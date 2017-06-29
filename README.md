@@ -1,5 +1,5 @@
-RIO/OS API Server
+RIO/OS API Server  Code name: `aran`
 ====
 
-Code name: `aran`
+
 
