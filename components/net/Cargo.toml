@@ -1,0 +1,31 @@
+[package]
+name = "habitat_net"
+version = "0.0.0"
+authors = ["Adam Jacob <adam@chef.io>", "Jamie Winsor <reset@chef.io>", "Fletcher Nichol <fnichol@chef.io>", "Joshua Timberman <joshua@chef.io>", "Dave Parfitt <dparfitt@chef.io>"]
+workspace = "../../"
+
+[dependencies]
+bitflags = "*"
+fnv = "*"
+habitat_builder_protocol = { path = "../builder-protocol" }
+habitat_core = { path = "../core" }
+hyper = "*"
+hyper-openssl = "*"
+iron = "*"
+lazy_static = "*"
+log = "*"
+num_cpus = "*"
+persistent = "*"
+protobuf = "*"
+serde = "*"
+serde_derive = "*"
+serde_json = "*"
+time = "*"
+unicase = "*"
+
+[dependencies.zmq]
+git = "https://github.com/erickt/rust-zmq"
+branch = "release/v0.8"
+
+[features]
+functional = []

@@ -1,0 +1,40 @@
+[package]
+name = "habitat_core"
+version = "0.0.0"
+authors = ["Adam Jacob <adam@chef.io>", "Jamie Winsor <reset@chef.io>", "Fletcher Nichol <fnichol@chef.io>", "Joshua Timberman <joshua@chef.io>", "Dave Parfitt <dparfitt@chef.io>", "Steven Murawski <smurawski@chef.io>"]
+workspace = "../../"
+build = "build.rs"
+
+[build-dependencies]
+gcc = "0.3"
+
+[dependencies]
+base64 = "*"
+errno = "*"
+hex = "*"
+lazy_static = "*"
+libarchive = "*"
+libc = "*"
+# JW: Temporarily use master branch of git until serde 1.0+ is available in crate release
+libsodium-sys = { git = "https://github.com/dnaq/sodiumoxide" }
+log = "*"
+rand = "*"
+regex = "*"
+serde = "*"
+serde_derive = "*"
+serde_json = "*"
+# JW: Temporarily use master branch of git until serde 1.0+ is available in crate release
+sodiumoxide = { git = "https://github.com/dnaq/sodiumoxide" }
+time = "*"
+toml = { version = "*", features = ["serde"], default-features = false }
+url = "*"
+
+[target.'cfg(not(windows))'.dependencies]
+users = "*"
+
+[dev-dependencies]
+hyper = "*"
+tempdir = "*"
+
+[features]
+functional = []

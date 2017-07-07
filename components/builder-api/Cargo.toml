@@ -1,0 +1,50 @@
+[package]
+name = "habitat_builder_api"
+version = "0.0.0"
+authors = ["Adam Jacob <adam@chef.io>", "Jamie Winsor <reset@chef.io>", "Fletcher Nichol <fnichol@chef.io>", "Joshua Timberman <joshua@chef.io>", "Dave Parfitt <dparfitt@chef.io>"]
+description = "Habitat-Builder HTTP API gateway"
+build = "../bldr-build.rs"
+workspace = "../../"
+
+[[bin]]
+name = "bldr-api"
+doc = false
+
+[dependencies]
+base64 = "*"
+bodyparser = "*"
+env_logger = "*"
+hyper = "*"
+iron = "*"
+log = "*"
+mount = "*"
+params = "*"
+persistent = "*"
+protobuf = "*"
+router = "*"
+serde = "*"
+serde_derive = "*"
+serde_json = "*"
+staticfile = "*"
+toml = { version = "*", features = ["serde"], default-features = false }
+unicase = "*"
+
+[dependencies.clap]
+version = "*"
+features = [ "suggestions", "color", "unstable" ]
+
+[dependencies.zmq]
+git = "https://github.com/erickt/rust-zmq"
+branch = "release/v0.8"
+
+[dependencies.habitat_core]
+path = "../core"
+
+[dependencies.habitat_builder_protocol]
+path = "../builder-protocol"
+
+[dependencies.habitat_net]
+path = "../net"
+
+[features]
+functional = []

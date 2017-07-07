@@ -1,0 +1,25 @@
+[package]
+name = "builder_core"
+version = "0.0.0"
+authors = ["Adam Jacob <adam@chef.io>", "Jamie Winsor <reset@chef.io>", "Fletcher Nichol <fnichol@chef.io>", "Joshua Timberman <joshua@chef.io>", "Dave Parfitt <dparfitt@chef.io>", "Steven Murawski <smurawski@chef.io>"]
+workspace = "../../"
+build = "../bldr-build.rs"
+
+[dependencies]
+log = "*"
+statsd = "*"
+petgraph = "*"
+protobuf = "*"
+walkdir = "*"
+libarchive = "*"
+time = "*"
+chrono = { version = "*", features = ["serde"] }
+
+[dependencies.habitat_core]
+path = "../core"
+
+[dependencies.habitat_builder_protocol]
+path = "../builder-protocol"
+
+[features]
+functional = []

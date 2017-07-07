@@ -1,0 +1,17 @@
+.DS_Store
+dump.rdb
+target
+terraform.tfstate*
+.delivery/cli.toml
+.tags*
+log/
+results/
+tmp/
+.vagrant/
+*.sig.key
+*.box.key
+*.sym.key
+test/builder-api/node_modules
+test/builder-api/services.log
+test/builder-api/built/*
+tags

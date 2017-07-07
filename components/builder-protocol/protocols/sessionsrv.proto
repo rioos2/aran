@@ -1,0 +1,100 @@
+package sessionsrv;
+
+enum OAuthProvider {
+  GitHub = 0;
+}
+
+message Account {
+  optional uint64 id = 1;
+  optional string email = 2;
+  optional string name = 3;
+}
+
+// get an account by GH username
+message AccountGet {
+  optional string name = 1;
+}
+
+message AccountGetId {
+  optional uint64 id = 1;
+}
+
+message AccountOriginInvitation {
+  optional uint64 id = 1;
+  optional uint64 origin_invitation_id = 2;
+  optional uint64 account_id = 3;
+  optional string account_name = 4;
+  optional uint64 origin_id = 5;
+  optional string origin_name = 6;
+  optional uint64 owner_id = 7;
+}
+
+message AccountOriginInvitationCreate {
+  optional uint64 origin_invitation_id = 1;
+  optional uint64 account_id = 2;
+  optional string account_name = 3;
+  optional uint64 origin_id = 4;
+  optional string origin_name = 5;
+  optional uint64 owner_id = 6;
+}
+
+message AccountOriginInvitationAcceptRequest {
+  optional uint64 account_id = 1;
+  optional uint64 invite_id = 2;
+  optional string origin_name = 3;
+  optional bool ignore = 4;
+}
+
+message AccountInvitationListRequest {
+  optional uint64 account_id = 1;
+}
+
+message AccountInvitationListResponse {
+  optional uint64 account_id = 1;
+  repeated AccountOriginInvitation invitations = 2;
+}
+
+message AccountOriginCreate {
+  optional uint64 account_id = 1;
+  optional string account_name = 2;
+  optional uint64 origin_id = 3;
+  optional string origin_name = 4;
+}
+
+message AccountOriginListRequest {
+  optional uint64 account_id = 1;
+}
+
+message AccountOriginListResponse {
+  optional uint64 account_id = 1;
+  repeated string origins = 2;
+}
+
+message Session {
+  optional uint64 id = 1;
+  optional string email = 2;
+  optional string name = 3;
+  optional string token = 4;
+  optional uint32 flags = 5;
+}
+
+// This can be deleted
+message SessionToken {
+  optional string token = 1;
+  optional uint64 owner_id = 2;
+  optional OAuthProvider provider = 3;
+}
+
+message SessionCreate {
+  optional string token = 1;
+  optional uint64 extern_id = 2;
+  optional string email = 3;
+  optional string name = 4;
+  optional OAuthProvider provider = 5;
+}
+
+message SessionGet {
+  optional string name = 1;
+  optional string token = 2;
+}
+
