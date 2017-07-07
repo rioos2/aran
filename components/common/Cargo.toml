@@ -1,0 +1,33 @@
+[package]
+name = "habitat_common"
+version = "0.0.0"
+authors = ["Adam Jacob <adam@chef.io>", "Jamie Winsor <reset@chef.io>", "Fletcher Nichol <fnichol@chef.io>", "Joshua Timberman <joshua@chef.io>", "Dave Parfitt <dparfitt@chef.io>"]
+workspace = "../../"
+
+[dependencies]
+ansi_term = "*"
+hyper = "*"
+libc = "*"
+log = "*"
+pbr = "*"
+regex = "*"
+retry = "*"
+term = "*"
+time = "*"
+toml = { version = "*", features = ["serde"], default-features = false }
+
+[dependencies.habitat_core]
+path = "../core"
+
+[dependencies.habitat_builder_protocol]
+path = "../builder-protocol"
+
+[target.'cfg(windows)'.dependencies]
+kernel32-sys = "*"
+winapi = "*"
+
+[dev-dependencies]
+tempdir = "*"
+
+[features]
+functional = []

@@ -1,0 +1,47 @@
+[package]
+name = "habitat_builder_sessionsrv"
+version = "0.0.0"
+authors = ["Adam Jacob <adam@chef.io>", "Jamie Winsor <reset@chef.io>", "Fletcher Nichol <fnichol@chef.io>", "Joshua Timberman <joshua@chef.io>", "Dave Parfitt <dparfitt@chef.io>"]
+description = "Habitat-Builder Session Server"
+build = "../bldr-build.rs"
+workspace = "../../"
+
+[[bin]]
+name = "bldr-session-srv"
+doc = false
+
+[dependencies]
+bitflags = "*"
+env_logger = "*"
+hyper = "*"
+log = "*"
+postgres = "*"
+protobuf = "*"
+r2d2 = "*"
+serde = "*"
+serde_derive = "*"
+time = "*"
+toml = { version = "*", features = ["serde"], default-features = false }
+
+[dependencies.clap]
+version = "*"
+features = [ "suggestions", "color", "unstable" ]
+
+[dependencies.habitat_core]
+path = "../core"
+
+[dependencies.habitat_builder_db]
+path = "../builder-db"
+
+[dependencies.habitat_builder_protocol]
+path = "../builder-protocol"
+
+[dependencies.habitat_net]
+path = "../net"
+
+[dependencies.zmq]
+git = "https://github.com/erickt/rust-zmq"
+branch = "release/v0.8"
+
+[features]
+functional = []
