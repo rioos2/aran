@@ -40,10 +40,10 @@ impl Default for DataStoreCfg {
     fn default() -> Self {
         DataStoreCfg {
             host: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
-            port: 5432,
-            user: String::from("hab"),
+            port: 8080,
+            user: String::from(""),
             password: None,
-            database: String::from(""),
+            database: String::from("rioos"),
             connection_retry_ms: 300,
             connection_timeout_sec: 3600,
             connection_test: false,
