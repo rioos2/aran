@@ -188,14 +188,12 @@ impl Application for Server {
             let cfg = self.config.read().unwrap();
             Broker::run(Self::net_ident(), cfg.route_addrs())
         };
-
         let datastore = {
             let cfg = self.config.read().unwrap();
             let ds = DataStore::new(cfg.deref())?;
             ds.setup()?;
             ds
         };
-
         // Start the background sync
         datastore.start_async();
 

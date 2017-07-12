@@ -27,12 +27,11 @@ use hab_core::config::ConfigFile;
 use router::{Config, Error, Result};
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
-const CFG_DEFAULT_PATH: &'static str = "/hab/svc/builder-router/config.toml";
+const CFG_DEFAULT_PATH: &'static str = "/var/lib/rioos/router.toml";
 
 fn main() {
     env_logger::init().unwrap();
     let matches = app().get_matches();
-    debug!("CLI matches: {:?}", matches);
     let config = match config_from_args(&matches) {
         Ok(result) => result,
         Err(e) => return exit_with(e, 1),
@@ -46,14 +45,14 @@ fn main() {
 fn app<'a, 'b>() -> clap::App<'a, 'b> {
     clap_app!(BuilderRouteSrv =>
         (version: VERSION)
-        (about: "Habitat builder-router")
+        (about: "Rios builder-router")
         (@setting VersionlessSubcommands)
         (@setting SubcommandRequiredElseHelp)
         (@subcommand start =>
-            (about: "Run a Habitat-Builder router")
+            (about: "Run a builder-router router")
             (@arg config: -c --config +takes_value
                 "Filepath to configuration file. \
-                [default: /hab/svc/builder-router/config.toml]")
+                [default: /var/lib/rioos/router.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 5560]")
         )
     )

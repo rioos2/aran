@@ -113,10 +113,6 @@ mod tests {
         root = "/some/path"
 
         [[targets]]
-        platform = "linux"
-        architecture = "x86_64"
-
-        [[targets]]
         platform = "windows"
         architecture = "x86_64"
 

@@ -43,7 +43,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         status: get "/status" => status,
         authenticate: get "/authenticate/:code" => github_authenticate,
 
-        jobs: post "/jobs" => XHandler::new(job_create).before(basic.clone()),
+        // jobs: post "/jobs" => XHandler::new(job_create).before(basic.clone()),
+        jobs: post "/jobs" => job_create,
         job: get "/jobs/:id" => job_show,
         job_log: get "/jobs/:id/log" => job_log,
 

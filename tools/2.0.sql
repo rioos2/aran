@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 -- foreign key account_id
 CREATE TABLE IF NOT EXISTS projects(
   id SERIAL PRIMARY KEY,
-  account INT NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+  account INT NOT NULL REFERENCES accounts(id),
   name STRING,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS plan_factory (
   description STRING,
   tags STRING,
   camp_version DECIMAL DEFAULT 1.2,
-  origin STRING DEFAULT "rioos:2.0"
+  origin STRING DEFAULT 'rioos:2.0',
   artifacts STRING,
   services STRING,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS plan_factory (
   -- Table structure for table `assembly_factory`
   -- items : []
 CREATE TABLE IF NOT EXISTS assembly_factory (
-  id SERIAL PRIMARY_KEY,
+  id SERIAL PRIMARY KEY,
   uri STRING,
   name STRING,
   description STRING,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS assembly_factory (
   total_items INT DEFAULT 0,
   Items_per_page INT DEFAULT 10,
   start_index INT DEFAULT 0,
-  items: STRING,
+  items STRING,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
 
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS assembly_factory (
   -- operation_collection : [], sensor_collection : []
   -- metadata : json
 CREATE TABLE  IF NOT EXISTS assembly (
-  id SERIAL PRIMARY_KEY,
+  id SERIAL PRIMARY KEY,
   uri STRING,
   name STRING,
   description STRING,
@@ -84,7 +84,7 @@ CREATE TABLE  IF NOT EXISTS assembly (
   plan STRING,
   operation_collection STRING,
   sensor_collection STRING,
-  metadata STRING
+  metadata STRING,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
 
@@ -96,7 +96,7 @@ CREATE TABLE  IF NOT EXISTS assembly (
 -- related_components_collection : [], operation_collection : []
 -- sensor_collection : [], metadata : json
 CREATE TABLE  IF NOT EXISTS components (
-  id SERIAL PRIMARY_KEY,
+  id SERIAL PRIMARY KEY,
   uri STRING,
   name STRING,
   description STRING,
@@ -110,7 +110,7 @@ CREATE TABLE  IF NOT EXISTS components (
   related_components_collection STRING,
   operation_collection STRING,
   sensor_collection STRING,
-  metadata STRING
+  metadata STRING,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
 

@@ -91,6 +91,7 @@ impl DataStore {
     /// * If the job cannot be created
     /// * If the job has an unknown VCS type
     pub fn create_job(&self, job: &jobsrv::Job) -> Result<jobsrv::Job> {
+
         let conn = self.pool.get_shard(0)?;
 
         if job.get_project().get_vcs_type() == "git" {
