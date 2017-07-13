@@ -69,10 +69,10 @@ impl DataStore {
     /// This includes all the schema, along with stored procedures for data
     /// access.
     pub fn setup(&self) -> Result<()> {
-        let conn = self.pool.get_raw()?;
-        let xact = conn.transaction().map_err(Error::DbTransactionStart)?;
-
-        self.async.register("sync_jobs".to_string(), sync_jobs);
+        // let conn = self.pool.get_raw()?;
+        // let xact = conn.transaction().map_err(Error::DbTransactionStart)?;
+        //
+        // self.async.register("sync_jobs".to_string(), sync_jobs);
 
         Ok(())
     }
@@ -123,6 +123,22 @@ impl DataStore {
     ///
     /// * If a connection cannot be gotten from the pool
     /// * If the job cannot be selected from the database
+
+    pub fn get_job_id(id: i64){
+        println!("##################################33");
+        println!("{:?}",id);
+        // let conn = self.pool.get_shard(0)?;
+        // let rows = &conn.query(
+        //     "SELECT * FROM get_job_v1($1)",
+        //     &[&(get_job.get_id() as i64)],
+        // ).map_err(Error::JobGet)?;
+        // for row in rows {
+        //     let job = row_to_job(&row)?;
+        //     return Ok(Some(job));
+        // }
+        // Ok(())
+    }
+
     pub fn get_job(&self, get_job: &jobsrv::JobGet) -> Result<Option<jobsrv::Job>> {
         let conn = self.pool.get_shard(0)?;
         let rows = &conn.query(

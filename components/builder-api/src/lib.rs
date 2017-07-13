@@ -6,6 +6,7 @@ extern crate habitat_builder_protocol as protocol;
 #[macro_use]
 extern crate habitat_core as hab_core;
 extern crate habitat_net as hab_net;
+extern crate habitat_builder_jobsrv as job;
 extern crate hyper;
 extern crate iron;
 #[macro_use]

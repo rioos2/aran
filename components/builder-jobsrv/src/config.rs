@@ -49,7 +49,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         let mut datastore = DataStoreCfg::default();
-        datastore.database = String::from("builder_jobsrv");
+        datastore.database = String::from("rioos");
         Config {
             shards: (0..SHARD_COUNT).collect(),
             worker_threads: Self::default_worker_count(),
