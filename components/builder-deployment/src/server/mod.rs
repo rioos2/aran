@@ -220,7 +220,7 @@ impl Application for Server {
         //
         // try!(sup.start());
         try!(self.connect());
-        info!("builder-jobsrv is ready to go.");
+        info!("builder-deployment is ready to go.");
         try!(zmq::proxy(&mut self.router.socket, &mut self.be_sock));
         // worker_mgr.join().unwrap();
         broker.join().unwrap();

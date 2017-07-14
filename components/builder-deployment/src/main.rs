@@ -45,7 +45,7 @@ fn main() {
 fn app<'a, 'b>() -> clap::App<'a, 'b> {
     clap_app!(BuilderJobSrv =>
         (version: VERSION)
-        (about: "Habitat builder-jobsrv")
+        (about: "Habitat builder-deployment")
         (@setting VersionlessSubcommands)
         (@setting SubcommandRequiredElseHelp)
         (@subcommand start =>
@@ -71,7 +71,7 @@ fn exit_with(err: Error, code: i32) {
     process::exit(code)
 }
 
-/// Starts the builder-jobsrv server.
+/// Starts the builder-deployment server.
 ///
 /// # Failures
 ///

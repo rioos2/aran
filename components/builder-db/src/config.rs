@@ -41,7 +41,7 @@ impl Default for DataStoreCfg {
         DataStoreCfg {
             host: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             port: 26257,
-            user: String::from("vinov"),
+            user: String::from("root"),
             password: None,
             database: String::from("rioos"),
             connection_retry_ms: 300,

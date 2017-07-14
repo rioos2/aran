@@ -28,6 +28,8 @@ use protocol::{originsrv, jobsrv, scheduler};
 use std::str::FromStr;
 use protobuf::ProtobufEnum;
 
+use db::config::DataStoreCfg;
+
 /// DataStore inherints being Send + Sync by virtue of having only one member, the pool itself.
 #[derive(Debug, Clone)]
 pub struct DataStore {
@@ -124,9 +126,20 @@ impl DataStore {
     /// * If a connection cannot be gotten from the pool
     /// * If the job cannot be selected from the database
 
-    pub fn get_job_id(id: i64){
-        println!("##################################33");
-        println!("{:?}",id);
+    pub fn assembly_create(){
+        let mut config = DataStoreCfg::default();
+        config.pool_size = 1;
+        let create_pool = Pool::new(&config, vec![0]).expect("Failed to create pool");
+        let tb_name = String::from("animals");
+        let value = 1;
+        let conn = create_pool.get_raw().expect("Failed to get connection");
+        // let drop_db = format!("DROP DATABASE IF EXISTS {}", config.database);
+        let create_db = format!("INSERT INTO assembly(id) VALUES({})" ,value);
+        // conn.execute(&drop_db, &[]).expect("Failed to drop test database");
+        conn.execute(&create_db, &[]).expect("Failed to create test database from template");
+        // let mut config = DataStoreCfg::default();
+        // let pool = Pool::new(&config.datastore, config.shards.clone())?;
+
         // let conn = self.pool.get_shard(0)?;
         // let rows = &conn.query(
         //     "SELECT * FROM get_job_v1($1)",

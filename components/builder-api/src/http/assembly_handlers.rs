@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! A collection of handlers for the HTTP server's router
+//! A collection of assembly_handlers for the HTTP server's router
 
 use std::env;
 
@@ -146,8 +146,8 @@ pub fn job_create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn show_id(req: &mut Request)-> IronResult<Response> {
- let val = DataStore::get_job_id(1);
+pub fn assembly_create(req: &mut Request)-> IronResult<Response> {
+ let val = DataStore::assembly_create();
   Ok(Response::with(status::Ok))
 }
 

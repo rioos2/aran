@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! A module containing the HTTP server and handlers for servicing client requests
+//! A module containing the HTTP server and assembly_handlers for servicing client requests
 
-pub mod handlers;
+pub mod assembly_handlers;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -29,7 +29,7 @@ use staticfile::Static;
 
 use config::Config;
 use error::Result;
-use self::handlers::*;
+use self::assembly_handlers::*;
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.
 // See: http://172.16.2.131:9633/iron/prelude/struct.Iron.html#method.http
@@ -46,7 +46,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         // jobs: post "/jobs" => XHandler::new(job_create).before(basic.clone()),
         jobs: post "/jobs" => job_create,
         job: get "/jobs/:id" => job_show,
-        data: get "/data" => show_id,
+        assembly: get "/assembly" => assembly_create,
         job_log: get "/jobs/:id/log" => job_log,
 
         user_invitations: get "/user/invitations" => {
