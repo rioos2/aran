@@ -31,7 +31,7 @@ impl Server {
     /// * HTTP server could not start
     pub fn run(&mut self) -> Result<()> {
         let cfg1 = self.config.clone();
-        let broker = Broker::run(Self::net_ident(), self.config.route_addrs());
+        // let broker = Broker::run(Self::net_ident(), self.config.route_addrs());
         println!(
             "Builder API listening on {}:{}",
             self.config.http.listen,
@@ -41,7 +41,7 @@ impl Server {
         let http = try!(http::run(cfg1));
 
         http.join().unwrap();
-        broker.join().unwrap();
+        // broker.join().unwrap();
         Ok(())
     }
 }

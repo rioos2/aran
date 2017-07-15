@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! A collection of handlers for the HTTP server's router
+//! A collection of assembly_handlers for the HTTP server's router
 
 use std::env;
 
@@ -23,6 +23,7 @@ use hab_core::event::*;
 use hab_net;
 use hab_net::http::controller::*;
 use hab_net::routing::Broker;
+use job::data_store::DataStore;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
@@ -34,7 +35,6 @@ use protocol::originsrv::*;
 use protocol::sessionsrv;
 use protocol::net::{self, NetOk, ErrCode};
 use router::Router;
-
 // For the initial release, Builder will only be enabled on the "core"
 // origin. Later, we'll roll it out to other origins; at that point,
 // we should consider other options, such as configurable middleware.
@@ -146,12 +146,19 @@ pub fn job_create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn job_show(req: &mut Request) -> IronResult<Response> {
+pub fn assembly_create(req: &mut Request)-> IronResult<Response> {
+ let val = DataStore::assembly_create();
+  Ok(Response::with(status::Ok))
+}
+
+
+pub fn job_show(req: &mut Request) -> IronResult<Response>{
     let params = req.extensions.get::<Router>().unwrap();
     let id = match params.find("id").unwrap().parse::<u64>() {
         Ok(id) => id,
         Err(_) => return Ok(Response::with(status::BadRequest)),
     };
+
     let mut conn = Broker::connect().unwrap();
     let mut request = JobGet::new();
     request.set_id(id);

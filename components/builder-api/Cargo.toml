@@ -46,5 +46,8 @@ path = "../builder-protocol"
 [dependencies.habitat_net]
 path = "../net"
 
+[dependencies.habitat_builder_jobsrv]
+path = "../builder-deployment"
+
 [features]
 functional = []

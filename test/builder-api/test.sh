@@ -19,7 +19,7 @@ echo "**** Spinning up the services ****"
 count=0;
 while [ $count -ne 5 ]; do
   count=0;
-  for svc in builder-sessionsrv builder-router builder-api builder-jobsrv; do
+  for svc in builder-sessionsrv builder-router builder-api builder-deployment; do
     if grep -q "$svc is ready to go" ./services.log; then
       ((count++))
     fi

@@ -197,34 +197,34 @@ impl Application for Server {
         // Start the background sync
         datastore.start_async();
 
-        let ds2 = datastore.clone();
-        let ingester_datastore = datastore.clone();
-
-        let log_dir = {
-            let dir = self.config.read().unwrap().log_dir.clone();
-            let log_dir = LogDirectory::new(&dir);
-            log_dir.validate()?;
-            log_dir
-        };
-
-        let cfg = self.config.clone();
-        let sup_log_dir = log_dir.clone();
-        let init_state = InitServerState::new(datastore, sup_log_dir);
-        let sup: Supervisor<Worker> = Supervisor::new(cfg, init_state);
-
-        let cfg2 = self.config.clone();
-        let log_ingester = LogIngester::start(cfg2, log_dir, ingester_datastore)?;
-
-        let cfg3 = self.config.clone();
-        let worker_mgr = try!(WorkerMgr::start(cfg3, ds2));
-
-        try!(sup.start());
+        // let ds2 = datastore.clone();
+        // let ingester_datastore = datastore.clone();
+        //
+        // let log_dir = {
+        //     let dir = self.config.read().unwrap().log_dir.clone();
+        //     let log_dir = LogDirectory::new(&dir);
+        //     log_dir.validate()?;
+        //     log_dir
+        // };
+        //
+        // let cfg = self.config.clone();
+        // let sup_log_dir = log_dir.clone();
+        // let init_state = InitServerState::new(datastore, sup_log_dir);
+        // let sup: Supervisor<Worker> = Supervisor::new(cfg, init_state);
+        //
+        // let cfg2 = self.config.clone();
+        // let log_ingester = LogIngester::start(cfg2, log_dir, ingester_datastore)?;
+        //
+        // let cfg3 = self.config.clone();
+        // let worker_mgr = try!(WorkerMgr::start(cfg3, ds2));
+        //
+        // try!(sup.start());
         try!(self.connect());
-        info!("builder-jobsrv is ready to go.");
+        info!("builder-deployment is ready to go.");
         try!(zmq::proxy(&mut self.router.socket, &mut self.be_sock));
-        worker_mgr.join().unwrap();
+        // worker_mgr.join().unwrap();
         broker.join().unwrap();
-        log_ingester.join().unwrap();
+        // log_ingester.join().unwrap();
         Ok(())
     }
 }

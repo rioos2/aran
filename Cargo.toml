@@ -4,7 +4,7 @@ members = [
   "components/builder-api",
   "components/builder-core",
   "components/builder-db",
-  "components/builder-jobsrv",
+  "components/builder-deployment",
   "components/builder-protocol",
   "components/builder-router",
   "components/builder-sessionsrv",
