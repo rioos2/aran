@@ -85,12 +85,7 @@ pub struct ArtifactHeader {
 }
 
 impl ArtifactHeader {
-    pub fn new(
-        format_version: String,
-        key_name: String,
-        hash_type: String,
-        signature_raw: String,
-    ) -> ArtifactHeader {
+    pub fn new(format_version: String, key_name: String, hash_type: String, signature_raw: String) -> ArtifactHeader {
         ArtifactHeader {
             format_version: format_version,
             key_name: key_name,

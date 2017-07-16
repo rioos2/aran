@@ -354,12 +354,7 @@ impl UI {
         }
     }
 
-    fn write_heading<T: ToString>(
-        stream: &mut OutputStream,
-        color: Colour,
-        symbol: char,
-        message: T,
-    ) -> Result<()> {
+    fn write_heading<T: ToString>(stream: &mut OutputStream, color: Colour, symbol: char, message: T) -> Result<()> {
         match stream.is_colored() {
             true => {
                 try!(write!(
@@ -376,12 +371,7 @@ impl UI {
         Ok(())
     }
 
-    fn print_wrapped(
-        stream: &mut OutputStream,
-        text: &str,
-        wrap_width: usize,
-        left_indent: usize,
-    ) -> Result<()> {
+    fn print_wrapped(stream: &mut OutputStream, text: &str, wrap_width: usize, left_indent: usize) -> Result<()> {
         for line in text.split("\n\n") {
             let mut buffer = String::new();
             let mut width = 0;
@@ -570,8 +560,7 @@ impl OutputStream {
     }
 
     pub fn is_colored(&self) -> bool {
-        self.supports_color() &&
-            (Coloring::Auto == self.coloring || Coloring::Always == self.coloring)
+        self.supports_color() && (Coloring::Auto == self.coloring || Coloring::Always == self.coloring)
     }
 
     pub fn is_a_terminal(&self) -> bool {

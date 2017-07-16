@@ -158,8 +158,7 @@ impl AsyncServer {
         let mut rng = rand::thread_rng();
         let high_end = 2u64.pow(failure_count as u32);
         let cycles = rng.gen_range(0, high_end);
-        let next_event = SteadyTime::now() +
-            SteadyDuration::milliseconds((cycles * BACKOFF_SLOT_TIME_MS) as i64);
+        let next_event = SteadyTime::now() + SteadyDuration::milliseconds((cycles * BACKOFF_SLOT_TIME_MS) as i64);
         info!("Backing off {:?} for {:?}", key, next_event);
         let mut r = self.retry.write().expect("Async retry lock poisoned");
         r.insert(key, (next_event, event));
@@ -175,8 +174,7 @@ impl AsyncServer {
         let _ = thread::Builder::new()
             .name("async-events".to_string())
             .spawn(move || {
-                let threadpool =
-                    ThreadPool::new_with_name("async-event-worker".to_string(), workers);
+                let threadpool = ThreadPool::new_with_name("async-event-worker".to_string(), workers);
                 loop {
                     if server.stop.load(Ordering::SeqCst) {
                         return;
@@ -190,8 +188,7 @@ impl AsyncServer {
                     let events = server.get_num_events(available_jobs);
                     for (key, event) in events.into_iter() {
                         let is_running = {
-                            let running_events =
-                                server.running.read().expect("Running events lock poisoned");
+                            let running_events = server.running.read().expect("Running events lock poisoned");
                             running_events.contains(&key)
                         };
                         if !is_running {
@@ -204,8 +201,7 @@ impl AsyncServer {
                                 running_events.insert(key.clone());
                             }
                             {
-                                let mut r =
-                                    server.retry.write().expect("Async write lock poisoned");
+                                let mut r = server.retry.write().expect("Async write lock poisoned");
                                 r.remove(&key);
                             }
                             threadpool.execute(move || sa.run_event(key, event));

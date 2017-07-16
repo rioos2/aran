@@ -22,29 +22,22 @@ use sodiumoxide::crypto::box_::curve25519xsalsa20poly1305::SecretKey as BoxSecre
 use sodiumoxide::crypto::box_::curve25519xsalsa20poly1305::{Nonce, gen_nonce};
 
 use error::{Error, Result};
-use super::{get_key_revisions, mk_key_filename, mk_revision_string, parse_name_with_rev,
-            read_key_bytes, write_keypair_files, KeyPair, KeyType};
+use super::{get_key_revisions, mk_key_filename, mk_revision_string, parse_name_with_rev, read_key_bytes, write_keypair_files, KeyPair, KeyType};
 use super::super::{BOX_FORMAT_VERSION, PUBLIC_KEY_SUFFIX, SECRET_BOX_KEY_SUFFIX};
 
 pub type BoxKeyPair = KeyPair<BoxPublicKey, BoxSecretKey>;
 
 impl BoxKeyPair {
-    pub fn generate_pair_for_service<S1, S2, P>(
-        org: S1,
-        service_group: S2,
-        cache_key_path: P,
-    ) -> Result<Self>
+    pub fn generate_pair_for_service<S1, S2, P>(org: S1, service_group: S2, cache_key_path: P) -> Result<Self>
     where
         S1: AsRef<str>,
         S2: AsRef<str>,
         P: AsRef<Path>,
     {
         let revision = try!(mk_revision_string());
-        let keyname =
-            Self::mk_key_name_for_service(org.as_ref(), service_group.as_ref(), &revision);
+        let keyname = Self::mk_key_name_for_service(org.as_ref(), service_group.as_ref(), &revision);
         debug!("new service box key name = {}", &keyname);
-        let (public_key, secret_key) =
-            try!(Self::generate_pair_files(&keyname, cache_key_path.as_ref()));
+        let (public_key, secret_key) = try!(Self::generate_pair_files(&keyname, cache_key_path.as_ref()));
         let (name, _) = try!(parse_name_with_rev(&keyname));
         Ok(Self::new(
             name,
@@ -54,15 +47,11 @@ impl BoxKeyPair {
         ))
     }
 
-    pub fn generate_pair_for_user<P: AsRef<Path> + ?Sized>(
-        user: &str,
-        cache_key_path: &P,
-    ) -> Result<Self> {
+    pub fn generate_pair_for_user<P: AsRef<Path> + ?Sized>(user: &str, cache_key_path: &P) -> Result<Self> {
         let revision = try!(mk_revision_string());
         let keyname = Self::mk_key_name_for_user(user, &revision);
         debug!("new user sig key name = {}", &keyname);
-        let (public_key, secret_key) =
-            try!(Self::generate_pair_files(&keyname, cache_key_path.as_ref()));
+        let (public_key, secret_key) = try!(Self::generate_pair_files(&keyname, cache_key_path.as_ref()));
         let (name, _) = try!(parse_name_with_rev(&keyname));
         Ok(Self::new(
             name,
@@ -148,10 +137,7 @@ impl BoxKeyPair {
         }
     }
 
-    pub fn get_public_key_path<P: AsRef<Path> + ?Sized>(
-        key_with_rev: &str,
-        cache_key_path: &P,
-    ) -> Result<PathBuf> {
+    pub fn get_public_key_path<P: AsRef<Path> + ?Sized>(key_with_rev: &str, cache_key_path: &P) -> Result<PathBuf> {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, PUBLIC_KEY_SUFFIX);
         if !path.is_file() {
             return Err(Error::CryptoError(
@@ -161,10 +147,7 @@ impl BoxKeyPair {
         Ok(path)
     }
 
-    pub fn get_secret_key_path<P: AsRef<Path> + ?Sized>(
-        key_with_rev: &str,
-        cache_key_path: &P,
-    ) -> Result<PathBuf> {
+    pub fn get_secret_key_path<P: AsRef<Path> + ?Sized>(key_with_rev: &str, cache_key_path: &P) -> Result<PathBuf> {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, SECRET_BOX_KEY_SUFFIX);
         if !path.is_file() {
             return Err(Error::CryptoError(
@@ -273,10 +256,7 @@ impl BoxKeyPair {
         }
     }
 
-    fn generate_pair_files(
-        name_with_rev: &str,
-        cache_key_path: &Path,
-    ) -> Result<(BoxPublicKey, BoxSecretKey)> {
+    fn generate_pair_files(name_with_rev: &str, cache_key_path: &Path) -> Result<(BoxPublicKey, BoxSecretKey)> {
         let (pk, sk) = box_::gen_keypair();
 
         let public_keyfile = mk_key_filename(cache_key_path, name_with_rev, PUBLIC_KEY_SUFFIX);
@@ -300,8 +280,7 @@ impl BoxKeyPair {
         T: AsRef<str>,
         P: AsRef<Path>,
     {
-        let public_keyfile =
-            mk_key_filename(cache_key_path, key_with_rev.as_ref(), PUBLIC_KEY_SUFFIX);
+        let public_keyfile = mk_key_filename(cache_key_path, key_with_rev.as_ref(), PUBLIC_KEY_SUFFIX);
         let bytes = try!(read_key_bytes(&public_keyfile));
         match BoxPublicKey::from_slice(&bytes) {
             Some(sk) => Ok(sk),
@@ -319,8 +298,7 @@ impl BoxKeyPair {
         T: AsRef<str>,
         P: AsRef<Path>,
     {
-        let secret_keyfile =
-            mk_key_filename(cache_key_path, key_with_rev.as_ref(), SECRET_BOX_KEY_SUFFIX);
+        let secret_keyfile = mk_key_filename(cache_key_path, key_with_rev.as_ref(), SECRET_BOX_KEY_SUFFIX);
         let bytes = try!(read_key_bytes(&secret_keyfile));
         match BoxSecretKey::from_slice(&bytes) {
             Some(sk) => Ok(sk),
@@ -379,8 +357,7 @@ mod test {
     #[test]
     fn generated_service_pair() {
         let cache = TempDir::new("key_cache").unwrap();
-        let pair = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let pair = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         assert_eq!(pair.name, "tnt.default@acme");
         match pair.public() {
@@ -554,8 +531,7 @@ mod test {
     #[test]
     fn encrypt_and_decrypt_from_user_to_service() {
         let cache = TempDir::new("key_cache").unwrap();
-        let service = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let service = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
         let user = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
 
         let ciphertext = user.encrypt("I wish to buy more rockets".as_bytes(), &service)
@@ -567,8 +543,7 @@ mod test {
     #[test]
     fn encrypt_and_decrypt_from_service_to_user() {
         let cache = TempDir::new("key_cache").unwrap();
-        let service = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let service = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
         let user = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
 
         let ciphertext = service.encrypt("Out of rockets".as_bytes(), &user).unwrap();
@@ -586,17 +561,11 @@ mod test {
         // required on each end
         {
             let sender = BoxKeyPair::generate_pair_for_user("wecoyote", full_cache.path()).unwrap();
-            let receiver =
-                BoxKeyPair::generate_pair_for_service("acme", "tnt.default", full_cache.path())
-                    .unwrap();
+            let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", full_cache.path()).unwrap();
 
             // Prepare the sender cache with sender's secret and receiver's public keys
-            let secret =
-                BoxKeyPair::get_secret_key_path(&sender.name_with_rev(), full_cache.path())
-                    .unwrap();
-            let public =
-                BoxKeyPair::get_public_key_path(&receiver.name_with_rev(), full_cache.path())
-                    .unwrap();
+            let secret = BoxKeyPair::get_secret_key_path(&sender.name_with_rev(), full_cache.path()).unwrap();
+            let public = BoxKeyPair::get_public_key_path(&receiver.name_with_rev(), full_cache.path()).unwrap();
             fs::copy(
                 &secret,
                 sender_cache.path().join(&secret.file_name().unwrap()),
@@ -607,12 +576,8 @@ mod test {
             ).unwrap();
 
             // Prepare the receiver cache with receivers's secret and sender's public keys
-            let secret =
-                BoxKeyPair::get_secret_key_path(&receiver.name_with_rev(), full_cache.path())
-                    .unwrap();
-            let public =
-                BoxKeyPair::get_public_key_path(&sender.name_with_rev(), full_cache.path())
-                    .unwrap();
+            let secret = BoxKeyPair::get_secret_key_path(&receiver.name_with_rev(), full_cache.path()).unwrap();
+            let public = BoxKeyPair::get_public_key_path(&sender.name_with_rev(), full_cache.path()).unwrap();
             fs::copy(
                 &secret,
                 receiver_cache.path().join(&secret.file_name().unwrap()),
@@ -627,8 +592,7 @@ mod test {
         let ciphertext = {
             // Load the sender and receiver keys from sender cache to encrypt
             let sender = BoxKeyPair::get_latest_pair_for("wecoyote", sender_cache.path()).unwrap();
-            let receiver = BoxKeyPair::get_latest_pair_for("tnt.default@acme", sender_cache.path())
-                .unwrap();
+            let receiver = BoxKeyPair::get_latest_pair_for("tnt.default@acme", sender_cache.path()).unwrap();
             sender
                 .encrypt("Falling hurts".as_bytes(), &receiver)
                 .unwrap()
@@ -646,8 +610,7 @@ mod test {
     fn encrypt_missing_sender_secret_key() {
         let cache = TempDir::new("key_cache").unwrap();
         let sender = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
-        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         // Delete the sender's secret key
         fs::remove_file(
@@ -666,8 +629,7 @@ mod test {
     fn encrypt_missing_receiver_public_key() {
         let cache = TempDir::new("key_cache").unwrap();
         let sender = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
-        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         // Delete the receiver's public key
         fs::remove_file(
@@ -686,8 +648,7 @@ mod test {
     fn decrypt_missing_receiver_secret_key() {
         let cache = TempDir::new("key_cache").unwrap();
         let sender = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
-        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         // Delete the receiver's secret key
         fs::remove_file(
@@ -705,8 +666,7 @@ mod test {
     fn decrypt_missing_sender_public_key() {
         let cache = TempDir::new("key_cache").unwrap();
         let sender = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
-        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         // Delete the sender's public key
         fs::remove_file(
@@ -758,8 +718,7 @@ mod test {
     fn decrypt_invalid_nonce_decode() {
         let cache = TempDir::new("key_cache").unwrap();
         let sender = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
-        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         let payload = format!(
             "BOX-1\n{}\n{}\nnot:base64",
@@ -774,8 +733,7 @@ mod test {
     fn decrypt_invalid_nonce() {
         let cache = TempDir::new("key_cache").unwrap();
         let sender = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
-        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         let payload = format!(
             "BOX-1\n{}\n{}\nuhoh",
@@ -790,8 +748,7 @@ mod test {
     fn decrypt_invalid_ciphertext_decode() {
         let cache = TempDir::new("key_cache").unwrap();
         let sender = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
-        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         let payload = sender
             .encrypt("problems ahead".as_bytes(), &receiver)
@@ -816,8 +773,7 @@ mod test {
     fn decrypt_invalid_ciphertext() {
         let cache = TempDir::new("key_cache").unwrap();
         let sender = BoxKeyPair::generate_pair_for_user("wecoyote", cache.path()).unwrap();
-        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            .unwrap();
+        let receiver = BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path()).unwrap();
 
         let payload = sender
             .encrypt("problems ahead".as_bytes(), &receiver)

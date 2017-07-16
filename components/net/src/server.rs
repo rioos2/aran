@@ -113,11 +113,7 @@ impl Envelope {
         Ok(())
     }
 
-    pub fn reply_complete<M: ProtoBufMessage>(
-        &mut self,
-        sock: &mut zmq::Socket,
-        msg: &M,
-    ) -> Result<()> {
+    pub fn reply_complete<M: ProtoBufMessage>(&mut self, sock: &mut zmq::Socket, msg: &M) -> Result<()> {
         try!(self.send_header(sock));
         let rep = protocol::Message::new(msg).build();
         let bytes = try!(rep.write_to_bytes());

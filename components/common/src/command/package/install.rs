@@ -54,17 +54,7 @@ use retry::retry;
 pub const RETRIES: u64 = 5;
 pub const RETRY_WAIT: u64 = 3000;
 
-pub fn start<P1, P2>(
-    ui: &mut UI,
-    url: &str,
-    channel: Option<&str>,
-    ident_or_archive: &str,
-    product: &str,
-    version: &str,
-    fs_root_path: &P1,
-    cache_artifact_path: &P2,
-    ignore_target: bool,
-) -> Result<PackageIdent>
+pub fn start<P1, P2>(ui: &mut UI, url: &str, channel: Option<&str>, ident_or_archive: &str, product: &str, version: &str, fs_root_path: &P1, cache_artifact_path: &P2, ignore_target: bool) -> Result<PackageIdent>
 where
     P1: AsRef<Path> + ?Sized,
     P2: AsRef<Path> + ?Sized,
@@ -107,15 +97,7 @@ struct InstallTask<'a> {
 }
 
 impl<'a> InstallTask<'a> {
-    pub fn new(
-        url: &str,
-        product: &str,
-        version: &str,
-        fs_root_path: &'a Path,
-        cache_artifact_path: &'a Path,
-        cache_key_path: &'a Path,
-        ignore_target: bool,
-    ) -> Result<Self> {
+    pub fn new(url: &str, product: &str, version: &str, fs_root_path: &'a Path, cache_artifact_path: &'a Path, cache_key_path: &'a Path, ignore_target: bool) -> Result<Self> {
         Ok(InstallTask {
             fs_root_path: fs_root_path,
             cache_artifact_path: cache_artifact_path,
@@ -139,12 +121,7 @@ impl<'a> InstallTask<'a> {
         Ok(res)
     }
 
-    pub fn from_ident(
-        &self,
-        ui: &mut UI,
-        ident: PackageIdent,
-        channel: Option<&str>,
-    ) -> Result<PackageIdent> {
+    pub fn from_ident(&self, ui: &mut UI, ident: PackageIdent, channel: Option<&str>) -> Result<PackageIdent> {
         if channel.is_some() {
             try!(ui.begin(format!(
                 "Installing {} from channel '{}'",
@@ -196,12 +173,7 @@ impl<'a> InstallTask<'a> {
         self.install_package(ui, ident, Some(src_path))
     }
 
-    fn install_package(
-        &self,
-        ui: &mut UI,
-        ident: PackageIdent,
-        src_path: Option<&Path>,
-    ) -> Result<PackageIdent> {
+    fn install_package(&self, ui: &mut UI, ident: PackageIdent, src_path: Option<&Path>) -> Result<PackageIdent> {
         let mut artifact = try!(self.get_cached_artifact(ui, ident.clone(), src_path));
         let mut artifacts: Vec<PackageArchive> = Vec::new();
 
@@ -226,12 +198,7 @@ impl<'a> InstallTask<'a> {
         Ok(ident)
     }
 
-    fn get_cached_artifact(
-        &self,
-        ui: &mut UI,
-        ident: PackageIdent,
-        src_path: Option<&Path>,
-    ) -> Result<PackageArchive> {
+    fn get_cached_artifact(&self, ui: &mut UI, ident: PackageIdent, src_path: Option<&Path>) -> Result<PackageArchive> {
         if try!(self.is_artifact_cached(&ident)) {
             debug!(
                 "Found {} in artifact cache, skipping remote download",
@@ -282,20 +249,11 @@ impl<'a> InstallTask<'a> {
         Ok(self.cache_artifact_path.join(name))
     }
 
-    fn fetch_latest_pkg_ident_for(
-        &self,
-        ident: &PackageIdent,
-        channel: Option<&str>,
-    ) -> Result<PackageIdent> {
+    fn fetch_latest_pkg_ident_for(&self, ident: &PackageIdent, channel: Option<&str>) -> Result<PackageIdent> {
         Ok(ident.clone())
     }
 
-    fn fetch_artifact(
-        &self,
-        ui: &mut UI,
-        ident: &PackageIdent,
-        src_path: Option<&Path>,
-    ) -> Result<()> {
+    fn fetch_artifact(&self, ui: &mut UI, ident: &PackageIdent, src_path: Option<&Path>) -> Result<()> {
         if let Some(src_path) = src_path {
             let name = match ident.archive_name() {
                 Some(n) => n,
@@ -345,12 +303,7 @@ impl<'a> InstallTask<'a> {
         Ok(())
     }
 
-    fn verify_artifact(
-        &self,
-        ui: &mut UI,
-        ident: &PackageIdent,
-        artifact: &mut PackageArchive,
-    ) -> Result<()> {
+    fn verify_artifact(&self, ui: &mut UI, ident: &PackageIdent, artifact: &mut PackageArchive) -> Result<()> {
         let artifact_ident = try!(artifact.ident());
         if ident != &artifact_ident {
             return Err(Error::ArtifactIdentMismatch((

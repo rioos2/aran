@@ -40,8 +40,8 @@ else
 	docs_host := 127.0.0.1
 endif
 
-LIB = builder-db builder-core builder-protocol common core http-client net
-SRV = builder-api builder-admin builder-router builder-deployment builder-sessionsrv
+LIB = builder-db builder-core builder-protocol common core http-client net builder-deployment
+SRV = builder-api builder-router
 ALL = $(LIB) $(SRV)
 VERSION := $(shell cat VERSION)
 

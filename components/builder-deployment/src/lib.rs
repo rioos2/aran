@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate aws_sdk_rust;
 extern crate chrono;
 extern crate habitat_builder_protocol as protocol;
 extern crate habitat_core as hab_core;
@@ -31,14 +30,12 @@ extern crate serde;
 extern crate serde_derive;
 extern crate sha2;
 extern crate toml;
-extern crate zmq;
 
 extern crate url as extern_url;
 
 pub mod config;
 pub mod data_store;
 pub mod error;
-pub mod server;
 
 pub use self::config::Config;
 pub use self::error::{Error, Result};

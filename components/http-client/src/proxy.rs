@@ -473,11 +473,7 @@ pub fn proxy_unless_domain_exempted(for_domain: Option<&Url>) -> Result<Option<P
     }
 }
 
-fn process_no_proxy(
-    for_domain: Option<&Url>,
-    scheme: &str,
-    domains: String,
-) -> Result<Option<ProxyInfo>> {
+fn process_no_proxy(for_domain: Option<&Url>, scheme: &str, domains: String) -> Result<Option<ProxyInfo>> {
     let domain = match for_domain {
         Some(url) => url.host_str().unwrap_or(""),
         None => "",

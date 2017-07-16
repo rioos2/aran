@@ -98,9 +98,7 @@ impl BrokerConn {
                     }
                 }
             }
-            Err(Error::Zmq(zmq::Error::EAGAIN)) => {
-                Err(protocol::net::err(ErrCode::TIMEOUT, "net:route:3"))
-            }
+            Err(Error::Zmq(zmq::Error::EAGAIN)) => Err(protocol::net::err(ErrCode::TIMEOUT, "net:route:3")),
             Err(Error::Zmq(err)) => {
                 error!("route-recv, code={}, msg={}", err, err.to_raw());
                 Err(protocol::net::err(ErrCode::ZMQ, "net:route:4"))

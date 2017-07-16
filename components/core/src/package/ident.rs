@@ -71,12 +71,7 @@ pub trait Identifiable: fmt::Display + Into<PackageIdent> {
 
 impl PackageIdent {
     /// Creates a new package identifier
-    pub fn new<T: Into<String>>(
-        origin: T,
-        name: T,
-        version: Option<T>,
-        release: Option<T>,
-    ) -> Self {
+    pub fn new<T: Into<String>>(origin: T, name: T, version: Option<T>, release: Option<T>) -> Self {
         PackageIdent {
             origin: origin.into(),
             name: name.into(),

@@ -145,9 +145,7 @@ impl fmt::Display for Error {
                     e
                 )
             }
-            Error::ConfigFileIO(ref f, ref e) => {
-                format!("Error reading configuration file, {}, {}", f.display(), e)
-            }
+            Error::ConfigFileIO(ref f, ref e) => format!("Error reading configuration file, {}, {}", f.display(), e),
             Error::ConfigFileSyntax(ref e) => {
                 format!(
                     "Syntax errors while parsing TOML configuration file:\n\n{}",
@@ -220,9 +218,7 @@ impl fmt::Display for Error {
                     f
                 )
             }
-            Error::ConfigInvalidString(ref f) => {
-                format!("Invalid string value in config, field={}.", f)
-            }
+            Error::ConfigInvalidString(ref f) => format!("Invalid string value in config, field={}.", f),
             Error::ConfigInvalidTableString(ref f) => {
                 format!(
                     "Invalid table value of string fields and values in config, field={}",
@@ -239,9 +235,7 @@ impl fmt::Display for Error {
             Error::ConfigInvalidU16(ref f) => format!("Invalid u16 value in config, field={}", f),
             Error::ConfigInvalidU32(ref f) => format!("Invalid u32 value in config, field={}", f),
             Error::ConfigInvalidU64(ref f) => format!("Invalid u64 value in config, field={}", f),
-            Error::ConfigInvalidUsize(ref f) => {
-                format!("Invalid usize value in config, field={}", f)
-            }
+            Error::ConfigInvalidUsize(ref f) => format!("Invalid usize value in config, field={}", f),
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
             Error::FileNotFound(ref e) => format!("File not found at: {}", e),
             Error::InvalidPackageIdent(ref e) => {
@@ -269,9 +263,7 @@ impl fmt::Display for Error {
             }
             Error::IO(ref err) => format!("{}", err),
             Error::MetaFileBadBind => format!("Bad value parsed from BIND or BIND_OPTIONAL"),
-            Error::MetaFileMalformed(ref e) => {
-                format!("MetaFile: {:?}, didn't contain a valid UTF-8 string", e)
-            }
+            Error::MetaFileMalformed(ref e) => format!("MetaFile: {:?}, didn't contain a valid UTF-8 string", e),
             Error::MetaFileNotFound(ref e) => format!("Couldn't read MetaFile: {}, not found", e),
             Error::MetaFileIO(ref e) => format!("IO error while accessing MetaFile: {:?}", e),
             Error::NoOutboundAddr => format!("Failed to discover this hosts outbound IP address"),
@@ -290,9 +282,7 @@ impl fmt::Display for Error {
             Error::TargetMatchError(ref e) => format!("{}", e),
             Error::UnameFailed(ref e) => format!("{}", e),
             Error::WaitpidFailed(ref e) => format!("{}", e),
-            Error::SignalFailed(ref e) => {
-                format!("Failed to send a signal to the child process: {}", e)
-            }
+            Error::SignalFailed(ref e) => format!("Failed to send a signal to the child process: {}", e),
             Error::GetExitCodeProcessFailed(ref e) => format!("{}", e),
             Error::CreateToolhelp32SnapshotFailed(ref e) => format!("{}", e),
             Error::WaitForSingleObjectFailed(ref e) => format!("{}", e),
@@ -323,64 +313,36 @@ impl error::Error for Error {
                 "Invalid array value of targets containing string fields and values encountered \
                  while parsing a configuration file"
             }
-            Error::ConfigInvalidArrayU16(_) => {
-                "Invalid array value of u16 entries encountered while parsing a configuration file"
-            }
-            Error::ConfigInvalidArrayU32(_) => {
-                "Invalid array value of u32 entries encountered while parsing a configuration file"
-            }
-            Error::ConfigInvalidArrayU64(_) => {
-                "Invalid array value of u64 entries encountered while parsing a configuration file"
-            }
-            Error::ConfigInvalidBool(_) => {
-                "Invalid boolean value encountered while parsing a configuration file"
-            }
+            Error::ConfigInvalidArrayU16(_) => "Invalid array value of u16 entries encountered while parsing a configuration file",
+            Error::ConfigInvalidArrayU32(_) => "Invalid array value of u32 entries encountered while parsing a configuration file",
+            Error::ConfigInvalidArrayU64(_) => "Invalid array value of u64 entries encountered while parsing a configuration file",
+            Error::ConfigInvalidBool(_) => "Invalid boolean value encountered while parsing a configuration file",
             Error::ConfigInvalidIdent(_) => {
                 "Invalid package identifier string value encountered while parsing a configuration \
                  file"
             }
-            Error::ConfigInvalidIpAddr(_) => {
-                "Invalid IP address string value encountered while parsing a configuration file"
-            }
+            Error::ConfigInvalidIpAddr(_) => "Invalid IP address string value encountered while parsing a configuration file",
             Error::ConfigInvalidSocketAddr(_) => {
                 "Invalid network address pair string value encountered while parsing a \
                  configuration file"
             }
-            Error::ConfigInvalidString(_) => {
-                "Invalid string value encountered while parsing a configuration file"
-            }
+            Error::ConfigInvalidString(_) => "Invalid string value encountered while parsing a configuration file",
             Error::ConfigInvalidTableString(_) => {
                 "Invalid table value of string fields and values encountered while parsing a \
                  configuration file"
             }
-            Error::ConfigInvalidTarget(_) => {
-                "Invalid package target string value encountered while parsing a configuration file"
-            }
-            Error::ConfigInvalidU16(_) => {
-                "Invalid u16 value encountered while parsing a configuration file"
-            }
-            Error::ConfigInvalidU32(_) => {
-                "Invalid u32 value encountered while parsing a configuration file"
-            }
-            Error::ConfigInvalidU64(_) => {
-                "Invalid u64 value encountered while parsing a configuration file"
-            }
-            Error::ConfigInvalidUsize(_) => {
-                "Invalid usize value encountered while parsing a configuration file"
-            }
+            Error::ConfigInvalidTarget(_) => "Invalid package target string value encountered while parsing a configuration file",
+            Error::ConfigInvalidU16(_) => "Invalid u16 value encountered while parsing a configuration file",
+            Error::ConfigInvalidU32(_) => "Invalid u32 value encountered while parsing a configuration file",
+            Error::ConfigInvalidU64(_) => "Invalid u64 value encountered while parsing a configuration file",
+            Error::ConfigInvalidUsize(_) => "Invalid usize value encountered while parsing a configuration file",
             Error::CryptoError(_) => "Crypto error",
             Error::FileNotFound(_) => "File not found",
-            Error::InvalidPackageIdent(_) => {
-                "Package identifiers must be in origin/name format (example: acme/redis)"
-            }
-            Error::InvalidPackageTarget(_) => {
-                "Package targets must be in architecture-platform format (example: x86_64-linux)"
-            }
+            Error::InvalidPackageIdent(_) => "Package identifiers must be in origin/name format (example: acme/redis)",
+            Error::InvalidPackageTarget(_) => "Package targets must be in architecture-platform format (example: x86_64-linux)",
             Error::InvalidArchitecture(_) => "Unsupported target architecture supplied.",
             Error::InvalidPlatform(_) => "Unsupported target platform supplied.",
-            Error::InvalidServiceGroup(_) => {
-                "Service group strings must be in service.group format (example: redis.production)"
-            }
+            Error::InvalidServiceGroup(_) => "Service group strings must be in service.group format (example: redis.production)",
             Error::IO(ref err) => err.description(),
             Error::MetaFileBadBind => "Bad value parsed from BIND or BIND_OPTIONAL MetaFile",
             Error::MetaFileMalformed(_) => "MetaFile didn't contain a valid UTF-8 string",

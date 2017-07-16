@@ -23,23 +23,17 @@ use sodiumoxide::crypto::sign::ed25519::PublicKey as SigPublicKey;
 use sodiumoxide::randombytes::randombytes;
 
 use error::{Error, Result};
-use super::{get_key_revisions, mk_key_filename, mk_revision_string, parse_name_with_rev,
-            read_key_bytes, write_keypair_files, KeyPair, KeyType, PairType, TmpKeyfile};
-use super::super::{PUBLIC_KEY_SUFFIX, PUBLIC_SIG_KEY_VERSION, SECRET_SIG_KEY_SUFFIX,
-                   SECRET_SIG_KEY_VERSION, hash};
+use super::{get_key_revisions, mk_key_filename, mk_revision_string, parse_name_with_rev, read_key_bytes, write_keypair_files, KeyPair, KeyType, PairType, TmpKeyfile};
+use super::super::{PUBLIC_KEY_SUFFIX, PUBLIC_SIG_KEY_VERSION, SECRET_SIG_KEY_SUFFIX, SECRET_SIG_KEY_VERSION, hash};
 
 pub type SigKeyPair = KeyPair<SigPublicKey, SigSecretKey>;
 
 impl SigKeyPair {
-    pub fn generate_pair_for_origin<P: AsRef<Path> + ?Sized>(
-        name: &str,
-        cache_key_path: &P,
-    ) -> Result<Self> {
+    pub fn generate_pair_for_origin<P: AsRef<Path> + ?Sized>(name: &str, cache_key_path: &P) -> Result<Self> {
         let revision = try!(mk_revision_string());
         let keyname = Self::mk_key_name(name, &revision);
         debug!("new sig key name = {}", &keyname);
-        let (public_key, secret_key) =
-            try!(Self::generate_pair_files(&keyname, cache_key_path.as_ref()));
+        let (public_key, secret_key) = try!(Self::generate_pair_files(&keyname, cache_key_path.as_ref()));
         Ok(Self::new(
             name.to_string(),
             revision,
@@ -52,10 +46,7 @@ impl SigKeyPair {
         format!("{}-{}", name, revision)
     }
 
-    fn generate_pair_files(
-        name_with_rev: &str,
-        cache_key_path: &Path,
-    ) -> Result<(SigPublicKey, SigSecretKey)> {
+    fn generate_pair_files(name_with_rev: &str, cache_key_path: &Path) -> Result<(SigPublicKey, SigSecretKey)> {
         let (pk, sk) = sign::gen_keypair();
 
         let public_keyfile = mk_key_filename(cache_key_path, name_with_rev, PUBLIC_KEY_SUFFIX);
@@ -76,11 +67,7 @@ impl SigKeyPair {
 
     /// Return a Vec of origin keys with a given name.
     /// The newest key is listed first in the Vec.
-    pub fn get_pairs_for<P: AsRef<Path> + ?Sized>(
-        name: &str,
-        cache_key_path: &P,
-        pair_type: Option<&PairType>,
-    ) -> Result<Vec<Self>> {
+    pub fn get_pairs_for<P: AsRef<Path> + ?Sized>(name: &str, cache_key_path: &P, pair_type: Option<&PairType>) -> Result<Vec<Self>> {
         let revisions = try!(get_key_revisions(name, cache_key_path.as_ref(), pair_type));
         debug!("revisions = {:?}", &revisions);
         let mut key_pairs = Vec::new();
@@ -96,10 +83,7 @@ impl SigKeyPair {
         Ok(key_pairs)
     }
 
-    pub fn get_pair_for<P: AsRef<Path> + ?Sized>(
-        name_with_rev: &str,
-        cache_key_path: &P,
-    ) -> Result<Self> {
+    pub fn get_pair_for<P: AsRef<Path> + ?Sized>(name_with_rev: &str, cache_key_path: &P) -> Result<Self> {
         let (name, rev) = try!(parse_name_with_rev(name_with_rev));
         let pk = match Self::get_public_key(name_with_rev, cache_key_path.as_ref()) {
             Ok(k) => Some(k),
@@ -135,11 +119,7 @@ impl SigKeyPair {
         Ok(SigKeyPair::new(name, rev, pk, sk))
     }
 
-    pub fn get_latest_pair_for<P: AsRef<Path> + ?Sized>(
-        name: &str,
-        cache_key_path: &P,
-        pair_type: Option<&PairType>,
-    ) -> Result<Self> {
+    pub fn get_latest_pair_for<P: AsRef<Path> + ?Sized>(name: &str, cache_key_path: &P, pair_type: Option<&PairType>) -> Result<Self> {
         let mut all = try!(Self::get_pairs_for(name, cache_key_path, pair_type));
         match all.len() {
             0 => {
@@ -150,10 +130,7 @@ impl SigKeyPair {
         }
     }
 
-    pub fn get_public_key_path<P: AsRef<Path> + ?Sized>(
-        key_with_rev: &str,
-        cache_key_path: &P,
-    ) -> Result<PathBuf> {
+    pub fn get_public_key_path<P: AsRef<Path> + ?Sized>(key_with_rev: &str, cache_key_path: &P) -> Result<PathBuf> {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, PUBLIC_KEY_SUFFIX);
         if !path.is_file() {
             return Err(Error::CryptoError(
@@ -163,10 +140,7 @@ impl SigKeyPair {
         Ok(path)
     }
 
-    pub fn get_secret_key_path<P: AsRef<Path> + ?Sized>(
-        key_with_rev: &str,
-        cache_key_path: &P,
-    ) -> Result<PathBuf> {
+    pub fn get_secret_key_path<P: AsRef<Path> + ?Sized>(key_with_rev: &str, cache_key_path: &P) -> Result<PathBuf> {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, SECRET_SIG_KEY_SUFFIX);
         if !path.is_file() {
             return Err(Error::CryptoError(
@@ -253,10 +227,7 @@ impl SigKeyPair {
     /// * If the key file cannot be written to disk
     /// * If an existing key is already installed, but the new content is different from the
     /// existing
-    pub fn write_file_from_str<P: AsRef<Path> + ?Sized>(
-        content: &str,
-        cache_key_path: &P,
-    ) -> Result<(Self, PairType)> {
+    pub fn write_file_from_str<P: AsRef<Path> + ?Sized>(content: &str, cache_key_path: &P) -> Result<(Self, PairType)> {
         let (pair_type, name_with_rev, key_body) = try!(Self::parse_key_str(content));
         let suffix = match pair_type {
             PairType::Public => PUBLIC_KEY_SUFFIX,
@@ -553,12 +524,10 @@ mod test {
         assert_eq!(pairs.len(), 2);
 
         // We should be able to count public and private keys separately
-        let pairs = SigKeyPair::get_pairs_for("unicorn", cache.path(), Some(&PairType::Secret))
-            .unwrap();
+        let pairs = SigKeyPair::get_pairs_for("unicorn", cache.path(), Some(&PairType::Secret)).unwrap();
         assert_eq!(pairs.len(), 2);
 
-        let pairs = SigKeyPair::get_pairs_for("unicorn", cache.path(), Some(&PairType::Public))
-            .unwrap();
+        let pairs = SigKeyPair::get_pairs_for("unicorn", cache.path(), Some(&PairType::Public)).unwrap();
         assert_eq!(pairs.len(), 2);
     }
 
@@ -618,9 +587,7 @@ mod test {
     fn get_latest_pair_for_secret() {
         let cache = TempDir::new("key_cache").unwrap();
         let p = SigKeyPair::generate_pair_for_origin("unicorn", cache.path()).unwrap();
-        let latest =
-            SigKeyPair::get_latest_pair_for("unicorn", cache.path(), Some(&PairType::Secret))
-                .unwrap();
+        let latest = SigKeyPair::get_latest_pair_for("unicorn", cache.path(), Some(&PairType::Secret)).unwrap();
         assert_eq!(latest.name, p.name);
         assert_eq!(latest.rev, p.rev);
     }
@@ -629,9 +596,7 @@ mod test {
     fn get_latest_pair_for_public() {
         let cache = TempDir::new("key_cache").unwrap();
         let p = SigKeyPair::generate_pair_for_origin("unicorn", cache.path()).unwrap();
-        let latest =
-            SigKeyPair::get_latest_pair_for("unicorn", cache.path(), Some(&PairType::Public))
-                .unwrap();
+        let latest = SigKeyPair::get_latest_pair_for("unicorn", cache.path(), Some(&PairType::Public)).unwrap();
         assert_eq!(latest.name, p.name);
         assert_eq!(latest.rev, p.rev);
     }

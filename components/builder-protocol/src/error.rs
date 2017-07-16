@@ -27,12 +27,8 @@ pub type ProtocolResult<T> = result::Result<T, ProtocolError>;
 impl fmt::Display for ProtocolError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
-            ProtocolError::BadSearchEntity(ref e) => {
-                format!("Search not implemented for entity: {}", e)
-            }
-            ProtocolError::BadSearchKey(ref e) => {
-                format!("Search not implemented for entity with key: {}", e)
-            }
+            ProtocolError::BadSearchEntity(ref e) => format!("Search not implemented for entity: {}", e),
+            ProtocolError::BadSearchKey(ref e) => format!("Search not implemented for entity with key: {}", e),
         };
         write!(f, "{}", msg)
     }

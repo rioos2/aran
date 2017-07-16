@@ -1,26 +1,13 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2017 RioCorp Inc.
 
 //! A module containing the HTTP server and assembly_handlers for servicing client requests
 
-pub mod assembly_handlers;
+pub mod deployment_handler;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
 
 use hab_net::http::middleware::*;
-use hab_net::oauth::github::GitHubClient;
 use hab_core::event::EventLogger;
 use iron::prelude::*;
 use mount::Mount;
@@ -41,41 +28,29 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
     let router =
         router!(
         status: get "/status" => status,
-        authenticate: get "/authenticate/:code" => github_authenticate,
 
-        // jobs: post "/jobs" => XHandler::new(job_create).before(basic.clone()),
-        jobs: post "/jobs" => job_create,
-        job: get "/jobs/:id" => job_show,
-        assembly: get "/assembly" => assembly_create,
-        job_log: get "/jobs/:id/log" => job_log,
+        // assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
+        assemblys: post "/assemblys" => assembly_create,
+        assembly: get "/assemblys/:id" => assembly_show,
 
-        user_invitations: get "/user/invitations" => {
-            XHandler::new(list_account_invitations).before(basic.clone())
-        },
-        user_origins: get "/user/origins" => XHandler::new(list_user_origins).before(basic.clone()),
+        assembly_factorys: post "/assembly_factorys" => assembly_create,
+        assembly_factory: get "/assembly_factory/:id" => assembly_show,
 
-        // NOTE: Each of the handler functions for projects currently
-        // short-circuits processing if trying to do anything with a
-        // non-"core" origin, since we're not enabling Builder for any
-        // other origins at the moment.
-        projects: post "/projects" => XHandler::new(project_create).before(basic.clone()),
-        project: get "/projects/:origin/:name" => project_show,
-        project_jobs: get "/projects/:origin/:name/jobs" => project_jobs,
-        edit_project: put "/projects/:origin/:name" => {
-            XHandler::new(project_update).before(basic.clone())
-        },
-        delete_project: delete "/projects/:origin/:name" => {
-            XHandler::new(project_delete).before(basic.clone())
-        }
     );
+
     let mut chain = Chain::new(router);
+
+    //TO-DO: I am thinking to stick the Datastore here, which will be created for every request.
+    //TO-DO: Just watch the number of Datastore connections in cockroachdb UI
+    //TO-DO: Just change the GithubCli to Datastore, Grab the Datastore code from builder_deployment
     chain.link(persistent::Read::<GitHubCli>::both(
         GitHubClient::new(&*config),
     ));
+
     chain.link(Read::<EventLog>::both(
         EventLogger::new(&config.log_dir, config.events_enabled),
     ));
-    chain.link_before(RouteBroker);
+
     chain.link_after(Cors);
     Ok(chain)
 }
@@ -94,6 +69,8 @@ pub fn run(config: Arc<Config>) -> Result<JoinHandle<()>> {
     let (tx, rx) = mpsc::sync_channel(1);
 
     let mut mount = Mount::new();
+
+    //TO-DO: I think we don't have a / URL, but we'll probably show some static files. 
     if let Some(ref path) = config.ui.root {
         debug!("Mounting UI at filepath {}", path);
         mount.mount("/", Static::new(path));
