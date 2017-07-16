@@ -326,8 +326,7 @@ pub fn anon_pipe(ours_readable: bool) -> io::Result<Pipes> {
             let handle = kernel32::CreateNamedPipeW(
                 wide_name.as_ptr(),
                 flags,
-                winapi::PIPE_TYPE_BYTE | winapi::PIPE_READMODE_BYTE | winapi::PIPE_WAIT |
-                    reject_remote_clients_flag,
+                winapi::PIPE_TYPE_BYTE | winapi::PIPE_READMODE_BYTE | winapi::PIPE_WAIT | reject_remote_clients_flag,
                 1,
                 4096,
                 4096,
@@ -358,9 +357,7 @@ pub fn anon_pipe(ours_readable: bool) -> io::Result<Pipes> {
                 if tries < 10 {
                     if raw_os_err == Some(winapi::ERROR_ACCESS_DENIED as i32) {
                         continue;
-                    } else if reject_remote_clients_flag != 0 &&
-                               raw_os_err == Some(winapi::ERROR_INVALID_PARAMETER as i32)
-                    {
+                    } else if reject_remote_clients_flag != 0 && raw_os_err == Some(winapi::ERROR_INVALID_PARAMETER as i32) {
                         reject_remote_clients_flag = 0;
                         tries -= 1;
                         continue;
@@ -451,8 +448,7 @@ impl OpenOptions {
             // system-specific
             custom_flags: 0,
             access_mode: None,
-            share_mode: winapi::FILE_SHARE_READ | winapi::FILE_SHARE_WRITE |
-                winapi::FILE_SHARE_DELETE,
+            share_mode: winapi::FILE_SHARE_READ | winapi::FILE_SHARE_WRITE | winapi::FILE_SHARE_DELETE,
             attributes: 0,
             security_qos_flags: 0,
             security_attributes: 0,
@@ -489,9 +485,7 @@ impl OpenOptions {
                     winapi::GENERIC_READ | (winapi::FILE_GENERIC_WRITE & !winapi::FILE_WRITE_DATA),
                 )
             }
-            (false, false, false, None) => {
-                Err(io::Error::from_raw_os_error(ERROR_INVALID_PARAMETER))
-            }
+            (false, false, false, None) => Err(io::Error::from_raw_os_error(ERROR_INVALID_PARAMETER)),
         }
     }
 
@@ -674,11 +668,7 @@ impl RawHandle {
         }
     }
 
-    pub unsafe fn read_overlapped(
-        &self,
-        buf: &mut [u8],
-        overlapped: *mut winapi::OVERLAPPED,
-    ) -> io::Result<Option<usize>> {
+    pub unsafe fn read_overlapped(&self, buf: &mut [u8], overlapped: *mut winapi::OVERLAPPED) -> io::Result<Option<usize>> {
         let len = cmp::min(buf.len(), <winapi::DWORD>::max_value() as usize) as winapi::DWORD;
         let mut amt = 0;
         let res = cvt({
@@ -704,11 +694,7 @@ impl RawHandle {
         }
     }
 
-    pub fn overlapped_result(
-        &self,
-        overlapped: *mut winapi::OVERLAPPED,
-        wait: bool,
-    ) -> io::Result<usize> {
+    pub fn overlapped_result(&self, overlapped: *mut winapi::OVERLAPPED, wait: bool) -> io::Result<usize> {
         unsafe {
             let mut bytes = 0;
             let wait = if wait { winapi::TRUE } else { winapi::FALSE };
@@ -718,9 +704,7 @@ impl RawHandle {
             match res {
                 Ok(_) => Ok(bytes as usize),
                 Err(e) => {
-                    if e.raw_os_error() == Some(winapi::ERROR_HANDLE_EOF as i32) ||
-                        e.raw_os_error() == Some(winapi::ERROR_BROKEN_PIPE as i32)
-                    {
+                    if e.raw_os_error() == Some(winapi::ERROR_HANDLE_EOF as i32) || e.raw_os_error() == Some(winapi::ERROR_BROKEN_PIPE as i32) {
                         Ok(0)
                     } else {
                         Err(e)

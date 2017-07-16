@@ -203,8 +203,7 @@ port=front-end.port
         );
         m.insert(
             "PYTHONPATH".to_string(),
-            "/hab/pkgs/python/setuptools/35.0.1/20170424072606/lib/python3.6/site-packages"
-                .to_string(),
+            "/hab/pkgs/python/setuptools/35.0.1/20170424072606/lib/python3.6/site-packages".to_string(),
         );
 
         assert_eq!(parse_key_value(&ENVIRONMENT).unwrap(), m);
@@ -246,8 +245,7 @@ port=front-end.port
             },
             EnvVar {
                 key: "PYTHONPATH".to_string(),
-                value: "/hab/pkgs/python/setuptools/35.0.1/20170424072606/lib/python3.6/site-packages"
-                    .to_string(),
+                value: "/hab/pkgs/python/setuptools/35.0.1/20170424072606/lib/python3.6/site-packages".to_string(),
                 separator: Some(':'),
             },
         ];

@@ -54,9 +54,7 @@ impl fmt::Display for Error {
             Error::MaxHops => format!("Received a message containing too many network hops"),
             Error::Net(ref e) => format!("{}", e),
             Error::Protobuf(ref e) => format!("{}", e),
-            Error::RequiredConfigField(ref e) => {
-                format!("Missing required field in configuration, {}", e)
-            }
+            Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
             Error::Sys => format!("Internal system error"),
             Error::Zmq(ref e) => format!("{}", e),
         };

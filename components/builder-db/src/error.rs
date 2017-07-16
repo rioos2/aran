@@ -50,21 +50,15 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::AsyncListen(ref e) => format!("Error setting up async listen, {}", e),
             Error::AsyncNotification(ref e) => format!("Error getting async notification, {}", e),
-            Error::AsyncMalformedChannel(ref e) => {
-                format!("Notification received, but the channel is malformed, {}", e)
-            }
+            Error::AsyncMalformedChannel(ref e) => format!("Notification received, but the channel is malformed, {}", e),
             Error::AsyncMalformedShardId(ref e) => {
                 format!(
                     "Notification received, but the channels shard id is malformed, {}",
                     e
                 )
             }
-            Error::AsyncFunctionCheck(ref e) => {
-                format!("Async function database check failed, {}", e)
-            }
-            Error::AsyncFunctionUpdate(ref e) => {
-                format!("Async function database update failed, {}", e)
-            }
+            Error::AsyncFunctionCheck(ref e) => format!("Async function database check failed, {}", e),
+            Error::AsyncFunctionUpdate(ref e) => format!("Async function database update failed, {}", e),
             Error::ConnectionTimeout(ref e) => format!("Connection timeout, {}", e),
             Error::FunctionCreate(ref e) => format!("Error creating a function: {}", e),
             Error::FunctionDrop(ref e) => format!("Error dropping a function: {}", e),

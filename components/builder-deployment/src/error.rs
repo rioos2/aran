@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use aws_sdk_rust;
 use db;
 use extern_url;
 use hab_core;
@@ -25,7 +24,6 @@ use std::fmt;
 use std::io;
 use std::path::PathBuf;
 use std::result;
-use zmq;
 
 #[derive(Debug)]
 pub enum Error {
@@ -41,8 +39,6 @@ pub enum Error {
     IO(io::Error),
     JobCreate(postgres::error::Error),
     JobGet(postgres::error::Error),
-    JobLogArchive(u64, aws_sdk_rust::aws::errors::s3::S3Error),
-    JobLogRetrieval(u64, aws_sdk_rust::aws::errors::s3::S3Error),
     JobMarkArchived(postgres::error::Error),
     JobPending(postgres::error::Error),
     JobReset(postgres::error::Error),
@@ -56,7 +52,6 @@ pub enum Error {
     Protobuf(protobuf::ProtobufError),
     UnknownVCS,
     UnknownJobState,
-    Zmq(zmq::Error),
 }
 
 
@@ -66,55 +61,30 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
-            Error::CaughtPanic(ref msg, ref source) => {
-                format!("Caught a panic: {}. {}", msg, source)
-            }
+            Error::CaughtPanic(ref msg, ref source) => format!("Caught a panic: {}. {}", msg, source),
             Error::Db(ref e) => format!("{}", e),
-            Error::DbPoolTimeout(ref e) => {
-                format!("Timeout getting connection from the database pool, {}", e)
-            }
+            Error::DbPoolTimeout(ref e) => format!("Timeout getting connection from the database pool, {}", e),
             Error::DbTransaction(ref e) => format!("Database transaction error, {}", e),
-            Error::DbTransactionStart(ref e) => {
-                format!("Failed to start database transaction, {}", e)
-            }
-            Error::DbTransactionCommit(ref e) => {
-                format!("Failed to commit database transaction, {}", e)
-            }
+            Error::DbTransactionStart(ref e) => format!("Failed to start database transaction, {}", e),
+            Error::DbTransactionCommit(ref e) => format!("Failed to commit database transaction, {}", e),
             Error::HabitatCore(ref e) => format!("{}", e),
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
             Error::JobCreate(ref e) => format!("Database error creating a new job, {}", e),
             Error::JobGet(ref e) => format!("Database error getting job data, {}", e),
-            Error::JobLogArchive(job_id, ref e) => {
-                format!("Log archiving error for job {}, {}", job_id, e)
-            }
-            Error::JobLogRetrieval(job_id, ref e) => {
-                format!("Log retrieval error for job {}, {}", job_id, e)
-            }
-            Error::JobMarkArchived(ref e) => {
-                format!("Database error marking job as archived, {}", e)
-            }
+            Error::JobMarkArchived(ref e) => format!("Database error marking job as archived, {}", e),
             Error::JobPending(ref e) => format!("Database error getting pending jobs, {}", e),
             Error::JobReset(ref e) => format!("Database error reseting jobs, {}", e),
             Error::JobSetLogUrl(ref e) => format!("Database error setting job log URL, {}", e),
             Error::JobSetState(ref e) => format!("Database error setting job state, {}", e),
-            Error::LogDirDoesNotExist(ref path, ref e) => {
-                format!("Build log directory {:?} doesn't exist!: {:?}", path, e)
-            }
-            Error::LogDirIsNotDir(ref path) => {
-                format!("Build log directory {:?} is not a directory!", path)
-            }
-            Error::LogDirNotWritable(ref path) => {
-                format!("Build log directory {:?} is not writable!", path)
-            }
+            Error::LogDirDoesNotExist(ref path, ref e) => format!("Build log directory {:?} doesn't exist!: {:?}", path, e),
+            Error::LogDirIsNotDir(ref path) => format!("Build log directory {:?} is not a directory!", path),
+            Error::LogDirNotWritable(ref path) => format!("Build log directory {:?} is not writable!", path),
             Error::NetError(ref e) => format!("{}", e),
             Error::Protobuf(ref e) => format!("{}", e),
-            Error::ProjectJobsGet(ref e) => {
-                format!("Database error getting jobs for project, {}", e)
-            }
+            Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
             Error::UnknownVCS => format!("Unknown VCS"),
             Error::UnknownJobState => format!("Unknown Job State"),
-            Error::Zmq(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -135,8 +105,6 @@ impl error::Error for Error {
             Error::InvalidUrl => "Bad Url!",
             Error::JobCreate(ref err) => err.description(),
             Error::JobGet(ref err) => err.description(),
-            Error::JobLogArchive(_, ref err) => err.description(),
-            Error::JobLogRetrieval(_, ref err) => err.description(),
             Error::JobMarkArchived(ref err) => err.description(),
             Error::JobPending(ref err) => err.description(),
             Error::JobReset(ref err) => err.description(),
@@ -150,7 +118,6 @@ impl error::Error for Error {
             Error::Protobuf(ref err) => err.description(),
             Error::UnknownJobState => "Unknown Job State",
             Error::UnknownVCS => "Unknown VCS",
-            Error::Zmq(ref err) => err.description(),
         }
     }
 }
@@ -188,12 +155,6 @@ impl From<hab_net::Error> for Error {
 impl From<protobuf::ProtobufError> for Error {
     fn from(err: protobuf::ProtobufError) -> Error {
         Error::Protobuf(err)
-    }
-}
-
-impl From<zmq::Error> for Error {
-    fn from(err: zmq::Error) -> Error {
-        Error::Zmq(err)
     }
 }
 

@@ -260,11 +260,7 @@ pub fn find_command(command: &str) -> Option<PathBuf> {
 /// # Failures
 ///
 /// * The path entries metadata cannot be loaded
-pub fn find_command_in_pkg(
-    command: &str,
-    pkg_install: &PackageInstall,
-    fs_root_path: &Path,
-) -> Result<Option<PathBuf>> {
+pub fn find_command_in_pkg(command: &str, pkg_install: &PackageInstall, fs_root_path: &Path) -> Result<Option<PathBuf>> {
     for path in try!(pkg_install.paths()) {
         let stripped = path.strip_prefix("/").expect(&format!(
             "Package path missing / prefix {}",

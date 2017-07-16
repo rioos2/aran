@@ -6,12 +6,7 @@ description = "Habitat-Builder Job Server"
 build = "../bldr-build.rs"
 workspace = "../../"
 
-[[bin]]
-name = "bldr-job-srv"
-doc = false
-
 [dependencies]
-aws-sdk-rust = "*"
 env_logger = "*"
 linked-hash-map = "*"
 log = "*"
@@ -42,10 +37,6 @@ path = "../net"
 
 [dependencies.habitat_builder_db]
 path = "../builder-db"
-
-[dependencies.zmq]
-git = "https://github.com/erickt/rust-zmq"
-branch = "release/v0.8"
 
 [features]
 functional = []

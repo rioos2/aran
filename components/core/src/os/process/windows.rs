@@ -232,11 +232,7 @@ impl Child {
         result
     }
 
-    fn terminate_process_descendants(
-        &self,
-        table: &HashMap<winapi::DWORD, Vec<winapi::DWORD>>,
-        pid: winapi::DWORD,
-    ) -> Result<()> {
+    fn terminate_process_descendants(&self, table: &HashMap<winapi::DWORD, Vec<winapi::DWORD>>, pid: winapi::DWORD) -> Result<()> {
         if let Some(children) = table.get(&pid) {
             for child in children {
                 self.terminate_process_descendants(table, child.clone())?;
@@ -260,8 +256,7 @@ impl Child {
     }
 
     fn build_proc_table(&self) -> Result<HashMap<winapi::DWORD, Vec<winapi::DWORD>>> {
-        let processes_snap_handle =
-            unsafe { kernel32::CreateToolhelp32Snapshot(winapi::TH32CS_SNAPPROCESS, 0) };
+        let processes_snap_handle = unsafe { kernel32::CreateToolhelp32Snapshot(winapi::TH32CS_SNAPPROCESS, 0) };
 
         if processes_snap_handle == winapi::INVALID_HANDLE_VALUE {
             return Err(Error::CreateToolhelp32SnapshotFailed(format!(
@@ -297,9 +292,7 @@ impl Child {
                     );
                     (*children).push(process_entry.th32ProcessID);
 
-                    process_success = unsafe {
-                        kernel32::Process32NextW(processes_snap_handle, &mut process_entry)
-                    };
+                    process_success = unsafe { kernel32::Process32NextW(processes_snap_handle, &mut process_entry) };
                 }
 
                 unsafe { kernel32::CloseHandle(processes_snap_handle) };

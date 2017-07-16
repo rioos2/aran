@@ -22,8 +22,7 @@ use hyper::header::UserAgent;
 use hyper::http::h1::Http11Protocol;
 use hyper::net::HttpsConnector;
 use hyper_openssl::OpensslClient;
-use openssl::ssl::{SslConnectorBuilder, SslConnector, SslMethod, SslOption, SSL_OP_NO_SSLV2,
-                   SSL_OP_NO_SSLV3, SSL_OP_NO_COMPRESSION};
+use openssl::ssl::{SslConnectorBuilder, SslConnector, SslMethod, SslOption, SSL_OP_NO_SSLV2, SSL_OP_NO_SSLV3, SSL_OP_NO_COMPRESSION};
 use url::Url;
 
 use error::Result;
@@ -65,12 +64,7 @@ impl ApiClient {
     /// * If a suitable SSL context cannot be established
     /// * If an HTTP proxy cannot be correctly setup
     /// * If a `User-Agent` HTTP header string cannot be constructed
-    pub fn new<T>(
-        endpoint: T,
-        product: &str,
-        version: &str,
-        fs_root_path: Option<&Path>,
-    ) -> Result<Self>
+    pub fn new<T>(endpoint: T, product: &str, version: &str, fs_root_path: Option<&Path>) -> Result<Self>
     where
         T: IntoUrl,
     {

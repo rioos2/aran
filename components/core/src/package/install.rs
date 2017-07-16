@@ -65,10 +65,7 @@ impl PackageInstall {
     ///
     /// An optional `fs_root` path may be provided to search for a package that is mounted on a
     /// filesystem not currently rooted at `/`.
-    pub fn load_at_least(
-        ident: &PackageIdent,
-        fs_root_path: Option<&Path>,
-    ) -> Result<PackageInstall> {
+    pub fn load_at_least(ident: &PackageIdent, fs_root_path: Option<&Path>) -> Result<PackageInstall> {
         let package_install = Self::resolve_package_install_min(ident, fs_root_path)?;
         let package_target = package_install.target()?;
         match package_target.validate() {
@@ -77,10 +74,7 @@ impl PackageInstall {
         }
     }
 
-    fn resolve_package_install<T>(
-        ident: &PackageIdent,
-        fs_root_path: Option<T>,
-    ) -> Result<PackageInstall>
+    fn resolve_package_install<T>(ident: &PackageIdent, fs_root_path: Option<T>) -> Result<PackageInstall>
     where
         T: AsRef<Path>,
     {
@@ -104,8 +98,7 @@ impl PackageInstall {
         } else {
             let latest: Option<PackageIdent> = pl.iter().filter(|&p| p.satisfies(ident)).fold(
                 None,
-                |winner,
-                 b| {
+                |winner, b| {
                     match winner {
                         Some(a) => {
                             match a.partial_cmp(&b) {
@@ -133,10 +126,7 @@ impl PackageInstall {
     }
 
     /// Find an installed package that is at minimum the version of the given ident.
-    fn resolve_package_install_min<T>(
-        ident: &PackageIdent,
-        fs_root_path: Option<T>,
-    ) -> Result<PackageInstall>
+    fn resolve_package_install_min<T>(ident: &PackageIdent, fs_root_path: Option<T>) -> Result<PackageInstall>
     where
         T: AsRef<Path>,
     {
@@ -188,12 +178,7 @@ impl PackageInstall {
         }
     }
 
-    pub fn new_from_parts(
-        ident: PackageIdent,
-        fs_root_path: PathBuf,
-        package_root_path: PathBuf,
-        installed_path: PathBuf,
-    ) -> PackageInstall {
+    pub fn new_from_parts(ident: PackageIdent, fs_root_path: PathBuf, package_root_path: PathBuf, installed_path: PathBuf) -> PackageInstall {
         PackageInstall {
             ident: ident,
             fs_root_path: fs_root_path,
@@ -591,11 +576,7 @@ impl PackageInstall {
 
     /// Helper function for walk_names. Walks the given name DirEntry for directories and recurses
     /// into them to find release directories.
-    fn walk_versions(
-        origin: &String,
-        name: &DirEntry,
-        packages: &mut Vec<PackageIdent>,
-    ) -> Result<()> {
+    fn walk_versions(origin: &String, name: &DirEntry, packages: &mut Vec<PackageIdent>) -> Result<()> {
         for version in std::fs::read_dir(name.path())? {
             let version = version?;
             let name = name.file_name().to_string_lossy().into_owned().to_string();
@@ -610,12 +591,7 @@ impl PackageInstall {
     /// recurses into them to find version directories. Finally, a Package struct is built and
     /// concatenated onto the given packages vector with the origin, name, version, and release of
     /// each.
-    fn walk_releases(
-        origin: &String,
-        name: &String,
-        version: &DirEntry,
-        packages: &mut Vec<PackageIdent>,
-    ) -> Result<()> {
+    fn walk_releases(origin: &String, name: &String, version: &DirEntry, packages: &mut Vec<PackageIdent>) -> Result<()> {
         for release in std::fs::read_dir(version.path())? {
             let release = release?
                 .file_name()
@@ -627,8 +603,7 @@ impl PackageInstall {
                 .to_string_lossy()
                 .into_owned()
                 .to_string();
-            let ident =
-                PackageIdent::new(origin.clone(), name.clone(), Some(version), Some(release));
+            let ident = PackageIdent::new(origin.clone(), name.clone(), Some(version), Some(release));
             packages.push(ident)
         }
         Ok(())

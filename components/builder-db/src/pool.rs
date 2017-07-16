@@ -46,10 +46,9 @@ impl fmt::Debug for Pool {
 impl Pool {
     pub fn new(config: &DataStoreCfg, shards: Vec<ShardId>) -> Result<Pool> {
         loop {
-            let pool_config_builder =
-                r2d2::Config::builder()
-                    .pool_size(config.pool_size)
-                    .connection_timeout(Duration::from_secs(config.connection_timeout_sec));
+            let pool_config_builder = r2d2::Config::builder()
+                .pool_size(config.pool_size)
+                .connection_timeout(Duration::from_secs(config.connection_timeout_sec));
             let pool_config = pool_config_builder.build();
             let manager = PostgresConnectionManager::new(config, TlsMode::None)?;
             match r2d2::Pool::new(pool_config, manager) {
@@ -70,17 +69,12 @@ impl Pool {
         }
     }
 
-    pub fn get_raw(
-        &self,
-    ) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
+    pub fn get_raw(&self) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
         let conn = self.inner.get().map_err(Error::ConnectionTimeout)?;
         Ok(conn)
     }
 
-    pub fn get_shard(
-        &self,
-        shard_id: u32,
-    ) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
+    pub fn get_shard(&self, shard_id: u32) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
         let conn = self.inner.get().map_err(Error::ConnectionTimeout)?;
         debug!("Switching to shard {}", shard_id);
 
@@ -92,10 +86,7 @@ impl Pool {
         Ok(conn)
     }
 
-    pub fn get<T: Routable>(
-        &self,
-        routable: &T,
-    ) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
+    pub fn get<T: Routable>(&self, routable: &T) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
         let optional_shard_id = routable.route_key().map(
             |k| k.hash(&mut FnvHasher::default()),
         );

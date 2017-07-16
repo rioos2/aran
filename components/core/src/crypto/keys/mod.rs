@@ -29,10 +29,7 @@ use time;
 use error::{Error, Result};
 use util::perm;
 
-use super::{PUBLIC_BOX_KEY_VERSION, PUBLIC_KEY_PERMISSIONS, PUBLIC_KEY_SUFFIX,
-            PUBLIC_SIG_KEY_VERSION, SECRET_BOX_KEY_SUFFIX, SECRET_BOX_KEY_VERSION,
-            SECRET_KEY_PERMISSIONS, SECRET_SIG_KEY_SUFFIX, SECRET_SIG_KEY_VERSION,
-            SECRET_SYM_KEY_SUFFIX, SECRET_SYM_KEY_VERSION};
+use super::{PUBLIC_BOX_KEY_VERSION, PUBLIC_KEY_PERMISSIONS, PUBLIC_KEY_SUFFIX, PUBLIC_SIG_KEY_VERSION, SECRET_BOX_KEY_SUFFIX, SECRET_BOX_KEY_VERSION, SECRET_KEY_PERMISSIONS, SECRET_SIG_KEY_SUFFIX, SECRET_SIG_KEY_VERSION, SECRET_SYM_KEY_SUFFIX, SECRET_SYM_KEY_VERSION};
 
 lazy_static! {
     static ref NAME_WITH_REV_RE: Regex = Regex::new(r"\A(?P<name>.+)-(?P<rev>\d{14})\z").unwrap();
@@ -159,12 +156,7 @@ impl<P, S> KeyPair<P, S> {
 /// file (without path, without .suffix) to the set. This function doesn't
 /// return an error on a "bad" file, the bad file key name just doesn't get
 /// added to the set.
-fn check_filename(
-    keyname: &str,
-    filename: String,
-    candidates: &mut HashSet<String>,
-    pair_type: Option<&PairType>,
-) {
+fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<String>, pair_type: Option<&PairType>) {
     let caps = match KEYFILE_RE.captures(&filename) {
         Some(c) => c,
         None => {
@@ -196,9 +188,7 @@ fn check_filename(
         }
     };
 
-    if suffix == PUBLIC_KEY_SUFFIX || suffix == SECRET_SIG_KEY_SUFFIX ||
-        suffix == SECRET_BOX_KEY_SUFFIX || suffix == SECRET_SYM_KEY_SUFFIX
-    {
+    if suffix == PUBLIC_KEY_SUFFIX || suffix == SECRET_SIG_KEY_SUFFIX || suffix == SECRET_BOX_KEY_SUFFIX || suffix == SECRET_SYM_KEY_SUFFIX {
         debug!("valid key suffix");
     } else {
         debug!("check_filename: Invalid key suffix from {}", &filename);
@@ -210,9 +200,7 @@ fn check_filename(
 
         let do_insert = match pair_type {
             Some(&PairType::Secret) => {
-                if suffix == SECRET_SIG_KEY_SUFFIX || suffix == SECRET_BOX_KEY_SUFFIX ||
-                    suffix == SECRET_SYM_KEY_SUFFIX
-                {
+                if suffix == SECRET_SIG_KEY_SUFFIX || suffix == SECRET_BOX_KEY_SUFFIX || suffix == SECRET_SYM_KEY_SUFFIX {
                     true
                 } else {
                     false
@@ -236,11 +224,7 @@ fn check_filename(
 
 /// Take a key name (ex "habitat"), and find all revisions of that
 /// keyname in the default_cache_key_path().
-fn get_key_revisions<P>(
-    keyname: &str,
-    cache_key_path: P,
-    pair_type: Option<&PairType>,
-) -> Result<Vec<String>>
+fn get_key_revisions<P>(keyname: &str, cache_key_path: P, pair_type: Option<&PairType>) -> Result<Vec<String>>
 where
     P: AsRef<Path>,
 {
@@ -392,14 +376,7 @@ fn read_key_bytes(keyfile: &Path) -> Result<Vec<u8>> {
     }
 }
 
-fn write_keypair_files(
-    key_type: KeyType,
-    keyname: &str,
-    public_keyfile: Option<&Path>,
-    public_content: Option<&[u8]>,
-    secret_keyfile: Option<&Path>,
-    secret_content: Option<&[u8]>,
-) -> Result<()> {
+fn write_keypair_files(key_type: KeyType, keyname: &str, public_keyfile: Option<&Path>, public_content: Option<&[u8]>, secret_keyfile: Option<&Path>, secret_content: Option<&[u8]>) -> Result<()> {
     if let Some(public_keyfile) = public_keyfile {
         let public_version = match key_type {
             KeyType::Sig => PUBLIC_SIG_KEY_VERSION,
@@ -644,8 +621,7 @@ mod test {
             });
         }
 
-        let _ = BoxKeyPair::generate_pair_for_service("acyou", "tnt.default", cache.path())
-            .unwrap();
+        let _ = BoxKeyPair::generate_pair_for_service("acyou", "tnt.default", cache.path()).unwrap();
 
         let revisions = super::get_key_revisions("tnt.default@acme", cache.path(), None).unwrap();
         assert_eq!(3, revisions.len());

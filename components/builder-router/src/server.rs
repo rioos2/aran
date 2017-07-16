@@ -255,9 +255,7 @@ impl Server {
                             "failed to route message, no server servicing shard, msg={:?}",
                             self.envelope.msg
                         );
-                        let err = protocol::Message::new(
-                            &protocol::net::err(ErrCode::NO_SHARD, "rt:route:1"),
-                        ).build();
+                        let err = protocol::Message::new(&protocol::net::err(ErrCode::NO_SHARD, "rt:route:1")).build();
                         let bytes = try!(err.write_to_bytes());
                         for hop in self.envelope.hops() {
                             try!(self.fe_sock.send(&*hop, zmq::SNDMORE));
@@ -272,9 +270,7 @@ impl Server {
                     "failed to route message, no servers registered for protocol, msg={:?}",
                     self.envelope.msg
                 );
-                let err = protocol::Message::new(
-                    &protocol::net::err(ErrCode::NO_SHARD, "rt:route:2"),
-                ).build();
+                let err = protocol::Message::new(&protocol::net::err(ErrCode::NO_SHARD, "rt:route:2")).build();
                 let bytes = try!(err.write_to_bytes());
                 for hop in self.envelope.hops() {
                     try!(self.fe_sock.send(&*hop, zmq::SNDMORE));

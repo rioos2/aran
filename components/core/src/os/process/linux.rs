@@ -175,9 +175,7 @@ impl ExitStatusExt for HabExitStatus {
         unsafe {
             match self.status {
                 None => None,
-                Some(status) if libc::WIFEXITED(status as libc::c_int) => {
-                    Some(libc::WEXITSTATUS(status as libc::c_int) as u32)
-                }
+                Some(status) if libc::WIFEXITED(status as libc::c_int) => Some(libc::WEXITSTATUS(status as libc::c_int) as u32),
                 _ => None,
             }
         }
@@ -187,9 +185,7 @@ impl ExitStatusExt for HabExitStatus {
         unsafe {
             match self.status {
                 None => None,
-                Some(status) if !libc::WIFEXITED(status as libc::c_int) => {
-                    Some(libc::WTERMSIG(status as libc::c_int) as u32)
-                }
+                Some(status) if !libc::WIFEXITED(status as libc::c_int) => Some(libc::WTERMSIG(status as libc::c_int) as u32),
                 _ => None,
             }
         }
