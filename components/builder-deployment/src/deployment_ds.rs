@@ -35,7 +35,7 @@ impl DeploymentDS {
         Ok(Some(assembly));
     }
 
-    pub fn get_assembly(get_assembly: &asmsrv::AssemblyGet) -> Result<Option<asmsrv::Assembly>> {
+    pub fn get_assembly(get_assembly: &AssemblyGet) -> Result<Option<Assembly>> {
         let conn = self.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_job_v1($1)",
