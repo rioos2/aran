@@ -75,21 +75,6 @@ impl Key for GitHubCli {
     type Value = GitHubClient;
 }
 
-pub struct DataStoreBroker;
-
-impl Key for DataStoreBroker {
-    type Value = DataStoreConn;
-}
-
-impl BeforeMiddleware for DataStoreBroker {
-    fn before(&self, req: &mut Request) -> IronResult<()> {
-        // change
-        let ds =DataStoreConn::new().unwrap();
-        req.extensions.insert::<DataStoreBroker>(ds);
-        Ok(())
-    }
-}
-
 #[derive(Clone)]
 pub struct Authenticated {
     github: GitHubClient,
