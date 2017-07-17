@@ -65,7 +65,7 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
         }
     }
     //This will get loaded in the middleware, so we do 1 Datastore pool per connection.
-    let datastore = req.get::<DataStore>().unwrap();
+    let datastore = req.get::<DataStoreConn>().unwrap();
     //This is needed as you'll need the email/token if any
     let session = req.extensions.get::<Authenticated>().unwrap().clone();
 

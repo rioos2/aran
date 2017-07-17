@@ -40,12 +40,10 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
     let mut chain = Chain::new(router);
 
-    //TO-DO: I am thinking to stick the Datastore here, which will be created for every request.
+    //TO-DO: I am thinking to stick the DatastoreBroker here, which will be created for every request.
     //TO-DO: Just watch the number of Datastore connections in cockroachdb UI
     //TO-DO: Just change the GithubCli to Datastore, Grab the Datastore code from builder_deployment
-    chain.link(persistent::Read::<GitHubCli>::both(
-        GitHubClient::new(&*config),
-    ));
+    chain.link(DataStoreBroke);
 
     chain.link(Read::<EventLog>::both(
         EventLogger::new(&config.log_dir, config.events_enabled),
@@ -70,7 +68,7 @@ pub fn run(config: Arc<Config>) -> Result<JoinHandle<()>> {
 
     let mut mount = Mount::new();
 
-    //TO-DO: I think we don't have a / URL, but we'll probably show some static files. 
+    //TO-DO: I think we don't have a / URL, but we'll probably show some static files.
     if let Some(ref path) = config.ui.root {
         debug!("Mounting UI at filepath {}", path);
         mount.mount("/", Static::new(path));
