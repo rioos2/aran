@@ -20,6 +20,7 @@ use protobuf;
 use sharding::InstaId;
 
 pub mod jobsrv;
+pub mod asmsrv;
 pub mod net;
 pub mod routesrv;
 pub mod sessionsrv;

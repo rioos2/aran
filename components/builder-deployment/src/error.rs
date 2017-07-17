@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use db;
 use extern_url;
 use hab_core;
 use hab_net;
@@ -29,7 +28,6 @@ use std::result;
 pub enum Error {
     BadPort(String),
     CaughtPanic(String, String),
-    Db(db::error::Error),
     DbPoolTimeout(r2d2::GetTimeout),
     DbTransaction(postgres::error::Error),
     DbTransactionStart(postgres::error::Error),
@@ -62,7 +60,6 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
             Error::CaughtPanic(ref msg, ref source) => format!("Caught a panic: {}. {}", msg, source),
-            Error::Db(ref e) => format!("{}", e),
             Error::DbPoolTimeout(ref e) => format!("Timeout getting connection from the database pool, {}", e),
             Error::DbTransaction(ref e) => format!("Database transaction error, {}", e),
             Error::DbTransactionStart(ref e) => format!("Failed to start database transaction, {}", e),
@@ -95,7 +92,6 @@ impl error::Error for Error {
         match *self {
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
             Error::CaughtPanic(_, _) => "Caught a panic",
-            Error::Db(ref err) => err.description(),
             Error::DbPoolTimeout(ref err) => err.description(),
             Error::DbTransaction(ref err) => err.description(),
             Error::DbTransactionCommit(ref err) => err.description(),
@@ -131,12 +127,6 @@ impl From<r2d2::GetTimeout> for Error {
 impl From<hab_core::Error> for Error {
     fn from(err: hab_core::Error) -> Error {
         Error::HabitatCore(err)
-    }
-}
-
-impl From<db::error::Error> for Error {
-    fn from(err: db::error::Error) -> Self {
-        Error::Db(err)
     }
 }
 

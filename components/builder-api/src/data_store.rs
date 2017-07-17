@@ -1,6 +1,8 @@
 use db::async::{AsyncServer, EventOutcome};
 use db::error::{Error as DbError, Result as DbResult};
 use db::pool::Pool;
+// import the DataStoreConn
+use db::config::DataStore;
 
 pub struct DataStoreBroker;
 

@@ -17,6 +17,8 @@ use staticfile::Static;
 use config::Config;
 use error::Result;
 use self::deployment_handler::*;
+use data_store::DataStoreBroker;
+
 
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.

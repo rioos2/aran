@@ -7,9 +7,11 @@ use error::{Result, Error};
 use postgres;
 use protobuf;
 use protocol::net::{NetOk, NetError, ErrCode};
-use protocol::{originsrv, jobsrv, scheduler};
+use protocol::message::asmsrv::{Assembly, AssemblyGet};
 use std::str::FromStr;
 use protobuf::ProtobufEnum;
+use db::config::DataStore;
+
 
 pub struct DeploymentDS;
 
@@ -21,7 +23,7 @@ impl DeploymentDS {
     ///
     /// * If the pool has no connections available
     /// * If the assembly cannot be created
-    pub fn assembly_create(datastore: Datastore, assembly: &asmsrv::Assembly) {
+    pub fn assembly_create(datastore: &DataStore, assembly: &Assembly) {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(

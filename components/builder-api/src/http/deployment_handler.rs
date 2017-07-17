@@ -19,11 +19,13 @@ use params::{Params, Value, FromValue};
 use persistent;
 //TO-DO change the protocol::jobsrv to protocol::deployment
 //       add Assembly, AssemblyGet
-use protocol::jobsrv::{Job, JobGet, JobLogGet, JobLog, JobSpec, ProjectJobsGet, ProjectJobsGetResponse};
+use protocol::message::asmsrv::{Assembly, AssemblyGet};
 
 use protocol::sessionsrv;
 use protocol::net::{self, NetOk, ErrCode};
 use router::Router;
+use data_store::DataStoreBroker;
+use db::config::DataStore;
 
 // For the initial release, Builder will only be enabled on the "core"
 // origin. Later, we'll roll it out to other origins; at that point,
@@ -69,7 +71,7 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
     //This is needed as you'll need the email/token if any
     let session = req.extensions.get::<Authenticated>().unwrap().clone();
 
-    match DeploymentDS::new(&datastore).assembly_create(&assembly_create) {
+    match DeploymentDS::assembly_create(&datastore, &assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Ok(render_net_error(&err)),
     }
@@ -83,11 +85,11 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
     };
 
     //This will get loaded in the middleware, so we do 1 Datastore pool per connection.
-    let datastore = req.get::<DataStore>().unwrap();
+    let datastore = req.get::<DataStoreBroker>().unwrap();
 
     let mut request = AssemblyGet::new();
     request.set_id(id);
-    
+
     match DeploymentDS::assembly_show(&datastore, &request) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Ok(render_net_error(&err)),
