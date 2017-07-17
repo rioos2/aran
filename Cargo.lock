@@ -302,6 +302,7 @@ dependencies = [
  "bodyparser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.23.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "habitat_builder_db 0.0.0",
  "habitat_builder_jobsrv 0.0.0",
  "habitat_builder_protocol 0.0.0",
  "habitat_core 0.0.0",

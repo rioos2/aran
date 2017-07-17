@@ -22,7 +22,7 @@ use rand::{self, Rng};
 use r2d2;
 use r2d2_postgres::{self, PostgresConnectionManager, TlsMode};
 
-use config::DataStoreCfg;
+use config::DataStore;
 use error::{Error, Result};
 use protocol::{Routable, RouteKey, ShardId, SHARD_COUNT};
 
@@ -44,7 +44,7 @@ impl fmt::Debug for Pool {
 }
 
 impl Pool {
-    pub fn new(config: &DataStoreCfg, shards: Vec<ShardId>) -> Result<Pool> {
+    pub fn new(config: &DataStore, shards: Vec<ShardId>) -> Result<Pool> {
         loop {
             let pool_config_builder = r2d2::Config::builder()
                 .pool_size(config.pool_size)

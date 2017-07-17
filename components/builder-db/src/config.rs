@@ -20,7 +20,7 @@ use postgres::params::{ConnectParams, Host, IntoConnectParams};
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
-pub struct DataStoreCfg {
+pub struct DataStore {
     pub host: IpAddr,
     pub port: u16,
     pub user: String,
@@ -36,9 +36,9 @@ pub struct DataStoreCfg {
     pub pool_size: u32,
 }
 
-impl Default for DataStoreCfg {
+impl Default for DataStore {
     fn default() -> Self {
-        DataStoreCfg {
+        DataStore {
             host: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             port: 26257,
             user: String::from("root"),
@@ -52,7 +52,7 @@ impl Default for DataStoreCfg {
     }
 }
 
-impl<'a> IntoConnectParams for &'a DataStoreCfg {
+impl<'a> IntoConnectParams for &'a DataStore {
     fn into_connect_params(self) -> Result<ConnectParams, Box<Error + Sync + Send>> {
         let mut builder = ConnectParams::builder();
         builder.port(self.port);

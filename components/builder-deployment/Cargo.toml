@@ -35,8 +35,5 @@ path = "../builder-protocol"
 [dependencies.habitat_net]
 path = "../net"
 
-[dependencies.habitat_builder_db]
-path = "../builder-db"
-
 [features]
 functional = []
