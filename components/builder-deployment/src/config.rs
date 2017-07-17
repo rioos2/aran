@@ -17,7 +17,6 @@ use std::env;
 use std::net::{IpAddr, Ipv4Addr};
 use std::path::PathBuf;
 
-use db::config::DataStoreCfg;
 use hab_core::config::ConfigFile;
 use hab_net::config::{DispatcherCfg, RouterAddr, RouterCfg, Shards};
 use protocol::sharding::{ShardId, SHARD_COUNT};
@@ -31,12 +30,12 @@ pub struct Config {
     pub shards: Vec<ShardId>,
     /// List of net addresses for routing servers to connect to
     pub routers: Vec<RouterAddr>,
-    pub datastore: DataStoreCfg,
+    pub datastore: DataStore,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        let mut datastore = DataStoreCfg::default();
+        let mut datastore = DataStore::default();
         datastore.database = String::from("rioos");
         Config {
             shards: (0..SHARD_COUNT).collect(),

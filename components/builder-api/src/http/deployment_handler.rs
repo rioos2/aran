@@ -11,7 +11,7 @@ use hab_core::event::*;
 use hab_net;
 use hab_net::http::controller::*;
 use hab_net::routing::Broker;
-use job::data_store::DataStore;
+use deploy::deploy_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
@@ -65,12 +65,10 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
         }
     }
     //This will get loaded in the middleware, so we do 1 Datastore pool per connection.
-    let datastore = req.get::<DataStoreConn>().unwrap();
+    let datastore = req.get::<DataStoreBroker>().unwrap();
     //This is needed as you'll need the email/token if any
     let session = req.extensions.get::<Authenticated>().unwrap().clone();
 
-    //TO-DO: renmae the builder-deployment/datastore.rs to deployment_ds.rs and make the changes as mentioned in builder-deployment/datastore.rs
-    // All datastores  will be named with ds. or deployment_datastore whichever you prefer.
     match DeploymentDS::new(&datastore).assembly_create(&assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Ok(render_net_error(&err)),
@@ -89,9 +87,7 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
 
     let mut request = AssemblyGet::new();
     request.set_id(id);
-
-    //TO-DO: renmae the builder-deployment/datastore.rs to deployment_ds.rs
-    // All datastores  will be named with ds. or deployment_datastore whichever you prefer.
+    
     match DeploymentDS::assembly_show(&datastore, &request) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Ok(render_net_error(&err)),

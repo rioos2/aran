@@ -49,5 +49,8 @@ path = "../net"
 [dependencies.habitat_builder_jobsrv]
 path = "../builder-deployment"
 
+[dependencies.habitat_builder_db]
+path = "../builder-db"
+
 [features]
 functional = []

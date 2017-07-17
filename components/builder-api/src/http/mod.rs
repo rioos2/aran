@@ -16,7 +16,8 @@ use staticfile::Static;
 
 use config::Config;
 use error::Result;
-use self::assembly_handlers::*;
+use self::deployment_handler::*;
+
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.
 // See: http://172.16.2.131:9633/iron/prelude/struct.Iron.html#method.http
@@ -43,7 +44,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
     //TO-DO: I am thinking to stick the DatastoreBroker here, which will be created for every request.
     //TO-DO: Just watch the number of Datastore connections in cockroachdb UI
     //TO-DO: Just change the GithubCli to Datastore, Grab the Datastore code from builder_deployment
-    chain.link(DataStoreBroke);
+    chain.link(DataStoreBroker);
 
     chain.link(Read::<EventLog>::both(
         EventLogger::new(&config.log_dir, config.events_enabled),

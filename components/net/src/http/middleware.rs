@@ -32,6 +32,7 @@ use super::super::error::Error;
 use super::super::routing::{Broker, BrokerConn};
 use super::super::oauth::github::GitHubClient;
 use config;
+use data_store::DataStoreConn;
 use privilege::FeatureFlags;
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
@@ -74,16 +75,17 @@ impl Key for GitHubCli {
     type Value = GitHubClient;
 }
 
-pub struct RouteBroker;
+pub struct DataStoreBroker;
 
-impl Key for RouteBroker {
-    type Value = BrokerConn;
+impl Key for DataStoreBroker {
+    type Value = DataStoreConn;
 }
 
-impl BeforeMiddleware for RouteBroker {
+impl BeforeMiddleware for DataStoreBroker {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        let conn = Broker::connect().unwrap();
-        req.extensions.insert::<RouteBroker>(conn);
+        // change
+        let ds =DataStoreConn::new().unwrap();
+        req.extensions.insert::<DataStoreBroker>(ds);
         Ok(())
     }
 }
@@ -141,7 +143,7 @@ impl BeforeMiddleware for Authenticated {
         let session = {
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
-                    match req.extensions.get_mut::<RouteBroker>() {
+                    match req.extensions.get_mut::<DataStoreBroker>() {
                         Some(broker) => try!(self.authenticate(broker, token)),
                         None => {
                             let mut broker = Broker::connect().unwrap();
