@@ -23,18 +23,13 @@ use db::config::DataStoreCfg;
 
 /// DataStore inherints being Send + Sync by virtue of having only one member, the pool itself.
 #[derive(Debug, Clone)]
-pub struct DataStore {
+pub struct DeploymentDS {
     pool: Pool,
     pub async: AsyncServer,
 }
 
-impl Drop for DataStore {
-    fn drop(&mut self) {
-        self.async.stop();
-    }
-}
 
-impl DataStore {
+impl DeploymentDS {
     /// Create a new DataStore.
     ///
     /// * Can fail if the pool cannot be created
