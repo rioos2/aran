@@ -2,15 +2,33 @@ use db::async::{AsyncServer, EventOutcome};
 use db::error::{Error as DbError, Result as DbResult};
 use db::pool::Pool;
 
+pub struct DataStoreBroker;
+
+impl Key for DataStoreBroker {
+    type Value = DataStoreConn;
+}
+
+impl BeforeMiddleware for DataStoreBroker {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        let ds = DataStoreConn::new().unwrap();
+        req.extensions.insert::<DataStoreBroker>(ds);
+        Ok(())
+    }
+}
+
+
 pub struct DataStoreConn {
     pool: Pool,
     pub async: AsyncServer,
 }
 
 impl DataStoreConn {
-    pub fn new(config: &Config) -> Result<DataStore> {
-        let pool = Pool::new(&config.datastore, config.shards.clone())?;
-        let ap = pool.clone();
+    pub fn new() -> Result<DataStore> {
+        let shards = (0..SHARD_COUNT).collect();
+        let mut datastore = DataStore::default();
+
+        let pool = Pool::new(datastore, shards.clone())?;
+
         Ok(DataStore {
             pool: pool,
             async: AsyncServer::new(ap),
@@ -26,11 +44,6 @@ impl DataStoreConn {
     }
 
     pub fn setup(&self) -> Result<()> {
-        // let conn = self.pool.get_raw()?;
-        // let xact = conn.transaction().map_err(Error::DbTransactionStart)?;
-        //
-        // self.async.register("sync_jobs".to_string(), sync_jobs);
-
         Ok(())
     }
 
