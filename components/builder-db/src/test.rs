@@ -69,13 +69,13 @@ pub mod postgres {
 pub mod init {
     use std::sync::{Once, ONCE_INIT};
 
-    use config::DataStoreCfg;
+    use config::DataStore;
     use pool::Pool;
 
     static INIT: Once = ONCE_INIT;
     pub fn create_database() {
         INIT.call_once(|| {
-            let mut config = DataStoreCfg::default();
+            let mut config = DataStore::default();
             config.database = "template1".to_string();
             config.pool_size = 1;
             let pool = Pool::new(&config, vec![0]).expect("Failed to create pool");
@@ -92,14 +92,14 @@ macro_rules! datastore_test {
     ($datastore:ident) => {
         {
             use std::sync::atomic::Ordering;
-            use $crate::config::DataStoreCfg;
+            use $crate::config::DataStore;
             use $crate::pool::Pool;
             use $crate::test::{postgres, SHARD_COUNT, INIT_TEMPLATE, TEST_COUNT};
 
             postgres::start();
 
             INIT_TEMPLATE.call_once(|| {
-                let mut config = DataStoreCfg::default();
+                let mut config = DataStore::default();
                 config.database = "template1".to_string();
                 config.pool_size = 1;
                 let pool = Pool::new(&config, vec![0]).expect("Failed to create pool");
@@ -113,7 +113,7 @@ macro_rules! datastore_test {
             });
             let test_number = TEST_COUNT.fetch_add(1, Ordering::SeqCst);
             let db_name = format!("builder_db_test_{}", test_number);
-            let mut config = DataStoreCfg::default();
+            let mut config = DataStore::default();
             config.database = "template1".to_string();
             config.pool_size = 1;
             let create_pool = Pool::new(&config, vec![0]).expect("Failed to create pool");
@@ -137,7 +137,7 @@ macro_rules! datastore_test {
 macro_rules! with_pool {
     ($pool:ident, $code:block) => {
         use std::sync::atomic::Ordering;
-        use $crate::config::DataStoreCfg;
+        use $crate::config::DataStore;
         use $crate::pool::Pool;
         use $crate::test::{init, postgres, SHARD_COUNT, TEST_COUNT};
 
@@ -145,7 +145,7 @@ macro_rules! with_pool {
         init::create_database();
         let test_number = TEST_COUNT.fetch_add(1, Ordering::SeqCst);
         let db_name = format!("builder_db_test_{}", test_number);
-        let mut config = DataStoreCfg::default();
+        let mut config = DataStore::default();
         config.database = "template1".to_string();
         config.pool_size = 1;
         let create_pool = Pool::new(&config, vec![0]).expect("Failed to create pool");

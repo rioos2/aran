@@ -8,7 +8,6 @@ workspace = "../../"
 bitflags = "*"
 fnv = "*"
 habitat_builder_protocol = { path = "../builder-protocol" }
-habitat_builder_db = { path = "../builder-db" }
 habitat_core = { path = "../core" }
 hyper = "*"
 hyper-openssl = "*"

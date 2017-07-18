@@ -17,7 +17,6 @@ extern crate bitflags;
 extern crate fnv;
 extern crate habitat_builder_protocol as protocol;
 extern crate habitat_core as core;
-extern crate habitat_builder_db as db;
 
 #[macro_use]
 extern crate hyper;
@@ -48,8 +47,6 @@ pub mod privilege;
 pub mod routing;
 pub mod server;
 pub mod supervisor;
-pub mod data_store;
-
 use std::process::Command;
 
 pub use self::error::{Error, Result};
