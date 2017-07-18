@@ -23,10 +23,13 @@ use std::fmt;
 use std::io;
 use std::path::PathBuf;
 use std::result;
+use db;
+
 
 #[derive(Debug)]
 pub enum Error {
     BadPort(String),
+    Db(db::error::Error),
     CaughtPanic(String, String),
     DbPoolTimeout(r2d2::GetTimeout),
     DbTransaction(postgres::error::Error),
@@ -59,6 +62,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
+            Error::Db(ref e) => format!("{}", e),
             Error::CaughtPanic(ref msg, ref source) => format!("Caught a panic: {}. {}", msg, source),
             Error::DbPoolTimeout(ref e) => format!("Timeout getting connection from the database pool, {}", e),
             Error::DbTransaction(ref e) => format!("Database transaction error, {}", e),
@@ -91,6 +95,7 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
+            Error::Db(ref err) => err.description(),
             Error::CaughtPanic(_, _) => "Caught a panic",
             Error::DbPoolTimeout(ref err) => err.description(),
             Error::DbTransaction(ref err) => err.description(),
@@ -145,6 +150,13 @@ impl From<hab_net::Error> for Error {
 impl From<protobuf::ProtobufError> for Error {
     fn from(err: protobuf::ProtobufError) -> Error {
         Error::Protobuf(err)
+    }
+}
+
+
+impl From<db::error::Error> for Error {
+    fn from(err: db::error::Error) -> Self {
+        Error::Db(err)
     }
 }
 

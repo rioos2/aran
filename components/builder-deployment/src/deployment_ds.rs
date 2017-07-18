@@ -4,7 +4,6 @@
 
 use chrono::{DateTime, UTC};
 use error::{Result, Error};
-use postgres;
 use protobuf;
 use protocol::net::{NetOk, NetError, ErrCode};
 use protocol::message::asmsrv;
@@ -27,22 +26,22 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "INSERT INTO assembly($1)",
-            &[&(assembly.get_id() as i64)],
+            &[&(assembly.get_id() as String)],
         ).map_err(Error::AssemblyCreate)?;
 
-        Ok(Some(*assembly))
+        Ok(Some(assembly.clone()))
     }
 
-    pub fn get_assembly(datastore: &DataStoreConn, get_assembly: &asmsrv::AssemblyGet) -> Result<Option<asmsrv::AssemblyGet>> {
+    pub fn assembly_show(datastore: &DataStoreConn, get_assembly: &asmsrv::AssemblyGet) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM assembly($1)",
             &[&(get_assembly.get_id() as i64)],
         ).map_err(Error::AssemblyGet)?;
-        for row in rows {
+        /*for row in rows {
             let job = row_to_job(&row)?;
             return Ok(Some(job));
-        }
+        }*/
         Ok(None)
     }
 }

@@ -1,4 +1,5 @@
-use async::{AsyncServer, EventOutcome};
+use std::env;
+use async::{AsyncServer};
 use error::{Error as DbError, Result as DbResult};
 use error::{Result, Error};
 use pool::Pool;
@@ -11,6 +12,7 @@ use iron::prelude::*;
 use iron::status::Status;
 use iron::typemap::Key;
 use protocol::{Routable, RouteKey, ShardId, SHARD_COUNT};
+
 
 pub struct DataStoreBroker;
 
@@ -34,7 +36,7 @@ pub struct DataStoreConn {
 
 impl DataStoreConn {
     pub fn new() -> Result<DataStoreConn> {
-        let mut datastore = DataStore::default();
+        let datastore = DataStore::default();
         let pool = Pool::new(&datastore, (0..SHARD_COUNT).collect())?;
         let ap = pool.clone();
         Ok(DataStoreConn {

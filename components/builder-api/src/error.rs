@@ -10,6 +10,7 @@ use hab_net;
 use hyper;
 use protobuf;
 use zmq;
+use deploy;
 
 #[derive(Debug)]
 pub enum Error {

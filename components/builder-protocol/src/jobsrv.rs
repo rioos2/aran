@@ -22,6 +22,19 @@ use std::result;
 use std::str::FromStr;
 
 pub use message::jobsrv::*;
+pub use message::asmsrv::*;
+
+impl Serialize for Assembly {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut strukt = try!(serializer.serialize_struct("assembly", 10));
+
+
+        strukt.end()
+    }
+}
 
 #[derive(Debug)]
 pub enum Error {
@@ -32,56 +45,11 @@ impl Into<Job> for JobSpec {
     fn into(mut self) -> Job {
         let mut job = Job::new();
         job.set_owner_id(self.get_owner_id());
-        job.set_state(JobState::default());
         job.set_project(self.take_project());
         job
     }
 }
 
-impl Routable for JobSpec {
-    type H = InstaId;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_owner_id()))
-    }
-}
-
-impl Routable for JobLogGet {
-    type H = InstaId;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_id()))
-    }
-}
-
-impl Routable for JobGet {
-    type H = InstaId;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_id()))
-    }
-}
-
-impl Routable for Job {
-    type H = InstaId;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_id()))
-    }
-}
-
-// Note: Given that we only run a single JobServer, the specific
-// routing key for this message isn't really important (everything is
-// going to route to the same, single place anyway). If we ever do run
-// multiple JobServers, though, this may need to be revisited (as will
-// other corners of the code).
-impl Routable for ProjectJobsGet {
-    type H = String;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(self.get_name().to_string())
-    }
-}
 
 impl Serialize for Job {
     fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
@@ -139,7 +107,6 @@ impl Serialize for Job {
             )?;
         }
 
-        strukt.serialize_field("state", &self.get_state())?;
 
         if self.has_error() {
             try!(strukt.serialize_field("error", self.get_error()));
@@ -148,103 +115,6 @@ impl Serialize for Job {
     }
 }
 
-impl Serialize for ProjectJobsGetResponse {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut strukt = try!(serializer.serialize_struct("project_jobs_get_response", 1));
-        try!(strukt.serialize_field("jobs", self.get_jobs()));
-        strukt.end()
-    }
-}
-
-impl JobLog {
-    /// Strip any ANSI control codes from the contents of the log
-    /// chunk. Useful mainly for removing color codes.
-    pub fn strip_ansi(&mut self) {
-        lazy_static! {
-            // https://github.com/chalk/ansi-regex/blob/master/index.js
-            static ref RE: Regex = Regex::new(
-                r"[\x1b\x9b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]")
-                .unwrap();
-        }
-
-        let mut stripped = RepeatedField::new();
-        for line in self.get_content() {
-            let after = RE.replace_all(line, "");
-            stripped.push(after);
-        }
-
-        self.set_content(stripped);
-    }
-}
-
-impl Serialize for JobLog {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut log = try!(serializer.serialize_struct("JobLog", 4));
-        log.serialize_field("start", &self.get_start())?;
-        log.serialize_field("stop", &self.get_stop())?;
-        log.serialize_field("content", &self.get_content())?;
-        log.serialize_field("is_complete", &self.get_is_complete())?;
-        log.end()
-    }
-}
-
-impl Default for JobState {
-    fn default() -> JobState {
-        JobState::Pending
-    }
-}
-
-impl Serialize for JobState {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match *self as u64 {
-            0 => serializer.serialize_str("Pending"),
-            1 => serializer.serialize_str("Processing"),
-            2 => serializer.serialize_str("Complete"),
-            3 => serializer.serialize_str("Rejected"),
-            4 => serializer.serialize_str("Failed"),
-            5 => serializer.serialize_str("Dispatched"),
-            _ => panic!("Unexpected enum value"),
-        }
-    }
-}
-
-impl FromStr for JobState {
-    type Err = Error;
-
-    fn from_str(value: &str) -> result::Result<Self, Self::Err> {
-        match value.parse() {
-            Ok(id) => {
-                if let Some(state) = JobState::from_i32(id) {
-                    Ok(state)
-                } else {
-                    Err(Error::BadJobState)
-                }
-            }
-            Err(_) => Err(Error::BadJobState),
-        }
-    }
-}
-
-impl Persistable for Job {
-    type Key = u64;
-
-    fn primary_key(&self) -> Self::Key {
-        self.get_id()
-    }
-
-    fn set_primary_key(&mut self, value: Self::Key) {
-        self.set_id(value);
-    }
-}
 
 #[cfg(test)]
 mod tests {

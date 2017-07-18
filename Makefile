@@ -41,7 +41,7 @@ else
 endif
 
 LIB = builder-db builder-core builder-protocol common core http-client net builder-deployment
-SRV = builder-api builder-router
+SRV = builder-api
 ALL = $(LIB) $(SRV)
 VERSION := $(shell cat VERSION)
 
