@@ -1,8 +1,8 @@
 [package]
 name = "habitat_builder_admin"
 version = "0.0.0"
-authors = ["Jamie Winsor <reset@chef.io>"]
-description = "Habitat-Builder Admin Gateway"
+authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
+description = "RIO/OS Admin Gateway"
 build = "../bldr-build.rs"
 workspace = "../../"
 

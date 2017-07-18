@@ -1,8 +1,8 @@
 [package]
 name = "op"
 version = "0.1.0"
-authors = ["Josh Black <raskchanky@gmail.com>"]
-description = "Operational tools for Habitat developers"
+authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
+description = "Operational tools for RIO/OS Aran developers"
 workspace = "../../"
 
 [dependencies]

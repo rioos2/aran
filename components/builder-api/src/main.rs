@@ -32,13 +32,13 @@ fn main() {
 }
 
 fn app<'a, 'b>() -> clap::App<'a, 'b> {
-    clap_app!(BuilderApi =>
+    clap_app!(RIOOSAran =>
         (version: VERSION)
-        (about: "RIO/OS builder-api")
+        (about: "RIO/OS api-server")
         (@setting VersionlessSubcommands)
         (@setting SubcommandRequiredElseHelp)
         (@subcommand start =>
-            (about: "Run the builder-api server")
+            (about: "Run the api server")
             (@arg config: -c --config +takes_value
                 "Filepath to configuration file. [default: /var/lib/rioos/api.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 9636]")
