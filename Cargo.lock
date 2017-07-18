@@ -386,24 +386,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "habitat_builder_router"
-version = "0.0.0"
-dependencies = [
- "clap 2.23.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "env_logger 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "habitat_builder_protocol 0.0.0",
- "habitat_core 0.0.0",
- "habitat_net 0.0.0",
- "log 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "protobuf 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_derive 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "toml 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "zmq 0.8.1 (git+https://github.com/erickt/rust-zmq?branch=release/v0.8)",
-]
-
-[[package]]
 name = "habitat_builder_sessionsrv"
 version = "0.0.0"
 dependencies = [

@@ -1,8 +1,8 @@
 [package]
 name = "habitat_builder_jobsrv"
 version = "0.0.0"
-authors = ["Adam Jacob <adam@chef.io>", "Jamie Winsor <reset@chef.io>", "Fletcher Nichol <fnichol@chef.io>", "Joshua Timberman <joshua@chef.io>", "Dave Parfitt <dparfitt@chef.io>"]
-description = "Habitat-Builder Job Server"
+authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
+description = "RIO/OS Deployment library"
 build = "../bldr-build.rs"
 workspace = "../../"
 
