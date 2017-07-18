@@ -7,11 +7,11 @@ use error::{Result, Error};
 use postgres;
 use protobuf;
 use protocol::net::{NetOk, NetError, ErrCode};
-use protocol::message::asmsrv::{Assembly, AssemblyGet};
+use protocol::message::asmsrv;
 use std::str::FromStr;
 use protobuf::ProtobufEnum;
-use db::config::DataStore;
-
+use db::data_store::DataStoreConn;
+use db::error::{Error as DbError, Result as DbResult};
 
 pub struct DeploymentDS;
 
@@ -23,29 +23,26 @@ impl DeploymentDS {
     ///
     /// * If the pool has no connections available
     /// * If the assembly cannot be created
-    pub fn assembly_create(datastore: &DataStore, assembly: &Assembly) {
+    pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly)->Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
-
         let rows = &conn.query(
-            "INSERT INTO assembly($1, $2, $3, $4, $5)",
+            "INSERT INTO assembly($1)",
             &[&(assembly.get_id() as i64)],
-        //TO-DO: Create custom errors AssemblyCreate
         ).map_err(Error::AssemblyCreate)?;
 
-        Ok(Some(assembly));
+        Ok(Some(*assembly))
     }
 
-    pub fn get_assembly(get_assembly: &AssemblyGet) -> Result<Option<Assembly>> {
-        let conn = self.pool.get_shard(0)?;
+    pub fn get_assembly(datastore: &DataStoreConn, get_assembly: &asmsrv::AssemblyGet) -> Result<Option<asmsrv::AssemblyGet>> {
+        let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_job_v1($1)",
-            &[&(get_job.get_id() as i64)],
-        ).map_err(Error::JobGet)?;
+            "SELECT * FROM assembly($1)",
+            &[&(get_assembly.get_id() as i64)],
+        ).map_err(Error::AssemblyGet)?;
         for row in rows {
             let job = row_to_job(&row)?;
             return Ok(Some(job));
         }
         Ok(None)
     }
-
 }

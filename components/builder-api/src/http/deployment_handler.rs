@@ -24,8 +24,7 @@ use protocol::message::asmsrv::{Assembly, AssemblyGet};
 use protocol::sessionsrv;
 use protocol::net::{self, NetOk, ErrCode};
 use router::Router;
-use data_store::DataStoreBroker;
-use db::config::DataStore;
+use db::data_store::DataStoreBroker;
 
 // For the initial release, Builder will only be enabled on the "core"
 // origin. Later, we'll roll it out to other origins; at that point,
@@ -33,10 +32,22 @@ use db::config::DataStore;
 
 define_event_log!();
 
-//TO-DO please change as per your datamodel.
 #[derive(Clone, Serialize, Deserialize)]
 struct AssemblyCreateReq {
-    project_id: String,
+    id: String,
+    uri: String,
+    name: String,
+    description:String,
+    tags: String,
+    representation_skew: String,
+    external_management_resource: String,
+    component_collection: String,
+    plan:String,
+    operation_collection: String,
+    sensor_collection: String,
+    metadata: String,
+    updated_at: String,
+    created_at: String
 }
 
 //TO-DO please change as per your datamodel when we activate update
@@ -48,10 +59,8 @@ struct AssemblyUpdateReq {
 
 
 pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
-    //Create a AssemblyCreate in builder-protocol (by renaming jobsrv.rs to deployment.rs)
     let mut assembly_create = AssemblyCreate::new();
     {
-        //TO-DO Please create a struct AssemblyCreateReq like JobCreateReq (with the exact data model)
         match req.get::<bodyparser::Struct<AssemblyCreateReq>>() {
             Ok(Some(body)) => {
                 //TO-DO Check for validity as per your need
@@ -66,12 +75,11 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
-    //This will get loaded in the middleware, so we do 1 Datastore pool per connection.
-    let datastore = req.get::<DataStoreBroker>().unwrap();
+    let conn = req.get::<DataStoreBroker>().unwrap();
     //This is needed as you'll need the email/token if any
     let session = req.extensions.get::<Authenticated>().unwrap().clone();
 
-    match DeploymentDS::assembly_create(&datastore, &assembly_create) {
+    match DeploymentDS::assembly_create(&conn, &assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Ok(render_net_error(&err)),
     }
@@ -84,7 +92,6 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
         Err(_) => return Ok(Response::with(status::BadRequest)),
     };
 
-    //This will get loaded in the middleware, so we do 1 Datastore pool per connection.
     let datastore = req.get::<DataStoreBroker>().unwrap();
 
     let mut request = AssemblyGet::new();

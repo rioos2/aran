@@ -17,9 +17,7 @@ use staticfile::Static;
 use config::Config;
 use error::Result;
 use self::deployment_handler::*;
-use data_store::DataStoreBroker;
-
-
+use db::data_store::DataStoreBroker;
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.
 // See: http://172.16.2.131:9633/iron/prelude/struct.Iron.html#method.http
