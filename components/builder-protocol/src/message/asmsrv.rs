@@ -23,54 +23,42 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 
 #[derive(PartialEq,Clone,Default)]
 pub struct Assembly {
-    // message fields
-    id: ::std::option::Option<u64>,
-    uri: ::std::option::Option<u64>,
-    name: ::protobuf::SingularField<::std::string::String>,
-    description: ::protobuf::SingularPtrField<super::originsrv::OriginProject>,
-    tags: ::protobuf::SingularPtrField<super::net::NetError>,
-    representation_skew: ::protobuf::SingularField<::std::string::String>,
-    external_management_resource: ::protobuf::SingularField<::std::string::String>,
-    component_collection: ::protobuf::SingularField<::std::string::String>,
-    plan: ::protobuf::SingularPtrField<super::originsrv::OriginPackageIdent>,
-    operation_collection: ::std::option::Option<bool>,
-    metadata: ::protobuf::SingularField<::std::string::String>,
-    created_at: ::protobuf::SingularField<::std::string::String>,
-    updated_at: ::protobuf::SingularField<::std::string::String>
+    id: String,
+    uri: String,
+    name: String,
+    description:String,
+    tags: String,
+    representation_skew: String,
+    external_management_resource: String,
+    component_collection: String,
+    plan:String,
+    operation_collection: String,
+    sensor_collection: String,
+    metadata: String,
 }
 
-// // see codegen.rs for the explanation why impl Sync explicitly
-// unsafe impl ::std::marker::Sync for Assembly {}
 impl Assembly {
     pub fn new() -> Assembly {
         ::std::default::Default::default()
     }
-    pub fn set_id(&mut self, v: u64) {
-        self.id = ::std::option::Option::Some(v);
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
     }
 
-    pub fn get_id(&self) -> u64 {
-        self.id.unwrap_or(0)
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 }
 
 #[derive(PartialEq,Clone,Default)]
 pub struct AssemblyGet {
-    // message fields
     id: ::std::option::Option<u64>,
-    // special fields
-    unknown_fields: ::protobuf::UnknownFields,
-    cached_size: ::protobuf::CachedSize,
 }
 
-// see codegen.rs for the explanation why impl Sync explicitly
-// unsafe impl ::std::marker::Sync for AssemblyGet {}
 impl AssemblyGet {
     pub fn new() -> AssemblyGet {
         ::std::default::Default::default()
     }
-
-    // optional uint64 id = 1;
 
     pub fn clear_id(&mut self) {
         self.id = ::std::option::Option::None;

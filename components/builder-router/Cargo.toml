@@ -6,10 +6,6 @@ description = "Habitat-Builder Database Access Library"
 build = "../bldr-build.rs"
 workspace = "../../"
 
-[[bin]]
-name = "bldr-router"
-doc = false
-
 [dependencies]
 env_logger = "*"
 log = "*"

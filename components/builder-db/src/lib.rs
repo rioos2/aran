@@ -73,7 +73,6 @@ extern crate fallible_iterator;
 extern crate habitat_builder_protocol as protocol;
 extern crate habitat_core as hcore;
 extern crate habitat_net as hab_net;
-#[macro_use]
 extern crate iron;
 
 pub mod config;
