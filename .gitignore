@@ -13,7 +13,6 @@ tmp/
 *.box.key
 *.sym.key
 test/rios-apiserver/node_modules
-test/rios-apiserver/cockroach-data/*
 test/rios-apiserver/*.log
 test
 tags
