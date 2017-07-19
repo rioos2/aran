@@ -12,7 +12,7 @@ tmp/
 *.sig.key
 *.box.key
 *.sym.key
-test/builder-api/node_modules
-test/builder-api/services.log
-test/builder-api/built/*
+test/rios-apiserver/node_modules
+test/rios-apiserver/rios-apiserver.log
+test
 tags

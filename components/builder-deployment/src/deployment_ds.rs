@@ -25,8 +25,8 @@ impl DeploymentDS {
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly)->Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "INSERT INTO assembly($1)",
-            &[&(assembly.get_id() as String)],
+            "INSERT INTO assembly(name) values($1)",
+            &[&(assembly.get_name() as String)],
         ).map_err(Error::AssemblyCreate)?;
 
         Ok(Some(assembly.clone()))

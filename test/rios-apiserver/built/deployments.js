@@ -9,7 +9,7 @@ describe('Deployment API', function () {
         it('returns the created assembly', function (done) {
             request.post('/assemblys')
                 .set('Authorization', globalAny.bobo_bearer)
-                .send({ "name": "neurosis" })
+                .send({"name": "neurosis","uri":"/v1/assemblys","description":"ubuntuinstallation","tags": "","representation_skew":" ","external_management_resource":"","metadata":"" ,"component_collection": "","operation_collection": "","sensor_collection": "","plan": "" })
                 .expect(201)
                 .end(function (err, res) {
                 chai_1.expect(res.body.name).to.equal("neurosis");
@@ -20,7 +20,7 @@ describe('Deployment API', function () {
     });
     describe('Get assembly neurosis', function () {
         it('returns the assembly', function (done) {
-            request.get('/assembly/1')
+            request.get('/assemblys/1')
                 .set('Authorization', globalAny.bobo_bearer)
                 .expect(200)
                 .end(function (err, res) {
