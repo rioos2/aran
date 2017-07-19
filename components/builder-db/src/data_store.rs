@@ -36,6 +36,7 @@ pub struct DataStoreConn {
 
 impl DataStoreConn {
     pub fn new() -> Result<DataStoreConn> {
+        println!("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2");
         let datastore = DataStore::default();
         let pool = Pool::new(&datastore, (0..SHARD_COUNT).collect())?;
         let ap = pool.clone();

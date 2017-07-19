@@ -21,6 +21,7 @@ use iron::status::Status;
 use protocol::net::ErrCode;
 
 pub fn net_err_to_http(err: ErrCode) -> Status {
+    println!("-------error-------------------{:?}",err );
     match err {
         ErrCode::BUG => Status::InternalServerError,
         ErrCode::TIMEOUT => Status::GatewayTimeout,

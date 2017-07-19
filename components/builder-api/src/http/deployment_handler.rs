@@ -32,9 +32,8 @@ define_event_log!();
 
 #[derive(Clone, Serialize, Deserialize)]
 struct AssemblyCreateReq {
-    id: String,
-    uri: String,
     name: String,
+    uri: String,
     description:String,
     tags: String,
     representation_skew: String,
@@ -46,10 +45,8 @@ struct AssemblyCreateReq {
     metadata: String,
 }
 
-//TO-DO please change as per your datamodel when we activate update
 #[derive(Clone, Serialize, Deserialize)]
 struct AssemblyUpdateReq {
-    id: String,
     uri: String,
     name: String,
     description:String,
@@ -62,7 +59,6 @@ struct AssemblyUpdateReq {
     sensor_collection: String,
     metadata: String,
 }
-
 
 pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
     let mut assembly_create = Assembly::new();
@@ -76,15 +72,14 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `name`",
                     )));
                 }
-                assembly_create.set_id(body.name)
+                assembly_create.set_name(body.name)
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
     let conn = req.extensions.get::<DataStoreBroker>().unwrap();
-
     //This is needed as you'll need the email/token if any
-    let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
 
     match DeploymentDS::assembly_create(&conn, &assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
@@ -99,9 +94,7 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
         Ok(id) => id,
         Err(_) => return Ok(Response::with(status::BadRequest)),
     };
-
     let datastore = req.extensions.get::<DataStoreBroker>().unwrap();
-
     let mut request = AssemblyGet::new();
     request.set_id(id);
 

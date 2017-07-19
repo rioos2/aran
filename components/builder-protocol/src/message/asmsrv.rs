@@ -25,7 +25,7 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 pub struct Assembly {
     id: String,
     uri: String,
-    name: String,
+    name: ::protobuf::SingularField<::std::string::String>,
     description:String,
     tags: String,
     representation_skew: String,
@@ -43,6 +43,17 @@ impl Assembly {
     }
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = ::protobuf::SingularField::some(v);
+    }
+
+    pub fn get_name(&self) -> &str {
+        match self.name.as_ref() {
+            Some(v) => &v,
+            None => "",
+        }
     }
 
     pub fn get_id(&self) -> ::std::string::String {

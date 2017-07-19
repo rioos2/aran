@@ -49,7 +49,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         EventLogger::new(&config.log_dir, config.events_enabled),
     ));
 
-    chain.link_after(Cors);
+    // chain.link_after(Cors);
     Ok(chain)
 }
 
