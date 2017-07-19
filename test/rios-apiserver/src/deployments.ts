@@ -20,8 +20,8 @@ describe('Deployment API', function() {
   });
 
   describe('Get assembly neurosis', function() {
-    it('returns the assembly', function(done) {
-      request.get('/assembly/1')
+    it('returns the assemblys', function(done) {
+      request.get('/assemblys/1')
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
         .end(function(err, res) {
