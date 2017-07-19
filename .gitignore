@@ -13,6 +13,6 @@ tmp/
 *.box.key
 *.sym.key
 test/rios-apiserver/node_modules
-test/rios-apiserver/*.log
+test/rios-apiserver/rios-apiserver.log
 test
 tags
