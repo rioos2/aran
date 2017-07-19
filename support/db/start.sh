@@ -15,7 +15,7 @@ function stop_cockroach {
   exit 0
 }
 
-trap stop_pg SIGHUP SIGINT SIGTERM
+trap stop_cockroach SIGHUP SIGINT SIGTERM
 
 pwd
 
@@ -30,6 +30,8 @@ while [ $running -eq 0 ]; do
   fi
   sleep 2
 done
+
+echo "**** cockroachdb is running"
 
 while true; do
   sleep 1
