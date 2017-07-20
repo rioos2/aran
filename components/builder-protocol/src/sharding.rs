@@ -23,7 +23,8 @@ use time;
 pub const EPOCH_MS: u64 = 1460499133628;
 /// Maximum shard count. This number cannot exceed the value of `MAX_SHARD_ID`. If this number
 /// is altered then the entities in the data store must all be issued new identifiers.
-pub const SHARD_COUNT: u32 = 128;
+/// Hence in our case we just need one schema :)
+pub const SHARD_COUNT: u32 = 1;
 /// Maximum value allowed for a Shard ID (2^13).
 pub const MAX_SHARD_ID: u16 = 8192;
 

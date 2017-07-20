@@ -4,23 +4,18 @@
 
 use std::env;
 
-use base64;
 use bodyparser;
-use hab_core::package::Plan;
 use hab_core::event::*;
-use hab_net;
 use hab_net::http::controller::*;
-use hab_net::routing::Broker;
 use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use params::{Params, Value, FromValue};
 use persistent;
 
 use protocol::asmsrv::{Assembly, AssemblyGet};
 use protocol::sessionsrv;
-use protocol::net::{self, NetOk, ErrCode};
+use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::DataStoreBroker;
 
@@ -30,31 +25,31 @@ use db::data_store::DataStoreBroker;
 
 define_event_log!();
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct AssemblyCreateReq {
     name: String,
     uri: String,
-    description:String,
+    description: String,
     tags: String,
     representation_skew: String,
     external_management_resource: String,
     component_collection: String,
-    plan:String,
+    plan: String,
     operation_collection: String,
     sensor_collection: String,
     metadata: String,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct AssemblyUpdateReq {
     uri: u64,
     name: String,
-    description:String,
+    description: String,
     tags: String,
     representation_skew: String,
     external_management_resource: String,
     component_collection: String,
-    plan:String,
+    plan: String,
     operation_collection: String,
     sensor_collection: String,
     metadata: String,
@@ -87,13 +82,17 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
-    let conn = req.extensions.get::<DataStoreBroker>().unwrap();
+
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
     //This is needed as you'll need the email/token if any
     // let session = req.extensions.get::<Authenticated>().unwrap().clone();
 
     match DeploymentDS::assembly_create(&conn, &assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Ok(render_net_error(&net::err(ErrCode::DATA_STORE, format!("{}\n", err)))),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
 
     }
 }
@@ -109,30 +108,41 @@ pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
-    let conn = req.extensions.get::<DataStoreBroker>().unwrap();
+
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
     //This is needed as you'll need the email/token if any
     // let session = req.extensions.get::<Authenticated>().unwrap().clone();
 
     match DeploymentDS::assembly_create(&conn, &assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Ok(render_net_error(&net::err(ErrCode::DATA_STORE, format!("{}\n", err)))),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
 
     }
 }
 
 pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
-    let params = req.extensions.get::<Router>().unwrap();
-    let id = match params.find("id").unwrap().parse::<u64>() {
-        Ok(id) => id,
-        Err(_) => return Ok(Response::with(status::BadRequest)),
-    };
-    let datastore = req.extensions.get::<DataStoreBroker>().unwrap();
-    let mut request = AssemblyGet::new();
-    request.set_id(id);
 
-    match DeploymentDS::assembly_show(&datastore, &request) {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
+    let mut asm_get = AssemblyGet::new();
+    asm_get.set_id(id);
+
+    match DeploymentDS::assembly_show(&conn, &asm_get) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Ok(render_net_error(&net::err(ErrCode::ACCESS_DENIED, "err"))),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }
 

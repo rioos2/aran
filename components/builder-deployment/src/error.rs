@@ -16,8 +16,6 @@ use extern_url;
 use hab_core;
 use hab_net;
 use postgres;
-use protobuf;
-use r2d2;
 use std::error;
 use std::fmt;
 use std::io;
@@ -46,7 +44,6 @@ pub enum Error {
     LogDirNotWritable(PathBuf),
     NetError(hab_net::Error),
     ProjectJobsGet(postgres::error::Error),
-    Protobuf(protobuf::ProtobufError),
     UnknownVCS,
     UnknownJobState,
 }
@@ -74,7 +71,6 @@ impl fmt::Display for Error {
             Error::LogDirIsNotDir(ref path) => format!("Build log directory {:?} is not a directory!", path),
             Error::LogDirNotWritable(ref path) => format!("Build log directory {:?} is not writable!", path),
             Error::NetError(ref e) => format!("{}", e),
-            Error::Protobuf(ref e) => format!("{}", e),
             Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
             Error::UnknownVCS => format!("Unknown VCS"),
             Error::UnknownJobState => format!("Unknown Job State"),
@@ -104,7 +100,6 @@ impl error::Error for Error {
             Error::LogDirNotWritable(_) => "Build log directory is not writable",
             Error::NetError(ref err) => err.description(),
             Error::ProjectJobsGet(ref err) => err.description(),
-            Error::Protobuf(ref err) => err.description(),
             Error::UnknownJobState => "Unknown Job State",
             Error::UnknownVCS => "Unknown VCS",
         }
@@ -128,13 +123,6 @@ impl From<hab_net::Error> for Error {
         Error::NetError(err)
     }
 }
-
-impl From<protobuf::ProtobufError> for Error {
-    fn from(err: protobuf::ProtobufError) -> Error {
-        Error::Protobuf(err)
-    }
-}
-
 
 impl From<db::error::Error> for Error {
     fn from(err: db::error::Error) -> Self {

@@ -1,2 +1,2 @@
-cockroach: support/db/start.sh
+pg: support/db/start.sh
 api: target/debug/rios-apiserver start

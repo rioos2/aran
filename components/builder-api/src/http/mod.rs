@@ -42,15 +42,19 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
     let mut chain = Chain::new(router);
 
-    //Stick the DatastoreBroker here, which will be created for every request.
-    //Just watch the number of connections in cockroachdb admin UI
-    chain.link_before(DataStoreBroker);
+    //Stick the DatastoreBroker here, which will be created globally once
+    //whew! it works :)
+    chain.link(persistent::Read::<DataStoreBroker>::both(
+        ({let ds =  DataStoreConn::new().unwrap();
+        ds.setup().unwrap().clone()})
+    ));
+
 
     chain.link(Read::<EventLog>::both(
         EventLogger::new(&config.log_dir, config.events_enabled),
     ));
 
-    // chain.link_after(Cors);
+    chain.link_after(Cors);
     Ok(chain)
 }
 

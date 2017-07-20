@@ -47,14 +47,12 @@ impl<'a> Migrator<'a> {
         self.xact
             .execute("SET search_path TO public", &[])
             .map_err(Error::SchemaSwitch)?;
-            println!("111111111111111111111111111111111111111111111111111111111111111");
 
         // We take this lock because there can be one, and only one, migration
         // running at a time. No parallel changes allowed.
         self.xact
             .execute("SELECT pg_advisory_xact_lock($1)", &[&SETUP_LOCK])
             .map_err(Error::MigrationLock)?;
-            println!("2222222222222222222222222222222222222222222222222222222222");
 
         let schema_prefix = self.schema_prefix();
         for shard in self.shards.iter() {
@@ -62,6 +60,7 @@ impl<'a> Migrator<'a> {
             schema_xact
                 .execute("SET search_path TO public", &[])
                 .map_err(Error::SchemaSwitch)?;
+
             let schema_name = format!("{}_{}", schema_prefix, shard);
             let sql_create_schema = format!("CREATE SCHEMA IF NOT EXISTS {}", schema_name);
             match schema_xact.execute(&sql_create_schema, &[]) {
@@ -79,37 +78,24 @@ impl<'a> Migrator<'a> {
                 }
                 Err(e) => return Err(Error::SchemaCreate(e)),
             }
+
             let set_search_path = format!("SET search_path TO {}", schema_name);
             schema_xact.execute(&set_search_path, &[]).map_err(
                 Error::SchemaSwitch,
             )?;
+
+            debug!("=> START: Migration.");
             schema_xact
                 .execute(
-                    r#"CREATE TABLE IF NOT EXISTS builder_db_migrations (
-                prefix text NOT NULL,
-                sequence_number bigint NOT NULL,
-                created_at timestamptz DEFAULT now(),
-                updated_at timestamptz,
-                PRIMARY KEY(prefix, sequence_number)
-            )"#,
+                    r#"CREATE SEQUENCE IF NOT EXISTS builder_db_migrations_id_seq"#,
                     &[],
                 )
                 .map_err(Error::MigrationTable)?;
-                println!("3333333333333333333333333333333333333333333333333333");
-            schema_xact.execute(r#"CREATE OR REPLACE FUNCTION migration_has_run_v1(p text, sn bigint) RETURNS bool AS $$
-            DECLARE
-                result BOOLEAN;
-            BEGIN
-                SELECT true FROM builder_db_migrations WHERE prefix = p AND sequence_number = sn INTO result;
-                RETURN result;
-            END
-            $$ LANGUAGE plpgsql STABLE
-            "#,
-                         &[])
-                .map_err(Error::FunctionCreate)?;
-                println!("444444444444444444444444444444444444444444444444444444444");
 
-            let next_id_v1 = format!(r#"CREATE OR REPLACE FUNCTION next_id_v1(sequence_id regclass, OUT result bigint) AS $$
+            debug!("=> [✓] builder_db_migrations_id_seq");
+
+            let next_id_v1 = format!(
+                r#"CREATE OR REPLACE FUNCTION next_id_v1(sequence_id regclass, OUT result bigint) AS $$
                 DECLARE
                     our_epoch bigint := 1409266191000;
                     seq_id bigint;
@@ -122,53 +108,34 @@ impl<'a> Migrator<'a> {
                     result := result | (seq_id << 13);
                     result := result | (shard_id);
                 END;
-                $$ LANGUAGE PLPGSQL;"#, shard);
+                $$ LANGUAGE PLPGSQL;"#,
+                shard
+            );
             schema_xact.execute(&next_id_v1, &[]).map_err(
                 Error::FunctionCreate,
             )?;
-            schema_xact
-                .execute(
-                    r#"ALTER TABLE IF EXISTS builder_db_migrations
-                DROP CONSTRAINT builder_db_migrations_pkey"#,
-                    &[],
-                )
-                .map_err(Error::MigrationTable)?;
-                println!("5555555555555555555555555555555555555555555555555555555");
+
+            debug!("=> [✓] fn: next_id_v1 in {}",schema_name);
+
 
             schema_xact
                 .execute(
-                    r#"ALTER TABLE IF EXISTS builder_db_migrations
-                DROP COLUMN IF EXISTS sequence_number"#,
+                    r#"CREATE TABLE IF NOT EXISTS builder_db_migrations (
+                id bigint PRIMARY KEY DEFAULT next_id_v1('builder_db_migrations_id_seq'),
+                prefix text NOT NULL,
+                hashed_content varchar(64),
+                created_at timestamptz DEFAULT now(),
+                updated_at timestamptz)"#,
                     &[],
                 )
                 .map_err(Error::MigrationTable)?;
-                println!("66666666666666666666666666666666666666666666666666666666666");
+
+            debug!("=> [✓] builder_db_migrations in {}",schema_name);
+
 
             schema_xact
                 .execute(
-                    r#"CREATE SEQUENCE IF NOT EXISTS builder_db_migrations_id_seq"#,
-                    &[],
-                )
-                .map_err(Error::MigrationTable)?;
-                println!("777777777777777777777777777777777777777777777777777777777777");
-
-            schema_xact
-                .execute(r#"ALTER TABLE IF EXISTS builder_db_migrations
-                ADD COLUMN IF NOT EXISTS hashed_content varchar(64),
-                ADD COLUMN IF NOT EXISTS id bigint PRIMARY KEY DEFAULT next_id_v1('builder_db_migrations_id_seq')"#,
-                         &[])
-                .map_err(Error::MigrationTable)?;
-                println!("8888888888888888888888888888888888888888888888888888888888");
-
-            schema_xact
-                .execute(
-                    r#"DROP FUNCTION IF EXISTS migration_has_run_v1(text, bigint)"#,
-                    &[],
-                )
-                .map_err(Error::FunctionDrop)?;
-                println!("999999999999999999999999999999999999999999999999999999999999999");
-
-            schema_xact.execute(r#"CREATE OR REPLACE FUNCTION migration_has_run_v1(p text, hsh text) RETURNS bool AS $$
+                    r#"CREATE OR REPLACE FUNCTION migration_has_run_v1(p text, hsh text) RETURNS bool AS $$
             DECLARE
                 result BOOLEAN;
             BEGIN
@@ -177,11 +144,12 @@ impl<'a> Migrator<'a> {
             END
             $$ LANGUAGE plpgsql STABLE
             "#,
-                         &[])
+                    &[],
+                )
                 .map_err(Error::FunctionCreate)?;
-                println!("10101010101010101010101010101010101010101010101010101010101010");
-
             schema_xact.commit().map_err(Error::TransactionCommit)?;
+            debug!("=> DONE: Migration");
+
         }
         Ok(())
     }
@@ -216,11 +184,7 @@ impl<'a> Migrator<'a> {
     }
 }
 
-fn check_migration_has_run(
-    xact: &postgres::transaction::Transaction,
-    prefix: &str,
-    hsh: &str,
-) -> Result<Option<bool>> {
+fn check_migration_has_run(xact: &postgres::transaction::Transaction, prefix: &str, hsh: &str) -> Result<Option<bool>> {
     let check_result = xact.query("SELECT migration_has_run_v1($1, $2)", &[&prefix, &hsh])
         .map_err(Error::MigrationCheck)?;
     Ok(check_result.get(0).get(0))
