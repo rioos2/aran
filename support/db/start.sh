@@ -10,28 +10,33 @@
 # The gpid stuff below is because we need to track the parent process ID of the
 # sudo command that executes us.
 
-function stop_cockroach {
-  sudo /usr/bin/killall cockroach
+function stop_pg {
+  sudo systemctl stop postgresql
   exit 0
 }
 
-trap stop_cockroach SIGHUP SIGINT SIGTERM
+trap stop_pg SIGHUP SIGINT SIGTERM
 
 pwd
 
 running=0;
 
-echo "Waiting for cockroachdb to start"
+echo "Waiting for postgresql to start"
 while [ $running -eq 0 ]; do
-  cd $MEGAM_HOME/cockroach
-  #  cockroach start --certs-dir=certs --host=localhost --http-host=localhost
-  if cockroach start --insecure --host=localhost --http-host=localhost; then
+  if sudo -E TERM=vt100 psql -lqt --host 127.0.0.1 -U rioos; then
     running=1
   fi
   sleep 2
 done
 
-echo "**** cockroachdb is running"
+for dbname in rioosdb; do
+  if sudo -E TERM=vt100 psql -lqt --host 127.0.0.1 -U rioos -W rioos | cut -d \| -f 1 | grep -qw $dbname; then
+    echo "Database $dbname exists"
+  else
+    echo "Creating database $dbname"
+    sudo -u hab -E TERM=vt100 createdb -O rioos -h 127.0.0.1 $dbname
+  fi
+done
 
 while true; do
   sleep 1

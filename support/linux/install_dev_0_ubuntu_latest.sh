@@ -22,6 +22,7 @@ sudo -E apt-get install -y --no-install-recommends \
   pkg-config \
   protobuf-compiler \
   software-properties-common \
+  postgresql \
   sudo \
   tmux \
   vim \

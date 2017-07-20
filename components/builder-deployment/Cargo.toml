@@ -10,11 +10,9 @@ workspace = "../../"
 env_logger = "*"
 linked-hash-map = "*"
 log = "*"
-protobuf = "*"
 postgres = { version = "*", features = ["with-chrono"] }
 chrono = { version = "*", features = ["serde"] }
 rand = "*"
-r2d2 = "*"
 serde = "*"
 serde_derive = "*"
 sha2 = "*"

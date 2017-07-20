@@ -21,7 +21,7 @@ use protobuf::Message as Message_imported_for_functions;
 use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 
 
-#[derive(PartialEq,Clone,Default)]
+#[derive(Debug, PartialEq,Clone,Default)]
 pub struct Assembly {
     id: u64,
     uri: String,
@@ -157,7 +157,7 @@ impl Assembly {
     }
 }
 
-#[derive(PartialEq,Clone,Default)]
+#[derive(PartialEq,Clone,Debug,Default)]
 pub struct AssemblyGet {
     id: ::std::option::Option<u64>,
 }

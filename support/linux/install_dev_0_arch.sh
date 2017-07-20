@@ -15,6 +15,6 @@ sudo -E pacman -S --noconfirm \
   openssl \
   pkg-config \
   protobuf \
-  redis \
+  postgresql \
   wget \
   zeromq
