@@ -12,6 +12,7 @@ use iron::prelude::*;
 use iron::status::Status;
 use iron::typemap::Key;
 use protocol::{Routable, RouteKey, ShardId, SHARD_COUNT};
+use migration::Migrator;
 
 
 pub struct DataStoreBroker;
@@ -23,6 +24,7 @@ impl Key for DataStoreBroker {
 impl BeforeMiddleware for DataStoreBroker {
     fn before(&self, req: &mut Request) -> IronResult<()> {
         let ds = DataStoreConn::new().unwrap();
+        ds.setup().unwrap();
         req.extensions.insert::<DataStoreBroker>(ds);
         Ok(())
     }
@@ -36,7 +38,6 @@ pub struct DataStoreConn {
 
 impl DataStoreConn {
     pub fn new() -> Result<DataStoreConn> {
-        println!("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2");
         let datastore = DataStore::default();
         let pool = Pool::new(&datastore, (0..SHARD_COUNT).collect())?;
         let ap = pool.clone();
@@ -54,9 +55,81 @@ impl DataStoreConn {
         })
     }
 
-    pub fn setup(&self) ->Result<()>{
-        Ok(())
-    }
+    /// Setup the datastore.
+/// This includes all the schema and data migrations, along with stored procedures for data
+/// access.
+pub fn setup(&self) -> Result<()> {
+    let conn = self.pool.get_raw()?;
+    let xact = conn.transaction().map_err(Error::DbTransactionStart)?;
+    let mut migrator = Migrator::new(xact, self.pool.shards.clone());
+
+    migrator.setup()?;
+
+    // The core jobs table
+       migrator.migrate(
+           "asmsrv",
+           r#"CREATE TABLE  IF NOT EXISTS assembly (
+             id serial PRIMARY KEY,
+             uri text,
+             name text,
+             description text,
+             tags text[],
+             representation_skew text,
+             external_management_resource text,
+             component_collection text[],
+             plan text,
+             operation_collection text[],
+             sensor_collection text[],
+             metadata text,
+             updated_at timestamptz,
+             created_at timestamptz DEFAULT now())"#,
+       )?;
+
+    // Insert a new job into the jobs table
+    migrator.migrate("asmsrv",
+                         r#"CREATE OR REPLACE FUNCTION insert_assembly_v1 (
+                            name text,
+                            uri text,
+                            description text,
+                            tags text[],
+                            external_management_resource text,
+                            representation_skew text,
+                            component_collection text[],
+                            plan text,
+                            operation_collection text[],
+                            sensor_collection text[],
+                            metadata text
+                        ) RETURNS SETOF assembly AS $$
+                                BEGIN
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description, tags, external_management_resource, representation_skew, component_collection,plan,operation_collection,sensor_collection,metadata)
+                                        VALUES (name,uri, description, tags, external_management_resource, representation_skew, component_collection,plan,operation_collection,sensor_collection,metadata)
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#)?;
+    // Hey, Adam - why did you do `select *` here? Isn't that bad?
+    //
+    // So glad you asked. In this case, it's better - essentially we have an API call that
+    // returns a job object, which is flattened into the table structure above. We then
+    // translate those job rows into Job structs. Since the table design is purely additive,
+    // this allows us to add data to the table without having to re-roll functions that
+    // generate Job structs, and keeps things DRY.
+    //
+    // Just make sure you always address the columns by name, not by position.
+    migrator.migrate(
+        "asmsrv",
+        r#"CREATE OR REPLACE FUNCTION get_assembly_v1 (aid uuid) RETURNS SETOF assembly AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM assembly WHERE id = aid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+    )?;
+
+    migrator.finish()?;
+    Ok(())
+}
 
     pub fn start_async(&self) {
         // This is an arc under the hood

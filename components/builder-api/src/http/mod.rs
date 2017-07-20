@@ -33,6 +33,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         // assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
         assemblys: post "/assemblys" => assembly_create,
         assembly: get "/assemblys/:id" => assembly_show,
+        assembly_update: post "/assemblys/update/:id" => assembly_update,
 
         assembly_factorys: post "/assembly_factorys" => assembly_create,
         assembly_factory: get "/assembly_factory/:id" => assembly_show,
