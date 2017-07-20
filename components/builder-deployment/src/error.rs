@@ -31,10 +31,6 @@ pub enum Error {
     BadPort(String),
     Db(db::error::Error),
     CaughtPanic(String, String),
-    DbPoolTimeout(r2d2::GetTimeout),
-    DbTransaction(postgres::error::Error),
-    DbTransactionStart(postgres::error::Error),
-    DbTransactionCommit(postgres::error::Error),
     HabitatCore(hab_core::Error),
     InvalidUrl,
     IO(io::Error),
@@ -64,10 +60,6 @@ impl fmt::Display for Error {
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
             Error::Db(ref e) => format!("{}", e),
             Error::CaughtPanic(ref msg, ref source) => format!("Caught a panic: {}. {}", msg, source),
-            Error::DbPoolTimeout(ref e) => format!("Timeout getting connection from the database pool, {}", e),
-            Error::DbTransaction(ref e) => format!("Database transaction error, {}", e),
-            Error::DbTransactionStart(ref e) => format!("Failed to start database transaction, {}", e),
-            Error::DbTransactionCommit(ref e) => format!("Failed to commit database transaction, {}", e),
             Error::HabitatCore(ref e) => format!("{}", e),
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
@@ -97,10 +89,6 @@ impl error::Error for Error {
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
             Error::Db(ref err) => err.description(),
             Error::CaughtPanic(_, _) => "Caught a panic",
-            Error::DbPoolTimeout(ref err) => err.description(),
-            Error::DbTransaction(ref err) => err.description(),
-            Error::DbTransactionCommit(ref err) => err.description(),
-            Error::DbTransactionStart(ref err) => err.description(),
             Error::HabitatCore(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::InvalidUrl => "Bad Url!",
@@ -120,12 +108,6 @@ impl error::Error for Error {
             Error::UnknownJobState => "Unknown Job State",
             Error::UnknownVCS => "Unknown VCS",
         }
-    }
-}
-
-impl From<r2d2::GetTimeout> for Error {
-    fn from(err: r2d2::GetTimeout) -> Error {
-        Error::DbPoolTimeout(err)
     }
 }
 

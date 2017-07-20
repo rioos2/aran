@@ -41,6 +41,15 @@ pub enum Error {
     SetSearchPath(postgres::error::Error),
     TransactionCreate(postgres::error::Error),
     TransactionCommit(postgres::error::Error),
+    DbPoolTimeout(r2d2::GetTimeout),
+    DbTransaction(postgres::error::Error),
+    DbTransactionStart(postgres::error::Error),
+    DbTransactionCommit(postgres::error::Error),
+    Migration(postgres::error::Error),
+    MigrationCheck(postgres::error::Error),
+    MigrationTable(postgres::error::Error),
+    MigrationTracking(postgres::error::Error),
+    MigrationLock(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -71,6 +80,15 @@ impl fmt::Display for Error {
             Error::SetSearchPath(ref e) => format!("Error setting local search path: {}", e),
             Error::TransactionCreate(ref e) => format!("Error creating transaction: {}", e),
             Error::TransactionCommit(ref e) => format!("Error committing transaction: {}", e),
+            Error::DbPoolTimeout(ref e) => format!("Timeout getting connection from the database pool, {}", e),
+            Error::DbTransaction(ref e) => format!("Database transaction error, {}", e),
+            Error::DbTransactionStart(ref e) => format!("Failed to start database transaction, {}", e),
+            Error::DbTransactionCommit(ref e) => format!("Failed to commit database transaction, {}", e),
+            Error::Migration(ref e) => format!("Error executing migration: {}", e),
+            Error::MigrationCheck(ref e) => format!("Error checking if a migration has run: {}", e),
+            Error::MigrationTable(ref e) => format!("Error creating migration tracking table: {}", e),
+            Error::MigrationTracking(ref e) => format!("Error updating migration tracking table: {}", e),
+            Error::MigrationLock(ref e) => format!("Error getting migration lock: {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -97,6 +115,15 @@ impl error::Error for Error {
             Error::SetSearchPath(_) => "Error setting local search path",
             Error::TransactionCreate(_) => "Error creating a transaction",
             Error::TransactionCommit(_) => "Error committing a transaction",
+            Error::DbPoolTimeout(ref err) => err.description(),
+            Error::DbTransaction(ref err) => err.description(),
+            Error::DbTransactionCommit(ref err) => err.description(),
+            Error::DbTransactionStart(ref err) => err.description(),
+            Error::Migration(_) => "Error executing migration",
+            Error::MigrationCheck(_) => "Error checking if a migration has run",
+            Error::MigrationTable(_) => "Error creat2ing migration tracking table",
+            Error::MigrationTracking(_) => "Error updating migration tracking table",
+            Error::MigrationLock(_) => "Error getting migration lock",
         }
     }
 }

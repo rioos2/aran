@@ -6,66 +6,65 @@ CREATE DATABASE IF NOT EXISTS riodb;
 
 SET DATABASE = riodb;
 
---
 -- Table structure for table `accounts`
 -- created_at is the first timestamp
 --- updated_at is the last timestamp
 CREATE TABLE IF NOT EXISTS accounts (
-  id SERIAL PRIMARY KEY,
-  email STRING UNIQUE,
-  first_name STRING,
-  last_name STRING,
-  phone STRING,
-  api_key STRING,
-  password STRING,
-  states STRING,
-  approval STRING,
-  suspend STRING,
-  registration_ip_address STRING,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
+  id  serial PRIMARY KEY,
+  email text UNIQUE,
+  first_name text,
+  last_name text,
+  phone text,
+  api_key text,
+  password text,
+  states text,
+  approval text,
+  suspend text,
+  registration_ip_address text,
+  updated_at timestamptz,
+  created_at timestamptz DEFAULT now());
 
 --
 -- Table structure for table `projects`
 -- foreign key account_id
 CREATE TABLE IF NOT EXISTS projects(
-  id SERIAL PRIMARY KEY,
-  account INT NOT NULL REFERENCES accounts(id),
-  name STRING,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
+  id serial PRIMARY KEY,
+  account integer NOT NULL REFERENCES accounts(id),
+  name text,
+  updated_at timestamptz,
+  created_at timestamptz DEFAULT now());
 
 --
 -- Table structure for table `plan_factory`
 -- tag : [], artifacts: [], services: json
 CREATE TABLE IF NOT EXISTS plan_factory (
-  id SERIAL PRIMARY KEY,
-  name STRING,
-  description STRING,
-  tags STRING,
+  id serial PRIMARY KEY,
+  name text,
+  description text,
+  tags text,
   camp_version DECIMAL DEFAULT 1.2,
-  origin STRING DEFAULT 'rioos:2.0',
-  artifacts STRING,
-  services STRING,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
+  origin text DEFAULT 'rioos:2.0',
+  artifacts text,
+  services text,
+  updated_at timestamptz,
+  created_at timestamptz DEFAULT now());
 
   --
   -- Table structure for table `assembly_factory`
   -- items : []
 CREATE TABLE IF NOT EXISTS assembly_factory (
-  id SERIAL PRIMARY KEY,
-  uri STRING,
-  name STRING,
-  description STRING,
-  tags STRING,
-  representation_skew STRING,
+  id serial PRIMARY KEY,
+  uri text,
+  name text,
+  description text,
+  tags text,
+  representation_skew text,
   total_items INT DEFAULT 0,
   Items_per_page INT DEFAULT 10,
   start_index INT DEFAULT 0,
-  items STRING,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
+  items text,
+  updated_at timestamptz,
+  created_at timestamptz DEFAULT now());
 
   --
   -- Table structure for table `assembly`
@@ -73,20 +72,20 @@ CREATE TABLE IF NOT EXISTS assembly_factory (
   -- operation_collection : [], sensor_collection : []
   -- metadata : json
 CREATE TABLE  IF NOT EXISTS assembly (
-  id SERIAL PRIMARY KEY,
-  uri STRING,
-  name STRING,
-  description STRING,
-  tags STRING,
-  representation_skew STRING,
-  external_management_resource STRING,
-  component_collection STRING,
-  plan STRING,
-  operation_collection STRING,
-  sensor_collection STRING,
-  metadata STRING,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
+  id serial PRIMARY KEY,
+  uri text,
+  name text,
+  description text,
+  tags text[],
+  representation_skew text,
+  external_management_resource text,
+  component_collection text[],
+  plan text,
+  operation_collection text[],
+  sensor_collection text[],
+  metadata text,
+  updated_at timestamptz,
+  created_at timestamptz DEFAULT now());
 
 
 --
@@ -96,23 +95,23 @@ CREATE TABLE  IF NOT EXISTS assembly (
 -- related_components_collection : [], operation_collection : []
 -- sensor_collection : [], metadata : json
 CREATE TABLE  IF NOT EXISTS components (
-  id SERIAL PRIMARY KEY,
-  uri STRING,
-  name STRING,
-  description STRING,
-  tags STRING,
-  representation_skew STRING,
-  external_management_resource STRING,
-  assembly_collection STRING,
-  artifact STRING,
-  service STRING,
-  status STRING,
-  related_components_collection STRING,
-  operation_collection STRING,
-  sensor_collection STRING,
-  metadata STRING,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP());
+  id serial PRIMARY KEY,
+  uri text,
+  name text,
+  description text,
+  tags text[],
+  representation_skew text,
+  external_management_resource text,
+  assembly_collection text[],
+  artifact text,
+  service text,
+  status text,
+  related_components_collection text[],
+  operation_collection text[],
+  sensor_collection text[],
+  metadata text[],
+  updated_at timestamptz,
+  created_at timestamptz DEFAULT now());
 
 
 --

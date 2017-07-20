@@ -23,9 +23,9 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 
 #[derive(PartialEq,Clone,Default)]
 pub struct Assembly {
-    id: String,
+    id: u64,
     uri: String,
-    name: ::protobuf::SingularField<::std::string::String>,
+    name: String,
     description:String,
     tags: String,
     representation_skew: String,
@@ -35,29 +35,125 @@ pub struct Assembly {
     operation_collection: String,
     sensor_collection: String,
     metadata: String,
+    created_at: String,
+    updated_at: String,
 }
 
 impl Assembly {
     pub fn new() -> Assembly {
         ::std::default::Default::default()
     }
-    pub fn set_id(&mut self, v: ::std::string::String) {
+
+    pub fn set_id(&mut self, v: u64) {
         self.id = v;
     }
 
+    pub fn get_id(&self) -> u64 {
+        self.id
+    }
+
+    pub fn set_uri(&mut self, v: ::std::string::String) {
+        self.uri = v;
+    }
+
+    pub fn get_uri(&self)-> ::std::string::String {
+        self.uri.clone()
+    }
+
     pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = ::protobuf::SingularField::some(v);
+        self.name = v;
     }
 
-    pub fn get_name(&self) -> &str {
-        match self.name.as_ref() {
-            Some(v) => &v,
-            None => "",
-        }
+    pub fn get_name(&self)-> ::std::string::String {
+        self.name.clone()
     }
 
-    pub fn get_id(&self) -> ::std::string::String {
-        self.id.clone()
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+
+    pub fn get_description(&self)-> ::std::string::String {
+        self.description.clone()
+    }
+
+    pub fn set_plan(&mut self, v: ::std::string::String) {
+        self.plan = v;
+    }
+
+    pub fn get_plan(&self)-> ::std::string::String {
+        self.plan.clone()
+    }
+
+    pub fn set_tags(&mut self, v: ::std::string::String) {
+        self.tags = v;
+    }
+
+    pub fn get_tags(&self)-> ::std::string::String {
+        self.tags.clone()
+    }
+
+    pub fn set_representation_skew(&mut self, v: ::std::string::String) {
+        self.representation_skew = v;
+    }
+
+    pub fn get_representation_skew(&self)-> ::std::string::String {
+        self.representation_skew.clone()
+    }
+
+    pub fn set_external_management_resource(&mut self, v: ::std::string::String) {
+        self.external_management_resource = v;
+    }
+
+    pub fn get_external_management_resource(&self)-> ::std::string::String {
+        self.external_management_resource.clone()
+    }
+
+    pub fn set_component_collection(&mut self, v: ::std::string::String) {
+        self.component_collection = v;
+    }
+
+    pub fn get_component_collection(&self)-> ::std::string::String {
+        self.component_collection.clone()
+    }
+
+    pub fn set_operation_collection(&mut self, v: ::std::string::String) {
+        self.operation_collection = v;
+    }
+
+    pub fn get_operation_collection(&self)-> ::std::string::String {
+        self.operation_collection.clone()
+    }
+
+    pub fn set_sensor_collection(&mut self, v: ::std::string::String) {
+        self.sensor_collection = v;
+    }
+
+    pub fn get_sensor_collection(&self)-> ::std::string::String {
+        self.sensor_collection.clone()
+    }
+
+    pub fn set_metadata(&mut self, v: ::std::string::String) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self)-> ::std::string::String {
+        self.metadata.clone()
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self)-> ::std::string::String {
+        self.created_at.clone()
+    }
+
+    pub fn set_updated_at(&mut self, v: ::std::string::String) {
+        self.updated_at = v;
+    }
+
+    pub fn get_updated_at(&self)-> ::std::string::String {
+        self.updated_at.clone()
     }
 }
 

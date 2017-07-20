@@ -81,3 +81,4 @@ pub mod pool;
 pub mod async;
 pub mod test;
 pub mod data_store;
+pub mod migration;
