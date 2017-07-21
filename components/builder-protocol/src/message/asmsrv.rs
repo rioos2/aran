@@ -27,16 +27,15 @@ pub struct Assembly {
     uri: String,
     name: String,
     description:String,
-    tags: String,
+    tags: Vec<String>,
     representation_skew: String,
     external_management_resource: String,
-    component_collection: String,
+    component_collection: Vec<String>,
     plan:String,
-    operation_collection: String,
-    sensor_collection: String,
+    operation_collection: Vec<String>,
+    sensor_collection: Vec<String>,
     metadata: String,
     created_at: String,
-    updated_at: String,
 }
 
 impl Assembly {
@@ -84,11 +83,11 @@ impl Assembly {
         self.plan.clone()
     }
 
-    pub fn set_tags(&mut self, v: ::std::string::String) {
+    pub fn set_tags(&mut self, v: ::std::vec::Vec<String>) {
         self.tags = v;
     }
 
-    pub fn get_tags(&self)-> ::std::string::String {
+    pub fn get_tags(&self)-> ::std::vec::Vec<String> {
         self.tags.clone()
     }
 
@@ -108,27 +107,27 @@ impl Assembly {
         self.external_management_resource.clone()
     }
 
-    pub fn set_component_collection(&mut self, v: ::std::string::String) {
+    pub fn set_component_collection(&mut self, v: ::std::vec::Vec<String>) {
         self.component_collection = v;
     }
 
-    pub fn get_component_collection(&self)-> ::std::string::String {
+    pub fn get_component_collection(&self)-> ::std::vec::Vec<String> {
         self.component_collection.clone()
     }
 
-    pub fn set_operation_collection(&mut self, v: ::std::string::String) {
+    pub fn set_operation_collection(&mut self, v: ::std::vec::Vec<String>) {
         self.operation_collection = v;
     }
 
-    pub fn get_operation_collection(&self)-> ::std::string::String {
+    pub fn get_operation_collection(&self)-> ::std::vec::Vec<String>{
         self.operation_collection.clone()
     }
 
-    pub fn set_sensor_collection(&mut self, v: ::std::string::String) {
+    pub fn set_sensor_collection(&mut self, v: ::std::vec::Vec<String>) {
         self.sensor_collection = v;
     }
 
-    pub fn get_sensor_collection(&self)-> ::std::string::String {
+    pub fn get_sensor_collection(&self)-> ::std::vec::Vec<String> {
         self.sensor_collection.clone()
     }
 
@@ -146,14 +145,6 @@ impl Assembly {
 
     pub fn get_created_at(&self)-> ::std::string::String {
         self.created_at.clone()
-    }
-
-    pub fn set_updated_at(&mut self, v: ::std::string::String) {
-        self.updated_at = v;
-    }
-
-    pub fn get_updated_at(&self)-> ::std::string::String {
-        self.updated_at.clone()
     }
 }
 

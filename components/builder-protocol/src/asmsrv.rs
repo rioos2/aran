@@ -33,16 +33,15 @@ impl Serialize for Assembly {
         strukt.serialize_field("name", &self.get_name().to_string())?;
         strukt.serialize_field("uri", &self.get_uri().to_string())?;
         strukt.serialize_field("description", &self.get_description().to_string())?;
-        strukt.serialize_field("tags", &self.get_tags().to_string())?;
+        strukt.serialize_field("tags", &self.get_tags())?;
         strukt.serialize_field("representation_skew", &self.get_representation_skew().to_string())?;
         strukt.serialize_field("external_management_resource", &self.get_external_management_resource().to_string())?;
-        strukt.serialize_field("component_collection", &self.get_component_collection().to_string())?;
+        strukt.serialize_field("component_collection", &self.get_component_collection())?;
         strukt.serialize_field("plan", &self.get_plan().to_string())?;
-        strukt.serialize_field("operation_collection", &self.get_operation_collection().to_string())?;
-        strukt.serialize_field("sensor_collection", &self.get_sensor_collection().to_string())?;
+        strukt.serialize_field("operation_collection", &self.get_operation_collection())?;
+        strukt.serialize_field("sensor_collection", &self.get_sensor_collection())?;
         strukt.serialize_field("metadata", &self.get_metadata().to_string())?;
         strukt.serialize_field("created_at", &self.get_created_at())?;
-        strukt.serialize_field("updated_at", &self.get_updated_at())?;
 
         strukt.end()
     }
