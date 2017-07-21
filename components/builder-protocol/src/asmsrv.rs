@@ -32,15 +32,77 @@ impl Serialize for Assembly {
         strukt.serialize_field("id", &self.get_id().to_string())?;
         strukt.serialize_field("name", &self.get_name().to_string())?;
         strukt.serialize_field("uri", &self.get_uri().to_string())?;
-        strukt.serialize_field("description", &self.get_description().to_string())?;
+        strukt.serialize_field(
+            "description",
+            &self.get_description().to_string(),
+        )?;
         strukt.serialize_field("tags", &self.get_tags())?;
-        strukt.serialize_field("representation_skew", &self.get_representation_skew().to_string())?;
-        strukt.serialize_field("external_management_resource", &self.get_external_management_resource().to_string())?;
-        strukt.serialize_field("component_collection", &self.get_component_collection())?;
+        strukt.serialize_field(
+            "representation_skew",
+            &self.get_representation_skew().to_string(),
+        )?;
+        strukt.serialize_field(
+            "external_management_resource",
+            &self.get_external_management_resource().to_string(),
+        )?;
+        strukt.serialize_field(
+            "component_collection",
+            &self.get_component_collection(),
+        )?;
         strukt.serialize_field("plan", &self.get_plan().to_string())?;
-        strukt.serialize_field("operation_collection", &self.get_operation_collection())?;
-        strukt.serialize_field("sensor_collection", &self.get_sensor_collection())?;
-        strukt.serialize_field("metadata", &self.get_metadata().to_string())?;
+        strukt.serialize_field(
+            "operation_collection",
+            &self.get_operation_collection(),
+        )?;
+        strukt.serialize_field(
+            "sensor_collection",
+            &self.get_sensor_collection(),
+        )?;
+        strukt.serialize_field(
+            "metadata",
+            &self.get_metadata().to_string(),
+        )?;
+        strukt.serialize_field("created_at", &self.get_created_at())?;
+
+        strukt.end()
+    }
+}
+
+
+impl Serialize for AssemblyFactory {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut strukt = try!(serializer.serialize_struct("assemblyFactory", 10));
+        strukt.serialize_field("id", &self.get_id().to_string())?;
+        strukt.serialize_field("name", &self.get_name().to_string())?;
+        strukt.serialize_field("uri", &self.get_uri().to_string())?;
+        strukt.serialize_field(
+            "description",
+            &self.get_description().to_string(),
+        )?;
+        strukt.serialize_field("tags", &self.get_tags())?;
+        strukt.serialize_field(
+            "representation_skew",
+            &self.get_representation_skew().to_string(),
+        )?;
+        strukt.serialize_field(
+            "total_items",
+            &self.get_total_items().to_string(),
+        )?;
+        strukt.serialize_field(
+            "items_per_page",
+            &self.get_items_per_page().to_string(),
+        )?;
+        strukt.serialize_field(
+            "start_index",
+            &self.get_start_index().to_string(),
+        )?;
+        strukt.serialize_field(
+            "items",
+            &self.get_items().to_string(),
+        )?;
         strukt.serialize_field("created_at", &self.get_created_at())?;
 
         strukt.end()
