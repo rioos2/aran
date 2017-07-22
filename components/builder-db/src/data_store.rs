@@ -118,6 +118,72 @@ impl DataStoreConn {
         )?;
 
         debug!("=> [✓] fn: get_assembly_v1");
+
+        // The core asms_facttory table
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS asm_fac_id_seq;"#,
+        )?;
+
+        debug!("=> [✓] asm_id_seq");
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE TABLE  IF NOT EXISTS assembly_factory (
+             id bigint PRIMARY KEY DEFAULT next_id_v1('asm_fac_id_seq'),
+             uri text,
+             name text,
+             description text,
+             tags text[],
+             representation_skew text,
+             total_items integer  DEFAULT 0,
+             items_per_page integer DEFAULT 10,
+             start_index integer DEFAULT 0,
+             items text,
+             updated_at timestamptz,
+             created_at timestamptz DEFAULT now())"#,
+        )?;
+
+        debug!("=> [✓] assembly_factory");
+
+        // Insert a new assembly_factory into the assembly_factory table
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_assembly_factory_v1 (
+                            name text,
+                            uri text,
+                            description text,
+                            tags text[],
+                            representation_skew text,
+                            total_items integer,
+                            items_per_page integer,
+                            start_index integer,
+                            items text
+                        ) RETURNS SETOF assembly_factory AS $$
+                                BEGIN
+                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, representation_skew,total_items,items_per_page, start_index,items)
+                                        VALUES (name,uri, description, tags, representation_skew,total_items,items_per_page,start_index,items)
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#,
+        )?;
+        debug!("=> [✓] fn: assembly_factory_v1");
+
+        // Just make sure you always address the columns by name, not by position.
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_assembly_factory_v1 (aid bigint) RETURNS SETOF assembly_factory AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM assembly_factory WHERE id = aid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_assembly_factory_v1");
+
         migrator.finish()?;
         debug!("=> DONE: asmsrv");
 
