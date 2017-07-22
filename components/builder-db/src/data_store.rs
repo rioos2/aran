@@ -45,7 +45,7 @@ impl DataStoreConn {
 
     /// Setup the datastore.
     /// This includes all the schema and data migrations, along with stored procedures for data
-    /// access.
+/// access.
     pub fn setup(&self) -> Result<&DataStoreConn> {
         let conn = self.pool.get_raw()?;
         let xact = conn.transaction().map_err(Error::DbTransactionStart)?;
@@ -64,10 +64,12 @@ impl DataStoreConn {
     //this returns trait objects Migratable,
     //rust has a difference between trait, trait objects as its statically typed
     fn setup_fromsrvs(&self, migrator: &mut Migrator) -> Result<()> {
+        //wanted to do it using an identifier string that when matched will call the
+        //migratable interface trait objects
+        //this is more like flatMap in scala and we are good now.
         AuthProcedures::new()?.migrate(migrator)?;
         DeployProcedures::new()?.migrate(migrator)?;
         PlanProcedures::new()?.migrate(migrator)?;
-
         Ok(())
     }
 }

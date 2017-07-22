@@ -23,25 +23,6 @@ CREATE TABLE IF NOT EXISTS plan_factory (
   updated_at timestamptz,
   created_at timestamptz DEFAULT now());
 
-  --
-  -- Table structure for table `assembly_factory`
-  -- items : []
-CREATE TABLE IF NOT EXISTS assembly_factory (
-  id serial PRIMARY KEY,
-  uri text,
-  name text,
-  description text,
-  tags text,
-  representation_skew text,
-  total_items INT DEFAULT 0,
-  Items_per_page INT DEFAULT 10,
-  start_index INT DEFAULT 0,
-  items text,
-  updated_at timestamptz,
-  created_at timestamptz DEFAULT now());
-
-
---
 -- Table structure for table `components`
 -- tags : [], assembly_collection : []
 -- artifact: json ? service: json ?
