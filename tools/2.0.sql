@@ -1,30 +1,4 @@
 --
--- Database: `riodb` for 2.0
---
-
-CREATE DATABASE IF NOT EXISTS riodb;
-
-SET DATABASE = riodb;
-
--- Table structure for table `accounts`
--- created_at is the first timestamp
---- updated_at is the last timestamp
-CREATE TABLE IF NOT EXISTS accounts (
-  id  serial PRIMARY KEY,
-  email text UNIQUE,
-  first_name text,
-  last_name text,
-  phone text,
-  api_key text,
-  password text,
-  states text,
-  approval text,
-  suspend text,
-  registration_ip_address text,
-  updated_at timestamptz,
-  created_at timestamptz DEFAULT now());
-
---
 -- Table structure for table `projects`
 -- foreign key account_id
 CREATE TABLE IF NOT EXISTS projects(
@@ -63,27 +37,6 @@ CREATE TABLE IF NOT EXISTS assembly_factory (
   Items_per_page INT DEFAULT 10,
   start_index INT DEFAULT 0,
   items text,
-  updated_at timestamptz,
-  created_at timestamptz DEFAULT now());
-
-  --
-  -- Table structure for table `assembly`
-  -- tags : [],component_collection : []
-  -- operation_collection : [], sensor_collection : []
-  -- metadata : json
-CREATE TABLE  IF NOT EXISTS assembly (
-  id serial PRIMARY KEY,
-  uri text,
-  name text,
-  description text,
-  tags text[],
-  representation_skew text,
-  external_management_resource text,
-  component_collection text[],
-  plan text,
-  operation_collection text[],
-  sensor_collection text[],
-  metadata text,
   updated_at timestamptz,
   created_at timestamptz DEFAULT now());
 

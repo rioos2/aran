@@ -27,6 +27,13 @@ pub struct Migrator<'a> {
     shards: Vec<ShardId>,
 }
 
+
+/// Provides an interface for migrating the implementing type for `Migratables`.
+pub trait Migratable {
+    fn migrate(&self, migrator: &mut Migrator) -> Result<()>;
+}
+
+
 impl<'a> Migrator<'a> {
     pub fn new(xact: postgres::transaction::Transaction<'a>, shards: Vec<ShardId>) -> Migrator {
         Migrator {
@@ -115,7 +122,7 @@ impl<'a> Migrator<'a> {
                 Error::FunctionCreate,
             )?;
 
-            debug!("=> [✓] fn: next_id_v1 in {}",schema_name);
+            debug!("=> [✓] fn: next_id_v1 in {}", schema_name);
 
 
             schema_xact
@@ -130,7 +137,7 @@ impl<'a> Migrator<'a> {
                 )
                 .map_err(Error::MigrationTable)?;
 
-            debug!("=> [✓] builder_db_migrations in {}",schema_name);
+            debug!("=> [✓] builder_db_migrations in {}", schema_name);
 
 
             schema_xact
