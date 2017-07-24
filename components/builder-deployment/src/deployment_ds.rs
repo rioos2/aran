@@ -65,22 +65,22 @@ impl DeploymentDS {
         Ok(None)
     }
 
-    pub fn assembly_factory_create(datastore: &DataStoreConn, assembly_factory: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
+    pub fn assembly_factory_create(datastore: &DataStoreConn, assembly: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_factory_v1($1, $2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
-                &(assembly_factory.get_name() as String),
-                &(assembly_factory.get_uri() as String),
-                &(assembly_factory.get_description() as String),
-                &(assembly_factory.get_tags() as Vec<String>),
-                &(assembly_factory.get_representation_skew() as String),
-                &(assembly_factory.get_total_items() as i64),
-                &(assembly_factory.get_items_per_page() as i64),
-                &(assembly_factory.get_start_index() as i64),
-                &(assembly_factory.get_items() as String),
+                &(assembly.get_name() as String),
+                &(assembly.get_uri() as String),
+                &(assembly.get_description() as String),
+                &(assembly.get_tags() as Vec<String>),
+                &(assembly.get_representation_skew() as String),
+                &(assembly.get_total_items() as i64),
+                &(assembly.get_items_per_page() as i64),
+                &(assembly.get_start_index() as i64),
+                &(assembly.get_items() as String),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
 
@@ -158,7 +158,6 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
-    let plan: String = row.get("plan");
     let uri: String = row.get("uri");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");

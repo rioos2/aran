@@ -8,14 +8,12 @@ use migration::{Migratable, Migrator};
 pub struct DeployProcedures;
 
 impl DeployProcedures {
-
     pub fn new() -> Result<DeployProcedures> {
         Ok(DeployProcedures)
     }
 }
 
 impl Migratable for DeployProcedures {
-
     fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
         debug!("=> START: asmsrv");
 
@@ -99,16 +97,16 @@ impl Migratable for DeployProcedures {
 
         migrator.migrate(
             "asmsrv",
-            r#"CREATE TABLE  IF NOT EXISTS assembly_factory (
+            r#"CREATE TABLE IF NOT EXISTS assembly_factory (
              id bigint PRIMARY KEY DEFAULT next_id_v1('asm_fact_id_seq'),
              uri text,
              name text,
              description text,
              tags text[],
              representation_skew text,
-             total_items integer  DEFAULT 0,
-             items_per_page integer DEFAULT 10,
-             start_index integer DEFAULT 0,
+             total_items bigint,
+             items_per_page bigint,
+             start_index bigint,
              items text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
@@ -125,13 +123,13 @@ impl Migratable for DeployProcedures {
                             description text,
                             tags text[],
                             representation_skew text,
-                            total_items integer,
-                            items_per_page integer,
-                            start_index integer,
+                            total_items bigint,
+                            items_per_page bigint,
+                            start_index bigint,
                             items text
                         ) RETURNS SETOF assembly_factory AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, representation_skew,total_items,items_per_page, start_index,items)
+                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, representation_skew,total_items,items_per_page,start_index,items)
                                         VALUES (name,uri, description, tags, representation_skew,total_items,items_per_page,start_index,items)
                                         RETURNING *;
                                     RETURN;

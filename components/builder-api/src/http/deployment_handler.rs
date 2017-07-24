@@ -55,16 +55,16 @@ struct AssemblyFacCreateReq {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct AssemblyUpdateReq {
-    uri: u64,
     name: String,
+    uri: String,
     description: String,
-    tags: String,
+    tags: Vec<String>,
     representation_skew: String,
     external_management_resource: String,
-    component_collection: String,
+    component_collection: Vec<String>,
     plan: String,
-    operation_collection: String,
-    sensor_collection: String,
+    operation_collection: Vec<String>,
+    sensor_collection: Vec<String>,
     metadata: String,
 }
 
