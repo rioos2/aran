@@ -87,6 +87,18 @@ impl Migratable for DeployProcedures {
 
         debug!("=> [✓] fn: get_assembly_v1");
 
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_assemblys_v1() RETURNS SETOF assembly AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM assembly;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_assemblys_v1");
+
         // The core asms_facttory table
         migrator.migrate(
             "asmsrv",

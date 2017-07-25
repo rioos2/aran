@@ -109,6 +109,18 @@ impl Serialize for AssemblyFactory {
     }
 }
 
+
+impl Serialize for AssemblysGetResponse {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut strukt = serializer.serialize_struct("assemblys_get_response", 1)?;
+        strukt.serialize_field("assemblys", self.get_assemblys())?;
+        strukt.end()
+    }
+}
+
 #[derive(Debug)]
 pub enum Error {
     BadJobState,

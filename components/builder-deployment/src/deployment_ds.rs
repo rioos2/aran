@@ -49,7 +49,6 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_show {:?}", get_assembly.get_id());
 
-
         let rows = &conn.query(
             "SELECT * FROM get_assembly_v1($1)",
             &[&(get_assembly.get_id() as i64)],
@@ -63,6 +62,26 @@ impl DeploymentDS {
         }
 
         Ok(None)
+    }
+
+    pub fn assembly_list(datastore: &DataStoreConn, get_assembly: &asmsrv::AssemblyGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+        debug!("◖☩ START: assemby_show {:?}", get_assembly.get_id());
+
+
+        let rows = &conn.query("SELECT * FROM get_assemblys_v1()", &[])
+            .map_err(Error::AssemblyGet)?;
+
+        let mut response = asmsrv::AssemblysGetResponse::new();
+
+        let mut assemblys = Vec::new();
+
+        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+        for row in rows {
+            assemblys.push(row_to_assembly(&row)?)
+        }
+        response.set_assemblys(assemblys);
+        Ok(Some(response))
     }
 
     pub fn assembly_factory_create(datastore: &DataStoreConn, assembly: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
