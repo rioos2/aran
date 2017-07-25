@@ -134,12 +134,9 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn assembly_list(req: &mut Request) -> IronResult<Response> {
-    println!("**************************************************");
     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
 
-    let mut asm_get = AssemblyGet::new();
-
-    match DeploymentDS::assembly_list(&conn, &asm_get) {
+    match DeploymentDS::assembly_list(&conn) {
         Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),

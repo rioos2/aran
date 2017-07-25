@@ -64,10 +64,8 @@ impl DeploymentDS {
         Ok(None)
     }
 
-    pub fn assembly_list(datastore: &DataStoreConn, get_assembly: &asmsrv::AssemblyGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
+    pub fn assembly_list(datastore: &DataStoreConn) -> Result<Option<asmsrv::AssemblysGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: assemby_show {:?}", get_assembly.get_id());
-
 
         let rows = &conn.query("SELECT * FROM get_assemblys_v1()", &[])
             .map_err(Error::AssemblyGet)?;
