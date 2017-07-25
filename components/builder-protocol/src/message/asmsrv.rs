@@ -341,3 +341,26 @@ impl AssemblyFactoryGet {
         self.id.unwrap_or(0)
     }
 }
+
+
+#[derive(PartialEq, Clone, Default)]
+pub struct AssemblyFactoryGetResponse {
+    // message fields
+    assembly_factory: Vec<AssemblyFactory>,
+}
+
+
+impl AssemblyFactoryGetResponse {
+    pub fn new() -> AssemblyFactoryGetResponse {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>) {
+        self.assembly_factory = v;
+    }
+
+    pub fn get_assemblys_factory(&self) -> &[AssemblyFactory] {
+        &self.assembly_factory
+    }
+}

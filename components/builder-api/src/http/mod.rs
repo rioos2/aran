@@ -38,8 +38,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
         assembly_factorys: post "/assembly_factorys" => assembly_factory_create,
         assemblys_factory: get "/assembly_factorys/:id" => assembly_factory_show,
-        assemblys_factorys_get: get "/assembly_factorys" => assembly_show,
-        assembly_factory_update: put "/assembly_factorys/update/:id" => assembly_update,
+        assemblys_factorys_get: get "/assembly_factorys" => assembly_factory_list,
+        // assembly_factory_update: put "/assembly_factorys/update/:id" => assembly_factory_update,
 
     );
 

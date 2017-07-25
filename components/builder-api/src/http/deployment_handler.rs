@@ -73,7 +73,6 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<AssemblyCreateReq>>() {
             Ok(Some(body)) => {
-                //TO-DO Check for validity as per your need
                 if body.name.len() <= 0 {
                     return Ok(Response::with((
                         status::UnprocessableEntity,
@@ -97,10 +96,8 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
     }
 
     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-
     //This is needed as you'll need the email/token if any
     // let session = req.extensions.get::<Authenticated>().unwrap().clone();
-
     match DeploymentDS::assembly_create(&conn, &assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Ok(render_net_error(
@@ -135,7 +132,6 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
 
 pub fn assembly_list(req: &mut Request) -> IronResult<Response> {
     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-
     match DeploymentDS::assembly_list(&conn) {
         Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => Ok(render_net_error(
@@ -150,7 +146,6 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<AssemblyFacCreateReq>>() {
             Ok(Some(body)) => {
-                //TO-DO Check for validity as per your need
                 if body.name.len() <= 0 {
                     return Ok(Response::with((
                         status::UnprocessableEntity,
@@ -232,6 +227,17 @@ pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+
+pub fn assembly_factory_list(req: &mut Request) -> IronResult<Response> {
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    match DeploymentDS::assembly_factory_list(&conn) {
+        Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }
 

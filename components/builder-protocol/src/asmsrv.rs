@@ -116,7 +116,25 @@ impl Serialize for AssemblysGetResponse {
         S: Serializer,
     {
         let mut strukt = serializer.serialize_struct("assemblys_get_response", 1)?;
-        strukt.serialize_field("assemblys", self.get_assemblys())?;
+        strukt.serialize_field("results", self.get_assemblys())?;
+        strukt.end()
+    }
+}
+
+
+impl Serialize for AssemblyFactoryGetResponse {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut strukt = serializer.serialize_struct(
+            "assembly_factory_get_response",
+            1,
+        )?;
+        strukt.serialize_field(
+            "results",
+            self.get_assemblys_factory(),
+        )?;
         strukt.end()
     }
 }

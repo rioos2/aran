@@ -129,6 +129,25 @@ impl DeploymentDS {
 
         Ok(None)
     }
+
+
+    pub fn assembly_factory_list(datastore: &DataStoreConn) -> Result<Option<asmsrv::AssemblyFactoryGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_assemblys_factory_v1()", &[])
+            .map_err(Error::AssemblyFactoryGet)?;
+
+        let mut response = asmsrv::AssemblyFactoryGetResponse::new();
+
+        let mut assemblys = Vec::new();
+
+        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+        for row in rows {
+            assemblys.push(row_to_assembly_factory(&row)?)
+        }
+        response.set_assemblys_factory(assemblys);
+        Ok(Some(response))
+    }
 }
 
 fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
