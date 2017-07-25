@@ -148,6 +148,30 @@ impl Assembly {
     }
 }
 
+
+
+#[derive(PartialEq, Clone, Default)]
+pub struct AssemblysGetResponse {
+    // message fields
+    assembly: Vec<Assembly>,
+}
+
+
+impl AssemblysGetResponse {
+    pub fn new() -> AssemblysGetResponse {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_assemblys(&mut self, v: Vec<Assembly>) {
+        self.assembly = v;
+    }
+
+    pub fn get_assemblys(&self) -> &[Assembly] {
+        &self.assembly
+    }
+}
+
 #[derive(PartialEq, Clone, Debug, Default)]
 pub struct AssemblyGet {
     id: ::std::option::Option<u64>,

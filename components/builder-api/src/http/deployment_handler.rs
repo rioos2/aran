@@ -55,16 +55,16 @@ struct AssemblyFacCreateReq {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct AssemblyUpdateReq {
-    uri: u64,
     name: String,
+    uri: String,
     description: String,
-    tags: String,
+    tags: Vec<String>,
     representation_skew: String,
     external_management_resource: String,
-    component_collection: String,
+    component_collection: Vec<String>,
     plan: String,
-    operation_collection: String,
-    sensor_collection: String,
+    operation_collection: Vec<String>,
+    sensor_collection: Vec<String>,
     metadata: String,
 }
 
@@ -127,6 +127,17 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
 
     match DeploymentDS::assembly_show(&conn, &asm_get) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+pub fn assembly_list(req: &mut Request) -> IronResult<Response> {
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
+    match DeploymentDS::assembly_list(&conn) {
+        Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
