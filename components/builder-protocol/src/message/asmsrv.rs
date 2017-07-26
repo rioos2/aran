@@ -204,15 +204,16 @@ impl AssemblyGet {
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct AssemblyFactory {
     id: u64,
-    uri: String,
     name: String,
+    uri: String,
     description: String,
     tags: Vec<String>,
-    representation_skew: String,
-    total_items: u64,
-    items_per_page: u64,
-    start_index: u64,
-    items: String,
+    properties: String,
+    plan: String,
+    external_management_resource: Vec<String>,
+    component_collection: String,
+    status: String,
+    opssettings: String,
     created_at: String,
 }
 
@@ -263,37 +264,54 @@ impl AssemblyFactory {
         self.tags.clone()
     }
 
-    pub fn set_representation_skew(&mut self, v: ::std::string::String) {
-        self.representation_skew = v;
+    pub fn set_external_management_resource(&mut self, v: ::std::vec::Vec<String>) {
+        self.external_management_resource = v;
     }
 
-    pub fn get_representation_skew(&self) -> ::std::string::String {
-        self.representation_skew.clone()
+    pub fn get_external_management_resource(&self) -> ::std::vec::Vec<String> {
+        self.external_management_resource.clone()
     }
 
-    pub fn set_total_items(&mut self, v: u64) {
-        self.total_items = v;
+    pub fn set_plan(&mut self, v: ::std::string::String) {
+        self.plan = v;
     }
 
-    pub fn get_total_items(&self) -> u64 {
-        self.total_items
+    pub fn get_plan(&self) -> ::std::string::String {
+        self.plan.clone()
     }
 
-    pub fn set_items_per_page(&mut self, v: u64) {
-        self.items_per_page = v;
+    pub fn set_properties(&mut self, v: ::std::string::String) {
+        self.properties = v;
     }
 
-    pub fn get_items_per_page(&self) -> u64 {
-        self.items_per_page
+    pub fn get_properties(&self) -> ::std::string::String {
+        self.properties.clone()
     }
 
-    pub fn set_start_index(&mut self, v: u64) {
-        self.start_index = v;
+    pub fn set_component_collection(&mut self, v: ::std::string::String) {
+        self.component_collection = v;
     }
 
-    pub fn get_start_index(&self) -> u64 {
-        self.start_index
+    pub fn get_component_collection(&self) -> ::std::string::String {
+        self.component_collection.clone()
     }
+
+    pub fn set_status(&mut self, v: ::std::string::String) {
+        self.status = v;
+    }
+
+    pub fn get_status(&self) -> ::std::string::String {
+        self.status.clone()
+    }
+
+    pub fn set_opssettings(&mut self, v: ::std::string::String) {
+        self.opssettings = v;
+    }
+
+    pub fn get_opssettings(&self) -> ::std::string::String {
+        self.opssettings.clone()
+    }
+
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
@@ -301,15 +319,6 @@ impl AssemblyFactory {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
-    }
-
-
-    pub fn set_items(&mut self, v: ::std::string::String) {
-        self.items = v;
-    }
-
-    pub fn get_items(&self) -> ::std::string::String {
-        self.items.clone()
     }
 }
 

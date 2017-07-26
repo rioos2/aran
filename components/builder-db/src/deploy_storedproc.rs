@@ -111,15 +111,16 @@ impl Migratable for DeployProcedures {
             "asmsrv",
             r#"CREATE TABLE IF NOT EXISTS assembly_factory (
              id bigint PRIMARY KEY DEFAULT next_id_v1('asm_fact_id_seq'),
-             uri text,
              name text,
+             uri text,
              description text,
              tags text[],
-             representation_skew text,
-             total_items bigint,
-             items_per_page bigint,
-             start_index bigint,
-             items text,
+             plan text,
+             properties text,
+             external_management_resource text[],
+             component_collection text,
+             opssettings: text,
+             status: text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
         )?;
@@ -130,19 +131,20 @@ impl Migratable for DeployProcedures {
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION insert_assembly_factory_v1 (
-                            name text,
-                            uri text,
-                            description text,
-                            tags text[],
-                            representation_skew text,
-                            total_items bigint,
-                            items_per_page bigint,
-                            start_index bigint,
-                            items text
+                name text,
+                uri text,
+                description text,
+                tags text[],
+                plan text,
+                properties text,
+                external_management_resource text[],
+                component_collection text,
+                opssettings: text,
+                status: text,
                         ) RETURNS SETOF assembly_factory AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, representation_skew,total_items,items_per_page,start_index,items)
-                                        VALUES (name,uri, description, tags, representation_skew,total_items,items_per_page,start_index,items)
+                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,external_management_resource,component_collection,opssettings,status)
+                                        VALUES (name, uri, description, tags,plan,properties,external_management_resource,component_collection,opssettings,status)
                                         RETURNING *;
                                     RETURN;
                                 END

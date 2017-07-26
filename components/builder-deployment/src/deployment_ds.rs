@@ -93,11 +93,12 @@ impl DeploymentDS {
                 &(assembly.get_uri() as String),
                 &(assembly.get_description() as String),
                 &(assembly.get_tags() as Vec<String>),
-                &(assembly.get_representation_skew() as String),
-                &(assembly.get_total_items() as i64),
-                &(assembly.get_items_per_page() as i64),
-                &(assembly.get_start_index() as i64),
-                &(assembly.get_items() as String),
+                &(assembly.get_plan() as String),
+                &(assembly.get_properties() as String),
+                &(assembly.get_external_management_resource() as Vec<String>),
+                &(assembly.get_component_collection() as String),
+                &(assembly.get_opssettings() as String),
+                &(assembly.get_status() as String),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
 
@@ -197,11 +198,12 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let uri: String = row.get("uri");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
-    let representation_skew: String = row.get("representation_skew");
-    let total_items: i64 = row.get("total_items");
-    let items_per_page: i64 = row.get("items_per_page");
-    let start_index: i64 = row.get("start_index");
-    let items: String = row.get("items");
+    let plan: String = row.get("plan");
+    let properties: String = row.get("properties");
+    let external_management_resource: Vec<String> = row.get("external_management_resource");
+    let component_collection: String = row.get("component_collection");
+    let opssettings: String = row.get("opssettings");
+    let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     assembly_factory.set_id(id as u64);
@@ -209,12 +211,13 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     assembly_factory.set_uri(uri as String);
     assembly_factory.set_description(description as String);
     assembly_factory.set_tags(tags as Vec<String>);
-    assembly_factory.set_representation_skew(representation_skew as String);
-    assembly_factory.set_total_items(total_items as u64);
-    assembly_factory.set_items_per_page(items_per_page as u64);
-    assembly_factory.set_start_index(start_index as u64);
+    assembly_factory.set_external_management_resource(external_management_resource as Vec<String>);
     assembly_factory.set_created_at(created_at.to_rfc3339());
-    assembly_factory.set_items(items as String);
+    assembly_factory.set_component_collection(component_collection as String);
+    assembly_factory.set_opssettings(opssettings as String);
+    assembly_factory.set_status(status as String);
+    assembly_factory.set_plan(plan as String);
+    assembly_factory.set_properties(properties as String);
 
     debug!(
         "◖☩ ASM: row_to_assemby_factory =>\n{:?}",

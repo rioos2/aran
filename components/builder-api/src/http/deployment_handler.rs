@@ -46,11 +46,12 @@ struct AssemblyFacCreateReq {
     uri: String,
     description: String,
     tags: Vec<String>,
-    representation_skew: String,
-    total_items: u64,
-    items_per_page: u64,
-    start_index: u64,
-    items: String,
+    properties: String,
+    plan: String,
+    external_management_resource: Vec<String>,
+    component_collection: String,
+    status: String,
+    opssettings: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -61,7 +62,7 @@ struct AssemblyUpdateReq {
     tags: Vec<String>,
     representation_skew: String,
     external_management_resource: String,
-    component_collection: Vec<String>,
+    component_collection: String,
     plan: String,
     operation_collection: Vec<String>,
     sensor_collection: Vec<String>,
@@ -156,11 +157,13 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 assembly_factory_create.set_uri(body.uri);
                 assembly_factory_create.set_description(body.description);
                 assembly_factory_create.set_tags(body.tags);
-                assembly_factory_create.set_representation_skew(body.representation_skew);
-                assembly_factory_create.set_total_items(body.total_items);
-                assembly_factory_create.set_items_per_page(body.items_per_page);
-                assembly_factory_create.set_start_index(body.start_index);
-                assembly_factory_create.set_items(body.items);
+                assembly_factory_create.set_external_management_resource(body.external_management_resource);
+                assembly_factory_create.set_plan(body.plan);
+                assembly_factory_create.set_component_collection(body.component_collection);
+                assembly_factory_create.set_status(body.status);
+                assembly_factory_create.set_opssettings(body.opssettings);
+                assembly_factory_create.set_properties(body.properties);
+
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
