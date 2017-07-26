@@ -84,24 +84,25 @@ impl Serialize for AssemblyFactory {
         )?;
         strukt.serialize_field("tags", &self.get_tags())?;
         strukt.serialize_field(
-            "representation_skew",
-            &self.get_representation_skew().to_string(),
+            "properties",
+            &self.get_properties().to_string(),
+        )?;
+        strukt.serialize_field("plan", &self.get_plan().to_string())?;
+        strukt.serialize_field(
+            "external_management_resource",
+            &self.get_external_management_resource(),
         )?;
         strukt.serialize_field(
-            "total_items",
-            &self.get_total_items().to_string(),
+            "component_collection",
+            &self.get_component_collection().to_string(),
         )?;
         strukt.serialize_field(
-            "items_per_page",
-            &self.get_items_per_page().to_string(),
+            "status",
+            &self.get_status().to_string(),
         )?;
         strukt.serialize_field(
-            "start_index",
-            &self.get_start_index().to_string(),
-        )?;
-        strukt.serialize_field(
-            "items",
-            &self.get_items().to_string(),
+            "opssettings",
+            &self.get_opssettings().to_string(),
         )?;
         strukt.serialize_field("created_at", &self.get_created_at())?;
 
@@ -116,7 +117,25 @@ impl Serialize for AssemblysGetResponse {
         S: Serializer,
     {
         let mut strukt = serializer.serialize_struct("assemblys_get_response", 1)?;
-        strukt.serialize_field("assemblys", self.get_assemblys())?;
+        strukt.serialize_field("results", self.get_assemblys())?;
+        strukt.end()
+    }
+}
+
+
+impl Serialize for AssemblyFactoryGetResponse {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut strukt = serializer.serialize_struct(
+            "assembly_factory_get_response",
+            1,
+        )?;
+        strukt.serialize_field(
+            "results",
+            self.get_assemblys_factory(),
+        )?;
         strukt.end()
     }
 }
