@@ -119,8 +119,8 @@ impl Migratable for DeployProcedures {
              properties text,
              external_management_resource text[],
              component_collection text,
-             opssettings: text,
-             status: text,
+             opssettings text,
+             status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
         )?;
@@ -139,8 +139,8 @@ impl Migratable for DeployProcedures {
                 properties text,
                 external_management_resource text[],
                 component_collection text,
-                opssettings: text,
-                status: text,
+                opssettings text,
+                status text
                         ) RETURNS SETOF assembly_factory AS $$
                                 BEGIN
                                     RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,external_management_resource,component_collection,opssettings,status)

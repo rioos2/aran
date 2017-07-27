@@ -87,7 +87,7 @@ impl DeploymentDS {
         debug!("◖☩ START: assemby_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
