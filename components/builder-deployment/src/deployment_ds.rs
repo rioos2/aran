@@ -23,19 +23,18 @@ impl DeploymentDS {
         debug!("◖☩ START: assemby_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1, $2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM insert_assembly_v1($1, $2,$3,$4,$5,$6,$7,$8,$9)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
                 &(assembly.get_description() as String),
+                &(assembly.get_parent_id() as i64),
                 &(assembly.get_tags() as Vec<String>),
-                &(assembly.get_representation_skew() as String),
-                &(assembly.get_external_management_resource() as String),
-                &(assembly.get_component_collection() as Vec<String>),
-                &(assembly.get_plan() as String),
-                &(assembly.get_operation_collection() as Vec<String>),
-                &(assembly.get_sensor_collection() as Vec<String>),
-                &(assembly.get_metadata() as String),
+                &(assembly.get_node() as String),
+                &(assembly.get_ip() as String),
+                &(assembly.get_urls() as String),
+                &(assembly.get_component_collection() as String),
+                &(assembly.get_status() as String),
             ],
         ).map_err(Error::AssemblyCreate)?;
 
@@ -157,30 +156,27 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
-    let plan: String = row.get("plan");
+    let urls: String = row.get("urls");
     let uri: String = row.get("uri");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
-    let representation_skew: String = row.get("representation_skew");
-    let external_management_resource: String = row.get("external_management_resource");
-    let component_collection: Vec<String> = row.get("component_collection");
-    let operation_collection: Vec<String> = row.get("operation_collection");
-    let sensor_collection: Vec<String> = row.get("sensor_collection");
-    let metadata: String = row.get("metadata");
+    let parent_id: i64 = row.get("parent_id");
+    let component_collection: String = row.get("component_collection");
+    let status: String = row.get("status");
+    let node: String = row.get("node");
+    let ip: String = row.get("ip");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     assembly.set_id(id as u64);
     assembly.set_name(name as String);
-    assembly.set_plan(plan as String);
+    assembly.set_urls(urls as String);
     assembly.set_uri(uri as String);
     assembly.set_description(description as String);
-    assembly.set_tags(tags as Vec<String>);
-    assembly.set_component_collection(component_collection as Vec<String>);
-    assembly.set_operation_collection(operation_collection as Vec<String>);
-    assembly.set_sensor_collection(sensor_collection as Vec<String>);
-    assembly.set_metadata(metadata as String);
-    assembly.set_representation_skew(representation_skew as String);
-    assembly.set_external_management_resource(external_management_resource as String);
+    assembly.set_parent_id(parent_id as u64);
+    assembly.set_component_collection(component_collection as String);
+    assembly.set_status(status as String);
+    assembly.set_node(node as String);
+    assembly.set_ip(ip as String);
     assembly.set_created_at(created_at.to_rfc3339());
 
     debug!("◖☩ ASM: row_to_assemby =>\n{:?}", assembly);

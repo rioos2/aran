@@ -36,32 +36,16 @@ impl Serialize for Assembly {
             "description",
             &self.get_description().to_string(),
         )?;
+        strukt.serialize_field(
+            "parent_id",
+            &self.get_parent_id().to_string(),
+        )?;
         strukt.serialize_field("tags", &self.get_tags())?;
-        strukt.serialize_field(
-            "representation_skew",
-            &self.get_representation_skew().to_string(),
-        )?;
-        strukt.serialize_field(
-            "external_management_resource",
-            &self.get_external_management_resource().to_string(),
-        )?;
-        strukt.serialize_field(
-            "component_collection",
-            &self.get_component_collection(),
-        )?;
-        strukt.serialize_field("plan", &self.get_plan().to_string())?;
-        strukt.serialize_field(
-            "operation_collection",
-            &self.get_operation_collection(),
-        )?;
-        strukt.serialize_field(
-            "sensor_collection",
-            &self.get_sensor_collection(),
-        )?;
-        strukt.serialize_field(
-            "metadata",
-            &self.get_metadata().to_string(),
-        )?;
+
+        strukt.serialize_field("node", &self.get_node().to_string())?;
+        strukt.serialize_field("ip", &self.get_ip())?;
+        strukt.serialize_field("urls", &self.get_urls().to_string())?;
+        strukt.serialize_field("status", &self.get_status())?;
         strukt.serialize_field("created_at", &self.get_created_at())?;
 
         strukt.end()

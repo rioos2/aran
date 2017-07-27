@@ -24,17 +24,16 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Assembly {
     id: u64,
-    uri: String,
     name: String,
+    uri: String,
     description: String,
+    parent_id: u64,
     tags: Vec<String>,
-    representation_skew: String,
-    external_management_resource: String,
-    component_collection: Vec<String>,
-    plan: String,
-    operation_collection: Vec<String>,
-    sensor_collection: Vec<String>,
-    metadata: String,
+    component_collection: String,
+    node: String,
+    ip: String,
+    urls: String,
+    status: String,
     created_at: String,
 }
 
@@ -46,9 +45,16 @@ impl Assembly {
     pub fn set_id(&mut self, v: u64) {
         self.id = v;
     }
-
     pub fn get_id(&self) -> u64 {
         self.id
+    }
+
+    pub fn get_parent_id(&self) -> u64 {
+        self.id
+    }
+
+    pub fn set_parent_id(&mut self, v: u64) {
+        self.id = v;
     }
 
     pub fn set_uri(&mut self, v: ::std::string::String) {
@@ -57,6 +63,14 @@ impl Assembly {
 
     pub fn get_uri(&self) -> ::std::string::String {
         self.uri.clone()
+    }
+
+    pub fn set_urls(&mut self, v: ::std::string::String) {
+        self.urls = v;
+    }
+
+    pub fn get_urls(&self) -> ::std::string::String {
+        self.urls.clone()
     }
 
     pub fn set_name(&mut self, v: ::std::string::String) {
@@ -75,14 +89,6 @@ impl Assembly {
         self.description.clone()
     }
 
-    pub fn set_plan(&mut self, v: ::std::string::String) {
-        self.plan = v;
-    }
-
-    pub fn get_plan(&self) -> ::std::string::String {
-        self.plan.clone()
-    }
-
     pub fn set_tags(&mut self, v: ::std::vec::Vec<String>) {
         self.tags = v;
     }
@@ -91,52 +97,37 @@ impl Assembly {
         self.tags.clone()
     }
 
-    pub fn set_representation_skew(&mut self, v: ::std::string::String) {
-        self.representation_skew = v;
-    }
-
-    pub fn get_representation_skew(&self) -> ::std::string::String {
-        self.representation_skew.clone()
-    }
-
-    pub fn set_external_management_resource(&mut self, v: ::std::string::String) {
-        self.external_management_resource = v;
-    }
-
-    pub fn get_external_management_resource(&self) -> ::std::string::String {
-        self.external_management_resource.clone()
-    }
-
-    pub fn set_component_collection(&mut self, v: ::std::vec::Vec<String>) {
+    pub fn set_component_collection(&mut self, v: ::std::string::String) {
         self.component_collection = v;
     }
 
-    pub fn get_component_collection(&self) -> ::std::vec::Vec<String> {
+    pub fn get_component_collection(&self) -> ::std::string::String {
         self.component_collection.clone()
     }
 
-    pub fn set_operation_collection(&mut self, v: ::std::vec::Vec<String>) {
-        self.operation_collection = v;
+    pub fn set_node(&mut self, v: ::std::string::String) {
+        self.node = v;
     }
 
-    pub fn get_operation_collection(&self) -> ::std::vec::Vec<String> {
-        self.operation_collection.clone()
+    pub fn get_node(&self) -> ::std::string::String {
+        self.node.clone()
     }
 
-    pub fn set_sensor_collection(&mut self, v: ::std::vec::Vec<String>) {
-        self.sensor_collection = v;
+    pub fn set_ip(&mut self, v: ::std::string::String) {
+        self.ip = v;
     }
 
-    pub fn get_sensor_collection(&self) -> ::std::vec::Vec<String> {
-        self.sensor_collection.clone()
+    pub fn get_ip(&self) -> ::std::string::String {
+        self.ip.clone()
     }
 
-    pub fn set_metadata(&mut self, v: ::std::string::String) {
-        self.metadata = v;
+
+    pub fn set_status(&mut self, v: ::std::string::String) {
+        self.status = v;
     }
 
-    pub fn get_metadata(&self) -> ::std::string::String {
-        self.metadata.clone()
+    pub fn get_status(&self) -> ::std::string::String {
+        self.status.clone()
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -311,7 +302,6 @@ impl AssemblyFactory {
     pub fn get_opssettings(&self) -> ::std::string::String {
         self.opssettings.clone()
     }
-
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
