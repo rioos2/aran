@@ -27,13 +27,14 @@ pub struct Assembly {
     name: String,
     uri: String,
     description: String,
-    parent_id: u64,
+    pub parent_id: u64,
     tags: Vec<String>,
     component_collection: String,
     node: String,
     ip: String,
     urls: String,
     status: String,
+    spec: Result<AssemblyFactory>,
     created_at: String,
 }
 
@@ -50,11 +51,11 @@ impl Assembly {
     }
 
     pub fn get_parent_id(&self) -> u64 {
-        self.id
+        self.parent_id
     }
 
     pub fn set_parent_id(&mut self, v: u64) {
-        self.id = v;
+        self.parent_id = v;
     }
 
     pub fn set_uri(&mut self, v: ::std::string::String) {
@@ -136,6 +137,14 @@ impl Assembly {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+
+    pub fn set_spec(&mut self, v: Result<AssemblyFactory>) {
+        self.spec = v;
+    }
+
+    pub fn get_spec(&self) -> AssemblyFactory {
+        self.spec.clone()
     }
 }
 

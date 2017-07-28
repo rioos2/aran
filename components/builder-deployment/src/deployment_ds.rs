@@ -23,7 +23,7 @@ impl DeploymentDS {
         debug!("◖☩ START: assemby_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1, $2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
@@ -57,6 +57,10 @@ impl DeploymentDS {
 
         for row in rows {
             let assembly = row_to_assembly(&row)?;
+            let mut asm_fac_get = asmsrv::AssemblyFactoryGet::new();
+            asm_fac_get.set_id(assembly.parent_id);
+            let data = Self::assembly_factory_show(&datastore, &asm_fac_get);
+            assembly.set_spec(data);
             return Ok(Some(assembly));
         }
 
@@ -73,7 +77,7 @@ impl DeploymentDS {
 
         let mut assemblys = Vec::new();
 
-        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+        debug!(">● ROWS: assemby_list =>\n{:?}", &rows);
         for row in rows {
             assemblys.push(row_to_assembly(&row)?)
         }
@@ -83,7 +87,7 @@ impl DeploymentDS {
 
     pub fn assembly_factory_create(datastore: &DataStoreConn, assembly: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: assemby_create ");
+        debug!("◖☩ START: assembly_factory_create ");
 
         let rows = &conn.query(
             "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
@@ -101,9 +105,9 @@ impl DeploymentDS {
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
 
-        debug!(">● ROWS: assemby_create =>\n{:?}", &rows);
+        debug!(">● ROWS: assembly_factory_create =>\n{:?}", &rows);
         let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
-        debug!("◖☩ DONE: assemby_create ");
+        debug!("◖☩ DONE: assembly_factory_create ");
         return Ok(Some(assembly_factory.clone()));
     }
 
@@ -111,7 +115,7 @@ impl DeploymentDS {
     pub fn assembly_factory_show(datastore: &DataStoreConn, get_assembly_factory: &asmsrv::AssemblyFactoryGet) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!(
-            "◖☩ START: assemby_show {:?}",
+            "◖☩ START: assemby_factory_show {:?}",
             get_assembly_factory.get_id()
         );
 
@@ -120,7 +124,7 @@ impl DeploymentDS {
             &[&(get_assembly_factory.get_id() as i64)],
         ).map_err(Error::AssemblyFactoryGet)?;
 
-        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+        debug!(">● ROWS: assemby_factory_show =>\n{:?}", &rows);
 
         for row in rows {
             let assembly_factory = row_to_assembly_factory(&row)?;
@@ -141,7 +145,7 @@ impl DeploymentDS {
 
         let mut assemblys = Vec::new();
 
-        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+        debug!(">● ROWS: assembly_factory_list =>\n{:?}", &rows);
         for row in rows {
             assemblys.push(row_to_assembly_factory(&row)?)
         }

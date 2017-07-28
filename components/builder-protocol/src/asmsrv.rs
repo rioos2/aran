@@ -36,10 +36,7 @@ impl Serialize for Assembly {
             "description",
             &self.get_description().to_string(),
         )?;
-        strukt.serialize_field(
-            "parent_id",
-            &self.get_parent_id().to_string(),
-        )?;
+        strukt.serialize_field("parent_id", &self.get_parent_id())?;
         strukt.serialize_field("tags", &self.get_tags())?;
 
         strukt.serialize_field("node", &self.get_node().to_string())?;
