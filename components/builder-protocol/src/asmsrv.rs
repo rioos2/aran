@@ -40,9 +40,13 @@ impl Serialize for Assembly {
         strukt.serialize_field("tags", &self.get_tags())?;
 
         strukt.serialize_field("node", &self.get_node().to_string())?;
-        strukt.serialize_field("ip", &self.get_ip())?;
+        strukt.serialize_field("ip", &self.get_ip().to_string())?;
         strukt.serialize_field("urls", &self.get_urls().to_string())?;
-        strukt.serialize_field("status", &self.get_status())?;
+        strukt.serialize_field(
+            "status",
+            &self.get_status().to_string(),
+        )?;
+        strukt.serialize_field("spec", &self.get_spec())?;
         strukt.serialize_field("created_at", &self.get_created_at())?;
 
         strukt.end()

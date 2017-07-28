@@ -19,6 +19,7 @@
 
 use protobuf::Message as Message_imported_for_functions;
 use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
+use error::{Result, Error};
 
 
 #[derive(Debug, PartialEq, Clone, Default)]
@@ -34,7 +35,7 @@ pub struct Assembly {
     ip: String,
     urls: String,
     status: String,
-    spec: Result<AssemblyFactory>,
+    spec: Option<AssemblyFactory>,
     created_at: String,
 }
 
@@ -139,16 +140,14 @@ impl Assembly {
         self.created_at.clone()
     }
 
-    pub fn set_spec(&mut self, v: Result<AssemblyFactory>) {
+    pub fn set_spec(&mut self, v: Option<AssemblyFactory>) {
         self.spec = v;
     }
 
-    pub fn get_spec(&self) -> AssemblyFactory {
+    pub fn get_spec(&self) -> Option<AssemblyFactory> {
         self.spec.clone()
     }
 }
-
-
 
 #[derive(PartialEq, Clone, Default)]
 pub struct AssemblysGetResponse {

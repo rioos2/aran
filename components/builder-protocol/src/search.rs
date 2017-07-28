@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use error::ProtocolResult;
+use error::Result;
 
 pub trait FromSearchPair: Sized {
-    fn from_search_pair<K: AsRef<str>, V: Into<String>>(key: K, value: V) -> ProtocolResult<Self>;
+    fn from_search_pair<K: AsRef<str>, V: Into<String>>(key: K, value: V) -> Result<Self>;
 }

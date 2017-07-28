@@ -56,14 +56,13 @@ impl DeploymentDS {
         debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
 
         for row in rows {
-            let assembly = row_to_assembly(&row)?;
+            let mut assembly = row_to_assembly(&row)?;
             let mut asm_fac_get = asmsrv::AssemblyFactoryGet::new();
             asm_fac_get.set_id(assembly.parent_id);
-            let data = Self::assembly_factory_show(&datastore, &asm_fac_get);
+            let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
             assembly.set_spec(data);
             return Ok(Some(assembly));
         }
-
         Ok(None)
     }
 
