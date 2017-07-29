@@ -23,19 +23,18 @@ impl DeploymentDS {
         debug!("◖☩ START: assemby_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1, $2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
                 &(assembly.get_description() as String),
+                &(assembly.get_parent_id() as i64),
                 &(assembly.get_tags() as Vec<String>),
-                &(assembly.get_representation_skew() as String),
-                &(assembly.get_external_management_resource() as String),
-                &(assembly.get_component_collection() as Vec<String>),
-                &(assembly.get_plan() as String),
-                &(assembly.get_operation_collection() as Vec<String>),
-                &(assembly.get_sensor_collection() as Vec<String>),
-                &(assembly.get_metadata() as String),
+                &(assembly.get_node() as String),
+                &(assembly.get_ip() as String),
+                &(assembly.get_urls() as String),
+                &(assembly.get_component_collection() as String),
+                &(assembly.get_status() as String),
             ],
         ).map_err(Error::AssemblyCreate)?;
 
@@ -57,10 +56,13 @@ impl DeploymentDS {
         debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
 
         for row in rows {
-            let assembly = row_to_assembly(&row)?;
+            let mut assembly = row_to_assembly(&row)?;
+            let mut asm_fac_get = asmsrv::AssemblyFactoryGet::new();
+            asm_fac_get.set_id(assembly.parent_id);
+            let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
+            assembly.set_spec(data);
             return Ok(Some(assembly));
         }
-
         Ok(None)
     }
 
@@ -74,7 +76,7 @@ impl DeploymentDS {
 
         let mut assemblys = Vec::new();
 
-        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+        debug!(">● ROWS: assemby_list =>\n{:?}", &rows);
         for row in rows {
             assemblys.push(row_to_assembly(&row)?)
         }
@@ -84,10 +86,10 @@ impl DeploymentDS {
 
     pub fn assembly_factory_create(datastore: &DataStoreConn, assembly: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: assemby_create ");
+        debug!("◖☩ START: assembly_factory_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
@@ -102,9 +104,9 @@ impl DeploymentDS {
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
 
-        debug!(">● ROWS: assemby_create =>\n{:?}", &rows);
+        debug!(">● ROWS: assembly_factory_create =>\n{:?}", &rows);
         let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
-        debug!("◖☩ DONE: assemby_create ");
+        debug!("◖☩ DONE: assembly_factory_create ");
         return Ok(Some(assembly_factory.clone()));
     }
 
@@ -112,7 +114,7 @@ impl DeploymentDS {
     pub fn assembly_factory_show(datastore: &DataStoreConn, get_assembly_factory: &asmsrv::AssemblyFactoryGet) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!(
-            "◖☩ START: assemby_show {:?}",
+            "◖☩ START: assemby_factory_show {:?}",
             get_assembly_factory.get_id()
         );
 
@@ -121,7 +123,7 @@ impl DeploymentDS {
             &[&(get_assembly_factory.get_id() as i64)],
         ).map_err(Error::AssemblyFactoryGet)?;
 
-        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+        debug!(">● ROWS: assemby_factory_show =>\n{:?}", &rows);
 
         for row in rows {
             let assembly_factory = row_to_assembly_factory(&row)?;
@@ -142,7 +144,7 @@ impl DeploymentDS {
 
         let mut assemblys = Vec::new();
 
-        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+        debug!(">● ROWS: assembly_factory_list =>\n{:?}", &rows);
         for row in rows {
             assemblys.push(row_to_assembly_factory(&row)?)
         }
@@ -157,30 +159,27 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
-    let plan: String = row.get("plan");
+    let urls: String = row.get("urls");
     let uri: String = row.get("uri");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
-    let representation_skew: String = row.get("representation_skew");
-    let external_management_resource: String = row.get("external_management_resource");
-    let component_collection: Vec<String> = row.get("component_collection");
-    let operation_collection: Vec<String> = row.get("operation_collection");
-    let sensor_collection: Vec<String> = row.get("sensor_collection");
-    let metadata: String = row.get("metadata");
+    let parent_id: i64 = row.get("parent_id");
+    let component_collection: String = row.get("component_collection");
+    let status: String = row.get("status");
+    let node: String = row.get("node");
+    let ip: String = row.get("ip");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     assembly.set_id(id as u64);
     assembly.set_name(name as String);
-    assembly.set_plan(plan as String);
+    assembly.set_urls(urls as String);
     assembly.set_uri(uri as String);
     assembly.set_description(description as String);
-    assembly.set_tags(tags as Vec<String>);
-    assembly.set_component_collection(component_collection as Vec<String>);
-    assembly.set_operation_collection(operation_collection as Vec<String>);
-    assembly.set_sensor_collection(sensor_collection as Vec<String>);
-    assembly.set_metadata(metadata as String);
-    assembly.set_representation_skew(representation_skew as String);
-    assembly.set_external_management_resource(external_management_resource as String);
+    assembly.set_parent_id(parent_id as u64);
+    assembly.set_component_collection(component_collection as String);
+    assembly.set_status(status as String);
+    assembly.set_node(node as String);
+    assembly.set_ip(ip as String);
     assembly.set_created_at(created_at.to_rfc3339());
 
     debug!("◖☩ ASM: row_to_assemby =>\n{:?}", assembly);

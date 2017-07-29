@@ -29,15 +29,13 @@ define_event_log!();
 struct AssemblyCreateReq {
     name: String,
     uri: String,
-    description: String,
     tags: Vec<String>,
-    representation_skew: String,
-    external_management_resource: String,
-    component_collection: Vec<String>,
-    plan: String,
-    operation_collection: Vec<String>,
-    sensor_collection: Vec<String>,
-    metadata: String,
+    parent_id: u64,
+    description: String,
+    node: String,
+    status: String,
+    ip: String,
+    urls: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -59,14 +57,12 @@ struct AssemblyUpdateReq {
     name: String,
     uri: String,
     description: String,
+    parent_id: u64,
     tags: Vec<String>,
-    representation_skew: String,
-    external_management_resource: String,
-    component_collection: String,
-    plan: String,
-    operation_collection: Vec<String>,
-    sensor_collection: Vec<String>,
-    metadata: String,
+    node: String,
+    ip: String,
+    urls: String,
+    status: String,
 }
 
 pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
@@ -84,13 +80,11 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                 assembly_create.set_uri(body.uri);
                 assembly_create.set_description(body.description);
                 assembly_create.set_tags(body.tags);
-                assembly_create.set_representation_skew(body.representation_skew);
-                assembly_create.set_external_management_resource(body.external_management_resource);
-                assembly_create.set_component_collection(body.component_collection);
-                assembly_create.set_plan(body.plan);
-                assembly_create.set_operation_collection(body.operation_collection);
-                assembly_create.set_sensor_collection(body.sensor_collection);
-                assembly_create.set_metadata(body.metadata);
+                assembly_create.set_parent_id(body.parent_id);
+                assembly_create.set_node(body.node);
+                assembly_create.set_status(body.status);
+                assembly_create.set_ip(body.ip);
+                assembly_create.set_urls(body.urls);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

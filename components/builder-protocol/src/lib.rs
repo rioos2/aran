@@ -34,6 +34,6 @@ pub mod originsrv;
 pub mod scheduler;
 pub mod message;
 
-pub use self::error::{ProtocolError, ProtocolResult};
+pub use self::error::{Error, Result};
 pub use self::message::{Message, Persistable, Routable, RouteKey};
 pub use self::sharding::{ShardId, SHARD_COUNT, InstaId};

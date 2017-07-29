@@ -40,7 +40,7 @@ impl Default for DataStore {
     fn default() -> Self {
         DataStore {
             host: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
-            port: 5432,
+            port: 5433,
             user: String::from("rioos"),
             password: Some("rioos".to_string()),
             database: String::from("rioosdb"),

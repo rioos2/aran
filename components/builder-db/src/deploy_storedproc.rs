@@ -29,17 +29,16 @@ impl Migratable for DeployProcedures {
             "asmsrv",
             r#"CREATE TABLE  IF NOT EXISTS assembly (
              id bigint PRIMARY KEY DEFAULT next_id_v1('asm_id_seq'),
-             uri text,
              name text,
+             uri text,
              description text,
+             parent_id bigint,
              tags text[],
-             representation_skew text,
-             external_management_resource text,
-             component_collection text[],
-             plan text,
-             operation_collection text[],
-             sensor_collection text[],
-             metadata text,
+             node text,
+             ip text,
+             urls text,
+             component_collection text,
+             status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
         )?;
@@ -51,21 +50,20 @@ impl Migratable for DeployProcedures {
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION insert_assembly_v1 (
-                            name text,
-                            uri text,
-                            description text,
-                            tags text[],
-                            external_management_resource text,
-                            representation_skew text,
-                            component_collection text[],
-                            plan text,
-                            operation_collection text[],
-                            sensor_collection text[],
-                            metadata text
+                name text,
+                uri text,
+                description text,
+                parent_id bigint,
+                tags text[],
+                node text,
+                ip text,
+                urls text,
+                component_collection text,
+                status text
                         ) RETURNS SETOF assembly AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description, tags, external_management_resource, representation_skew, component_collection,plan,operation_collection,sensor_collection,metadata)
-                                        VALUES (name,uri, description, tags, external_management_resource, representation_skew, component_collection,plan,operation_collection,sensor_collection,metadata)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,node,ip,urls,component_collection,status)
+                                        VALUES (name, uri, description,parent_id, tags,node,ip,urls,component_collection,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -119,8 +117,8 @@ impl Migratable for DeployProcedures {
              properties text,
              external_management_resource text[],
              component_collection text,
-             opssettings: text,
-             status: text,
+             opssettings text,
+             status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
         )?;
@@ -139,8 +137,8 @@ impl Migratable for DeployProcedures {
                 properties text,
                 external_management_resource text[],
                 component_collection text,
-                opssettings: text,
-                status: text,
+                opssettings text,
+                status text
                         ) RETURNS SETOF assembly_factory AS $$
                                 BEGIN
                                     RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,external_management_resource,component_collection,opssettings,status)
