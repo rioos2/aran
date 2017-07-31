@@ -207,11 +207,12 @@ pub struct AssemblyFactory {
     uri: String,
     description: String,
     tags: Vec<String>,
+    replicas: u64,
     properties: String,
     plan: String,
     external_management_resource: Vec<String>,
     component_collection: String,
-    status: String,
+    status: Option<String>,
     opssettings: String,
     created_at: String,
 }
@@ -229,6 +230,14 @@ impl AssemblyFactory {
 
     pub fn get_id(&self) -> u64 {
         self.id
+    }
+
+    pub fn set_replicas(&mut self, v: u64) {
+        self.replicas = v;
+    }
+
+    pub fn get_replicas(&self) -> u64 {
+        self.replicas
     }
 
     pub fn set_uri(&mut self, v: ::std::string::String) {
@@ -295,12 +304,13 @@ impl AssemblyFactory {
         self.component_collection.clone()
     }
 
-    pub fn set_status(&mut self, v: ::std::string::String) {
-        self.status = v;
+    pub fn set_status(&mut self, v: Option<String>) {
+        self.status = v.clone();
     }
 
+
     pub fn get_status(&self) -> ::std::string::String {
-        self.status.clone()
+        self.status.unwrap().clone()
     }
 
     pub fn set_opssettings(&mut self, v: ::std::string::String) {
@@ -369,5 +379,31 @@ impl AssemblyFactoryGetResponse {
 
     pub fn get_assemblys_factory(&self) -> &[AssemblyFactory] {
         &self.assembly_factory
+    }
+}
+
+
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+pub enum AssemblyFactoryStatus {
+    Pending,
+    Processing,
+    Complete,
+    Rejected,
+    Failed,
+    Dispatched,
+}
+
+impl AssemblyFactoryStatus {
+    pub fn covert_to_enum(v: String) -> ::std::option::Option<AssemblyFactoryStatus> {
+        match &v[..] {
+            "Dispatched" => ::std::option::Option::Some(AssemblyFactoryStatus::Dispatched),
+            "Pending" => ::std::option::Option::Some(AssemblyFactoryStatus::Pending),
+            "Processing" => ::std::option::Option::Some(AssemblyFactoryStatus::Processing),
+            "Complete" => ::std::option::Option::Some(AssemblyFactoryStatus::Complete),
+            "Rejected" => ::std::option::Option::Some(AssemblyFactoryStatus::Rejected),
+            "Failed" => ::std::option::Option::Some(AssemblyFactoryStatus::Failed),
+            _ => ::std::option::Option::None,
+        }
+
     }
 }

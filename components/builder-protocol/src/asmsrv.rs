@@ -64,6 +64,10 @@ impl Serialize for AssemblyFactory {
         strukt.serialize_field("name", &self.get_name().to_string())?;
         strukt.serialize_field("uri", &self.get_uri().to_string())?;
         strukt.serialize_field(
+            "replicas",
+            &self.get_replicas().to_string(),
+        )?;
+        strukt.serialize_field(
             "description",
             &self.get_description().to_string(),
         )?;
@@ -81,10 +85,7 @@ impl Serialize for AssemblyFactory {
             "component_collection",
             &self.get_component_collection().to_string(),
         )?;
-        strukt.serialize_field(
-            "status",
-            &self.get_status().to_string(),
-        )?;
+        strukt.serialize_field("status", &self.get_status())?;
         strukt.serialize_field(
             "opssettings",
             &self.get_opssettings().to_string(),

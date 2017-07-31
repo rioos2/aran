@@ -89,7 +89,7 @@ impl DeploymentDS {
         debug!("◖☩ START: assembly_factory_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
@@ -100,6 +100,7 @@ impl DeploymentDS {
                 &(assembly.get_external_management_resource() as Vec<String>),
                 &(assembly.get_component_collection() as String),
                 &(assembly.get_opssettings() as String),
+                &(assembly.get_replicas() as i64),
                 &(assembly.get_status() as String),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
@@ -131,6 +132,17 @@ impl DeploymentDS {
         }
 
         Ok(None)
+    }
+
+    pub fn assembly_factory_status_update(datastore: &DataStoreConn, assembly: &asmsrv::AssemblyFactory) -> Result<()> {
+        let conn = datastore.pool.get_shard(0)?;
+        let asm_fac_id = assembly.get_id() as i64;
+        let asm_fac_status = assembly.get_status() as String;
+        conn.execute(
+            "SELECT set_assembly_factorys_status_v1($1, $2)",
+            &[&asm_fac_id, &asm_fac_status],
+        ).map_err(Error::AsmFactorySetStatus)?;
+        Ok(())
     }
 
 
@@ -177,7 +189,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as u64);
     assembly.set_component_collection(component_collection as String);
-    assembly.set_status(status as String);
+    assembly.set_status(status as Option<String>);
     assembly.set_node(node as String);
     assembly.set_ip(ip as String);
     assembly.set_created_at(created_at.to_rfc3339());
@@ -203,6 +215,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let component_collection: String = row.get("component_collection");
     let opssettings: String = row.get("opssettings");
     let status: String = row.get("status");
+    let replicas: i64 = row.get("replicas");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     assembly_factory.set_id(id as u64);
@@ -216,6 +229,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     assembly_factory.set_opssettings(opssettings as String);
     assembly_factory.set_status(status as String);
     assembly_factory.set_plan(plan as String);
+    assembly_factory.set_replicas(replicas as u64);
     assembly_factory.set_properties(properties as String);
 
     debug!(

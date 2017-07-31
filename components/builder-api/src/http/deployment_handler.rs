@@ -13,7 +13,7 @@ use iron::status;
 use iron::typemap;
 use persistent;
 
-use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet};
+use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, AssemblyFactoryStatus};
 use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
@@ -45,6 +45,7 @@ struct AssemblyFacCreateReq {
     description: String,
     tags: Vec<String>,
     properties: String,
+    replicas: u64,
     plan: String,
     external_management_resource: Vec<String>,
     component_collection: String,
@@ -156,6 +157,7 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 assembly_factory_create.set_component_collection(body.component_collection);
                 assembly_factory_create.set_status(body.status);
                 assembly_factory_create.set_opssettings(body.opssettings);
+                assembly_factory_create.set_replicas(body.replicas);
                 assembly_factory_create.set_properties(body.properties);
 
             }
@@ -201,13 +203,23 @@ pub fn assembly_factory_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
-    let mut assembly_create = Assembly::new();
+pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+    let mut assembly_create = AssemblyFactory::new();
     {
-        match req.get::<bodyparser::Struct<AssemblyCreateReq>>() {
+        match req.get::<bodyparser::Struct<AssemblyFacCreateReq>>() {
             Ok(Some(body)) => {
                 //TO-DO Check for validity as per your need
-                assembly_create.set_name(body.name)
+
+                let status = AssemblyFactoryStatus::covert_to_enum(body.status);
+                assembly_create.set_status(status);
+                assembly_create.set_id(id);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
@@ -218,7 +230,7 @@ pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
     //This is needed as you'll need the email/token if any
     // let session = req.extensions.get::<Authenticated>().unwrap().clone();
 
-    match DeploymentDS::assembly_create(&conn, &assembly_create) {
+    match DeploymentDS::assembly_factory_status_update(&conn, &assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
