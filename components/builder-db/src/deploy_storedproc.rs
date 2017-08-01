@@ -184,9 +184,9 @@ impl Migratable for DeployProcedures {
 
         migrator.migrate(
             "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION set_assembly_factorys_status_v1 (aid bigint, status text) RETURNS void AS $$
+            r#"CREATE OR REPLACE FUNCTION set_assembly_factorys_status_v1 (aid bigint, asm_status text) RETURNS void AS $$
                             BEGIN
-                                UPDATE assembly_factory SET status=status updated_at=now() WHERE id=aid;
+                                UPDATE assembly_factory SET status=asm_status, updated_at=now() WHERE id=aid;
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;

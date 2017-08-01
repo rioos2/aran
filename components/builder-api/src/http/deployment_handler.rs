@@ -66,6 +66,12 @@ struct AssemblyUpdateReq {
     status: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct AssemblyFacStatusReq {
+    status: String,
+}
+
+
 pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
     let mut assembly_create = Assembly::new();
     {
@@ -155,7 +161,8 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 assembly_factory_create.set_external_management_resource(body.external_management_resource);
                 assembly_factory_create.set_plan(body.plan);
                 assembly_factory_create.set_component_collection(body.component_collection);
-                assembly_factory_create.set_status(body.status);
+                let status = AssemblyFactoryStatus::from_str(body.status);
+                assembly_factory_create.set_status(status);
                 assembly_factory_create.set_opssettings(body.opssettings);
                 assembly_factory_create.set_replicas(body.replicas);
                 assembly_factory_create.set_properties(body.properties);
@@ -181,7 +188,6 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
 
 
 pub fn assembly_factory_show(req: &mut Request) -> IronResult<Response> {
-
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
@@ -212,14 +218,12 @@ pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response>
         }
     };
     let mut assembly_create = AssemblyFactory::new();
+    assembly_create.set_id(id);
     {
-        match req.get::<bodyparser::Struct<AssemblyFacCreateReq>>() {
+        match req.get::<bodyparser::Struct<AssemblyFacStatusReq>>() {
             Ok(Some(body)) => {
-                //TO-DO Check for validity as per your need
-
-                let status = AssemblyFactoryStatus::covert_to_enum(body.status);
+                let status = AssemblyFactoryStatus::from_str(body.status);
                 assembly_create.set_status(status);
-                assembly_create.set_id(id);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
