@@ -3,6 +3,8 @@
 //! A module containing the HTTP server and assembly_handlers for servicing client requests
 
 pub mod deployment_handler;
+pub mod scaling_handler;
+
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -17,6 +19,7 @@ use staticfile::Static;
 use config::Config;
 use error::Result;
 use self::deployment_handler::*;
+use self::scaling_handler::*;
 use db::data_store::*;
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.
@@ -41,6 +44,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         assemblys_factorys_get: get "/assembly_factorys" => assembly_factory_list,
         assembly_factory_status: put "/assembly_factorys/status/:id" => assembly_factory_status_update,
 
+        horizontal_scaling: post "/horizontal_scaling" => hs_create,
+
     );
 
     let mut chain = Chain::new(router);
@@ -50,11 +55,6 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
              let ds = DataStoreConn::new().unwrap();
              ds.setup().unwrap().clone()
          }),
-    ));
-
-
-    chain.link(Read::<EventLog>::both(
-        EventLogger::new(&config.log_dir, config.events_enabled),
     ));
 
     chain.link_after(Cors);

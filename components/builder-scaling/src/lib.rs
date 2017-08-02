@@ -12,29 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+extern crate chrono;
+extern crate habitat_builder_protocol as protocol;
 extern crate habitat_core as hab_core;
+extern crate habitat_builder_db as db;
+extern crate habitat_net as hab_net;
+extern crate hyper;
+extern crate linked_hash_map;
 #[macro_use]
-extern crate lazy_static;
-extern crate protobuf;
-extern crate regex;
+extern crate log;
+extern crate postgres;
+extern crate rand;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate time;
+extern crate sha2;
+extern crate toml;
 
+extern crate url as extern_url;
+
+pub mod scaling_ds;
 pub mod error;
-pub mod jobsrv;
-pub mod asmsrv;
-pub mod net;
-pub mod routesrv;
-pub mod search;
-pub mod sessionsrv;
-pub mod sharding;
-pub mod originsrv;
-pub mod scheduler;
-pub mod message;
-pub mod scalesrv;
+
 
 pub use self::error::{Error, Result};
-pub use self::message::{Message, Persistable, Routable, RouteKey};
-pub use self::sharding::{ShardId, SHARD_COUNT, InstaId};
+
+pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));

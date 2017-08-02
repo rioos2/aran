@@ -7,6 +7,7 @@ extern crate habitat_builder_protocol as protocol;
 extern crate habitat_core as hab_core;
 extern crate habitat_net as hab_net;
 extern crate habitat_builder_jobsrv as deploy;
+extern crate habitat_builder_scalesrv as scale;
 extern crate habitat_builder_db as db;
 extern crate hyper;
 extern crate iron;

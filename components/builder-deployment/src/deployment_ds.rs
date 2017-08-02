@@ -197,6 +197,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_name(name as String);
     assembly.set_urls(urls as String);
     assembly.set_uri(uri as String);
+    assembly.set_tags(tags as Vec<String>);
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as u64);
     assembly.set_component_collection(component_collection as String);
