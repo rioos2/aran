@@ -70,9 +70,8 @@ impl Migratable for DeployProcedures {
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] assembly");
+        debug!("=> [✓] fn: insert_assembly_v1");
 
-        // Just make sure you always address the columns by name, not by position.
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION get_assembly_v1 (aid bigint) RETURNS SETOF assembly AS $$
@@ -97,6 +96,16 @@ impl Migratable for DeployProcedures {
 
         debug!("=> [✓] fn: get_assemblys_v1");
 
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION set_assembly_status_v1 (aid bigint, asm_status text) RETURNS void AS $$
+                            BEGIN
+                                UPDATE assembly SET status=asm_status, updated_at=now() WHERE id=aid;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: set_assembly_status_v1");
 
 
         // The core asms_facttory table
@@ -153,7 +162,7 @@ impl Migratable for DeployProcedures {
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] fn: assembly_factory_v1");
+        debug!("=> [✓] fn: insert_assembly_factory_v1");
 
         // Just make sure you always address the columns by name, not by position.
         migrator.migrate(
@@ -184,12 +193,14 @@ impl Migratable for DeployProcedures {
 
         migrator.migrate(
             "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION set_assembly_factorys_status_v1 (aid bigint, asm_status text) RETURNS void AS $$
+            r#"CREATE OR REPLACE FUNCTION set_assembly_factorys_status_v1 (aid bigint, asm_fac_status text) RETURNS void AS $$
                             BEGIN
-                                UPDATE assembly_factory SET status=asm_status, updated_at=now() WHERE id=aid;
+                                UPDATE assembly_factory SET status=asm_fac_status, updated_at=now() WHERE id=aid;
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
+
+        debug!("=> [✓] fn: set_assembly_factorys_status_v1");
 
         debug!("=> DONE: asmsrv");
 

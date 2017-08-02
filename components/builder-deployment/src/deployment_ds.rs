@@ -34,7 +34,7 @@ impl DeploymentDS {
                 &(assembly.get_ip() as String),
                 &(assembly.get_urls() as String),
                 &(assembly.get_component_collection() as String),
-                &(assembly.get_status() as String),
+                &(format!("{}", assembly.get_status()) as String),
             ],
         ).map_err(Error::AssemblyCreate)?;
 
@@ -74,34 +74,45 @@ impl DeploymentDS {
 
         let mut response = asmsrv::AssemblysGetResponse::new();
 
-        let mut assemblys = Vec::new();
+        let mut assemblys_collection = Vec::new();
 
         debug!(">● ROWS: assemby_list =>\n{:?}", &rows);
         for row in rows {
-            assemblys.push(row_to_assembly(&row)?)
+            assemblys_collection.push(row_to_assembly(&row)?)
         }
-        response.set_assemblys(assemblys);
+        response.set_assemblys(assemblys_collection);
         Ok(Some(response))
     }
 
-    pub fn assembly_factory_create(datastore: &DataStoreConn, assembly: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
+    pub fn assembly_status_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<()> {
+        let conn = datastore.pool.get_shard(0)?;
+        let asm_id = assembly.get_id() as i64;
+        let asm_status = format!("{}", assembly.get_status()) as String;
+        conn.execute(
+            "SELECT set_assembly_status_v1($1, $2)",
+            &[&asm_id, &asm_status],
+        ).map_err(Error::AsmSetStatus)?;
+        Ok(())
+    }
+
+    pub fn assembly_factory_create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assembly_factory_create ");
 
         let rows = &conn.query(
             "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
-                &(assembly.get_name() as String),
-                &(assembly.get_uri() as String),
-                &(assembly.get_description() as String),
-                &(assembly.get_tags() as Vec<String>),
-                &(assembly.get_plan() as String),
-                &(assembly.get_properties() as String),
-                &(assembly.get_external_management_resource() as Vec<String>),
-                &(assembly.get_component_collection() as String),
-                &(assembly.get_opssettings() as String),
-                &(assembly.get_replicas() as i64),
-                &(format!("{}", assembly.get_status()) as String),
+                &(assembly_fac.get_name() as String),
+                &(assembly_fac.get_uri() as String),
+                &(assembly_fac.get_description() as String),
+                &(assembly_fac.get_tags() as Vec<String>),
+                &(assembly_fac.get_plan() as String),
+                &(assembly_fac.get_properties() as String),
+                &(assembly_fac.get_external_management_resource() as Vec<String>),
+                &(assembly_fac.get_component_collection() as String),
+                &(assembly_fac.get_opssettings() as String),
+                &(assembly_fac.get_replicas() as i64),
+                &(format!("{}", assembly_fac.get_status()) as String),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
 
@@ -134,10 +145,10 @@ impl DeploymentDS {
         Ok(None)
     }
 
-    pub fn assembly_factory_status_update(datastore: &DataStoreConn, assembly: &asmsrv::AssemblyFactory) -> Result<()> {
+    pub fn assembly_factory_status_update(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
-        let asm_fac_id = assembly.get_id() as i64;
-        let asm_fac_status = format!("{}", assembly.get_status()) as String;
+        let asm_fac_id = assembly_fac.get_id() as i64;
+        let asm_fac_status = format!("{}", assembly_fac.get_status()) as String;
         conn.execute(
             "SELECT set_assembly_factorys_status_v1($1, $2)",
             &[&asm_fac_id, &asm_fac_status],
@@ -154,13 +165,13 @@ impl DeploymentDS {
 
         let mut response = asmsrv::AssemblyFactoryGetResponse::new();
 
-        let mut assemblys = Vec::new();
+        let mut assembly_factorys_collection = Vec::new();
 
         debug!(">● ROWS: assembly_factory_list =>\n{:?}", &rows);
         for row in rows {
-            assemblys.push(row_to_assembly_factory(&row)?)
+            assembly_factorys_collection.push(row_to_assembly_factory(&row)?)
         }
-        response.set_assemblys_factory(assemblys);
+        response.set_assemblys_factory(assembly_factorys_collection);
         Ok(Some(response))
     }
 }
@@ -177,7 +188,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let tags: Vec<String> = row.get("tags");
     let parent_id: i64 = row.get("parent_id");
     let component_collection: String = row.get("component_collection");
-    let status: String = row.get("status");
+    let status = asmsrv::AssemblyStatus::from_str(row.get("status"));
     let node: String = row.get("node");
     let ip: String = row.get("ip");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
@@ -189,7 +200,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as u64);
     assembly.set_component_collection(component_collection as String);
-    assembly.set_status(status as String);
+    assembly.set_status(status);
     assembly.set_node(node as String);
     assembly.set_ip(ip as String);
     assembly.set_created_at(created_at.to_rfc3339());

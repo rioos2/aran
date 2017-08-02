@@ -34,7 +34,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         assemblys: post "/assemblys" => assembly_create,
         assemblys_get: get "/assemblys" => assembly_list,
         assembly: get "/assemblys/:id" => assembly_show,
-        // assembly_update: put "/assemblys/:id" => assembly_update,
+        assembly_status: put "/assemblys/status/:id" => assembly_status_update,
 
         assembly_factorys: post "/assembly_factorys" => assembly_factory_create,
         assemblys_factory: get "/assembly_factorys/:id" => assembly_factory_show,
@@ -45,8 +45,6 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
     let mut chain = Chain::new(router);
 
-    //Stick the DatastoreBroker here, which will be created globally once
-    //whew! it works :)
     chain.link(persistent::Read::<DataStoreBroker>::both(
         ({
              let ds = DataStoreConn::new().unwrap();

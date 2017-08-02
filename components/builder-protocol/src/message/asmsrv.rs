@@ -37,7 +37,7 @@ pub struct Assembly {
     node: String,
     ip: String,
     urls: String,
-    status: String,
+    status: ::std::option::Option<AssemblyStatus>,
     spec: Option<AssemblyFactory>,
     created_at: String,
 }
@@ -127,12 +127,12 @@ impl Assembly {
     }
 
 
-    pub fn set_status(&mut self, v: ::std::string::String) {
-        self.status = v;
+    pub fn set_status(&mut self, v: AssemblyStatus) {
+        self.status = ::std::option::Option::Some(v);
     }
 
-    pub fn get_status(&self) -> ::std::string::String {
-        self.status.clone()
+    pub fn get_status(&self) -> AssemblyStatus {
+        self.status.unwrap_or(AssemblyStatus::Pending)
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -201,6 +201,45 @@ impl AssemblyGet {
         self.id.unwrap_or(0)
     }
 }
+
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+pub enum AssemblyStatus {
+    Pending,
+    Processing,
+    Complete,
+    Rejected,
+    Failed,
+    Dispatched,
+}
+
+impl AssemblyStatus {
+    pub fn from_str(value: String) -> AssemblyStatus {
+        match &value[..] {
+            "Dispatched" => AssemblyStatus::Dispatched,
+            "Pending" => AssemblyStatus::Pending,
+            "Processing" => AssemblyStatus::Processing,
+            "Complete" => AssemblyStatus::Complete,
+            "Rejected" => AssemblyStatus::Rejected,
+            "Failed" => AssemblyStatus::Failed,
+            _ => AssemblyStatus::Pending,
+        }
+    }
+}
+
+impl fmt::Display for AssemblyStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            AssemblyStatus::Dispatched => write!(f, "Dispatched"),
+            AssemblyStatus::Pending => write!(f, "Pending"),
+            AssemblyStatus::Processing => write!(f, "Processing"),
+            AssemblyStatus::Rejected => write!(f, "Rejected"),
+            AssemblyStatus::Complete => write!(f, "Complete"),
+            AssemblyStatus::Failed => write!(f, "Failed"),
+        }
+    }
+}
+
 
 
 #[derive(Debug, PartialEq, Clone, Default)]
