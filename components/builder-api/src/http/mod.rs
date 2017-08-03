@@ -17,6 +17,7 @@ use staticfile::Static;
 use config::Config;
 use error::Result;
 use self::deployment_handler::*;
+use self::auth_handler::*;
 use db::data_store::*;
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.
@@ -26,20 +27,26 @@ const HTTP_THREAD_COUNT: usize = 128;
 /// Create a new `iron::Chain` containing a Router and it's required middleware
 pub fn router(config: Arc<Config>) -> Result<Chain> {
     let basic = Authenticated::new(&*config);
+    let bioshield = Shielded::new(&*config);
+
     let router =
         router!(
         status: get "/status" => status,
 
-        // assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
+        //auth API for login
+        authenticate: post "/authenticate/:code" => default_authenticate,
+
+        //deploy API: assembly_factory
+        assembly_factorys: post "/assembly_factorys" => assembly_factory_create,
+        assemblys_factory: get "/assembly_factorys/:id" => assembly_factory_show,
+        assemblys_factorys_get: get "/assembly_factorys" => assembly_factory_list,
+
+        //deploy API: assembly
+        //assemblys: post "/assemblys" => XHandler::new(assembly_create).before(bioshield.clone()).before(basic.clone()),
         assemblys: post "/assemblys" => assembly_create,
         assemblys_get: get "/assemblys" => assembly_list,
         assembly: get "/assemblys/:id" => assembly_show,
         assembly_update: put "/assemblys/:id" => assembly_update,
-
-        assembly_factorys: post "/assembly_factorys" => assembly_factory_create,
-        assemblys_factory: get "/assembly_factorys/:id" => assembly_factory_show,
-        assemblys_factorys_get: get "/assembly_factorys" => assembly_factory_list,
-        // assembly_factory_update: put "/assembly_factorys/update/:id" => assembly_factory_update,
 
     );
 

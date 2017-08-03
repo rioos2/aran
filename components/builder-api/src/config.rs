@@ -18,8 +18,11 @@ pub struct Config {
     pub http: HttpCfg,
     /// List of net addresses for routing servers to connect to
     pub routers: Vec<RouterAddr>,
+    //
     pub github: GitHubCfg,
-    pub ui: UiCfg,
+    //RIO Shield
+    pub shield: ShieldCfg,
+    //
     // Whether to log events for funnel metrics
     pub events_enabled: bool,
     /// Where to record log events for funnel metrics
@@ -32,7 +35,7 @@ impl Default for Config {
             http: HttpCfg::default(),
             routers: vec![RouterAddr::default()],
             github: GitHubCfg::default(),
-            ui: UiCfg::default(),
+            shield: ShieldCfg::default(),
             events_enabled: false,
             log_dir: env::temp_dir().to_string_lossy().into_owned(),
         }

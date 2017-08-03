@@ -1,6 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//stored procedures for authentication (users, roles, permissions)
+//stored procedures for authentication (users, origins, origin_members, roles, permissions)
 
 use error::{Result, Error};
 use migration::{Migratable, Migrator};
@@ -13,26 +13,25 @@ impl AuthProcedures {
     }
 }
 
+// Just make sure you always address the columns by name, not by position.
 impl Migratable for AuthProcedures {
-
     fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
         debug!("=> START: authsrv");
 
-        // Just make sure you always address the columns by name, not by position.
-
-        // The core user_id_seq table
+        // The core account_id_seq table
         migrator.migrate(
             "authsrv",
-            r#"CREATE SEQUENCE IF NOT EXISTS user_id_seq;"#,
+            r#"CREATE SEQUENCE IF NOT EXISTS account_id_seq;"#,
         )?;
-        debug!("=> [✓] user_id_seq");
+        debug!("=> [✓] account_id_seq");
 
-        // Create table users
+        // Create table accounts
         migrator.migrate(
             "authsrv",
-            r#"CREATE TABLE  IF NOT EXISTS users (
-         id bigint PRIMARY KEY DEFAULT next_id_v1('user_id_seq'),
-         email text,
+            r#"CREATE TABLE  IF NOT EXISTS accounts (
+         id bigint PRIMARY KEY DEFAULT next_id_v1('account_id_seq'),
+         name text,
+         email text UNIQUE,
          first_name text,
          last_name text,
          phone text,
@@ -46,12 +45,13 @@ impl Migratable for AuthProcedures {
          created_at timestamptz DEFAULT now())"#,
         )?;
 
-        debug!("=> [✓] users");
+        debug!("=> [✓] accounts");
 
-        // Insert a new user into the users table
+        // Insert a new account into the accounts table
         migrator.migrate(
             "authsrv",
-            r#"CREATE OR REPLACE FUNCTION insert_user_v1 (
+            r#"CREATE OR REPLACE FUNCTION insert_account_v1 (
+                        name text,
                         email text,
                         first_name text,
                         last_name text,
@@ -62,44 +62,328 @@ impl Migratable for AuthProcedures {
                         approval text,
                         suspend text,
                         registration_ip_address text
-                    ) RETURNS SETOF users AS $$
+                    ) RETURNS SETOF accounts AS $$
                             BEGIN
-                                RETURN QUERY INSERT INTO users(email, first_name, last_name, phone, api_key, password, states, approval, suspend, registration_ip_address)
-                                    VALUES (email, first_name, last_name, phone, api_key, password, states, approval, suspend, registration_ip_address)
+                                RETURN QUERY INSERT INTO accounts(name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, registration_ip_address)
+                                    VALUES (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, registration_ip_address)
                                     RETURNING *;
                                 RETURN;
                             END
                         $$ LANGUAGE plpgsql VOLATILE
                         "#,
         )?;
-        debug!("=> [✓] fn: insert_user_v1");
+
+        debug!("=> [✓] fn: insert_account_v1");
 
 
-        // Select all user from users table
+        migrator.migrate(
+            "accountsrv",
+            r#"CREATE OR REPLACE FUNCTION select_or_insert_account_v1 (
+                  account_name text,
+                  account_email text,
+                  account_first_name text,
+                  account_last_name text,
+                  account_phone text,
+                  account_api_key text,
+                  account_password text,
+                  account_states text,
+                  account_approval text,
+                  account_suspend text,
+                  account_registration_ip_address text
+                ) RETURNS SETOF accounts AS $$
+                    DECLARE
+                       existing_account accounts%rowtype;
+                    BEGIN
+                       SELECT * INTO existing_account FROM accounts WHERE email = account_email LIMIT 1;
+                       IF FOUND THEN
+                           RETURN NEXT existing_account;
+                       ELSE
+                           RETURN QUERY INSERT INTO accounts (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, registration_ip_address)
+                            VALUES (account_name, account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password, account_states,
+                                account_approval, account_suspend, account_registration_ip_address) ON CONFLICT DO NOTHING RETURNING *;
+                       END IF;
+                       RETURN;
+                    END
+                $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: select_or_insert_account_v1");
+
+        // Select all account from accounts table
         migrator.migrate(
             "authsrv",
-            r#"CREATE OR REPLACE FUNCTION get_users_v1 () RETURNS SETOF users AS $$
+            r#"CREATE OR REPLACE FUNCTION get_accounts_v1 () RETURNS SETOF accounts AS $$
                     BEGIN
-                      RETURN QUERY SELECT * FROM users;
+                      RETURN QUERY SELECT * FROM accounts;
                       RETURN;
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_users_v1");
+        debug!("=> [✓] fn: get_accounts_v1");
 
-        // Select user from users table by id
+        // Select account from accounts table by id
         migrator.migrate(
             "authsrv",
-            r#"CREATE OR REPLACE FUNCTION get_user_v1 (uid bigint) RETURNS SETOF users AS $$
+            r#"CREATE OR REPLACE FUNCTION  get_account_by_id_v1 (uid bigint) RETURNS SETOF accounts AS $$
                     BEGIN
-                      RETURN QUERY SELECT * FROM users WHERE id = uid;
+                      RETURN QUERY SELECT * FROM accounts WHERE id = uid;
                       RETURN;
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_user_v1");
+        debug!("=> [✓] fn:  get_account_by_id_v1");
+
+        // Select account from accounts table by email
+        migrator.migrate(
+            "accountsrv",
+            r#"CREATE OR REPLACE FUNCTION get_account_by_email_v1 (
+                   account_email text
+                ) RETURNS SETOF accounts AS $$
+                    BEGIN
+                       RETURN QUERY SELECT * FROM accounts WHERE email = account_email;
+                       RETURN;
+                    END
+                $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_account_by_email_v1");
+
+
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE TABLE IF NOT EXISTS account_sessions (
+                        account_id bigint REFERENCES accounts(id),
+                        token text,
+                        provider text,
+                        extern_id bigint,
+                        is_admin bool DEFAULT false,
+                        is_service_access bool DEFAULT false,
+                        created_at timestamptz DEFAULT now(),
+                        expires_at timestamptz DEFAULT now() + interval '1 day',
+                        UNIQUE (account_id)
+                        )"#,
+        )?;
+        debug!("=> [✓] fn: account_sessions_v1");
+
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_account_session_v1 (
+                    a_account_id bigint,
+                    account_token text,
+                    account_provider text,
+                    account_extern_id bigint,
+                    account_is_admin bool,
+                    account_is_service_access bool
+                 ) RETURNS SETOF account_sessions AS $$
+                     BEGIN
+                        RETURN QUERY INSERT INTO account_sessions (account_id, token, provider, extern_id, is_admin, is_service_access)
+                                        VALUES (a_account_id, account_token, account_provider, account_extern_id, account_is_admin, account_is_service_access)
+                                        ON CONFLICT (account_id) DO UPDATE
+                                        SET token = account_token, expires_at = now() + interval '1 day', provider = account_provider, extern_id = account_extern_id, is_admin = account_is_admin, is_service_access = account_is_service_access
+                                        RETURNING *;
+                        RETURN;
+                     END
+                 $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_account_session_v1 (
+                    account_email text,
+                    account_token text
+                ) RETURNS TABLE(id bigint, email text, name text, token text, is_admin bool, is_service_access bool) AS $$
+                     DECLARE
+                        this_account accounts%rowtype;
+                     BEGIN
+                        SELECT * FROM accounts WHERE accounts.email = account_email LIMIT 1 INTO this_account;
+                        IF FOUND THEN
+                            DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token AND expires_at < now();
+                            IF NOT FOUND THEN
+                                RETURN QUERY
+                                    SELECT accounts.id, accounts.email,
+                                           accounts.name, account_sessions.token,
+                                           account_sessions.is_admin,
+                                           account_sessions.is_service
+                                      FROM accounts
+                                        INNER JOIN account_sessions ON account_sessions.account_id = accounts.id
+                                      WHERE accounts.id = this_account.id
+                                        AND account_sessions.token = account_token;
+                            END IF;
+                        END IF;
+                        RETURN;
+                     END
+                 $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_account_session_v1");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS origin_id_seq;"#,
+        )?;
+
+        debug!("=> [✓] origin_id_seq");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE TABLE IF NOT EXISTS origins (
+                    id bigint PRIMARY KEY DEFAULT next_id_v1('origin_id_seq'),
+                    name text UNIQUE,
+                    owner_id bigint,
+                    session_sync bool DEFAULT false,
+                    created_at timestamptz DEFAULT now(),
+                    updated_at timestamptz
+             )"#,
+        )?;
+
+        debug!("=> [✓] origins");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE TABLE IF NOT EXISTS origin_members (
+                    origin_id bigint REFERENCES origins(id),
+                    origin_name text,
+                    account_id bigint,
+                    account_name text,
+                    created_at timestamptz DEFAULT now(),
+                    updated_at timestamptz,
+                    PRIMARY KEY (origin_id, account_id)
+                )"#,
+        )?;
+
+        debug!("=> [✓] fn: origin_members");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_origin_member_v1 (
+                     om_origin_id bigint,
+                     om_origin_name text,
+                     om_account_id bigint,
+                     om_account_name text
+                 ) RETURNS void AS $$
+                     BEGIN
+                         INSERT INTO origin_members (origin_id, origin_name, account_id, account_name)
+                                VALUES (om_origin_id, om_origin_name, om_account_id, om_account_name);
+                     END
+                 $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: insert_origin_member_v1");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_origin_v1 (
+                     origin_name text,
+                     origin_owner_id bigint,
+                     origin_owner_name text
+                 ) RETURNS SETOF origins AS $$
+                     DECLARE
+                       inserted_origin origins;
+                     BEGIN
+                         INSERT INTO origins (name, owner_id)
+                                VALUES (origin_name, origin_owner_id) RETURNING * into inserted_origin;
+                         PERFORM insert_origin_member_v1(inserted_origin.id, origin_name, origin_owner_id, origin_owner_name);
+                         PERFORM insert_origin_channel_v1(inserted_origin.id, origin_owner_id, 'unstable');
+                         PERFORM insert_origin_channel_v1(inserted_origin.id, origin_owner_id, 'stable');
+                         RETURN NEXT inserted_origin;
+                         RETURN;
+                     END
+                 $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: insert_origin_v1");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION list_origin_members_v1 (
+                   om_origin_id bigint
+                 ) RETURNS TABLE(account_name text) AS $$
+                    BEGIN
+                        RETURN QUERY SELECT origin_members.account_name FROM origin_members WHERE origin_id = om_origin_id
+                          ORDER BY account_name ASC;
+                        RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: list_origin_members_v1");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION check_account_in_origin_members_v1 (
+                   om_origin_name text,
+                   om_account_id bigint
+                 ) RETURNS TABLE(is_member bool) AS $$
+                    BEGIN
+                        RETURN QUERY SELECT true FROM origin_members WHERE origin_name = om_origin_name AND account_id = om_account_id;
+                        RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: check_account_in_origin_members_v1");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION list_origin_by_account_id_v1 (
+                   o_account_id bigint
+                 ) RETURNS TABLE(origin_name text) AS $$
+                    BEGIN
+                        RETURN QUERY SELECT origin_members.origin_name FROM origin_members WHERE account_id = o_account_id
+                          ORDER BY origin_name ASC;
+                        RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: list_origin_by_account_id_v1");
+
+        migrator.migrate(
+            "accountsrv",
+            r#"CREATE TABLE IF NOT EXISTS account_origins (
+                       account_id bigint,
+                       account_email text,
+                       origin_id bigint,
+                       origin_name text,
+                       created_at timestamptz DEFAULT now(),
+                       updated_at timestamptz,
+                       UNIQUE(account_id, origin_id)
+                       )"#,
+        )?;
+
+        debug!("=> [✓] account_origins");
+
+        migrator.migrate(
+            "accountsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_account_origin_v1 (
+                   o_account_id bigint,
+                   o_account_email text,
+                   o_origin_id bigint,
+                   o_origin_name text
+                ) RETURNS void AS $$
+                    BEGIN
+                       INSERT INTO account_origins (account_id, account_email, origin_id, origin_name) VALUES (o_account_id, o_account_email, o_origin_id, o_origin_name);
+                    END
+                $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: insert_account_origin_v1");
+
+        migrator.migrate(
+            "accountsrv",
+            r#"CREATE OR REPLACE FUNCTION get_account_origins_v1 (
+                   in_account_id bigint
+                ) RETURNS SETOF account_origins AS $$
+                    BEGIN
+                       RETURN QUERY SELECT * FROM account_origins WHERE account_id = in_account_id;
+                       RETURN;
+                    END
+                $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_account_origin_v1");
 
         // The core role_id_seq table
         migrator.migrate(

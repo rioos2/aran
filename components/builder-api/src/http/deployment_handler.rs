@@ -1,6 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! A collection of deployment [assembly, assembly_factory, for the HTTP server
+//! A collection of deployment [assembly, assembly_factory] for the HTTP server
 
 use std::env;
 

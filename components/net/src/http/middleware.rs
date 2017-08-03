@@ -1,16 +1,6 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2017 RioCorp Inc.
+
+//! A module containing the middleware of the HTTP server
 
 use std::env;
 
@@ -74,11 +64,13 @@ impl Key for GitHubCli {
     type Value = GitHubClient;
 }
 
+
 #[derive(Clone)]
 pub struct Authenticated {
     github: GitHubClient,
     features: FeatureFlags,
 }
+
 
 impl Authenticated {
     pub fn new<T: config::GitHubOAuth>(config: &T) -> Self {
@@ -94,10 +86,13 @@ impl Authenticated {
         self
     }
 
-    fn authenticate(&self, conn: &mut BrokerConn, token: &str) -> IronResult<Session> {
+    fn authenticate(&self, token: &str) -> IronResult<Session> {
         let mut request = SessionGet::new();
         request.set_token(token.to_string());
-        match conn.route::<SessionGet, Session>(&request) {
+
+        let ds = "";
+
+        match ds.route::<SessionGet, Session>(&request) {
             Ok(session) => Ok(session),
             Err(err) => {
                 if err.get_code() == ErrCode::SESSION_EXPIRED {
@@ -115,6 +110,73 @@ impl Authenticated {
                 }
             }
         }
+
+    }
+}
+
+impl BeforeMiddleware for Shielded {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        let session = {
+            match req.headers.get::<XAuthShield>() {
+                Some(shield_token) => try!(self.authenticate(shield_token)),
+                _ => {
+                    //log an event here saying you skipped the shield.
+                    return Ok(Session::new());
+                }
+            }
+        };
+        req.extensions.insert::<Self>(session);
+        Ok(())
+    }
+}
+
+
+
+#[derive(Clone)]
+pub struct Shielded {
+    shield: ShieldClient,
+    features: FeatureFlags,
+}
+
+impl Shielded {
+    pub fn new<T: config::ShieldAuth>(config: &T) -> Self {
+        let shielder = ShieldClient::new(config);
+        Authenticated {
+            shield: shielder,
+            features: FeatureFlags::empty(),
+        }
+    }
+
+    pub fn require(mut self, flag: FeatureFlags) -> Self {
+        self.features.insert(flag);
+        self
+    }
+
+    fn authenticate(&self, token: &str) -> IronResult<Session> {
+        let mut request = SessionGet::new();
+        request.set_token(token.to_string());
+
+        let ds = "";
+
+        match ds.route::<SessionGet, Session>(&request) {
+            Ok(session) => Ok(session),
+            Err(err) => {
+                if err.get_code() == ErrCode::SESSION_EXPIRED {
+                    let session = try!(session_create(&self.github, token));
+                    let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
+                    if !flags.contains(self.features) {
+                        let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
+                        return Err(IronError::new(err, Status::Forbidden));
+                    }
+                    Ok(session)
+                } else {
+                    let status = net_err_to_http(err.get_code());
+                    let body = itry!(serde_json::to_string(&err));
+                    Err(IronError::new(err, (body, status)))
+                }
+            }
+        }
+
     }
 }
 
