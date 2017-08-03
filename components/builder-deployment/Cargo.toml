@@ -1,5 +1,5 @@
 [package]
-name = "habitat_builder_jobsrv"
+name = "habitat_builder_asmsrv"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS Deployment library"

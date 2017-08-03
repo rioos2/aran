@@ -14,7 +14,7 @@
 
 #[macro_use]
 extern crate habitat_builder_db as db;
-extern crate habitat_builder_jobsrv as jobsrv;
+extern crate habitat_builder_asmsrv as asmsrv;
 extern crate habitat_builder_protocol as protocol;
 
 mod data_store;
