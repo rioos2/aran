@@ -5,6 +5,7 @@ members = [
   "components/builder-core",
   "components/builder-db",
   "components/builder-deployment",
+  "components/builder-scaling",
   "components/builder-protocol",
   "components/builder-sessionsrv",
   "components/common",

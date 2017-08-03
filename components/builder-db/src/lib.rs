@@ -73,4 +73,5 @@ pub mod data_store;
 pub mod auth_storedproc;
 pub mod deploy_storedproc;
 pub mod plan_storedproc;
+pub mod scale_storedproc;
 pub mod migration;
