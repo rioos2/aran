@@ -11,6 +11,7 @@ use migration::{Migratable, Migrator};
 use auth_storedproc::*;
 use deploy_storedproc::*;
 use plan_storedproc::*;
+use scale_storedproc::*;
 
 pub struct DataStoreBroker;
 
@@ -45,7 +46,7 @@ impl DataStoreConn {
 
     /// Setup the datastore.
     /// This includes all the schema and data migrations, along with stored procedures for data
-/// access.
+    /// access.
     pub fn setup(&self) -> Result<&DataStoreConn> {
         let conn = self.pool.get_raw()?;
         let xact = conn.transaction().map_err(Error::DbTransactionStart)?;
@@ -70,6 +71,7 @@ impl DataStoreConn {
         AuthProcedures::new()?.migrate(migrator)?;
         DeployProcedures::new()?.migrate(migrator)?;
         PlanProcedures::new()?.migrate(migrator)?;
+        ScaleProcedures::new()?.migrate(migrator)?;
         Ok(())
     }
 }

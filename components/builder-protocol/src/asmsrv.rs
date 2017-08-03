@@ -64,6 +64,10 @@ impl Serialize for AssemblyFactory {
         strukt.serialize_field("name", &self.get_name().to_string())?;
         strukt.serialize_field("uri", &self.get_uri().to_string())?;
         strukt.serialize_field(
+            "replicas",
+            &self.get_replicas().to_string(),
+        )?;
+        strukt.serialize_field(
             "description",
             &self.get_description().to_string(),
         )?;

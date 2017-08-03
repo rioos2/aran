@@ -19,7 +19,10 @@
 
 use protobuf::Message as Message_imported_for_functions;
 use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
-use error::{Result, Error};
+use std::fmt;
+use error::{Error, Result};
+use std::str::FromStr;
+
 
 
 #[derive(Debug, PartialEq, Clone, Default)]
@@ -34,7 +37,7 @@ pub struct Assembly {
     node: String,
     ip: String,
     urls: String,
-    status: String,
+    status: ::std::option::Option<AssemblyStatus>,
     spec: Option<AssemblyFactory>,
     created_at: String,
 }
@@ -124,12 +127,12 @@ impl Assembly {
     }
 
 
-    pub fn set_status(&mut self, v: ::std::string::String) {
-        self.status = v;
+    pub fn set_status(&mut self, v: AssemblyStatus) {
+        self.status = ::std::option::Option::Some(v);
     }
 
-    pub fn get_status(&self) -> ::std::string::String {
-        self.status.clone()
+    pub fn get_status(&self) -> AssemblyStatus {
+        self.status.unwrap_or(AssemblyStatus::Pending)
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -200,6 +203,45 @@ impl AssemblyGet {
 }
 
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+pub enum AssemblyStatus {
+    Pending,
+    Processing,
+    Complete,
+    Rejected,
+    Failed,
+    Dispatched,
+}
+
+impl AssemblyStatus {
+    pub fn from_str(value: String) -> AssemblyStatus {
+        match &value[..] {
+            "Dispatched" => AssemblyStatus::Dispatched,
+            "Pending" => AssemblyStatus::Pending,
+            "Processing" => AssemblyStatus::Processing,
+            "Complete" => AssemblyStatus::Complete,
+            "Rejected" => AssemblyStatus::Rejected,
+            "Failed" => AssemblyStatus::Failed,
+            _ => AssemblyStatus::Pending,
+        }
+    }
+}
+
+impl fmt::Display for AssemblyStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            AssemblyStatus::Dispatched => write!(f, "Dispatched"),
+            AssemblyStatus::Pending => write!(f, "Pending"),
+            AssemblyStatus::Processing => write!(f, "Processing"),
+            AssemblyStatus::Rejected => write!(f, "Rejected"),
+            AssemblyStatus::Complete => write!(f, "Complete"),
+            AssemblyStatus::Failed => write!(f, "Failed"),
+        }
+    }
+}
+
+
+
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct AssemblyFactory {
     id: u64,
@@ -207,11 +249,12 @@ pub struct AssemblyFactory {
     uri: String,
     description: String,
     tags: Vec<String>,
+    replicas: u64,
     properties: String,
     plan: String,
     external_management_resource: Vec<String>,
     component_collection: String,
-    status: String,
+    status: ::std::option::Option<AssemblyFactoryStatus>,
     opssettings: String,
     created_at: String,
 }
@@ -229,6 +272,14 @@ impl AssemblyFactory {
 
     pub fn get_id(&self) -> u64 {
         self.id
+    }
+
+    pub fn set_replicas(&mut self, v: u64) {
+        self.replicas = v;
+    }
+
+    pub fn get_replicas(&self) -> u64 {
+        self.replicas
     }
 
     pub fn set_uri(&mut self, v: ::std::string::String) {
@@ -295,12 +346,13 @@ impl AssemblyFactory {
         self.component_collection.clone()
     }
 
-    pub fn set_status(&mut self, v: ::std::string::String) {
-        self.status = v;
+
+    pub fn set_status(&mut self, v: AssemblyFactoryStatus) {
+        self.status = ::std::option::Option::Some(v);
     }
 
-    pub fn get_status(&self) -> ::std::string::String {
-        self.status.clone()
+    pub fn get_status(&self) -> AssemblyFactoryStatus {
+        self.status.unwrap_or(AssemblyFactoryStatus::Pending)
     }
 
     pub fn set_opssettings(&mut self, v: ::std::string::String) {
@@ -369,5 +421,43 @@ impl AssemblyFactoryGetResponse {
 
     pub fn get_assemblys_factory(&self) -> &[AssemblyFactory] {
         &self.assembly_factory
+    }
+}
+
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+pub enum AssemblyFactoryStatus {
+    Pending,
+    Processing,
+    Complete,
+    Rejected,
+    Failed,
+    Dispatched,
+}
+
+impl AssemblyFactoryStatus {
+    pub fn from_str(value: String) -> AssemblyFactoryStatus {
+        match &value[..] {
+            "Dispatched" => AssemblyFactoryStatus::Dispatched,
+            "Pending" => AssemblyFactoryStatus::Pending,
+            "Processing" => AssemblyFactoryStatus::Processing,
+            "Complete" => AssemblyFactoryStatus::Complete,
+            "Rejected" => AssemblyFactoryStatus::Rejected,
+            "Failed" => AssemblyFactoryStatus::Failed,
+            _ => AssemblyFactoryStatus::Pending,
+        }
+    }
+}
+
+impl fmt::Display for AssemblyFactoryStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            AssemblyFactoryStatus::Dispatched => write!(f, "Dispatched"),
+            AssemblyFactoryStatus::Pending => write!(f, "Pending"),
+            AssemblyFactoryStatus::Processing => write!(f, "Processing"),
+            AssemblyFactoryStatus::Rejected => write!(f, "Rejected"),
+            AssemblyFactoryStatus::Complete => write!(f, "Complete"),
+            AssemblyFactoryStatus::Failed => write!(f, "Failed"),
+        }
     }
 }

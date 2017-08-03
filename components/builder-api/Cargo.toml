@@ -46,8 +46,11 @@ path = "../builder-protocol"
 [dependencies.habitat_net]
 path = "../net"
 
-[dependencies.habitat_builder_jobsrv]
+[dependencies.habitat_builder_asmsrv]
 path = "../builder-deployment"
+
+[dependencies.habitat_builder_scalesrv]
+path = "../builder-scaling"
 
 [dependencies.habitat_builder_db]
 path = "../builder-db"

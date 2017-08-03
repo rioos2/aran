@@ -70,9 +70,8 @@ impl Migratable for DeployProcedures {
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] assembly");
+        debug!("=> [✓] fn: insert_assembly_v1");
 
-        // Just make sure you always address the columns by name, not by position.
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION get_assembly_v1 (aid bigint) RETURNS SETOF assembly AS $$
@@ -97,6 +96,18 @@ impl Migratable for DeployProcedures {
 
         debug!("=> [✓] fn: get_assemblys_v1");
 
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION set_assembly_status_v1 (aid bigint, asm_status text) RETURNS void AS $$
+                            BEGIN
+                                UPDATE assembly SET status=asm_status, updated_at=now() WHERE id=aid;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: set_assembly_status_v1");
+
+
         // The core asms_facttory table
         migrator.migrate(
             "asmsrv",
@@ -118,6 +129,7 @@ impl Migratable for DeployProcedures {
              external_management_resource text[],
              component_collection text,
              opssettings text,
+             replicas bigint,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
@@ -138,18 +150,19 @@ impl Migratable for DeployProcedures {
                 external_management_resource text[],
                 component_collection text,
                 opssettings text,
+                replicas bigint,
                 status text
                         ) RETURNS SETOF assembly_factory AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,external_management_resource,component_collection,opssettings,status)
-                                        VALUES (name, uri, description, tags,plan,properties,external_management_resource,component_collection,opssettings,status)
+                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,external_management_resource,component_collection,opssettings,replicas,status)
+                                        VALUES (name, uri, description, tags,plan,properties,external_management_resource,component_collection,opssettings,replicas,status)
                                         RETURNING *;
                                     RETURN;
                                 END
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] fn: assembly_factory_v1");
+        debug!("=> [✓] fn: insert_assembly_factory_v1");
 
         // Just make sure you always address the columns by name, not by position.
         migrator.migrate(
@@ -176,6 +189,18 @@ impl Migratable for DeployProcedures {
         )?;
 
         debug!("=> [✓] fn: get_assemblys_factory_v1");
+
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION set_assembly_factorys_status_v1 (aid bigint, asm_fac_status text) RETURNS void AS $$
+                            BEGIN
+                                UPDATE assembly_factory SET status=asm_fac_status, updated_at=now() WHERE id=aid;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: set_assembly_factorys_status_v1");
 
         debug!("=> DONE: asmsrv");
 
