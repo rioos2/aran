@@ -7,6 +7,10 @@ use error::{Result, Error};
 use protocol::scalesrv;
 use postgres;
 use db::data_store::DataStoreConn;
+use serde_json;
+use serde::Serialize;
+
+
 
 pub struct ScalingDS;
 
@@ -20,10 +24,12 @@ impl ScalingDS {
     /// * If the assembly cannot be created
     pub fn hs_create(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
         let conn = datastore.pool.get_shard(0)?;
+        let encoded = serde_json::to_string(hs.get_spec()).unwrap();
+        println!("-------------------------------------{:?}", encoded);
         debug!("◖☩ START: hs_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
                 &(hs.get_name() as String),
                 &(hs.get_description() as String),
@@ -32,8 +38,7 @@ impl ScalingDS {
                 &(hs.get_representation_skew() as String),
                 &(hs.get_target_resource() as String),
                 &(hs.get_metadata() as Vec<String>),
-                &(hs.get_rules() as Vec<String>),
-                &(hs.get_properties() as Vec<String>),
+                &(encoded),
                 &(hs.get_status() as String),
             ],
         ).map_err(Error::HSCreate)?;
@@ -57,8 +62,6 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     let representation_skew: String = row.get("representation_skew");
     let target_resource: String = row.get("target_resource");
     let metadata: Vec<String> = row.get("metadata");
-    let rules: Vec<String> = row.get("rules");
-    let properties: Vec<String> = row.get("properties");
     let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
@@ -70,8 +73,6 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     hs.set_representation_skew(representation_skew as String);
     hs.set_target_resource(target_resource as String);
     hs.set_metadata(metadata as Vec<String>);
-    hs.set_rules(rules as Vec<String>);
-    hs.set_properties(properties as Vec<String>);
     hs.set_status(status as String);
     hs.set_created_at(created_at.to_rfc3339());
 

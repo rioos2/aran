@@ -35,14 +35,32 @@ impl Serialize for HorizontalScaling {
             &self.get_target_resource().to_string(),
         )?;
         strukt.serialize_field("metadata", &self.get_metadata())?;
-        strukt.serialize_field("rules", &self.get_rules())?;
-        strukt.serialize_field("properties", &self.get_properties())?;
-        strukt.serialize_field(
-            "status",
-            &self.get_status().to_string(),
-        )?;
+        strukt.serialize_field("spec", &self.get_spec())?;
+        strukt.serialize_field("status", &self.get_status())?;
         strukt.serialize_field("created_at", &self.get_created_at())?;
 
+        strukt.end()
+    }
+}
+
+impl Serialize for Spec {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut strukt = serializer.serialize_struct("spec", 3)?;
+        strukt.serialize_field(
+            "scale_target_ref",
+            &self.get_scale_target_ref().to_string(),
+        )?;
+        strukt.serialize_field(
+            "min_replicas",
+            &self.get_min_replicas().to_string(),
+        )?;
+        strukt.serialize_field(
+            "max_replicas",
+            &self.get_max_replicas().to_string(),
+        )?;
         strukt.end()
     }
 }

@@ -12,7 +12,7 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use persistent;
-use protocol::scalesrv::HorizontalScaling;
+use protocol::scalesrv::{HorizontalScaling, Spec};
 use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
@@ -30,18 +30,56 @@ struct HsCreateReq {
     representation_skew: String,
     target_resource: String,
     metadata: Vec<String>,
-    rules: Vec<String>,
-    properties: Vec<String>,
+    spec: SpecReq,
     status: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct SpecReq {
+    scale_target_ref: String,
+    min_replicas: u64,
+    max_replicas: u64,
+    // metrics: Vec<Metrics>,
+}
+
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct Metrics {
+    metric_type: String,
+    object: MetricObject,
+    resource: MetricResource,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct MetricObject {
+    target: String,
+    target_value: u64,
+    metric_time_spec: TimeSpec,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct MetricResource {
+    name: String,
+    min_target_value: String,
+    max_target_value: String,
+    metric_time_spec: TimeSpec,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct TimeSpec {
+    scale_up_by: String,
+    scale_up_wait_time: String,
+    scale_down_by: String,
+    scale_down_wait_time: String,
+}
+
+
 pub fn hs_create(req: &mut Request) -> IronResult<Response> {
-    println!("-----------------------------------------------------");
     let mut hs_create = HorizontalScaling::new();
+    let mut spec = Spec::new();
     {
         match req.get::<bodyparser::Struct<HsCreateReq>>() {
             Ok(Some(body)) => {
-                println!("----------------------{:?}", body.name);
                 if body.name.len() <= 0 {
                     return Ok(Response::with((
                         status::UnprocessableEntity,
@@ -55,14 +93,15 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 hs_create.set_representation_skew(body.representation_skew);
                 hs_create.set_metadata(body.metadata);
                 hs_create.set_status(body.status);
+                spec.set_scale_target_ref(body.spec.scale_target_ref);
+                spec.set_min_replicas(body.spec.min_replicas);
+                spec.set_max_replicas(body.spec.max_replicas);
+                hs_create.set_spec(spec);
                 hs_create.set_target_resource(body.target_resource);
-                hs_create.set_rules(body.rules);
-                hs_create.set_properties(body.properties);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
-
     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
     //This is needed as you'll need the email/token if any
     // let session = req.extensions.get::<Authenticated>().unwrap().clone();

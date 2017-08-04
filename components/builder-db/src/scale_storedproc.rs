@@ -35,8 +35,7 @@ impl Migratable for ScaleProcedures {
              representation_skew text,
              target_resource text,
              metadata text[],
-             rules text[],
-             properties text[],
+             spec jsonb,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
@@ -56,13 +55,12 @@ impl Migratable for ScaleProcedures {
                 representation_skew text,
                 target_resource text,
                 metadata text[],
-                rules text[],
-                properties text[],
+                spec jsonb,
                 status text
                         ) RETURNS SETOF horizontal_scaling AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,hs_type,representation_skew,target_resource,metadata,rules,properties,status)
-                                        VALUES (name,description,tags,hs_type,representation_skew,target_resource,metadata,rules,properties,status)
+                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,hs_type,representation_skew,target_resource,metadata,spec,status)
+                                        VALUES (name,description,tags,hs_type,representation_skew,target_resource,metadata,spec,status)
                                         RETURNING *;
                                     RETURN;
                                 END

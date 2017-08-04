@@ -16,9 +16,7 @@
 use protobuf::Message as Message_imported_for_functions;
 use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 use std::fmt;
-use error::{Error, Result};
 use std::str::FromStr;
-
 
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct HorizontalScaling {
@@ -30,8 +28,7 @@ pub struct HorizontalScaling {
     representation_skew: String,
     target_resource: String,
     metadata: Vec<String>,
-    rules: Vec<String>,
-    properties: Vec<String>,
+    spec: Spec,
     status: String,
     created_at: String,
 }
@@ -102,20 +99,12 @@ impl HorizontalScaling {
         self.metadata.clone()
     }
 
-    pub fn set_rules(&mut self, v: ::std::vec::Vec<String>) {
-        self.rules = v;
+    pub fn set_spec(&mut self, v: Spec) {
+        self.spec = v;
     }
 
-    pub fn get_rules(&self) -> ::std::vec::Vec<String> {
-        self.rules.clone()
-    }
-
-    pub fn set_properties(&mut self, v: ::std::vec::Vec<String>) {
-        self.properties = v;
-    }
-
-    pub fn get_properties(&self) -> ::std::vec::Vec<String> {
-        self.properties.clone()
+    pub fn get_spec(&self) -> &Spec {
+        &self.spec
     }
 
     pub fn set_status(&mut self, v: ::std::string::String) {
@@ -132,5 +121,36 @@ impl HorizontalScaling {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default)]
+pub struct Spec {
+    scale_target_ref: String,
+    min_replicas: u64,
+    max_replicas: u64,
+}
+
+impl Spec {
+    pub fn new() -> Spec {
+        ::std::default::Default::default()
+    }
+    pub fn set_scale_target_ref(&mut self, v: ::std::string::String) {
+        self.scale_target_ref = v;
+    }
+    pub fn get_scale_target_ref(&self) -> ::std::string::String {
+        self.scale_target_ref.clone()
+    }
+    pub fn set_min_replicas(&mut self, v: u64) {
+        self.min_replicas = v;
+    }
+    pub fn get_min_replicas(&self) -> u64 {
+        self.min_replicas.clone()
+    }
+    pub fn set_max_replicas(&mut self, v: u64) {
+        self.max_replicas = v;
+    }
+    pub fn get_max_replicas(&self) -> u64 {
+        self.max_replicas.clone()
     }
 }
