@@ -35,7 +35,7 @@ impl Migratable for ScaleProcedures {
              representation_skew text,
              target_resource text,
              metadata text[],
-             spec jsonb,
+             spec text,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
@@ -55,7 +55,7 @@ impl Migratable for ScaleProcedures {
                 representation_skew text,
                 target_resource text,
                 metadata text[],
-                spec jsonb,
+                spec text,
                 status text
                         ) RETURNS SETOF horizontal_scaling AS $$
                                 BEGIN

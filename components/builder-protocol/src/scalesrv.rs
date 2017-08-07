@@ -1,3 +1,18 @@
+#![allow(unknown_lints)]
+
+#![cfg_attr(rustfmt, rustfmt_skip)]
+
+#![allow(box_pointers)]
+#![allow(dead_code)]
+#![allow(missing_docs)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
+#![allow(non_upper_case_globals)]
+#![allow(trivial_casts)]
+#![allow(unsafe_code)]
+#![allow(unused_imports)]
+#![allow(unused_results)]
+
 use message::{Persistable, Routable};
 use protobuf::{ProtobufEnum, RepeatedField};
 use regex::Regex;
@@ -7,60 +22,148 @@ use sharding::InstaId;
 use std::result;
 use std::str::FromStr;
 
-pub use message::scalesrv::*;
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HorizontalScaling {
+    id: u64,
+    name: String,
+    description: String,
+    tags: Vec<String>,
+    hs_type: String,
+    representation_skew: String,
+    target_resource: String,
+    metadata: Vec<String>,
+    spec: String,
+    status: String,
+    created_at: String,
+    spec_obj: Spec,
+}
+impl HorizontalScaling {
+    pub fn new() -> HorizontalScaling {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: u64) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> u64 {
+        self.id
+    }
 
-impl Serialize for HorizontalScaling {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut strukt = try!(serializer.serialize_struct("horizontal_scaling", 10));
-        strukt.serialize_field("id", &self.get_id().to_string())?;
-        strukt.serialize_field("name", &self.get_name().to_string())?;
-        strukt.serialize_field(
-            "description",
-            &self.get_description().to_string(),
-        )?;
-        strukt.serialize_field("tags", &self.get_tags())?;
-        strukt.serialize_field(
-            "hs_type",
-            &self.get_hs_type().to_string(),
-        )?;
-        strukt.serialize_field(
-            "representation_skew",
-            &self.get_representation_skew().to_string(),
-        )?;
-        strukt.serialize_field(
-            "target_resource",
-            &self.get_target_resource().to_string(),
-        )?;
-        strukt.serialize_field("metadata", &self.get_metadata())?;
-        strukt.serialize_field("spec", &self.get_spec())?;
-        strukt.serialize_field("status", &self.get_status())?;
-        strukt.serialize_field("created_at", &self.get_created_at())?;
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
 
-        strukt.end()
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+
+    pub fn get_description(&self) -> ::std::string::String {
+        self.description.clone()
+    }
+
+    pub fn set_tags(&mut self, v: ::std::vec::Vec<String>) {
+        self.tags = v;
+    }
+
+    pub fn get_tags(&self) -> ::std::vec::Vec<String> {
+        self.tags.clone()
+    }
+
+    pub fn set_hs_type(&mut self, v: ::std::string::String) {
+        self.hs_type = v;
+    }
+
+    pub fn get_hs_type(&self) -> ::std::string::String {
+        self.hs_type.clone()
+    }
+
+    pub fn set_representation_skew(&mut self, v: ::std::string::String) {
+        self.representation_skew = v;
+    }
+
+    pub fn get_representation_skew(&self) -> ::std::string::String {
+        self.representation_skew.clone()
+    }
+
+    pub fn set_target_resource(&mut self, v: ::std::string::String) {
+        self.target_resource = v;
+    }
+
+    pub fn get_target_resource(&self) -> ::std::string::String {
+        self.target_resource.clone()
+    }
+
+    pub fn set_metadata(&mut self, v: ::std::vec::Vec<String>) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self) -> ::std::vec::Vec<String> {
+        self.metadata.clone()
+    }
+
+    pub fn set_spec_as_string(&mut self, v: ::std::string::String) {
+        self.spec = v;
+    }
+
+    pub fn get_spec_as_string(&self) -> ::std::string::String {
+        self.spec.clone()
+    }
+
+    pub fn set_spec_as_obj(&mut self, v: Spec) {
+        self.spec_obj = v;
+    }
+
+    pub fn get_spec_as_obj(&self) -> &Spec {
+        &self.spec_obj
+    }
+
+    pub fn set_status(&mut self, v: ::std::string::String) {
+        self.status = v;
+    }
+
+    pub fn get_status(&self) -> ::std::string::String {
+        self.status.clone()
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
     }
 }
 
-impl Serialize for Spec {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut strukt = serializer.serialize_struct("spec", 3)?;
-        strukt.serialize_field(
-            "scale_target_ref",
-            &self.get_scale_target_ref().to_string(),
-        )?;
-        strukt.serialize_field(
-            "min_replicas",
-            &self.get_min_replicas().to_string(),
-        )?;
-        strukt.serialize_field(
-            "max_replicas",
-            &self.get_max_replicas().to_string(),
-        )?;
-        strukt.end()
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Spec {
+    scale_target_ref: String,
+    min_replicas: u64,
+    max_replicas: u64,
+}
+
+impl Spec {
+    pub fn new() -> Spec {
+        ::std::default::Default::default()
+    }
+    pub fn set_scale_target_ref(&mut self, v: ::std::string::String) {
+        self.scale_target_ref = v;
+    }
+    pub fn get_scale_target_ref(&self) -> ::std::string::String {
+        self.scale_target_ref.clone()
+    }
+    pub fn set_min_replicas(&mut self, v: u64) {
+        self.min_replicas = v;
+    }
+    pub fn get_min_replicas(&self) -> u64 {
+        self.min_replicas.clone()
+    }
+    pub fn set_max_replicas(&mut self, v: u64) {
+        self.max_replicas = v;
+    }
+    pub fn get_max_replicas(&self) -> u64 {
+        self.max_replicas.clone()
     }
 }

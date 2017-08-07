@@ -17,7 +17,7 @@ use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::DataStoreBroker;
-
+use serde_json;
 
 define_event_log!();
 
@@ -96,7 +96,8 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 spec.set_scale_target_ref(body.spec.scale_target_ref);
                 spec.set_min_replicas(body.spec.min_replicas);
                 spec.set_max_replicas(body.spec.max_replicas);
-                hs_create.set_spec(spec);
+                let encoded = serde_json::to_string(&spec).unwrap();
+                hs_create.set_spec_as_string(encoded);
                 hs_create.set_target_resource(body.target_resource);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
