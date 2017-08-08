@@ -56,6 +56,17 @@ impl ScalingDS {
         response.set_hs_collection(hs_collection);
         Ok(Some(response))
     }
+
+    pub fn hs_status_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<()> {
+        let conn = datastore.pool.get_shard(0)?;
+        let id = hs.get_id() as i64;
+        let status_str = serde_json::to_string(hs.get_status()).unwrap();
+        conn.execute(
+            "SELECT set_hs_status_v1($1, $2)",
+            &[&id, &(status_str as String)],
+        ).map_err(Error::HSSetStatus)?;
+        Ok(())
+    }
 }
 
 fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {

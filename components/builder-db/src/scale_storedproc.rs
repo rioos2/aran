@@ -81,6 +81,19 @@ impl Migratable for ScaleProcedures {
 
         debug!("=> [✓] fn: get_hs_v1");
 
+
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION set_hs_status_v1 (hid bigint, hs_status text) RETURNS void AS $$
+                            BEGIN
+                                UPDATE horizontal_scaling SET status=hs_status, updated_at=now() WHERE id=hid;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: set_hs_status_v1");
+
+
         // The core plans table
         debug!("=> DONE: scalesrv");
 
