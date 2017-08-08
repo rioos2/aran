@@ -12,7 +12,7 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use persistent;
-use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec};
+use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
 use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
@@ -30,7 +30,7 @@ struct HsCreateReq {
     target_resource: String,
     metadata: Vec<String>,
     spec: SpecReq,
-    status: String,
+    status: StatusReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -80,10 +80,15 @@ struct ResTimeSpecReq {
     scale_down_wait_time: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct StatusReq {
+    last_scale_time: String,
+    current_replicas: u64,
+    desired_replicas: u64,
+}
 
 pub fn hs_create(req: &mut Request) -> IronResult<Response> {
     let mut hs_create = HorizontalScaling::new();
-    let mut spec = Spec::new();
 
     {
         match req.get::<bodyparser::Struct<HsCreateReq>>() {
@@ -100,7 +105,9 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 hs_create.set_hs_type(body.hs_type);
                 hs_create.set_representation_skew(body.representation_skew);
                 hs_create.set_metadata(body.metadata);
-                hs_create.set_status(body.status);
+                hs_create.set_target_resource(body.target_resource);
+
+                let mut spec = Spec::new();
 
                 spec.set_scale_target_ref(body.spec.scale_target_ref);
                 spec.set_min_replicas(body.spec.min_replicas);
@@ -151,9 +158,14 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 }
 
                 spec.set_metrics(metrics_collection);
-
                 hs_create.set_spec(spec);
-                hs_create.set_target_resource(body.target_resource);
+
+                let mut status = Status::new();
+
+                status.set_last_scale_time(body.status.last_scale_time);
+                status.set_current_replicas(body.status.current_replicas);
+                status.set_desired_replicas(body.status.desired_replicas);
+                hs_create.set_status(status);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

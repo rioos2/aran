@@ -14,7 +14,8 @@ pub struct ScalingDS;
 impl ScalingDS {
     pub fn hs_create(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
         let conn = datastore.pool.get_shard(0)?;
-        let encoded = serde_json::to_string(hs.get_spec()).unwrap();
+        let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
+        let status_str = serde_json::to_string(hs.get_status()).unwrap();
         debug!("◖☩ START: hs_create ");
         let rows = &conn.query(
             "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
@@ -26,8 +27,8 @@ impl ScalingDS {
                 &(hs.get_representation_skew() as String),
                 &(hs.get_target_resource() as String),
                 &(hs.get_metadata() as Vec<String>),
-                &(encoded as String),
-                &(hs.get_status() as String),
+                &(spec_str as String),
+                &(status_str as String),
             ],
         ).map_err(Error::HSCreate)?;
 
@@ -51,7 +52,7 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     let target_resource: String = row.get("target_resource");
     let metadata: Vec<String> = row.get("metadata");
     let status: String = row.get("status");
-    let spec_str: String = row.get("spec");
+    let spec: String = row.get("spec");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     hs.set_id(id as u64);
@@ -62,11 +63,11 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     hs.set_representation_skew(representation_skew as String);
     hs.set_target_resource(target_resource as String);
     hs.set_metadata(metadata as Vec<String>);
-    hs.set_status(status as String);
-    let back: scalesrv::Spec = serde_json::from_str(&spec_str).unwrap();
-    hs.set_spec(back);
+    let spec_obj: scalesrv::Spec = serde_json::from_str(&spec).unwrap();
+    let status_obj: scalesrv::Status = serde_json::from_str(&status).unwrap();
+    hs.set_spec(spec_obj);
+    hs.set_status(status_obj);
     hs.set_created_at(created_at.to_rfc3339());
-
     debug!("◖☩ ASM: row_to_hs =>\n{:?}", hs);
     debug!("◖☩ DONE: row_to_hs");
     Ok(hs)

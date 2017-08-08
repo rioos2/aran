@@ -33,7 +33,7 @@ pub struct HorizontalScaling {
     target_resource: String,
     metadata: Vec<String>,
     spec: Spec,
-    status: String,
+    status: Status,
     created_at: String,
 }
 impl HorizontalScaling {
@@ -112,12 +112,12 @@ impl HorizontalScaling {
         &self.spec
     }
 
-    pub fn set_status(&mut self, v: ::std::string::String) {
+    pub fn set_status(&mut self, v: Status) {
         self.status = v;
     }
 
-    pub fn get_status(&self) -> ::std::string::String {
-        self.status.clone()
+    pub fn get_status(&self) -> &Status {
+        &self.status
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -256,5 +256,29 @@ impl TimeSpec {
     }
     pub fn set_scale_down_wait_time(&mut self, v: ::std::string::String) {
         self.scale_down_wait_time = v;
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Status {
+    last_scale_time: String,
+    current_replicas: u64,
+    desired_replicas: u64,
+}
+
+impl Status {
+    pub fn new() -> Status {
+        ::std::default::Default::default()
+    }
+    pub fn set_last_scale_time(&mut self, v: ::std::string::String) {
+        self.last_scale_time = v;
+    }
+
+    pub fn set_current_replicas(&mut self, v: u64) {
+        self.current_replicas = v;
+    }
+    pub fn set_desired_replicas(&mut self, v: u64) {
+        self.desired_replicas = v;
     }
 }
