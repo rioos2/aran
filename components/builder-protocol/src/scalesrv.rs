@@ -162,7 +162,7 @@ impl Spec {
 pub struct Metrics {
     metric_type: String,
     object: MetricObject,
-    // resource: MetricResource,
+    resource: MetricResource,
 }
 
 impl Metrics {
@@ -175,12 +175,17 @@ impl Metrics {
     pub fn set_metric_object(&mut self, v: MetricObject) {
         self.object = v;
     }
+
+    pub fn set_metric_resource(&mut self, v: MetricResource) {
+        self.resource = v;
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct MetricObject {
     target: String,
     target_value: u64,
+    metric_time_spec: TimeSpec,
 }
 
 impl MetricObject {
@@ -192,5 +197,64 @@ impl MetricObject {
     }
     pub fn set_target_value(&mut self, v: u64) {
         self.target_value = v;
+    }
+    pub fn set_metric_time_spec(&mut self, v: TimeSpec) {
+        self.metric_time_spec = v;
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct MetricResource {
+    name: String,
+    min_target_value: String,
+    max_target_value: String,
+    metric_time_spec: TimeSpec,
+}
+
+impl MetricResource {
+    pub fn new() -> MetricResource {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn set_min_target_value(&mut self, v: ::std::string::String) {
+        self.min_target_value = v;
+    }
+    pub fn set_max_target_value(&mut self, v: ::std::string::String) {
+        self.max_target_value = v;
+    }
+    pub fn set_metric_time_spec(&mut self, v: TimeSpec) {
+        self.metric_time_spec = v;
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct TimeSpec {
+    scale_up_by: String,
+    scale_up_wait_time: String,
+    scale_down_by: String,
+    scale_down_wait_time: String,
+}
+
+impl TimeSpec {
+    pub fn new() -> TimeSpec {
+        ::std::default::Default::default()
+    }
+    pub fn set_scale_up_by(&mut self, v: ::std::string::String) {
+        self.scale_up_by = v;
+    }
+
+    pub fn set_scale_up_wait_time(&mut self, v: ::std::string::String) {
+        self.scale_up_wait_time = v;
+    }
+    pub fn set_scale_down_by(&mut self, v: ::std::string::String) {
+        self.scale_down_by = v;
+    }
+    pub fn set_scale_down_wait_time(&mut self, v: ::std::string::String) {
+        self.scale_down_wait_time = v;
     }
 }
