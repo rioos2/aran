@@ -12,12 +12,11 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use persistent;
-use protocol::scalesrv::{HorizontalScaling, Spec};
+use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject};
 use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::DataStoreBroker;
-use serde_json;
 
 define_event_log!();
 
@@ -39,22 +38,22 @@ struct SpecReq {
     scale_target_ref: String,
     min_replicas: u64,
     max_replicas: u64,
-    // metrics: Vec<Metrics>,
+    metrics: Vec<MetricsReq>,
 }
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct Metrics {
+struct MetricsReq {
     metric_type: String,
-    object: MetricObject,
-    resource: MetricResource,
+    object: MetricObjectReq,
+    // resource: MetricResource,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct MetricObject {
+struct MetricObjectReq {
     target: String,
     target_value: u64,
-    metric_time_spec: TimeSpec,
+    // metric_time_spec: TimeSpec,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -77,6 +76,7 @@ struct TimeSpec {
 pub fn hs_create(req: &mut Request) -> IronResult<Response> {
     let mut hs_create = HorizontalScaling::new();
     let mut spec = Spec::new();
+
     {
         match req.get::<bodyparser::Struct<HsCreateReq>>() {
             Ok(Some(body)) => {
@@ -96,8 +96,22 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 spec.set_scale_target_ref(body.spec.scale_target_ref);
                 spec.set_min_replicas(body.spec.min_replicas);
                 spec.set_max_replicas(body.spec.max_replicas);
-                let encoded = serde_json::to_string(&spec).unwrap();
-                hs_create.set_spec_as_string(encoded);
+                let mut metrics_collection = Vec::new();
+                for data in body.spec.metrics {
+                    let mut metrics = Metrics::new();
+                    let mut metrics_obj = MetricObject::new();
+                    metrics.set_metric_type(data.metric_type);
+                    metrics_obj.set_target(data.object.target);
+                    metrics_obj.set_target_value(data.object.target_value);
+                    metrics.set_metric_object(metrics_obj);
+                    metrics_collection.push(metrics);
+                }
+                println!(
+                    "------------------------metrics_collection--------------------------------{:?}",
+                    metrics_collection
+                );
+                spec.set_metrics(metrics_collection);
+                hs_create.set_spec(spec);
                 hs_create.set_target_resource(body.target_resource);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),

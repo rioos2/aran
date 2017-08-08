@@ -32,10 +32,9 @@ pub struct HorizontalScaling {
     representation_skew: String,
     target_resource: String,
     metadata: Vec<String>,
-    spec: String,
+    spec: Spec,
     status: String,
     created_at: String,
-    spec_obj: Spec,
 }
 impl HorizontalScaling {
     pub fn new() -> HorizontalScaling {
@@ -104,20 +103,13 @@ impl HorizontalScaling {
         self.metadata.clone()
     }
 
-    pub fn set_spec_as_string(&mut self, v: ::std::string::String) {
+
+    pub fn set_spec(&mut self, v: Spec) {
         self.spec = v;
     }
 
-    pub fn get_spec_as_string(&self) -> ::std::string::String {
-        self.spec.clone()
-    }
-
-    pub fn set_spec_as_obj(&mut self, v: Spec) {
-        self.spec_obj = v;
-    }
-
-    pub fn get_spec_as_obj(&self) -> &Spec {
-        &self.spec_obj
+    pub fn get_spec(&self) -> &Spec {
+        &self.spec
     }
 
     pub fn set_status(&mut self, v: ::std::string::String) {
@@ -142,6 +134,7 @@ pub struct Spec {
     scale_target_ref: String,
     min_replicas: u64,
     max_replicas: u64,
+    metrics: Vec<Metrics>,
 }
 
 impl Spec {
@@ -151,19 +144,53 @@ impl Spec {
     pub fn set_scale_target_ref(&mut self, v: ::std::string::String) {
         self.scale_target_ref = v;
     }
-    pub fn get_scale_target_ref(&self) -> ::std::string::String {
-        self.scale_target_ref.clone()
-    }
+
     pub fn set_min_replicas(&mut self, v: u64) {
         self.min_replicas = v;
     }
-    pub fn get_min_replicas(&self) -> u64 {
-        self.min_replicas.clone()
-    }
+
     pub fn set_max_replicas(&mut self, v: u64) {
         self.max_replicas = v;
     }
-    pub fn get_max_replicas(&self) -> u64 {
-        self.max_replicas.clone()
+
+    pub fn set_metrics(&mut self, v: Vec<Metrics>) {
+        self.metrics = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Metrics {
+    metric_type: String,
+    object: MetricObject,
+    // resource: MetricResource,
+}
+
+impl Metrics {
+    pub fn new() -> Metrics {
+        ::std::default::Default::default()
+    }
+    pub fn set_metric_type(&mut self, v: ::std::string::String) {
+        self.metric_type = v;
+    }
+    pub fn set_metric_object(&mut self, v: MetricObject) {
+        self.object = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct MetricObject {
+    target: String,
+    target_value: u64,
+}
+
+impl MetricObject {
+    pub fn new() -> MetricObject {
+        ::std::default::Default::default()
+    }
+    pub fn set_target(&mut self, v: ::std::string::String) {
+        self.target = v;
+    }
+    pub fn set_target_value(&mut self, v: u64) {
+        self.target_value = v;
     }
 }

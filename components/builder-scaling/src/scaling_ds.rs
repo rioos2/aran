@@ -8,20 +8,13 @@ use protocol::scalesrv;
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-use serde::Serialize;
 
 pub struct ScalingDS;
 
 impl ScalingDS {
-    /// Create an assembly in the  database. If the assembly is created, we'll
-    /// return the Assembly result.
-    ///
-    /// # Errors
-    ///
-    /// * If the pool has no connections available
-    /// * If the assembly cannot be created
     pub fn hs_create(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
         let conn = datastore.pool.get_shard(0)?;
+        let encoded = serde_json::to_string(hs.get_spec()).unwrap();
         debug!("◖☩ START: hs_create ");
         let rows = &conn.query(
             "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
@@ -33,7 +26,7 @@ impl ScalingDS {
                 &(hs.get_representation_skew() as String),
                 &(hs.get_target_resource() as String),
                 &(hs.get_metadata() as Vec<String>),
-                &(hs.get_spec_as_string() as String),
+                &(encoded as String),
                 &(hs.get_status() as String),
             ],
         ).map_err(Error::HSCreate)?;
@@ -70,11 +63,10 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     hs.set_target_resource(target_resource as String);
     hs.set_metadata(metadata as Vec<String>);
     hs.set_status(status as String);
-    hs.set_spec_as_string(spec_str as String);
-    // let back: scalesrv::Spec = serde_json::<scalesrv::Spec>::from_str(&spec_str).unwrap();
-    // println!("-----------------------------------------{:?}", back);
-    // hs.set_spec_as_obj(back);
+    let back: scalesrv::Spec = serde_json::from_str(&spec_str).unwrap();
+    hs.set_spec(back);
     hs.set_created_at(created_at.to_rfc3339());
+
     debug!("◖☩ ASM: row_to_hs =>\n{:?}", hs);
     debug!("◖☩ DONE: row_to_hs");
     Ok(hs)
