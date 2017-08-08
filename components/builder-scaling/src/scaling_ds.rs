@@ -37,6 +37,25 @@ impl ScalingDS {
         debug!("◖☩ DONE: hs_create ");
         return Ok(Some(hs.clone()));
     }
+
+    pub fn hs_list(datastore: &DataStoreConn) -> Result<Option<scalesrv::HorizontalScalingGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_hs_v1()", &[]).map_err(
+            Error::HSGet,
+        )?;
+
+        let mut response = scalesrv::HorizontalScalingGetResponse::new();
+
+        let mut hs_collection = Vec::new();
+
+        debug!(">● ROWS: assemby_list =>\n{:?}", &rows);
+        for row in rows {
+            hs_collection.push(row_to_hs(&row)?)
+        }
+        response.set_hs_collection(hs_collection);
+        Ok(Some(response))
+    }
 }
 
 fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {

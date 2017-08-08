@@ -282,3 +282,19 @@ impl Status {
         self.desired_replicas = v;
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HorizontalScalingGetResponse {
+    results: Vec<HorizontalScaling>,
+}
+
+
+impl HorizontalScalingGetResponse {
+    pub fn new() -> HorizontalScalingGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_hs_collection(&mut self, v: Vec<HorizontalScaling>) {
+        self.results = v;
+    }
+}

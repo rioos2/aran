@@ -68,6 +68,19 @@ impl Migratable for ScaleProcedures {
                             "#,
         )?;
         debug!("=> [✓] fn: insert_hs_v1");
+
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION get_hs_v1() RETURNS SETOF horizontal_scaling AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM horizontal_scaling;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_hs_v1");
+
         // The core plans table
         debug!("=> DONE: scalesrv");
 

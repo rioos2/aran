@@ -181,3 +181,48 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
 
     }
 }
+
+pub fn hs_list(req: &mut Request) -> IronResult<Response> {
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    match ScalingDS::hs_list(&conn) {
+        Ok(hs_list) => Ok(render_json(status::Ok, &hs_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
+// pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
+//     let id = {
+//         let params = req.extensions.get::<Router>().unwrap();
+//         match params.find("id").unwrap().parse::<u64>() {
+//             Ok(id) => id,
+//             Err(_) => return Ok(Response::with(status::BadRequest)),
+//         }
+//     };
+//     let mut assembly_factory = HorizontalScaling::new();
+//     assembly_factory.set_id(id);
+//     {
+//         match req.get::<bodyparser::Struct<AssemblyFacStatusReq>>() {
+//             Ok(Some(body)) => {
+//                 let status = AssemblyFactoryStatus::from_str(body.status);
+//                 assembly_factory.set_status(status);
+//             }
+//             _ => return Ok(Response::with(status::UnprocessableEntity)),
+//         }
+//     }
+//
+//     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+//
+//     //This is needed as you'll need the email/token if any
+//     // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+//
+//     match DeploymentDS::assembly_factory_status_update(&conn, &assembly_factory) {
+//         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
+//         Err(err) => Ok(render_net_error(
+//             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+//         )),
+//
+//     }
+// }
