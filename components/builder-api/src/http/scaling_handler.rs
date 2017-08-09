@@ -73,18 +73,18 @@ struct ObjTimeSpecReq {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+struct StatusReq {
+    last_scale_time: String,
+    current_replicas: u64,
+    desired_replicas: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct ResTimeSpecReq {
     scale_up_by: String,
     scale_up_wait_time: String,
     scale_down_by: String,
     scale_down_wait_time: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct StatusReq {
-    last_scale_time: String,
-    current_replicas: u64,
-    desired_replicas: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

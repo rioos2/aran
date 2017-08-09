@@ -7,6 +7,8 @@ use error::{Result, Error};
 use protocol::asmsrv;
 use postgres;
 use db::data_store::DataStoreConn;
+use serde_json;
+
 
 pub struct DeploymentDS;
 
@@ -22,6 +24,8 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_create ");
 
+        let status_str = serde_json::to_string(assembly.get_status()).unwrap();
+
         let rows = &conn.query(
             "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
@@ -34,7 +38,7 @@ impl DeploymentDS {
                 &(assembly.get_ip() as String),
                 &(assembly.get_urls() as String),
                 &(assembly.get_component_collection() as String),
-                &(format!("{}", assembly.get_status()) as String),
+                &(status_str as String),
             ],
         ).map_err(Error::AssemblyCreate)?;
 
@@ -87,10 +91,10 @@ impl DeploymentDS {
     pub fn assembly_status_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
         let asm_id = assembly.get_id() as i64;
-        let asm_status = format!("{}", assembly.get_status()) as String;
+        let status_str = serde_json::to_string(assembly.get_status()).unwrap();
         conn.execute(
             "SELECT set_assembly_status_v1($1, $2)",
-            &[&asm_id, &asm_status],
+            &[&asm_id, &(status_str as String)],
         ).map_err(Error::AsmSetStatus)?;
         Ok(())
     }
@@ -188,7 +192,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let tags: Vec<String> = row.get("tags");
     let parent_id: i64 = row.get("parent_id");
     let component_collection: String = row.get("component_collection");
-    let status = asmsrv::AssemblyStatus::from_str(row.get("status"));
+    let status: String = row.get("status");
     let node: String = row.get("node");
     let ip: String = row.get("ip");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
@@ -201,7 +205,8 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as u64);
     assembly.set_component_collection(component_collection as String);
-    assembly.set_status(status);
+    let status_obj: asmsrv::Status = serde_json::from_str(&status).unwrap();
+    assembly.set_status(status_obj);
     assembly.set_node(node as String);
     assembly.set_ip(ip as String);
     assembly.set_created_at(created_at.to_rfc3339());
