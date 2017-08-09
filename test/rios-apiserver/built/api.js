@@ -4,3 +4,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("./helpers");
 // `deployments_neurosis` = the neurosis origin
 require("./deployments");
+require("./scaling");
