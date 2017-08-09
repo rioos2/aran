@@ -211,8 +211,7 @@ impl Condition {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblysGetResponse {
-    // message fields
-    assembly: Vec<Assembly>,
+    results: Vec<Assembly>,
 }
 
 
@@ -223,11 +222,7 @@ impl AssemblysGetResponse {
 
     // Param is passed by value, moved
     pub fn set_assemblys(&mut self, v: Vec<Assembly>) {
-        self.assembly = v;
-    }
-
-    pub fn get_assemblys(&self) -> &[Assembly] {
-        &self.assembly
+        self.results = v;
     }
 }
 
@@ -259,46 +254,6 @@ impl AssemblyGet {
     }
 }
 
-
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub enum CommonStatus {
-    Pending,
-    Processing,
-    Complete,
-    Rejected,
-    Failed,
-    Dispatched,
-}
-
-impl CommonStatus {
-    pub fn from_str(value: String) -> CommonStatus {
-        match &value[..] {
-            "Dispatched" => CommonStatus::Dispatched,
-            "Pending" => CommonStatus::Pending,
-            "Processing" => CommonStatus::Processing,
-            "Complete" => CommonStatus::Complete,
-            "Rejected" => CommonStatus::Rejected,
-            "Failed" => CommonStatus::Failed,
-            _ => CommonStatus::Pending,
-        }
-    }
-}
-
-impl fmt::Display for CommonStatus {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            CommonStatus::Dispatched => write!(f, "Dispatched"),
-            CommonStatus::Pending => write!(f, "Pending"),
-            CommonStatus::Processing => write!(f, "Processing"),
-            CommonStatus::Rejected => write!(f, "Rejected"),
-            CommonStatus::Complete => write!(f, "Complete"),
-            CommonStatus::Failed => write!(f, "Failed"),
-        }
-    }
-}
-
-
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactory {
     id: u64,
@@ -307,16 +262,14 @@ pub struct AssemblyFactory {
     description: String,
     tags: Vec<String>,
     replicas: u64,
-    properties: String,
+    properties: Properties,
     plan: String,
     external_management_resource: Vec<String>,
-    component_collection: String,
-    status: ::std::option::Option<AssemblyFactoryStatus>,
-    opssettings: String,
+    component_collection: ComponentCollection,
+    status: Status,
+    opssettings: OpsSettings,
     created_at: String,
 }
-
-
 
 impl AssemblyFactory {
     pub fn new() -> AssemblyFactory {
@@ -387,37 +340,37 @@ impl AssemblyFactory {
         self.plan.clone()
     }
 
-    pub fn set_properties(&mut self, v: ::std::string::String) {
+    pub fn set_properties(&mut self, v: Properties) {
         self.properties = v;
     }
 
-    pub fn get_properties(&self) -> ::std::string::String {
-        self.properties.clone()
+    pub fn get_properties(&self) -> &Properties {
+        &self.properties
     }
 
-    pub fn set_component_collection(&mut self, v: ::std::string::String) {
+    pub fn set_component_collection(&mut self, v: ComponentCollection) {
         self.component_collection = v;
     }
 
-    pub fn get_component_collection(&self) -> ::std::string::String {
-        self.component_collection.clone()
+    pub fn get_component_collection(&self) -> &ComponentCollection {
+        &self.component_collection
     }
 
 
-    pub fn set_status(&mut self, v: AssemblyFactoryStatus) {
-        self.status = ::std::option::Option::Some(v);
+    pub fn set_status(&mut self, v: Status) {
+        self.status = v;
     }
 
-    pub fn get_status(&self) -> AssemblyFactoryStatus {
-        self.status.unwrap_or(AssemblyFactoryStatus::Pending)
+    pub fn get_status(&self) -> &Status {
+        &self.status
     }
 
-    pub fn set_opssettings(&mut self, v: ::std::string::String) {
+    pub fn set_opssettings(&mut self, v: OpsSettings) {
         self.opssettings = v;
     }
 
-    pub fn get_opssettings(&self) -> ::std::string::String {
-        self.opssettings.clone()
+    pub fn get_opssettings(&self) -> &OpsSettings {
+        &self.opssettings
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -426,6 +379,77 @@ impl AssemblyFactory {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ComponentCollection {
+    flavor: String,
+    network: String,
+}
+
+impl ComponentCollection {
+    pub fn new() -> ComponentCollection {
+        ::std::default::Default::default()
+    }
+    pub fn set_flavor(&mut self, v: ::std::string::String) {
+        self.flavor = v;
+    }
+    pub fn set_network(&mut self, v: ::std::string::String) {
+        self.network = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Properties {
+    domain: String,
+    cloudsetting: String,
+    region: String,
+    storage_type: String,
+}
+
+impl Properties {
+    pub fn new() -> Properties {
+        ::std::default::Default::default()
+    }
+    pub fn set_domain(&mut self, v: ::std::string::String) {
+        self.domain = v;
+    }
+    pub fn set_cloudsetting(&mut self, v: ::std::string::String) {
+        self.cloudsetting = v;
+    }
+    pub fn set_region(&mut self, v: ::std::string::String) {
+        self.region = v;
+    }
+    pub fn set_storage_type(&mut self, v: ::std::string::String) {
+        self.storage_type = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct OpsSettings {
+    nodeselector: String,
+    priority: String,
+    nodename: String,
+    restartpolicy: String,
+}
+
+impl OpsSettings {
+    pub fn new() -> OpsSettings {
+        ::std::default::Default::default()
+    }
+    pub fn set_nodeselector(&mut self, v: ::std::string::String) {
+        self.nodeselector = v;
+    }
+    pub fn set_priority(&mut self, v: ::std::string::String) {
+        self.priority = v;
+    }
+    pub fn set_nodename(&mut self, v: ::std::string::String) {
+        self.nodename = v;
+    }
+    pub fn set_restartpolicy(&mut self, v: ::std::string::String) {
+        self.restartpolicy = v;
     }
 }
 
@@ -462,7 +486,7 @@ impl AssemblyFactoryGet {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactoryGetResponse {
     // message fields
-    assembly_factory: Vec<AssemblyFactory>,
+    results: Vec<AssemblyFactory>,
 }
 
 
@@ -473,17 +497,12 @@ impl AssemblyFactoryGetResponse {
 
     // Param is passed by value, moved
     pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>) {
-        self.assembly_factory = v;
-    }
-
-    pub fn get_assemblys_factory(&self) -> &[AssemblyFactory] {
-        &self.assembly_factory
+        self.results = v;
     }
 }
 
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
-pub enum AssemblyFactoryStatus {
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub enum CommonStatus {
     Pending,
     Processing,
     Complete,
@@ -492,29 +511,29 @@ pub enum AssemblyFactoryStatus {
     Dispatched,
 }
 
-impl AssemblyFactoryStatus {
-    pub fn from_str(value: String) -> AssemblyFactoryStatus {
+impl CommonStatus {
+    pub fn from_str(value: String) -> CommonStatus {
         match &value[..] {
-            "Dispatched" => AssemblyFactoryStatus::Dispatched,
-            "Pending" => AssemblyFactoryStatus::Pending,
-            "Processing" => AssemblyFactoryStatus::Processing,
-            "Complete" => AssemblyFactoryStatus::Complete,
-            "Rejected" => AssemblyFactoryStatus::Rejected,
-            "Failed" => AssemblyFactoryStatus::Failed,
-            _ => AssemblyFactoryStatus::Pending,
+            "Dispatched" => CommonStatus::Dispatched,
+            "Pending" => CommonStatus::Pending,
+            "Processing" => CommonStatus::Processing,
+            "Complete" => CommonStatus::Complete,
+            "Rejected" => CommonStatus::Rejected,
+            "Failed" => CommonStatus::Failed,
+            _ => CommonStatus::Pending,
         }
     }
 }
 
-impl fmt::Display for AssemblyFactoryStatus {
+impl fmt::Display for CommonStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            AssemblyFactoryStatus::Dispatched => write!(f, "Dispatched"),
-            AssemblyFactoryStatus::Pending => write!(f, "Pending"),
-            AssemblyFactoryStatus::Processing => write!(f, "Processing"),
-            AssemblyFactoryStatus::Rejected => write!(f, "Rejected"),
-            AssemblyFactoryStatus::Complete => write!(f, "Complete"),
-            AssemblyFactoryStatus::Failed => write!(f, "Failed"),
+            CommonStatus::Dispatched => write!(f, "Dispatched"),
+            CommonStatus::Pending => write!(f, "Pending"),
+            CommonStatus::Processing => write!(f, "Processing"),
+            CommonStatus::Rejected => write!(f, "Rejected"),
+            CommonStatus::Complete => write!(f, "Complete"),
+            CommonStatus::Failed => write!(f, "Failed"),
         }
     }
 }

@@ -23,9 +23,9 @@ impl ScalingDS {
                 &(hs.get_name() as String),
                 &(hs.get_description() as String),
                 &(hs.get_tags() as Vec<String>),
-                &(hs.get_hs_type() as String),
+                &(hs.get_scale_type() as String),
                 &(hs.get_representation_skew() as String),
-                &(hs.get_target_resource() as String),
+                &(hs.get_state() as String),
                 &(hs.get_metadata() as Vec<String>),
                 &(spec_str as String),
                 &(status_str as String),
@@ -77,9 +77,9 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     let name: String = row.get("name");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
-    let hs_type: String = row.get("hs_type");
+    let scale_type: String = row.get("scale_type");
     let representation_skew: String = row.get("representation_skew");
-    let target_resource: String = row.get("target_resource");
+    let state: String = row.get("state");
     let metadata: Vec<String> = row.get("metadata");
     let status: String = row.get("status");
     let spec: String = row.get("spec");
@@ -89,9 +89,9 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     hs.set_name(name as String);
     hs.set_description(description as String);
     hs.set_tags(tags as Vec<String>);
-    hs.set_hs_type(hs_type as String);
+    hs.set_scale_type(scale_type as String);
     hs.set_representation_skew(representation_skew as String);
-    hs.set_target_resource(target_resource as String);
+    hs.set_state(state as String);
     hs.set_metadata(metadata as Vec<String>);
     let spec_obj: scalesrv::Spec = serde_json::from_str(&spec).unwrap();
     let status_obj: scalesrv::Status = serde_json::from_str(&status).unwrap();

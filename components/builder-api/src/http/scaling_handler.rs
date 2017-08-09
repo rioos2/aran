@@ -25,9 +25,9 @@ struct HsCreateReq {
     name: String,
     description: String,
     tags: Vec<String>,
-    hs_type: String,
+    scale_type: String,
     representation_skew: String,
-    target_resource: String,
+    state: String,
     metadata: Vec<String>,
     spec: SpecReq,
     status: StatusReq,
@@ -107,10 +107,10 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 hs_create.set_name(body.name);
                 hs_create.set_description(body.description);
                 hs_create.set_tags(body.tags);
-                hs_create.set_hs_type(body.hs_type);
+                hs_create.set_scale_type(body.scale_type);
                 hs_create.set_representation_skew(body.representation_skew);
                 hs_create.set_metadata(body.metadata);
-                hs_create.set_target_resource(body.target_resource);
+                hs_create.set_state(body.state);
 
                 let mut spec = Spec::new();
 

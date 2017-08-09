@@ -28,9 +28,9 @@ pub struct HorizontalScaling {
     name: String,
     description: String,
     tags: Vec<String>,
-    hs_type: String,
+    scale_type: String,
     representation_skew: String,
-    target_resource: String,
+    state: String,
     metadata: Vec<String>,
     spec: Spec,
     status: Status,
@@ -71,12 +71,12 @@ impl HorizontalScaling {
         self.tags.clone()
     }
 
-    pub fn set_hs_type(&mut self, v: ::std::string::String) {
-        self.hs_type = v;
+    pub fn set_scale_type(&mut self, v: ::std::string::String) {
+        self.scale_type = v;
     }
 
-    pub fn get_hs_type(&self) -> ::std::string::String {
-        self.hs_type.clone()
+    pub fn get_scale_type(&self) -> ::std::string::String {
+        self.scale_type.clone()
     }
 
     pub fn set_representation_skew(&mut self, v: ::std::string::String) {
@@ -87,12 +87,12 @@ impl HorizontalScaling {
         self.representation_skew.clone()
     }
 
-    pub fn set_target_resource(&mut self, v: ::std::string::String) {
-        self.target_resource = v;
+    pub fn set_state(&mut self, v: ::std::string::String) {
+        self.state = v;
     }
 
-    pub fn get_target_resource(&self) -> ::std::string::String {
-        self.target_resource.clone()
+    pub fn get_state(&self) -> ::std::string::String {
+        self.state.clone()
     }
 
     pub fn set_metadata(&mut self, v: ::std::vec::Vec<String>) {
