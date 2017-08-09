@@ -7,6 +7,8 @@ use error::{Result, Error};
 use protocol::asmsrv;
 use postgres;
 use db::data_store::DataStoreConn;
+use serde_json;
+
 
 pub struct DeploymentDS;
 
@@ -22,6 +24,8 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_create ");
 
+        let status_str = serde_json::to_string(assembly.get_status()).unwrap();
+
         let rows = &conn.query(
             "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
@@ -34,7 +38,7 @@ impl DeploymentDS {
                 &(assembly.get_ip() as String),
                 &(assembly.get_urls() as String),
                 &(assembly.get_component_collection() as String),
-                &(format!("{}", assembly.get_status()) as String),
+                &(status_str as String),
             ],
         ).map_err(Error::AssemblyCreate)?;
 
@@ -87,15 +91,20 @@ impl DeploymentDS {
     pub fn assembly_status_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
         let asm_id = assembly.get_id() as i64;
-        let asm_status = format!("{}", assembly.get_status()) as String;
+        let status_str = serde_json::to_string(assembly.get_status()).unwrap();
         conn.execute(
             "SELECT set_assembly_status_v1($1, $2)",
-            &[&asm_id, &asm_status],
+            &[&asm_id, &(status_str as String)],
         ).map_err(Error::AsmSetStatus)?;
         Ok(())
     }
 
     pub fn assembly_factory_create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
+        let status_str = serde_json::to_string(assembly_fac.get_status()).unwrap();
+        let properties = serde_json::to_string(assembly_fac.get_properties()).unwrap();
+        let component_collection = serde_json::to_string(assembly_fac.get_component_collection()).unwrap();
+        let opssettings = serde_json::to_string(assembly_fac.get_opssettings()).unwrap();
+
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assembly_factory_create ");
 
@@ -107,12 +116,12 @@ impl DeploymentDS {
                 &(assembly_fac.get_description() as String),
                 &(assembly_fac.get_tags() as Vec<String>),
                 &(assembly_fac.get_plan() as String),
-                &(assembly_fac.get_properties() as String),
+                &(properties as String),
                 &(assembly_fac.get_external_management_resource() as Vec<String>),
-                &(assembly_fac.get_component_collection() as String),
-                &(assembly_fac.get_opssettings() as String),
+                &(component_collection as String),
+                &(opssettings as String),
                 &(assembly_fac.get_replicas() as i64),
-                &(format!("{}", assembly_fac.get_status()) as String),
+                &(status_str as String),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
 
@@ -148,10 +157,10 @@ impl DeploymentDS {
     pub fn assembly_factory_status_update(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
         let asm_fac_id = assembly_fac.get_id() as i64;
-        let asm_fac_status = format!("{}", assembly_fac.get_status()) as String;
+        let status_str = serde_json::to_string(assembly_fac.get_status()).unwrap();
         conn.execute(
             "SELECT set_assembly_factorys_status_v1($1, $2)",
-            &[&asm_fac_id, &asm_fac_status],
+            &[&asm_fac_id, &(status_str as String)],
         ).map_err(Error::AsmFactorySetStatus)?;
         Ok(())
     }
@@ -188,7 +197,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let tags: Vec<String> = row.get("tags");
     let parent_id: i64 = row.get("parent_id");
     let component_collection: String = row.get("component_collection");
-    let status = asmsrv::AssemblyStatus::from_str(row.get("status"));
+    let status: String = row.get("status");
     let node: String = row.get("node");
     let ip: String = row.get("ip");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
@@ -201,7 +210,8 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as u64);
     assembly.set_component_collection(component_collection as String);
-    assembly.set_status(status);
+    let status_obj: asmsrv::Status = serde_json::from_str(&status).unwrap();
+    assembly.set_status(status_obj);
     assembly.set_node(node as String);
     assembly.set_ip(ip as String);
     assembly.set_created_at(created_at.to_rfc3339());
@@ -226,7 +236,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let external_management_resource: Vec<String> = row.get("external_management_resource");
     let component_collection: String = row.get("component_collection");
     let opssettings: String = row.get("opssettings");
-    let status = asmsrv::AssemblyFactoryStatus::from_str(row.get("status"));
+    let status: String = row.get("status");
     let replicas: i64 = row.get("replicas");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
@@ -237,12 +247,16 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     assembly_factory.set_tags(tags as Vec<String>);
     assembly_factory.set_external_management_resource(external_management_resource as Vec<String>);
     assembly_factory.set_created_at(created_at.to_rfc3339());
-    assembly_factory.set_component_collection(component_collection as String);
-    assembly_factory.set_opssettings(opssettings as String);
-    assembly_factory.set_status(status);
+    let component_collection_obj: asmsrv::ComponentCollection = serde_json::from_str(&component_collection).unwrap();
+    assembly_factory.set_component_collection(component_collection_obj);
+    let opssettings_obj: asmsrv::OpsSettings = serde_json::from_str(&opssettings).unwrap();
+    assembly_factory.set_opssettings(opssettings_obj);
+    let status_obj: asmsrv::Status = serde_json::from_str(&status).unwrap();
+    assembly_factory.set_status(status_obj);
     assembly_factory.set_plan(plan as String);
     assembly_factory.set_replicas(replicas as u64);
-    assembly_factory.set_properties(properties as String);
+    let properties_obj: asmsrv::Properties = serde_json::from_str(&properties).unwrap();
+    assembly_factory.set_properties(properties_obj);
 
     debug!(
         "◖☩ ASM: row_to_assemby_factory =>\n{:?}",

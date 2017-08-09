@@ -31,12 +31,11 @@ impl Migratable for ScaleProcedures {
              name text,
              description text,
              tags text[],
-             hs_type text,
+             scale_type text,
              representation_skew text,
-             target_resource text,
+             state text,
              metadata text[],
-             rules text[],
-             properties text[],
+             spec text,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
@@ -52,17 +51,16 @@ impl Migratable for ScaleProcedures {
                 name text,
                 description text,
                 tags text[],
-                hs_type text,
+                scale_type text,
                 representation_skew text,
-                target_resource text,
+                state text,
                 metadata text[],
-                rules text[],
-                properties text[],
+                spec text,
                 status text
                         ) RETURNS SETOF horizontal_scaling AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,hs_type,representation_skew,target_resource,metadata,rules,properties,status)
-                                        VALUES (name,description,tags,hs_type,representation_skew,target_resource,metadata,rules,properties,status)
+                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,scale_type,representation_skew,state,metadata,spec,status)
+                                        VALUES (name,description,tags,scale_type,representation_skew,state,metadata,spec,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -70,6 +68,32 @@ impl Migratable for ScaleProcedures {
                             "#,
         )?;
         debug!("=> [✓] fn: insert_hs_v1");
+
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION get_hs_v1() RETURNS SETOF horizontal_scaling AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM horizontal_scaling;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_hs_v1");
+
+
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION set_hs_status_v1 (hid bigint, hs_status text) RETURNS void AS $$
+                            BEGIN
+                                UPDATE horizontal_scaling SET status=hs_status, updated_at=now() WHERE id=hid;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: set_hs_status_v1");
+
+
         // The core plans table
         debug!("=> DONE: scalesrv");
 

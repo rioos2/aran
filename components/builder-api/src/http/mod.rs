@@ -45,7 +45,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         assembly_factory_status: put "/assembly_factorys/status/:id" => assembly_factory_status_update,
 
         horizontal_scaling: post "/horizontal_scaling" => hs_create,
-
+        horizontal_scaling_list: get "/horizontal_scaling" => hs_list,
+        horizontal_scaling_status: put "/horizontal_scaling/status/:id" => hs_status_update,
     );
 
     let mut chain = Chain::new(router);
