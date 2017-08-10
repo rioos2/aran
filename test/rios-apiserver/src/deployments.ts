@@ -55,12 +55,12 @@ describe('Get assembly_factorys', function() {
    it('returns the created assembly', function(done) {
       request.post('/assemblys')
         .set('Authorization', globalAny.bobo_bearer)
-        .send({"name": "ubuntu","uri":"/v1/assemblys","description":"ubuntuinstallation","tags": ["ubuntu"],"parent_id":"774977920044113920",
+        .send({"name": "ubuntu","uri":"/v1/assemblys","description":"ubuntuinstallation","tags": ["ubuntu"],"parent_id":globalAny.asm_fac_id,
          "component_collection": " ","urls": " ", "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":" ","conditionType":" "}]},"node":"","ip":"" })
         .expect(200)
         .end(function(err, res) {
           expect(res.body.name).to.equal("ubuntu");
-          expect(res.body.parent_id).to.equal("774977920044113920");
+          expect(res.body.spec.id).to.equal(globalAny.asm_fac_id);
           globalAny.asm = res.body;
           done(err);
         });
