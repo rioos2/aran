@@ -244,7 +244,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let replicas: i64 = row.get("replicas");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
-    assembly_factory.set_id(id.to_string());
+    assembly_factory.set_id(id.to_string() as String);
     assembly_factory.set_name(name as String);
     assembly_factory.set_uri(uri as String);
     assembly_factory.set_description(description as String);

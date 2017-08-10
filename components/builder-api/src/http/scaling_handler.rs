@@ -207,7 +207,7 @@ pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
         }
     };
     let mut hs_update = HorizontalScaling::new();
-    hs_update.set_id(id);
+    hs_update.set_id(id.to_string());
     {
         match req.get::<bodyparser::Struct<HsStatusReq>>() {
             Ok(Some(body)) => {

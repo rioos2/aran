@@ -4,7 +4,7 @@ import supertest = require('supertest');
 const request = supertest('http://localhost:9636/v1');
 const globalAny:any = global;
 
-/*describe('Scaling API', function() {
+describe('Scaling API', function() {
   describe('Create horizontal_scaling', function() {
     it('returns the created horizontal_scaling', function(done) {
       request.post('/horizontal_scaling')
@@ -24,22 +24,21 @@ const globalAny:any = global;
         .send({"status":{"last_scale_time":"sdgd","current_replicas":3,"desired_replicas":3}})
         .expect(200)
         .end(function(err, res) {
-         expect(res.body.id).to.equal(globalAny.hs_id);
+         expect(res.body);
           done(err);
         });
     });
   });
-  });
+
   describe('Get horizontal_scaling', function() {
     it('returns all horizontal_scaling', function(done) {
       request.get('/horizontal_scaling')
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body);
+            expect(res.body.results.length).to.equal(1);
           done(err);
         });
     });
   });
-
-  });*/
+  });

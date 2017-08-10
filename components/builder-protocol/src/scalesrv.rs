@@ -24,7 +24,7 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScaling {
-    id: u64,
+    id: String,
     name: String,
     description: String,
     tags: Vec<String>,
@@ -40,11 +40,11 @@ impl HorizontalScaling {
     pub fn new() -> HorizontalScaling {
         ::std::default::Default::default()
     }
-    pub fn set_id(&mut self, v: u64) {
+    pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
-    pub fn get_id(&self) -> u64 {
-        self.id
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
     pub fn set_name(&mut self, v: ::std::string::String) {

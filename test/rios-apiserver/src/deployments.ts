@@ -7,7 +7,7 @@ const globalAny:any = global;
 describe('Deployment API', function() {
 
 describe('Create assembly_factorys', function() {
-  it('returns the created assembly', function(done) {
+  it('returns the assembly_factorys', function(done) {
     request.post('/assembly_factorys')
       .set('Authorization', globalAny.bobo_bearer)
       .send({"name": "ubuntu","uri":"/v1/assemblys/assembly_factorys","description":"ubuntuinstallation","tags": ["ubuntu"],"external_management_resource":["safsf"],"properties":{"domain":"megambox.com","cloudsetting":"/clouds/one","region":"chennai","storage_type":"ssd"},"plan":"","component_collection":{"flavor":"/url","network":"/url"},"opssettings":{"nodeselector":"","priority":" ","nodename":" ","restartpolicy":" "},"status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":" ","conditionType":" "}]}, "replicas":2})
@@ -18,7 +18,7 @@ describe('Create assembly_factorys', function() {
         done(err);
       });
   });
-  it('returns the assemblys', function(done) {
+  it('returns the assembly_factory by id', function(done) {
     request.get('/assembly_factorys/' + globalAny.asm_fac_id)
       .set('Authorization', globalAny.bobo_bearer)
       .expect(200)
@@ -27,7 +27,7 @@ describe('Create assembly_factorys', function() {
         done(err);
       });
   });
-  it('returns the assembly_factorys_status_update', function(done) {
+  it('returns the assembly_factorys_status_update by id', function(done) {
     request.put('/assembly_factorys/status/'+ globalAny.asm_fac_id)
       .set('Authorization', globalAny.bobo_bearer)
       .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":"","conditionType":" "}]}})
@@ -40,12 +40,12 @@ describe('Create assembly_factorys', function() {
 });
 
 describe('Get assembly_factorys', function() {
-  it('returns the assemblys_factory', function(done) {
+  it('returns the all assemblys_factory', function(done) {
     request.get('/assembly_factorys')
       .set('Authorization', globalAny.bobo_bearer)
       .expect(200)
       .end(function(err, res) {
-        expect(res.body.length).to.equal(1);
+        expect(res.body.results.length).to.equal(1);
         done(err);
       });
   });
@@ -65,7 +65,7 @@ describe('Get assembly_factorys', function() {
           done(err);
         });
     });
-    it('returns the assemblys', function(done) {
+    it('returns the assembly by id', function(done) {
       request.get('/assemblys/'+ globalAny.asm.id)
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
@@ -75,7 +75,7 @@ describe('Get assembly_factorys', function() {
         });
     });
 
-    it('returns the assemblys_status_update', function(done) {
+    it('returns the assemblys_status_update by id', function(done) {
       request.put('/assemblys/status/'+ globalAny.asm.id)
         .set('Authorization', globalAny.bobo_bearer)
         .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":"","conditionType":" "}]}})
@@ -88,12 +88,12 @@ describe('Get assembly_factorys', function() {
   });
 
   describe('Get assemblys', function() {
-    it('returns the assemblys', function(done) {
+    it('returns all assemblys', function(done) {
       request.get('/assemblys')
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
         .end(function(err, res) {
-         expect(res.body.length).to.equal(1);
+           expect(res.body.results.length).to.equal(1);
           done(err);
         });
     });

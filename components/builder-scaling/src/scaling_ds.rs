@@ -59,7 +59,7 @@ impl ScalingDS {
 
     pub fn hs_status_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
-        let id = hs.get_id() as i64;
+        let id = hs.get_id().parse::<i64>().unwrap();
         let status_str = serde_json::to_string(hs.get_status()).unwrap();
         conn.execute(
             "SELECT set_hs_status_v1($1, $2)",
@@ -85,7 +85,7 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     let spec: String = row.get("spec");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
-    hs.set_id(id as u64);
+    hs.set_id(id.to_string() as String);
     hs.set_name(name as String);
     hs.set_description(description as String);
     hs.set_tags(tags as Vec<String>);
