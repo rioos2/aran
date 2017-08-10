@@ -43,14 +43,14 @@ pub trait DispatcherCfg {
     fn worker_count(&self) -> usize;
 }
 
-pub trait GitHubOAuth {
+pub trait PasswordAuth {
     fn github_url(&self) -> &str;
     fn github_client_id(&self) -> &str;
     fn github_client_secret(&self) -> &str;
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GitHubCfg {
+pub struct PasswordCfg {
     /// URL to GitHub API
     pub url: String,
     /// Client identifier used for GitHub API requests
@@ -59,9 +59,36 @@ pub struct GitHubCfg {
     pub client_secret: String,
 }
 
-impl Default for GitHubCfg {
+impl Default for PasswordCfg {
     fn default() -> Self {
-        GitHubCfg {
+        PasswordCfg {
+            url: DEFAULT_GITHUB_URL.to_string(),
+            client_id: DEV_GITHUB_CLIENT_ID.to_string(),
+            client_secret: DEV_GITHUB_CLIENT_SECRET.to_string(),
+        }
+    }
+}
+
+//Configuration structure for shield auth
+pub trait ShieldAuth {
+    fn github_url(&self) -> &str;
+    fn github_client_id(&self) -> &str;
+    fn github_client_secret(&self) -> &str;
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ShieldCfg {
+    /// URL to GitHub API
+    pub url: String,
+    /// Client identifier used for GitHub API requests
+    pub client_id: String,
+    /// Client secret used for GitHub API requests
+    pub client_secret: String,
+}
+
+impl Default for ShieldCfg {
+    fn default() -> Self {
+        ShieldCfg {
             url: DEFAULT_GITHUB_URL.to_string(),
             client_id: DEV_GITHUB_CLIENT_ID.to_string(),
             client_secret: DEV_GITHUB_CLIENT_SECRET.to_string(),

@@ -24,11 +24,11 @@ use protocol::net;
 use serde_json;
 use zmq;
 
-use oauth;
+use auth;
 
 #[derive(Debug)]
 pub enum Error {
-    Auth(oauth::github::AuthErr),
+    Auth(auth::default::AuthErr),
     GitHubAPI(hyper::status::StatusCode, HashMap<String, String>),
     IO(io::Error),
     Json(serde_json::Error),
@@ -86,8 +86,8 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<oauth::github::AuthErr> for Error {
-    fn from(err: oauth::github::AuthErr) -> Self {
+impl From<auth::default::AuthErr> for Error {
+    fn from(err: auth::default::AuthErr) -> Self {
         Error::Auth(err)
     }
 }

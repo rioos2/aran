@@ -31,21 +31,21 @@ const HTTP_TIMEOUT: u64 = 3_000;
 const AUTH_SCOPES: &'static [&'static str] = &["user:email", "read:org"];
 
 #[derive(Clone)]
-pub struct GitHubClient {
+pub struct PasswordAuthClient {
     pub url: String,
     pub web_url: String,
     pub client_id: String,
     pub client_secret: String,
 }
 
-impl GitHubClient {
+impl PasswordAuthClient {
     pub fn new<T>(config: &T) -> Self
     where
-        T: config::GitHubOAuth,
+        T: config::PasswordAuth,
     {
-        GitHubClient {
+        PasswordAuthClient {
             url: config.github_url().to_string(),
-            web_url: config.github_web_url().to_string(),
+            web_url: config.github_url().to_string(),
             client_id: config.github_client_id().to_string(),
             client_secret: config.github_client_secret().to_string(),
         }

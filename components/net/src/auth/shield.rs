@@ -11,8 +11,7 @@ use std::time::Duration;
 
 use hyper::{self, Url};
 use hyper::status::StatusCode;
-use hyper::header::{Authorizati
-    on, Accept, Bearer, UserAgent, qitem};
+use hyper::header::{Authorization, Accept, Bearer, UserAgent, qitem};
 use hyper::mime::{Mime, TopLevel, SubLevel};
 use hyper::net::HttpsConnector;
 use hyper_openssl::OpensslClient;
@@ -42,11 +41,11 @@ pub struct ShieldClient {
 impl ShieldClient {
     pub fn new<T>(config: &T) -> Self
     where
-        T: config::GitHubOAuth,
+        T: config::ShieldAuth,
     {
         ShieldClient {
             url: config.github_url().to_string(),
-            web_url: config.github_web_url().to_string(),
+            web_url: config.github_url().to_string(),
             client_id: config.github_client_id().to_string(),
             client_secret: config.github_client_secret().to_string(),
         }

@@ -42,7 +42,7 @@ pub mod config;
 pub mod error;
 pub mod dispatcher;
 pub mod http;
-pub mod oauth;
+pub mod auth;
 pub mod privilege;
 pub mod routing;
 pub mod server;

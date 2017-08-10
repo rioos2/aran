@@ -23,9 +23,6 @@ serde_json = "*"
 time = "*"
 unicase = "*"
 
-[dependencies.zmq]
-git = "https://github.com/erickt/rust-zmq"
-branch = "release/v0.8"
 
 [features]
 functional = []

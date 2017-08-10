@@ -1,6 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! A collection of auth [accounts, login, roles, permissions,] for the HTTP server
+//! A collection of auth [origin] for the HTTP server
 
 use std::env;
 
@@ -31,17 +31,7 @@ struct SessionCreateReq {
     provider: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct AccountCreateReq {
-    token: String,
-    extern_id: String,
-    email: Vec<String>,
-    login: u64,
-    provider: String,
-}
-
-
-pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
+pub fn account_origin_invitation_create(req: &mut Request) -> IronResult<Response> {
     let code = {
         let params = req.extensions.get::<Router>().unwrap();
         params.find("code").unwrap().to_string()
@@ -69,7 +59,7 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
 
             log_event!(
                 req,
-                Event::PasswordAuthenticate {
+                Event::PAsswordAuthenticate {
                     user: session.get_name().to_string(),
                     account: session.get_id().to_string(),
                 }
@@ -86,7 +76,7 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn account_create(req: &mut Request) -> IronResult<Response> {
+pub fn account_origin_invitation_accept(req: &mut Request) -> IronResult<Response> {
     let mut account_create = AccountCreate::new();
     {
 
@@ -121,7 +111,7 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
 }
 
 
-pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
+pub fn account_origin_create(req: &mut Request) -> IronResult<Response> {
     let mut account_get_by_id = AccountGet::new();
     {
 
@@ -152,7 +142,7 @@ pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
 }
 
 
-pub fn account_get(req: &mut Request) -> IronResult<Response> {
+pub fn account_origin_list_request(req: &mut Request) -> IronResult<Response> {
     let mut account_get = AccountGet::new();
     {
 
@@ -183,7 +173,7 @@ pub fn account_get(req: &mut Request) -> IronResult<Response> {
 }
 
 
-pub fn session_get(req: &mut Request) -> IronResult<Response> {
+pub fn account_invitation_list(req: &mut Request) -> IronResult<Response> {
     let mut session_get = SessionGet::new();
     {
 

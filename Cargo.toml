@@ -7,7 +7,7 @@ members = [
   "components/builder-deployment",
   "components/builder-scaling",
   "components/builder-protocol",
-  "components/builder-sessionsrv",
+  "components/builder-session",
   "components/common",
   "components/core",
   "components/http-client",

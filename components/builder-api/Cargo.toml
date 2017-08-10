@@ -33,10 +33,6 @@ unicase = "*"
 version = "*"
 features = [ "suggestions", "color", "unstable" ]
 
-[dependencies.zmq]
-git = "https://github.com/erickt/rust-zmq"
-branch = "release/v0.8"
-
 [dependencies.habitat_core]
 path = "../core"
 
@@ -51,6 +47,9 @@ path = "../builder-deployment"
 
 [dependencies.habitat_builder_scalesrv]
 path = "../builder-scaling"
+
+[dependencies.habitat_builder_session]
+path = "../builder-session"
 
 [dependencies.habitat_builder_db]
 path = "../builder-db"

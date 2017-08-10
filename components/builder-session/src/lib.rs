@@ -30,6 +30,8 @@ extern crate toml;
 extern crate zmq;
 
 pub mod config;
+pub mod session_ds;
+
 pub mod data_store;
 pub mod error;
 pub mod server;

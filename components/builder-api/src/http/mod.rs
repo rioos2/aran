@@ -38,6 +38,10 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
         //auth API for login
         authenticate: post "/authenticate/:code" => default_authenticate,
+        //authenticate: post "/authenticate/ldap/:code" => ldap_authenticate,
+
+        //auth API for creating new account
+        signup: post "/accounts" => account_create,
 
         //deploy API: assembly_factory
         assembly_factorys: post "/assembly_factorys" => assembly_factory_create,
@@ -58,8 +62,11 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
     let mut chain = Chain::new(router);
 
-    chain.link(persistent::Read::<DataStoreBroker>::both(
-        ({
+    //chain.link(persistent::Read::<GitHubCli>::both(
+73	//        GitHubClient::new(&*config),
+74	//   ));
+
+    chain.link(persistent::Read::<DataStoreBroker>::both(({
              let ds = DataStoreConn::new().unwrap();
              ds.setup().unwrap().clone()
          }),

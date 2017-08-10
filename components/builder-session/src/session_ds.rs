@@ -1,36 +1,18 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! The PostgreSQL backend for the Account Server.
+//! The PostgreSQL backend for the SessionDS.
 
-use db::pool::Pool;
-use hab_net::privilege;
+use chrono::{DateTime, UTC};
+use error::{Result, Error};
 use protocol::sessionsrv;
 use postgres;
-use protobuf;
+use db::pool::Pool;
+use hab_net::privilege;
+use db::data_store::DataStoreConn;
 
-use config::Config;
-use error::{Result, Error};
+pub struct SessionDS;
 
-#[derive(Debug, Clone)]
-pub struct DataStore {
-    pub pool: Pool,
-}
-
-impl DataStore {
-    pub fn new(config: &Config) -> Result<DataStore> {
-        let pool = Pool::new(&config.datastore, config.shards.clone())?;
-        Ok(DataStore { pool: pool })
-    }
-
-    pub fn from_pool(pool: Pool) -> Result<DataStore> {
-        Ok(DataStore { pool: pool })
-    }
-
-    pub fn setup(&self) -> Result<()> {
-        let conn = self.pool.get_raw()?;
-        let xact = conn.transaction().map_err(Error::DbTransactionStart)?;
-        Ok(())
-    }
+impl SessionDS {
 
     fn row_to_account(&self, row: postgres::rows::Row) -> sessionsrv::Account {
         let mut account = sessionsrv::Account::new();
@@ -41,13 +23,14 @@ impl DataStore {
         account
     }
 
-    pub fn find_or_create_account_via_session(
-        &self,
-        session_create: &sessionsrv::SessionCreate,
-        is_admin: bool,
-        is_early_access: bool,
-        is_build_worker: bool,
-    ) -> Result<sessionsrv::Session> {
+    pub fn account_create(&self, account_create: AccountCreate)  -> Result<sessionsrv::Session> {
+        //call and do find_or_create_account_via_session
+        //call and do find_or_create_default_role_permission
+        //call and do find_or_create_default_origin
+        //return Session
+    }
+
+    pub fn find_or_create_account_via_session(&self, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_early_access: bool, is_build_worker: bool) -> Result<sessionsrv::Session> {
         let conn = self.pool.get(session_create)?;
         let rows = conn.query(
             "SELECT * FROM select_or_insert_account_v1($1, $2)",
@@ -91,10 +74,7 @@ impl DataStore {
         Ok(session)
     }
 
-    pub fn get_account(
-        &self,
-        account_get: &sessionsrv::AccountGet,
-    ) -> Result<Option<sessionsrv::Account>> {
+    pub fn get_account(&self, account_get: &sessionsrv::AccountGet) -> Result<Option<sessionsrv::Account>> {
         let conn = self.pool.get(account_get)?;
         let rows = conn.query(
             "SELECT * FROM get_account_by_name_v1($1)",
@@ -108,10 +88,7 @@ impl DataStore {
         }
     }
 
-    pub fn get_account_by_id(
-        &self,
-        account_get_id: &sessionsrv::AccountGetId,
-    ) -> Result<Option<sessionsrv::Account>> {
+    pub fn get_account_by_id(&self, account_get_id: &sessionsrv::AccountGetId) -> Result<Option<sessionsrv::Account>> {
         let conn = self.pool.get(account_get_id)?;
         let rows = conn.query(
             "SELECT * FROM get_account_by_id_v1($1)",
@@ -125,10 +102,7 @@ impl DataStore {
         }
     }
 
-    pub fn get_session(
-        &self,
-        session_get: &sessionsrv::SessionGet,
-    ) -> Result<Option<sessionsrv::Session>> {
+    pub fn get_session(&self, session_get: &sessionsrv::SessionGet) -> Result<Option<sessionsrv::Session>> {
         let conn = self.pool.get(session_get)?;
         let rows = conn.query(
             "SELECT * FROM get_account_session_v1($1, $2)",
@@ -162,10 +136,7 @@ impl DataStore {
         }
     }
 
-    pub fn get_origins_by_account(
-        &self,
-        request: &sessionsrv::AccountOriginListRequest,
-    ) -> Result<sessionsrv::AccountOriginListResponse> {
+    pub fn get_origins_by_account(&self, request: &sessionsrv::AccountOriginListRequest) -> Result<sessionsrv::AccountOriginListResponse> {
         let conn = self.pool.get(request)?;
         let rows = conn.query(
             "SELECT * FROM get_account_origins_v1($1)",
@@ -184,10 +155,7 @@ impl DataStore {
         Ok(response)
     }
 
-    pub fn accept_origin_invitation(
-        &self,
-        request: &sessionsrv::AccountOriginInvitationAcceptRequest,
-    ) -> Result<()> {
+    pub fn accept_origin_invitation(&self, request: &sessionsrv::AccountOriginInvitationAcceptRequest) -> Result<()> {
         let conn = self.pool.get(request)?;
         let tr = conn.transaction().map_err(Error::DbTransactionStart)?;
         tr.execute(
@@ -212,10 +180,7 @@ impl DataStore {
         Ok(())
     }
 
-    pub fn create_account_origin_invitation(
-        &self,
-        invitation_create: &sessionsrv::AccountOriginInvitationCreate,
-    ) -> Result<()> {
+    pub fn create_account_origin_invitation(&self, invitation_create: &sessionsrv::AccountOriginInvitationCreate) -> Result<()> {
         let conn = self.pool.get(invitation_create)?;
         let _rows = conn.query(
             "SELECT * FROM insert_account_invitation_v1($1, $2, $3, $4, $5, $6)",
@@ -231,10 +196,7 @@ impl DataStore {
         Ok(())
     }
 
-    pub fn list_invitations(
-        &self,
-        ailr: &sessionsrv::AccountInvitationListRequest,
-    ) -> Result<sessionsrv::AccountInvitationListResponse> {
+    pub fn list_invitations(&self, ailr: &sessionsrv::AccountInvitationListRequest) -> Result<sessionsrv::AccountInvitationListResponse> {
         let conn = self.pool.get(ailr)?;
         let rows = &conn.query(
             "SELECT * FROM get_invitations_for_account_v1($1)",

@@ -1,21 +1,10 @@
 // Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+
 // Configuration for a Habitat SessionSrv service
 
 use db::config::DataStoreCfg;
 use hab_core::config::ConfigFile;
-use hab_net::config::{DispatcherCfg, GitHubCfg, GitHubOAuth, RouterCfg, RouterAddr, Shards};
+use hab_net::config::{DispatcherCfg, PasswordCfg, PasswordAuth, RouterCfg, RouterAddr, Shards};
 use protocol::sharding::{ShardId, SHARD_COUNT};
 
 use error::Error;
@@ -30,7 +19,7 @@ pub struct Config {
     /// List of net addresses for routing servers to connect to
     pub routers: Vec<RouterAddr>,
     pub datastore: DataStoreCfg,
-    pub github: GitHubCfg,
+    pub github: PasswordCfg,
     pub permissions: PermissionsCfg,
 }
 
@@ -43,7 +32,7 @@ impl Default for Config {
             worker_threads: Self::default_worker_count(),
             routers: vec![RouterAddr::default()],
             datastore: datastore,
-            github: GitHubCfg::default(),
+            github: PasswordCfg::default(),
             permissions: PermissionsCfg::default(),
         }
     }
@@ -59,7 +48,7 @@ impl DispatcherCfg for Config {
     }
 }
 
-impl GitHubOAuth for Config {
+impl PasswordAuth for Config {
     fn github_url(&self) -> &str {
         &self.github.url
     }

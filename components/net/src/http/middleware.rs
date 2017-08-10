@@ -10,6 +10,7 @@ use iron::headers::{self, Authorization, Bearer};
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
+use persistent;
 use iron::status::Status;
 use iron::typemap::Key;
 use unicase::UniCase;
@@ -20,9 +21,12 @@ use serde_json;
 use super::net_err_to_http;
 use super::super::error::Error;
 use super::super::routing::{Broker, BrokerConn};
-use super::super::oauth::github::GitHubClient;
+use super::super::auth::default::PasswordAuthClient;
+use super::super::auth::shield::ShieldClient;
 use config;
 use privilege::FeatureFlags;
+use super::headers::*;
+
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
 pub struct XHandler(Chain);
@@ -58,23 +62,23 @@ impl Handler for XHandler {
     }
 }
 
-pub struct GitHubCli;
+pub struct PasswordAuthCli;
 
-impl Key for GitHubCli {
-    type Value = GitHubClient;
+impl Key for PasswordAuthCli {
+    type Value = PasswordAuthClient;
 }
 
 
 #[derive(Clone)]
 pub struct Authenticated {
-    github: GitHubClient,
+    github: PasswordAuthClient,
     features: FeatureFlags,
 }
 
 
 impl Authenticated {
-    pub fn new<T: config::GitHubOAuth>(config: &T) -> Self {
-        let github = GitHubClient::new(config);
+    pub fn new<T: config::PasswordAuth>(config: &T) -> Self {
+        let github = PasswordAuthClient::new(config);
         Authenticated {
             github: github,
             features: FeatureFlags::empty(),
@@ -90,9 +94,7 @@ impl Authenticated {
         let mut request = SessionGet::new();
         request.set_token(token.to_string());
 
-        let ds = "";
-
-        match ds.route::<SessionGet, Session>(&request) {
+        match SessionDS::get_session(&conn, &request) {
             Ok(session) => Ok(session),
             Err(err) => {
                 if err.get_code() == ErrCode::SESSION_EXPIRED {
@@ -114,14 +116,21 @@ impl Authenticated {
     }
 }
 
+impl Key for Shielded {
+    type Value = Session;
+}
+
+//If the header has custom flags XAUTHSHIELD then we do a check with the shield tokens.
+//Multiple shield tokens shall be comma separated.
 impl BeforeMiddleware for Shielded {
     fn before(&self, req: &mut Request) -> IronResult<()> {
         let session = {
             match req.headers.get::<XAuthShield>() {
-                Some(shield_token) => try!(self.authenticate(shield_token)),
+                Some(shield_token) => try!(self.shield(shield_token)),
                 _ => {
-                    //log an event here saying you skipped the shield.
-                    return Ok(Session::new());
+                    //                    log_event!(req, Event::AuthShieldSkipped {});
+
+                    return Ok(());
                 }
             }
         };
@@ -141,7 +150,7 @@ pub struct Shielded {
 impl Shielded {
     pub fn new<T: config::ShieldAuth>(config: &T) -> Self {
         let shielder = ShieldClient::new(config);
-        Authenticated {
+        Shielded {
             shield: shielder,
             features: FeatureFlags::empty(),
         }
@@ -152,31 +161,31 @@ impl Shielded {
         self
     }
 
-    fn authenticate(&self, token: &str) -> IronResult<Session> {
+    fn shield(&self, token: &str) -> IronResult<Session> {
         let mut request = SessionGet::new();
         request.set_token(token.to_string());
 
-        let ds = "";
-
-        match ds.route::<SessionGet, Session>(&request) {
+        /*match SessionDS::get_session(&conn, &request) {
             Ok(session) => Ok(session),
             Err(err) => {
                 if err.get_code() == ErrCode::SESSION_EXPIRED {
-                    let session = try!(session_create(&self.github, token));
+                    /*    let session = try!(shield_create(&self.github, token));
                     let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
                     if !flags.contains(self.features) {
-                        let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
+                        let err = net::err(ErrCode::ACCESS_DENIED, "net:shield:0");
                         return Err(IronError::new(err, Status::Forbidden));
                     }
-                    Ok(session)
+                    Ok(session)*/
+                    return Err(IronError::new(err, Status::Forbidden));
                 } else {
                     let status = net_err_to_http(err.get_code());
                     let body = itry!(serde_json::to_string(&err));
                     Err(IronError::new(err, (body, status)))
                 }
             }
-        }
-
+        }*/
+        let err = net::err(ErrCode::ACCESS_DENIED, "net:shield:0");
+        Err(IronError::new(err, Status::Forbidden))
     }
 }
 
@@ -203,13 +212,8 @@ impl BeforeMiddleware for Authenticated {
         let session = {
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
-                    match req.extensions.get_mut::<RouteBroker>() {
-                        Some(broker) => try!(self.authenticate(broker, token)),
-                        None => {
-                            let mut broker = Broker::connect().unwrap();
-                            try!(self.authenticate(&mut broker, token))
-                        }
-                    }
+                    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+                    try!(self.authenticate(&conn, token))
                 }
                 _ => {
                     let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
@@ -238,8 +242,8 @@ impl AfterMiddleware for Cors {
     }
 }
 
-pub fn session_create(github: &GitHubClient, token: &str) -> IronResult<Session> {
-    if env::var_os("HAB_FUNC_TEST").is_some() {
+pub fn session_create(authcli: &PasswordAuthClient, token: &str) -> IronResult<Session> {
+    if env::var_os("RIOOS_FUNC_TEST").is_some() {
         let request = match token {
             "bobo" => {
                 let mut request = SessionCreate::new();
@@ -276,11 +280,11 @@ pub fn session_create(github: &GitHubClient, token: &str) -> IronResult<Session>
             }
         }
     }
-    match github.user(&token) {
+    match authcli.user(&token) {
         Ok(user) => {
             // Select primary email. If no primary email can be found, use any email. If
             // no email is associated with account return an access denied error.
-            let email = match github.emails(&token) {
+            let email = match authcli.emails(&token) {
                 Ok(ref emails) => {
                     emails
                         .iter()

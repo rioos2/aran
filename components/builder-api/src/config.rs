@@ -7,7 +7,7 @@ use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
-use hab_net::config::{GitHubCfg, GitHubOAuth, RouterAddr, RouterCfg};
+use hab_net::config::{PasswordCfg, PasswordAuth, RouterAddr, RouterCfg};
 use hab_core::config::ConfigFile;
 
 use error::Error;
@@ -19,7 +19,7 @@ pub struct Config {
     /// List of net addresses for routing servers to connect to
     pub routers: Vec<RouterAddr>,
     //
-    pub github: GitHubCfg,
+    pub github: PasswordCfg,
     //RIO Shield
     pub shield: ShieldCfg,
     //
@@ -34,7 +34,7 @@ impl Default for Config {
         Config {
             http: HttpCfg::default(),
             routers: vec![RouterAddr::default()],
-            github: GitHubCfg::default(),
+            github: PasswordCfg::default(),
             shield: ShieldCfg::default(),
             events_enabled: false,
             log_dir: env::temp_dir().to_string_lossy().into_owned(),
@@ -46,7 +46,7 @@ impl ConfigFile for Config {
     type Error = Error;
 }
 
-impl GitHubOAuth for Config {
+impl PasswordAuth for Config {
     fn github_url(&self) -> &str {
         &self.github.url
     }

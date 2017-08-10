@@ -1,6 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! The PostgreSQL backend for the Account Server.
+//! The PostgreSQL backend for the account/session library.
 
 use std::env;
 

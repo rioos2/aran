@@ -2,4 +2,5 @@
 
 //! A module containing the middleware of the HTTP server
 
-pub mod github;
+pub mod default;
+pub mod shield;
