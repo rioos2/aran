@@ -107,6 +107,12 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `name`",
                     )));
                 }
+                if body.parent_id.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `parent_id`",
+                    )));
+                }
                 assembly_create.set_name(body.name);
                 assembly_create.set_uri(body.uri);
                 assembly_create.set_description(body.description);

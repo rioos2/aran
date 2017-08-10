@@ -44,11 +44,7 @@ impl DeploymentDS {
 
         debug!(">● ROWS: assemby_create =>\n{:?}", &rows);
         for row in rows {
-            let mut assembly = row_to_assembly(&row)?;
-            let mut asm_fac_get = asmsrv::AssemblyFactoryGet::new();
-            asm_fac_get.set_id(assembly.get_parent_id());
-            let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
-            assembly.set_spec(data);
+            let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
         }
         Ok(None)
@@ -64,11 +60,7 @@ impl DeploymentDS {
         debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
 
         for row in rows {
-            let mut assembly = row_to_assembly(&row)?;
-            let mut asm_fac_get = asmsrv::AssemblyFactoryGet::new();
-            asm_fac_get.set_id(assembly.get_parent_id());
-            let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
-            assembly.set_spec(data);
+            let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
         }
         Ok(None)
@@ -86,7 +78,8 @@ impl DeploymentDS {
 
         debug!(">● ROWS: assemby_list =>\n{:?}", &rows);
         for row in rows {
-            assemblys_collection.push(row_to_assembly(&row)?)
+            let assembly = Self::collect_spec(&row, &datastore)?;
+            assemblys_collection.push(assembly);
         }
         response.set_assemblys(assemblys_collection);
         Ok(Some(response))
@@ -186,6 +179,15 @@ impl DeploymentDS {
         }
         response.set_assemblys_factory(assembly_factorys_collection);
         Ok(Some(response))
+    }
+
+    pub fn collect_spec(row: &postgres::rows::Row, datastore: &DataStoreConn) -> Result<asmsrv::Assembly> {
+        let mut assembly = row_to_assembly(&row)?;
+        let mut asm_fac_get = asmsrv::AssemblyFactoryGet::new();
+        asm_fac_get.set_id(assembly.get_parent_id());
+        let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
+        assembly.set_spec(data);
+        Ok(assembly)
     }
 }
 
