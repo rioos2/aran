@@ -26,7 +26,7 @@ struct AssemblyCreateReq {
     name: String,
     uri: String,
     tags: Vec<String>,
-    parent_id: u64,
+    parent_id: String,
     description: String,
     node: String,
     status: StatusReq,
@@ -164,7 +164,7 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
 
     let mut asm_get = AssemblyGet::new();
-    asm_get.set_id(id);
+    asm_get.set_id(id.to_string());
 
     match DeploymentDS::assembly_show(&conn, &asm_get) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
@@ -194,7 +194,7 @@ pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
         }
     };
     let mut assembly = Assembly::new();
-    assembly.set_id(id);
+    assembly.set_id(id.to_string());
     {
         match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
@@ -322,7 +322,7 @@ pub fn assembly_factory_show(req: &mut Request) -> IronResult<Response> {
     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
 
     let mut asm_fac_get = AssemblyFactoryGet::new();
-    asm_fac_get.set_id(id);
+    asm_fac_get.set_id(id.to_string());
 
     match DeploymentDS::assembly_factory_show(&conn, &asm_fac_get) {
         Ok(assembly_factory) => Ok(render_json(status::Ok, &assembly_factory)),
@@ -341,7 +341,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response>
         }
     };
     let mut assembly_factory = AssemblyFactory::new();
-    assembly_factory.set_id(id);
+    assembly_factory.set_id(id.to_string());
     {
         match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
