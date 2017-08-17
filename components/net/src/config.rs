@@ -32,16 +32,6 @@ pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";
 /// additional comments.
 pub const DEV_GITHUB_CLIENT_SECRET: &'static str = "438223113eeb6e7edf2d2f91a232b72de72b9bdf";
 
-pub trait DispatcherCfg {
-    fn default_worker_count() -> usize {
-        // JW TODO: increase default count after r2d2 connection pools are moved to be owned
-        // by main thread of servers instead of dispatcher threads.
-        // num_cpus::get() * 8
-        num_cpus::get()
-    }
-
-    fn worker_count(&self) -> usize;
-}
 
 pub trait PasswordAuth {
     fn github_url(&self) -> &str;

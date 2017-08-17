@@ -17,21 +17,15 @@ use std::fmt;
 use std::io;
 use std::result;
 use std::num;
-
-use hab_core;
 use hyper;
-use hab_net;
+use hab_core;
 use postgres;
 use db;
-use r2d2;
 
 #[derive(Debug)]
 pub enum Error {
     BadPort(String),
     Db(db::error::Error),
-    DbPoolTimeout(r2d2::GetTimeout),
-    DbTransactionStart(postgres::error::Error),
-    DbTransactionCommit(postgres::error::Error),
     EntityNotFound,
     HabitatCore(hab_core::Error),
     HTTP(hyper::status::StatusCode),
@@ -56,15 +50,6 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
             Error::Db(ref e) => format!("{}", e),
-            Error::DbPoolTimeout(ref e) => {
-                format!("Timeout getting connection from the database pool, {}", e)
-            }
-            Error::DbTransactionStart(ref e) => {
-                format!("Failed to start database transaction, {}", e)
-            }
-            Error::DbTransactionCommit(ref e) => {
-                format!("Failed to commit database transaction, {}", e)
-            }
             Error::EntityNotFound => format!("No value for key found"),
             Error::HabitatCore(ref e) => format!("{}", e),
             Error::HTTP(ref e) => format!("{}", e),
@@ -103,9 +88,6 @@ impl error::Error for Error {
         match *self {
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
             Error::Db(ref err) => err.description(),
-            Error::DbPoolTimeout(ref err) => err.description(),
-            Error::DbTransactionStart(ref err) => err.description(),
-            Error::DbTransactionCommit(ref err) => err.description(),
             Error::EntityNotFound => "Entity not found in database.",
             Error::HabitatCore(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
@@ -140,12 +122,6 @@ impl From<io::Error> for Error {
 impl From<hyper::error::Error> for Error {
     fn from(err: hyper::error::Error) -> Self {
         Error::HyperError(err)
-    }
-}
-
-impl From<r2d2::GetTimeout> for Error {
-    fn from(err: r2d2::GetTimeout) -> Error {
-        Error::DbPoolTimeout(err)
     }
 }
 

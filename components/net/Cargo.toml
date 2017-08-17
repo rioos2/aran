@@ -6,7 +6,6 @@ workspace = "../../"
 
 [dependencies]
 rand = "*" # Or a newer version
-bitflags = "*"
 fnv = "*"
 habitat_builder_protocol = { path = "../builder-protocol" }
 habitat_core = { path = "../core" }
@@ -26,6 +25,8 @@ unicase = "*"
 [dependencies.habitat_builder_db]
 path = "../builder-db"
 
+[dependencies.habitat_builder_session]
+path = "../builder-session"
 
 [features]
 functional = []

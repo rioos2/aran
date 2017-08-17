@@ -13,12 +13,12 @@
 // limitations under the License.
 
 #[macro_use]
-extern crate bitflags;
 extern crate fnv;
 extern crate habitat_builder_protocol as protocol;
 extern crate habitat_core as core;
 extern crate habitat_builder_db as db;
-    
+extern crate habitat_builder_session as session;
+
 #[macro_use]
 extern crate hyper;
 extern crate hyper_openssl;
@@ -42,7 +42,6 @@ pub mod config;
 pub mod error;
 pub mod http;
 pub mod auth;
-pub mod privilege;
 pub mod server;
 use std::process::Command;
 

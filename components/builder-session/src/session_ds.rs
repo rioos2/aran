@@ -6,35 +6,30 @@ use chrono::{DateTime, UTC};
 use error::{Result, Error};
 use protocol::sessionsrv;
 use postgres;
-use db::pool::Pool;
-use hab_net::privilege;
+use privilege;
 use db::data_store::DataStoreConn;
 
 pub struct SessionDS;
 
 impl SessionDS {
-    fn row_to_account(&self, row: postgres::rows::Row) -> sessionsrv::Account {
-        let mut account = sessionsrv::Account::new();
-        let id: i64 = row.get("id");
-        account.set_id(id as u64);
-        account.set_email(row.get("email"));
-        account.set_name(row.get("name"));
-        account
-    }
-
     //For new users to onboard in Rio/OS, which takes the full account creation arguments and returns the Session which has the token.
     //The default role and permission for the user is
     //The default origin is
-    pub fn account_create(&self, session_create: &sessionsrv::SessionCreate) -> Result<sessionsrv::Session> {
+    pub fn account_create(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate) -> Result<sessionsrv::Session> {
         //call and do find_or_create_account_via_session
-        find_or_create_account_via_session(session_create, true, false)?;
+        SessionDS::find_or_create_account_via_session(
+            datastore,
+            session_create,
+            true,
+            false,
+        )
         //do find_or_create_default_role_permission
         //do find_or_create_default_origin
         //return Session
     }
 
-    pub fn find_or_create_account_via_session(&self, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_service_access: bool) -> Result<sessionsrv::Session> {
-        let conn = self.pool.get(session_create)?;
+    pub fn find_or_create_account_via_session(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_service_access: bool) -> Result<sessionsrv::Session> {
+        let conn = datastore.pool.get_shard(0)?;
 
         let rows = conn.query(
             "SELECT * FROM select_or_insert_account_v1($1)",
@@ -42,11 +37,11 @@ impl SessionDS {
         ).map_err(Error::AccountCreate)?;
 
         let row = rows.get(0);
-        let account = self.row_to_account(row);
+        let account = row_to_account(row);
 
         let provider = match session_create.get_provider() {
             sessionsrv::OAuthProvider::GitHub => "openid",
-            _ => "password"
+            _ => "password",
         };
 
         let rows = conn.query(
@@ -82,36 +77,37 @@ impl SessionDS {
         Ok(session)
     }
 
-    pub fn get_account(&self, account_get: &sessionsrv::AccountGet) -> Result<Option<sessionsrv::Account>> {
-        let conn = self.pool.get(account_get)?;
+    pub fn get_account(datastore: &DataStoreConn, account_get: &sessionsrv::AccountGet) -> Result<Option<sessionsrv::Account>> {
+        let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT * FROM get_account_by_name_v1($1)",
             &[&account_get.get_name()],
         ).map_err(Error::AccountGet)?;
         if rows.len() != 0 {
             let row = rows.get(0);
-            Ok(Some(self.row_to_account(row)))
+            Ok(Some(row_to_account(row)))
         } else {
             Ok(None)
         }
     }
 
-    pub fn get_account_by_id(&self, account_get_id: &sessionsrv::AccountGetId) -> Result<Option<sessionsrv::Account>> {
-        let conn = self.pool.get(account_get_id)?;
+    pub fn get_account_by_id(datastore: &DataStoreConn, account_get_id: &sessionsrv::AccountGetId) -> Result<Option<sessionsrv::Account>> {
+        let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT * FROM get_account_by_id_v1($1)",
             &[&(account_get_id.get_id() as i64)],
         ).map_err(Error::AccountGetById)?;
         if rows.len() != 0 {
             let row = rows.get(0);
-            Ok(Some(self.row_to_account(row)))
+            Ok(Some(row_to_account(row)))
         } else {
             Ok(None)
         }
     }
 
-    pub fn get_session(&self, session_get: &sessionsrv::SessionGet) -> Result<Option<sessionsrv::Session>> {
-        let conn = self.pool.get(session_get)?;
+    pub fn get_session(datastore: &DataStoreConn, session_get: &sessionsrv::SessionGet) -> Result<Option<sessionsrv::Session>> {
+        let conn = datastore.pool.get_shard(0)?;
+
         let rows = conn.query(
             "SELECT * FROM get_account_session_v1($1, $2)",
             &[&session_get.get_name(), &session_get.get_token()],
@@ -131,11 +127,11 @@ impl SessionDS {
             if row.get("is_admin") {
                 flags.insert(privilege::ADMIN);
             }
-            if row.get("is_early_access") {
-                flags.insert(privilege::EARLY_ACCESS);
+            if row.get("is_service_access") {
+                flags.insert(privilege::SERVICE_ACCESS);
             }
-            if row.get("is_build_worker") {
-                flags.insert(privilege::BUILD_WORKER);
+            if row.get("is_default_worker") {
+                flags.insert(privilege::DEFAULT_ACCESS);
             }
             session.set_flags(flags.bits());
             Ok(Some(session))
@@ -234,4 +230,13 @@ impl SessionDS {
         Ok(response)
     }
     */
+}
+
+fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
+    let mut account = sessionsrv::Account::new();
+    let id: i64 = row.get("id");
+    account.set_id(id as u64);
+    account.set_email(row.get("email"));
+    account.set_name(row.get("name"));
+    account
 }

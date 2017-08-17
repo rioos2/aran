@@ -15,12 +15,13 @@ bitflags = "*"
 env_logger = "*"
 hyper = "*"
 log = "*"
-postgres = "*"
 r2d2 = "*"
+postgres = { version = "*", features = ["with-chrono"] }
+chrono = { version = "*", features = ["serde"] }
+rand = "*"
 serde = "*"
 serde_derive = "*"
-time = "*"
-toml = { version = "*", features = ["serde"], default-features = false }
+serde_json = "1.0"
 
 [dependencies.clap]
 version = "*"

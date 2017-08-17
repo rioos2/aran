@@ -27,7 +27,7 @@ use error::{Error, Result};
 use std::str::FromStr;
 
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize)]
 pub struct SessionCreate {
     id: u64,
     name: String,
@@ -35,6 +35,8 @@ pub struct SessionCreate {
     first_name: String,
     last_name: String,
     phone: String,
+    extern_id: u64,
+    provider: ::std::option::Option<OAuthProvider>,
     api_key: String,
     token: String,
     password: String,
@@ -71,6 +73,22 @@ impl SessionCreate {
 
     pub fn get_name(&self) -> ::std::string::String {
         self.name.clone()
+    }
+
+    pub fn set_extern_id(&mut self, v: u64) {
+        self.extern_id = v;
+    }
+
+    pub fn set_provider(&mut self, v: OAuthProvider) {
+        self.provider = ::std::option::Option::Some(v);
+    }
+
+    pub fn get_provider(&self) -> OAuthProvider {
+        self.provider.clone().unwrap_or(OAuthProvider::GitHub)
+    }
+
+    pub fn get_extern_id(&self) -> u64 {
+        self.extern_id
     }
 
     pub fn set_first_name(&mut self, v: ::std::string::String) {
@@ -227,29 +245,58 @@ impl Session {
     pub fn get_flags(&self) -> u32 {
         self.flags
     }
+}
 
+#[derive(PartialEq, Clone, Default)]
+pub struct SessionGet {
+    name: String,
+    email: String,
+    token: String,
+    api_key: String,
 }
 
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct AccountGetResponse {
-    results: Vec<Account>,
-}
-
-
-impl AccountGetResponse {
-    pub fn new() -> AccountGetResponse {
+impl SessionGet {
+    pub fn new() -> SessionGet {
         ::std::default::Default::default()
     }
 
-    pub fn set_assemblys(&mut self, v: Vec<Account>) {
-        self.results = v;
+    pub fn set_email(&mut self, v: ::std::string::String) {
+        self.email = v;
+    }
+
+    pub fn get_email(&self) -> ::std::string::String {
+        self.email.clone()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_apikey(&mut self, v: ::std::string::String) {
+        self.api_key = v;
+    }
+
+    pub fn get_apikey(&self) -> ::std::string::String {
+        self.api_key.clone()
+    }
+
+    pub fn set_token(&mut self, v: ::std::string::String) {
+        self.token = v;
+    }
+
+    pub fn get_token(&self) -> ::std::string::String {
+        self.token.clone()
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AccountGet {
-    id: ::std::option::Option<u64>,
+    name: String,
 }
 
 impl AccountGet {
@@ -257,23 +304,50 @@ impl AccountGet {
         ::std::default::Default::default()
     }
 
-    pub fn clear_id(&mut self) {
-        self.id = ::std::option::Option::None;
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
     }
 
-    pub fn has_id(&self) -> bool {
-        self.id.is_some()
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct AccountGetId {
+    id: u64,
+}
+
+
+impl AccountGetId {
+    pub fn new() -> AccountGetId {
+        ::std::default::Default::default()
     }
 
-    // Param is passed by value, moved
     pub fn set_id(&mut self, v: u64) {
-        self.id = ::std::option::Option::Some(v);
+        self.id = v;
     }
 
     pub fn get_id(&self) -> u64 {
-        self.id.unwrap_or(0)
+        self.id
     }
 }
+
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+pub enum OAuthProvider {
+    GitHub = 0,
+}
+
+impl Serialize for OAuthProvider {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_u64(self.to_owned() as u64)
+    }
+}
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Account {
@@ -291,6 +365,32 @@ pub struct Account {
     suspend: String,
     registration_ip_address: String,
     created_at: String,
+}
+
+impl Into<Session> for Account {
+    fn into(self) -> Session {
+        let mut session = Session::new();
+        session.set_id(self.get_id());
+        session.set_email(self.get_email().to_owned());
+        session.set_name(self.get_name().to_owned());
+        session
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct AccountGetResponse {
+    results: Vec<Account>,
+}
+
+
+impl AccountGetResponse {
+    pub fn new() -> AccountGetResponse {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_assemblys(&mut self, v: Vec<Account>) {
+        self.results = v;
+    }
 }
 
 

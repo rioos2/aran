@@ -22,10 +22,11 @@ use super::super::error::Error;
 use super::super::auth::default::PasswordAuthClient;
 use super::super::auth::shield::ShieldClient;
 use config;
-use privilege::FeatureFlags;
+use session::privilege::FeatureFlags;
 use super::headers::*;
-use db::data_store::DataStoreConn;
 
+use db::data_store::{DataStoreBroker, DataStoreConn};
+use session::session_ds::SessionDS;
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
 pub struct XHandler(Chain);
@@ -97,7 +98,7 @@ impl Authenticated {
             Ok(session) => Ok(session),
             Err(err) => {
                 if err.get_code() == ErrCode::SESSION_EXPIRED {
-                    let session = try!(session_create(&conn, token));
+                    let session = try!(session_create(datastore, token));
 
                     let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
                     if !flags.contains(self.features) {
@@ -266,6 +267,12 @@ pub fn session_create(conn: &DataStoreConn, token: &str) -> IronResult<Session> 
             }
         }
     }
+
+    let mut request = SessionCreate::new();
+    request.set_token(token.to_string());
+    request.set_extern_id(1);
+    request.set_email("logan@example.com".to_string());
+
 
     match SessionDS::session_create(&conn, &request) {
         Ok(session) => return Ok(session),
