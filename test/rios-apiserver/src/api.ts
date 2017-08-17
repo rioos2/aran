@@ -5,3 +5,4 @@ import "./helpers";
 import "./deployments";
 
 import "./scaling";
+import "./auth";
