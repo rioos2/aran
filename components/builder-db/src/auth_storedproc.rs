@@ -14,7 +14,6 @@ impl AuthProcedures {
 }
 
 impl Migratable for AuthProcedures {
-
     fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
         debug!("=> START: authsrv");
 
@@ -193,18 +192,18 @@ impl Migratable for AuthProcedures {
         migrator.migrate(
             "authsrv",
             r#"CREATE OR REPLACE FUNCTION insert_permission_v1 (
-                   role_id bigint,
-                   name text,
-                   description text
+                   per_role_id bigint,
+                   per_name text,
+                   per_description text
                ) RETURNS SETOF permissions AS $$
                     BEGIN
-                       IF NOT EXISTS (SELECT true FROM roles WHERE id = role_id) THEN
+                     IF EXISTS (SELECT true FROM roles WHERE id = per_role_id) THEN
                             RETURN QUERY INSERT INTO permissions (role_id, name, description)
-                                   VALUES (role_id, name, description)
+                                   VALUES (per_role_id, per_name, per_description)
                                    ON CONFLICT DO NOTHING
                                    RETURNING *;
                             RETURN;
-                       END IF;
+                            END IF;
                     END
                 $$ LANGUAGE plpgsql VOLATILE"#,
         )?;

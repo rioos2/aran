@@ -18,4 +18,17 @@ describe('Authorization API', function() {
         });
     });
   });
+
+  describe('Create permission for user', function() {
+    it('returns the created permission', function(done) {
+      request.post('/permissions')
+        .set('Authorization', globalAny.bobo_bearer)
+        .send({"role_id":globalAny.role_id,"name": "rioos.assembly.get","description":"Read only access to all the users  VMs, Containers"})
+        .expect(200)
+        .end(function(err, res) {
+          expect(res.body.role_id).to.equal(globalAny.role_id);
+          done(err);
+        });
+    });
+  });
   });
