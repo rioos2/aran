@@ -347,6 +347,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "habitat_builder_authsrv"
+version = "0.0.0"
+dependencies = [
+ "chrono 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clap 2.23.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "env_logger 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "habitat_builder_db 0.0.0",
+ "habitat_builder_protocol 0.0.0",
+ "habitat_core 0.0.0",
+ "habitat_net 0.0.0",
+ "hyper 0.10.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "linked-hash-map 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "postgres 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sha2 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "url 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "habitat_builder_db"
 version = "0.0.0"
 dependencies = [

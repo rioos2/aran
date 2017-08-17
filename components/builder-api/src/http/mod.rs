@@ -4,7 +4,7 @@
 
 pub mod deployment_handler;
 pub mod scaling_handler;
-
+pub mod authorize_handler;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -21,6 +21,8 @@ use error::Result;
 use self::deployment_handler::*;
 use self::auth_handler::*;
 use self::scaling_handler::*;
+use self::authorize_handler::*;
+
 use db::data_store::*;
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.
@@ -60,6 +62,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         horizontal_scaling: post "/horizontal_scaling" => hs_create,
         horizontal_scaling_list: get "/horizontal_scaling" => hs_list,
         horizontal_scaling_status: put "/horizontal_scaling/status/:id" => hs_status_update,
+
+        roles: post "/roles" =>roles_create,
     );
 
     let mut chain = Chain::new(router);

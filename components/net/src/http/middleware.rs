@@ -95,27 +95,28 @@ impl Authenticated {
         request.set_token(token.to_string());
 
         match SessionDS::get_session(datastore, &request) {
-            Ok(session) => Ok(session),
-            Err(err) => {
-                if err.get_code() == ErrCode::SESSION_EXPIRED {
-                    let session = try!(session_create(datastore, token));
+            Ok(Some(session)) => Ok(session),
+            Ok(None) => {
+                let session = try!(session_create(datastore, token));
 
-                    let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
-                    if !flags.contains(self.features) {
-                        let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
-                        return Err(IronError::new(err, Status::Forbidden));
-                    }
-
-                    Ok(session)
-                } else {
-                    let status = net_err_to_http(err.get_code());
-                    let body = itry!(serde_json::to_string(&err));
-                    Err(IronError::new(err, (body, status)))
+                let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
+                if !flags.contains(self.features) {
+                    let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
+                    return Err(IronError::new(err, Status::Forbidden));
                 }
+
+                return Ok(session);
             }
+            Err(err) => {
+                let status = net_err_to_http(err.get_code());
+                let body = itry!(serde_json::to_string(&err));
+                return Err(IronError::new(err, (body, status)));
+            }
+
         }
     }
 }
+
 
 impl Key for Shielded {
     type Value = Session;

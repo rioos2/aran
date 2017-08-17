@@ -9,6 +9,7 @@ extern crate habitat_net as hab_net;
 extern crate habitat_builder_asmsrv as deploy;
 extern crate habitat_builder_session as session;
 extern crate habitat_builder_scalesrv as scale;
+extern crate habitat_builder_authsrv as authorize;
 extern crate habitat_builder_db as db;
 extern crate hyper;
 extern crate iron;

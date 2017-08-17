@@ -27,11 +27,11 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
-    id: u64,
+    id: String,
     name: String,
     uri: String,
     description: String,
-    pub parent_id: u64,
+    parent_id: String,
     tags: Vec<String>,
     component_collection: String,
     node: String,
@@ -47,18 +47,18 @@ impl Assembly {
         ::std::default::Default::default()
     }
 
-    pub fn set_id(&mut self, v: u64) {
+    pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
-    pub fn get_id(&self) -> u64 {
-        self.id
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
-    pub fn get_parent_id(&self) -> u64 {
-        self.parent_id
+    pub fn get_parent_id(&self) -> ::std::string::String {
+        self.parent_id.clone()
     }
 
-    pub fn set_parent_id(&mut self, v: u64) {
+    pub fn set_parent_id(&mut self, v: ::std::string::String) {
         self.parent_id = v;
     }
 
@@ -230,7 +230,7 @@ impl AssemblysGetResponse {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyGet {
-    id: ::std::option::Option<u64>,
+    id: String,
 }
 
 impl AssemblyGet {
@@ -238,27 +238,19 @@ impl AssemblyGet {
         ::std::default::Default::default()
     }
 
-    pub fn clear_id(&mut self) {
-        self.id = ::std::option::Option::None;
-    }
-
-    pub fn has_id(&self) -> bool {
-        self.id.is_some()
-    }
-
     // Param is passed by value, moved
-    pub fn set_id(&mut self, v: u64) {
-        self.id = ::std::option::Option::Some(v);
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
     }
 
-    pub fn get_id(&self) -> u64 {
-        self.id.unwrap_or(0)
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactory {
-    id: u64,
+    id: String,
     name: String,
     uri: String,
     description: String,
@@ -278,12 +270,12 @@ impl AssemblyFactory {
         ::std::default::Default::default()
     }
 
-    pub fn set_id(&mut self, v: u64) {
+    pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
 
-    pub fn get_id(&self) -> u64 {
-        self.id
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
     pub fn set_replicas(&mut self, v: u64) {
@@ -458,7 +450,7 @@ impl OpsSettings {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactoryGet {
-    id: ::std::option::Option<u64>,
+    id: String,
 }
 
 impl AssemblyFactoryGet {
@@ -466,21 +458,13 @@ impl AssemblyFactoryGet {
         ::std::default::Default::default()
     }
 
-    pub fn clear_id(&mut self) {
-        self.id = ::std::option::Option::None;
-    }
-
-    pub fn has_id(&self) -> bool {
-        self.id.is_some()
-    }
-
     // Param is passed by value, moved
-    pub fn set_id(&mut self, v: u64) {
-        self.id = ::std::option::Option::Some(v);
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
     }
 
-    pub fn get_id(&self) -> u64 {
-        self.id.unwrap_or(0)
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 }
 

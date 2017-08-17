@@ -1,0 +1,42 @@
+[package]
+name = "habitat_builder_authsrv"
+version = "0.0.0"
+authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
+description = "RIO/OS Deployment library"
+build = "../bldr-build.rs"
+workspace = "../../"
+
+[dependencies]
+env_logger = "*"
+linked-hash-map = "*"
+log = "*"
+postgres = { version = "*", features = ["with-chrono"] }
+chrono = { version = "*", features = ["serde"] }
+rand = "*"
+serde = "*"
+serde_derive = "*"
+serde_json = "1.0"
+sha2 = "*"
+toml = { version = "*", features = ["serde"], default-features = false }
+url = "*"
+hyper = "*"
+
+[dependencies.clap]
+version = "*"
+features = [ "suggestions", "color", "unstable" ]
+
+[dependencies.habitat_core]
+path = "../core"
+
+[dependencies.habitat_builder_protocol]
+path = "../builder-protocol"
+
+[dependencies.habitat_net]
+path = "../net"
+
+[dependencies.habitat_builder_db]
+path = "../builder-db"
+
+
+[features]
+functional = []

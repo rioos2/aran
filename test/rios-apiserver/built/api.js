@@ -5,3 +5,4 @@ require("./helpers");
 // `deployments_neurosis` = the neurosis origin
 require("./deployments");
 require("./scaling");
+require("./auth");
