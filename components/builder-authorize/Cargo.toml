@@ -1,41 +1,29 @@
 [package]
-name = "habitat_builder_api"
+name = "habitat_builder_authsrv"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
-description = "RIO/OS HTTP API gateway"
+description = "RIO/OS Deployment library"
 build = "../bldr-build.rs"
 workspace = "../../"
 
-[[bin]]
-name = "rios-apiserver"
-doc = false
-
 [dependencies]
-base64 = "*"
-bodyparser = "*"
 env_logger = "*"
-hyper = "*"
-iron = "*"
+linked-hash-map = "*"
 log = "*"
-mount = "*"
-params = "*"
-persistent = "*"
-protobuf = "*"
-router = "*"
+postgres = { version = "*", features = ["with-chrono"] }
+chrono = { version = "*", features = ["serde"] }
+rand = "*"
 serde = "*"
 serde_derive = "*"
-serde_json = "*"
-staticfile = "*"
+serde_json = "1.0"
+sha2 = "*"
 toml = { version = "*", features = ["serde"], default-features = false }
-unicase = "*"
+url = "*"
+hyper = "*"
 
 [dependencies.clap]
 version = "*"
 features = [ "suggestions", "color", "unstable" ]
-
-[dependencies.zmq]
-git = "https://github.com/erickt/rust-zmq"
-branch = "release/v0.8"
 
 [dependencies.habitat_core]
 path = "../core"
@@ -46,17 +34,9 @@ path = "../builder-protocol"
 [dependencies.habitat_net]
 path = "../net"
 
-[dependencies.habitat_builder_asmsrv]
-path = "../builder-deployment"
-
-[dependencies.habitat_builder_scalesrv]
-path = "../builder-scaling"
-
-[dependencies.habitat_builder_authsrv]
-path = "../builder-authorize"
-
 [dependencies.habitat_builder_db]
 path = "../builder-db"
+
 
 [features]
 functional = []
