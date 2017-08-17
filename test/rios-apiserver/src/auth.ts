@@ -41,7 +41,7 @@ describe('Authorization API', function() {
     });
 
     it('returns role based permission', function(done) {
-      request.get('/permissions'+ globalAny.role_id)
+      request.get('/permissions/'+ globalAny.role_id)
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
         .end(function(err, res) {
@@ -49,16 +49,16 @@ describe('Authorization API', function() {
           done(err);
         });
     });
-  });
 
-  it('returns the all permission', function(done) {
-    request.get('/permissions')
-      .set('Authorization', globalAny.bobo_bearer)
-      .expect(200)
-      .end(function(err, res) {
-      expect(res.body.results.length).to.equal(1);
-        done(err);
-      });
-  });
+    it('returns the all permission', function(done) {
+      request.get('/permissions')
+        .set('Authorization', globalAny.bobo_bearer)
+        .expect(200)
+        .end(function(err, res) {
+        expect(res.body.results.length).to.equal(1);
+          done(err);
+        });
+    });
 
+  });
   });

@@ -28,9 +28,6 @@ describe('Scaling API', function() {
           done(err);
         });
     });
-  });
-
-  describe('Get horizontal_scaling', function() {
     it('returns all horizontal_scaling', function(done) {
       request.get('/horizontal_scaling')
         .set('Authorization', globalAny.bobo_bearer)

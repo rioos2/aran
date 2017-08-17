@@ -37,9 +37,6 @@ describe('Create assembly_factorys', function() {
         done(err);
       });
   });
-});
-
-describe('Get assembly_factorys', function() {
   it('returns the all assemblys_factory', function(done) {
     request.get('/assembly_factorys')
       .set('Authorization', globalAny.bobo_bearer)
@@ -85,9 +82,6 @@ describe('Get assembly_factorys', function() {
           done(err);
         });
     });
-  });
-
-  describe('Get assemblys', function() {
     it('returns all assemblys', function(done) {
       request.get('/assemblys')
         .set('Authorization', globalAny.bobo_bearer)
@@ -98,5 +92,4 @@ describe('Get assembly_factorys', function() {
         });
     });
   });
-
 });
