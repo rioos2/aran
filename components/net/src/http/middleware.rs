@@ -17,15 +17,14 @@ use unicase::UniCase;
 use protocol::sessionsrv::*;
 use protocol::net::{self, ErrCode};
 use serde_json;
-
 use super::net_err_to_http;
 use super::super::error::Error;
-use super::super::routing::{Broker, BrokerConn};
 use super::super::auth::default::PasswordAuthClient;
 use super::super::auth::shield::ShieldClient;
 use config;
 use privilege::FeatureFlags;
 use super::headers::*;
+use db::data_store::DataStoreConn;
 
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
@@ -90,20 +89,22 @@ impl Authenticated {
         self
     }
 
-    fn authenticate(&self, token: &str) -> IronResult<Session> {
+    fn authenticate(&self, datastore: &DataStoreConn, token: &str) -> IronResult<Session> {
         let mut request = SessionGet::new();
         request.set_token(token.to_string());
 
-        match SessionDS::get_session(&conn, &request) {
+        match SessionDS::get_session(datastore, &request) {
             Ok(session) => Ok(session),
             Err(err) => {
                 if err.get_code() == ErrCode::SESSION_EXPIRED {
-                    let session = try!(session_create(&self.github, token));
+                    let session = try!(session_create(&conn, token));
+
                     let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
                     if !flags.contains(self.features) {
                         let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
                         return Err(IronError::new(err, Status::Forbidden));
                     }
+
                     Ok(session)
                 } else {
                     let status = net_err_to_http(err.get_code());
@@ -112,7 +113,6 @@ impl Authenticated {
                 }
             }
         }
-
     }
 }
 
@@ -189,20 +189,6 @@ impl Shielded {
     }
 }
 
-pub struct RouteBroker;
-
-impl Key for RouteBroker {
-    type Value = BrokerConn;
-}
-
-impl BeforeMiddleware for RouteBroker {
-    fn before(&self, req: &mut Request) -> IronResult<()> {
-        let conn = Broker::connect().unwrap();
-        req.extensions.insert::<RouteBroker>(conn);
-        Ok(())
-    }
-}
-
 impl Key for Authenticated {
     type Value = Session;
 }
@@ -242,7 +228,7 @@ impl AfterMiddleware for Cors {
     }
 }
 
-pub fn session_create(authcli: &PasswordAuthClient, token: &str) -> IronResult<Session> {
+pub fn session_create(conn: &DataStoreConn, token: &str) -> IronResult<Session> {
     if env::var_os("RIOOS_FUNC_TEST").is_some() {
         let request = match token {
             "bobo" => {
@@ -270,8 +256,8 @@ pub fn session_create(authcli: &PasswordAuthClient, token: &str) -> IronResult<S
                 )
             }
         };
-        let mut conn = Broker::connect().unwrap();
-        match conn.route::<SessionCreate, Session>(&request) {
+
+        match SessionDS::session_create(&conn, &request) {
             Ok(session) => return Ok(session),
             Err(err) => {
                 let body = itry!(serde_json::to_string(&err));
@@ -280,41 +266,13 @@ pub fn session_create(authcli: &PasswordAuthClient, token: &str) -> IronResult<S
             }
         }
     }
-    match authcli.user(&token) {
-        Ok(user) => {
-            // Select primary email. If no primary email can be found, use any email. If
-            // no email is associated with account return an access denied error.
-            let email = match authcli.emails(&token) {
-                Ok(ref emails) => {
-                    emails
-                        .iter()
-                        .find(|e| e.primary)
-                        .unwrap_or(&emails[0])
-                        .email
-                        .clone()
-                }
-                Err(_) => {
-                    let err = net::err(ErrCode::ACCESS_DENIED, "net:session-create:0");
-                    let status = net_err_to_http(err.get_code());
-                    let body = itry!(serde_json::to_string(&err));
-                    return Err(IronError::new(err, (body, status)));
-                }
-            };
-            let mut conn = Broker::connect().unwrap();
-            let mut request = SessionCreate::new();
-            request.set_token(token.to_string());
-            request.set_extern_id(user.id);
-            request.set_email(email);
-            request.set_name(user.login);
-            request.set_provider(OAuthProvider::GitHub);
-            match conn.route::<SessionCreate, Session>(&request) {
-                Ok(session) => Ok(session),
-                Err(err) => {
-                    let body = itry!(serde_json::to_string(&err));
-                    let status = net_err_to_http(err.get_code());
-                    Err(IronError::new(err, (body, status)))
-                }
-            }
+
+    match SessionDS::session_create(&conn, &request) {
+        Ok(session) => return Ok(session),
+        Err(err) => {
+            let body = itry!(serde_json::to_string(&err));
+            let status = net_err_to_http(err.get_code());
+            return Err(IronError::new(err, (body, status)));
         }
         Err(Error::GitHubAPI(hyper::status::StatusCode::Unauthorized, _)) => {
             let err = net::err(ErrCode::ACCESS_DENIED, "net:session-create:1");

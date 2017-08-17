@@ -44,7 +44,6 @@ use hcore::fs::{am_i_root, cache_key_path};
 use hcore::crypto::{artifact, SigKeyPair};
 use hcore::crypto::keys::parse_name_with_rev;
 use hcore::package::{Identifiable, PackageArchive, PackageIdent, Target, PackageInstall};
-use hyper::status::StatusCode;
 
 use error::{Error, Result};
 use ui::{Status, UI};
@@ -104,21 +103,6 @@ impl<'a> InstallTask<'a> {
             cache_key_path: cache_key_path,
             ignore_target: ignore_target,
         })
-    }
-
-    fn get_channel_recommendations(&self, ident: &PackageIdent) -> Result<Vec<(String, String)>> {
-        let mut res = Vec::new();
-
-        /*let channels = { return Err(Error::PackageNotFound); };
-
-        for channel in channels {
-            match self.fetch_latest_pkg_ident_for(ident, Some(&channel)) {
-                Ok(pkg) => res.push((channel, format!("{}", pkg))),
-                Err(_) => (),
-            };
-        }*/
-
-        Ok(res)
     }
 
     pub fn from_ident(&self, ui: &mut UI, ident: PackageIdent, channel: Option<&str>) -> Result<PackageIdent> {

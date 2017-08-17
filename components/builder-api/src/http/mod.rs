@@ -50,23 +50,26 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         assembly_factory_status: put "/assembly_factorys/status/:id" => assembly_factory_status_update,
 
         //deploy API: assembly
-        // assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
+        //assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
         assemblys: post "/assemblys" => assembly_create,
         assemblys_get: get "/assemblys" => assembly_list,
         assembly: get "/assemblys/:id" => assembly_show,
         assembly_status: put "/assemblys/status/:id" => assembly_status_update,
 
-
+        //scaling API: horizontal scaling
         horizontal_scaling: post "/horizontal_scaling" => hs_create,
+        horizontal_scaling_list: get "/horizontal_scaling" => hs_list,
+        horizontal_scaling_status: put "/horizontal_scaling/status/:id" => hs_status_update,
     );
 
     let mut chain = Chain::new(router);
 
     //chain.link(persistent::Read::<GitHubCli>::both(
-73	//        GitHubClient::new(&*config),
-74	//   ));
+    //        GitHubClient::new(&*config),
+    //   ));
 
-    chain.link(persistent::Read::<DataStoreBroker>::both(({
+    chain.link(persistent::Read::<DataStoreBroker>::both(
+        ({
              let ds = DataStoreConn::new().unwrap();
              ds.setup().unwrap().clone()
          }),

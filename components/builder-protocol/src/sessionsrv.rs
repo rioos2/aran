@@ -1,233 +1,435 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2017 RioCorp Inc.
 
-use std::result;
+//The protocol for the database marshall/unmarshall
+//for session management.
 
-use serde::{Serialize, Serializer};
+
+#![allow(unknown_lints)]
+
+#![cfg_attr(rustfmt, rustfmt_skip)]
+
+#![allow(box_pointers)]
+#![allow(dead_code)]
+#![allow(missing_docs)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
+#![allow(non_upper_case_globals)]
+#![allow(trivial_casts)]
+#![allow(unsafe_code)]
+#![allow(unused_imports)]
+#![allow(unused_results)]
+
 use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
+use std::result;
+use std::fmt;
+use error::{Error, Result};
+use std::str::FromStr;
 
-use message::{Persistable, Routable};
 
-use sharding::InstaId;
-pub use message::sessionsrv::*;
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SessionCreate {
+    id: u64,
+    name: String,
+    email: String,
+    first_name: String,
+    last_name: String,
+    phone: String,
+    api_key: String,
+    token: String,
+    password: String,
+    states: String,
+    approval: String,
+    suspend: String,
+    registration_ip_address: String,
+    created_at: String,
+}
 
+impl SessionCreate {
+    pub fn new() -> SessionCreate {
+        ::std::default::Default::default()
+    }
 
-impl Routable for SessionCreate {
-    type H = String;
+    pub fn set_id(&mut self, v: u64) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> u64 {
+        self.id
+    }
 
-    fn route_key(&self) -> Option<Self::H> {
-        Some(String::from(self.get_name()))
+    pub fn set_email(&mut self, v: ::std::string::String) {
+        self.email = v;
+    }
+
+    pub fn get_email(&self) -> ::std::string::String {
+        self.email.clone()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_first_name(&mut self, v: ::std::string::String) {
+        self.first_name = v;
+    }
+
+    pub fn get_first_name(&self) -> ::std::string::String {
+        self.first_name.clone()
+    }
+
+    pub fn set_last_name(&mut self, v: ::std::string::String) {
+        self.last_name = v;
+    }
+
+    pub fn get_last_name(&self) -> ::std::string::String {
+        self.last_name.clone()
+    }
+
+    pub fn set_apikey(&mut self, v: ::std::string::String) {
+        self.api_key = v;
+    }
+
+    pub fn get_apikey(&self) -> ::std::string::String {
+        self.api_key.clone()
+    }
+
+    pub fn set_token(&mut self, v: ::std::string::String) {
+        self.token = v;
+    }
+
+    pub fn get_token(&self) -> ::std::string::String {
+        self.token.clone()
+    }
+
+    pub fn set_password(&mut self, v: ::std::string::String) {
+        self.password = v;
+    }
+
+    pub fn get_password(&self) -> ::std::string::String {
+        self.password.clone()
+    }
+
+    pub fn set_states(&mut self, v: ::std::string::String) {
+        self.states = v;
+    }
+
+    pub fn get_states(&self) -> ::std::string::String {
+        self.states.clone()
+    }
+
+    pub fn set_approval(&mut self, v: ::std::string::String) {
+        self.approval = v;
+    }
+
+    pub fn get_approval(&self) -> ::std::string::String {
+        self.approval.clone()
+    }
+
+    pub fn set_suspend(&mut self, v: ::std::string::String) {
+        self.suspend = v;
+    }
+
+    pub fn get_suspend(&self) -> ::std::string::String {
+        self.suspend.clone()
+    }
+
+    pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {
+        self.registration_ip_address = v;
+    }
+
+    pub fn get_registration_ip_address(&self) -> ::std::string::String {
+        self.registration_ip_address.clone()
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
     }
 }
 
-impl Routable for SessionGet {
-    type H = String;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(String::from(self.get_name()))
-    }
-}
-
-impl Persistable for Account {
-    type Key = u64;
-
-    fn primary_key(&self) -> Self::Key {
-        self.get_id()
-    }
-
-    fn set_primary_key(&mut self, value: Self::Key) {
-        self.set_id(value);
-    }
-}
-
-impl Into<Session> for Account {
+impl Into<Session> for SessionCreate {
     fn into(self) -> Session {
         let mut session = Session::new();
         session.set_id(self.get_id());
         session.set_email(self.get_email().to_owned());
         session.set_name(self.get_name().to_owned());
+        session.set_token(self.get_token().to_owned());
+        session.set_apikey(self.get_apikey().to_owned());
         session
     }
 }
 
-impl Serialize for Account {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut strukt = try!(serializer.serialize_struct("account", 3));
-        try!(strukt.serialize_field("id", &self.get_id().to_string()));
-        try!(strukt.serialize_field("name", self.get_name()));
-        try!(strukt.serialize_field("email", self.get_email()));
-        strukt.end()
+#[derive(PartialEq, Clone, Default)]
+pub struct Session {
+    id: u64,
+    email: String,
+    name: String,
+    token: String,
+    api_key: String,
+    flags: u32,
+}
+
+impl Session {
+    pub fn new() -> Session {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_id(&mut self, v: u64) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> u64 {
+        self.id
+    }
+
+    pub fn set_email(&mut self, v: ::std::string::String) {
+        self.email = v;
+    }
+
+    pub fn get_email(&self) -> ::std::string::String {
+        self.email.clone()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_apikey(&mut self, v: ::std::string::String) {
+        self.api_key = v;
+    }
+
+    pub fn get_apikey(&self) -> ::std::string::String {
+        self.api_key.clone()
+    }
+
+
+    pub fn set_token(&mut self, v: ::std::string::String) {
+        self.token = v;
+    }
+
+    pub fn get_token(&self) -> ::std::string::String {
+        self.token.clone()
+    }
+
+    pub fn set_flags(&mut self, v: u32) {
+        self.flags = v;
+    }
+    pub fn get_flags(&self) -> u32 {
+        self.flags
+    }
+
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct AccountGetResponse {
+    results: Vec<Account>,
+}
+
+
+impl AccountGetResponse {
+    pub fn new() -> AccountGetResponse {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_assemblys(&mut self, v: Vec<Account>) {
+        self.results = v;
     }
 }
 
-impl Routable for AccountGet {
-    type H = String;
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct AccountGet {
+    id: ::std::option::Option<u64>,
+}
 
-    fn route_key(&self) -> Option<Self::H> {
-        Some(self.get_name().to_string())
+impl AccountGet {
+    pub fn new() -> AccountGet {
+        ::std::default::Default::default()
+    }
+
+    pub fn clear_id(&mut self) {
+        self.id = ::std::option::Option::None;
+    }
+
+    pub fn has_id(&self) -> bool {
+        self.id.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_id(&mut self, v: u64) {
+        self.id = ::std::option::Option::Some(v);
+    }
+
+    pub fn get_id(&self) -> u64 {
+        self.id.unwrap_or(0)
     }
 }
 
-impl Routable for AccountGetId {
-    type H = InstaId;
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Account {
+    id: u64,
+    name: String,
+    email: String,
+    first_name: String,
+    last_name: String,
+    phone: String,
+    token: String,
+    api_key: String,
+    password: String,
+    states: String,
+    approval: String,
+    suspend: String,
+    registration_ip_address: String,
+    created_at: String,
+}
 
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_id()))
+
+impl Account {
+    pub fn new() -> Account {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_id(&mut self, v: u64) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> u64 {
+        self.id
+    }
+
+    pub fn set_email(&mut self, v: ::std::string::String) {
+        self.email = v;
+    }
+
+    pub fn get_email(&self) -> ::std::string::String {
+        self.email.clone()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_first_name(&mut self, v: ::std::string::String) {
+        self.first_name = v;
+    }
+
+    pub fn get_first_name(&self) -> ::std::string::String {
+        self.first_name.clone()
+    }
+
+    pub fn set_last_name(&mut self, v: ::std::string::String) {
+        self.last_name = v;
+    }
+
+    pub fn get_last_name(&self) -> ::std::string::String {
+        self.last_name.clone()
+    }
+
+    pub fn set_apikey(&mut self, v: ::std::string::String) {
+        self.api_key = v;
+    }
+
+    pub fn get_apikey(&self) -> ::std::string::String {
+        self.api_key.clone()
+    }
+
+    pub fn set_token(&mut self, v: ::std::string::String) {
+        self.token = v;
+    }
+
+    pub fn get_token(&self) -> ::std::string::String {
+        self.token.clone()
+    }
+
+    pub fn set_password(&mut self, v: ::std::string::String) {
+        self.password = v;
+    }
+
+    pub fn get_password(&self) -> ::std::string::String {
+        self.password.clone()
+    }
+
+    pub fn set_states(&mut self, v: ::std::string::String) {
+        self.states = v;
+    }
+
+    pub fn get_states(&self) -> ::std::string::String {
+        self.states.clone()
+    }
+
+    pub fn set_approval(&mut self, v: ::std::string::String) {
+        self.approval = v;
+    }
+
+    pub fn get_approval(&self) -> ::std::string::String {
+        self.approval.clone()
+    }
+
+    pub fn set_suspend(&mut self, v: ::std::string::String) {
+        self.suspend = v;
+    }
+
+    pub fn get_suspend(&self) -> ::std::string::String {
+        self.suspend.clone()
+    }
+
+    pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {
+        self.registration_ip_address = v;
+    }
+
+    pub fn get_registration_ip_address(&self) -> ::std::string::String {
+        self.registration_ip_address.clone()
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
     }
 }
 
 
-impl Routable for AccountOriginInvitationCreate {
-    type H = InstaId;
+#[derive(PartialEq, Clone, Default)]
+pub struct AccountInvitationListRequest {
+    account_id: u64,
+}
 
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_account_id()))
+impl AccountInvitationListRequest {
+    pub fn new() -> AccountInvitationListRequest {
+        ::std::default::Default::default()
     }
 }
 
-impl Routable for AccountInvitationListRequest {
-    type H = InstaId;
 
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_account_id()))
-    }
+#[derive(PartialEq, Clone, Default)]
+pub struct AccountOriginInvitation {
+    // message fields
+    id: u64,
+    origin_invitation_id: u64,
+    account_id: u64,
+    account_name: String,
+    origin_id: u64,
+    origin_name: String,
+    owner_id: u64,
 }
 
-impl Routable for AccountOriginListRequest {
-    type H = InstaId;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_account_id()))
-    }
-}
-
-impl Routable for AccountOriginCreate {
-    type H = InstaId;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_account_id()))
-    }
-}
-
-impl Routable for AccountOriginInvitationAcceptRequest {
-    type H = InstaId;
-
-    fn route_key(&self) -> Option<Self::H> {
-        Some(InstaId(self.get_account_id()))
-    }
-}
-
-impl Serialize for AccountInvitationListResponse {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut strukt = try!(serializer.serialize_struct(
-            "account_invitation_list_response",
-            2,
-        ));
-        try!(strukt.serialize_field(
-            "account_id",
-            &self.get_account_id().to_string(),
-        ));
-        try!(strukt.serialize_field(
-            "invitations",
-            self.get_invitations(),
-        ));
-        strukt.end()
-    }
-}
-
-impl Serialize for AccountOriginInvitation {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut strukt = try!(serializer.serialize_struct("account_origin_invitation", 6));
-        try!(strukt.serialize_field("id", &self.get_id().to_string()));
-        try!(strukt.serialize_field(
-            "origin_invitation_id",
-            &self.get_origin_invitation_id().to_string(),
-        ));
-        try!(strukt.serialize_field(
-            "account_id",
-            &self.get_account_id().to_string(),
-        ));
-        try!(strukt.serialize_field(
-            "account_name",
-            self.get_account_name(),
-        ));
-        try!(strukt.serialize_field(
-            "origin_id",
-            &self.get_origin_id().to_string(),
-        ));
-        try!(strukt.serialize_field(
-            "origin_name",
-            self.get_origin_name(),
-        ));
-        try!(strukt.serialize_field(
-            "owner_id",
-            &self.get_owner_id().to_string(),
-        ));
-        strukt.end()
-    }
-}
-
-impl Serialize for AccountOriginListResponse {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut strukt = try!(serializer.serialize_struct(
-            "account_origin_list_response",
-            2,
-        ));
-        try!(strukt.serialize_field(
-            "account_id",
-            &self.get_account_id().to_string(),
-        ));
-        try!(strukt.serialize_field("origins", self.get_origins()));
-        strukt.end()
-    }
-}
-
-impl Persistable for SessionToken {
-    type Key = String;
-
-    fn primary_key(&self) -> Self::Key {
-        self.get_token().to_string()
-    }
-
-    fn set_primary_key(&mut self, value: Self::Key) {
-        self.set_token(value)
-    }
-}
-
-impl Serialize for Session {
-    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut strukt = try!(serializer.serialize_struct("session", 5));
-        try!(strukt.serialize_field("token", self.get_token()));
-        try!(strukt.serialize_field("id", &self.get_id().to_string()));
-        try!(strukt.serialize_field("name", self.get_name()));
-        try!(strukt.serialize_field("email", self.get_email()));
-        try!(strukt.serialize_field("flags", &self.get_flags()));
-        strukt.end()
+impl AccountOriginInvitation {
+    pub fn new() -> AccountOriginInvitation {
+        ::std::default::Default::default()
     }
 }

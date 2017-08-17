@@ -34,7 +34,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
     chain.link(persistent::Read::<AuthCli>::both(
         PasswordAuthClient::new(&*config),
     ));
-    chain.link_before(RouteBroker);
+
     chain.link_after(Cors);
     Ok(chain)
 }

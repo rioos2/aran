@@ -5,6 +5,7 @@ authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@m
 workspace = "../../"
 
 [dependencies]
+rand = "*" # Or a newer version
 bitflags = "*"
 fnv = "*"
 habitat_builder_protocol = { path = "../builder-protocol" }
@@ -16,12 +17,14 @@ lazy_static = "*"
 log = "*"
 num_cpus = "*"
 persistent = "*"
-protobuf = "*"
 serde = "*"
 serde_derive = "*"
 serde_json = "*"
 time = "*"
 unicase = "*"
+
+[dependencies.habitat_builder_db]
+path = "../builder-db"
 
 
 [features]

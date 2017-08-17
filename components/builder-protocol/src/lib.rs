@@ -15,26 +15,23 @@
 extern crate habitat_core as hab_core;
 #[macro_use]
 extern crate lazy_static;
-extern crate protobuf;
 extern crate regex;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate serde_json;
+
 extern crate time;
 
 pub mod error;
-pub mod jobsrv;
-pub mod asmsrv;
 pub mod net;
-pub mod routesrv;
+pub mod asmsrv;
 pub mod search;
 pub mod sessionsrv;
 pub mod sharding;
 pub mod originsrv;
-pub mod scheduler;
-pub mod message;
 pub mod scalesrv;
+pub mod routesrv;
 
 pub use self::error::{Error, Result};
-pub use self::message::{Message, Persistable, Routable, RouteKey};
 pub use self::sharding::{ShardId, SHARD_COUNT, InstaId};

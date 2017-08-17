@@ -7,6 +7,7 @@ pub mod middleware;
 pub mod rendering;
 
 use iron::status::Status;
+
 use protocol::net::ErrCode;
 
 pub fn net_err_to_http(err: ErrCode) -> Status {
@@ -21,7 +22,6 @@ pub fn net_err_to_http(err: ErrCode) -> Status {
         ErrCode::ACCESS_DENIED => Status::Unauthorized,
         ErrCode::SESSION_EXPIRED => Status::Unauthorized,
         ErrCode::ENTITY_CONFLICT => Status::Conflict,
-        ErrCode::ZMQ => Status::ServiceUnavailable,
         ErrCode::DATA_STORE => Status::ServiceUnavailable,
         ErrCode::AUTH_SCOPE => Status::Forbidden,
         ErrCode::WORKSPACE_SETUP => Status::InternalServerError,

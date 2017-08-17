@@ -10,10 +10,14 @@ use fnv::FnvHasher;
 use rand::{self, Rng};
 use r2d2;
 use r2d2_postgres::{self, PostgresConnectionManager, TlsMode};
+use protocol::{ShardId, SHARD_COUNT};
 
 use config::DataStore;
 use error::{Error, Result};
-use protocol::{Routable, RouteKey, ShardId, SHARD_COUNT};
+//
+//This is for future use. Where we could shard in the database based on functionality
+//
+use protocol::routesrv::{Routable, RouteKey};
 
 #[derive(Clone)]
 pub struct Pool {
@@ -74,6 +78,7 @@ impl Pool {
         )?;
         Ok(conn)
     }
+
 
     pub fn get<T: Routable>(&self, routable: &T) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
         let optional_shard_id = routable.route_key().map(

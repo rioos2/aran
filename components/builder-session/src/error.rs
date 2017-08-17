@@ -22,8 +22,6 @@ use hab_core;
 use hyper;
 use hab_net;
 use postgres;
-use protobuf;
-use zmq;
 use db;
 use r2d2;
 
@@ -39,9 +37,6 @@ pub enum Error {
     HTTP(hyper::status::StatusCode),
     HyperError(hyper::error::Error),
     IO(io::Error),
-    NetError(hab_net::Error),
-    Protobuf(protobuf::ProtobufError),
-    Zmq(zmq::Error),
     AccountIdFromString(num::ParseIntError),
     AccountCreate(postgres::error::Error),
     AccountGet(postgres::error::Error),
@@ -75,9 +70,6 @@ impl fmt::Display for Error {
             Error::HTTP(ref e) => format!("{}", e),
             Error::HyperError(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
-            Error::NetError(ref e) => format!("{}", e),
-            Error::Protobuf(ref e) => format!("{}", e),
-            Error::Zmq(ref e) => format!("{}", e),
             Error::AccountIdFromString(ref e) => {
                 format!("Cannot convert from string to Account ID, {}", e)
             }
@@ -119,9 +111,6 @@ impl error::Error for Error {
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::HyperError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
-            Error::NetError(ref err) => err.description(),
-            Error::Protobuf(ref err) => err.description(),
-            Error::Zmq(ref err) => err.description(),
             Error::AccountIdFromString(ref err) => err.description(),
             Error::AccountCreate(ref err) => err.description(),
             Error::AccountGet(ref err) => err.description(),
@@ -151,24 +140,6 @@ impl From<io::Error> for Error {
 impl From<hyper::error::Error> for Error {
     fn from(err: hyper::error::Error) -> Self {
         Error::HyperError(err)
-    }
-}
-
-impl From<hab_net::Error> for Error {
-    fn from(err: hab_net::Error) -> Self {
-        Error::NetError(err)
-    }
-}
-
-impl From<protobuf::ProtobufError> for Error {
-    fn from(err: protobuf::ProtobufError) -> Self {
-        Error::Protobuf(err)
-    }
-}
-
-impl From<zmq::Error> for Error {
-    fn from(err: zmq::Error) -> Self {
-        Error::Zmq(err)
     }
 }
 

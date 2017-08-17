@@ -15,7 +15,6 @@ use iron::typemap;
 use persistent;
 
 use protocol::sessionsrv;
-use protocol::net::{self, ErrCode};
 use router::Router;
 
 use db::data_store::DataStoreBroker;
@@ -67,7 +66,6 @@ pub fn account_origin_invitation_create(req: &mut Request) -> IronResult<Respons
 
             Ok(render_json(status::Ok, &session))
         }
-        Err(hab_net::Error::Net(err)) => Ok(render_net_error(&err)),
         Err(e) => {
             error!("unhandled default authentication, err={:?}", e);
             let err = net::err(ErrCode::BUG, "rg:auth:0");

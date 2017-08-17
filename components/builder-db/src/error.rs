@@ -1,7 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-use hab_net;
-
 use std::error;
 use std::fmt;
 use std::result;
@@ -21,7 +19,6 @@ pub enum Error {
     FunctionCreate(postgres::error::Error),
     FunctionDrop(postgres::error::Error),
     FunctionRun(postgres::error::Error),
-    NetError(hab_net::Error),
     PostgresConnect(postgres::error::ConnectError),
     SchemaCreate(postgres::error::Error),
     SchemaDrop(postgres::error::Error),
@@ -60,7 +57,6 @@ impl fmt::Display for Error {
             Error::FunctionCreate(ref e) => format!("Error creating a function: {}", e),
             Error::FunctionDrop(ref e) => format!("Error dropping a function: {}", e),
             Error::FunctionRun(ref e) => format!("Error running a function: {}", e),
-            Error::NetError(ref e) => format!("{}", e),
             Error::PostgresConnect(ref e) => format!("Postgres connection error: {}", e),
             Error::SchemaCreate(ref e) => format!("Error creating schema: {}", e),
             Error::SchemaDrop(ref e) => format!("Error dropping schema: {}", e),
@@ -95,7 +91,6 @@ impl error::Error for Error {
             Error::FunctionCreate(_) => "Error creating database function",
             Error::FunctionDrop(_) => "Error dropping database function",
             Error::FunctionRun(_) => "Error running a database function",
-            Error::NetError(ref err) => err.description(),
             Error::PostgresConnect(ref e) => e.description(),
             Error::SchemaCreate(_) => "Error creating a schema",
             Error::SchemaDrop(_) => "Error dropping a schema",
@@ -113,12 +108,6 @@ impl error::Error for Error {
             Error::MigrationTracking(_) => "Error updating migration tracking table",
             Error::MigrationLock(_) => "Error getting migration lock",
         }
-    }
-}
-
-impl From<hab_net::Error> for Error {
-    fn from(err: hab_net::Error) -> Self {
-        Error::NetError(err)
     }
 }
 

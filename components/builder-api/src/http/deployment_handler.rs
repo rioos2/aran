@@ -13,12 +13,10 @@ use iron::status;
 use iron::typemap;
 use persistent;
 
-use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, AssemblyFactoryStatus, AssemblyStatus};
+use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, ComponentCollection, Properties, OpsSettings};
 use protocol::sessionsrv;
-use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::DataStoreBroker;
-
 
 define_event_log!();
 
@@ -30,10 +28,34 @@ struct AssemblyCreateReq {
     parent_id: u64,
     description: String,
     node: String,
-    status: String,
+    status: StatusReq,
     ip: String,
     urls: String,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct StatusReq {
+    phase: String,
+    message: String,
+    reason: String,
+    conditions: Vec<ConditionReq>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct ConditionReq {
+    message: String,
+    reason: String,
+    status: String,
+    lastTransitionTime: String,
+    lastProbeTime: String,
+    conditionType: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct CommonStatusReq {
+    status: StatusReq,
+}
+
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct AssemblyFacCreateReq {
@@ -41,38 +63,36 @@ struct AssemblyFacCreateReq {
     uri: String,
     description: String,
     tags: Vec<String>,
-    properties: String,
+    properties: PropReq,
     replicas: u64,
     plan: String,
     external_management_resource: Vec<String>,
-    component_collection: String,
-    status: String,
-    opssettings: String,
+    component_collection: ComponentReq,
+    status: StatusReq,
+    opssettings: OpsSettingsReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct AssemblyUpdateReq {
-    name: String,
-    uri: String,
-    description: String,
-    parent_id: u64,
-    tags: Vec<String>,
-    node: String,
-    ip: String,
-    urls: String,
-    status: String,
+struct PropReq {
+    domain: String,
+    cloudsetting: String,
+    region: String,
+    storage_type: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct AssemblyFacStatusReq {
-    status: String,
+struct ComponentReq {
+    flavor: String,
+    network: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct AssemblyStatusReq {
-    status: String,
+pub struct OpsSettingsReq {
+    nodeselector: String,
+    priority: String,
+    nodename: String,
+    restartpolicy: String,
 }
-
 
 
 pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
@@ -92,7 +112,24 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                 assembly_create.set_tags(body.tags);
                 assembly_create.set_parent_id(body.parent_id);
                 assembly_create.set_node(body.node);
-                let status = AssemblyStatus::from_str(body.status);
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
+                status.set_message(body.status.message);
+                status.set_reason(body.status.reason);
+
+                let mut condition_collection = Vec::new();
+
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_lastTransitionTime(data.lastTransitionTime);
+                    condition.set_lastProbeTime(data.lastProbeTime);
+                    condition.set_conditionType(data.conditionType);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
                 assembly_create.set_status(status);
                 assembly_create.set_ip(body.ip);
                 assembly_create.set_urls(body.urls);
@@ -158,9 +195,24 @@ pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
     let mut assembly = Assembly::new();
     assembly.set_id(id);
     {
-        match req.get::<bodyparser::Struct<AssemblyStatusReq>>() {
+        match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
-                let status = AssemblyStatus::from_str(body.status);
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
+                status.set_message(body.status.message);
+                status.set_reason(body.status.reason);
+                let mut condition_collection = Vec::new();
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_lastTransitionTime(data.lastTransitionTime);
+                    condition.set_lastProbeTime(data.lastProbeTime);
+                    condition.set_conditionType(data.conditionType);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
                 assembly.set_status(status);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
@@ -199,12 +251,43 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 assembly_factory_create.set_tags(body.tags);
                 assembly_factory_create.set_external_management_resource(body.external_management_resource);
                 assembly_factory_create.set_plan(body.plan);
-                assembly_factory_create.set_component_collection(body.component_collection);
-                let status = AssemblyFactoryStatus::from_str(body.status);
+
+                let mut component_collection = ComponentCollection::new();
+                component_collection.set_flavor(body.component_collection.flavor);
+                component_collection.set_network(body.component_collection.network);
+
+                assembly_factory_create.set_component_collection(component_collection);
+
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
+                status.set_message(body.status.message);
+                status.set_reason(body.status.reason);
+                let mut condition_collection = Vec::new();
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_lastTransitionTime(data.lastTransitionTime);
+                    condition.set_lastProbeTime(data.lastProbeTime);
+                    condition.set_conditionType(data.conditionType);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
                 assembly_factory_create.set_status(status);
-                assembly_factory_create.set_opssettings(body.opssettings);
+                let mut opssettings = OpsSettings::new();
+                opssettings.set_nodeselector(body.opssettings.nodeselector);
+                opssettings.set_priority(body.opssettings.priority);
+                opssettings.set_nodename(body.opssettings.nodename);
+                opssettings.set_restartpolicy(body.opssettings.restartpolicy);
+                assembly_factory_create.set_opssettings(opssettings);
                 assembly_factory_create.set_replicas(body.replicas);
-                assembly_factory_create.set_properties(body.properties);
+                let mut properties = Properties::new();
+                properties.set_cloudsetting(body.properties.cloudsetting);
+                properties.set_domain(body.properties.domain);
+                properties.set_region(body.properties.region);
+                properties.set_storage_type(body.properties.storage_type);
+                assembly_factory_create.set_properties(properties);
 
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
@@ -259,9 +342,24 @@ pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response>
     let mut assembly_factory = AssemblyFactory::new();
     assembly_factory.set_id(id);
     {
-        match req.get::<bodyparser::Struct<AssemblyFacStatusReq>>() {
+        match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
-                let status = AssemblyFactoryStatus::from_str(body.status);
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
+                status.set_message(body.status.message);
+                status.set_reason(body.status.reason);
+                let mut condition_collection = Vec::new();
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_lastTransitionTime(data.lastTransitionTime);
+                    condition.set_lastProbeTime(data.lastProbeTime);
+                    condition.set_conditionType(data.conditionType);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
                 assembly_factory.set_status(status);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),

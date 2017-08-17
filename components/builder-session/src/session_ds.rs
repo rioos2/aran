@@ -13,7 +13,6 @@ use db::data_store::DataStoreConn;
 pub struct SessionDS;
 
 impl SessionDS {
-
     fn row_to_account(&self, row: postgres::rows::Row) -> sessionsrv::Account {
         let mut account = sessionsrv::Account::new();
         let id: i64 = row.get("id");
@@ -23,25 +22,33 @@ impl SessionDS {
         account
     }
 
-    pub fn account_create(&self, account_create: AccountCreate)  -> Result<sessionsrv::Session> {
+    //For new users to onboard in Rio/OS, which takes the full account creation arguments and returns the Session which has the token.
+    //The default role and permission for the user is
+    //The default origin is
+    pub fn account_create(&self, session_create: &sessionsrv::SessionCreate) -> Result<sessionsrv::Session> {
         //call and do find_or_create_account_via_session
-        //call and do find_or_create_default_role_permission
-        //call and do find_or_create_default_origin
+        find_or_create_account_via_session(session_create, true, false)?;
+        //do find_or_create_default_role_permission
+        //do find_or_create_default_origin
         //return Session
     }
 
-    pub fn find_or_create_account_via_session(&self, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_early_access: bool, is_build_worker: bool) -> Result<sessionsrv::Session> {
+    pub fn find_or_create_account_via_session(&self, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_service_access: bool) -> Result<sessionsrv::Session> {
         let conn = self.pool.get(session_create)?;
+
         let rows = conn.query(
-            "SELECT * FROM select_or_insert_account_v1($1, $2)",
-            &[&session_create.get_name(), &session_create.get_email()],
+            "SELECT * FROM select_or_insert_account_v1($1)",
+            &[&session_create.get_email()],
         ).map_err(Error::AccountCreate)?;
+
         let row = rows.get(0);
         let account = self.row_to_account(row);
 
         let provider = match session_create.get_provider() {
-            sessionsrv::OAuthProvider::GitHub => "github",
+            sessionsrv::OAuthProvider::GitHub => "openid",
+            _ => "password"
         };
+
         let rows = conn.query(
             "SELECT * FROM insert_account_session_v1($1, $2, $3, $4, $5, $6, $7)",
             &[
@@ -50,8 +57,7 @@ impl SessionDS {
                 &provider,
                 &(session_create.get_extern_id() as i64),
                 &is_admin,
-                &is_early_access,
-                &is_build_worker,
+                &is_service_access,
             ],
         ).map_err(Error::AccountGetById)?;
         let session_row = rows.get(0);
@@ -59,6 +65,8 @@ impl SessionDS {
         let mut session: sessionsrv::Session = account.into();
         session.set_token(session_row.get("token"));
 
+        /*
+        This will be moved to role/permission
         let mut flags = privilege::FeatureFlags::empty();
         if session_row.get("is_admin") {
             flags.insert(privilege::ADMIN);
@@ -70,7 +78,7 @@ impl SessionDS {
             flags.insert(privilege::BUILD_WORKER);
         }
         session.set_flags(flags.bits());
-
+       */
         Ok(session)
     }
 
@@ -136,7 +144,7 @@ impl SessionDS {
         }
     }
 
-    pub fn get_origins_by_account(&self, request: &sessionsrv::AccountOriginListRequest) -> Result<sessionsrv::AccountOriginListResponse> {
+    /*pub fn get_origins_by_account(&self, request: &sessionsrv::AccountOriginListRequest) -> Result<sessionsrv::AccountOriginListResponse> {
         let conn = self.pool.get(request)?;
         let rows = conn.query(
             "SELECT * FROM get_account_origins_v1($1)",
@@ -225,4 +233,5 @@ impl SessionDS {
         response.set_invitations(invitations);
         Ok(response)
     }
+    */
 }

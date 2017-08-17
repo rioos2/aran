@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use protocol;
 use std::collections::HashMap;
 use std::error;
 use std::fmt;
@@ -19,10 +20,7 @@ use std::io;
 use std::result;
 
 use hyper;
-use protobuf;
-use protocol::net;
 use serde_json;
-use zmq;
 
 use auth;
 
@@ -33,12 +31,9 @@ pub enum Error {
     IO(io::Error),
     Json(serde_json::Error),
     MaxHops,
-    Net(net::NetError),
     HTTP(hyper::status::StatusCode),
-    Protobuf(protobuf::ProtobufError),
     RequiredConfigField(&'static str),
     Sys,
-    Zmq(zmq::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -52,11 +47,8 @@ impl fmt::Display for Error {
             Error::IO(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
             Error::MaxHops => format!("Received a message containing too many network hops"),
-            Error::Net(ref e) => format!("{}", e),
-            Error::Protobuf(ref e) => format!("{}", e),
             Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
             Error::Sys => format!("Internal system error"),
-            Error::Zmq(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -71,11 +63,8 @@ impl error::Error for Error {
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::Json(ref err) => err.description(),
             Error::MaxHops => "Received a message containing too many network hops",
-            Error::Net(ref err) => err.description(),
-            Error::Protobuf(ref err) => err.description(),
             Error::RequiredConfigField(_) => "Missing required field in configuration.",
             Error::Sys => "Internal system error",
-            Error::Zmq(ref err) => err.description(),
         }
     }
 }
@@ -92,26 +81,8 @@ impl From<auth::default::AuthErr> for Error {
     }
 }
 
-impl From<protobuf::ProtobufError> for Error {
-    fn from(err: protobuf::ProtobufError) -> Error {
-        Error::Protobuf(err)
-    }
-}
-
-impl From<net::NetError> for Error {
-    fn from(err: net::NetError) -> Error {
-        Error::Net(err)
-    }
-}
-
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Error {
         Error::Json(err)
-    }
-}
-
-impl From<zmq::Error> for Error {
-    fn from(err: zmq::Error) -> Error {
-        Error::Zmq(err)
     }
 }

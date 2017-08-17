@@ -1,5 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc.
-
+/*
 use std::path::{Path, PathBuf};
 use walkdir::{WalkDir, Iter};
 use hab_core::package::{FromArchive, PackageArchive};
@@ -62,3 +62,4 @@ impl Iterator for FileWalker {
         }
     }
 }
+*/

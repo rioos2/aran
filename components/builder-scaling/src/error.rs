@@ -33,7 +33,8 @@ pub enum Error {
     InvalidUrl,
     IO(io::Error),
     HSCreate(postgres::error::Error),
-    NetError(hab_net::Error),
+    HSGet(postgres::error::Error),
+    HSSetStatus(postgres::error::Error),
     ProjectJobsGet(postgres::error::Error),
     UnknownVCS,
     UnknownJobState,
@@ -52,6 +53,8 @@ impl fmt::Display for Error {
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
             Error::HSCreate(ref e) => format!("Database error creating a horizontal_scaling, {}", e),
+            Error::HSGet(ref e) => format!("Database error get horizontal_scaling, {}", e),
+            Error::HSSetStatus(ref e) => format!("Database error while update status, {}", e),
             Error::NetError(ref e) => format!("{}", e),
             Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
             Error::UnknownVCS => format!("Unknown VCS"),
@@ -71,6 +74,8 @@ impl error::Error for Error {
             Error::IO(ref err) => err.description(),
             Error::InvalidUrl => "Bad Url!",
             Error::HSCreate(ref err) => err.description(),
+            Error::HSGet(ref err) => err.description(),
+            Error::HSSetStatus(ref err) => err.description(),
             Error::NetError(ref err) => err.description(),
             Error::ProjectJobsGet(ref err) => err.description(),
             Error::UnknownJobState => "Unknown Job State",
@@ -88,12 +93,6 @@ impl From<hab_core::Error> for Error {
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {
         Error::IO(err)
-    }
-}
-
-impl From<hab_net::Error> for Error {
-    fn from(err: hab_net::Error) -> Self {
-        Error::NetError(err)
     }
 }
 
