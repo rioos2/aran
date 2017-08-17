@@ -121,3 +121,58 @@ impl Permissions {
         self.created_at.clone()
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct RolesGetResponse {
+    results: Vec<Roles>,
+}
+
+
+impl RolesGetResponse {
+    pub fn new() -> RolesGetResponse {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_roles(&mut self, v: Vec<Roles>) {
+        self.results = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PermissionsGet {
+    id: String,
+}
+
+impl PermissionsGet {
+    pub fn new() -> PermissionsGet {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PermissionsGetResponse {
+    results: Vec<Permissions>,
+}
+
+
+impl PermissionsGetResponse {
+    pub fn new() -> PermissionsGetResponse {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_permissions(&mut self, v: Vec<Permissions>) {
+        self.results = v;
+    }
+}

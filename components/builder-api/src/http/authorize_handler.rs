@@ -16,7 +16,7 @@ use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::DataStoreBroker;
-use protocol::authsrv::{Roles, Permissions};
+use protocol::authsrv::{Roles, Permissions, PermissionsGet};
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -63,6 +63,16 @@ pub fn roles_create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+pub fn roles_list(req: &mut Request) -> IronResult<Response> {
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    match AuthorizeDS::roles_list(&conn) {
+        Ok(roles_list) => Ok(render_json(status::Ok, &roles_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
 pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
     let mut permissions = Permissions::new();
     {
@@ -92,5 +102,37 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+pub fn permissions_list(req: &mut Request) -> IronResult<Response> {
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    match AuthorizeDS::permissions_list(&conn) {
+        Ok(permissions_list) => Ok(render_json(status::Ok, &permissions_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+pub fn get_rolebased_permissions(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
+    let mut perm_get = PermissionsGet::new();
+    perm_get.set_id(id.to_string());
+
+    match AuthorizeDS::get_rolebased_permissions(&conn, &perm_get) {
+        Ok(permission) => Ok(render_json(status::Ok, &permission)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }

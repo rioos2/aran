@@ -51,7 +51,11 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         horizontal_scaling_status: put "/horizontal_scaling/status/:id" => hs_status_update,
 
         roles: post "/roles" =>roles_create,
+        roles_list: get "/roles" =>roles_list,
+
         permissions: post "/permissions" =>permissions_create,
+        permissions_list: get "/permissions" => permissions_list,
+        role_based_permission: get "/permissions/:id" => get_rolebased_permissions,
     );
 
     let mut chain = Chain::new(router);

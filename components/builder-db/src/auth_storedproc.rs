@@ -239,10 +239,10 @@ impl Migratable for AuthProcedures {
         migrator.migrate(
             "authsrv",
             r#"CREATE OR REPLACE FUNCTION get_permission_for_role_v1 (
-                  role_id bigint
+                 rid bigint
               ) RETURNS SETOF permissions AS $$
                    BEGIN
-                       RETURN QUERY SELECT * FROM permissions WHERE id = role_id AND ignored = false
+                       RETURN QUERY SELECT * FROM permissions WHERE role_id = rid
                          ORDER BY name ASC;
                        RETURN;
                    END

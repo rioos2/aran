@@ -17,6 +17,15 @@ describe('Authorization API', function() {
           done(err);
         });
     });
+    it('returns the all roles', function(done) {
+      request.get('/roles')
+        .set('Authorization', globalAny.bobo_bearer)
+        .expect(200)
+        .end(function(err, res) {
+        expect(res.body.results.length).to.equal(1);
+          done(err);
+        });
+    });
   });
 
   describe('Create permission for user', function() {
@@ -30,5 +39,26 @@ describe('Authorization API', function() {
           done(err);
         });
     });
+
+    it('returns role based permission', function(done) {
+      request.get('/permissions'+ globalAny.role_id)
+        .set('Authorization', globalAny.bobo_bearer)
+        .expect(200)
+        .end(function(err, res) {
+          expect(res.body.role_id).to.equal(globalAny.role_id);
+          done(err);
+        });
+    });
   });
+
+  it('returns the all permission', function(done) {
+    request.get('/permissions')
+      .set('Authorization', globalAny.bobo_bearer)
+      .expect(200)
+      .end(function(err, res) {
+      expect(res.body.results.length).to.equal(1);
+        done(err);
+      });
+  });
+
   });
