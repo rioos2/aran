@@ -59,7 +59,6 @@ impl PasswordAuthClient {
 
     //Generates a token of 15 ascii random character
     pub fn token(&self) -> Result<String> {
-        println!("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2");
         Ok(
             rand::thread_rng()
                 .gen_ascii_chars()
