@@ -109,12 +109,6 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<hab_net::Error> for Error {
-    fn from(err: hab_net::Error) -> Self {
-        Error::NetError(err)
-    }
-}
-
 impl From<db::error::Error> for Error {
     fn from(err: db::error::Error) -> Self {
         Error::Db(err)

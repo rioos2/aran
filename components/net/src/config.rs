@@ -32,25 +32,15 @@ pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";
 /// additional comments.
 pub const DEV_GITHUB_CLIENT_SECRET: &'static str = "438223113eeb6e7edf2d2f91a232b72de72b9bdf";
 
-pub trait DispatcherCfg {
-    fn default_worker_count() -> usize {
-        // JW TODO: increase default count after r2d2 connection pools are moved to be owned
-        // by main thread of servers instead of dispatcher threads.
-        // num_cpus::get() * 8
-        num_cpus::get()
-    }
 
-    fn worker_count(&self) -> usize;
-}
-
-pub trait GitHubOAuth {
+pub trait PasswordAuth {
     fn github_url(&self) -> &str;
     fn github_client_id(&self) -> &str;
     fn github_client_secret(&self) -> &str;
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GitHubCfg {
+pub struct PasswordCfg {
     /// URL to GitHub API
     pub url: String,
     /// Client identifier used for GitHub API requests
@@ -59,9 +49,36 @@ pub struct GitHubCfg {
     pub client_secret: String,
 }
 
-impl Default for GitHubCfg {
+impl Default for PasswordCfg {
     fn default() -> Self {
-        GitHubCfg {
+        PasswordCfg {
+            url: DEFAULT_GITHUB_URL.to_string(),
+            client_id: DEV_GITHUB_CLIENT_ID.to_string(),
+            client_secret: DEV_GITHUB_CLIENT_SECRET.to_string(),
+        }
+    }
+}
+
+//Configuration structure for shield auth
+pub trait ShieldAuth {
+    fn github_url(&self) -> &str;
+    fn github_client_id(&self) -> &str;
+    fn github_client_secret(&self) -> &str;
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ShieldCfg {
+    /// URL to GitHub API
+    pub url: String,
+    /// Client identifier used for GitHub API requests
+    pub client_id: String,
+    /// Client secret used for GitHub API requests
+    pub client_secret: String,
+}
+
+impl Default for ShieldCfg {
+    fn default() -> Self {
+        ShieldCfg {
             url: DEFAULT_GITHUB_URL.to_string(),
             client_id: DEV_GITHUB_CLIENT_ID.to_string(),
             client_secret: DEV_GITHUB_CLIENT_SECRET.to_string(),

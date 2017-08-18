@@ -13,12 +13,8 @@
 #![allow(unused_imports)]
 #![allow(unused_results)]
 
-use message::{Persistable, Routable};
-use protobuf::{ProtobufEnum, RepeatedField};
-use regex::Regex;
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
-use sharding::InstaId;
 use std::result;
 use std::str::FromStr;
 

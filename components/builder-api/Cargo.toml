@@ -20,7 +20,6 @@ log = "*"
 mount = "*"
 params = "*"
 persistent = "*"
-protobuf = "*"
 router = "*"
 serde = "*"
 serde_derive = "*"
@@ -32,10 +31,6 @@ unicase = "*"
 [dependencies.clap]
 version = "*"
 features = [ "suggestions", "color", "unstable" ]
-
-[dependencies.zmq]
-git = "https://github.com/erickt/rust-zmq"
-branch = "release/v0.8"
 
 [dependencies.habitat_core]
 path = "../core"
@@ -54,6 +49,9 @@ path = "../builder-scaling"
 
 [dependencies.habitat_builder_authsrv]
 path = "../builder-authorize"
+
+[dependencies.habitat_builder_session]
+path = "../builder-session"
 
 [dependencies.habitat_builder_db]
 path = "../builder-db"

@@ -7,7 +7,7 @@ build = "build.rs"
 workspace = "../../"
 
 [dependencies]
-protobuf = "*"
+rand = "*"
 serde = "*"
 serde_json = "*"
 serde_derive = "*"

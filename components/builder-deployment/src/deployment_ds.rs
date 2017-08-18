@@ -5,6 +5,7 @@
 use chrono::{DateTime, UTC};
 use error::{Result, Error};
 use protocol::asmsrv;
+use protocol::net::{self, ErrCode};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -13,13 +14,7 @@ use serde_json;
 pub struct DeploymentDS;
 
 impl DeploymentDS {
-    /// Create an assembly in the  database. If the assembly is created, we'll
-    /// return the Assembly result.
-    ///
-    /// # Errors
-    ///
-    /// * If the pool has no connections available
-    /// * If the assembly cannot be created
+
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_create ");

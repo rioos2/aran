@@ -5,7 +5,7 @@ authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@m
 workspace = "../../"
 
 [dependencies]
-bitflags = "*"
+rand = "*" # Or a newer version
 fnv = "*"
 habitat_builder_protocol = { path = "../builder-protocol" }
 habitat_core = { path = "../core" }
@@ -16,16 +16,17 @@ lazy_static = "*"
 log = "*"
 num_cpus = "*"
 persistent = "*"
-protobuf = "*"
 serde = "*"
 serde_derive = "*"
 serde_json = "*"
 time = "*"
 unicase = "*"
 
-[dependencies.zmq]
-git = "https://github.com/erickt/rust-zmq"
-branch = "release/v0.8"
+[dependencies.habitat_builder_db]
+path = "../builder-db"
+
+[dependencies.habitat_builder_session]
+path = "../builder-session"
 
 [features]
 functional = []

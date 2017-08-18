@@ -16,7 +16,6 @@ extern crate chrono;
 extern crate habitat_builder_protocol as protocol;
 extern crate habitat_core as hab_core;
 extern crate habitat_builder_db as db;
-extern crate habitat_net as hab_net;
 extern crate hyper;
 extern crate linked_hash_map;
 #[macro_use]
@@ -26,6 +25,7 @@ extern crate rand;
 extern crate serde;
 #[macro_use]
 extern crate serde_json;
+#[macro_use]
 extern crate serde_derive;
 extern crate sha2;
 extern crate toml;
