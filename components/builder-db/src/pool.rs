@@ -1,16 +1,5 @@
-// Copyright (c) 2016 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2017 RioCorp Inc.
+
 
 use std::ops::{Deref, DerefMut};
 use std::thread;
@@ -21,10 +10,14 @@ use fnv::FnvHasher;
 use rand::{self, Rng};
 use r2d2;
 use r2d2_postgres::{self, PostgresConnectionManager, TlsMode};
+use protocol::{ShardId, SHARD_COUNT};
 
 use config::DataStore;
 use error::{Error, Result};
-use protocol::{Routable, RouteKey, ShardId, SHARD_COUNT};
+//
+//This is for future use. Where we could shard in the database based on functionality
+//
+use protocol::routesrv::{Routable, RouteKey};
 
 #[derive(Clone)]
 pub struct Pool {
@@ -85,6 +78,7 @@ impl Pool {
         )?;
         Ok(conn)
     }
+
 
     pub fn get<T: Routable>(&self, routable: &T) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
         let optional_shard_id = routable.route_key().map(

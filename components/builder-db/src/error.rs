@@ -1,18 +1,4 @@
-// Copyright (c) 2016 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-use hab_net;
+// Copyright (c) 2017 RioCorp Inc.
 
 use std::error;
 use std::fmt;
@@ -33,7 +19,6 @@ pub enum Error {
     FunctionCreate(postgres::error::Error),
     FunctionDrop(postgres::error::Error),
     FunctionRun(postgres::error::Error),
-    NetError(hab_net::Error),
     PostgresConnect(postgres::error::ConnectError),
     SchemaCreate(postgres::error::Error),
     SchemaDrop(postgres::error::Error),
@@ -72,7 +57,6 @@ impl fmt::Display for Error {
             Error::FunctionCreate(ref e) => format!("Error creating a function: {}", e),
             Error::FunctionDrop(ref e) => format!("Error dropping a function: {}", e),
             Error::FunctionRun(ref e) => format!("Error running a function: {}", e),
-            Error::NetError(ref e) => format!("{}", e),
             Error::PostgresConnect(ref e) => format!("Postgres connection error: {}", e),
             Error::SchemaCreate(ref e) => format!("Error creating schema: {}", e),
             Error::SchemaDrop(ref e) => format!("Error dropping schema: {}", e),
@@ -107,7 +91,6 @@ impl error::Error for Error {
             Error::FunctionCreate(_) => "Error creating database function",
             Error::FunctionDrop(_) => "Error dropping database function",
             Error::FunctionRun(_) => "Error running a database function",
-            Error::NetError(ref err) => err.description(),
             Error::PostgresConnect(ref e) => e.description(),
             Error::SchemaCreate(_) => "Error creating a schema",
             Error::SchemaDrop(_) => "Error dropping a schema",
@@ -125,12 +108,6 @@ impl error::Error for Error {
             Error::MigrationTracking(_) => "Error updating migration tracking table",
             Error::MigrationLock(_) => "Error getting migration lock",
         }
-    }
-}
-
-impl From<hab_net::Error> for Error {
-    fn from(err: hab_net::Error) -> Self {
-        Error::NetError(err)
     }
 }
 

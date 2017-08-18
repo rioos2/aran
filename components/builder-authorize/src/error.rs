@@ -35,7 +35,6 @@ pub enum Error {
     RolesCreate(postgres::error::Error),
     HSGet(postgres::error::Error),
     HSSetStatus(postgres::error::Error),
-    NetError(hab_net::Error),
     ProjectJobsGet(postgres::error::Error),
     UnknownVCS,
     UnknownJobState,
@@ -56,7 +55,6 @@ impl fmt::Display for Error {
             Error::RolesCreate(ref e) => format!("Database error creating a role, {}", e),
             Error::HSGet(ref e) => format!("Database error get horizontal_scaling, {}", e),
             Error::HSSetStatus(ref e) => format!("Database error while update status, {}", e),
-            Error::NetError(ref e) => format!("{}", e),
             Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
             Error::UnknownVCS => format!("Unknown VCS"),
             Error::UnknownJobState => format!("Unknown Job State"),
@@ -77,7 +75,6 @@ impl error::Error for Error {
             Error::RolesCreate(ref err) => err.description(),
             Error::HSGet(ref err) => err.description(),
             Error::HSSetStatus(ref err) => err.description(),
-            Error::NetError(ref err) => err.description(),
             Error::ProjectJobsGet(ref err) => err.description(),
             Error::UnknownJobState => "Unknown Job State",
             Error::UnknownVCS => "Unknown VCS",
@@ -94,12 +91,6 @@ impl From<hab_core::Error> for Error {
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {
         Error::IO(err)
-    }
-}
-
-impl From<hab_net::Error> for Error {
-    fn from(err: hab_net::Error) -> Self {
-        Error::NetError(err)
     }
 }
 

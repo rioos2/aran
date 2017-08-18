@@ -14,7 +14,6 @@
 
 use extern_url;
 use hab_core;
-use hab_net;
 use postgres;
 use std::error;
 use std::fmt;
@@ -45,7 +44,6 @@ pub enum Error {
     LogDirDoesNotExist(PathBuf, io::Error),
     LogDirIsNotDir(PathBuf),
     LogDirNotWritable(PathBuf),
-    NetError(hab_net::Error),
     ProjectJobsGet(postgres::error::Error),
     UnknownVCS,
     UnknownJobState,
@@ -76,7 +74,6 @@ impl fmt::Display for Error {
             Error::LogDirDoesNotExist(ref path, ref e) => format!("Build log directory {:?} doesn't exist!: {:?}", path, e),
             Error::LogDirIsNotDir(ref path) => format!("Build log directory {:?} is not a directory!", path),
             Error::LogDirNotWritable(ref path) => format!("Build log directory {:?} is not writable!", path),
-            Error::NetError(ref e) => format!("{}", e),
             Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
             Error::UnknownVCS => format!("Unknown VCS"),
             Error::UnknownJobState => format!("Unknown Job State"),
@@ -107,7 +104,6 @@ impl error::Error for Error {
             Error::LogDirDoesNotExist(_, ref err) => err.description(),
             Error::LogDirIsNotDir(_) => "Build log directory is not a directory",
             Error::LogDirNotWritable(_) => "Build log directory is not writable",
-            Error::NetError(ref err) => err.description(),
             Error::ProjectJobsGet(ref err) => err.description(),
             Error::UnknownJobState => "Unknown Job State",
             Error::UnknownVCS => "Unknown VCS",
@@ -127,11 +123,6 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<hab_net::Error> for Error {
-    fn from(err: hab_net::Error) -> Self {
-        Error::NetError(err)
-    }
-}
 
 impl From<db::error::Error> for Error {
     fn from(err: db::error::Error) -> Self {

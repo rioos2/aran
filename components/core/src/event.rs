@@ -89,7 +89,9 @@ pub enum Event {
     OriginInvitationAccept { id: String, account: String },
     OriginInvitationIgnore { id: String, account: String },
     JobCreate { package: String, account: String },
-    GithubAuthenticate { user: String, account: String },
+
+    PasswordAuthenticate { user: String, account: String },
+    AuthShieldSkipped {},
 }
 
 impl fmt::Display for Event {
@@ -114,7 +116,8 @@ impl fmt::Display for Event {
             Event::OriginInvitationAccept { id: _, account: _ } => "origin-invitation-accept",
             Event::OriginInvitationIgnore { id: _, account: _ } => "origin-invitation-ignore",
             Event::JobCreate { package: _, account: _ } => "job-create",
-            Event::GithubAuthenticate { user: _, account: _ } => "github-authenticate",
+            Event::PasswordAuthenticate { user: _, account: _ } => "default-authenticate",
+            Event::AuthShieldSkipped { } => "auth-shield-skipped",
         };
 
         write!(f, "{}", msg)
@@ -201,7 +204,7 @@ impl Serialize for Event {
                 try!(strukt.serialize_field("account", a));
                 strukt
             }
-            Event::GithubAuthenticate {
+            Event::PasswordAuthenticate {
                 user: ref u,
                 account: ref a,
             } => {
@@ -211,12 +214,16 @@ impl Serialize for Event {
                 try!(strukt.serialize_field("account", a));
                 strukt
             }
+            Event::AuthShieldSkipped {} => {
+                let mut strukt = try!(serializer.serialize_struct("event", 4));
+                strukt
+            }
             Event::OriginKeyUpload {
                 origin: ref o,
                 version: ref v,
                 account: ref a,
             } => {
-                let mut strukt = try!(serializer.serialize_struct("event", 4));
+                let mut strukt = try!(serializer.serialize_struct("event", 5));
                 try!(strukt.serialize_field("name", &self.to_string()));
                 try!(strukt.serialize_field("origin", o));
                 try!(strukt.serialize_field("version", v));
@@ -228,7 +235,7 @@ impl Serialize for Event {
                 version: ref v,
                 account: ref a,
             } => {
-                let mut strukt = try!(serializer.serialize_struct("event", 4));
+                let mut strukt = try!(serializer.serialize_struct("event", 6));
                 try!(strukt.serialize_field("name", &self.to_string()));
                 try!(strukt.serialize_field("origin", o));
                 try!(strukt.serialize_field("version", v));

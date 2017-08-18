@@ -6,11 +6,10 @@ use std::io;
 use std::result;
 
 use hab_core;
-use hab_net;
 use hyper;
-use protobuf;
-use zmq;
 use deploy;
+use protocol::net::{self, ErrCode};
+
 
 #[derive(Debug)]
 pub enum Error {
@@ -19,9 +18,6 @@ pub enum Error {
     HyperError(hyper::error::Error),
     HTTP(hyper::status::StatusCode),
     IO(io::Error),
-    NetError(hab_net::Error),
-    Protobuf(protobuf::ProtobufError),
-    Zmq(zmq::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -34,9 +30,6 @@ impl fmt::Display for Error {
             Error::HyperError(ref e) => format!("{}", e),
             Error::HTTP(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
-            Error::NetError(ref e) => format!("{}", e),
-            Error::Protobuf(ref e) => format!("{}", e),
-            Error::Zmq(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -50,9 +43,6 @@ impl error::Error for Error {
             Error::HyperError(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::IO(ref err) => err.description(),
-            Error::NetError(ref err) => err.description(),
-            Error::Protobuf(ref err) => err.description(),
-            Error::Zmq(ref err) => err.description(),
         }
     }
 }
@@ -60,12 +50,6 @@ impl error::Error for Error {
 impl From<hab_core::Error> for Error {
     fn from(err: hab_core::Error) -> Error {
         Error::HabitatCore(err)
-    }
-}
-
-impl From<hab_net::Error> for Error {
-    fn from(err: hab_net::Error) -> Self {
-        Error::NetError(err)
     }
 }
 
@@ -78,17 +62,5 @@ impl From<hyper::error::Error> for Error {
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Self {
         Error::IO(err)
-    }
-}
-
-impl From<protobuf::ProtobufError> for Error {
-    fn from(err: protobuf::ProtobufError) -> Error {
-        Error::Protobuf(err)
-    }
-}
-
-impl From<zmq::Error> for Error {
-    fn from(err: zmq::Error) -> Error {
-        Error::Zmq(err)
     }
 }

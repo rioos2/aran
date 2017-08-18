@@ -13,10 +13,11 @@
 // limitations under the License.
 
 #[macro_use]
-extern crate bitflags;
 extern crate fnv;
 extern crate habitat_builder_protocol as protocol;
 extern crate habitat_core as core;
+extern crate habitat_builder_db as db;
+extern crate habitat_builder_session as session;
 
 #[macro_use]
 extern crate hyper;
@@ -29,29 +30,23 @@ extern crate lazy_static;
 extern crate log;
 extern crate num_cpus;
 extern crate persistent;
-extern crate protobuf;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
 extern crate time;
 extern crate unicase;
-extern crate zmq;
+extern crate rand;
 
 pub mod config;
 pub mod error;
-pub mod dispatcher;
 pub mod http;
-pub mod oauth;
-pub mod privilege;
-pub mod routing;
+pub mod auth;
 pub mod server;
-pub mod supervisor;
 use std::process::Command;
 
 pub use self::error::{Error, Result};
-pub use self::server::{Application, ServerReg};
-pub use self::supervisor::Supervisor;
+pub use self::server::{Application};
 
 pub fn hostname() -> Result<String> {
     let output = try!(

@@ -1,16 +1,6 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2017 RioCorp Inc.
+
+//! A module containing the middleware of the HTTP server
 
 use std::env;
 
@@ -20,19 +10,23 @@ use iron::headers::{self, Authorization, Bearer};
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
+use persistent;
 use iron::status::Status;
 use iron::typemap::Key;
 use unicase::UniCase;
 use protocol::sessionsrv::*;
 use protocol::net::{self, ErrCode};
 use serde_json;
-
 use super::net_err_to_http;
 use super::super::error::Error;
-use super::super::routing::{Broker, BrokerConn};
-use super::super::oauth::github::GitHubClient;
+use super::super::auth::default::PasswordAuthClient;
+use super::super::auth::shield::ShieldClient;
 use config;
-use privilege::FeatureFlags;
+use session::privilege::FeatureFlags;
+use super::headers::*;
+
+use db::data_store::{DataStoreBroker, DataStoreConn};
+use session::session_ds::SessionDS;
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
 pub struct XHandler(Chain);
@@ -68,21 +62,23 @@ impl Handler for XHandler {
     }
 }
 
-pub struct GitHubCli;
+pub struct PasswordAuthCli;
 
-impl Key for GitHubCli {
-    type Value = GitHubClient;
+impl Key for PasswordAuthCli {
+    type Value = PasswordAuthClient;
 }
+
 
 #[derive(Clone)]
 pub struct Authenticated {
-    github: GitHubClient,
+    github: PasswordAuthClient,
     features: FeatureFlags,
 }
 
+
 impl Authenticated {
-    pub fn new<T: config::GitHubOAuth>(config: &T) -> Self {
-        let github = GitHubClient::new(config);
+    pub fn new<T: config::PasswordAuth>(config: &T) -> Self {
+        let github = PasswordAuthClient::new(config);
         Authenticated {
             github: github,
             features: FeatureFlags::empty(),
@@ -94,41 +90,103 @@ impl Authenticated {
         self
     }
 
-    fn authenticate(&self, conn: &mut BrokerConn, token: &str) -> IronResult<Session> {
+    fn authenticate(&self, datastore: &DataStoreConn, token: &str) -> IronResult<Session> {
         let mut request = SessionGet::new();
         request.set_token(token.to_string());
-        match conn.route::<SessionGet, Session>(&request) {
+
+        match SessionDS::get_session(datastore, &request) {
+            Ok(Some(session)) => Ok(session),
+            Ok(None) => {
+                let session = try!(session_create(datastore, token));
+
+                let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
+                if !flags.contains(self.features) {
+                    let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
+                    return Err(IronError::new(err, Status::Forbidden));
+                }
+
+                return Ok(session);
+            }
+            Err(err) => {
+                let err = net::err(ErrCode::DATA_STORE, "net::todo-change-it-auth-1");
+                return Err(IronError::new(err, Status::Unauthorized));
+            }
+
+        }
+    }
+}
+
+
+impl Key for Shielded {
+    type Value = Session;
+}
+
+//If the header has custom flags XAUTHSHIELD then we do a check with the shield tokens.
+//Multiple shield tokens shall be comma separated.
+impl BeforeMiddleware for Shielded {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        let session = {
+            match req.headers.get::<XAuthShield>() {
+                Some(shield_token) => try!(self.shield(shield_token)),
+                _ => {
+                    //                    log_event!(req, Event::AuthShieldSkipped {});
+
+                    return Ok(());
+                }
+            }
+        };
+        req.extensions.insert::<Self>(session);
+        Ok(())
+    }
+}
+
+
+
+#[derive(Clone)]
+pub struct Shielded {
+    shield: ShieldClient,
+    features: FeatureFlags,
+}
+
+impl Shielded {
+    pub fn new<T: config::ShieldAuth>(config: &T) -> Self {
+        let shielder = ShieldClient::new(config);
+        Shielded {
+            shield: shielder,
+            features: FeatureFlags::empty(),
+        }
+    }
+
+    pub fn require(mut self, flag: FeatureFlags) -> Self {
+        self.features.insert(flag);
+        self
+    }
+
+    fn shield(&self, token: &str) -> IronResult<Session> {
+        let mut request = SessionGet::new();
+        request.set_token(token.to_string());
+
+        /*match SessionDS::get_session(&conn, &request) {
             Ok(session) => Ok(session),
             Err(err) => {
                 if err.get_code() == ErrCode::SESSION_EXPIRED {
-                    let session = try!(session_create(&self.github, token));
+                    /*    let session = try!(shield_create(&self.github, token));
                     let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
                     if !flags.contains(self.features) {
-                        let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
+                        let err = net::err(ErrCode::ACCESS_DENIED, "net:shield:0");
                         return Err(IronError::new(err, Status::Forbidden));
                     }
-                    Ok(session)
+                    Ok(session)*/
+                    return Err(IronError::new(err, Status::Forbidden));
                 } else {
                     let status = net_err_to_http(err.get_code());
                     let body = itry!(serde_json::to_string(&err));
                     Err(IronError::new(err, (body, status)))
                 }
             }
-        }
-    }
-}
-
-pub struct RouteBroker;
-
-impl Key for RouteBroker {
-    type Value = BrokerConn;
-}
-
-impl BeforeMiddleware for RouteBroker {
-    fn before(&self, req: &mut Request) -> IronResult<()> {
-        let conn = Broker::connect().unwrap();
-        req.extensions.insert::<RouteBroker>(conn);
-        Ok(())
+        }*/
+        let err = net::err(ErrCode::ACCESS_DENIED, "net:shield:0");
+        Err(IronError::new(err, Status::Forbidden))
     }
 }
 
@@ -141,13 +199,14 @@ impl BeforeMiddleware for Authenticated {
         let session = {
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
-                    match req.extensions.get_mut::<RouteBroker>() {
-                        Some(broker) => try!(self.authenticate(broker, token)),
+                    match req.extensions.get_mut::<DataStoreBroker>() {
+                        Some(broker) => self.authenticate(broker, token)?,
                         None => {
-                            let mut broker = Broker::connect().unwrap();
-                            try!(self.authenticate(&mut broker, token))
+                            let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
+                            return Err(IronError::new(err, Status::Unauthorized));
                         }
                     }
+
                 }
                 _ => {
                     let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
@@ -176,13 +235,13 @@ impl AfterMiddleware for Cors {
     }
 }
 
-pub fn session_create(github: &GitHubClient, token: &str) -> IronResult<Session> {
-    if env::var_os("HAB_FUNC_TEST").is_some() {
+pub fn session_create(conn: &DataStoreConn, token: &str) -> IronResult<Session> {
+    if env::var_os("RIOOS_FUNC_TEST").is_some() {
         let request = match token {
             "bobo" => {
                 let mut request = SessionCreate::new();
                 request.set_token(token.to_string());
-                request.set_extern_id(0);
+                request.set_extern_id(String::from("0"));
                 request.set_email("bobo@example.com".to_string());
                 request.set_name("bobo".to_string());
                 request.set_provider(OAuthProvider::GitHub);
@@ -191,7 +250,7 @@ pub fn session_create(github: &GitHubClient, token: &str) -> IronResult<Session>
             "logan" => {
                 let mut request = SessionCreate::new();
                 request.set_token(token.to_string());
-                request.set_extern_id(1);
+                request.set_extern_id(String::from("1"));
                 request.set_email("logan@example.com".to_string());
                 request.set_name("logan".to_string());
                 request.set_provider(OAuthProvider::GitHub);
@@ -204,78 +263,31 @@ pub fn session_create(github: &GitHubClient, token: &str) -> IronResult<Session>
                 )
             }
         };
-        let mut conn = Broker::connect().unwrap();
-        match conn.route::<SessionCreate, Session>(&request) {
+        //wrong name, use another fascade method session_create
+        match SessionDS::account_create(&conn, &request) {
             Ok(session) => return Ok(session),
             Err(err) => {
-                let body = itry!(serde_json::to_string(&err));
-                let status = net_err_to_http(err.get_code());
+                let body = format!("{}\n", err);
+                let status = net_err_to_http(ErrCode::DATA_STORE);
                 return Err(IronError::new(err, (body, status)));
             }
         }
     }
-    match github.user(&token) {
-        Ok(user) => {
-            // Select primary email. If no primary email can be found, use any email. If
-            // no email is associated with account return an access denied error.
-            let email = match github.emails(&token) {
-                Ok(ref emails) => {
-                    emails
-                        .iter()
-                        .find(|e| e.primary)
-                        .unwrap_or(&emails[0])
-                        .email
-                        .clone()
-                }
-                Err(_) => {
-                    let err = net::err(ErrCode::ACCESS_DENIED, "net:session-create:0");
-                    let status = net_err_to_http(err.get_code());
-                    let body = itry!(serde_json::to_string(&err));
-                    return Err(IronError::new(err, (body, status)));
-                }
-            };
-            let mut conn = Broker::connect().unwrap();
-            let mut request = SessionCreate::new();
-            request.set_token(token.to_string());
-            request.set_extern_id(user.id);
-            request.set_email(email);
-            request.set_name(user.login);
-            request.set_provider(OAuthProvider::GitHub);
-            match conn.route::<SessionCreate, Session>(&request) {
-                Ok(session) => Ok(session),
-                Err(err) => {
-                    let body = itry!(serde_json::to_string(&err));
-                    let status = net_err_to_http(err.get_code());
-                    Err(IronError::new(err, (body, status)))
-                }
-            }
-        }
-        Err(Error::GitHubAPI(hyper::status::StatusCode::Unauthorized, _)) => {
-            let err = net::err(ErrCode::ACCESS_DENIED, "net:session-create:1");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
-        }
-        Err(e @ Error::GitHubAPI(_, _)) => {
-            warn!("Unexpected response from GitHub, {:?}", e);
-            let err = net::err(ErrCode::BAD_REMOTE_REPLY, "net:session-create:2");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
-        }
-        Err(e @ Error::Json(_)) => {
-            warn!("Bad response body from GitHub, {:?}", e);
-            let err = net::err(ErrCode::BAD_REMOTE_REPLY, "net:session-create:3");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
-        }
+
+    let mut request = SessionCreate::new();
+    request.set_token(token.to_string());
+    request.set_extern_id(String::from("1"));
+    request.set_email("logan@example.com".to_string());
+
+    //wrong name, use another fascade method session_create
+    match SessionDS::account_create(&conn, &request) {
+        Ok(session) => return Ok(session),
         Err(e) => {
             error!("Unexpected error, err={:?}", e);
-            let err = net::err(ErrCode::BUG, "net:session-create:4");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
+            let err = net::err(ErrCode::BAD_REMOTE_REPLY, "net:session-create:3");
+            let status = net_err_to_http(ErrCode::BUG);
+            let body = format!("{}\n", err);
+            return Err(IronError::new(err, (body, status)));
         }
     }
 }

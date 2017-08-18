@@ -23,9 +23,6 @@ threadpool = "*"
 [dependencies.habitat_core]
 path = "../core"
 
-[dependencies.habitat_net]
-path = "../net"
-
 [dependencies.habitat_builder_protocol]
 path = "../builder-protocol"
 

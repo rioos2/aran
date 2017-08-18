@@ -17,9 +17,9 @@ use iron::mime::{Mime, TopLevel, SubLevel};
 use iron::modifiers::Header;
 use iron::prelude::*;
 use iron::status;
-use protocol::net::NetError;
 use serde::Serialize;
 use serde_json;
+use protocol::net::{self, NetError, ErrCode};
 
 use super::net_err_to_http;
 

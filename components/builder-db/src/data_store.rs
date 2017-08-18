@@ -1,6 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-use std::env;
 use async::AsyncServer;
 use error::{Result, Error};
 use pool::Pool;

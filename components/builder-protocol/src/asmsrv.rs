@@ -1,3 +1,8 @@
+// Copyright (c) 2017 RioCorp Inc.
+
+//The protocol for the database marshall/unmarshall
+//for deployment (assembly, assembly_factory).
+
 #![allow(unknown_lints)]
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
@@ -13,16 +18,12 @@
 #![allow(unused_imports)]
 #![allow(unused_results)]
 
-use message::{Persistable, Routable};
-use protobuf::{ProtobufEnum, RepeatedField};
-use regex::Regex;
-use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
-use sharding::InstaId;
 use std::result;
 use std::fmt;
 use error::{Error, Result};
 use std::str::FromStr;
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
@@ -157,6 +158,7 @@ pub struct Status {
     reason: String,
     conditions: Vec<Condition>,
 }
+
 impl Status {
     pub fn new() -> Status {
         ::std::default::Default::default()

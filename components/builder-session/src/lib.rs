@@ -11,5 +11,22 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+extern crate chrono;
+extern crate habitat_builder_db as db;
+extern crate habitat_builder_protocol as protocol;
+extern crate habitat_core as hab_core;
+extern crate hyper;
 
-pub mod github;
+#[macro_use]
+extern crate bitflags;
+extern crate log;
+extern crate postgres;
+extern crate rand;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+pub mod privilege;
+pub mod session_ds;
+pub mod error;
+pub use self::error::{Error, Result};

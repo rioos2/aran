@@ -5,6 +5,7 @@
 pub mod deployment_handler;
 pub mod scaling_handler;
 pub mod authorize_handler;
+pub mod auth_handler;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -19,6 +20,7 @@ use staticfile::Static;
 use config::Config;
 use error::Result;
 use self::deployment_handler::*;
+use self::auth_handler::*;
 use self::scaling_handler::*;
 use self::authorize_handler::*;
 
@@ -31,21 +33,33 @@ const HTTP_THREAD_COUNT: usize = 128;
 /// Create a new `iron::Chain` containing a Router and it's required middleware
 pub fn router(config: Arc<Config>) -> Result<Chain> {
     let basic = Authenticated::new(&*config);
+    let bioshield = Shielded::new(&*config);
+
     let router =
         router!(
         status: get "/status" => status,
 
-        // assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
-        assemblys: post "/assemblys" => assembly_create,
-        assemblys_get: get "/assemblys" => assembly_list,
-        assembly: get "/assemblys/:id" => assembly_show,
-        assembly_status: put "/assemblys/status/:id" => assembly_status_update,
+        //auth API for login
+        authenticate: post "/authenticate/:code" => default_authenticate,
+        //authenticate: post "/authenticate/ldap/:code" => ldap_authenticate,
 
+        //auth API for creating new account
+        signup: post "/accounts" => account_create,
+
+        //deploy API: assembly_factory
         assembly_factorys: post "/assembly_factorys" => assembly_factory_create,
         assemblys_factory: get "/assembly_factorys/:id" => assembly_factory_show,
         assemblys_factorys_get: get "/assembly_factorys" => assembly_factory_list,
         assembly_factory_status: put "/assembly_factorys/status/:id" => assembly_factory_status_update,
 
+        //deploy API: assembly
+        //assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
+        assemblys: post "/assemblys" => assembly_create,
+        assemblys_get: get "/assemblys" => assembly_list,
+        assembly: get "/assemblys/:id" => assembly_show,
+        assembly_status: put "/assemblys/status/:id" => assembly_status_update,
+
+        //scaling API: horizontal scaling
         horizontal_scaling: post "/horizontal_scaling" => hs_create,
         horizontal_scaling_list: get "/horizontal_scaling" => hs_list,
         horizontal_scaling_status: put "/horizontal_scaling/status/:id" => hs_status_update,
@@ -54,6 +68,10 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
     );
 
     let mut chain = Chain::new(router);
+
+    //chain.link(persistent::Read::<GitHubCli>::both(
+    //        GitHubClient::new(&*config),
+    //   ));
 
     chain.link(persistent::Read::<DataStoreBroker>::both(
         ({

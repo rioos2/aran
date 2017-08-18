@@ -7,7 +7,7 @@ use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
-use hab_net::config::{GitHubCfg, GitHubOAuth, RouterAddr, RouterCfg};
+use hab_net::config::{PasswordCfg, ShieldCfg, PasswordAuth, ShieldAuth, RouterAddr, RouterCfg};
 use hab_core::config::ConfigFile;
 
 use error::Error;
@@ -18,8 +18,13 @@ pub struct Config {
     pub http: HttpCfg,
     /// List of net addresses for routing servers to connect to
     pub routers: Vec<RouterAddr>,
-    pub github: GitHubCfg,
+    //
     pub ui: UiCfg,
+    //
+    pub github: PasswordCfg,
+    //RIO Shield
+    pub shield: ShieldCfg,
+    //
     // Whether to log events for funnel metrics
     pub events_enabled: bool,
     /// Where to record log events for funnel metrics
@@ -31,8 +36,9 @@ impl Default for Config {
         Config {
             http: HttpCfg::default(),
             routers: vec![RouterAddr::default()],
-            github: GitHubCfg::default(),
             ui: UiCfg::default(),
+            github: PasswordCfg::default(),
+            shield: ShieldCfg::default(),
             events_enabled: false,
             log_dir: env::temp_dir().to_string_lossy().into_owned(),
         }
@@ -43,7 +49,7 @@ impl ConfigFile for Config {
     type Error = Error;
 }
 
-impl GitHubOAuth for Config {
+impl PasswordAuth for Config {
     fn github_url(&self) -> &str {
         &self.github.url
     }
@@ -56,6 +62,21 @@ impl GitHubOAuth for Config {
         &self.github.client_secret
     }
 }
+
+impl ShieldAuth for Config {
+    fn github_url(&self) -> &str {
+        &self.github.url
+    }
+
+    fn github_client_id(&self) -> &str {
+        &self.github.client_id
+    }
+
+    fn github_client_secret(&self) -> &str {
+        &self.github.client_secret
+    }
+}
+
 
 impl RouterCfg for Config {
     fn route_addrs(&self) -> &Vec<RouterAddr> {
@@ -137,7 +158,6 @@ mod tests {
             config.github.client_secret,
             "438223113eeb6e7edf2d2f91a232b72de72b9bdf"
         );
-        assert_eq!(config.ui.root, Some("/some/path".to_string()));
     }
 
     #[test]
