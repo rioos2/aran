@@ -35,7 +35,6 @@ pub struct SessionCreate {
     first_name: String,
     last_name: String,
     phone: String,
-    extern_id: String,
     provider: ::std::option::Option<OAuthProvider>,
     api_key: String,
     token: String,
@@ -52,13 +51,14 @@ impl SessionCreate {
         ::std::default::Default::default()
     }
 
-   pub fn set_id(&mut self, v: ::std::string::String) {
+    pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
 
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
     }
+
 
     pub fn set_email(&mut self, v: ::std::string::String) {
         self.email = v;
@@ -80,7 +80,7 @@ impl SessionCreate {
         self.extern_id = v;
     }
 
-    pub fn get_extern_id(&self) -> ::std::string::String  {
+    pub fn get_extern_id(&self) -> ::std::string::String {
         self.extern_id.clone()
     }
 
@@ -340,7 +340,7 @@ impl AccountGetId {
         self.id = v;
     }
 
-    pub fn get_id(&self) -> ::std::string::String  {
+    pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
     }
 }

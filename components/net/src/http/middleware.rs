@@ -16,9 +16,9 @@ use iron::typemap::Key;
 use unicase::UniCase;
 use protocol::sessionsrv::*;
 use protocol::net::{self, ErrCode};
-use serde_json;
+// use serde_json;
 use super::net_err_to_http;
-use super::super::error::Error;
+// use super::super::error::Error;
 use super::super::auth::default::PasswordAuthClient;
 use super::super::auth::shield::ShieldClient;
 use config;
@@ -206,7 +206,6 @@ impl BeforeMiddleware for Authenticated {
                             return Err(IronError::new(err, Status::Unauthorized));
                         }
                     }
-
                 }
                 _ => {
                     let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");

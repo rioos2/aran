@@ -2,7 +2,7 @@
 
 //stored procedures for assemblys, assembly_factory, components
 
-use error::{Result, Error};
+use error::Result;
 use migration::{Migratable, Migrator};
 
 pub struct DeployProcedures;
