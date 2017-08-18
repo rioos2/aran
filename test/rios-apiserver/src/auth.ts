@@ -5,7 +5,7 @@ const request = supertest('http://localhost:9636/v1');
 const globalAny:any = global;
 
 describe('Authorization API', function() {
-  describe('Create role for user', function() {
+  describe('User Roles API', function() {
     it('returns the created roles', function(done) {
       request.post('/roles')
         .set('Authorization', globalAny.bobo_bearer)
@@ -39,7 +39,7 @@ describe('Authorization API', function() {
     });
   });
 
-  describe('Create permission for user', function() {
+  describe('User Permission API', function() {
     it('returns the created permission', function(done) {
       request.post('/permissions')
         .set('Authorization', globalAny.bobo_bearer)
@@ -68,6 +68,17 @@ describe('Authorization API', function() {
         .expect(200)
         .end(function(err, res) {
          expect(res.body.id).to.equal(globalAny.perm_id);
+          done(err);
+        });
+    });
+
+    it('returns the specfic permission for the specfic role', function(done) {
+      request.get('/permissions/' + globalAny.perm_id + '/roles/' + globalAny.role_id)
+        .set('Authorization', globalAny.bobo_bearer)
+        .expect(200)
+        .end(function(err, res) {
+         expect(res.body.id).to.equal(globalAny.perm_id);
+         expect(res.body.role_id).to.equal( globalAny.role_id);
           done(err);
         });
     });

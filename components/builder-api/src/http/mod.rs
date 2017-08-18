@@ -58,6 +58,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         permissions_list: get "/permissions" => permissions_list,
         role_based_permission: get "/permissions/roles/:id" => get_rolebased_permissions,
         permissions_show: get "/permissions/:id" => permissions_show,
+        get_specfic_permission_based_role: get "/permissions/:id/roles/:rid" => get_specfic_permission_based_role,
 
     );
 

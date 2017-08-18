@@ -138,6 +138,24 @@ impl AuthorizeDS {
         }
         Ok(None)
     }
+
+    pub fn get_specfic_permission_based_role(datastore: &DataStoreConn, get_perms: &authsrv::PermissionsGet) -> Result<Option<authsrv::Permissions>> {
+        let conn = datastore.pool.get_shard(0)?;
+        debug!("◖☩ START: get_permission {:?}", get_perms.get_id());
+        let perm_id = get_perms.get_id().parse::<i64>().unwrap();
+        let role_id = get_perms.get_role_id().parse::<i64>().unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM get_specfic_permission_role_v1($1,$2)",
+            &[&perm_id, &role_id],
+        ).map_err(Error::PermissionGet)?;
+
+        debug!(">● ROWS: get_permission=>\n{:?}", &rows);
+        for row in rows {
+            let mut perm_get = row_to_permissions(&row)?;
+            return Ok(Some(perm_get));
+        }
+        Ok(None)
+    }
 }
 
 

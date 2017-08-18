@@ -180,3 +180,28 @@ pub fn permissions_show(req: &mut Request) -> IronResult<Response> {
         )),
     }
 }
+
+pub fn get_specfic_permission_based_role(req: &mut Request) -> IronResult<Response> {
+
+    let (perm_id, role_id) = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let perm_id = params.find("id").unwrap().to_owned();
+        let role_id = params.find("rid").unwrap().to_owned();
+
+        // We're only allowing projects to be created for the core
+        // origin initially. Thus, if we try to update a project for
+        // any other origin, we can safely short-circuit processing.
+        (perm_id, role_id)
+    };
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
+    let mut perms_get = PermissionsGet::new();
+    perms_get.set_id(perm_id);
+    perms_get.set_role_id(role_id);
+    match AuthorizeDS::get_specfic_permission_based_role(&conn, &perms_get) {
+        Ok(perms) => Ok(render_json(status::Ok, &perms)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}

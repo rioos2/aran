@@ -165,6 +165,7 @@ impl Permissions {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct PermissionsGet {
     id: String,
+    role_id: String,
 }
 
 impl PermissionsGet {
@@ -179,6 +180,14 @@ impl PermissionsGet {
 
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
+    }
+
+    pub fn set_role_id(&mut self, v: ::std::string::String) {
+        self.role_id = v;
+    }
+
+    pub fn get_role_id(&self) -> ::std::string::String {
+        self.role_id.clone()
     }
 }
 

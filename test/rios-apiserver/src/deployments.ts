@@ -6,7 +6,7 @@ const globalAny:any = global;
 
 describe('Deployment API', function() {
 
-describe('Create assembly_factorys', function() {
+describe('Assembly_factory API', function() {
   it('returns the assembly_factorys', function(done) {
     request.post('/assembly_factorys')
       .set('Authorization', globalAny.bobo_bearer)
@@ -48,7 +48,7 @@ describe('Create assembly_factorys', function() {
   });
 });
 
-  describe('Create assembly', function() {
+  describe('Assembly API', function() {
    it('returns the created assembly', function(done) {
       request.post('/assemblys')
         .set('Authorization', globalAny.bobo_bearer)

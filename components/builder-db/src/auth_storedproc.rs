@@ -249,6 +249,20 @@ impl Migratable for AuthProcedures {
                    $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_specfic_permission_role_v1 (
+                 perm_id bigint,
+                 rid bigint
+              ) RETURNS SETOF permissions AS $$
+                   BEGIN
+                       RETURN QUERY SELECT * FROM permissions WHERE role_id = rid AND id = perm_id
+                         ORDER BY name ASC;
+                       RETURN;
+                   END
+                   $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
         debug!("=> DONE: authsrv");
 
         Ok(())

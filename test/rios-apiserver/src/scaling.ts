@@ -5,7 +5,7 @@ const request = supertest('http://localhost:9636/v1');
 const globalAny:any = global;
 
 describe('Scaling API', function() {
-  describe('Create horizontal_scaling', function() {
+  describe('Horizontal Scaling API', function() {
     it('returns the created horizontal_scaling', function(done) {
       request.post('/horizontal_scaling')
         .set('Authorization', globalAny.bobo_bearer)
