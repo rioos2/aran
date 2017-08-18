@@ -8,6 +8,8 @@ use std::result;
 use hab_core;
 use hyper;
 use deploy;
+use protocol::net::{self, ErrCode};
+
 
 #[derive(Debug)]
 pub enum Error {
@@ -28,7 +30,6 @@ impl fmt::Display for Error {
             Error::HyperError(ref e) => format!("{}", e),
             Error::HTTP(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
-            Error::NetError(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }

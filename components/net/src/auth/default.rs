@@ -58,7 +58,7 @@ impl PasswordAuthClient {
     }
 
     //Generates a token of 15 ascii random character
-    pub fn token(&self, code: &str) -> Result<String> {
+    pub fn token(&self) -> Result<String> {
         Ok(
             rand::thread_rng()
                 .gen_ascii_chars()
@@ -66,9 +66,8 @@ impl PasswordAuthClient {
                 .collect(),
         )
     }
-
     //Authenticates an user with email/password.
-    pub fn authenticate(&self, conn: &str, code: &str) -> Result<String> {
+    pub fn authenticate(&self, session_create: &sessionsrv::SessionCreate, code: &str) -> Result<String> {
         /*let url = Url::parse(&format!(
             "{}/login/oauth/access_token?\
                                 client_id={}&client_secret={}&code={}",
@@ -110,7 +109,7 @@ impl PasswordAuthClient {
         }*/
         let hello = String::from("Hello, world!");
         Ok(hello)
-    }    
+    }
 
 }
 

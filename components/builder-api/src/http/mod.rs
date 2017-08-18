@@ -5,6 +5,7 @@
 pub mod deployment_handler;
 pub mod scaling_handler;
 pub mod authorize_handler;
+pub mod auth_handler;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};

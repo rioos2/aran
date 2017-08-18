@@ -108,9 +108,8 @@ impl Authenticated {
                 return Ok(session);
             }
             Err(err) => {
-                let status = net_err_to_http(err.get_code());
-                let body = itry!(serde_json::to_string(&err));
-                return Err(IronError::new(err, (body, status)));
+                let err = net::err(ErrCode::DATA_STORE, "net::todo-change-it-auth-1");
+                return Err(IronError::new(err, Status::Unauthorized));
             }
 
         }
@@ -200,8 +199,14 @@ impl BeforeMiddleware for Authenticated {
         let session = {
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
-                    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-                    try!(self.authenticate(&conn, token))
+                    match req.extensions.get_mut::<DataStoreBroker>() {
+                        Some(broker) => self.authenticate(broker, token)?,
+                        None => {
+                            let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
+                            return Err(IronError::new(err, Status::Unauthorized));
+                        }
+                    }
+
                 }
                 _ => {
                     let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
@@ -236,7 +241,7 @@ pub fn session_create(conn: &DataStoreConn, token: &str) -> IronResult<Session> 
             "bobo" => {
                 let mut request = SessionCreate::new();
                 request.set_token(token.to_string());
-                request.set_extern_id(0);
+                request.set_extern_id(String::from("0"));
                 request.set_email("bobo@example.com".to_string());
                 request.set_name("bobo".to_string());
                 request.set_provider(OAuthProvider::GitHub);
@@ -245,7 +250,7 @@ pub fn session_create(conn: &DataStoreConn, token: &str) -> IronResult<Session> 
             "logan" => {
                 let mut request = SessionCreate::new();
                 request.set_token(token.to_string());
-                request.set_extern_id(1);
+                request.set_extern_id(String::from("1"));
                 request.set_email("logan@example.com".to_string());
                 request.set_name("logan".to_string());
                 request.set_provider(OAuthProvider::GitHub);
@@ -258,12 +263,12 @@ pub fn session_create(conn: &DataStoreConn, token: &str) -> IronResult<Session> 
                 )
             }
         };
-
-        match SessionDS::session_create(&conn, &request) {
+        //wrong name, use another fascade method session_create
+        match SessionDS::account_create(&conn, &request) {
             Ok(session) => return Ok(session),
             Err(err) => {
-                let body = itry!(serde_json::to_string(&err));
-                let status = net_err_to_http(err.get_code());
+                let body = format!("{}\n", err);
+                let status = net_err_to_http(ErrCode::DATA_STORE);
                 return Err(IronError::new(err, (body, status)));
             }
         }
@@ -271,43 +276,18 @@ pub fn session_create(conn: &DataStoreConn, token: &str) -> IronResult<Session> 
 
     let mut request = SessionCreate::new();
     request.set_token(token.to_string());
-    request.set_extern_id(1);
+    request.set_extern_id(String::from("1"));
     request.set_email("logan@example.com".to_string());
 
-
-    match SessionDS::session_create(&conn, &request) {
+    //wrong name, use another fascade method session_create
+    match SessionDS::account_create(&conn, &request) {
         Ok(session) => return Ok(session),
-        Err(err) => {
-            let body = itry!(serde_json::to_string(&err));
-            let status = net_err_to_http(err.get_code());
-            return Err(IronError::new(err, (body, status)));
-        }
-        Err(Error::GitHubAPI(hyper::status::StatusCode::Unauthorized, _)) => {
-            let err = net::err(ErrCode::ACCESS_DENIED, "net:session-create:1");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
-        }
-        Err(e @ Error::GitHubAPI(_, _)) => {
-            warn!("Unexpected response from GitHub, {:?}", e);
-            let err = net::err(ErrCode::BAD_REMOTE_REPLY, "net:session-create:2");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
-        }
-        Err(e @ Error::Json(_)) => {
-            warn!("Bad response body from GitHub, {:?}", e);
-            let err = net::err(ErrCode::BAD_REMOTE_REPLY, "net:session-create:3");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
-        }
         Err(e) => {
             error!("Unexpected error, err={:?}", e);
-            let err = net::err(ErrCode::BUG, "net:session-create:4");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
+            let err = net::err(ErrCode::BAD_REMOTE_REPLY, "net:session-create:3");
+            let status = net_err_to_http(ErrCode::BUG);
+            let body = format!("{}\n", err);
+            return Err(IronError::new(err, (body, status)));
         }
     }
 }

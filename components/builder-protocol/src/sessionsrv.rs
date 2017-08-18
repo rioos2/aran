@@ -29,13 +29,13 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize)]
 pub struct SessionCreate {
-    id: u64,
+    id: String,
     name: String,
     email: String,
     first_name: String,
     last_name: String,
     phone: String,
-    extern_id: u64,
+    extern_id: String,
     provider: ::std::option::Option<OAuthProvider>,
     api_key: String,
     token: String,
@@ -52,11 +52,12 @@ impl SessionCreate {
         ::std::default::Default::default()
     }
 
-    pub fn set_id(&mut self, v: u64) {
+   pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
-    pub fn get_id(&self) -> u64 {
-        self.id
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
     pub fn set_email(&mut self, v: ::std::string::String) {
@@ -75,9 +76,14 @@ impl SessionCreate {
         self.name.clone()
     }
 
-    pub fn set_extern_id(&mut self, v: u64) {
+    pub fn set_extern_id(&mut self, v: ::std::string::String) {
         self.extern_id = v;
     }
+
+    pub fn get_extern_id(&self) -> ::std::string::String  {
+        self.extern_id.clone()
+    }
+
 
     pub fn set_provider(&mut self, v: OAuthProvider) {
         self.provider = ::std::option::Option::Some(v);
@@ -85,10 +91,6 @@ impl SessionCreate {
 
     pub fn get_provider(&self) -> OAuthProvider {
         self.provider.clone().unwrap_or(OAuthProvider::GitHub)
-    }
-
-    pub fn get_extern_id(&self) -> u64 {
-        self.extern_id
     }
 
     pub fn set_first_name(&mut self, v: ::std::string::String) {
@@ -105,6 +107,14 @@ impl SessionCreate {
 
     pub fn get_last_name(&self) -> ::std::string::String {
         self.last_name.clone()
+    }
+
+    pub fn set_phone(&mut self, v: ::std::string::String) {
+        self.phone = v;
+    }
+
+    pub fn get_phone(&self) -> ::std::string::String {
+        self.phone.clone()
     }
 
     pub fn set_apikey(&mut self, v: ::std::string::String) {
@@ -184,9 +194,9 @@ impl Into<Session> for SessionCreate {
     }
 }
 
-#[derive(PartialEq, Clone, Default)]
+#[derive(PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Session {
-    id: u64,
+    id: String,
     email: String,
     name: String,
     token: String,
@@ -199,11 +209,12 @@ impl Session {
         ::std::default::Default::default()
     }
 
-    pub fn set_id(&mut self, v: u64) {
+    pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
-    pub fn get_id(&self) -> u64 {
-        self.id
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
     pub fn set_email(&mut self, v: ::std::string::String) {
@@ -316,7 +327,7 @@ impl AccountGet {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AccountGetId {
-    id: u64,
+    id: String,
 }
 
 
@@ -325,12 +336,12 @@ impl AccountGetId {
         ::std::default::Default::default()
     }
 
-    pub fn set_id(&mut self, v: u64) {
+    pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
 
-    pub fn get_id(&self) -> u64 {
-        self.id
+    pub fn get_id(&self) -> ::std::string::String  {
+        self.id.clone()
     }
 }
 
@@ -351,7 +362,7 @@ impl Serialize for OAuthProvider {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Account {
-    id: u64,
+    id: String,
     name: String,
     email: String,
     first_name: String,
@@ -399,11 +410,12 @@ impl Account {
         ::std::default::Default::default()
     }
 
-    pub fn set_id(&mut self, v: u64) {
+    pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
-    pub fn get_id(&self) -> u64 {
-        self.id
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
     pub fn set_email(&mut self, v: ::std::string::String) {
@@ -506,7 +518,7 @@ impl Account {
 
 #[derive(PartialEq, Clone, Default)]
 pub struct AccountInvitationListRequest {
-    account_id: u64,
+    account_id: String,
 }
 
 impl AccountInvitationListRequest {
@@ -519,13 +531,13 @@ impl AccountInvitationListRequest {
 #[derive(PartialEq, Clone, Default)]
 pub struct AccountOriginInvitation {
     // message fields
-    id: u64,
-    origin_invitation_id: u64,
-    account_id: u64,
+    id: String,
+    origin_invitation_id: String,
+    account_id: String,
     account_name: String,
-    origin_id: u64,
+    origin_id: String,
     origin_name: String,
-    owner_id: u64,
+    owner_id: String,
 }
 
 impl AccountOriginInvitation {

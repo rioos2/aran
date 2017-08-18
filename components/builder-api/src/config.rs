@@ -7,7 +7,7 @@ use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
-use hab_net::config::{PasswordCfg, PasswordAuth, RouterAddr, RouterCfg};
+use hab_net::config::{PasswordCfg, ShieldCfg, PasswordAuth, ShieldAuth, RouterAddr, RouterCfg};
 use hab_core::config::ConfigFile;
 
 use error::Error;
@@ -18,6 +18,8 @@ pub struct Config {
     pub http: HttpCfg,
     /// List of net addresses for routing servers to connect to
     pub routers: Vec<RouterAddr>,
+    //
+    pub ui: UiCfg,
     //
     pub github: PasswordCfg,
     //RIO Shield
@@ -34,6 +36,7 @@ impl Default for Config {
         Config {
             http: HttpCfg::default(),
             routers: vec![RouterAddr::default()],
+            ui: UiCfg::default(),
             github: PasswordCfg::default(),
             shield: ShieldCfg::default(),
             events_enabled: false,
@@ -59,6 +62,21 @@ impl PasswordAuth for Config {
         &self.github.client_secret
     }
 }
+
+impl ShieldAuth for Config {
+    fn github_url(&self) -> &str {
+        &self.github.url
+    }
+
+    fn github_client_id(&self) -> &str {
+        &self.github.client_id
+    }
+
+    fn github_client_secret(&self) -> &str {
+        &self.github.client_secret
+    }
+}
+
 
 impl RouterCfg for Config {
     fn route_addrs(&self) -> &Vec<RouterAddr> {
@@ -140,7 +158,6 @@ mod tests {
             config.github.client_secret,
             "438223113eeb6e7edf2d2f91a232b72de72b9bdf"
         );
-        assert_eq!(config.ui.root, Some("/some/path".to_string()));
     }
 
     #[test]

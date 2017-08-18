@@ -302,6 +302,7 @@ dependencies = [
  "clap 2.23.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "habitat_builder_asmsrv 0.0.0",
+ "habitat_builder_authsrv 0.0.0",
  "habitat_builder_db 0.0.0",
  "habitat_builder_protocol 0.0.0",
  "habitat_builder_scalesrv 0.0.0",

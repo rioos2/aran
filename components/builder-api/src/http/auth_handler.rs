@@ -5,19 +5,22 @@
 use std::env;
 
 use bodyparser;
+use hab_net;
 use hab_core::event::*;
 use hab_net::http::controller::*;
-use session::auth_ds::SessionDS;
+use session::session_ds::SessionDS;
 
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use persistent;
-
+use protocol::net::{self, ErrCode};
 use protocol::sessionsrv;
 use router::Router;
+use protocol::sessionsrv::*;
 
 use db::data_store::DataStoreBroker;
+
 
 define_event_log!();
 
@@ -52,7 +55,7 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
         params.find("code").unwrap().to_string()
     };
 
-    let mut session_create = SessionCreate::new();
+    let mut session_data = SessionCreate::new();
     {
 
         match req.get::<bodyparser::Struct<SessionCreateReq>>() {
@@ -71,8 +74,8 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
                     )));
                 }
 
-                session_create.set_email(body.email);
-                session_create.set_password(body.password);
+                session_data.set_email(body.email);
+                session_data.set_password(body.password);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
@@ -80,9 +83,11 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
 
     let authcli = req.get::<persistent::Read<PasswordAuthCli>>().unwrap();
 
-    match authcli.authenticate(&session_create, &code) {
+    match authcli.authenticate(&session_data, &code) {
         Ok(session) => {
-            let session = try!(session_create(&session));
+            let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
+            let session = try!(session_create(&conn, &code));
 
             log_event!(
                 req,
@@ -131,7 +136,7 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 account_create.set_first_name(body.first_name);
                 account_create.set_last_name(body.last_name);
                 account_create.set_phone(body.phone);
-                account_create.set_api_key(body.api_key);
+                account_create.set_apikey(body.api_key);
                 account_create.set_password(body.password);
                 account_create.set_states(body.states);
                 account_create.set_approval(body.approval);
@@ -155,7 +160,7 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
 
 
 pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
-    let mut account_get_by_id = AccountGet::new();
+    let mut account_get_by_id = AccountGetId::new();
     {
 
         match req.get::<bodyparser::Struct<AccountGetReq>>() {
@@ -166,7 +171,7 @@ pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `id`",
                     )));
                 }
-                account_get_by_id.set_id(id.to_string());
+                account_get_by_id.set_id(body.id.to_string());
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
@@ -197,7 +202,7 @@ pub fn account_get(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `name`",
                     )));
                 }
-                account_create.set_id(id.to_string());
+                account_get.set_name(body.name.to_string());
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
@@ -206,7 +211,7 @@ pub fn account_get(req: &mut Request) -> IronResult<Response> {
     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
     //This is needed as you'll need the email/token if any
 
-    match SessionDS::account_get(&conn, &account_get) {
+    match SessionDS::get_account(&conn, &account_get) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
@@ -222,13 +227,19 @@ pub fn session_get(req: &mut Request) -> IronResult<Response> {
 
         match req.get::<bodyparser::Struct<AccountGetReq>>() {
             Ok(Some(body)) => {
+                if body.email.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `email`",
+                    )));
+                }
                 if body.name.len() <= 0 {
                     return Ok(Response::with((
                         status::UnprocessableEntity,
-                        "Missing value for field: `name`",
+                        "Missing value for field: `token`",
                     )));
                 }
-                session_get.set_token(token.to_string());
+                session_get.set_token(body.email.to_string());
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

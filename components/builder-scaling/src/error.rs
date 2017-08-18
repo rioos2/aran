@@ -14,7 +14,6 @@
 
 use extern_url;
 use hab_core;
-use hab_net;
 use postgres;
 use std::error;
 use std::fmt;
@@ -55,7 +54,6 @@ impl fmt::Display for Error {
             Error::HSCreate(ref e) => format!("Database error creating a horizontal_scaling, {}", e),
             Error::HSGet(ref e) => format!("Database error get horizontal_scaling, {}", e),
             Error::HSSetStatus(ref e) => format!("Database error while update status, {}", e),
-            Error::NetError(ref e) => format!("{}", e),
             Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
             Error::UnknownVCS => format!("Unknown VCS"),
             Error::UnknownJobState => format!("Unknown Job State"),
@@ -76,7 +74,6 @@ impl error::Error for Error {
             Error::HSCreate(ref err) => err.description(),
             Error::HSGet(ref err) => err.description(),
             Error::HSSetStatus(ref err) => err.description(),
-            Error::NetError(ref err) => err.description(),
             Error::ProjectJobsGet(ref err) => err.description(),
             Error::UnknownJobState => "Unknown Job State",
             Error::UnknownVCS => "Unknown VCS",

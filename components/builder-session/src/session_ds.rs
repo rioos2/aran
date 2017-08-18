@@ -47,10 +47,10 @@ impl SessionDS {
         let rows = conn.query(
             "SELECT * FROM insert_account_session_v1($1, $2, $3, $4, $5, $6, $7)",
             &[
-                &(account.get_id() as i64),
+                &(account.get_id()),
                 &session_create.get_token(),
                 &provider,
-                &(session_create.get_extern_id() as i64),
+                &(session_create.get_extern_id()),
                 &is_admin,
                 &is_service_access,
             ],
@@ -95,7 +95,7 @@ impl SessionDS {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT * FROM get_account_by_id_v1($1)",
-            &[&(account_get_id.get_id() as i64)],
+            &[&(account_get_id.get_id())],
         ).map_err(Error::AccountGetById)?;
         if rows.len() != 0 {
             let row = rows.get(0);
@@ -115,8 +115,8 @@ impl SessionDS {
         if rows.len() != 0 {
             let row = rows.get(0);
             let mut session = sessionsrv::Session::new();
-            let id: i64 = row.get("id");
-            session.set_id(id as u64);
+            let id = row.get("id");
+            session.set_id(id);
             let email: String = row.get("email");
             session.set_email(email);
             let name: String = row.get("name");
@@ -234,8 +234,8 @@ impl SessionDS {
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
     let mut account = sessionsrv::Account::new();
-    let id: i64 = row.get("id");
-    account.set_id(id as u64);
+    let id = row.get("id");
+    account.set_id(id);
     account.set_email(row.get("email"));
     account.set_name(row.get("name"));
     account

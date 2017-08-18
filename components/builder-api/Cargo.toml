@@ -47,6 +47,9 @@ path = "../builder-deployment"
 [dependencies.habitat_builder_scalesrv]
 path = "../builder-scaling"
 
+[dependencies.habitat_builder_authsrv]
+path = "../builder-authorize"
+
 [dependencies.habitat_builder_session]
 path = "../builder-session"
 

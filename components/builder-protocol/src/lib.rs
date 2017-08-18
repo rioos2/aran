@@ -30,6 +30,7 @@ pub mod search;
 pub mod sessionsrv;
 pub mod sharding;
 pub mod originsrv;
+pub mod authsrv;
 pub mod scalesrv;
 pub mod routesrv;
 
