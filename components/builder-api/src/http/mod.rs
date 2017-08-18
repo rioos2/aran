@@ -52,10 +52,13 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
         roles: post "/roles" =>roles_create,
         roles_list: get "/roles" =>roles_list,
+        roles_show: get "/roles/:id" =>roles_show,
 
         permissions: post "/permissions" =>permissions_create,
         permissions_list: get "/permissions" => permissions_list,
-        role_based_permission: get "/permissions/:id" => get_rolebased_permissions,
+        role_based_permission: get "/permissions/roles/:id" => get_rolebased_permissions,
+        permissions_show: get "/permissions/:id" => permissions_show,
+
     );
 
     let mut chain = Chain::new(router);

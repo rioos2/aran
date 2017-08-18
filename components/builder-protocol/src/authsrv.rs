@@ -68,6 +68,45 @@ impl Roles {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct RolesGet {
+    id: String,
+}
+
+impl RolesGet {
+    pub fn new() -> RolesGet {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+}
+
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct RolesGetResponse {
+    results: Vec<Roles>,
+}
+
+
+impl RolesGetResponse {
+    pub fn new() -> RolesGetResponse {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_roles(&mut self, v: Vec<Roles>) {
+        self.results = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Permissions {
     id: String,
     role_id: String,
@@ -122,22 +161,6 @@ impl Permissions {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct RolesGetResponse {
-    results: Vec<Roles>,
-}
-
-
-impl RolesGetResponse {
-    pub fn new() -> RolesGetResponse {
-        ::std::default::Default::default()
-    }
-
-    // Param is passed by value, moved
-    pub fn set_roles(&mut self, v: Vec<Roles>) {
-        self.results = v;
-    }
-}
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct PermissionsGet {

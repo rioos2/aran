@@ -16,7 +16,7 @@ use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::DataStoreBroker;
-use protocol::authsrv::{Roles, Permissions, PermissionsGet};
+use protocol::authsrv::{Roles, Permissions, PermissionsGet, RolesGet};
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -60,6 +60,29 @@ pub fn roles_create(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+
+pub fn roles_show(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
+    let mut roles_get = RolesGet::new();
+    roles_get.set_id(id.to_string());
+
+    match AuthorizeDS::roles_show(&conn, &roles_get) {
+        Ok(roles) => Ok(render_json(status::Ok, &roles)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }
 
@@ -131,6 +154,27 @@ pub fn get_rolebased_permissions(req: &mut Request) -> IronResult<Response> {
 
     match AuthorizeDS::get_rolebased_permissions(&conn, &perm_get) {
         Ok(permission) => Ok(render_json(status::Ok, &permission)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+pub fn permissions_show(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
+    let mut perms_get = PermissionsGet::new();
+    perms_get.set_id(id.to_string());
+    match AuthorizeDS::permissions_show(&conn, &perms_get) {
+        Ok(perms) => Ok(render_json(status::Ok, &perms)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
