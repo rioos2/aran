@@ -2,7 +2,7 @@
 
 //stored procedures for authentication (users, origins, origin_members, roles, permissions)
 
-use error::{Result, Error};
+use error::Result;
 use migration::{Migratable, Migrator};
 
 pub struct AuthProcedures;
@@ -173,15 +173,14 @@ impl Migratable for AuthProcedures {
                     a_account_id bigint,
                     account_token text,
                     account_provider text,
-                    account_extern_id bigint,
                     account_is_admin bool,
                     account_is_service_access bool
                  ) RETURNS SETOF account_sessions AS $$
                      BEGIN
-                        RETURN QUERY INSERT INTO account_sessions (account_id, token, provider, extern_id, is_admin, is_service_access)
-                                        VALUES (a_account_id, account_token, account_provider, account_extern_id, account_is_admin, account_is_service_access)
+                        RETURN QUERY INSERT INTO account_sessions (account_id, token, provider, is_admin, is_service_access)
+                                        VALUES (a_account_id, account_token, account_provider, account_is_admin, account_is_service_access)
                                         ON CONFLICT (account_id) DO UPDATE
-                                        SET token = account_token, expires_at = now() + interval '1 day', provider = account_provider, extern_id = account_extern_id, is_admin = account_is_admin, is_service_access = account_is_service_access
+                                        SET token = account_token, expires_at = now() + interval '1 day', provider = account_provider, is_admin = account_is_admin, is_service_access = account_is_service_access
                                         RETURNING *;
                         RETURN;
                      END

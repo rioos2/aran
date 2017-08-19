@@ -110,7 +110,6 @@ impl PasswordAuthClient {
         let hello = String::from("Hello, world!");
         Ok(hello)
     }
-
 }
 
 

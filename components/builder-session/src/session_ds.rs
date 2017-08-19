@@ -17,12 +17,7 @@ impl SessionDS {
     //The default origin is
     pub fn account_create(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate) -> Result<sessionsrv::Session> {
         //call and do find_or_create_account_via_session
-        SessionDS::find_or_create_account_via_session(
-            datastore,
-            session_create,
-            true,
-            false,
-        )
+        SessionDS::find_or_create_account_via_session(datastore, session_create, true, false)
         //do find_or_create_default_role_permission
         //do find_or_create_default_origin
         //return Session
@@ -32,12 +27,27 @@ impl SessionDS {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = conn.query(
-            "SELECT * FROM select_or_insert_account_v1($1)",
-            &[&session_create.get_email()],
+            "SELECT * FROM select_or_insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            &[
+                &session_create.get_email(),
+                &session_create.get_name(),
+                &session_create.get_first_name(),
+                &session_create.get_last_name(),
+                &session_create.get_phone(),
+                &session_create.get_apikey(),
+                &session_create.get_password(),
+                &session_create.get_states(),
+                &session_create.get_approval(),
+                &session_create.get_suspend(),
+                &session_create.get_registration_ip_address(),
+            ],
         ).map_err(Error::AccountCreate)?;
 
         let row = rows.get(0);
         let account = row_to_account(row);
+
+        let id = account.get_id().parse::<i64>().unwrap();
+
 
         let provider = match session_create.get_provider() {
             sessionsrv::OAuthProvider::GitHub => "openid",
@@ -45,12 +55,11 @@ impl SessionDS {
         };
 
         let rows = conn.query(
-            "SELECT * FROM insert_account_session_v1($1, $2, $3, $4, $5, $6, $7)",
+            "SELECT * FROM insert_account_session_v1($1, $2, $3, $4, $5)",
             &[
-                &(account.get_id()),
+                &id,
                 &session_create.get_token(),
                 &provider,
-                &(session_create.get_extern_id()),
                 &is_admin,
                 &is_service_access,
             ],
@@ -234,8 +243,8 @@ impl SessionDS {
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
     let mut account = sessionsrv::Account::new();
-    let id = row.get("id");
-    account.set_id(id);
+    let id: i64 = row.get("id");
+    account.set_id(id.to_string());
     account.set_email(row.get("email"));
     account.set_name(row.get("name"));
     account

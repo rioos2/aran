@@ -11,6 +11,7 @@ use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
 
 use hab_net::http::middleware::*;
+use hab_net::auth::default::PasswordAuthClient;
 use hab_core::event::EventLogger;
 use iron::prelude::*;
 use mount::Mount;
@@ -78,9 +79,9 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
     let mut chain = Chain::new(router);
 
-    //chain.link(persistent::Read::<GitHubCli>::both(
-    //        GitHubClient::new(&*config),
-    //   ));
+    chain.link(persistent::Read::<PasswordAuthCli>::both(
+        PasswordAuthClient::new(&*config),
+    ));
 
     chain.link(persistent::Read::<DataStoreBroker>::both(
         ({

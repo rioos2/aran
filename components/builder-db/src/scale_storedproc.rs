@@ -2,7 +2,7 @@
 
 //stored procedures for plan_factory
 
-use error::{Result, Error};
+use error::Result;
 use migration::{Migratable, Migrator};
 
 pub struct ScaleProcedures;

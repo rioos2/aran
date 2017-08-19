@@ -26,7 +26,6 @@ extern crate time;
 pub mod error;
 pub mod net;
 pub mod asmsrv;
-pub mod search;
 pub mod sessionsrv;
 pub mod sharding;
 pub mod originsrv;

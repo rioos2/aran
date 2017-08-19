@@ -13,18 +13,15 @@
 // limitations under the License.
 use std::error;
 use std::result;
-use std::sync::{Arc, RwLock};
+// use std::sync::{Arc, RwLock};
 
 use core::os::process;
-use fnv::FnvHasher;
-use time;
+// use fnv::FnvHasher;
+// use time;
 
-use config::{self, RouterCfg, Shards, ToAddrString};
-use error::{Error, Result};
+// use config::{self, RouterCfg, Shards, ToAddrString};
+// use error::{Error, Result};
 
-const PING_INTERVAL: i64 = 2000;
-const SERVER_TTL: i64 = 6000;
-const MAX_HOPS: usize = 8;
 
 pub trait Application {
     type Error: error::Error;
