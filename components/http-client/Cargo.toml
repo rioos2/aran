@@ -14,7 +14,7 @@ hyper-openssl = "*"
 openssl = "*"
 url = "*"
 
-[dependencies.habitat_core]
+[dependencies.rioos_core]
 path = "../core"
 
 [features]

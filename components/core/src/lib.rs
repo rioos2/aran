@@ -26,9 +26,10 @@ extern crate log;
 extern crate rand;
 extern crate regex;
 extern crate serde;
+extern crate serde_json;
+
 #[macro_use]
 extern crate serde_derive;
-extern crate serde_json;
 extern crate sodiumoxide;
 extern crate libsodium_sys;
 #[cfg(test)]

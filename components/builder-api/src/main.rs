@@ -1,17 +1,19 @@
 // Copyright (c) 2017 RioCorp Inc.
 
+//! Nadhi mulam:_This where everything starts: main starting point of the Rio/OS Aran server.
+
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
-extern crate habitat_builder_api as api;
-extern crate habitat_core as hab_core;
+extern crate rioos_aran_api as api;
+extern crate rioos_core as rio_core;
 #[macro_use]
 extern crate log;
 
 use std::process;
 use std::str::FromStr;
 
-use hab_core::config::ConfigFile;
+use rio_core::config::ConfigFile;
 use api::{Config, Error, Result};
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
@@ -34,7 +36,7 @@ fn main() {
 fn app<'a, 'b>() -> clap::App<'a, 'b> {
     clap_app!(RIOOSAran =>
         (version: VERSION)
-        (about: "RIO/OS api-server")
+        (about: "Rio/OS api-server")
         (@setting VersionlessSubcommands)
         (@setting SubcommandRequiredElseHelp)
         (@subcommand start =>
@@ -71,7 +73,7 @@ fn exit_with(err: Error, code: i32) {
 ///
 /// # Failures
 ///
-/// * Fails if the depot server fails to start - cannot bind to the port, etc.
+/// * Fails if the postgresql dbr fails to be found - cannot bind to the port, etc.
 fn start(config: Config) -> Result<()> {
     api::server::run(config)
 }

@@ -1,5 +1,5 @@
 [package]
-name = "habitat_net"
+name = "rioos_net"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 workspace = "../../"
@@ -7,8 +7,9 @@ workspace = "../../"
 [dependencies]
 rand = "*" # Or a newer version
 fnv = "*"
-habitat_builder_protocol = { path = "../builder-protocol" }
-habitat_core = { path = "../core" }
+rioos_builder_protocol = { path = "../builder-protocol" }
+rioos_core = { path = "../core" }
+ring = "*"
 hyper = "*"
 hyper-openssl = "*"
 iron = "*"
@@ -16,16 +17,16 @@ lazy_static = "*"
 log = "*"
 num_cpus = "*"
 persistent = "*"
-serde = "*"
+serde = "1.0.2"
 serde_derive = "*"
 serde_json = "*"
 time = "*"
 unicase = "*"
 
-[dependencies.habitat_builder_db]
+[dependencies.rioos_builder_db]
 path = "../builder-db"
 
-[dependencies.habitat_builder_session]
+[dependencies.rioos_builder_session]
 path = "../builder-session"
 
 [features]

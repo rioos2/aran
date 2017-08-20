@@ -1,11 +1,10 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! The PostgreSQL backend for the DeploymentDS.
+//! The PostgreSQL backend for the Authorization [assembly, assemblyfactory].
 
-use chrono::{DateTime, UTC};
+use chrono::prelude::*;
 use error::{Result, Error};
 use protocol::asmsrv;
-use protocol::net::{self, ErrCode};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;

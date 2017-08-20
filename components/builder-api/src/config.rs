@@ -1,14 +1,14 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! Configuration for a RIO/OS API service
+//! Configuration for a Rio/OS API service
 
 use std::env;
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
-use hab_net::config::{PasswordCfg, ShieldCfg, PasswordAuth, ShieldAuth, RouterAddr, RouterCfg};
-use hab_core::config::ConfigFile;
+use rio_net::config::{PasswordCfg, ShieldCfg, PasswordAuth, ShieldAuth, RouterAddr, RouterCfg};
+use rio_core::config::ConfigFile;
 
 use error::Error;
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate habitat_builder_protocol as protocol;
-extern crate habitat_core as hcore;
+extern crate rioos_builder_protocol as protocol;
+extern crate rioos_core as rcore;
 extern crate ansi_term;
 extern crate hyper;
 #[macro_use]

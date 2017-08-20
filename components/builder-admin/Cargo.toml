@@ -20,11 +20,11 @@ mount = "*"
 persistent = "*"
 protobuf = "*"
 router = "*"
-serde = "*"
+serde = "1.0.2"
 serde_derive = "*"
 serde_json = "*"
 staticfile = "*"
-toml = { version = "*", features = ["serde"], default-features = false }
+toml = { version = "0.4.5", features = ["serde"], default-features = false }
 unicase = "*"
 # JW TODO: Switch back to crates version once an updated version is published to crates.io
 # which leverages the latest version of bodyparser
@@ -38,11 +38,11 @@ features = [ "suggestions", "color", "unstable" ]
 git = "https://github.com/erickt/rust-zmq"
 branch = "release/v0.8"
 
-[dependencies.habitat_core]
+[dependencies.rioos_core]
 path = "../core"
 
-[dependencies.habitat_builder_protocol]
+[dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
 
-[dependencies.habitat_net]
+[dependencies.rioos_net]
 path = "../net"

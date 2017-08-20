@@ -2,18 +2,15 @@
 
 //! A collection of deployment [assembly, assembly_factory, for the HTTP server
 
-use std::env;
-
 use bodyparser;
-use hab_core::event::*;
-use hab_net::http::controller::*;
+use rio_core::event::*;
+use rio_net::http::controller::*;
 use scale::scaling_ds::ScalingDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use persistent;
 use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
-use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::DataStoreBroker;

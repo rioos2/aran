@@ -59,8 +59,8 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate fallible_iterator;
-extern crate habitat_builder_protocol as protocol;
-extern crate habitat_core as hcore;
+extern crate rioos_builder_protocol as protocol;
+extern crate rioos_core as rcore;
 extern crate iron;
 
 pub mod config;

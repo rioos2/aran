@@ -5,8 +5,8 @@
 use std::env;
 
 use bodyparser;
-use hab_core::event::*;
-use hab_net::http::controller::*;
+use rio_core::event::*;
+use rio_net::http::controller::*;
 use session::auth_ds::SessionDS;
 
 use iron::prelude::*;
@@ -90,7 +90,7 @@ pub fn account_origin_invitation_accept(req: &mut Request) -> IronResult<Respons
                 account_create.set_extern_id(user.id);
                 account_create.set_email(email);
                 account_create.set_name(user.login);
-                account_create.set_provider(OAuthProvider::GitHub);
+                account_create.set_provider(OAuthProvider::PasswordAuth);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

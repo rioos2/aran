@@ -1,5 +1,5 @@
 [package]
-name = "habitat_builder_protocol"
+name = "rioos_builder_protocol"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS Aran Server Communication Protocol"
@@ -8,14 +8,14 @@ workspace = "../../"
 
 [dependencies]
 rand = "*"
-serde = "*"
+serde = "1.0.2"
 serde_json = "*"
 serde_derive = "*"
 time = "*"
 regex = "*"
 lazy_static = "*"
 
-[dependencies.habitat_core]
+[dependencies.rioos_core]
 path = "../core"
 
 [build-dependencies]

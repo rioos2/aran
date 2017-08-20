@@ -1,5 +1,5 @@
 [package]
-name = "habitat_builder_session"
+name = "rioos_builder_session"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS Identity Access Manager"
@@ -19,21 +19,20 @@ r2d2 = "*"
 postgres = { version = "*", features = ["with-chrono"] }
 chrono = { version = "*", features = ["serde"] }
 rand = "*"
-serde = "*"
-serde_derive = "*"
+serde = "1.0.2"
 serde_json = "1.0"
 
 [dependencies.clap]
 version = "*"
 features = [ "suggestions", "color", "unstable" ]
 
-[dependencies.habitat_core]
+[dependencies.rioos_core]
 path = "../core"
 
-[dependencies.habitat_builder_db]
+[dependencies.rioos_builder_db]
 path = "../builder-db"
 
-[dependencies.habitat_builder_protocol]
+[dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
 
 [features]

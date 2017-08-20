@@ -1,5 +1,5 @@
 [package]
-name = "habitat_common"
+name = "rioos_common"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 workspace = "../../"
@@ -7,19 +7,19 @@ workspace = "../../"
 [dependencies]
 ansi_term = "*"
 hyper = "*"
-libc = "*"
+libc = "0.2.22"
 log = "*"
 pbr = "*"
 regex = "*"
 retry = "*"
 term = "*"
 time = "*"
-toml = { version = "*", features = ["serde"], default-features = false }
+toml = { version = "0.4.5", features = ["serde"], default-features = false }
 
-[dependencies.habitat_core]
+[dependencies.rioos_core]
 path = "../core"
 
-[dependencies.habitat_builder_protocol]
+[dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
 
 [target.'cfg(windows)'.dependencies]

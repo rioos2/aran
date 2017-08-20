@@ -13,9 +13,9 @@
 // limitations under the License.
 
 extern crate bodyparser;
-extern crate habitat_builder_protocol as protocol;
+extern crate rioos_builder_protocol as protocol;
 extern crate habitat_core as hab_core;
-extern crate habitat_net as hab_net;
+extern crate rioos_net as rio_net;
 extern crate hyper;
 extern crate iron;
 #[macro_use]

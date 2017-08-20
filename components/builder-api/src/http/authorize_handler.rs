@@ -2,17 +2,12 @@
 
 //! A collection of deployment [assembly, assembly_factory, for the HTTP server
 
-use std::env;
-
 use bodyparser;
-use hab_core::event::*;
-use hab_net::http::controller::*;
+use rio_net::http::controller::*;
 use authorize::authorize_ds::AuthorizeDS;
 use iron::prelude::*;
 use iron::status;
-use iron::typemap;
 use persistent;
-use protocol::sessionsrv;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::DataStoreBroker;

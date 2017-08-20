@@ -1,18 +1,5 @@
 // Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-use protocol;
 use std::collections::HashMap;
 use std::error;
 use std::fmt;
@@ -33,6 +20,8 @@ pub enum Error {
     MaxHops,
     HTTP(hyper::status::StatusCode),
     RequiredConfigField(&'static str),
+    /// Crypto library error
+    CryptoError(String),
     Sys,
 }
 
@@ -48,6 +37,7 @@ impl fmt::Display for Error {
             Error::Json(ref e) => format!("{}", e),
             Error::MaxHops => format!("Received a message containing too many network hops"),
             Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
+            Error::CryptoError(ref e) => format!("Crypto error: {}", e),
             Error::Sys => format!("Internal system error"),
         };
         write!(f, "{}", msg)
@@ -63,6 +53,7 @@ impl error::Error for Error {
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::Json(ref err) => err.description(),
             Error::MaxHops => "Received a message containing too many network hops",
+            Error::CryptoError(_) => "Crypto error",
             Error::RequiredConfigField(_) => "Missing required field in configuration.",
             Error::Sys => "Internal system error",
         }

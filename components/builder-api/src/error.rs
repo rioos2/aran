@@ -1,20 +1,20 @@
 // Copyright (c) 2017 RioCorp Inc.
 
+//! A module containing the errors handling for the builder api
+
 use std::error;
 use std::fmt;
 use std::io;
 use std::result;
 
-use hab_core;
+use rio_core;
 use hyper;
-use deploy;
-use protocol::net::{self, ErrCode};
 
 
 #[derive(Debug)]
 pub enum Error {
     BadPort(String),
-    HabitatCore(hab_core::Error),
+    HabitatCore(rio_core::Error),
     HyperError(hyper::error::Error),
     HTTP(hyper::status::StatusCode),
     IO(io::Error),
@@ -47,8 +47,8 @@ impl error::Error for Error {
     }
 }
 
-impl From<hab_core::Error> for Error {
-    fn from(err: hab_core::Error) -> Error {
+impl From<rio_core::Error> for Error {
+    fn from(err: rio_core::Error) -> Error {
         Error::HabitatCore(err)
     }
 }

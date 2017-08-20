@@ -1,5 +1,5 @@
 [package]
-name = "habitat_builder_api"
+name = "rioos_aran_api"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS HTTP API gateway"
@@ -21,39 +21,39 @@ mount = "*"
 params = "*"
 persistent = "*"
 router = "*"
-serde = "*"
+serde = "1.0.2"
 serde_derive = "*"
 serde_json = "*"
 staticfile = "*"
-toml = { version = "*", features = ["serde"], default-features = false }
+toml = { version = "0.4.5", features = ["serde"], default-features = false }
 unicase = "*"
 
 [dependencies.clap]
 version = "*"
 features = [ "suggestions", "color", "unstable" ]
 
-[dependencies.habitat_core]
+[dependencies.rioos_core]
 path = "../core"
 
-[dependencies.habitat_builder_protocol]
+[dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
 
-[dependencies.habitat_net]
+[dependencies.rioos_net]
 path = "../net"
 
-[dependencies.habitat_builder_asmsrv]
+[dependencies.rioos_builder_asmsrv]
 path = "../builder-deployment"
 
-[dependencies.habitat_builder_scalesrv]
+[dependencies.rioos_builder_scalesrv]
 path = "../builder-scaling"
 
-[dependencies.habitat_builder_authsrv]
+[dependencies.rioos_builder_authsrv]
 path = "../builder-authorize"
 
-[dependencies.habitat_builder_session]
+[dependencies.rioos_builder_session]
 path = "../builder-session"
 
-[dependencies.habitat_builder_db]
+[dependencies.rioos_builder_db]
 path = "../builder-db"
 
 [features]

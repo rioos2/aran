@@ -16,9 +16,9 @@
 
 use std::sync::Arc;
 
-use hab_net::config::RouterCfg;
-use hab_net::routing::Broker;
-use hab_net::server::NetIdent;
+use rio_net::config::RouterCfg;
+use rio_net::routing::Broker;
+use rio_net::server::NetIdent;
 
 use config::Config;
 use error::Result;

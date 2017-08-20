@@ -1,13 +1,12 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! The PostgreSQL backend for the DeploymentDS.
+//! The PostgreSQL backend for the Authorization [roles, permissions].
 
-use chrono::{DateTime, UTC};
+use chrono::prelude::*;
 use error::{Result, Error};
 use protocol::authsrv;
 use postgres;
 use db::data_store::DataStoreConn;
-use serde_json;
 
 pub struct AuthorizeDS;
 
@@ -25,7 +24,7 @@ impl AuthorizeDS {
 
         debug!(">● ROWS: roles_create =>\n{:?}", &rows);
         for row in rows {
-            let mut roles_create = row_to_roles(&row)?;
+            let roles_create = row_to_roles(&row)?;
             return Ok(Some(roles_create));
         }
         Ok(None)
@@ -40,7 +39,7 @@ impl AuthorizeDS {
 
         debug!(">● ROWS: get_role=>\n{:?}", &rows);
         for row in rows {
-            let mut roles_get = row_to_roles(&row)?;
+            let roles_get = row_to_roles(&row)?;
             return Ok(Some(roles_get));
         }
         Ok(None)
@@ -81,7 +80,7 @@ impl AuthorizeDS {
 
         debug!(">● ROWS: permission_create =>\n{:?}", &rows);
         for row in rows {
-            let mut permissions_create = row_to_permissions(&row)?;
+            let permissions_create = row_to_permissions(&row)?;
             return Ok(Some(permissions_create));
         }
         Ok(None)
@@ -118,7 +117,7 @@ impl AuthorizeDS {
 
         debug!(">● ROWS: get_rolebased_permissions=>\n{:?}", &rows);
         for row in rows {
-            let mut permissions_get = row_to_permissions(&row)?;
+            let permissions_get = row_to_permissions(&row)?;
             return Ok(Some(permissions_get));
         }
         Ok(None)
@@ -133,7 +132,7 @@ impl AuthorizeDS {
 
         debug!(">● ROWS: get_permission=>\n{:?}", &rows);
         for row in rows {
-            let mut perm_get = row_to_permissions(&row)?;
+            let perm_get = row_to_permissions(&row)?;
             return Ok(Some(perm_get));
         }
         Ok(None)
@@ -151,7 +150,7 @@ impl AuthorizeDS {
 
         debug!(">● ROWS: get_permission=>\n{:?}", &rows);
         for row in rows {
-            let mut perm_get = row_to_permissions(&row)?;
+            let perm_get = row_to_permissions(&row)?;
             return Ok(Some(perm_get));
         }
         Ok(None)

@@ -1,14 +1,14 @@
 #%RAML 0.8
 ---
-title: Builder API
+title: Rio/OS API
 version: v1
 
 baseUri: https://{rootUri}/{version}
 baseUriParameters:
     rootUri:
         description: |
-            The root URI for the particular installation of Builder
-        example: bldr.habitat.sh, api.habitat.sh, localhost:9636
+            The root URI for the particular installation of Rio/OS API server
+        example: api.rioos.sh, localhost:9636
 mediaType: application/json
 schemas:
     - netError: |

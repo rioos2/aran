@@ -5,7 +5,7 @@ use std::sync::{Once, ONCE_INIT};
 use std::sync::mpsc::{channel, sync_channel, Sender, Receiver, SyncSender};
 use std::thread;
 use statsd::Client;
-use hab_core::env;
+use rio_core::env;
 
 // Statsd Application name
 pub const APP_NAME: &'static str = "bldr";

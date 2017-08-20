@@ -2,30 +2,14 @@
 
 //! A module containing the middleware of the HTTP server
 
-use std::error::Error as StdError;
-use std::collections::HashMap;
 use std::fmt;
 use rand::{self, Rng};
-use std::io::Read;
-use std::result::Result as StdResult;
-use std::time::Duration;
 
-use hyper::{self, Url};
-use hyper::status::StatusCode;
-use hyper::header::{Authorization, Accept, Bearer, UserAgent, qitem};
-use hyper::mime::{Mime, TopLevel, SubLevel};
-use hyper::net::HttpsConnector;
-use hyper_openssl::OpensslClient;
 use protocol::sessionsrv;
-use protocol::net::{self, ErrCode};
-
-use serde_json;
 
 use config;
-use error::{Error, Result};
-
-const USER_AGENT: &'static str = "Aran-PasswordAuth";
-const HTTP_TIMEOUT: u64 = 3_000;
+use auth::goofy_crypto::GoofyCrypto;
+use error::{Result};
 
 // These OAuth scopes are required for a user to be authenticated. If this list is updated, then
 // the front-end also needs to be updated in `components/builder-web/app/util.ts`. Both the
@@ -33,7 +17,7 @@ const HTTP_TIMEOUT: u64 = 3_000;
 // our users and less cumbersome for us to message out.
 // https://developer.github.com/v3/oauth/#scopes
 const AUTH_SCOPES: &'static [&'static str] = &["user:email", "read:org"];
-const TOKEN_LEN: usize = 15;
+const TOKEN_LEN: usize = 18;
 
 
 #[derive(Clone)]
@@ -66,49 +50,30 @@ impl PasswordAuthClient {
                 .collect(),
         )
     }
+
+    //Encrypts a password text using pbkdf2
+    pub fn encrypt(&self, email: String, password_text: String) -> Result<String> {
+        GoofyCrypto::new().encrypt_password(&email.to_string(), &password_text.to_string())
+    }
+
     //Authenticates an user with email/password.
-    pub fn authenticate(&self, session_create: &sessionsrv::SessionCreate, code: &str) -> Result<String> {
-        /*let url = Url::parse(&format!(
-            "{}/login/oauth/access_token?\
-                                client_id={}&client_secret={}&code={}",
-            self.web_url,
-            self.client_id,
-            self.client_secret,
-            code
-        )).unwrap();
-        let mut rep = http_post(url)?;
-        if rep.status.is_success() {
-            let mut encoded = String::new();
-            rep.read_to_string(&mut encoded)?;
-            match serde_json::from_str::<AuthOk>(&encoded) {
-                Ok(msg) => {
-                    let missing = msg.missing_auth_scopes();
-                    if missing.is_empty() {
-                        Ok(msg.access_token)
-                    } else {
-                        let msg = format!("Missing OAuth scope(s), '{}'", missing.join(", "));
-                        let err = net::err(net::ErrCode::AUTH_SCOPE, msg);
-                        Err(Error::from(err))
-                    }
-                }
-                Err(_) => {
-                    match serde_json::from_str::<AuthErr>(&encoded) {
-                        Ok(gh_err) => {
-                            let err = net::err(net::ErrCode::ACCESS_DENIED, gh_err.error);
-                            Err(Error::from(err))
-                        }
-                        Err(_) => {
-                            let err = net::err(net::ErrCode::BAD_REMOTE_REPLY, "net:github:0");
-                            Err(Error::from(err))
-                        }
-                    }
-                }
-            }
-        } else {
-            Err(Error::HTTP(rep.status))
+    pub fn authenticate(&self, session_create: &sessionsrv::SessionCreate, code: &str) -> Result<sessionsrv::Account> {
+        println!("{}", code);
+
+        /*match SessionDS::get_account(&conn, &session_create) {
+            Ok(account) =>{
+                GoofyCrypto::new().verify_password(account.get_email(), account.get_password(), code).map_err(// return error)
+                //return success
+                Ok(account)
+            },
+            Err(err) => {
+
+            },
         }*/
-        let hello = String::from("Hello, world!");
-        Ok(hello)
+
+        let account = sessionsrv::Account::new();
+
+        Ok(account)
     }
 }
 

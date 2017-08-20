@@ -18,6 +18,14 @@ impl Migratable for PlanProcedures {
         debug!("=> START: plansrv");
 
         // The core plans table
+        migrator.migrate(
+            "plansrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS plan_id_seq;"#,
+        )?;
+
+        debug!("=> [✓] plan_id_seq");
+
+        // The core plans table
         debug!("=> DONE: plansrv");
 
         Ok(())

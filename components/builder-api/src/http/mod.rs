@@ -10,12 +10,15 @@ pub mod auth_handler;
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
 
-use hab_net::http::middleware::*;
-use hab_net::auth::default::PasswordAuthClient;
-use hab_core::event::EventLogger;
+use rio_net::http::middleware::*;
+use rio_net::auth::default::PasswordAuthClient;
+
+// turn it on later
+//use rio_core::event::EventLogger;
+
 use iron::prelude::*;
 use mount::Mount;
-use persistent::{self, Read};
+use persistent::{self};
 use staticfile::Static;
 
 use config::Config;
@@ -34,7 +37,7 @@ const HTTP_THREAD_COUNT: usize = 128;
 /// Create a new `iron::Chain` containing a Router and it's required middleware
 pub fn router(config: Arc<Config>) -> Result<Chain> {
     let basic = Authenticated::new(&*config);
-    let bioshield = Shielded::new(&*config);
+//    let bioshield = Shielded::new(&*config);
 
     let router =
         router!(
@@ -54,8 +57,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         assembly_factory_status: put "/assembly_factorys/status/:id" => assembly_factory_status_update,
 
         //deploy API: assembly
-        //assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
-        assemblys: post "/assemblys" => assembly_create,
+        assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
         assemblys_get: get "/assemblys" => assembly_list,
         assembly: get "/assemblys/:id" => assembly_show,
         assembly_status: put "/assemblys/status/:id" => assembly_status_update,

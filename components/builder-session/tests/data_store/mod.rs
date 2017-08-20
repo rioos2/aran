@@ -9,7 +9,7 @@ fn create_account() {
     sc.set_extern_id(64);
     sc.set_email(String::from("bobo@chef.io"));
     sc.set_name(String::from("Bobo T. Clown"));
-    sc.set_provider(sessionsrv::OAuthProvider::GitHub);
+    sc.set_provider(sessionsrv::OAuthProvider::PasswordAuth);
 
     let session = ds.find_or_create_account_via_session(&sc, true, false, false)
         .expect("Should create account");
@@ -30,7 +30,7 @@ fn create_bobo_account(ds: &DataStore) -> sessionsrv::Session {
     sc.set_extern_id(64);
     sc.set_email(String::from("bobo@chef.io"));
     sc.set_name(String::from("Bobo T. Clown"));
-    sc.set_provider(sessionsrv::OAuthProvider::GitHub);
+    sc.set_provider(sessionsrv::OAuthProvider::PasswordAuth);
     ds.find_or_create_account_via_session(&sc, true, false, false)
         .expect("Should create account")
 }

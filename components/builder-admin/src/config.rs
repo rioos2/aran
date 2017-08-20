@@ -18,8 +18,8 @@ use std::io;
 use std::net::{Ipv4Addr, IpAddr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
-use hab_net::config::{PasswordCfg, PasswordAuth, RouterAddr, RouterCfg};
-use hab_core::config::ConfigFile;
+use rio_net::config::{PasswordCfg, PasswordAuth, RouterAddr, RouterCfg};
+use rio_core::config::ConfigFile;
 
 use error::Error;
 

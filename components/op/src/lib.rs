@@ -13,8 +13,8 @@
 // limitations under the License.
 
 extern crate fnv;
-extern crate habitat_builder_protocol as protocol;
-extern crate habitat_core as hcore;
+extern crate rioos_builder_protocol as protocol;
+extern crate rioos_core as rcore;
 
 pub mod config;
 pub mod util;

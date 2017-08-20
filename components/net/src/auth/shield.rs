@@ -2,29 +2,19 @@
 
 //! A module containing the middleware of the HTTP server
 
-use std::error::Error as StdError;
-use std::collections::HashMap;
 use std::fmt;
-use std::io::Read;
-use std::result::Result as StdResult;
-use std::time::Duration;
-
-use hyper::{self, Url};
-use hyper::status::StatusCode;
-use hyper::header::{Authorization, Accept, Bearer, UserAgent, qitem};
-use hyper::mime::{Mime, TopLevel, SubLevel};
-use hyper::net::HttpsConnector;
-use hyper_openssl::OpensslClient;
+//use hyper::{self, Url};
+//use hyper::header::{Authorization, Accept, Bearer, UserAgent, qitem};
+//use hyper::mime::{Mime, TopLevel, SubLevel};
+//use hyper::net::HttpsConnector;
+//use hyper_openssl::OpensslClient;
 use protocol::sessionsrv;
-use protocol::net::{self, ErrCode};
-
-use serde_json;
 
 use config;
-use error::{Error, Result};
+use error::{Result};
 
-const USER_AGENT: &'static str = "Aran-Shield";
-const HTTP_TIMEOUT: u64 = 3_000;
+//const USER_AGENT: &'static str = "Aran-Shield";
+//const HTTP_TIMEOUT: u64 = 3_000;
 // These OAuth scopes are required for a user to be authenticated. If this list is updated, then
 // the front-end also needs to be updated in `components/builder-web/app/util.ts`. Both the
 // front-end app and back-end app should have identical requirements to make things easier for
@@ -93,6 +83,7 @@ impl ShieldClient {
         } else {
             Err(Error::HTTP(rep.status))
         }*/
+         println!("{}", code);
         let hello = String::from("Hello, world!");
         Ok(hello)
     }
@@ -200,7 +191,7 @@ pub enum AuthResp {
     AuthErr,
 }
 
-fn http_get(url: Url, token: &str) -> StdResult<hyper::client::response::Response, net::NetError> {
+/*fn http_get(url: Url, token: &str) -> StdResult<hyper::client::response::Response, net::NetError> {
     hyper_client()
         .get(url)
         .header(Accept(vec![
@@ -238,4 +229,4 @@ fn hyper_client() -> hyper::Client {
 
 fn hyper_to_net_err(err: hyper::error::Error) -> net::NetError {
     net::err(net::ErrCode::BAD_REMOTE_REPLY, err.description())
-}
+}*/

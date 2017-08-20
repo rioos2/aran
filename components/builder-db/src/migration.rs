@@ -4,7 +4,7 @@
 use postgres;
 use protocol::ShardId;
 
-use hcore::crypto::hash::hash_string;
+use rcore::crypto::hash::hash_string;
 use error::{Error, Result};
 
 // Because Van Halen is awesome, and I love Sammy Hagar.

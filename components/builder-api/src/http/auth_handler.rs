@@ -2,12 +2,9 @@
 
 //! A collection of auth [accounts, login, roles, permissions,] for the HTTP server
 
-use std::env;
-
 use bodyparser;
-use hab_net;
-use hab_core::event::*;
-use hab_net::http::controller::*;
+use rio_core::event::*;
+use rio_net::http::controller::*;
 use session::session_ds::SessionDS;
 
 use iron::prelude::*;
@@ -15,7 +12,6 @@ use iron::status;
 use iron::typemap;
 use persistent;
 use protocol::net::{self, ErrCode};
-use protocol::sessionsrv;
 use router::Router;
 use protocol::sessionsrv::*;
 
@@ -44,6 +40,7 @@ struct AccountGetReq {
     id: String,
     name: String,
     email: String,
+    token: String,
 }
 
 //Default password authentication.
@@ -83,11 +80,15 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
 
     let authcli = req.get::<persistent::Read<PasswordAuthCli>>().unwrap();
 
+    //make sure authenticate returns an account.
     match authcli.authenticate(&session_data, &code) {
-        Ok(session) => {
+        Ok(_) => {
             let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
 
-            let session = try!(session_create(&conn, &code));
+            //
+            //session_data.set_token(session.get_token());
+
+            let session = try!(session_create(&conn, &session_data));
 
             log_event!(
                 req,
@@ -233,13 +234,14 @@ pub fn session_get(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `email`",
                     )));
                 }
-                if body.name.len() <= 0 {
+                if body.token.len() <= 0 {
                     return Ok(Response::with((
                         status::UnprocessableEntity,
                         "Missing value for field: `token`",
                     )));
                 }
-                session_get.set_token(body.email.to_string());
+                session_get.set_email(body.email.to_string());
+                session_get.set_token(body.token.to_string());
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
