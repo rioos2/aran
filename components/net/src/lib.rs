@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[macro_use]
 extern crate fnv;
-extern crate habitat_builder_protocol as protocol;
-extern crate habitat_core as core;
-extern crate habitat_builder_db as db;
-extern crate habitat_builder_session as session;
+extern crate rioos_builder_protocol as protocol;
+extern crate rioos_core as core;
+extern crate rioos_builder_db as db;
+extern crate rioos_builder_session as session;
 
+extern crate ring;
 #[macro_use]
 extern crate hyper;
 extern crate hyper_openssl;
-#[macro_use]
 extern crate iron;
-#[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate log;

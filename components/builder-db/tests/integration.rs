@@ -13,6 +13,6 @@
 // limitations under the License.
 
 #[macro_use]
-extern crate habitat_builder_db as db;
+extern crate rioos_builder_db as db;
 
 mod async;

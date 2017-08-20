@@ -76,21 +76,12 @@ impl SessionCreate {
         self.name.clone()
     }
 
-    pub fn set_extern_id(&mut self, v: ::std::string::String) {
-        self.extern_id = v;
-    }
-
-    pub fn get_extern_id(&self) -> ::std::string::String {
-        self.extern_id.clone()
-    }
-
-
     pub fn set_provider(&mut self, v: OAuthProvider) {
         self.provider = ::std::option::Option::Some(v);
     }
 
     pub fn get_provider(&self) -> OAuthProvider {
-        self.provider.clone().unwrap_or(OAuthProvider::GitHub)
+        self.provider.clone().unwrap_or(OAuthProvider::PasswordAuth)
     }
 
     pub fn set_first_name(&mut self, v: ::std::string::String) {
@@ -308,6 +299,7 @@ impl SessionGet {
 #[derive(PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AccountGet {
     name: String,
+    email: String,
 }
 
 impl AccountGet {
@@ -321,6 +313,14 @@ impl AccountGet {
 
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
+    }
+
+    pub fn get_email(&self) -> ::std::string::String {
+        self.email.clone()
+    }
+
+    pub fn set_email(&mut self, v: ::std::string::String) {
+        self.email = v;
     }
 }
 
@@ -347,7 +347,9 @@ impl AccountGetId {
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum OAuthProvider {
-    GitHub = 0,
+    PasswordAuth = 0,
+    LDAP = 1,
+    OpenID = 2,
 }
 
 impl Serialize for OAuthProvider {

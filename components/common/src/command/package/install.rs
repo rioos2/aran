@@ -39,11 +39,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use hcore;
-use hcore::fs::{am_i_root, cache_key_path};
-use hcore::crypto::{artifact, SigKeyPair};
-use hcore::crypto::keys::parse_name_with_rev;
-use hcore::package::{Identifiable, PackageArchive, PackageIdent, Target, PackageInstall};
+use rcore;
+use rcore::fs::{am_i_root, cache_key_path};
+use rcore::crypto::{artifact, SigKeyPair};
+use rcore::crypto::keys::parse_name_with_rev;
+use rcore::package::{Identifiable, PackageArchive, PackageIdent, Target, PackageInstall};
 
 use error::{Error, Result};
 use ui::{Status, UI};
@@ -212,7 +212,7 @@ impl<'a> InstallTask<'a> {
     fn is_package_installed(&self, ident: &PackageIdent) -> Result<bool> {
         match PackageInstall::load(ident, Some(self.fs_root_path)) {
             Ok(_) => Ok(true),
-            Err(hcore::Error::PackageNotFound(_)) => Ok(false),
+            Err(rcore::Error::PackageNotFound(_)) => Ok(false),
             Err(e) => Err(Error::HabitatCore(e)),
         }
     }
@@ -226,7 +226,7 @@ impl<'a> InstallTask<'a> {
             Some(n) => n,
             None => {
                 return Err(Error::HabitatCore(
-                    hcore::Error::InvalidPackageIdent(ident.to_string()),
+                    rcore::Error::InvalidPackageIdent(ident.to_string()),
                 ))
             }
         };
@@ -243,7 +243,7 @@ impl<'a> InstallTask<'a> {
                 Some(n) => n,
                 None => {
                     return Err(Error::HabitatCore(
-                        hcore::Error::InvalidPackageIdent(ident.to_string()),
+                        rcore::Error::InvalidPackageIdent(ident.to_string()),
                     ))
                 }
             };
@@ -278,7 +278,7 @@ impl<'a> InstallTask<'a> {
             Some(n) => n,
             None => {
                 return Err(Error::HabitatCore(
-                    hcore::Error::InvalidPackageIdent(ident.to_string()),
+                    rcore::Error::InvalidPackageIdent(ident.to_string()),
                 ))
             }
         };

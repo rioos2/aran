@@ -16,7 +16,7 @@ use url::{self, Url};
 use url::percent_encoding::percent_decode;
 
 use base64;
-use hab_core::env;
+use rio_core::env;
 
 use error::{Error, Result};
 

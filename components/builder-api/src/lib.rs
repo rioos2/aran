@@ -1,16 +1,18 @@
 // Copyright (c) 2017 RioCorp Inc.
 
+//! Libraries  module used by builder api
+
 extern crate base64;
 extern crate bodyparser;
-extern crate habitat_builder_protocol as protocol;
+extern crate rioos_builder_protocol as protocol;
 #[macro_use]
-extern crate habitat_core as hab_core;
-extern crate habitat_net as hab_net;
-extern crate habitat_builder_asmsrv as deploy;
-extern crate habitat_builder_session as session;
-extern crate habitat_builder_scalesrv as scale;
-extern crate habitat_builder_authsrv as authorize;
-extern crate habitat_builder_db as db;
+extern crate rioos_core as rio_core;
+extern crate rioos_net as rio_net;
+extern crate rioos_builder_asmsrv as deploy;
+extern crate rioos_builder_session as session;
+extern crate rioos_builder_scalesrv as scale;
+extern crate rioos_builder_authsrv as authorize;
+extern crate rioos_builder_db as db;
 extern crate hyper;
 extern crate iron;
 #[macro_use]

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 extern crate base64;
-extern crate habitat_core as hab_core;
+extern crate rioos_core as rio_core;
 extern crate httparse;
 #[macro_use]
 extern crate hyper;
@@ -38,9 +38,9 @@ mod ssl {
     use std::path::Path;
     use std::str::FromStr;
 
-    use hab_core::env;
-    use hab_core::fs::cache_ssl_path;
-    use hab_core::package::{PackageIdent, PackageInstall};
+    use rio_core::env;
+    use rio_core::fs::cache_ssl_path;
+    use rio_core::package::{PackageIdent, PackageInstall};
     use openssl::ssl::SslContextBuilder;
 
     use error::Result;

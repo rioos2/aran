@@ -1,25 +1,45 @@
 use ring::{digest, pbkdf2};
-use std::collections::HashMap;
+pub use super::super::error;
+pub use auth::default;
 
 static DIGEST_ALG: &'static digest::Algorithm = &digest::SHA256;
 const CREDENTIAL_LEN: usize = digest::SHA256_OUTPUT_LEN;
 
 pub type Credential = [u8; CREDENTIAL_LEN];
 
-enum Error {
-    WrongUsernameOrPassword,
-}
-
-struct PasswordDatabase {
+pub struct GoofyCrypto {
     pbkdf2_iterations: u32,
     db_salt_component: [u8; 16],
-
-    // Normally this would be a persistent database.
-    storage: HashMap<String, Credential>,
 }
 
-impl PasswordDatabase {
-    pub fn store_password(&mut self, username: &str, password: &str) {
+impl GoofyCrypto {
+    pub fn new() -> GoofyCrypto {
+        GoofyCrypto {
+            pbkdf2_iterations: 100_000,
+            db_salt_component: [
+                // This value was generated from a secure PRNG.
+                0xd6,
+                0x26,
+                0x98,
+                0xda,
+                0xf4,
+                0xdc,
+                0x50,
+                0x52,
+                0x24,
+                0xf2,
+                0x27,
+                0xd1,
+                0xfe,
+                0x39,
+                0x01,
+                0x8a,
+            ],
+        }
+    }
+
+    //The username is actually an email
+    pub fn encrypt_password(&mut self, username: &str, password: &str) -> error::Result<String> {
         let salt = self.salt(username);
         let mut to_store: Credential = [0u8; CREDENTIAL_LEN];
         pbkdf2::derive(
@@ -29,24 +49,27 @@ impl PasswordDatabase {
             password.as_bytes(),
             &mut to_store,
         );
-        self.storage.insert(String::from(username), to_store);
+
+        String::from_utf8(to_store.to_vec()).map_err(|_| {
+            error::Error::CryptoError("Error parsing password signature".to_string())
+        })
     }
 
-    pub fn verify_password(&self, username: &str, attempted_password: &str) -> Result<(), Error> {
-        match self.storage.get(username) {
-            Some(actual_password) => {
-                let salt = self.salt(username);
-                pbkdf2::verify(
-                    DIGEST_ALG,
-                    self.pbkdf2_iterations,
-                    &salt,
-                    attempted_password.as_bytes(),
-                    actual_password,
-                ).map_err(|_| Error::WrongUsernameOrPassword)
-            }
+    pub fn verify_password(&self, username: &str, actual_password: &str, attempted_password: &str) -> error::Result<()> {
+        let salt = self.salt(username);
 
-            None => Err(Error::WrongUsernameOrPassword),
-        }
+        //The error is not returned here.
+        pbkdf2::verify(
+            DIGEST_ALG,
+            self.pbkdf2_iterations,
+            &salt,
+            attempted_password.as_bytes(),
+            actual_password.as_bytes(),
+        ).map_err(|_| {
+            error::Error::CryptoError("Error verifying password signature".to_string())
+        })?;
+
+        Ok(())
     }
 
     // The salt should have a user-specific component so that an attacker
@@ -63,9 +86,10 @@ impl PasswordDatabase {
     }
 }
 
+/*
 fn main() {
     // Normally these parameters would be loaded from a configuration file.
-    let mut db = PasswordDatabase {
+    let mut db = GoofyCrypto {
         pbkdf2_iterations: 100_000,
         db_salt_component: [
             // This value was generated from a secure PRNG.
@@ -100,3 +124,4 @@ fn main() {
     // An attempt to log in with the right password succeeds.
     assert!(db.verify_password("alice", "@74d7]404j|W}6u").is_ok());
 }
+*/

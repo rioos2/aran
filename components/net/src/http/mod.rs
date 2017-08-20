@@ -5,6 +5,7 @@ pub mod controller;
 pub mod headers;
 pub mod middleware;
 pub mod rendering;
+pub mod token_target;
 
 use iron::status::Status;
 

@@ -1,8 +1,8 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! The PostgreSQL backend for the DeploymentDS.
+//! The PostgreSQL backend for the Scaling [horizonalscaler].
 
-use chrono::{DateTime, UTC};
+use chrono::prelude::*;
 use error::{Result, Error};
 use protocol::scalesrv;
 use postgres;

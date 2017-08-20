@@ -2,15 +2,11 @@
 
 //! A module containing the middleware of the HTTP server
 
-use std::env;
-
-use hyper;
 use iron::Handler;
 use iron::headers::{self, Authorization, Bearer};
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
-use persistent;
 use iron::status::Status;
 use iron::typemap::Key;
 use unicase::UniCase;
@@ -24,6 +20,7 @@ use super::super::auth::shield::ShieldClient;
 use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;
+use super::token_target::*;
 
 use db::data_store::{DataStoreBroker, DataStoreConn};
 use session::session_ds::SessionDS;
@@ -90,15 +87,18 @@ impl Authenticated {
         self
     }
 
-    fn authenticate(&self, datastore: &DataStoreConn, token: &str) -> IronResult<Session> {
-        let mut request = SessionGet::new();
-        request.set_token(token.to_string());
+    fn authenticate(&self, datastore: &DataStoreConn, email: &str, token: &str) -> IronResult<Session> {
+        let tk_target = TokenTarget::new(email.to_string(), token.to_string());
+        let request: SessionGet = tk_target.into();
 
         match SessionDS::get_session(datastore, &request) {
             Ok(Some(session)) => Ok(session),
             Ok(None) => {
-                let session = try!(session_create(datastore, token));
+                let mut session_tk: SessionCreate = SessionCreate::new();
+                session_tk.set_email(email.to_string());
+                session_tk.set_token(token.to_string());
 
+                let session = try!(session_create(datastore, &session_tk));
                 let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
                 if !flags.contains(self.features) {
                     let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
@@ -108,8 +108,9 @@ impl Authenticated {
                 return Ok(session);
             }
             Err(err) => {
-                let err = net::err(ErrCode::DATA_STORE, "net::todo-change-it-auth-1");
-                return Err(IronError::new(err, Status::Unauthorized));
+                let nerr = net::err(ErrCode::DATA_STORE,
+                    format!("{} {}", "net::todo-change-it-auth-1", err.to_string()));
+                return Err(IronError::new(nerr, Status::Unauthorized));
             }
 
         }
@@ -121,16 +122,14 @@ impl Key for Shielded {
     type Value = Session;
 }
 
-//If the header has custom flags XAUTHSHIELD then we do a check with the shield tokens.
-//Multiple shield tokens shall be comma separated.
+//If the header has custom flags X-AUTH-SHIELDs then we do a check with the shield tokens.
 impl BeforeMiddleware for Shielded {
     fn before(&self, req: &mut Request) -> IronResult<()> {
         let session = {
             match req.headers.get::<XAuthShield>() {
                 Some(shield_token) => try!(self.shield(shield_token)),
                 _ => {
-                    //                    log_event!(req, Event::AuthShieldSkipped {});
-
+                    //log_event!(req, Event::AuthShieldSkipped {});
                     return Ok(());
                 }
             }
@@ -194,13 +193,24 @@ impl Key for Authenticated {
     type Value = Session;
 }
 
+/// When an api request needs to be authenticateed we will check for the following
+/// email + bearer token (or) email + apikey
+/// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
         let session = {
+            let email = req.headers.get::<XAuthRioOSEmail>();
+
+            //This is malformed header actually.
+            if email.is_none() {
+                let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:2");
+                return Err(IronError::new(err, Status::Unauthorized));
+            }
+
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
                     match req.extensions.get_mut::<DataStoreBroker>() {
-                        Some(broker) => self.authenticate(broker, token)?,
+                        Some(broker) => self.authenticate(broker, email.unwrap(), token)?,
                         None => {
                             let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
                             return Err(IronError::new(err, Status::Unauthorized));
@@ -234,50 +244,7 @@ impl AfterMiddleware for Cors {
     }
 }
 
-pub fn session_create(conn: &DataStoreConn, token: &str) -> IronResult<Session> {
-    if env::var_os("RIOOS_FUNC_TEST").is_some() {
-        let request = match token {
-            "bobo" => {
-                let mut request = SessionCreate::new();
-                request.set_token(token.to_string());
-                request.set_extern_id(String::from("0"));
-                request.set_email("bobo@example.com".to_string());
-                request.set_name("bobo".to_string());
-                request.set_provider(OAuthProvider::GitHub);
-                request
-            }
-            "logan" => {
-                let mut request = SessionCreate::new();
-                request.set_token(token.to_string());
-                request.set_extern_id(String::from("1"));
-                request.set_email("logan@example.com".to_string());
-                request.set_name("logan".to_string());
-                request.set_provider(OAuthProvider::GitHub);
-                request
-            }
-            user => {
-                panic!(
-                    "You need to define the stub user {} during HAB_FUNC_TEST",
-                    user
-                )
-            }
-        };
-        //wrong name, use another fascade method session_create
-        match SessionDS::account_create(&conn, &request) {
-            Ok(session) => return Ok(session),
-            Err(err) => {
-                let body = format!("{}\n", err);
-                let status = net_err_to_http(ErrCode::DATA_STORE);
-                return Err(IronError::new(err, (body, status)));
-            }
-        }
-    }
-
-    let mut request = SessionCreate::new();
-    request.set_token(token.to_string());
-    request.set_extern_id(String::from("1"));
-    request.set_email("logan@example.com".to_string());
-
+pub fn session_create(conn: &DataStoreConn, request: &SessionCreate) -> IronResult<Session> {
     //wrong name, use another fascade method session_create
     match SessionDS::account_create(&conn, &request) {
         Ok(session) => return Ok(session),

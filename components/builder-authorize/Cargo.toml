@@ -1,5 +1,5 @@
 [package]
-name = "habitat_builder_authsrv"
+name = "rioos_builder_authsrv"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS Deployment library"
@@ -13,11 +13,10 @@ log = "*"
 postgres = { version = "*", features = ["with-chrono"] }
 chrono = { version = "*", features = ["serde"] }
 rand = "*"
-serde = "*"
-serde_derive = "*"
+serde = "1.0.2"
 serde_json = "1.0"
 sha2 = "*"
-toml = { version = "*", features = ["serde"], default-features = false }
+toml = { version = "0.4.5", features = ["serde"], default-features = false }
 url = "*"
 hyper = "*"
 
@@ -25,16 +24,16 @@ hyper = "*"
 version = "*"
 features = [ "suggestions", "color", "unstable" ]
 
-[dependencies.habitat_core]
+[dependencies.rioos_core]
 path = "../core"
 
-[dependencies.habitat_builder_protocol]
+[dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
 
-[dependencies.habitat_net]
+[dependencies.rioos_net]
 path = "../net"
 
-[dependencies.habitat_builder_db]
+[dependencies.rioos_builder_db]
 path = "../builder-db"
 
 

@@ -16,7 +16,7 @@ use std::hash::Hasher;
 use std::path::PathBuf;
 
 use fnv::FnvHasher;
-use hcore::crypto::hash::hash_file;
+use rcore::crypto::hash::hash_file;
 use protocol::SHARD_COUNT;
 
 use config::Config;

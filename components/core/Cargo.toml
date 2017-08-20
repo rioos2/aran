@@ -1,5 +1,5 @@
 [package]
-name = "habitat_core"
+name = "rioos_core"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 workspace = "../../"
@@ -14,19 +14,19 @@ errno = "*"
 hex = "*"
 lazy_static = "*"
 libarchive = "*"
-libc = "*"
+libc = "0.2.22"
 # JW: Temporarily use master branch of git until serde 1.0+ is available in crate release
 libsodium-sys = { git = "https://github.com/dnaq/sodiumoxide" }
 log = "*"
 rand = "*"
-regex = "*"
-serde = "*"
+regex = "0.2.1"
+serde = "1.0.2"
 serde_derive = "*"
 serde_json = "*"
 # JW: Temporarily use master branch of git until serde 1.0+ is available in crate release
 sodiumoxide = { git = "https://github.com/dnaq/sodiumoxide" }
 time = "*"
-toml = { version = "*", features = ["serde"], default-features = false }
+toml = { version = "0.4.5", features = ["serde"], default-features = false }
 url = "*"
 
 [target.'cfg(not(windows))'.dependencies]

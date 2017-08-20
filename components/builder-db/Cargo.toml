@@ -1,5 +1,5 @@
 [package]
-name = "habitat_builder_db"
+name = "rioos_builder_db"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS Aran Database Library"
@@ -13,17 +13,17 @@ postgres = "*"
 rand = "*"
 iron = "*"
 r2d2_postgres = "*"
-serde = "*"
+serde = "1.0.2"
 serde_derive = "*"
 num_cpus = "*"
 fnv = "*"
 fallible-iterator = "*"
 threadpool = "*"
 
-[dependencies.habitat_core]
+[dependencies.rioos_core]
 path = "../core"
 
-[dependencies.habitat_builder_protocol]
+[dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
 
 [features]

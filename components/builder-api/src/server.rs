@@ -3,7 +3,7 @@
 //! Contains core functionality for the Application's main server.
 
 use std::sync::Arc;
-use hab_net::server::NetIdent;
+use rio_net::server::NetIdent;
 use config::Config;
 use error::Result;
 use http;

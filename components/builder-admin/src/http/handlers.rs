@@ -15,9 +15,9 @@
 //! A collection of handlers for the HTTP server's router
 
 use bodyparser;
-use hab_net::http::controller::*;
-use hab_net::privilege;
-use hab_net::routing::Broker;
+use rio_net::http::controller::*;
+use rio_net::privilege;
+use rio_net::routing::Broker;
 use iron::prelude::*;
 use iron::status;
 use protocol::sessionsrv::*;

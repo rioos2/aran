@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate habitat_core as hab_core;
+extern crate rioos_core as rio_core;
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;

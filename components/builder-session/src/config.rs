@@ -2,7 +2,7 @@
 
 // Configuration for a Habitat SessionSrv service
 /*
-use hab_net::config::{ PasswordAuth};
+use rio_net::config::{ PasswordAuth};
 
 use error::Error;
 

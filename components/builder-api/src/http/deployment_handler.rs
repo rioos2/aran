@@ -2,12 +2,9 @@
 
 //! A collection of deployment [assembly, assembly_factory] for the HTTP server
 
-use std::env;
-
 use bodyparser;
-use hab_core::event::*;
-use hab_net::*;
-use hab_net::http::controller::*;
+use rio_core::event::*;
+use rio_net::http::controller::*;
 use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
@@ -16,7 +13,6 @@ use persistent;
 
 use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, ComponentCollection, Properties, OpsSettings};
 use protocol::net::{self, ErrCode};
-use protocol::sessionsrv;
 use router::Router;
 use db::data_store::DataStoreBroker;
 
@@ -43,6 +39,7 @@ struct StatusReq {
     conditions: Vec<ConditionReq>,
 }
 
+#[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ConditionReq {
     message: String,

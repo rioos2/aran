@@ -2,7 +2,6 @@
 
 //! The PostgreSQL backend for the SessionDS.
 
-use chrono::{DateTime, UTC};
 use error::{Result, Error};
 use protocol::sessionsrv;
 use postgres;
@@ -50,7 +49,7 @@ impl SessionDS {
 
 
         let provider = match session_create.get_provider() {
-            sessionsrv::OAuthProvider::GitHub => "openid",
+            sessionsrv::OAuthProvider::OpenID => "openid",
             _ => "password",
         };
 
@@ -89,8 +88,8 @@ impl SessionDS {
     pub fn get_account(datastore: &DataStoreConn, account_get: &sessionsrv::AccountGet) -> Result<Option<sessionsrv::Account>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
-            "SELECT * FROM get_account_by_name_v1($1)",
-            &[&account_get.get_name()],
+            "SELECT * FROM get_account_by_email_v1($1)",
+            &[&account_get.get_email()],
         ).map_err(Error::AccountGet)?;
         if rows.len() != 0 {
             let row = rows.get(0);
@@ -114,12 +113,48 @@ impl SessionDS {
         }
     }
 
+    /*pub fn get_session_by_token(datastore: &DataStoreConn, session: &str) -> Result<Option<sessionsrv::Session>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = conn.query(
+            "SELECT * FROM get_account_session_by_token_v1($1)",
+            &[&session_get.get_token()],
+        ).map_err(Error::SessionGet)?;
+        if rows.len() != 0 {
+            let row = rows.get(0);
+            let mut session = sessionsrv::Session::new();
+            let id = row.get("id");
+            session.set_id(id);
+            let email: String = row.get("email");
+            session.set_email(email);
+            let name: String = row.get("name");
+            session.set_name(name);
+            let token: String = row.get("token");
+            session.set_token(token);
+            let mut flags = privilege::FeatureFlags::empty();
+            if row.get("is_admin") {
+                flags.insert(privilege::ADMIN);
+            }
+            if row.get("is_service_access") {
+                flags.insert(privilege::SERVICE_ACCESS);
+            }
+            if row.get("is_default_worker") {
+                flags.insert(privilege::DEFAULT_ACCESS);
+            }
+            session.set_flags(flags.bits());
+            Ok(Some(session))
+        } else {
+            Ok(None)
+        }
+    }
+*/
+
     pub fn get_session(datastore: &DataStoreConn, session_get: &sessionsrv::SessionGet) -> Result<Option<sessionsrv::Session>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = conn.query(
             "SELECT * FROM get_account_session_v1($1, $2)",
-            &[&session_get.get_name(), &session_get.get_token()],
+            &[&session_get.get_email(), &session_get.get_token()],
         ).map_err(Error::SessionGet)?;
         if rows.len() != 0 {
             let row = rows.get(0);

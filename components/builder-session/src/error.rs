@@ -1,16 +1,6 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2017 RioCorp Inc.
+
+//! A module containing the errors handling for the builder session
 
 use std::error;
 use std::fmt;
@@ -18,7 +8,7 @@ use std::io;
 use std::result;
 use std::num;
 use hyper;
-use hab_core;
+use rio_core;
 use postgres;
 use db;
 
@@ -27,7 +17,7 @@ pub enum Error {
     BadPort(String),
     Db(db::error::Error),
     EntityNotFound,
-    HabitatCore(hab_core::Error),
+    HabitatCore(rio_core::Error),
     HTTP(hyper::status::StatusCode),
     HyperError(hyper::error::Error),
     IO(io::Error),
@@ -107,8 +97,8 @@ impl error::Error for Error {
     }
 }
 
-impl From<hab_core::Error> for Error {
-    fn from(err: hab_core::Error) -> Error {
+impl From<rio_core::Error> for Error {
+    fn from(err: rio_core::Error) -> Error {
         Error::HabitatCore(err)
     }
 }

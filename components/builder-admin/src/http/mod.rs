@@ -5,9 +5,9 @@ pub mod handlers;
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
 
-use hab_net::privilege;
-use hab_net::http::middleware::*;
-use hab_net::auth::default::PasswordAuthClient;
+use rio_net::privilege;
+use rio_net::http::middleware::*;
+use rio_net::auth::default::PasswordAuthClient;
 use iron::prelude::*;
 use mount::Mount;
 use persistent;

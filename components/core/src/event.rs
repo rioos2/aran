@@ -215,7 +215,7 @@ impl Serialize for Event {
                 strukt
             }
             Event::AuthShieldSkipped {} => {
-                let mut strukt = try!(serializer.serialize_struct("event", 4));
+                let strukt = try!(serializer.serialize_struct("event", 4));
                 strukt
             }
             Event::OriginKeyUpload {
