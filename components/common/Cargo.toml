@@ -6,7 +6,7 @@ workspace = "../../"
 
 [dependencies]
 ansi_term = "*"
-hyper = "*"
+hyper = "0.10.12"
 libc = "0.2.22"
 log = "*"
 pbr = "*"

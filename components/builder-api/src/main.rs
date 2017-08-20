@@ -17,6 +17,7 @@ use rio_core::config::ConfigFile;
 use api::{Config, Error, Result};
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
+
 const CFG_DEFAULT_PATH: &'static str = "/var/lib/rioos/api.toml";
 
 fn main() {

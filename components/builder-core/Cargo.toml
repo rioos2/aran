@@ -12,7 +12,7 @@ petgraph = "*"
 walkdir = "*"
 libarchive = "*"
 time = "*"
-chrono = { version = "*", features = ["serde"] }
+chrono = { version = "0.3.0", features = ["serde"] }
 
 [dependencies.rioos_core]
 path = "../core"

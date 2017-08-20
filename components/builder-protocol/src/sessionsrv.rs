@@ -300,6 +300,7 @@ impl SessionGet {
 pub struct AccountGet {
     name: String,
     email: String,
+    password: String,
 }
 
 impl AccountGet {
@@ -321,6 +322,14 @@ impl AccountGet {
 
     pub fn set_email(&mut self, v: ::std::string::String) {
         self.email = v;
+    }
+
+    pub fn get_password(&self) -> ::std::string::String {
+        self.password.clone()
+    }
+
+    pub fn set_password(&mut self, v: ::std::string::String) {
+        self.password = v;
     }
 }
 

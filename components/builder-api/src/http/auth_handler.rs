@@ -12,7 +12,6 @@ use iron::status;
 use iron::typemap;
 use persistent;
 use protocol::net::{self, ErrCode};
-use router::Router;
 use protocol::sessionsrv::*;
 
 use db::data_store::DataStoreBroker;
@@ -46,12 +45,6 @@ struct AccountGetReq {
 //Default password authentication.
 //The body contains email, password, authenticate and if all is well return a token.
 pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
-    //still thinking on why we need the code.
-    let code = {
-        let params = req.extensions.get::<Router>().unwrap();
-        params.find("code").unwrap().to_string()
-    };
-
     let mut session_data = SessionCreate::new();
     {
 
@@ -79,14 +72,17 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
     }
 
     let authcli = req.get::<persistent::Read<PasswordAuthCli>>().unwrap();
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
 
     //make sure authenticate returns an account.
-    match authcli.authenticate(&session_data, &code) {
-        Ok(_) => {
-            let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let mut account_get: AccountGet = AccountGet::new();
 
-            //
-            //session_data.set_token(session.get_token());
+    account_get.set_email(session_data.get_email().to_string());
+    account_get.set_password(session_data.get_password().to_string());
+
+    match authcli.authenticate(&conn, &account_get) {
+        Ok(account) => {
+            session_data.set_token(account.get_token());
 
             let session = try!(session_create(&conn, &session_data));
 
@@ -131,14 +127,16 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 //Don't know if this a good way to do so as why should PasswordAuthCli
                 //act as token generator
                 let authcli = req.get::<persistent::Read<PasswordAuthCli>>().unwrap();
+                let email = body.email.to_string();
+
                 account_create.set_token(authcli.token().unwrap());
                 account_create.set_name(body.name.to_string());
-                account_create.set_email(body.email);
+                account_create.set_email(email.clone());
                 account_create.set_first_name(body.first_name);
                 account_create.set_last_name(body.last_name);
                 account_create.set_phone(body.phone);
                 account_create.set_apikey(body.api_key);
-                account_create.set_password(body.password);
+                account_create.set_password(authcli.encrypt(email.clone(),body.password).unwrap());
                 account_create.set_states(body.states);
                 account_create.set_approval(body.approval);
                 account_create.set_suspend(body.suspend);
