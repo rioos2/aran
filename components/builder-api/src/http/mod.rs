@@ -18,7 +18,7 @@ use rio_net::auth::default::PasswordAuthClient;
 
 use iron::prelude::*;
 use mount::Mount;
-use persistent::{self};
+use persistent;
 use staticfile::Static;
 
 use config::Config;
@@ -37,15 +37,16 @@ const HTTP_THREAD_COUNT: usize = 128;
 /// Create a new `iron::Chain` containing a Router and it's required middleware
 pub fn router(config: Arc<Config>) -> Result<Chain> {
     let basic = Authenticated::new(&*config);
-//    let bioshield = Shielded::new(&*config);
+    //let bioshield = Shielded::new(&*config);
 
     let router =
         router!(
         status: get "/status" => status,
 
-        //auth API for login
-        authenticate: post "/authenticate/:code" => default_authenticate,
-        //authenticate: post "/authenticate/ldap/:code" => ldap_authenticate,
+        //auth API for login (default password auth)
+        authenticate: post "/authenticate" => default_authenticate,
+        //auth API for login (ldap, active directory)
+        authenticate: post "/authenticate/ldap/:code" => default_authenticate, //ldap_authenticate
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,
@@ -67,10 +68,12 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         horizontal_scaling_list: get "/horizontal_scaling" => hs_list,
         horizontal_scaling_status: put "/horizontal_scaling/status/:id" => hs_status_update,
 
+        //authorization API: for roles
         roles: post "/roles" =>roles_create,
         roles_list: get "/roles" =>roles_list,
         roles_show: get "/roles/:id" =>roles_show,
 
+        //authorization API: for permissions
         permissions: post "/permissions" =>permissions_create,
         permissions_list: get "/permissions" => permissions_list,
         role_based_permission: get "/permissions/roles/:id" => get_rolebased_permissions,

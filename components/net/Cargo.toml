@@ -10,18 +10,18 @@ fnv = "*"
 rioos_builder_protocol = { path = "../builder-protocol" }
 rioos_core = { path = "../core" }
 ring = "*"
-hyper = "*"
-hyper-openssl = "*"
+hyper = "0.10.12"
+hyper-openssl = "0.2.7"
 iron = "*"
 lazy_static = "*"
 log = "*"
 num_cpus = "*"
 persistent = "*"
-serde = "1.0.2"
+serde = "1.0.11"
 serde_derive = "*"
-serde_json = "*"
+serde_json = "1.0.2"
 time = "*"
-unicase = "*"
+unicase = "1.4.2"
 
 [dependencies.rioos_builder_db]
 path = "../builder-db"

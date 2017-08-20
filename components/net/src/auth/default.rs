@@ -9,7 +9,12 @@ use protocol::sessionsrv;
 
 use config;
 use auth::goofy_crypto::GoofyCrypto;
-use error::{Result};
+
+use super::super::error::{self, Result};
+
+use db::data_store::DataStoreConn;
+use session::session_ds::SessionDS;
+
 
 // These OAuth scopes are required for a user to be authenticated. If this list is updated, then
 // the front-end also needs to be updated in `components/builder-web/app/util.ts`. Both the
@@ -57,23 +62,33 @@ impl PasswordAuthClient {
     }
 
     //Authenticates an user with email/password.
-    pub fn authenticate(&self, session_create: &sessionsrv::SessionCreate, code: &str) -> Result<sessionsrv::Account> {
-        println!("{}", code);
+    //AccountGet has the attempted_password
+    //Retrieved Account has the actual_password
+    pub fn authenticate(&self, datastore: &DataStoreConn, account_get: &sessionsrv::AccountGet) -> Result<sessionsrv::Account> {
 
-        /*match SessionDS::get_account(&conn, &session_create) {
-            Ok(account) =>{
-                GoofyCrypto::new().verify_password(account.get_email(), account.get_password(), code).map_err(// return error)
-                //return success
+        match SessionDS::get_account(&datastore, &account_get) {
+            Ok(opt_account) => {
+                let account = opt_account.unwrap();
+
+                GoofyCrypto::new()
+                    .verify_password(&account.get_email().to_string(), &account.get_password().to_string(), &account_get.get_password())
+                    .map_err(|e| {
+                        error::Error::Auth(AuthErr {
+                            error: String::from("Password match not found"),
+                            error_description: format!("{}", e),
+                        })
+                    })?;
+
                 Ok(account)
-            },
-            Err(err) => {
+            }
+            Err(err) => return Err(
+                error::Error::Auth(AuthErr {
+                    error: String::from("Account not found"),
+                    error_description: format!("{}", err),
+                })
+            ),
+        }
 
-            },
-        }*/
-
-        let account = sessionsrv::Account::new();
-
-        Ok(account)
     }
 }
 
@@ -158,18 +173,11 @@ impl AuthOk {
 pub struct AuthErr {
     pub error: String,
     pub error_description: String,
-    pub error_uri: String,
 }
 
 impl fmt::Display for AuthErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "err={}, desc={}, uri={}",
-            self.error,
-            self.error_description,
-            self.error_uri
-        )
+        write!(f, "err={}, desc={}", self.error, self.error_description)
     }
 }
 
