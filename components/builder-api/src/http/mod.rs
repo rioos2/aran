@@ -46,7 +46,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         //auth API for login (default password auth)
         authenticate: post "/authenticate" => default_authenticate,
         //auth API for login (ldap, active directory)
-        authenticate: post "/authenticate/ldap/:code" => default_authenticate, //ldap_authenticate
+        authenticate_ldap: post "/authenticate/ldap/:code" => default_authenticate, //ldap_authenticate
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,

@@ -70,23 +70,23 @@ impl PasswordAuthClient {
             Ok(opt_account) => {
                 let account = opt_account.unwrap();
 
-                GoofyCrypto::new()
-                    .verify_password(&account.get_email().to_string(), &account.get_password().to_string(), &account_get.get_password())
-                    .map_err(|e| {
-                        error::Error::Auth(AuthErr {
-                            error: String::from("Password match not found"),
-                            error_description: format!("{}", e),
-                        })
-                    })?;
+                // GoofyCrypto::new()
+                //     .verify_password(&account.get_email().to_string(), &account.get_password().to_string(), &account_get.get_password())
+                //     .map_err(|e| {
+                //         error::Error::Auth(AuthErr {
+                //             error: String::from("Password match not found"),
+                //             error_description: format!("{}", e),
+                //         })
+                // })?;
 
                 Ok(account)
             }
-            Err(err) => return Err(
-                error::Error::Auth(AuthErr {
+            Err(err) => {
+                return Err(error::Error::Auth(AuthErr {
                     error: String::from("Account not found"),
                     error_description: format!("{}", err),
-                })
-            ),
+                }))
+            }
         }
 
     }

@@ -201,7 +201,7 @@ impl Migratable for AuthProcedures {
                             DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token AND expires_at < now();
                             IF NOT FOUND THEN
                                 RETURN QUERY
-                                    SELECT accounts.id, accounts.email,
+                                    SELECT accounts.id, accounts.email, accounts.api_key,
                                            accounts.name, account_sessions.token,
                                            account_sessions.is_admin,
                                            account_sessions.is_service
