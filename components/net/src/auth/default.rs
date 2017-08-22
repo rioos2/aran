@@ -56,9 +56,9 @@ impl PasswordAuthClient {
         )
     }
 
-    //Encrypts a password text using pbkdf2
-    pub fn encrypt(&self, email: String, password_text: String) -> Result<String> {
-        GoofyCrypto::new().encrypt_password(&email.to_string(), &password_text.to_string())
+    //Encrypts a password text using pbkdf2 using a random salt.
+    pub fn encrypt(&self, password_text: String) -> Result<String> {
+        GoofyCrypto::new().encrypt_password(&password_text.to_string())
     }
 
     //Authenticates an user with email/password.
@@ -70,14 +70,14 @@ impl PasswordAuthClient {
             Ok(opt_account) => {
                 let account = opt_account.unwrap();
 
-                // GoofyCrypto::new()
-                //     .verify_password(&account.get_email().to_string(), &account.get_password().to_string(), &account_get.get_password())
-                //     .map_err(|e| {
-                //         error::Error::Auth(AuthErr {
-                //             error: String::from("Password match not found"),
-                //             error_description: format!("{}", e),
-                //         })
-                // })?;
+                 GoofyCrypto::new()
+                     .verify_password(&account.get_password().to_string(), &account_get.get_password())
+                     .map_err(|e| {
+                     error::Error::Auth(AuthErr {
+                             error: String::from("Password match not found"),
+                             error_description: format!("{}", e),
+                         })
+                 })?;
 
                 Ok(account)
             }
