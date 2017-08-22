@@ -6,6 +6,8 @@ pub mod deployment_handler;
 pub mod scaling_handler;
 pub mod authorize_handler;
 pub mod auth_handler;
+pub mod node_handler;
+
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -27,6 +29,8 @@ use self::deployment_handler::*;
 use self::auth_handler::*;
 use self::scaling_handler::*;
 use self::authorize_handler::*;
+use self::node_handler::*;
+
 
 use db::data_store::*;
 
@@ -41,7 +45,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
     let router =
         router!(
-        status: get "/status" => status,
+        status: get "/healthz" => status,
 
         //auth API for login (default password auth)
         authenticate: post "/authenticate" => default_authenticate,
@@ -52,21 +56,23 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         signup: post "/accounts" => account_create,
 
         //deploy API: assembly_factory
-        assembly_factorys: post "/assembly_factorys" => assembly_factory_create,
-        assemblys_factory: get "/assembly_factorys/:id" => assembly_factory_show,
-        assemblys_factorys_get: get "/assembly_factorys" => assembly_factory_list,
-        assembly_factory_status: put "/assembly_factorys/status/:id" => assembly_factory_status_update,
+        assembly_factorys: post "/assemblyfactorys" => assembly_factory_create,
+        assemblys_factory: get "/assemblyfactorys/:id" => assembly_factory_show,
+        assemblys_factorys_get: get "/assemblyfactorys" => assembly_factory_list,
+        assembly_factory_status: put "/assemblyfactorys/status/:id" => assembly_factory_status_update,
 
         //deploy API: assembly
-        assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
+        // assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
+
+        assemblys: post "/assemblys" => assembly_create,
         assemblys_get: get "/assemblys" => assembly_list,
         assembly: get "/assemblys/:id" => assembly_show,
         assembly_status: put "/assemblys/status/:id" => assembly_status_update,
 
         //scaling API: horizontal scaling
-        horizontal_scaling: post "/horizontal_scaling" => hs_create,
-        horizontal_scaling_list: get "/horizontal_scaling" => hs_list,
-        horizontal_scaling_status: put "/horizontal_scaling/status/:id" => hs_status_update,
+        horizontal_scaling: post "/horizontalscaling" => hs_create,
+        horizontal_scaling_list: get "/horizontalscaling" => hs_list,
+        horizontal_scaling_status: put "/horizontalscaling/status/:id" => hs_status_update,
 
         //authorization API: for roles
         roles: post "/roles" =>roles_create,
@@ -79,6 +85,9 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         role_based_permission: get "/permissions/roles/:id" => get_rolebased_permissions,
         permissions_show: get "/permissions/:id" => permissions_show,
         get_specfic_permission_based_role: get "/permissions/:id/roles/:rid" => get_specfic_permission_based_role,
+
+        //node API
+        nodes: post "/nodes" => node_create,
 
     );
 
@@ -120,7 +129,7 @@ pub fn run(config: Arc<Config>) -> Result<JoinHandle<()>> {
         mount.mount("/", Static::new(path));
     }
     let chain = try!(router(config.clone()));
-    mount.mount("/v1", chain);
+    mount.mount("/api/v1", chain);
 
     let handle = thread::Builder::new()
         .name("http-srv".to_string())

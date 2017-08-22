@@ -11,6 +11,8 @@ use auth_storedproc::*;
 use deploy_storedproc::*;
 use plan_storedproc::*;
 use scale_storedproc::*;
+use node_storedproc::*;
+
 
 pub struct DataStoreBroker;
 
@@ -71,6 +73,7 @@ impl DataStoreConn {
         DeployProcedures::new()?.migrate(migrator)?;
         PlanProcedures::new()?.migrate(migrator)?;
         ScaleProcedures::new()?.migrate(migrator)?;
+        NodeProcedures::new()?.migrate(migrator)?;
         Ok(())
     }
 }

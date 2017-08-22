@@ -70,6 +70,7 @@ pub mod async;
 pub mod test;
 pub mod data_store;
 pub mod auth_storedproc;
+pub mod node_storedproc;
 pub mod deploy_storedproc;
 pub mod plan_storedproc;
 pub mod scale_storedproc;
