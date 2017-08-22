@@ -9,7 +9,7 @@ rand = "*" # Or a newer version
 fnv = "*"
 rioos_builder_protocol = { path = "../builder-protocol" }
 rioos_core = { path = "../core" }
-ring = "*"
+rust-crypto = "*"
 hyper = "0.10.12"
 hyper-openssl = "0.2.7"
 iron = "*"
