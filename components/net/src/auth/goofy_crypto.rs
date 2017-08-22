@@ -40,6 +40,7 @@ impl GoofyCrypto {
 
     //The username is actually an email
     pub fn encrypt_password(&mut self, username: &str, password: &str) -> error::Result<String> {
+
         let salt = self.salt(username);
         let mut to_store: Credential = [0u8; CREDENTIAL_LEN];
         pbkdf2::derive(
@@ -50,9 +51,10 @@ impl GoofyCrypto {
             &mut to_store,
         );
 
-        String::from_utf8(to_store.to_vec()).map_err(|_| {
+        let data = String::from_utf8(to_store.to_vec()).map_err(|_| {
             error::Error::CryptoError("Error parsing password signature".to_string())
-        })
+        })?;
+        Ok(data)
     }
 
     pub fn verify_password(&self, username: &str, actual_password: &str, attempted_password: &str) -> error::Result<()> {

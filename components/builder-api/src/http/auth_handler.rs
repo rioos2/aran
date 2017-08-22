@@ -35,6 +35,12 @@ struct SessionCreateReq {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+struct SessionLoginReq {
+    email: String,
+    password: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct AccountGetReq {
     id: String,
     name: String,
@@ -45,10 +51,12 @@ struct AccountGetReq {
 //Default password authentication.
 //The body contains email, password, authenticate and if all is well return a token.
 pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
+    let mut account_get: AccountGet = AccountGet::new();
+
     let mut session_data = SessionCreate::new();
     {
 
-        match req.get::<bodyparser::Struct<SessionCreateReq>>() {
+        match req.get::<bodyparser::Struct<SessionLoginReq>>() {
             Ok(Some(body)) => {
                 if body.email.len() <= 0 {
                     return Ok(Response::with((
@@ -63,9 +71,9 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `password`",
                     )));
                 }
+                account_get.set_email(body.email);
+                account_get.set_password(body.password);
 
-                session_data.set_email(body.email);
-                session_data.set_password(body.password);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
@@ -75,24 +83,22 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
     let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
 
     //make sure authenticate returns an account.
-    let mut account_get: AccountGet = AccountGet::new();
-
-    account_get.set_email(session_data.get_email().to_string());
-    account_get.set_password(session_data.get_password().to_string());
-
     match authcli.authenticate(&conn, &account_get) {
         Ok(account) => {
-            session_data.set_token(account.get_token());
+            session_data.set_email(account.get_email());
+            session_data.set_password(account.get_password());
+            let authcli = req.get::<persistent::Read<PasswordAuthCli>>().unwrap();
+
+            session_data.set_token(authcli.token().unwrap());
 
             let session = try!(session_create(&conn, &session_data));
-
-            log_event!(
-                req,
-                Event::PasswordAuthenticate {
-                    user: session.get_name().to_string(),
-                    account: session.get_id().to_string(),
-                }
-            );
+            // log_event!(
+            //     req,
+            //     Event::PasswordAuthenticate {
+            //         user: session.get_name().to_string(),
+            //         account: session.get_id().to_string(),
+            //     }
+            // );
 
             Ok(render_json(status::Ok, &session))
         }
@@ -130,13 +136,14 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 let email = body.email.to_string();
 
                 account_create.set_token(authcli.token().unwrap());
-                account_create.set_name(body.name.to_string());
+                account_create.set_name(body.name);
                 account_create.set_email(email.clone());
                 account_create.set_first_name(body.first_name);
                 account_create.set_last_name(body.last_name);
                 account_create.set_phone(body.phone);
                 account_create.set_apikey(body.api_key);
-                account_create.set_password(authcli.encrypt(email.clone(),body.password).unwrap());
+                // account_create.set_password(authcli.encrypt(email.clone(), body.password).unwrap());
+                account_create.set_password(body.password);
                 account_create.set_states(body.states);
                 account_create.set_approval(body.approval);
                 account_create.set_suspend(body.suspend);

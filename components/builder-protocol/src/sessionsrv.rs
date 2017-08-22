@@ -395,6 +395,7 @@ impl Into<Session> for Account {
         session.set_id(self.get_id());
         session.set_email(self.get_email().to_owned());
         session.set_name(self.get_name().to_owned());
+        session.set_apikey(self.get_apikey().to_owned());
         session
     }
 }

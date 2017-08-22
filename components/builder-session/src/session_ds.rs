@@ -28,8 +28,8 @@ impl SessionDS {
         let rows = conn.query(
             "SELECT * FROM select_or_insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
-                &session_create.get_email(),
                 &session_create.get_name(),
+                &session_create.get_email(),
                 &session_create.get_first_name(),
                 &session_create.get_last_name(),
                 &session_create.get_phone(),
@@ -44,7 +44,6 @@ impl SessionDS {
 
         let row = rows.get(0);
         let account = row_to_account(row);
-
         let id = account.get_id().parse::<i64>().unwrap();
 
 
@@ -64,7 +63,6 @@ impl SessionDS {
             ],
         ).map_err(Error::AccountGetById)?;
         let session_row = rows.get(0);
-
         let mut session: sessionsrv::Session = account.into();
         session.set_token(session_row.get("token"));
 
@@ -167,6 +165,8 @@ impl SessionDS {
             session.set_name(name);
             let token: String = row.get("token");
             session.set_token(token);
+            let api_key: String = row.get("api_key");
+            session.set_apikey(api_key);
             let mut flags = privilege::FeatureFlags::empty();
             if row.get("is_admin") {
                 flags.insert(privilege::ADMIN);
@@ -282,5 +282,6 @@ fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
     account.set_id(id.to_string());
     account.set_email(row.get("email"));
     account.set_name(row.get("name"));
+    account.set_apikey(row.get("api_key"));
     account
 }
