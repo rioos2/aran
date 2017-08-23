@@ -32,6 +32,8 @@ pub mod originsrv;
 pub mod authsrv;
 pub mod scalesrv;
 pub mod routesrv;
+pub mod nodesrv;
+
 
 pub use self::error::{Error, Result};
 pub use self::sharding::{ShardId, SHARD_COUNT, InstaId};
