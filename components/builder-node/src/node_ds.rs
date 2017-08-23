@@ -27,6 +27,25 @@ impl NodeDS {
         debug!("◖☩ DONE: node_create ");
         return Ok(Some(node.clone()));
     }
+
+    pub fn node_list(datastore: &DataStoreConn) -> Result<Option<nodesrv::NodeGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_nodes_v1()", &[]).map_err(
+            Error::NodeList,
+        )?;
+
+        let mut response = nodesrv::NodeGetResponse::new();
+
+        let mut node_collection = Vec::new();
+
+        debug!(">● ROWS: node_list =>\n{:?}", &rows);
+        for row in rows {
+            node_collection.push(row_to_node(&row)?)
+        }
+        response.set_node_collection(node_collection);
+        Ok(Some(response))
+    }
 }
 
 fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {

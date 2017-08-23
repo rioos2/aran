@@ -19,6 +19,7 @@ pub enum Error {
     HabitatCore(rio_core::Error),
     InvalidUrl,
     NodeCreate(postgres::error::Error),
+    NodeList(postgres::error::Error),
     IO(io::Error),
 }
 
@@ -33,6 +34,7 @@ impl fmt::Display for Error {
             Error::CaughtPanic(ref msg, ref source) => format!("Caught a panic: {}. {}", msg, source),
             Error::HabitatCore(ref e) => format!("{}", e),
             Error::NodeCreate(ref e) => format!("Database error creating a node, {}", e),
+            Error::NodeList(ref e) => format!("Database error list nodes, {}", e),
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
         };
@@ -49,6 +51,7 @@ impl error::Error for Error {
             Error::HabitatCore(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::NodeCreate(ref err) => err.description(),
+            Error::NodeList(ref err) => err.description(),
             Error::InvalidUrl => "Bad Url!",
         }
     }

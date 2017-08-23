@@ -88,6 +88,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
         //node API
         nodes: post "/nodes" => node_create,
+        nodes: get "/nodes" => node_list,
+
 
     );
 

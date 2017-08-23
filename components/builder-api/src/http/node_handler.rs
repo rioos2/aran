@@ -274,3 +274,13 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
 
     }
 }
+
+pub fn node_list(req: &mut Request) -> IronResult<Response> {
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    match NodeDS::node_list(&conn) {
+        Ok(node_list) => Ok(render_json(status::Ok, &node_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
