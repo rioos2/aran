@@ -21,7 +21,7 @@ struct SpecReq {
     assemblyCIDR: String,
     externalID: String,
     providerID: String,
-    unschedulable: String,
+    unschedulable: bool,
     taints: Vec<TaintsReq>,
 }
 #[allow(non_snake_case)]
