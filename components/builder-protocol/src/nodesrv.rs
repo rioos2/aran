@@ -64,7 +64,7 @@ pub struct Spec {
     assemblyCIDR: String,
     externalID: String,
     providerID: String,
-    unschedulable: bool,
+    unschedulable: String,
     taints: Vec<Taints>,
 }
 
@@ -82,7 +82,7 @@ impl Spec {
         self.providerID = v;
     }
 
-    pub fn set_unschedulable(&mut self, v: bool) {
+    pub fn set_unschedulable(&mut self, v: ::std::string::String) {
         self.unschedulable = v;
     }
 

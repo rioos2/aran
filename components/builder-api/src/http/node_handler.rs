@@ -21,7 +21,7 @@ struct SpecReq {
     assemblyCIDR: String,
     externalID: String,
     providerID: String,
-    unschedulable: bool,
+    unschedulable: String,
     taints: Vec<TaintsReq>,
 }
 #[allow(non_snake_case)]
@@ -227,14 +227,14 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 let mut condition_collection = Vec::new();
 
                 for conn in body.status.conditions {
-                    let mut conditions = Conditions::new();
-                    conditions.set_conditionType(conn.conditionType);
-                    conditions.set_lastHeartbeatTime(conn.lastHeartbeatTime);
-                    conditions.set_lastTransitionTime(conn.lastTransitionTime);
-                    conditions.set_reason(conn.reason);
-                    conditions.set_status(conn.status);
-                    conditions.set_message(conn.message);
-                    condition_collection.push(conditions);
+                    let mut condition = Conditions::new();
+                    condition.set_conditionType(conn.conditionType);
+                    condition.set_lastHeartbeatTime(conn.lastHeartbeatTime);
+                    condition.set_lastTransitionTime(conn.lastTransitionTime);
+                    condition.set_reason(conn.reason);
+                    condition.set_status(conn.status);
+                    condition.set_message(conn.message);
+                    condition_collection.push(condition);
                 }
                 status.set_conditions(condition_collection);
 
