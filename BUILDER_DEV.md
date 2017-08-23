@@ -68,8 +68,10 @@ postgres=#  \q
 modify `/etc/postgresql/9.5/main/pg_hba.conf`
 ```
 nano  /etc/postgresql/9.5/main/pg_hba.conf					
-
-local   all            all      peer  to local  all      all          md5
+#from this line
+local   all            all      peer  
+#to line
+local  all      all          md5
 ```
 
 ### Restart
