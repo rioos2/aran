@@ -46,6 +46,17 @@ impl NodeDS {
         response.set_node_collection(node_collection);
         Ok(Some(response))
     }
+
+    pub fn node_status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<()> {
+        let conn = datastore.pool.get_shard(0)?;
+        let id = node.get_id().parse::<i64>().unwrap();
+        let status_str = serde_json::to_string(node.get_status()).unwrap();
+        conn.execute(
+            "SELECT set_node_status_v1($1, $2)",
+            &[&id, &(status_str as String)],
+        ).map_err(Error::NodeSetStatus)?;
+        Ok(())
+    }
 }
 
 fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {

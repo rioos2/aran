@@ -25,5 +25,14 @@ describe('Node API', function() {
           done(err);
         });
     });
+    it('returns all nodes', function(done) {
+      request.get('/nodes')
+        .set('Authorization', globalAny.bobo_bearer)
+        .expect(200)
+        .end(function(err, res) {
+          expect(res.body.results.length).to.equal(1);
+          done(err);
+        });
+    });
   });
   });

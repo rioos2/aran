@@ -62,9 +62,9 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         assembly_factory_status: put "/assemblyfactorys/status/:id" => assembly_factory_status_update,
 
         //deploy API: assembly
-        // assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
+        assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
 
-        assemblys: post "/assemblys" => assembly_create,
+        // assemblys: post "/assemblys" => assembly_create,
         assemblys_get: get "/assemblys" => assembly_list,
         assembly: get "/assemblys/:id" => assembly_show,
         assembly_status: put "/assemblys/status/:id" => assembly_status_update,
@@ -89,7 +89,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         //node API
         nodes: post "/nodes" => node_create,
         nodes: get "/nodes" => node_list,
-
+        node_status: put "/node/status/:id" => node_status_update,
 
     );
 

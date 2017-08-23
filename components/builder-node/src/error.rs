@@ -20,6 +20,7 @@ pub enum Error {
     InvalidUrl,
     NodeCreate(postgres::error::Error),
     NodeList(postgres::error::Error),
+    NodeSetStatus(postgres::error::Error),
     IO(io::Error),
 }
 
@@ -35,6 +36,7 @@ impl fmt::Display for Error {
             Error::HabitatCore(ref e) => format!("{}", e),
             Error::NodeCreate(ref e) => format!("Database error creating a node, {}", e),
             Error::NodeList(ref e) => format!("Database error list nodes, {}", e),
+            Error::NodeSetStatus(ref e) => format!("Database error update node status, {}", e),
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
         };
@@ -52,6 +54,7 @@ impl error::Error for Error {
             Error::IO(ref err) => err.description(),
             Error::NodeCreate(ref err) => err.description(),
             Error::NodeList(ref err) => err.description(),
+            Error::NodeSetStatus(ref err) => err.description(),
             Error::InvalidUrl => "Bad Url!",
         }
     }

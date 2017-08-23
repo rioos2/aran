@@ -109,8 +109,10 @@ impl Authenticated {
                 return Ok(session);
             }
             Err(err) => {
-                let nerr = net::err(ErrCode::DATA_STORE,
-                    format!("{} {}", "net::todo-change-it-auth-1", err.to_string()));
+                let nerr = net::err(
+                    ErrCode::DATA_STORE,
+                    format!("{} {}", "net::todo-change-it-auth-1", err.to_string()),
+                );
                 return Err(IronError::new(nerr, Status::Unauthorized));
             }
 
@@ -199,6 +201,7 @@ impl Key for Authenticated {
 /// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
+        println!("**********************************************************************************");
         let session = {
             let email = req.headers.get::<XAuthRioOSEmail>();
 
