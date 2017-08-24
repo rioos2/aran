@@ -7,6 +7,7 @@ header! { (XAuthShieldIris, "X-AUTH-IRIS-SHIELD") => [String] }
 header! { (XAuthShieldVoice, "X-AUTH-VOICE-SHIELD") => [String] }
 
 header! { (XAuthRioOSEmail, "X-AUTH-RIOOS-EMAIL") => [String] }
+
 header! { (XAuthRioOSApiKey, "X-AUTH-RIOOS-APIKEY") => [String] }
 
 header! { (CacheControl, "Cache-Control") => [String] }

@@ -36,6 +36,7 @@ extern crate time;
 extern crate unicase;
 extern crate rand;
 
+
 pub mod config;
 pub mod error;
 pub mod http;
@@ -44,7 +45,7 @@ pub mod server;
 use std::process::Command;
 
 pub use self::error::{Error, Result};
-pub use self::server::{Application};
+pub use self::server::Application;
 
 pub fn hostname() -> Result<String> {
     let output = try!(

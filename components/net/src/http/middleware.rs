@@ -22,6 +22,8 @@ use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;
 use super::token_target::*;
+use persistent;
+
 
 use db::data_store::{DataStoreBroker, DataStoreConn};
 use session::session_ds::SessionDS;
@@ -204,18 +206,21 @@ impl BeforeMiddleware for Authenticated {
         println!("**********************************************************************************");
         let session = {
             let email = req.headers.get::<XAuthRioOSEmail>();
-
+            println!("----------------email-----------------------{:?}", email);
             //This is malformed header actually.
             if email.is_none() {
+                println!("----------------email is none----------------");
                 let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:2");
                 return Err(IronError::new(err, Status::Unauthorized));
             }
 
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
-                    match req.extensions.get_mut::<DataStoreBroker>() {
-                        Some(broker) => self.authenticate(broker, email.unwrap(), token)?,
-                        None => {
+                    println!("----------------success----------------");
+                    match req.get::<persistent::Read<DataStoreBroker>>() {
+                        Ok(broker) => self.authenticate(broker, email.unwrap(), token)?,
+                        Ok(None) => {
+                            println!("----------------error----------------");
                             let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
                             return Err(IronError::new(err, Status::Unauthorized));
                         }
@@ -231,6 +236,7 @@ impl BeforeMiddleware for Authenticated {
         Ok(())
     }
 }
+
 
 pub struct Cors;
 
