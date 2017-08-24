@@ -26,7 +26,6 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 extern crate num_cpus;
-extern crate persistent;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

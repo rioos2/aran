@@ -22,7 +22,6 @@ use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;
 use super::token_target::*;
-use persistent;
 
 
 use db::data_store::{DataStoreBroker, DataStoreConn};
@@ -203,7 +202,6 @@ impl Key for Authenticated {
 /// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        println!("**********************************************************************************");
         let session = {
             let email = req.headers.get::<XAuthRioOSEmail>();
             println!("----------------email-----------------------{:?}", email);
@@ -216,11 +214,9 @@ impl BeforeMiddleware for Authenticated {
 
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
-                    println!("----------------success----------------");
-                    match req.get::<persistent::Read<DataStoreBroker>>() {
-                        Ok(broker) => self.authenticate(broker, email.unwrap(), token)?,
-                        Ok(None) => {
-                            println!("----------------error----------------");
+                    match req.extensions.get_mut::<DataStoreBroker>() {
+                        Some(broker) => self.authenticate(broker, email.unwrap(), token)?,
+                        None => {
                             let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
                             return Err(IronError::new(err, Status::Unauthorized));
                         }
@@ -232,6 +228,7 @@ impl BeforeMiddleware for Authenticated {
                 }
             }
         };
+
         req.extensions.insert::<Self>(session);
         Ok(())
     }
