@@ -1,5 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 
+//Global header for Shields (we assume this as an aggregate of the 4 shields)
 header! { (XAuthShield, "X-AUTH-SHIELD") => [String] }
 header! { (XAuthShieldFingerPrint, "X-AUTH-FINGER-PRINT-SHIELD") => [String] }
 header! { (XAuthShieldFace, "X-AUTH-FACE-SHIELD") => [String] }

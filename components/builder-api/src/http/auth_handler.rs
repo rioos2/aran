@@ -142,8 +142,7 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 account_create.set_last_name(body.last_name);
                 account_create.set_phone(body.phone);
                 account_create.set_apikey(body.api_key);
-                // account_create.set_password(authcli.encrypt(email.clone(), body.password).unwrap());
-                account_create.set_password(body.password);
+                account_create.set_password(authcli.encrypt(body.password.clone()).unwrap());
                 account_create.set_states(body.states);
                 account_create.set_approval(body.approval);
                 account_create.set_suspend(body.suspend);
