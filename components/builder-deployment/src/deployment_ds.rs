@@ -5,6 +5,7 @@
 use chrono::prelude::*;
 use error::{Result, Error};
 use protocol::asmsrv;
+use protocol::plansrv;
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -13,7 +14,6 @@ use serde_json;
 pub struct DeploymentDS;
 
 impl DeploymentDS {
-
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_create ");
@@ -122,7 +122,6 @@ impl DeploymentDS {
         return Ok(Some(assembly_factory.clone()));
     }
 
-
     pub fn assembly_factory_show(datastore: &DataStoreConn, get_assembly_factory: &asmsrv::AssemblyFactoryGet) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
         let asm_id = get_assembly_factory.get_id().parse::<i64>().unwrap();
@@ -138,7 +137,10 @@ impl DeploymentDS {
         debug!(">● ROWS: assemby_factory_show =>\n{:?}", &rows);
 
         for row in rows {
-            let assembly_factory = row_to_assembly_factory(&row)?;
+            let mut assembly_factory = row_to_assembly_factory(&row)?;
+            let plan_url = assembly_factory.get_plan();
+            let data = Self::plan_show(&datastore, plan_url.clone())?;
+            assembly_factory.set_plan_data(data);
             return Ok(Some(assembly_factory));
         }
 
@@ -182,6 +184,24 @@ impl DeploymentDS {
         let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
         assembly.set_spec(data);
         Ok(assembly)
+    }
+
+    pub fn plan_show(datastore: &DataStoreConn, plan_url: String) -> Result<Option<plansrv::Plan>> {
+        let url = plan_url.to_string();
+        let conn = datastore.pool.get_shard(0)?;
+        debug!("◖☩ START: plan_show {:?}", plan_url);
+
+        let rows = &conn.query("SELECT * FROM get_plan_v1($1)", &[&url])
+            .map_err(Error::PlanGet)?;
+
+        debug!(">● ROWS: plan_show =>\n{:?}", &rows);
+
+        for row in rows {
+            let plan = row_to_plan(&row)?;
+            return Ok(Some(plan));
+        }
+
+        Ok(None)
     }
 }
 
@@ -264,4 +284,34 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     );
     debug!("◖☩ DONE: row_to_assemby_factory");
     Ok(assembly_factory)
+}
+
+
+fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
+    let mut plan = plansrv::Plan::new();
+    let id: i64 = row.get("id");
+    let name: String = row.get("name");
+    let url: String = row.get("url");
+    let description: String = row.get("description");
+    let tags: Vec<String> = row.get("tags");
+    let camp_version: String = row.get("camp_version");
+    let origin: String = row.get("origin");
+    let artifacts: Vec<String> = row.get("artifacts");
+    let services: String = row.get("services");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+
+    plan.set_id(id.to_string() as String);
+    plan.set_name(name as String);
+    plan.set_url(url as String);
+    plan.set_description(description as String);
+    plan.set_tags(tags as Vec<String>);
+    plan.set_camp_version(camp_version as String);
+    plan.set_origin(origin as String);
+    plan.set_artifacts(artifacts as Vec<String>);
+    plan.set_services(services as String);
+    plan.set_created_at(created_at.to_rfc3339());
+
+    debug!("◖☩ PLAN: row_to_plan =>\n{:?}", plan);
+    debug!("◖☩ DONE: row_to_assemby_factory");
+    Ok(plan)
 }

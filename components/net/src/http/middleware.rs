@@ -204,10 +204,8 @@ impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
         let session = {
             let email = req.headers.get::<XAuthRioOSEmail>();
-            println!("----------------email-----------------------{:?}", email);
             //This is malformed header actually.
             if email.is_none() {
-                println!("----------------email is none----------------");
                 let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:2");
                 return Err(IronError::new(err, Status::Unauthorized));
             }
