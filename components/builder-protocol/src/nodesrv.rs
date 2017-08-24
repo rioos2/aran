@@ -336,3 +336,19 @@ impl NodeInfo {
         self.architecture = v;
     }
 }
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct NodeGetResponse {
+    results: Vec<Node>,
+}
+
+impl NodeGetResponse {
+    pub fn new() -> NodeGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_node_collection(&mut self, v: Vec<Node>) {
+        self.results = v;
+    }
+}

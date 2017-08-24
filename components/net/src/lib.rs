@@ -26,7 +26,6 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 extern crate num_cpus;
-extern crate persistent;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -34,6 +33,7 @@ extern crate serde_json;
 extern crate time;
 extern crate unicase;
 extern crate rand;
+
 
 pub mod config;
 pub mod error;
@@ -43,7 +43,7 @@ pub mod server;
 use std::process::Command;
 
 pub use self::error::{Error, Result};
-pub use self::server::{Application};
+pub use self::server::Application;
 
 pub fn hostname() -> Result<String> {
     let output = try!(

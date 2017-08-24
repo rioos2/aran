@@ -23,6 +23,7 @@ use session::privilege::FeatureFlags;
 use super::headers::*;
 use super::token_target::*;
 
+
 use db::data_store::{DataStoreBroker, DataStoreConn};
 use session::session_ds::SessionDS;
 
@@ -109,8 +110,10 @@ impl Authenticated {
                 return Ok(session);
             }
             Err(err) => {
-                let nerr = net::err(ErrCode::DATA_STORE,
-                    format!("{} {}", "net::todo-change-it-auth-1", err.to_string()));
+                let nerr = net::err(
+                    ErrCode::DATA_STORE,
+                    format!("{} {}", "net::todo-change-it-auth-1", err.to_string()),
+                );
                 return Err(IronError::new(nerr, Status::Unauthorized));
             }
 
@@ -201,9 +204,10 @@ impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
         let session = {
             let email = req.headers.get::<XAuthRioOSEmail>();
-
+            println!("----------------email-----------------------{:?}", email);
             //This is malformed header actually.
             if email.is_none() {
+                println!("----------------email is none----------------");
                 let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:2");
                 return Err(IronError::new(err, Status::Unauthorized));
             }
@@ -224,10 +228,12 @@ impl BeforeMiddleware for Authenticated {
                 }
             }
         };
+
         req.extensions.insert::<Self>(session);
         Ok(())
     }
 }
+
 
 pub struct Cors;
 

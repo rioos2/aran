@@ -104,6 +104,11 @@ struct NodeInfoReq {
     architecture: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct CommonStatusReq {
+    status: StatusReq,
+}
+
 
 pub fn node_create(req: &mut Request) -> IronResult<Response> {
     let mut node_create = Node::new();
@@ -227,14 +232,14 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 let mut condition_collection = Vec::new();
 
                 for conn in body.status.conditions {
-                    let mut conditions = Conditions::new();
-                    conditions.set_conditionType(conn.conditionType);
-                    conditions.set_lastHeartbeatTime(conn.lastHeartbeatTime);
-                    conditions.set_lastTransitionTime(conn.lastTransitionTime);
-                    conditions.set_reason(conn.reason);
-                    conditions.set_status(conn.status);
-                    conditions.set_message(conn.message);
-                    condition_collection.push(conditions);
+                    let mut condition = Conditions::new();
+                    condition.set_conditionType(conn.conditionType);
+                    condition.set_lastHeartbeatTime(conn.lastHeartbeatTime);
+                    condition.set_lastTransitionTime(conn.lastTransitionTime);
+                    condition.set_reason(conn.reason);
+                    condition.set_status(conn.status);
+                    condition.set_message(conn.message);
+                    condition_collection.push(condition);
                 }
                 status.set_conditions(condition_collection);
 
@@ -272,5 +277,176 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+pub fn node_list(req: &mut Request) -> IronResult<Response> {
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    match NodeDS::node_list(&conn) {
+        Ok(node_list) => Ok(render_json(status::Ok, &node_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
+pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
+    let mut node_create = Node::new();
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+    node_create.set_id(id.to_string());
+    {
+        match req.get::<bodyparser::Struct<CommonStatusReq>>() {
+            Ok(Some(body)) => {
+                let mut status = Status::new();
+
+                let mut capacity = Capacity::new();
+
+                let mut cpu_capacity = Range::new();
+                let mut cpu_capacity_fixed_range = FixedRange::new();
+                cpu_capacity_fixed_range.set_value(body.status.capacity.cpu.fixed_range.value);
+                cpu_capacity_fixed_range.set_scale(body.status.capacity.cpu.fixed_range.scale);
+                cpu_capacity.set_fixed_range(cpu_capacity_fixed_range);
+                let mut cpu_capacity_infinite_range = InfiniteRange::new();
+                cpu_capacity_infinite_range.set_unscale(body.status.capacity.cpu.infinite_range.unscale);
+                cpu_capacity_infinite_range.set_scale(body.status.capacity.cpu.infinite_range.scale);
+                cpu_capacity.set_infinite_range(cpu_capacity_infinite_range);
+                cpu_capacity.set_quantity(body.status.capacity.cpu.quantity);
+                cpu_capacity.set_format(body.status.capacity.cpu.format);
+
+
+                let mut mem_capacity = Range::new();
+                let mut mem_capacity_fixed_range = FixedRange::new();
+                mem_capacity_fixed_range.set_value(body.status.capacity.mem.fixed_range.value);
+                mem_capacity_fixed_range.set_scale(body.status.capacity.mem.fixed_range.scale);
+                mem_capacity.set_fixed_range(mem_capacity_fixed_range);
+                let mut mem_capacity_infinite_range = InfiniteRange::new();
+                mem_capacity_infinite_range.set_unscale(body.status.capacity.mem.infinite_range.unscale);
+                mem_capacity_infinite_range.set_scale(body.status.capacity.mem.infinite_range.scale);
+                mem_capacity.set_infinite_range(mem_capacity_infinite_range);
+                mem_capacity.set_quantity(body.status.capacity.mem.quantity);
+                mem_capacity.set_format(body.status.capacity.mem.format);
+
+
+                let mut disk_capacity = Range::new();
+                let mut disk_capacity_fixed_range = FixedRange::new();
+                disk_capacity_fixed_range.set_value(body.status.capacity.disk.fixed_range.value);
+                disk_capacity_fixed_range.set_scale(body.status.capacity.disk.fixed_range.scale);
+                disk_capacity.set_fixed_range(disk_capacity_fixed_range);
+                let mut disk_capacity_infinite_range = InfiniteRange::new();
+                disk_capacity_infinite_range.set_unscale(body.status.capacity.disk.infinite_range.unscale);
+                disk_capacity_infinite_range.set_scale(body.status.capacity.disk.infinite_range.scale);
+                disk_capacity.set_infinite_range(disk_capacity_infinite_range);
+                disk_capacity.set_quantity(body.status.capacity.disk.quantity);
+                disk_capacity.set_format(body.status.capacity.disk.format);
+
+                capacity.set_cpu(cpu_capacity);
+                capacity.set_mem(mem_capacity);
+                capacity.set_disk(disk_capacity);
+
+                status.set_capacity(capacity);
+
+                let mut allocatable = Capacity::new();
+
+                let mut cpu_allocatable = Range::new();
+                let mut cpu_allocatable_fixed_range = FixedRange::new();
+                cpu_allocatable_fixed_range.set_value(body.status.allocatable.cpu.fixed_range.value);
+                cpu_allocatable_fixed_range.set_scale(body.status.allocatable.cpu.fixed_range.scale);
+                cpu_allocatable.set_fixed_range(cpu_allocatable_fixed_range);
+                let mut cpu_allocatable_infinite_range = InfiniteRange::new();
+                cpu_allocatable_infinite_range.set_unscale(body.status.allocatable.cpu.infinite_range.unscale);
+                cpu_allocatable_infinite_range.set_scale(body.status.allocatable.cpu.infinite_range.scale);
+                cpu_allocatable.set_infinite_range(cpu_allocatable_infinite_range);
+                cpu_allocatable.set_quantity(body.status.allocatable.cpu.quantity);
+                cpu_allocatable.set_format(body.status.allocatable.cpu.format);
+
+
+                let mut mem_allocatable = Range::new();
+                let mut mem_allocatable_fixed_range = FixedRange::new();
+                mem_allocatable_fixed_range.set_value(body.status.allocatable.mem.fixed_range.value);
+                mem_allocatable_fixed_range.set_scale(body.status.allocatable.mem.fixed_range.scale);
+                mem_allocatable.set_fixed_range(mem_allocatable_fixed_range);
+                let mut mem_allocatable_infinite_range = InfiniteRange::new();
+                mem_allocatable_infinite_range.set_unscale(body.status.allocatable.mem.infinite_range.unscale);
+                mem_allocatable_infinite_range.set_scale(body.status.allocatable.mem.infinite_range.scale);
+                mem_allocatable.set_infinite_range(mem_allocatable_infinite_range);
+                mem_allocatable.set_quantity(body.status.allocatable.mem.quantity);
+                mem_allocatable.set_format(body.status.allocatable.mem.format);
+
+
+                let mut disk_allocatable = Range::new();
+                let mut disk_allocatable_fixed_range = FixedRange::new();
+                disk_allocatable_fixed_range.set_value(body.status.allocatable.disk.fixed_range.value);
+                disk_allocatable_fixed_range.set_scale(body.status.allocatable.disk.fixed_range.scale);
+                disk_allocatable.set_fixed_range(disk_allocatable_fixed_range);
+                let mut disk_allocatable_infinite_range = InfiniteRange::new();
+                disk_allocatable_infinite_range.set_unscale(body.status.allocatable.disk.infinite_range.unscale);
+                disk_allocatable_infinite_range.set_scale(body.status.allocatable.disk.infinite_range.scale);
+                disk_allocatable.set_infinite_range(disk_allocatable_infinite_range);
+                disk_allocatable.set_quantity(body.status.allocatable.disk.quantity);
+                disk_allocatable.set_format(body.status.allocatable.disk.format);
+
+                allocatable.set_cpu(cpu_allocatable);
+                allocatable.set_mem(mem_allocatable);
+                allocatable.set_disk(disk_allocatable);
+
+                status.set_allocatable(allocatable);
+                status.set_phase(body.status.phase);
+
+                let mut condition_collection = Vec::new();
+
+                for conn in body.status.conditions {
+                    let mut condition = Conditions::new();
+                    condition.set_conditionType(conn.conditionType);
+                    condition.set_lastHeartbeatTime(conn.lastHeartbeatTime);
+                    condition.set_lastTransitionTime(conn.lastTransitionTime);
+                    condition.set_reason(conn.reason);
+                    condition.set_status(conn.status);
+                    condition.set_message(conn.message);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
+
+                let mut addresse_collection = Vec::new();
+
+                for addr in body.status.addresses {
+                    let mut addresses = Addresses::new();
+                    let mut node_addr = NodeAddress::new();
+                    node_addr.set_nodeType(addr.nodeAddress.nodeType);
+                    node_addr.set_addresses(addr.nodeAddress.addresses);
+                    addresses.set_nodeAddress(node_addr);
+                    addresse_collection.push(addresses);
+                }
+                status.set_addresses(addresse_collection);
+
+                let mut node_info = NodeInfo::new();
+                node_info.set_machineID(body.status.nodeInfo.machineID);
+                node_info.set_systemUUID(body.status.nodeInfo.systemUUID);
+                node_info.set_kernelVersion(body.status.nodeInfo.kernelVersion);
+                node_info.set_oSImage(body.status.nodeInfo.oSImage);
+                node_info.set_architecture(body.status.nodeInfo.architecture);
+                status.set_nodeInfo(node_info);
+                node_create.set_status(status);
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+
+    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+
+    //This is needed as you'll need the email/token if any
+    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+
+    match NodeDS::node_status_update(&conn, &node_create) {
+        Ok(node) => Ok(render_json(status::Ok, &node)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }

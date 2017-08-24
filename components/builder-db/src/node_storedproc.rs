@@ -55,6 +55,30 @@ impl Migratable for NodeProcedures {
         )?;
         debug!("=> [✓] fn: insert_node_v1");
 
+        migrator.migrate(
+            "nodesrv",
+            r#"CREATE OR REPLACE FUNCTION get_nodes_v1() RETURNS SETOF node AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM node;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_nodes_v1");
+
+        migrator.migrate(
+            "nodesrv",
+            r#"CREATE OR REPLACE FUNCTION set_node_status_v1 (nid bigint, node_status text) RETURNS void AS $$
+                            BEGIN
+                                UPDATE node SET status=node_status, updated_at=now() WHERE id=nid;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: set_node_status_v1");
+
+
         // The core plans table
         debug!("=> DONE: nodesrv");
 
