@@ -33,6 +33,7 @@ pub mod authsrv;
 pub mod scalesrv;
 pub mod routesrv;
 pub mod nodesrv;
+pub mod plansrv;
 
 
 pub use self::error::{Error, Result};

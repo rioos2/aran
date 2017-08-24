@@ -23,6 +23,7 @@ use std::result;
 use std::fmt;
 use error::{Error, Result};
 use std::str::FromStr;
+use plansrv;
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -258,6 +259,7 @@ pub struct AssemblyFactory {
     replicas: u64,
     properties: Properties,
     plan: String,
+    plan_data: Option<plansrv::Plan>,
     external_management_resource: Vec<String>,
     component_collection: ComponentCollection,
     status: Status,
@@ -373,6 +375,10 @@ impl AssemblyFactory {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+
+    pub fn set_plan_data(&mut self, v: Option<plansrv::Plan>) {
+        self.plan_data = v;
     }
 }
 
