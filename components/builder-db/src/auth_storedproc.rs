@@ -191,7 +191,7 @@ impl Migratable for AuthProcedures {
             r#"CREATE OR REPLACE FUNCTION get_account_session_v1 (
                     account_email text,
                     account_token text
-                ) RETURNS TABLE(id bigint, email text, name text, token text, is_admin bool, is_service_access bool) AS $$
+                ) RETURNS TABLE(id bigint, email text, name text, token text, api_key text, is_admin bool, is_service_access bool) AS $$
                      DECLARE
                         this_account accounts%rowtype;
                      BEGIN

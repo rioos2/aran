@@ -154,15 +154,11 @@ impl SessionDS {
             "SELECT * FROM get_account_session_v1($1, $2)",
             &[&session_get.get_email(), &session_get.get_token()],
         ).map_err(Error::SessionGet)?;
-        println!(
-            "---------------rowsssssssssss--------------------------{:?}",
-            rows
-        );
         if rows.len() != 0 {
             let row = rows.get(0);
             let mut session = sessionsrv::Session::new();
-            let id = row.get("id");
-            session.set_id(id);
+            let id: i64 = row.get("id");
+            session.set_id(id.to_string());
             let email: String = row.get("email");
             session.set_email(email);
             let name: String = row.get("name");
@@ -177,9 +173,6 @@ impl SessionDS {
             }
             if row.get("is_service_access") {
                 flags.insert(privilege::SERVICE_ACCESS);
-            }
-            if row.get("is_default_worker") {
-                flags.insert(privilege::DEFAULT_ACCESS);
             }
             session.set_flags(flags.bits());
             Ok(Some(session))

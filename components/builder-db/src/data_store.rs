@@ -4,7 +4,6 @@ use async::AsyncServer;
 use error::{Result, Error};
 use pool::Pool;
 use config::DataStore;
-use iron::typemap::Key;
 use protocol::SHARD_COUNT;
 use migration::{Migratable, Migrator};
 use auth_storedproc::*;
