@@ -9,9 +9,9 @@ This document outlines the steps to start and run a Rio/OS Aran API environment 
 ## Pre-Reqs
 1. Use a Linux OS - either Ubuntu or ArchLinux.
 1. Clone the aran repo to your local filesystem.
-1. The sample commands below use the 'httpie' tool. Install it if not present on your system (https://github.com/jkbrzt/httpie) but `curl` is ok tool
+1. The sample commands below use the `curl` tool.
 
-## PostgreSQL
+## PostgreSQL - Ubuntu
 
 ### Install postgres
 ```
@@ -115,42 +115,19 @@ Refer to [BUILDING.md](./BUILDING.md) doc for the detailed steps.
 
 Some capabilities (such as configuring database, turning on bioshield.
 
-Create the following files somewhere on your local filesystem (Note: the client_id and client_secret below are for development purposes only):
+Create the following files somewhere on your local filesystem)
 
 `/var/lib/rioos/api.toml`
 ```toml
-[depot]
-builds_enabled = true
 
-[github]
-url = "https://api.github.com"
-client_id = "0c2f738a7d0bd300de10"
-client_secret = "438223113eeb6e7edf2d2f91a232b72de72b9bdf"
 ```
-(Note: If you want your log files to persist across restarts of your development machine, replace `/tmp` with some other directory. It *must* exist and be writable before you start the job server).
+### Procfile *optional*
 
-Now, modify the `Procfile` (located in your hab repo in the `support` folder) to point the api, sessionsrv, jobsrv, and worker services to the previously created config files, e.g.
+Now, modify the `Procfile` (located in your aran repo in the `support` folder) to point the api, and worker services to the previously created config files, e.g.
 
 ```
 api: target/debug/rioos-api-server  --config /home/your_alias/rioos/api.toml
 ```
-
-## Run Aran
-1. Open a new terminal window.
-1. Export the following environment variables:
-
-```
-export RIOOS_HOME=$HOME/home
-```
-
-```
-
-```
-
-### In the browser
-
-http://localhost:3000/#/pkgs, sign in with GitHub, and click My Origins in the sidebar to create an origin.
-
 
 ## Run a build
 
@@ -167,7 +144,7 @@ make clean
 
 ## Testing
 
-This should create a build job, and then dispatch it to the build worker.
+This should show the status of the api server.
 
 You should see a response similar to the following:
 
@@ -186,12 +163,22 @@ HTTP/1.1 201 Created
 ```
 
 
+## Run Aran
+1. Open a new terminal window.
+1. Export the following environment variables:
+
+```
+export RIOOS_HOME=$HOME/home
+```
+
+```
+./rioos_apiserver start
+```
+
+
 ## Troubleshooting
 1. If you get the following error when starting the api-server, check to make sure you have the database setup correctly.
-`ERROR:habitat_builder_worker::runner: Unable to retrieve secret key, err=[404 Not Found]`
-
-1. If you get a build failing with a `401 Unauthorized`, make sure the builder worker is pointed to a valid Github token (via a config.toml in the Procfile)
-
+`ERROR:r2d2: Error opening a connection: Error communicating with the server: Connection refused (os error 111)`
 
 1. If Postgres dies when you run `systemctl start postgresql` with an error message that
    says `WARNING: out of shared memory`, edit the `postgresql.conf` file in

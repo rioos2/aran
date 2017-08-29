@@ -1,16 +1,6 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2017 RioCorp Inc.
+
+//! A module containing the common env loader
 
 use std;
 use std::env::VarError;
@@ -25,11 +15,11 @@ use std::ffi::{OsStr, OsString};
 ///
 /// ```
 /// use std;
-/// use habitat_core;
+/// use rioos_core;
 ///
 /// let key = "_I_AM_A_TEAPOT_COMMA_RIGHT_PEOPLE_QUESTION_MARK_";
 /// std::env::set_var(key, "");
-/// match habitat_core::env::var(key) {
+/// match rioos_core::env::var(key) {
 ///     Ok(val) => panic!("The environment variable {} is set but empty!", key),
 ///     Err(e) => println!("The environment variable {} is set, but empty. Not useful!", key),
 /// }
@@ -56,11 +46,11 @@ pub fn var<K: AsRef<OsStr>>(key: K) -> std::result::Result<String, VarError> {
 ///
 /// ```
 /// use std;
-/// use habitat_core;
+/// use rioos_core;
 ///
 /// let key = "_I_AM_A_TEAPOT_COMMA_RIGHT_PEOPLE_QUESTION_MARK_";
 /// std::env::set_var(key, "");
-/// match habitat_core::env::var_os(key) {
+/// match rioos_core::env::var_os(key) {
 ///     Some(val) => panic!("The environment variable {} is set but empty!", key),
 ///     None => println!("The environment variable {} is set, but empty. Not useful!", key),
 /// }
@@ -92,10 +82,10 @@ pub fn var_os<K: AsRef<OsStr>>(key: K) -> std::option::Option<OsString> {
 ///
 /// ```
 /// use std;
-/// use habitat_core;
+/// use rioos_core;
 ///
 /// std::env::remove_var("SUDO_USER");
-/// match habitat_core::env::sudo_user() {
+/// match rioos_core::env::sudo_user() {
 ///     Some(val) => panic!("The environment variable is set but should be unset!"),
 ///     None => println!("No SUDO_USER set in the environment"),
 /// }
@@ -105,10 +95,10 @@ pub fn var_os<K: AsRef<OsStr>>(key: K) -> std::option::Option<OsString> {
 ///
 /// ```
 /// use std;
-/// use habitat_core;
+/// use rioos_core;
 ///
 /// std::env::set_var("SUDO_USER", "bob");
-/// match habitat_core::env::sudo_user() {
+/// match rioos_core::env::sudo_user() {
 ///     Some(val) => assert_eq!(val, "bob"),
 ///     None => panic!("The environment variable is set and should be bob"),
 /// }
@@ -118,10 +108,10 @@ pub fn var_os<K: AsRef<OsStr>>(key: K) -> std::option::Option<OsString> {
 ///
 /// ```
 /// use std;
-/// use habitat_core;
+/// use rioos_core;
 ///
 /// std::env::set_var("SUDO_USER", "root");
-/// match habitat_core::env::sudo_user() {
+/// match rioos_core::env::sudo_user() {
 ///     Some(val) => panic!("The environment variable is set to root and should return with None!"),
 ///     None => println!("No non-root SUDO_USER set in the environment"),
 /// }

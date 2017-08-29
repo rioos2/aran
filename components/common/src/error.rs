@@ -19,7 +19,7 @@ pub enum Error {
     CryptoKeyError(String),
     GossipFileRelativePath(String),
     FileNameError,
-    HabitatCore(rcore::Error),
+    RioosAranCore(rcore::Error),
     /// Occurs when making lower level IO calls.
     IO(io::Error),
     RootRequired,
@@ -50,7 +50,7 @@ impl fmt::Display for Error {
                 )
             }
             Error::FileNameError => format!("Failed to extract a filename"),
-            Error::HabitatCore(ref e) => format!("{}", e),
+            Error::RioosAranCore(ref e) => format!("{}", e),
             Error::IO(ref err) => format!("{}", err),
             Error::RootRequired => "Root or administrator permissions required to complete operation".to_string(),
             Error::StrFromUtf8Error(ref e) => format!("{}", e),
@@ -71,7 +71,7 @@ impl error::Error for Error {
             Error::CryptoKeyError(_) => "Missing or invalid key",
             Error::GossipFileRelativePath(_) => "Path for gossip file cannot have relative components (eg: ..)",
             Error::FileNameError => "Failed to extract a filename from a path",
-            Error::HabitatCore(ref err) => err.description(),
+            Error::RioosAranCore(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::RootRequired => "Root or administrator permissions required to complete operation",
             Error::StrFromUtf8Error(_) => "Failed to convert a string as UTF-8",
@@ -85,7 +85,7 @@ impl error::Error for Error {
 
 impl From<rcore::Error> for Error {
     fn from(err: rcore::Error) -> Self {
-        Error::HabitatCore(err)
+        Error::RioosAranCore(err)
     }
 }
 

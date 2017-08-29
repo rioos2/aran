@@ -22,6 +22,10 @@ use regex::Regex;
 use package::PackageTarget;
 use error::{Error, Result};
 
+lazy_static! {
+    static ref ORIGIN_NAME_RE: Regex = Regex::new(r"\A[a-z0-9][a-z0-9_-]*\z").expect("Unable to compile regex");
+}
+
 #[derive(Deserialize, Serialize, Eq, PartialEq, Debug, Clone, Hash)]
 pub struct PackageIdent {
     pub origin: String,
@@ -71,7 +75,12 @@ pub trait Identifiable: fmt::Display + Into<PackageIdent> {
 
 impl PackageIdent {
     /// Creates a new package identifier
-    pub fn new<T: Into<String>>(origin: T, name: T, version: Option<T>, release: Option<T>) -> Self {
+    pub fn new<T: Into<String>>(
+        origin: T,
+        name: T,
+        version: Option<T>,
+        release: Option<T>,
+    ) -> Self {
         PackageIdent {
             origin: origin.into(),
             name: name.into(),
@@ -278,22 +287,22 @@ impl Ord for PackageIdent {
 ///
 /// Returns a Error if we fail to match for any reason.
 pub fn version_sort(a_version: &str, b_version: &str) -> Result<Ordering> {
-    let (a_parts, a_extension) = try!(split_version(a_version));
-    let (b_parts, b_extension) = try!(split_version(b_version));
+    let (a_parts, a_extension) = split_version(a_version)?;
+    let (b_parts, b_extension) = split_version(b_version)?;
     let mut a_iter = a_parts.iter();
     let mut b_iter = b_parts.iter();
     loop {
         let mut a_exhausted = false;
         let mut b_exhausted = false;
         let a_num = match a_iter.next() {
-            Some(i) => try!(i.parse::<u64>()),
+            Some(i) => i.parse::<u64>()?,
             None => {
                 a_exhausted = true;
                 0u64
             }
         };
         let b_num = match b_iter.next() {
-            Some(i) => try!(i.parse::<u64>()),
+            Some(i) => i.parse::<u64>()?,
             None => {
                 b_exhausted = true;
                 0u64
@@ -338,7 +347,7 @@ pub fn version_sort(a_version: &str, b_version: &str) -> Result<Ordering> {
 }
 
 fn split_version(version: &str) -> Result<(Vec<&str>, Option<String>)> {
-    let re = try!(Regex::new(r"([\d\.]+)(.+)?"));
+    let re = Regex::new(r"([\d\.]+)(.+)?")?;
     let caps = match re.captures(version) {
         Some(caps) => caps,
         None => return Err(Error::InvalidPackageIdent(version.to_string())),
@@ -356,6 +365,11 @@ fn split_version(version: &str) -> Result<(Vec<&str>, Option<String>)> {
     };
     let version_parts: Vec<&str> = version_number.as_str().split('.').collect();
     Ok((version_parts, extension))
+}
+
+/// Is the string a valid origin name?
+pub fn is_valid_origin_name(origin: &str) -> bool {
+    origin.chars().count() <= 255 && ORIGIN_NAME_RE.is_match(origin)
 }
 
 #[cfg(test)]
@@ -596,5 +610,21 @@ mod tests {
         assert!(valid4.valid());
         assert!(!invalid1.valid());
         assert!(!invalid2.valid());
+    }
+
+    #[test]
+    fn check_origin_name() {
+        assert!(super::is_valid_origin_name("foo"));
+        assert!(super::is_valid_origin_name("foo_bar"));
+        assert!(super::is_valid_origin_name("foo-bar"));
+        assert!(super::is_valid_origin_name("0xdeadbeef"));
+
+        assert!(!super::is_valid_origin_name("Core"));
+        assert!(!super::is_valid_origin_name(" foo"));
+        assert!(!super::is_valid_origin_name("foo "));
+        assert!(!super::is_valid_origin_name("!foo"));
+        assert!(!super::is_valid_origin_name("foo bar"));
+        assert!(!super::is_valid_origin_name("0xDEADBEEF"));
+
     }
 }

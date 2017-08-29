@@ -33,7 +33,7 @@ pub fn hash(config: Config) -> Result<()> {
             println!("{}", checksum);
             Ok(())
         }
-        Err(e) => Err(Error::HabitatCore(e)),
+        Err(e) => Err(Error::RioosAranCore(e)),
     }
 }
 

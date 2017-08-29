@@ -7,6 +7,7 @@ extern crate bodyparser;
 extern crate rioos_builder_protocol as protocol;
 #[macro_use]
 extern crate rioos_core as rio_core;
+extern crate rioos_common as common;
 extern crate rioos_net as rio_net;
 extern crate rioos_builder_asmsrv as deploy;
 extern crate rioos_builder_session as session;
@@ -33,6 +34,7 @@ extern crate unicase;
 pub mod config;
 pub mod error;
 pub mod http;
+pub mod command;
 pub mod server;
 
 pub use self::config::Config;

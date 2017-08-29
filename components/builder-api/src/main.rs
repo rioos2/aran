@@ -1,36 +1,55 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//! Nadhi mulam:_This where everything starts: main starting point of the Rio/OS Aran server.
+//! ~~~~ This where everything starts: main starting point of the Rio/OS Aran server.
 
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
+#[macro_use]
+extern crate lazy_static;
 extern crate rioos_aran_api as api;
 extern crate rioos_core as rio_core;
+extern crate rioos_common as common;
+
 #[macro_use]
 extern crate log;
 
-use std::process;
 use std::str::FromStr;
+use std::path::PathBuf;
 
 use rio_core::config::ConfigFile;
-use api::{Config, Error, Result};
+use rio_core::env as renv;
+use rio_core::crypto::{init, default_cache_key_path};
+use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
+
+use api::{command, Config, Error, Result};
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 const CFG_DEFAULT_PATH: &'static str = "/var/lib/rioos/api.toml";
 
+lazy_static! {
+    /// The default filesystem root path to base all commands from. This is lazily generated on
+    /// first call and reflects on the presence and value of the environment variable keyed as
+    /// `FS_ROOT_ENVVAR`.
+    static ref FS_ROOT: PathBuf = {
+        use rio_core::fs::FS_ROOT_ENVVAR;
+        if let Some(root) = renv::var(FS_ROOT_ENVVAR).ok() {
+            PathBuf::from(root)
+        } else {
+            PathBuf::from("/")
+        }
+    };
+}
+
 fn main() {
     env_logger::init().unwrap();
+    let mut ui = ui();
     let matches = app().get_matches();
-    debug!("CLI matches: {:?}", matches);
-    let config = match config_from_args(&matches) {
-        Ok(result) => result,
-        Err(e) => return exit_with(e, 1),
-    };
-    match start(config) {
-        Ok(_) => std::process::exit(0),
-        Err(e) => exit_with(e, 1),
+
+    if let Err(e) = exec_subcommand_if_called(&mut ui, &matches) {
+        ui.fatal(e).unwrap();
+        std::process::exit(1)
     }
 }
 
@@ -46,12 +65,42 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
                 "Filepath to configuration file. [default: /var/lib/rioos/api.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 9636]")
         )
+        (@subcommand setup =>
+            (about: "Setup the api server")
+        )
+
     )
 }
 
-fn config_from_args(matches: &clap::ArgMatches) -> Result<Config> {
-    let cmd = matches.subcommand_name().unwrap();
-    let args = matches.subcommand_matches(cmd).unwrap();
+fn exec_subcommand_if_called(ui: &mut UI, app_matches: &clap::ArgMatches) -> Result<()> {
+    debug!("CLI matches: {:?}", app_matches);
+
+    match app_matches.subcommand() {
+        ("start", Some(m)) => sub_start_server(ui, m)?,
+        ("setup", Some(_)) => sub_cli_setup(ui)?,
+        _ => unreachable!(),
+    };
+    Ok(())
+}
+
+
+fn sub_cli_setup(ui: &mut UI) -> Result<()> {
+    init();
+
+    command::cli::setup::start(ui, &default_cache_key_path(Some(&*FS_ROOT)))
+}
+
+fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
+    ui.heading("Aran")?;
+
+    let config = match config_from_args(&matches) {
+        Ok(result) => result,
+        Err(e) => return Err(e),
+    };
+    start(config)
+}
+
+fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
     let mut config = match args.value_of("config") {
         Some(cfg_path) => try!(Config::from_file(cfg_path)),
         None => Config::from_file(CFG_DEFAULT_PATH).unwrap_or(Config::default()),
@@ -65,16 +114,30 @@ fn config_from_args(matches: &clap::ArgMatches) -> Result<Config> {
     Ok(config)
 }
 
-fn exit_with(err: Error, code: i32) {
-    println!("{}", err);
-    process::exit(code)
-}
-
-/// Starts the builder-api server.
-///
+/// Starts the aran-api server.
 /// # Failures
-///
 /// * Fails if the postgresql dbr fails to be found - cannot bind to the port, etc.
 fn start(config: Config) -> Result<()> {
     api::server::run(config)
+}
+
+
+fn ui() -> UI {
+    let isatty = if renv::var(NONINTERACTIVE_ENVVAR)
+        .map(|val| val == "true")
+        .unwrap_or(false)
+    {
+        Some(false)
+    } else {
+        None
+    };
+    let coloring = if renv::var(NOCOLORING_ENVVAR)
+        .map(|val| val == "true")
+        .unwrap_or(false)
+    {
+        Coloring::Never
+    } else {
+        Coloring::Auto
+    };
+    UI::default_with(coloring, isatty)
 }

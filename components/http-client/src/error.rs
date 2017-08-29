@@ -24,7 +24,7 @@ use url;
 
 #[derive(Debug)]
 pub enum Error {
-    HabitatCore(rio_core::Error),
+    RioosAranCore(rio_core::Error),
     HyperError(hyper::error::Error),
     /// Occurs when an improper http or https proxy value is given.
     InvalidProxyValue(String),
@@ -40,7 +40,7 @@ pub type Result<T> = result::Result<T, Error>;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
-            Error::HabitatCore(ref e) => format!("{}", e),
+            Error::RioosAranCore(ref e) => format!("{}", e),
             Error::HyperError(ref err) => format!("{}", err),
             Error::IO(ref e) => format!("{}", e),
             Error::InvalidProxyValue(ref e) => format!("Invalid proxy value: {:?}", e),
@@ -55,7 +55,7 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::HabitatCore(ref err) => err.description(),
+            Error::RioosAranCore(ref err) => err.description(),
             Error::HyperError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::InvalidProxyValue(_) => "Invalid proxy value",
@@ -68,7 +68,7 @@ impl error::Error for Error {
 
 impl From<rio_core::Error> for Error {
     fn from(err: rio_core::Error) -> Error {
-        Error::HabitatCore(err)
+        Error::RioosAranCore(err)
     }
 }
 

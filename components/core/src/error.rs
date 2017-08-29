@@ -1,16 +1,7 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2017 RioCorp Inc.
+
+//! A module containing the common errors
+
 
 use std::error;
 use std::io;
@@ -89,6 +80,8 @@ pub enum Error {
     InvalidPlatform(String),
     /// Occurs when a service group string cannot be successfully parsed.
     InvalidServiceGroup(String),
+    /// Occurs when an origin is in an invalid format
+    InvalidOrigin(String),
     /// Occurs when making lower level IO calls.
     IO(io::Error),
     /// Occurs when a BIND or BIND_OPTIONAL MetaFile is read and contains a bad entry.
@@ -261,6 +254,14 @@ impl fmt::Display for Error {
                     e
                 )
             }
+            Error::InvalidOrigin(ref origin) => {
+                format!(
+                    "Invalid origin: {}. Origins must begin with a lowercase letter or number. \
+                        Allowed characters include lowercase letters, numbers, -, and _. \
+                        No more than 255 characters.",
+                    origin
+                )
+            }
             Error::IO(ref err) => format!("{}", err),
             Error::MetaFileBadBind => format!("Bad value parsed from BIND or BIND_OPTIONAL"),
             Error::MetaFileMalformed(ref e) => format!("MetaFile: {:?}, didn't contain a valid UTF-8 string", e),
@@ -343,6 +344,10 @@ impl error::Error for Error {
             Error::InvalidArchitecture(_) => "Unsupported target architecture supplied.",
             Error::InvalidPlatform(_) => "Unsupported target platform supplied.",
             Error::InvalidServiceGroup(_) => "Service group strings must be in service.group format (example: redis.production)",
+            Error::InvalidOrigin(_) => {
+                "Origins must begin with a lowercase letter or number.  \
+                    Allowed characters include a - z, 0 - 9, _, and -. No more than 255 characters."
+            }
             Error::IO(ref err) => err.description(),
             Error::MetaFileBadBind => "Bad value parsed from BIND or BIND_OPTIONAL MetaFile",
             Error::MetaFileMalformed(_) => "MetaFile didn't contain a valid UTF-8 string",
