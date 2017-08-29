@@ -157,7 +157,6 @@ impl Migratable for AuthProcedures {
                         account_id bigint REFERENCES accounts(id),
                         token text,
                         provider text,
-                        extern_id bigint,
                         is_admin bool DEFAULT false,
                         is_service_access bool DEFAULT false,
                         created_at timestamptz DEFAULT now(),
@@ -192,7 +191,7 @@ impl Migratable for AuthProcedures {
             r#"CREATE OR REPLACE FUNCTION get_account_session_v1 (
                     account_email text,
                     account_token text
-                ) RETURNS TABLE(id bigint, email text, name text, token text, is_admin bool, is_service_access bool) AS $$
+                ) RETURNS TABLE(id bigint, email text, name text, token text, api_key text, is_admin bool, is_service_access bool) AS $$
                      DECLARE
                         this_account accounts%rowtype;
                      BEGIN
@@ -204,7 +203,7 @@ impl Migratable for AuthProcedures {
                                     SELECT accounts.id, accounts.email, accounts.api_key,
                                            accounts.name, account_sessions.token,
                                            account_sessions.is_admin,
-                                           account_sessions.is_service
+                                           account_sessions.is_service_access
                                       FROM accounts
                                         INNER JOIN account_sessions ON account_sessions.account_id = accounts.id
                                       WHERE accounts.id = this_account.id

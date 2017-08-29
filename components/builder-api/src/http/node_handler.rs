@@ -3,10 +3,9 @@ use rio_net::http::controller::*;
 use node::node_ds::NodeDS;
 use iron::prelude::*;
 use iron::status;
-use persistent;
 use protocol::net::{self, ErrCode};
 use router::Router;
-use db::data_store::DataStoreBroker;
+use db::data_store::Broker;
 use protocol::nodesrv::{Node, Spec, Status, Capacity, Range, FixedRange, InfiniteRange, Conditions, Taints, Addresses, NodeAddress, NodeInfo};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -268,9 +267,8 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    let conn = Broker::connect().unwrap();
+
     match NodeDS::node_create(&conn, &node_create) {
         Ok(node) => Ok(render_json(status::Ok, &node)),
         Err(err) => Ok(render_net_error(
@@ -281,7 +279,7 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn node_list(req: &mut Request) -> IronResult<Response> {
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
     match NodeDS::node_list(&conn) {
         Ok(node_list) => Ok(render_json(status::Ok, &node_list)),
         Err(err) => Ok(render_net_error(
@@ -438,10 +436,7 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    let conn = Broker::connect().unwrap();
 
     match NodeDS::node_status_update(&conn, &node_create) {
         Ok(node) => Ok(render_json(status::Ok, &node)),

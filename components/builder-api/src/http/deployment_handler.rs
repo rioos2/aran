@@ -9,12 +9,10 @@ use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use persistent;
-
 use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, ComponentCollection, Properties, OpsSettings};
 use protocol::net::{self, ErrCode};
 use router::Router;
-use db::data_store::DataStoreBroker;
+use db::data_store::Broker;
 
 define_event_log!();
 
@@ -143,9 +141,8 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    let conn = Broker::connect().unwrap();
+
     match DeploymentDS::assembly_create(&conn, &assembly_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Ok(render_net_error(
@@ -165,7 +162,7 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
         }
     };
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
 
     let mut asm_get = AssemblyGet::new();
     asm_get.set_id(id.to_string());
@@ -179,7 +176,7 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn assembly_list(req: &mut Request) -> IronResult<Response> {
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_list(&conn) {
         Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => Ok(render_net_error(
@@ -224,10 +221,7 @@ pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    let conn = Broker::connect().unwrap();
 
     match DeploymentDS::assembly_status_update(&conn, &assembly) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
@@ -299,10 +293,7 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    let conn = Broker::connect().unwrap();
 
     match DeploymentDS::assembly_factory_create(&conn, &assembly_factory_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
@@ -323,7 +314,7 @@ pub fn assembly_factory_show(req: &mut Request) -> IronResult<Response> {
         }
     };
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
 
     let mut asm_fac_get = AssemblyFactoryGet::new();
     asm_fac_get.set_id(id.to_string());
@@ -371,10 +362,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response>
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    let conn = Broker::connect().unwrap();
 
     match DeploymentDS::assembly_factory_status_update(&conn, &assembly_factory) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
@@ -387,7 +375,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response>
 
 
 pub fn assembly_factory_list(req: &mut Request) -> IronResult<Response> {
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_list(&conn) {
         Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => Ok(render_net_error(
@@ -397,7 +385,6 @@ pub fn assembly_factory_list(req: &mut Request) -> IronResult<Response> {
 }
 
 /// Endpoint for determining availability of builder-api components.
-///
 /// Returns a status 200 on success. Any non-200 responses are an outage or a partial outage.
 pub fn status(_req: &mut Request) -> IronResult<Response> {
     Ok(Response::with(status::Ok))

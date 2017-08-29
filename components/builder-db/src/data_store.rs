@@ -4,7 +4,6 @@ use async::AsyncServer;
 use error::{Result, Error};
 use pool::Pool;
 use config::DataStore;
-use iron::typemap::Key;
 use protocol::SHARD_COUNT;
 use migration::{Migratable, Migrator};
 use auth_storedproc::*;
@@ -14,10 +13,14 @@ use scale_storedproc::*;
 use node_storedproc::*;
 
 
-pub struct DataStoreBroker;
+/// A messaging Broker for proxying messages from clients to one or more `RouteSrv` and vice versa.
+pub struct Broker {}
 
-impl Key for DataStoreBroker {
-    type Value = DataStoreConn;
+impl Broker {
+    pub fn connect() -> Result<DataStoreConn> {
+        let conn = DataStoreConn::new()?;
+        Ok(conn)
+    }
 }
 
 #[derive(Clone)]

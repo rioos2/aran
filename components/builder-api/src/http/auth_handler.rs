@@ -6,15 +6,14 @@ use bodyparser;
 use rio_core::event::*;
 use rio_net::http::controller::*;
 use session::session_ds::SessionDS;
-
 use iron::prelude::*;
 use iron::status;
-use iron::typemap;
 use persistent;
+use iron::typemap;
 use protocol::net::{self, ErrCode};
 use protocol::sessionsrv::*;
 
-use db::data_store::DataStoreBroker;
+use db::data_store::Broker;
 
 
 define_event_log!();
@@ -80,7 +79,7 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
     }
 
     let authcli = req.get::<persistent::Read<PasswordAuthCli>>().unwrap();
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
 
     //make sure authenticate returns an account.
     match authcli.authenticate(&conn, &account_get) {
@@ -92,13 +91,7 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
             session_data.set_token(authcli.token().unwrap());
 
             let session = try!(session_create(&conn, &session_data));
-            // log_event!(
-            //     req,
-            //     Event::PasswordAuthenticate {
-            //         user: session.get_name().to_string(),
-            //         account: session.get_id().to_string(),
-            //     }
-            // );
+
 
             Ok(render_json(status::Ok, &session))
         }
@@ -152,7 +145,7 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
 
     match SessionDS::account_create(&conn, &account_create) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
@@ -182,8 +175,7 @@ pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
+    let conn = Broker::connect().unwrap();
 
     match SessionDS::get_account_by_id(&conn, &account_get_by_id) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
@@ -213,8 +205,7 @@ pub fn account_get(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
+    let conn = Broker::connect().unwrap();
 
     match SessionDS::get_account(&conn, &account_get) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
@@ -251,8 +242,7 @@ pub fn session_get(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
+    let conn = Broker::connect().unwrap();
 
     match SessionDS::get_session(&conn, &session_get) {
         Ok(session) => Ok(render_json(status::Ok, &session)),

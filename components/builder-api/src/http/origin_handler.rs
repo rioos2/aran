@@ -12,12 +12,11 @@ use session::auth_ds::SessionDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use persistent;
 
 use protocol::sessionsrv;
 use router::Router;
 
-use db::data_store::DataStoreBroker;
+use db::data_store::Broker;
 
 define_event_log!();
 
@@ -96,8 +95,7 @@ pub fn account_origin_invitation_accept(req: &mut Request) -> IronResult<Respons
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
+    let conn = Broker::connect().unwrap();
 
     match SessionDS::account_create(&conn, &account_create) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
@@ -127,8 +125,7 @@ pub fn account_origin_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
+    let conn = Broker::connect().unwrap();
 
     match SessionDS::get_account_by_id(&conn, &account_get_by_id) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
@@ -158,8 +155,7 @@ pub fn account_origin_list_request(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
+    let conn = Broker::connect().unwrap();
 
     match SessionDS::account_get(&conn, &account_get) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
@@ -189,8 +185,7 @@ pub fn account_invitation_list(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
+    let conn = Broker::connect().unwrap();
 
     match SessionDS::get_session(&conn, &session_get) {
         Ok(session) => Ok(render_json(status::Ok, &session)),

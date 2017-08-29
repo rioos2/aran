@@ -9,11 +9,10 @@ use scale::scaling_ds::ScalingDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use persistent;
 use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
 use protocol::net::{self, ErrCode};
 use router::Router;
-use db::data_store::DataStoreBroker;
+use db::data_store::Broker;
 
 define_event_log!();
 
@@ -164,9 +163,8 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    let conn = Broker::connect().unwrap();
+
     match ScalingDS::hs_create(&conn, &hs_create) {
         Ok(response) => Ok(render_json(status::Ok, &response)),
         Err(err) => Ok(render_net_error(
@@ -177,7 +175,7 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn hs_list(req: &mut Request) -> IronResult<Response> {
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
     match ScalingDS::hs_list(&conn) {
         Ok(hs_list) => Ok(render_json(status::Ok, &hs_list)),
         Err(err) => Ok(render_net_error(
@@ -210,10 +208,7 @@ pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
         }
     }
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
+    let conn = Broker::connect().unwrap();
 
     match ScalingDS::hs_status_update(&conn, &hs_update) {
         Ok(hs_update) => Ok(render_json(status::Ok, &hs_update)),

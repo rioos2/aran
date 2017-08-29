@@ -24,7 +24,7 @@ use super::headers::*;
 use super::token_target::*;
 
 
-use db::data_store::{DataStoreBroker, DataStoreConn};
+use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
@@ -65,6 +65,21 @@ pub struct PasswordAuthCli;
 
 impl Key for PasswordAuthCli {
     type Value = PasswordAuthClient;
+}
+
+pub struct DataStoreBroker;
+
+impl Key for DataStoreBroker {
+    type Value = DataStoreConn;
+}
+
+
+impl BeforeMiddleware for DataStoreBroker {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        let conn = Broker::connect().unwrap();
+        req.extensions.insert::<DataStoreBroker>(conn);
+        Ok(())
+    }
 }
 
 
