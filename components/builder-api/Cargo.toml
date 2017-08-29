@@ -20,6 +20,7 @@ log = "*"
 mount = "*"
 params = "0.6"
 persistent = "*"
+lazy_static = "*"
 router = "*"
 serde = "1.0.11"
 serde_derive = "*"
@@ -34,6 +35,9 @@ features = [ "suggestions", "color", "unstable" ]
 
 [dependencies.rioos_core]
 path = "../core"
+
+[dependencies.rioos_common]
+path = "../common"
 
 [dependencies.rioos_builder_protocol]
 path = "../builder-protocol"

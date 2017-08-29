@@ -19,7 +19,7 @@ pub enum Error {
     BadPort(String),
     Db(db::error::Error),
     CaughtPanic(String, String),
-    HabitatCore(rio_core::Error),
+    RioosAranCore(rio_core::Error),
     InvalidUrl,
     IO(io::Error),
     RolesCreate(postgres::error::Error),
@@ -44,7 +44,7 @@ impl fmt::Display for Error {
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
             Error::Db(ref e) => format!("{}", e),
             Error::CaughtPanic(ref msg, ref source) => format!("Caught a panic: {}. {}", msg, source),
-            Error::HabitatCore(ref e) => format!("{}", e),
+            Error::RioosAranCore(ref e) => format!("{}", e),
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
             Error::RolesCreate(ref e) => format!("Database error creating a role, {}", e),
@@ -69,7 +69,7 @@ impl error::Error for Error {
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
             Error::Db(ref err) => err.description(),
             Error::CaughtPanic(_, _) => "Caught a panic",
-            Error::HabitatCore(ref err) => err.description(),
+            Error::RioosAranCore(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::InvalidUrl => "Bad Url!",
             Error::RolesCreate(ref err) => err.description(),
@@ -89,7 +89,7 @@ impl error::Error for Error {
 
 impl From<rio_core::Error> for Error {
     fn from(err: rio_core::Error) -> Error {
-        Error::HabitatCore(err)
+        Error::RioosAranCore(err)
     }
 }
 

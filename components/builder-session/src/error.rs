@@ -17,7 +17,7 @@ pub enum Error {
     BadPort(String),
     Db(db::error::Error),
     EntityNotFound,
-    HabitatCore(rio_core::Error),
+    RioosAranCore(rio_core::Error),
     HTTP(hyper::status::StatusCode),
     HyperError(hyper::error::Error),
     IO(io::Error),
@@ -41,7 +41,7 @@ impl fmt::Display for Error {
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
             Error::Db(ref e) => format!("{}", e),
             Error::EntityNotFound => format!("No value for key found"),
-            Error::HabitatCore(ref e) => format!("{}", e),
+            Error::RioosAranCore(ref e) => format!("{}", e),
             Error::HTTP(ref e) => format!("{}", e),
             Error::HyperError(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
@@ -79,7 +79,7 @@ impl error::Error for Error {
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
             Error::Db(ref err) => err.description(),
             Error::EntityNotFound => "Entity not found in database.",
-            Error::HabitatCore(ref err) => err.description(),
+            Error::RioosAranCore(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::HyperError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
@@ -99,7 +99,7 @@ impl error::Error for Error {
 
 impl From<rio_core::Error> for Error {
     fn from(err: rio_core::Error) -> Error {
-        Error::HabitatCore(err)
+        Error::RioosAranCore(err)
     }
 }
 

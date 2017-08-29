@@ -16,17 +16,23 @@ development environment.
 **Note:** The Makefile targets are documented. Run `make help` to show the
 output (this target requires `perl`).
 
-**Optional:**
+**Stable Rust:**
 
 To [install stable Rust](https://www.rust-lang.org/install.html), run: `curl -sSf
-https://sh.rustup.rs | sh`. Additionally, the project maintainers use
+https://sh.rustup.rs | sh`.
+
+**Rustfmt**
+
+Additionally, the project maintainers use
 [rustfmt](https://github.com/rust-lang-nursery/rustfmt) for code formatting. If
 you are submitting changes, please ensure that your work has been run through
-the latest version of rustfmt. An easy way to install it (assuming you have
+the latest version of rustfmt.
+
+An easy way to install it (assuming you have
 Rust installed as above), is to run `cargo install rustfmt` and adding
 `$HOME/.cargo/bin` to your `PATH`.
 
-## Ubuntu: Latest (16.10/Yakkety)
+## Ubuntu: Latest (16.04/16.10/Yakkety)
 
 This installation method uses as many packages from Ubuntu as possible.
 
@@ -40,7 +46,6 @@ cd aran
 Then, run the system preparation scripts and try to compile the project:
 
 ```
-cp components/aran/install.sh /tmp/
 sh support/linux/install_dev_0_ubuntu_latest.sh
 sh support/linux/install_dev_9_linux.sh
 . ~/.profile

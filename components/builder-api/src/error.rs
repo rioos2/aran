@@ -7,14 +7,17 @@ use std::fmt;
 use std::io;
 use std::result;
 
+use common;
 use rio_core;
 use hyper;
+
 
 
 #[derive(Debug)]
 pub enum Error {
     BadPort(String),
-    HabitatCore(rio_core::Error),
+    RioosAranCore(rio_core::Error),
+    RioosAranCommon(common::Error),
     HyperError(hyper::error::Error),
     HTTP(hyper::status::StatusCode),
     IO(io::Error),
@@ -26,7 +29,8 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
-            Error::HabitatCore(ref e) => format!("{}", e),
+            Error::RioosAranCore(ref e) => format!("{}", e),
+            Error::RioosAranCommon(ref e) => format!("{}", e),
             Error::HyperError(ref e) => format!("{}", e),
             Error::HTTP(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
@@ -39,7 +43,8 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
-            Error::HabitatCore(ref err) => err.description(),
+            Error::RioosAranCore(ref err) => err.description(),
+            Error::RioosAranCommon(ref err) => err.description(),
             Error::HyperError(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::IO(ref err) => err.description(),
@@ -47,9 +52,15 @@ impl error::Error for Error {
     }
 }
 
+impl From<common::Error> for Error {
+    fn from(err: common::Error) -> Error {
+        Error::RioosAranCommon(err)
+    }
+}
+
 impl From<rio_core::Error> for Error {
     fn from(err: rio_core::Error) -> Error {
-        Error::HabitatCore(err)
+        Error::RioosAranCore(err)
     }
 }
 
