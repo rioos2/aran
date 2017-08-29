@@ -7,10 +7,9 @@ use rio_net::http::controller::*;
 use authorize::authorize_ds::AuthorizeDS;
 use iron::prelude::*;
 use iron::status;
-use persistent;
 use protocol::net::{self, ErrCode};
 use router::Router;
-use db::data_store::DataStoreBroker;
+use db::data_store::Broker;
 use protocol::authsrv::{Roles, Permissions, PermissionsGet, RolesGet};
 
 
@@ -45,10 +44,8 @@ pub fn roles_create(req: &mut Request) -> IronResult<Response> {
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
+    let conn = Broker::connect().unwrap();
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
     match AuthorizeDS::roles_create(&conn, &roles) {
         Ok(roles_create) => Ok(render_json(status::Ok, &roles_create)),
         Err(err) => Ok(render_net_error(
@@ -67,8 +64,7 @@ pub fn roles_show(req: &mut Request) -> IronResult<Response> {
             Err(_) => return Ok(Response::with(status::BadRequest)),
         }
     };
-
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
 
     let mut roles_get = RolesGet::new();
     roles_get.set_id(id.to_string());
@@ -82,7 +78,8 @@ pub fn roles_show(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn roles_list(req: &mut Request) -> IronResult<Response> {
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
+
     match AuthorizeDS::roles_list(&conn) {
         Ok(roles_list) => Ok(render_json(status::Ok, &roles_list)),
         Err(err) => Ok(render_net_error(
@@ -110,10 +107,8 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
+    let conn = Broker::connect().unwrap();
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
-    //This is needed as you'll need the email/token if any
-    // let session = req.extensions.get::<Authenticated>().unwrap().clone();
     match AuthorizeDS::permissions_create(&conn, &permissions) {
         Ok(permissions_create) => Ok(render_json(status::Ok, &permissions_create)),
         Err(err) => Ok(render_net_error(
@@ -124,7 +119,7 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn permissions_list(req: &mut Request) -> IronResult<Response> {
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
     match AuthorizeDS::permissions_list(&conn) {
         Ok(permissions_list) => Ok(render_json(status::Ok, &permissions_list)),
         Err(err) => Ok(render_net_error(
@@ -142,7 +137,7 @@ pub fn get_rolebased_permissions(req: &mut Request) -> IronResult<Response> {
         }
     };
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
 
     let mut perm_get = PermissionsGet::new();
     perm_get.set_id(id.to_string());
@@ -164,7 +159,7 @@ pub fn permissions_show(req: &mut Request) -> IronResult<Response> {
         }
     };
 
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
 
     let mut perms_get = PermissionsGet::new();
     perms_get.set_id(id.to_string());
@@ -183,12 +178,9 @@ pub fn get_specfic_permission_based_role(req: &mut Request) -> IronResult<Respon
         let perm_id = params.find("id").unwrap().to_owned();
         let role_id = params.find("rid").unwrap().to_owned();
 
-        // We're only allowing projects to be created for the core
-        // origin initially. Thus, if we try to update a project for
-        // any other origin, we can safely short-circuit processing.
         (perm_id, role_id)
     };
-    let conn = req.get::<persistent::Read<DataStoreBroker>>().unwrap();
+    let conn = Broker::connect().unwrap();
 
     let mut perms_get = PermissionsGet::new();
     perms_get.set_id(perm_id);

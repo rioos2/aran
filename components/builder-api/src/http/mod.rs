@@ -106,6 +106,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
          }),
     ));
 
+    chain.link_before(DataStoreBroker);
 
     chain.link_after(Cors);
     Ok(chain)

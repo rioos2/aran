@@ -154,6 +154,10 @@ impl SessionDS {
             "SELECT * FROM get_account_session_v1($1, $2)",
             &[&session_get.get_email(), &session_get.get_token()],
         ).map_err(Error::SessionGet)?;
+        println!(
+            "---------------rowsssssssssss--------------------------{:?}",
+            rows
+        );
         if rows.len() != 0 {
             let row = rows.get(0);
             let mut session = sessionsrv::Session::new();
