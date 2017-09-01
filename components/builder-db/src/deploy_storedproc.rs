@@ -34,6 +34,8 @@ impl Migratable for DeployProcedures {
              description text,
              parent_id text,
              tags text[],
+             object_meta text,
+             type_meta text,
              node text,
              ip text,
              urls text,
@@ -55,6 +57,8 @@ impl Migratable for DeployProcedures {
                 description text,
                 parent_id text,
                 tags text[],
+                object_meta text,
+                type_meta text,
                 node text,
                 ip text,
                 urls text,
@@ -62,8 +66,8 @@ impl Migratable for DeployProcedures {
                 status text
                         ) RETURNS SETOF assembly AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,node,ip,urls,component_collection,status)
-                                        VALUES (name, uri, description,parent_id, tags,node,ip,urls,component_collection,status)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,object_meta,type_meta,node,ip,urls,component_collection,status)
+                                        VALUES (name, uri, description,parent_id, tags,object_meta, type_meta,node,ip,urls,component_collection,status)
                                         RETURNING *;
                                     RETURN;
                                 END

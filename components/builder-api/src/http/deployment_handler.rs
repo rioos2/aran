@@ -23,6 +23,8 @@ struct AssemblyCreateReq {
     tags: Vec<String>,
     parent_id: String,
     description: String,
+    object_meta: ObjectMetaReq,
+    type_meta: TypeMetaReq,
     node: String,
     status: StatusReq,
     ip: String,
@@ -175,6 +177,38 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                     condition_collection.push(condition);
                 }
                 status.set_conditions(condition_collection);
+
+                let mut object_meta = ObjectMeta::new();
+                object_meta.set_name(body.object_meta.name);
+                object_meta.set_namespace(body.object_meta.namespace);
+                object_meta.set_uid(body.object_meta.uid);
+                object_meta.set_created_at(body.object_meta.created_at);
+                object_meta.set_cluster_name(body.object_meta.cluster_name);
+                let mut labels = Labels::new();
+                    labels.set_group(body.object_meta.labels.group);
+                    labels.set_key2(body.object_meta.labels.key2);
+                    object_meta.set_labels(labels);
+                let mut annotations = Annotations::new();
+                        annotations.set_key1(body.object_meta.annotations.key1);
+                        annotations.set_key2(body.object_meta.annotations.key2);
+                    object_meta.set_annotations(annotations);
+                let mut owner_references_collection = Vec::new();
+                for data in body.object_meta.owner_references {
+                    let mut owner_references = OwnerReferences::new();
+                    owner_references.set_kind(data.kind);
+                    owner_references.set_api_version(data.api_version);
+                    owner_references.set_name(data.name);
+                    owner_references.set_uid(data.uid);
+                    owner_references.set_block_owner_deletion(data.block_owner_deletion);
+                    owner_references_collection.push(owner_references);
+                }
+                object_meta.set_owner_references(owner_references_collection);
+                assembly_create.set_object_meta(object_meta);
+                let mut type_meta = TypeMeta::new();
+                type_meta.set_kind(body.type_meta.kind);
+                type_meta.set_api_version(body.type_meta.api_version);
+                assembly_create.set_type_meta(type_meta);
+
                 assembly_create.set_status(status);
                 assembly_create.set_ip(body.ip);
                 assembly_create.set_urls(body.urls);

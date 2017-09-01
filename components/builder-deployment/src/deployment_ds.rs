@@ -19,15 +19,19 @@ impl DeploymentDS {
         debug!("◖☩ START: assemby_create ");
 
         let status_str = serde_json::to_string(assembly.get_status()).unwrap();
+        let type_meta = serde_json::to_string(assembly.get_type_meta()).unwrap();
+        let object_meta = serde_json::to_string(assembly.get_object_meta()).unwrap();
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
                 &(assembly.get_description() as String),
                 &(assembly.get_parent_id() as String),
                 &(assembly.get_tags() as Vec<String>),
+                &(object_meta as String),
+                &(type_meta as String),
                 &(assembly.get_node() as String),
                 &(assembly.get_ip() as String),
                 &(assembly.get_urls() as String),
@@ -219,6 +223,8 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let uri: String = row.get("uri");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
+    let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
     let parent_id: String = row.get("parent_id");
     let component_collection: String = row.get("component_collection");
     let status: String = row.get("status");
@@ -231,6 +237,10 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_urls(urls as String);
     assembly.set_uri(uri as String);
     assembly.set_tags(tags as Vec<String>);
+    let object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    assembly.set_object_meta(object_meta_obj);
+    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
+    assembly.set_type_meta(type_meta_obj);
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as String);
     assembly.set_component_collection(component_collection as String);

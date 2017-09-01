@@ -34,6 +34,8 @@ pub struct Assembly {
     description: String,
     parent_id: String,
     tags: Vec<String>,
+    type_meta: TypeMeta,
+    object_meta: ObjectMeta,
     component_collection: String,
     node: String,
     ip: String,
@@ -101,6 +103,21 @@ impl Assembly {
 
     pub fn get_tags(&self) -> ::std::vec::Vec<String> {
         self.tags.clone()
+    }
+    pub fn set_type_meta(&mut self, v: TypeMeta) {
+        self.type_meta = v;
+    }
+
+    pub fn get_type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+
+    pub fn set_object_meta(&mut self, v: ObjectMeta) {
+        self.object_meta = v;
+    }
+
+    pub fn get_object_meta(&self) -> &ObjectMeta {
+        &self.object_meta
     }
 
     pub fn set_component_collection(&mut self, v: ::std::string::String) {
