@@ -1,16 +1,6 @@
 // Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -23,14 +13,13 @@ use sodiumoxide::crypto::sign::ed25519::PublicKey as SigPublicKey;
 use sodiumoxide::randombytes::randombytes;
 
 use error::{Error, Result};
-use super::{get_key_revisions, mk_key_filename, mk_revision_string, parse_name_with_rev, read_key_bytes, write_keypair_files, KeyPair, KeyType, PairType, TmpKeyfile};
+use super::{get_key_revisions, mk_key_filename, parse_name_with_rev, read_key_bytes, write_keypair_files, KeyPair, KeyType, PairType, TmpKeyfile};
 use super::super::{PUBLIC_KEY_SUFFIX, PUBLIC_SIG_KEY_VERSION, SECRET_SIG_KEY_SUFFIX, SECRET_SIG_KEY_VERSION, hash};
 
 pub type SigKeyPair = KeyPair<SigPublicKey, SigSecretKey>;
 
 impl SigKeyPair {
     pub fn generate_pair_for_origin<P: AsRef<Path> + ?Sized>(name: &str, cache_key_path: &P) -> Result<Self> {
-        let revision = try!(mk_revision_string());
         let keyname = Self::mk_key_name(name, &revision);
         debug!("new sig key name = {}", &keyname);
         let (public_key, secret_key) = try!(Self::generate_pair_files(&keyname, cache_key_path.as_ref()));

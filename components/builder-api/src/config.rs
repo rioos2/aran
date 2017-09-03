@@ -174,71 +174,29 @@ mod tests {
 
 /*
 
-const (
-	// KubernetesDir is the directory kubernetes owns for storing various configuration files
-	KubernetesDir = "/etc/kubernetes"
+CACertAndKeyBaseName = "ca"
+CACertName           = "ca.crt"
+CAKeyName            = "ca.key"
 
-	ManifestsSubDirName = "manifests"
+APIServerCertAndKeyBaseName = "apiserver"
+APIServerCertName           = "apiserver.crt"
+APIServerKeyName            = "apiserver.key"
 
-	CACertAndKeyBaseName = "ca"
-	CACertName           = "ca.crt"
-	CAKeyName            = "ca.key"
+APIServerKubeletClientCertAndKeyBaseName = "apiserver-kubelet-client"
+APIServerKubeletClientCertName           = "apiserver-kubelet-client.crt"
+APIServerKubeletClientKeyName            = "apiserver-kubelet-client.key"
 
-	APIServerCertAndKeyBaseName = "apiserver"
-	APIServerCertName           = "apiserver.crt"
-	APIServerKeyName            = "apiserver.key"
+ServiceAccountKeyBaseName    = "sa"
+ServiceAccountPublicKeyName  = "sa.pub"
+ServiceAccountPrivateKeyName = "sa.key"
 
-	APIServerKubeletClientCertAndKeyBaseName = "apiserver-kubelet-client"
-	APIServerKubeletClientCertName           = "apiserver-kubelet-client.crt"
-	APIServerKubeletClientKeyName            = "apiserver-kubelet-client.key"
 
-	ServiceAccountKeyBaseName    = "sa"
-	ServiceAccountPublicKeyName  = "sa.pub"
-	ServiceAccountPrivateKeyName = "sa.key"
+fn generate_server_cert() -> Result<X509> {
+    let (ca_cert, ca_key) = X509Generator::new().generate().unwrap();
 
-	FrontProxyCACertAndKeyBaseName = "front-proxy-ca"
-	FrontProxyCACertName           = "front-proxy-ca.crt"
-	FrontProxyCAKeyName            = "front-proxy-ca.key"
+    let (server_cert, server_key) = X509Generator::new().generate().unwrap();
+    let request = server_cert.generate_signing_request().unwrap();
+    let signed_server_cert = ca_cert.sign(&request, &ca_key).unwrap();
+}
 
-	FrontProxyClientCertAndKeyBaseName = "front-proxy-client"
-	FrontProxyClientCertName           = "front-proxy-client.crt"
-	FrontProxyClientKeyName            = "front-proxy-client.key"
-
-	AdminKubeConfigFileName             = "admin.conf"
-	KubeletKubeConfigFileName           = "kubelet.conf"
-	ControllerManagerKubeConfigFileName = "controller-manager.conf"
-	SchedulerKubeConfigFileName         = "scheduler.conf"
-
-	// Some well-known users and groups in the core Kubernetes authorization system
-
-	ControllerManagerUser   = "system:kube-controller-manager"
-	SchedulerUser           = "system:kube-scheduler"
-	MastersGroup            = "system:masters"
-	NodesGroup              = "system:nodes"
-	NodesClusterRoleBinding = "system:node"
-
-	// Constants for what we name our ServiceAccounts with limited access to the cluster in case of RBAC
-	KubeDNSServiceAccountName   = "kube-dns"
-	KubeProxyServiceAccountName = "kube-proxy"
-
-	// APICallRetryInterval defines how long kubeadm should wait before retrying a failed API operation
-	APICallRetryInterval = 500 * time.Millisecond
-	// DiscoveryRetryInterval specifies how long kubeadm should wait before retrying to connect to the master when doing discovery
-	DiscoveryRetryInterval = 5 * time.Second
-
-	// Minimum amount of nodes the Service subnet should allow.
-	// We need at least ten, because the DNS service is always at the tenth cluster clusterIP
-	MinimumAddressesInServiceSubnet = 10
-
-	// DefaultTokenDuration specifies the default amount of time that a bootstrap token will be valid
-	// Default behaviour is "never expire" == 0
-	DefaultTokenDuration = 0
-
-	// LabelNodeRoleMaster specifies that a node is a master
-	// It's copied over to kubeadm until it's merged in core: https://github.com/kubernetes/kubernetes/pull/39112
-	LabelNodeRoleMaster = "node-role.kubernetes.io/master"
-
-	// MinExternalEtcdVersion indicates minimum external etcd version which kubeadm supports
-	MinExternalEtcdVersion = "3.0.14"
-)
 */

@@ -1,16 +1,6 @@
 // Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+
 
 use std::collections::HashSet;
 use std::fs;
@@ -38,14 +28,10 @@ lazy_static! {
     static ref ORIGIN_NAME_RE: Regex = Regex::new(r"\A[a-z0-9][a-z0-9_-]*\z").unwrap();
 }
 
-pub mod box_key_pair;
-pub mod sym_key;
 pub mod sig_key_pair;
 
 enum KeyType {
     Sig,
-    Box,
-    Sym,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -199,6 +185,13 @@ fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<Stri
         let thiskey = format!("{}-{}", name, rev);
 
         let do_insert = match pair_type {
+            Some(&PairType::CA) => {
+                if suffix == SECRET_SIG_KEY_SUFFIX || suffix == SECRET_BOX_KEY_SUFFIX || suffix == SECRET_SYM_KEY_SUFFIX {
+                    true
+                } else {
+                    false
+                }
+            }
             Some(&PairType::Secret) => {
                 if suffix == SECRET_SIG_KEY_SUFFIX || suffix == SECRET_BOX_KEY_SUFFIX || suffix == SECRET_SYM_KEY_SUFFIX {
                     true
@@ -224,7 +217,7 @@ fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<Stri
 
 /// Take a key name (ex "habitat"), and find all revisions of that
 /// keyname in the default_cache_key_path().
-fn get_key_revisions<P>(keyname: &str, cache_key_path: P, pair_type: Option<&PairType>) -> Result<Vec<String>>
+fn <P>(keyname: &str, cache_key_path: P, pair_type: Option<&PairType>) -> Result<Vec<String>>
 where
     P: AsRef<Path>,
 {
@@ -294,19 +287,6 @@ where
         keyname.as_ref(),
         suffix.as_ref()
     ))
-}
-
-/// generates a revision string in the form:
-/// `{year}{month}{day}{hour24}{minute}{second}`
-/// Timestamps are in UTC time.
-fn mk_revision_string() -> Result<String> {
-    let now = time::now_utc();
-    // https://github.com/rust-lang-deprecated/time/blob/master/src/display.rs
-    // http://man7.org/linux/man-pages/man3/strftime.3.html
-    match now.strftime("%Y%m%d%H%M%S") {
-        Ok(result) => Ok(result.to_string()),
-        Err(_) => return Err(Error::CryptoError("Can't parse system time".to_string())),
-    }
 }
 
 pub fn parse_name_with_rev<T>(name_with_rev: T) -> Result<(String, String)>
@@ -558,112 +538,6 @@ mod test {
             .unwrap();
 
         super::read_key_bytes(keyfile.as_path()).unwrap();
-    }
-
-    #[test]
-    fn get_key_revisions_can_return_everything() {
-        let cache = TempDir::new("key_cache").unwrap();
-        let _ = SigKeyPair::generate_pair_for_origin("foo", cache.path());
-        // we need to wait at least 1 second between generating keypairs to ensure uniqueness
-        thread::sleep(time::Duration::from_millis(1000));
-        let _ = SigKeyPair::generate_pair_for_origin("foo", cache.path());
-        let revs = super::get_key_revisions("foo", cache.path(), None).unwrap();
-        assert_eq!(2, revs.len());
-    }
-
-    #[test]
-    fn get_key_revisions_can_return_secret_keys() {
-        let cache = TempDir::new("key_cache").unwrap();
-        let _ = SigKeyPair::generate_pair_for_origin("foo", cache.path());
-        // we need to wait at least 1 second between generating keypairs to ensure uniqueness
-        thread::sleep(time::Duration::from_millis(1000));
-        let _ = SigKeyPair::generate_pair_for_origin("foo", cache.path());
-        let revs = super::get_key_revisions("foo", cache.path(), Some(&PairType::Secret)).unwrap();
-        assert_eq!(2, revs.len());
-    }
-
-    #[test]
-    fn get_key_revisions_can_return_public_keys() {
-        let cache = TempDir::new("key_cache").unwrap();
-        let _ = SigKeyPair::generate_pair_for_origin("foo", cache.path());
-        // we need to wait at least 1 second between generating keypairs to ensure uniqueness
-        thread::sleep(time::Duration::from_millis(1000));
-        let _ = SigKeyPair::generate_pair_for_origin("foo", cache.path());
-        let revs = super::get_key_revisions("foo", cache.path(), Some(&PairType::Public)).unwrap();
-        assert_eq!(2, revs.len());
-    }
-
-    #[test]
-    fn get_user_key_revisions() {
-        let cache = TempDir::new("key_cache").unwrap();
-        for _ in 0..3 {
-            wait_until_ok(|| {
-                BoxKeyPair::generate_pair_for_user("wecoyote", cache.path())
-            });
-        }
-        let _ = BoxKeyPair::generate_pair_for_user("wecoyote-foo", cache.path()).unwrap();
-
-        // we shouldn't see wecoyote-foo as a 4th revision
-        let revisions = super::get_key_revisions("wecoyote", cache.path(), None).unwrap();
-        assert_eq!(3, revisions.len());
-
-        let revisions = super::get_key_revisions("wecoyote-foo", cache.path(), None).unwrap();
-        assert_eq!(1, revisions.len());
-    }
-
-    #[test]
-    fn get_service_key_revisions() {
-        let cache = TempDir::new("key_cache").unwrap();
-
-        for _ in 0..3 {
-            wait_until_ok(|| {
-                BoxKeyPair::generate_pair_for_service("acme", "tnt.default", cache.path())
-            });
-        }
-
-        let _ = BoxKeyPair::generate_pair_for_service("acyou", "tnt.default", cache.path()).unwrap();
-
-        let revisions = super::get_key_revisions("tnt.default@acme", cache.path(), None).unwrap();
-        assert_eq!(3, revisions.len());
-
-        let revisions = super::get_key_revisions("tnt.default@acyou", cache.path(), None).unwrap();
-        assert_eq!(1, revisions.len());
-    }
-
-    #[test]
-    fn get_ring_key_revisions() {
-        let cache = TempDir::new("key_cache").unwrap();
-
-        for _ in 0..3 {
-            wait_until_ok(|| SymKey::generate_pair_for_ring("acme", cache.path()));
-        }
-
-        let _ = SymKey::generate_pair_for_ring("acme-you", cache.path()).unwrap();
-
-        let revisions = super::get_key_revisions("acme", cache.path(), None).unwrap();
-        assert_eq!(3, revisions.len());
-
-        let revisions = super::get_key_revisions("acme-you", cache.path(), None).unwrap();
-        assert_eq!(1, revisions.len());
-    }
-
-    #[test]
-    fn get_origin_key_revisions() {
-        let cache = TempDir::new("key_cache").unwrap();
-
-        for _ in 0..3 {
-            wait_until_ok(|| {
-                SigKeyPair::generate_pair_for_origin("mutants", cache.path())
-            });
-        }
-
-        let _ = SigKeyPair::generate_pair_for_origin("mutants-x", cache.path()).unwrap();
-
-        let revisions = super::get_key_revisions("mutants", cache.path(), None).unwrap();
-        assert_eq!(3, revisions.len());
-
-        let revisions = super::get_key_revisions("mutants-x", cache.path(), None).unwrap();
-        assert_eq!(1, revisions.len());
     }
 
     #[test]
