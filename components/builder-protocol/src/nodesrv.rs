@@ -25,6 +25,8 @@ pub struct Node {
     spec: Spec,
     status: Status,
     created_at: String,
+    object_meta: ObjectMeta,
+    type_meta: TypeMeta,
 }
 
 impl Node {
@@ -57,6 +59,22 @@ impl Node {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
+    pub fn set_type_meta(&mut self, v: TypeMeta) {
+        self.type_meta = v;
+    }
+
+    pub fn get_type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+
+    pub fn set_object_meta(&mut self, v: ObjectMeta) {
+        self.object_meta = v;
+    }
+
+    pub fn get_object_meta(&self) -> &ObjectMeta {
+        &self.object_meta
+    }
+
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -336,6 +354,144 @@ impl NodeInfo {
         self.architecture = v;
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ObjectMeta {
+    name: String,
+    namespace: String,
+    uid: String,
+    created_at: String,
+    cluster_name: String,
+    labels: Labels,
+    annotations: Annotations,
+    owner_references: Vec<OwnerReferences>,
+}
+
+impl ObjectMeta {
+    pub fn new() -> ObjectMeta {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_namespace(&mut self, v: ::std::string::String) {
+        self.namespace = v;
+    }
+    pub fn set_uid(&mut self, v: ::std::string::String) {
+        self.uid = v;
+    }
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn set_cluster_name(&mut self, v: ::std::string::String) {
+        self.cluster_name = v;
+    }
+    pub fn set_labels(&mut self, v: Labels) {
+        self.labels = v;
+    }
+
+    pub fn set_annotations(&mut self, v: Annotations) {
+        self.annotations = v;
+    }
+
+    pub fn set_owner_references(&mut self, v: Vec<OwnerReferences>) {
+        self.owner_references = v;
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct OwnerReferences {
+    kind: String,
+    api_version: String,
+    name: String,
+    uid: String,
+    block_owner_deletion: bool,
+}
+
+impl OwnerReferences {
+    pub fn new() -> OwnerReferences {
+        ::std::default::Default::default()
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_uid(&mut self, v: ::std::string::String) {
+        self.uid = v;
+    }
+    pub fn set_block_owner_deletion(&mut self, v: bool) {
+        self.block_owner_deletion = v;
+    }
+
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Labels {
+    group: String,
+    key2: String,
+}
+
+impl Labels {
+    pub fn new() -> Labels {
+        ::std::default::Default::default()
+    }
+    pub fn set_group(&mut self, v: ::std::string::String) {
+        self.group = v;
+    }
+    pub fn set_key2(&mut self, v: ::std::string::String) {
+        self.key2 = v;
+    }
+
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Annotations {
+    key1: String,
+    key2: String,
+}
+
+impl Annotations {
+    pub fn new() -> Annotations {
+        ::std::default::Default::default()
+    }
+    pub fn set_key1(&mut self, v: ::std::string::String) {
+        self.key1 = v;
+    }
+    pub fn set_key2(&mut self, v: ::std::string::String) {
+        self.key2 = v;
+    }
+
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct TypeMeta {
+    kind: String,
+    api_version: String,
+}
+
+impl TypeMeta {
+    pub fn new() -> TypeMeta {
+        ::std::default::Default::default()
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
+    }
+
+}
+
+
+
+
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]

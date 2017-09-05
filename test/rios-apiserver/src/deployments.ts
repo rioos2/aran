@@ -49,11 +49,12 @@ describe('Assembly_factory API', function() {
   });*/
 });
 
-  /*describe('Assembly API', function() {
+  describe('Assembly API', function() {
    it('returns the created assembly', function(done) {
       request.post('/assemblys')
         .set('Authorization', globalAny.bobo_bearer)
-        .send({"name": "ubuntu","uri":"/v1/assemblys","description":"ubuntuinstallation","tags": ["ubuntu"],"parent_id":globalAny.asm_fac_id,
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .send({"name": "ubuntu","uri":"/v1/assemblys","description":"ubuntuinstallation","tags": ["ubuntu"]",type_meta":{"kind":"Assemblyfactory","api_version":"v1"},"object_meta":{"name":"xyz","namespace":"","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"},"owner_references":[{"kind":"Node","api_version":"v1","name":"ddd","uid":"","block_owner_deletion":true}]},"type_meta":{"kind":"Assemblyfactory","api_version":"v1"},"object_meta":{"name":"xyz","namespace":"","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"},"owner_references":[{"kind":"Node","api_version":"v1","name":"ddd","uid":"","block_owner_deletion":true}]}"parent_id":globalAny.asm_fac_id,
          "component_collection": " ","urls": " ", "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":" ","conditionType":" "}]},"node":"","ip":"" })
         .expect(200)
         .end(function(err, res) {
@@ -63,7 +64,7 @@ describe('Assembly_factory API', function() {
           done(err);
         });
     });
-    it('returns the assembly by id', function(done) {
+  /*  it('returns the assembly by id', function(done) {
       request.get('/assemblys/'+ globalAny.asm.id)
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
@@ -91,6 +92,6 @@ describe('Assembly_factory API', function() {
            expect(res.body.results.length).to.equal(1);
           done(err);
         });
-    });
-  });*/
+    });*/
+  });
 });

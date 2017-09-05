@@ -9,7 +9,7 @@ use scale::scaling_ds::ScalingDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
+use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status,ObjectMeta,Labels,Annotations,OwnerReferences, TypeMeta};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
@@ -27,6 +27,8 @@ struct HsCreateReq {
     metadata: Vec<String>,
     spec: SpecReq,
     status: StatusReq,
+    object_meta: ObjectMetaReq,
+    type_meta: TypeMetaReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -79,6 +81,46 @@ struct StatusReq {
 struct HsStatusReq {
     status: StatusReq,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct TypeMetaReq {
+    kind: String,
+    api_version: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct ObjectMetaReq {
+    name: String,
+    namespace: String,
+    uid: String,
+    created_at: String,
+    cluster_name: String,
+    labels: LabelsReq,
+    annotations: AnnotationsReq,
+    owner_references: Vec<OwnerReferencesReq>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+ struct LabelsReq {
+     group: String,
+     key2: String,
+ }
+
+ #[derive(Clone, Debug, Serialize, Deserialize)]
+  struct AnnotationsReq {
+      key1: String,
+      key2: String,
+  }
+
+  #[allow(non_snake_case)]
+  #[derive(Clone, Debug, Serialize, Deserialize)]
+  struct OwnerReferencesReq {
+      kind: String,
+      api_version: String,
+      name: String,
+      uid: String,
+      block_owner_deletion: bool,
+  }
 
 pub fn hs_create(req: &mut Request) -> IronResult<Response> {
     let mut hs_create = HorizontalScaling::new();
@@ -159,6 +201,38 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 status.set_current_replicas(body.status.current_replicas);
                 status.set_desired_replicas(body.status.desired_replicas);
                 hs_create.set_status(status);
+
+                let mut object_meta = ObjectMeta::new();
+                object_meta.set_name(body.object_meta.name);
+                object_meta.set_namespace(body.object_meta.namespace);
+                object_meta.set_uid(body.object_meta.uid);
+                object_meta.set_created_at(body.object_meta.created_at);
+                object_meta.set_cluster_name(body.object_meta.cluster_name);
+                let mut labels = Labels::new();
+                    labels.set_group(body.object_meta.labels.group);
+                    labels.set_key2(body.object_meta.labels.key2);
+                    object_meta.set_labels(labels);
+                let mut annotations = Annotations::new();
+                        annotations.set_key1(body.object_meta.annotations.key1);
+                        annotations.set_key2(body.object_meta.annotations.key2);
+                    object_meta.set_annotations(annotations);
+                let mut owner_references_collection = Vec::new();
+                for data in body.object_meta.owner_references {
+                    let mut owner_references = OwnerReferences::new();
+                    owner_references.set_kind(data.kind);
+                    owner_references.set_api_version(data.api_version);
+                    owner_references.set_name(data.name);
+                    owner_references.set_uid(data.uid);
+                    owner_references.set_block_owner_deletion(data.block_owner_deletion);
+                    owner_references_collection.push(owner_references);
+                }
+                object_meta.set_owner_references(owner_references_collection);
+                hs_create.set_object_meta(object_meta);
+                let mut type_meta = TypeMeta::new();
+                type_meta.set_kind(body.type_meta.kind);
+                type_meta.set_api_version(body.type_meta.api_version);
+                hs_create.set_type_meta(type_meta);
+
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

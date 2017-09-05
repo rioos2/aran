@@ -16,9 +16,11 @@ impl ScalingDS {
         let conn = datastore.pool.get_shard(0)?;
         let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
         let status_str = serde_json::to_string(hs.get_status()).unwrap();
+        let object_meta = serde_json::to_string(hs.get_object_meta()).unwrap();
+        let type_meta = serde_json::to_string(hs.get_type_meta()).unwrap();
         debug!("◖☩ START: hs_create ");
         let rows = &conn.query(
-            "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
                 &(hs.get_name() as String),
                 &(hs.get_description() as String),
@@ -29,6 +31,8 @@ impl ScalingDS {
                 &(hs.get_metadata() as Vec<String>),
                 &(spec_str as String),
                 &(status_str as String),
+                &(object_meta as String),
+                &(type_meta as String),
             ],
         ).map_err(Error::HSCreate)?;
 
@@ -84,6 +88,8 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     let status: String = row.get("status");
     let spec: String = row.get("spec");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+    let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
 
     hs.set_id(id.to_string() as String);
     hs.set_name(name as String);
@@ -98,6 +104,10 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     hs.set_spec(spec_obj);
     hs.set_status(status_obj);
     hs.set_created_at(created_at.to_rfc3339());
+    let object_meta_obj: scalesrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    hs.set_object_meta(object_meta_obj);
+    let type_meta_obj: scalesrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
+    hs.set_type_meta(type_meta_obj);
     debug!("◖☩ ASM: row_to_hs =>\n{:?}", hs);
     debug!("◖☩ DONE: row_to_hs");
     Ok(hs)
