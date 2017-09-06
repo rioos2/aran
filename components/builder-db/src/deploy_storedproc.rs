@@ -34,6 +34,8 @@ impl Migratable for DeployProcedures {
              description text,
              parent_id text,
              tags text[],
+             object_meta text,
+             type_meta text,
              node text,
              ip text,
              urls text,
@@ -55,6 +57,8 @@ impl Migratable for DeployProcedures {
                 description text,
                 parent_id text,
                 tags text[],
+                object_meta text,
+                type_meta text,
                 node text,
                 ip text,
                 urls text,
@@ -62,8 +66,8 @@ impl Migratable for DeployProcedures {
                 status text
                         ) RETURNS SETOF assembly AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,node,ip,urls,component_collection,status)
-                                        VALUES (name, uri, description,parent_id, tags,node,ip,urls,component_collection,status)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,object_meta,type_meta,node,ip,urls,component_collection,status)
+                                        VALUES (name, uri, description,parent_id, tags,object_meta, type_meta,node,ip,urls,component_collection,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -126,6 +130,8 @@ impl Migratable for DeployProcedures {
              tags text[],
              plan text,
              properties text,
+             type_meta text,
+             object_meta text,
              external_management_resource text[],
              component_collection text,
              opssettings text,
@@ -147,6 +153,8 @@ impl Migratable for DeployProcedures {
                 tags text[],
                 plan text,
                 properties text,
+                type_meta text,
+                object_meta text,
                 external_management_resource text[],
                 component_collection text,
                 opssettings text,
@@ -154,8 +162,8 @@ impl Migratable for DeployProcedures {
                 status text
                         ) RETURNS SETOF assembly_factory AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,external_management_resource,component_collection,opssettings,replicas,status)
-                                        VALUES (name, uri, description, tags,plan,properties,external_management_resource,component_collection,opssettings,replicas,status)
+                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,type_meta,object_meta,external_management_resource,component_collection,opssettings,replicas,status)
+                                        VALUES (name, uri, description, tags,plan,properties,type_meta,object_meta,external_management_resource,component_collection,opssettings,replicas,status)
                                         RETURNING *;
                                     RETURN;
                                 END

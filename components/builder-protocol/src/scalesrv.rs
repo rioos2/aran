@@ -17,6 +17,7 @@ use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
 use std::result;
 use std::str::FromStr;
+use asmsrv;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScaling {
@@ -31,6 +32,8 @@ pub struct HorizontalScaling {
     spec: Spec,
     status: Status,
     created_at: String,
+    object_meta: asmsrv::ObjectMeta,
+    type_meta: asmsrv::TypeMeta,
 }
 impl HorizontalScaling {
     pub fn new() -> HorizontalScaling {
@@ -122,6 +125,21 @@ impl HorizontalScaling {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+    pub fn set_type_meta(&mut self, v: asmsrv::TypeMeta) {
+        self.type_meta = v;
+    }
+
+    pub fn get_type_meta(&self) -> &asmsrv::TypeMeta {
+        &self.type_meta
+    }
+
+    pub fn set_object_meta(&mut self, v: asmsrv::ObjectMeta) {
+        self.object_meta = v;
+    }
+
+    pub fn get_object_meta(&self) -> &asmsrv::ObjectMeta {
+        &self.object_meta
     }
 }
 

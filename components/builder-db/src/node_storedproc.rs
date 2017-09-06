@@ -31,7 +31,9 @@ impl Migratable for NodeProcedures {
              spec text,
              status text,
              updated_at timestamptz,
-             created_at timestamptz DEFAULT now())"#,
+             created_at timestamptz DEFAULT now(),
+             object_meta text,
+             type_meta text)"#,
         )?;
 
         debug!("=> [✓] node");
@@ -42,11 +44,13 @@ impl Migratable for NodeProcedures {
             "nodesrv",
             r#"CREATE OR REPLACE FUNCTION insert_node_v1 (
                 spec text,
-                status text
+                status text,
+                object_meta text,
+                type_meta text
             ) RETURNS SETOF node AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO node(spec,status)
-                                        VALUES (spec,status)
+                                    RETURN QUERY INSERT INTO node(spec,status,object_meta, type_meta)
+                                        VALUES (spec,status,object_meta, type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
