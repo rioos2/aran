@@ -6,10 +6,6 @@ description = "RIO/OS Admin Gateway"
 build = "../bldr-build.rs"
 workspace = "../../"
 
-[[bin]]
-name = "bldr-admin"
-doc = false
-
 [dependencies]
 bodyparser = "0.7.0"
 env_logger = "*"
