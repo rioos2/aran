@@ -6,10 +6,6 @@ description = "RIO/OS Identity Access Manager"
 build = "../bldr-build.rs"
 workspace = "../../"
 
-[[bin]]
-name = "bldr-session"
-doc = false
-
 [dependencies]
 bitflags = "*"
 env_logger = "*"

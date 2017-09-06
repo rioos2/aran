@@ -18,6 +18,7 @@ use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
 use std::result;
 use std::str::FromStr;
+use asmsrv;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -25,6 +26,8 @@ pub struct Node {
     spec: Spec,
     status: Status,
     created_at: String,
+    object_meta: asmsrv::ObjectMeta,
+    type_meta: asmsrv::TypeMeta,
 }
 
 impl Node {
@@ -57,6 +60,22 @@ impl Node {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
+    pub fn set_type_meta(&mut self, v: asmsrv::TypeMeta) {
+        self.type_meta = v;
+    }
+
+    pub fn get_type_meta(&self) -> &asmsrv::TypeMeta{
+        &self.type_meta
+    }
+
+    pub fn set_object_meta(&mut self, v: asmsrv::ObjectMeta) {
+        self.object_meta = v;
+    }
+
+    pub fn get_object_meta(&self) -> &asmsrv::ObjectMeta {
+        &self.object_meta
+    }
+
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -336,7 +355,6 @@ impl NodeInfo {
         self.architecture = v;
     }
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeGetResponse {
