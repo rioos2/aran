@@ -13,7 +13,6 @@ pub struct NodeDS;
 
 impl NodeDS {
     pub fn node_create(datastore: &DataStoreConn, node_create: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
-        println!("--------------------node ds protocol");
         let conn = datastore.pool.get_shard(0)?;
         let spec_str = serde_json::to_string(node_create.get_spec()).unwrap();
         let status_str = serde_json::to_string(node_create.get_status()).unwrap();

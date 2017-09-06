@@ -19,7 +19,7 @@ describe('Assembly_factory API', function() {
         done(err);
       });
   });
-/*  it('returns the assembly_factory by id', function(done) {
+  it('returns the assembly_factory by id', function(done) {
     request.get('/assembly_factorys/' + globalAny.asm_fac_id)
       .set('Authorization', globalAny.bobo_bearer)
       .expect(200)
@@ -46,7 +46,7 @@ describe('Assembly_factory API', function() {
         expect(res.body.results.length).to.equal(1);
         done(err);
       });
-  });*/
+  });
 });
 
   describe('Assembly API', function() {
@@ -64,7 +64,7 @@ describe('Assembly_factory API', function() {
           done(err);
         });
     });
-  /*  it('returns the assembly by id', function(done) {
+    it('returns the assembly by id', function(done) {
       request.get('/assemblys/'+ globalAny.asm.id)
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
@@ -92,6 +92,6 @@ describe('Assembly_factory API', function() {
            expect(res.body.results.length).to.equal(1);
           done(err);
         });
-    });*/
+    });
   });
 });

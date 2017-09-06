@@ -151,8 +151,6 @@ struct CommonStatusReq {
 
 
 pub fn node_create(req: &mut Request) -> IronResult<Response> {
-    println!("----------------------1------------------");
-    println!("{:?}", req);
     let mut node_create = Node::new();
     {
         match req.get::<bodyparser::Struct<NodeCreateReq>>() {
