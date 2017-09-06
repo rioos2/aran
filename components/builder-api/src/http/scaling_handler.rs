@@ -9,7 +9,8 @@ use scale::scaling_ds::ScalingDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status,ObjectMeta,Labels,Annotations,OwnerReferences, TypeMeta};
+use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
+use protocol::asmsrv::{ObjectMeta,Labels,Annotations,OwnerReferences, TypeMeta};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
@@ -112,7 +113,6 @@ struct ObjectMetaReq {
       key2: String,
   }
 
-  #[allow(non_snake_case)]
   #[derive(Clone, Debug, Serialize, Deserialize)]
   struct OwnerReferencesReq {
       kind: String,

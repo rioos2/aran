@@ -6,7 +6,8 @@ use iron::status;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use protocol::nodesrv::{Node, Spec, Status, Capacity, Range, FixedRange, InfiniteRange, Conditions, Taints, Addresses, NodeAddress, NodeInfo, ObjectMeta, Labels, Annotations,OwnerReferences ,TypeMeta};
+use protocol::nodesrv::{Node, Spec, Status, Capacity, Range, FixedRange, InfiniteRange, Conditions, Taints, Addresses, NodeAddress, NodeInfo};
+use protocol::asmsrv::{TypeMeta, ObjectMeta, Labels, Annotations,OwnerReferences };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NodeCreateReq {
@@ -46,7 +47,6 @@ struct ObjectMetaReq {
       key2: String,
   }
 
-  #[allow(non_snake_case)]
   #[derive(Clone, Debug, Serialize, Deserialize)]
   struct OwnerReferencesReq {
       kind: String,

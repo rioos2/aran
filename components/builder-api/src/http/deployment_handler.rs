@@ -111,7 +111,6 @@ struct ObjectMetaReq {
       key2: String,
   }
 
-  #[allow(non_snake_case)]
   #[derive(Clone, Debug, Serialize, Deserialize)]
   struct OwnerReferencesReq {
       kind: String,

@@ -4,7 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::nodesrv;
+use protocol::{nodesrv,asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -83,9 +83,9 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {
     node.set_spec(spec_obj);
     node.set_status(status_obj);
     node.set_created_at(created_at.to_rfc3339());
-    let object_meta_obj: nodesrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    let object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
     node.set_object_meta(object_meta_obj);
-    let type_meta_obj: nodesrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
+    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
     node.set_type_meta(type_meta_obj);
     debug!("◖☩ ASM: row_to_node =>\n{:?}", node);
     debug!("◖☩ DONE: row_to_node");

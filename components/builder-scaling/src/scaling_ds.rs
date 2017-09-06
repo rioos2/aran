@@ -4,7 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::scalesrv;
+use protocol::{scalesrv,asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -104,9 +104,9 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     hs.set_spec(spec_obj);
     hs.set_status(status_obj);
     hs.set_created_at(created_at.to_rfc3339());
-    let object_meta_obj: scalesrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    let object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
     hs.set_object_meta(object_meta_obj);
-    let type_meta_obj: scalesrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
+    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
     hs.set_type_meta(type_meta_obj);
     debug!("◖☩ ASM: row_to_hs =>\n{:?}", hs);
     debug!("◖☩ DONE: row_to_hs");
