@@ -60,8 +60,6 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
             ca = prompt_ca(ui)?;
         }
 
-        //write_cli_config_origin(&origin)?;
-
         ui.br()?;
         if is_ca_in_cache(&ca, cache_path) {
             ui.para(&format!(
@@ -157,29 +155,29 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
     ui.heading("Rio/OS Setup Complete")?;
     ui.para(&format!(
         "That's all for now. Thanks for using Rio/OS! {} {} {}",
-        generated_ca, generated_api, generated_serviceaccount
+        generated_ca,
+        generated_api,
+        generated_serviceaccount
     ))?;
     Ok(())
 }
 
 fn ask_default_ca(ui: &mut UI) -> Result<bool> {
-    Ok(ui.prompt_yes_no("Set up a default certificate authority (CA)?", Some(true))?)
-}
-
-fn ask_create_ca(ui: &mut UI, ca: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create a certifate authority `{}'?", ca),
+        "Set up a default certificate authority (CA)?",
         Some(true),
     )?)
 }
 
-/*fn write_cli_config_origin(origin: &str) -> Result<()> {
-    /*let mut config = config::load()?;
-    config.origin = Some(origin.to_string());
-    config::save(&config)
-    */
-    Ok(())
-}*/
+//prompt if the certifying authority ca exists.
+fn prompt_ca(ui: &mut UI) -> Result<String> {
+    let default = env::var(CA_ENVVAR).or("ca").ok();
+
+    Ok(ui.prompt_ask(
+        "Default certifying authority name",
+        default.as_ref().map(|x| &**x),
+    )?)
+}
 
 fn is_ca_in_cache(origin: &str, cache_path: &Path) -> bool {
     match SigKeyPair::get_latest_pair_for(origin, cache_path, None) {
@@ -193,30 +191,44 @@ fn is_ca_in_cache(origin: &str, cache_path: &Path) -> bool {
     }
 }
 
+
+fn ask_create_ca(ui: &mut UI, ca: &str) -> Result<bool> {
+    Ok(ui.prompt_yes_no(
+        &format!("Create a certifate authority `{}'?", ca),
+        Some(true),
+    )?)
+}
+
+
 fn create_ca(ui: &mut UI, origin: &str, cache_path: &Path) -> Result<()> {
     let result = command::origin::key::generate::start(ui, &origin, cache_path);
     ui.br()?;
     result
 }
 
-//prompt if the certifying authority ca exists.
-fn prompt_ca(ui: &mut UI) -> Result<String> {
-    //make sure you check if the ca exists ?
 
-    let config = config::load()?;
-    let default = match config.origin {
-        Some(o) => {
-            ui.para(&format!(
-                "You already have a default certifying authority set up as `{}', but feel \
-                                free to change it if you wish.",
-                &o
-            ))?;
-            Some(o)
-        }
-        None => env::var(CA_ENVVAR).or("ca").ok(),
-    };
-    Ok(ui.prompt_ask(
-        "Default certifying authority name",
-        default.as_ref().map(|x| &**x),
+fn ask_create_api(ui: &mut UI, api: &str) -> Result<bool> {
+    Ok(ui.prompt_yes_no(
+        &format!("Create an api key pair `{}'?", api),
+        Some(true),
     )?)
+}
+
+fn create_api(ui: &mut UI, api: &str, cache_path: &Path) -> Result<()> {
+    let result = command::origin::key::generate::start(ui, &api, cache_path);
+    ui.br()?;
+    result
+}
+
+fn ask_create_serviceaccount(ui: &mut UI, service_account: &str) -> Result<bool> {
+    Ok(ui.prompt_yes_no(
+        &format!("Create a service account `{}'?", service_account),
+        Some(true),
+    )?)
+}
+
+fn create_serviceaccount(ui: &mut UI, service_account: &str, cache_path: &Path) -> Result<()> {
+    let result = command::origin::key::generate::start(ui, &service_account, cache_path);
+    ui.br()?;
+    result
 }

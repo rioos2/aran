@@ -19,10 +19,9 @@ use time;
 use error::{Error, Result};
 use util::perm;
 
-use super::{PUBLIC_BOX_KEY_VERSION, PUBLIC_KEY_PERMISSIONS, PUBLIC_KEY_SUFFIX, PUBLIC_SIG_KEY_VERSION, SECRET_BOX_KEY_SUFFIX, SECRET_BOX_KEY_VERSION, SECRET_KEY_PERMISSIONS, SECRET_SIG_KEY_SUFFIX, SECRET_SIG_KEY_VERSION, SECRET_SYM_KEY_SUFFIX, SECRET_SYM_KEY_VERSION};
+use super::{PUBLIC_KEY_PERMISSIONS, PUBLIC_KEY_SUFFIX, PUBLIC_SIG_KEY_VERSION, SECRET_KEY_PERMISSIONS, SECRET_SIG_KEY_SUFFIX, SECRET_SIG_KEY_VERSION};
 
 lazy_static! {
-    static ref NAME_WITH_REV_RE: Regex = Regex::new(r"\A(?P<name>.+)-(?P<rev>\d{14})\z").unwrap();
     static ref KEYFILE_RE: Regex =
         Regex::new(r"\A(?P<name>.+)-(?P<rev>\d{14})\.(?P<suffix>[a-z]+(\.[a-z]+)?)\z").unwrap();
     static ref ORIGIN_NAME_RE: Regex = Regex::new(r"\A[a-z0-9][a-z0-9_-]*\z").unwrap();
@@ -87,8 +86,6 @@ impl Drop for TmpKeyfile {
 pub struct KeyPair<P, S> {
     /// The name of the key, ex: "habitat"
     pub name: String,
-    /// The revision of the key, which is a timestamp, ex: "201604051449"
-    pub rev: String,
     /// The public key component, if relevant
     pub public: Option<P>,
     /// The private key component, if relevant
@@ -100,15 +97,9 @@ impl<P, S> KeyPair<P, S> {
     pub fn new(name: String, rev: String, p: Option<P>, s: Option<S>) -> KeyPair<P, S> {
         KeyPair {
             name: name,
-            rev: rev,
             public: p,
             secret: s,
         }
-    }
-
-    /// Returns a `String` containing the combination of the `name` and `rev` fields.
-    pub fn name_with_rev(&self) -> String {
-        format!("{}-{}", self.name, self.rev)
     }
 
     pub fn public(&self) -> Result<&P> {
@@ -117,7 +108,7 @@ impl<P, S> KeyPair<P, S> {
             None => {
                 let msg = format!(
                     "Public key is required but not present for {}",
-                    self.name_with_rev()
+                    self.name
                 );
                 return Err(Error::CryptoError(msg));
             }
@@ -130,7 +121,7 @@ impl<P, S> KeyPair<P, S> {
             None => {
                 let msg = format!(
                     "Secret key is required but not present for {}",
-                    self.name_with_rev()
+                    self.name
                 );
                 return Err(Error::CryptoError(msg));
             }
@@ -174,7 +165,7 @@ fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<Stri
         }
     };
 
-    if suffix == PUBLIC_KEY_SUFFIX || suffix == SECRET_SIG_KEY_SUFFIX || suffix == SECRET_BOX_KEY_SUFFIX || suffix == SECRET_SYM_KEY_SUFFIX {
+    if suffix == PUBLIC_KEY_SUFFIX || suffix == SECRET_SIG_KEY_SUFFIX  {
         debug!("valid key suffix");
     } else {
         debug!("check_filename: Invalid key suffix from {}", &filename);
@@ -185,15 +176,8 @@ fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<Stri
         let thiskey = format!("{}-{}", name, rev);
 
         let do_insert = match pair_type {
-            Some(&PairType::CA) => {
-                if suffix == SECRET_SIG_KEY_SUFFIX || suffix == SECRET_BOX_KEY_SUFFIX || suffix == SECRET_SYM_KEY_SUFFIX {
-                    true
-                } else {
-                    false
-                }
-            }
             Some(&PairType::Secret) => {
-                if suffix == SECRET_SIG_KEY_SUFFIX || suffix == SECRET_BOX_KEY_SUFFIX || suffix == SECRET_SYM_KEY_SUFFIX {
+                if suffix == SECRET_SIG_KEY_SUFFIX  {
                     true
                 } else {
                     false
@@ -215,67 +199,6 @@ fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<Stri
     }
 }
 
-/// Take a key name (ex "habitat"), and find all revisions of that
-/// keyname in the default_cache_key_path().
-fn <P>(keyname: &str, cache_key_path: P, pair_type: Option<&PairType>) -> Result<Vec<String>>
-where
-    P: AsRef<Path>,
-{
-    // accumulator for files that match
-    let mut candidates = HashSet::new();
-    let paths = match fs::read_dir(cache_key_path.as_ref()) {
-        Ok(p) => p,
-        Err(e) => {
-            return Err(Error::CryptoError(format!(
-                "Error reading key directory {}: {}",
-                cache_key_path.as_ref().display(),
-                e
-            )))
-        }
-    };
-    for path in paths {
-        let p = match path {
-            Ok(ref p) => p,
-            Err(e) => {
-                debug!("Error reading path {}", e);
-                return Err(Error::CryptoError(format!("Error reading key path {}", e)));
-            }
-        };
-
-        match p.metadata() {
-            Ok(md) => {
-                if !md.is_file() {
-                    continue;
-                }
-            }
-            Err(e) => {
-                debug!("Error checking file metadata {}", e);
-                continue;
-            }
-        };
-        let filename = match p.file_name().into_string() {
-            Ok(f) => f,
-            Err(e) => {
-                // filename is still an OsString, so print it as debug output
-                debug!("Invalid filename {:?}", e);
-                return Err(Error::CryptoError(format!("Invalid filename in key path")));
-            }
-        };
-        debug!("checking file: {}", &filename);
-        check_filename(keyname, filename, &mut candidates, pair_type);
-    }
-
-    // traverse the candidates set and sort the entries
-    let mut candidate_vec = Vec::new();
-    for c in &candidates {
-        candidate_vec.push(c.clone());
-    }
-    candidate_vec.sort();
-    // newest key first
-    candidate_vec.reverse();
-    Ok(candidate_vec)
-}
-
 fn mk_key_filename<P, S1, S2>(path: P, keyname: S1, suffix: S2) -> PathBuf
 where
     P: AsRef<Path>,
@@ -289,42 +212,6 @@ where
     ))
 }
 
-pub fn parse_name_with_rev<T>(name_with_rev: T) -> Result<(String, String)>
-where
-    T: AsRef<str>,
-{
-    let caps = match NAME_WITH_REV_RE.captures(name_with_rev.as_ref()) {
-        Some(c) => c,
-        None => {
-            let msg = format!(
-                "parse_name_with_rev:1 Cannot parse {}",
-                name_with_rev.as_ref()
-            );
-            return Err(Error::CryptoError(msg));
-        }
-    };
-    let name = match caps.name("name") {
-        Some(r) => r.as_str().to_string(),
-        None => {
-            let msg = format!(
-                "parse_name_with_rev:2 Cannot parse name from {}",
-                name_with_rev.as_ref()
-            );
-            return Err(Error::CryptoError(msg));
-        }
-    };
-    let rev = match caps.name("rev") {
-        Some(r) => r.as_str().to_string(),
-        None => {
-            let msg = format!(
-                "parse_name_with_rev:3 Cannot parse rev from {}",
-                name_with_rev.as_ref()
-            );
-            return Err(Error::CryptoError(msg));
-        }
-    };
-    Ok((name, rev))
-}
 
 /// Is the string a valid origin name?
 pub fn is_valid_origin_name(name: &str) -> bool {
@@ -360,8 +247,7 @@ fn write_keypair_files(key_type: KeyType, keyname: &str, public_keyfile: Option<
     if let Some(public_keyfile) = public_keyfile {
         let public_version = match key_type {
             KeyType::Sig => PUBLIC_SIG_KEY_VERSION,
-            KeyType::Box => PUBLIC_BOX_KEY_VERSION,
-            KeyType::Sym => unreachable!("Sym keys do not have a public key"),
+            //KeyType::Sym => unreachable!("Sym keys do not have a public key"),
         };
 
         let public_content = match public_content {
@@ -396,8 +282,7 @@ fn write_keypair_files(key_type: KeyType, keyname: &str, public_keyfile: Option<
     if let Some(secret_keyfile) = secret_keyfile {
         let secret_version = match key_type {
             KeyType::Sig => SECRET_SIG_KEY_VERSION,
-            KeyType::Box => SECRET_BOX_KEY_VERSION,
-            KeyType::Sym => SECRET_SYM_KEY_VERSION,
+//            KeyType::Sym => SECRET_SYM_KEY_VERSION,
         };
 
         let secret_content = match secret_content {
@@ -441,9 +326,7 @@ mod test {
     use hex::ToHex;
     use tempdir::TempDir;
 
-    use super::box_key_pair::BoxKeyPair;
     use super::sig_key_pair::SigKeyPair;
-    use super::sym_key::SymKey;
     use super::PairType;
 
     use super::TmpKeyfile;
@@ -476,25 +359,6 @@ mod test {
             assert_eq!(tmp_keyfile.path.is_file(), false);
         }
         assert_eq!(path.is_file(), false);
-    }
-
-    #[test]
-    fn parse_name_with_rev() {
-        let (name, rev) = super::parse_name_with_rev("an-origin-19690114010203").unwrap();
-        assert_eq!(name, "an-origin");
-        assert_eq!(rev, "19690114010203");
-
-        let (name, rev) = super::parse_name_with_rev("user-19480531051223").unwrap();
-        assert_eq!(name, "user");
-        assert_eq!(rev, "19480531051223");
-
-        let (name, rev) = super::parse_name_with_rev("tnt.default@acme-19480531051223").unwrap();
-        assert_eq!(name, "tnt.default@acme");
-        assert_eq!(rev, "19480531051223");
-
-        let (name, rev) = super::parse_name_with_rev("--20160420042001").unwrap();
-        assert_eq!(name, "-");
-        assert_eq!(rev, "20160420042001");
     }
 
     #[test]

@@ -195,8 +195,72 @@ fn generate_server_cert() -> Result<X509> {
     let (ca_cert, ca_key) = X509Generator::new().generate().unwrap();
 
     let (server_cert, server_key) = X509Generator::new().generate().unwrap();
+
     let request = server_cert.generate_signing_request().unwrap();
+
     let signed_server_cert = ca_cert.sign(&request, &ca_key).unwrap();
 }
 
+
+//Generator of private key/certificate pairs
+
+use std::io::{File, Open, Write};
+
+use openssl::crypto::hash::SHA256;
+use openssl::x509::{DigitalSignature, X509Generator};
+
+let gen = X509Generator::new()
+       .set_bitlength(2048)
+       .set_valid_period(365*2)
+       .set_CN("SuperMegaCorp Inc.")
+       .set_sign_hash(SHA256)
+       .set_usage([DigitalSignature]);
+
+let (cert, pkey) = gen.generate().unwrap();
+
+let cert_path = Path::new("doc_cert.pem");
+let mut file = File::open_mode(&cert_path, Open, Write).unwrap();
+assert!(cert.write_pem(&mut file).is_ok());
+
+let pkey_path = Path::new("doc_key.pem");
+let mut file = File::open_mode(&pkey_path, Open, Write).unwrap();
+assert!(pkey.write_pem(&mut file).is_ok());
+
+////////////////
+
+use openssl::crypto::hash::Type;
+use openssl::crypto::pkey::PKey;
+use openssl::crypto::rsa::RSA;
+use openssl::x509::X509Generator;
+use openssl::x509::extension::{Extension, KeyUsageOption};
+
+let rsa = RSA::generate(2048).unwrap();
+
+let pkey = PKey::from_rsa(rsa).unwrap();
+
+let gen = X509Generator::new()
+       .set_valid_period(365*2)
+       .add_name("CN".to_owned(), "SuperMegaCorp Inc.".to_owned())
+       .set_sign_hash(Type::SHA256)
+       .add_extension(Extension::KeyUsage(vec![KeyUsageOption::DigitalSignature]));
+
+let cert = gen.sign(&pkey).unwrap();
+let cert_pem = cert.to_pem().unwrap();
+let pkey_pem = pkey.private_key_to_pem().unwrap();
+
+
+fn generate_server_cert() -> Result<X509> {
+    //let (ca_cert, ca_key) = X509Generator::new().generate().unwrap();
+
+    let ca_rsa = RSA::generate(2048).unwrap();
+    let ca_pkey = PKey::from_rsa(rsa).unwrap();
+
+
+    let server_rsa = RSA::generate(2048).unwrap();
+    let server_pkey = PKey::from_rsa(rsa).unwrap();
+
+
+    let csr = X509Generator::new().add_name("CN".to_owned(), "example.com".to_owned()).request(&server_pkey).unwrap();
+    X509Generator::new().sign_cert(&ca_key, &csr)
+}
 */
