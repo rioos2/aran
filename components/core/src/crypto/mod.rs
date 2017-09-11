@@ -239,6 +239,7 @@ pub const SECRET_SIG_KEY_VERSION: &'static str = "SIG-SEC-1";
 
 pub use self::keys::sig_key_pair::SigKeyPair;
 
+pub mod hash;
 pub mod keys;
 
 pub fn default_cache_key_path(fs_root_path: Option<&Path>) -> PathBuf {
@@ -258,7 +259,6 @@ pub mod test_support {
     use std::fs::File;
     use std::path::PathBuf;
 
-    use time;
 
     use error as herror;
 

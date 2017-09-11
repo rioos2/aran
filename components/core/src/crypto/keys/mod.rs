@@ -14,7 +14,6 @@ use std::str::FromStr;
 
 use base64;
 use regex::Regex;
-use time;
 
 use error::{Error, Result};
 use util::perm;
@@ -23,7 +22,7 @@ use super::{PUBLIC_KEY_PERMISSIONS, PUBLIC_KEY_SUFFIX, PUBLIC_SIG_KEY_VERSION, S
 
 lazy_static! {
     static ref KEYFILE_RE: Regex =
-        Regex::new(r"\A(?P<name>.+)-(?P<rev>\d{14})\.(?P<suffix>[a-z]+(\.[a-z]+)?)\z").unwrap();
+        Regex::new(r"\A(?P<name>.+)\.(?P<suffix>[a-z]+(\.[a-z]+)?)\z").unwrap();
     static ref ORIGIN_NAME_RE: Regex = Regex::new(r"\A[a-z0-9][a-z0-9_-]*\z").unwrap();
 }
 
@@ -64,17 +63,6 @@ impl FromStr for PairType {
     }
 }
 
-struct TmpKeyfile {
-    pub path: PathBuf,
-}
-
-impl Drop for TmpKeyfile {
-    fn drop(&mut self) {
-        if self.path.is_file() {
-            let _ = fs::remove_file(&self.path);
-        }
-    }
-}
 
 /// A pair of related keys (public and secret) which have a name and revision.
 ///
@@ -94,7 +82,7 @@ pub struct KeyPair<P, S> {
 
 impl<P, S> KeyPair<P, S> {
     /// Creates a new `KeyPair`.
-    pub fn new(name: String, rev: String, p: Option<P>, s: Option<S>) -> KeyPair<P, S> {
+    pub fn new(name: String, p: Option<P>, s: Option<S>) -> KeyPair<P, S> {
         KeyPair {
             name: name,
             public: p,
@@ -129,6 +117,7 @@ impl<P, S> KeyPair<P, S> {
     }
 }
 
+
 /// If a key "belongs" to a filename revision, then add the full stem of the
 /// file (without path, without .suffix) to the set. This function doesn't
 /// return an error on a "bad" file, the bad file key name just doesn't get
@@ -149,14 +138,6 @@ fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<Stri
         }
     };
 
-    let rev = match caps.name("rev") {
-        Some(r) => r.as_str(),
-        None => {
-            debug!("check_filename: Cannot parse rev from {}", &filename);
-            return;
-        }
-    };
-
     let suffix = match caps.name("suffix") {
         Some(r) => r.as_str(),
         None => {
@@ -165,7 +146,7 @@ fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<Stri
         }
     };
 
-    if suffix == PUBLIC_KEY_SUFFIX || suffix == SECRET_SIG_KEY_SUFFIX  {
+    if suffix == PUBLIC_KEY_SUFFIX || suffix == SECRET_SIG_KEY_SUFFIX {
         debug!("valid key suffix");
     } else {
         debug!("check_filename: Invalid key suffix from {}", &filename);
@@ -173,11 +154,11 @@ fn check_filename(keyname: &str, filename: String, candidates: &mut HashSet<Stri
     };
 
     if name == keyname {
-        let thiskey = format!("{}-{}", name, rev);
+        let thiskey = format!("{}", name);
 
         let do_insert = match pair_type {
             Some(&PairType::Secret) => {
-                if suffix == SECRET_SIG_KEY_SUFFIX  {
+                if suffix == SECRET_SIG_KEY_SUFFIX {
                     true
                 } else {
                     false
@@ -213,8 +194,8 @@ where
 }
 
 
-/// Is the string a valid origin name?
-pub fn is_valid_origin_name(name: &str) -> bool {
+/// Is the string a valid ca name?
+pub fn is_valid_ca_name(name: &str) -> bool {
     name.chars().count() <= 255 && ORIGIN_NAME_RE.is_match(name)
 }
 
@@ -262,6 +243,7 @@ fn write_keypair_files(key_type: KeyType, keyname: &str, public_keyfile: Option<
                 public_keyfile.to_string_lossy().into_owned(),
             ));
         }
+
         if public_keyfile.exists() {
             return Err(Error::CryptoError(format!(
                 "Public keyfile or a directory already \
@@ -269,9 +251,10 @@ fn write_keypair_files(key_type: KeyType, keyname: &str, public_keyfile: Option<
                 public_keyfile.display()
             )));
         }
+
         let public_file = try!(File::create(public_keyfile));
         let mut public_writer = BufWriter::new(&public_file);
-        try!(write!(public_writer, "{}\n{}\n\n", public_version, keyname));
+        //try!(write!(public_writer, "{}\n{}\n\n", public_version, keyname));
         try!(public_writer.write_all(public_content));
         try!(perm::set_permissions(
             public_keyfile,
@@ -282,7 +265,7 @@ fn write_keypair_files(key_type: KeyType, keyname: &str, public_keyfile: Option<
     if let Some(secret_keyfile) = secret_keyfile {
         let secret_version = match key_type {
             KeyType::Sig => SECRET_SIG_KEY_VERSION,
-//            KeyType::Sym => SECRET_SYM_KEY_VERSION,
+            //            KeyType::Sym => SECRET_SYM_KEY_VERSION,
         };
 
         let secret_content = match secret_content {
@@ -306,7 +289,7 @@ fn write_keypair_files(key_type: KeyType, keyname: &str, public_keyfile: Option<
         }
         let secret_file = try!(File::create(secret_keyfile));
         let mut secret_writer = BufWriter::new(&secret_file);
-        try!(write!(secret_writer, "{}\n{}\n\n", secret_version, keyname));
+        //try!(write!(secret_writer, "{}\n{}\n\n", secret_version, keyname));
         try!(secret_writer.write_all(secret_content));
         try!(perm::set_permissions(
             secret_keyfile,
@@ -329,37 +312,12 @@ mod test {
     use super::sig_key_pair::SigKeyPair;
     use super::PairType;
 
-    use super::TmpKeyfile;
     use super::super::test_support::*;
 
     static VALID_KEY: &'static str = "ring-key-valid-20160504220722.sym.key";
     static VALID_KEY_AS_HEX: &'static str = "\
         44215a3bce23e351a6af359d77131db17a46767de2b88cbb330df162b8cf2ec1";
 
-    #[test]
-    fn tmp_keyfile_delete_on_drop() {
-        let cache = TempDir::new("key_cache").unwrap();
-        let path = cache.path().join("mykey");
-
-        {
-            let tmp_keyfile = TmpKeyfile { path: path.clone() };
-            File::create(&tmp_keyfile.path).unwrap();
-            assert!(tmp_keyfile.path.is_file());
-        }
-        assert_eq!(path.is_file(), false);
-    }
-
-    #[test]
-    fn tmp_keyfile_no_file_on_drop() {
-        let cache = TempDir::new("key_cache").unwrap();
-        let path = cache.path().join("mykey");
-
-        {
-            let tmp_keyfile = TmpKeyfile { path: path.clone() };
-            assert_eq!(tmp_keyfile.path.is_file(), false);
-        }
-        assert_eq!(path.is_file(), false);
-    }
 
     #[test]
     fn read_key_bytes() {
@@ -519,17 +477,17 @@ mod test {
 
     #[test]
     fn check_origin_name() {
-        assert!(super::is_valid_origin_name("foo"));
-        assert!(super::is_valid_origin_name("foo_bar"));
-        assert!(super::is_valid_origin_name("foo-bar"));
-        assert!(super::is_valid_origin_name("0xdeadbeef"));
+        assert!(super::is_valid_ca_name("foo"));
+        assert!(super::is_valid_ca_name("foo_bar"));
+        assert!(super::is_valid_ca_name("foo-bar"));
+        assert!(super::is_valid_ca_name("0xdeadbeef"));
 
-        assert!(!super::is_valid_origin_name("Core"));
-        assert!(!super::is_valid_origin_name(" foo"));
-        assert!(!super::is_valid_origin_name("foo "));
-        assert!(!super::is_valid_origin_name("!foo"));
-        assert!(!super::is_valid_origin_name("foo!"));
-        assert!(!super::is_valid_origin_name("foo bar"));
-        assert!(!super::is_valid_origin_name("0xDEADBEEF"));
+        assert!(!super::is_valid_ca_name("Core"));
+        assert!(!super::is_valid_ca_name(" foo"));
+        assert!(!super::is_valid_ca_name("foo "));
+        assert!(!super::is_valid_ca_name("!foo"));
+        assert!(!super::is_valid_ca_name("foo!"));
+        assert!(!super::is_valid_ca_name("foo bar"));
+        assert!(!super::is_valid_ca_name("0xDEADBEEF"));
     }
 }

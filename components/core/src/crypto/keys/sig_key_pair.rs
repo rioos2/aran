@@ -1,43 +1,63 @@
-use std::fs;
 use std::path::{Path, PathBuf};
 
 use base64;
-use hex::ToHex;
+
+use openssl::pkey::PKey;
+use openssl::rsa::Rsa;
 
 use error::{Error, Result};
-use super::{mk_key_filename, read_key_bytes, write_keypair_files, KeyPair, KeyType, PairType, TmpKeyfile};
+use super::{mk_key_filename, read_key_bytes, write_keypair_files, KeyPair, KeyType, PairType};
 use super::super::{PUBLIC_KEY_SUFFIX, SECRET_SIG_KEY_SUFFIX};
 
-pub type SigKeyPair = KeyPair<SigPublicKey, SigSecretKey>;
+pub type SigKeyPair = KeyPair<Vec<u8>, Vec<u8>>;
+
+//probably make it as a default
+fn generate_rsa_pair() -> Result<(Vec<u8>, Vec<u8>)> {
+    let rsa = Rsa::generate(2048).unwrap();
+
+    let in_rsa: PKey = PKey::from_rsa(rsa).unwrap();
+
+    let public: Result<Vec<u8>> = match in_rsa.public_key_to_pem() {
+        Ok(p) => Ok(p),
+        Err(e) => return Err(Error::CryptoError(format!("[pub]: {}", e))),
+    };
+
+
+    let secret: Result<Vec<u8>> = match in_rsa.private_key_to_pem() {
+        Ok(s) => Ok(s),
+        Err(e) => return Err(Error::CryptoError(format!("[secret]: {}", e))),
+    };
+
+    Ok((public?, secret?))
+}
 
 impl SigKeyPair {
     pub fn generate_pair_for_origin<P: AsRef<Path> + ?Sized>(name: &str, cache_key_path: &P) -> Result<Self> {
         debug!("new sig key name = {}", &name);
-        let (public_key, secret_key) = try!(Self::generate_pair_files(&name, cache_key_path.as_ref()));
-        Ok(Self::new(
-            name.to_string(),
-            Some(public_key),
-            Some(secret_key),
-        ))
+
+        let (public, secret) = try!(Self::generate_pair_files(&name, cache_key_path.as_ref()));
+
+        Ok(Self::new(name.to_string(), Some(public), Some(secret)))
     }
 
-    fn generate_pair_files(name_with_rev: &str, cache_key_path: &Path) -> Result<(SigPublicKey, SigSecretKey)> {
-        let (pk, sk) = sign::gen_keypair();
+    fn generate_pair_files(name_with_rev: &str, cache_key_path: &Path) -> Result<(Vec<u8>, Vec<u8>)> {
+        let (public, secret) = generate_rsa_pair()?;
 
         let public_keyfile = mk_key_filename(cache_key_path, name_with_rev, PUBLIC_KEY_SUFFIX);
         let secret_keyfile = mk_key_filename(cache_key_path, name_with_rev, SECRET_SIG_KEY_SUFFIX);
-        debug!("public sig keyfile = {}", public_keyfile.display());
-        debug!("secret sig keyfile = {}", secret_keyfile.display());
+
+        debug!("public keyfile = {}", public_keyfile.display());
+        debug!("secret keyfile = {}", secret_keyfile.display());
 
         try!(write_keypair_files(
             KeyType::Sig,
             &name_with_rev,
             Some(&public_keyfile),
-            Some(&base64::encode(&pk[..]).into_bytes()),
+            Some(&public[..]),
             Some(&secret_keyfile),
-            Some(&base64::encode(&sk[..]).into_bytes()),
+            Some(&secret[..]),
         ));
-        Ok((pk, sk))
+        Ok((public, secret))
     }
 
     /// Return a Vec of origin keys with a given name.
@@ -45,10 +65,7 @@ impl SigKeyPair {
     pub fn get_pairs_for<P: AsRef<Path> + ?Sized>(name: &str, cache_key_path: &P, pair_type: Option<&PairType>) -> Result<Vec<Self>> {
         let mut key_pairs = Vec::new();
 
-        debug!(
-            "Attempting to read key name {}",
-            name
-        );
+        debug!("Attempting to read key name {}", name);
 
         let kp = try!(Self::get_pair_for(name, cache_key_path));
         key_pairs.push(kp);
@@ -88,7 +105,7 @@ impl SigKeyPair {
             );
             return Err(Error::CryptoError(msg));
         }
-        Ok(SigKeyPair::new(name_with_rev, pk, sk))
+        Ok(SigKeyPair::new(name_with_rev.to_string(), pk, sk))
     }
 
     pub fn get_latest_pair_for<P: AsRef<Path> + ?Sized>(name: &str, cache_key_path: &P, pair_type: Option<&PairType>) -> Result<Self> {
@@ -122,28 +139,34 @@ impl SigKeyPair {
         Ok(path)
     }
 
-    fn get_public_key(key_with_rev: &str, cache_key_path: &Path) -> Result<SigPublicKey> {
+    fn get_public_key(key_with_rev: &str, cache_key_path: &Path) -> Result<Vec<u8>> {
         let public_keyfile = mk_key_filename(cache_key_path, key_with_rev, PUBLIC_KEY_SUFFIX);
         let bytes = try!(read_key_bytes(&public_keyfile));
-        match SigPublicKey::from_slice(&bytes) {
-            Some(sk) => Ok(sk),
-            None => {
-                return Err(Error::CryptoError(
-                    format!("Can't read sig public key for {}", key_with_rev),
-                ))
+
+        match PKey::public_key_from_pem(&bytes) {
+            Ok(sk) => Ok(sk.public_key_to_pem().unwrap()),
+            Err(e) => {
+                return Err(Error::CryptoError(format!(
+                    "Can't read sig public key for {}\nErrorStack: {}",
+                    key_with_rev,
+                    e
+                )))
             }
         }
     }
 
-    fn get_secret_key(key_with_rev: &str, cache_key_path: &Path) -> Result<SigSecretKey> {
+    fn get_secret_key(key_with_rev: &str, cache_key_path: &Path) -> Result<Vec<u8>> {
         let secret_keyfile = mk_key_filename(cache_key_path, key_with_rev, SECRET_SIG_KEY_SUFFIX);
         let bytes = try!(read_key_bytes(&secret_keyfile));
-        match SigSecretKey::from_slice(&bytes) {
-            Some(sk) => Ok(sk),
-            None => {
-                return Err(Error::CryptoError(
-                    format!("Can't read sig secret key for {}", key_with_rev),
-                ))
+
+        match PKey::private_key_from_pem(&bytes) {
+            Ok(sk) => Ok(sk.public_key_to_pem().unwrap()),
+            Err(e) => {
+                return Err(Error::CryptoError(format!(
+                    "Can't read sig secret key for {}\nErrorStack: {}",
+                    key_with_rev,
+                    e
+                )))
             }
         }
     }
@@ -196,18 +219,8 @@ mod test {
             Ok(_) => assert!(true),
             Err(_) => panic!("Generated pair should have a secret key"),
         }
-        assert!(
-            cache
-                .path()
-                .join(format!("{}.crt", pair.name))
-                .exists()
-        );
-        assert!(
-            cache
-                .path()
-                .join(format!("{}.key", pair.name))
-                .exists()
-        );
+        assert!(cache.path().join(format!("{}.crt", pair.name)).exists());
+        assert!(cache.path().join(format!("{}.key", pair.name)).exists());
     }
 
     #[test]

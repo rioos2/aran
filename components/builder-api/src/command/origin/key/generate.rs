@@ -11,7 +11,7 @@ use rio_core::Error::InvalidOrigin;
 use error::{Error, Result};
 
 pub fn start(ui: &mut UI, origin: &str, cache: &Path) -> Result<()> {
-    match ident::is_valid_origin_name(origin) {
+    match ident::is_valid_ca_name(origin) {
         false => Err(Error::from(InvalidOrigin(origin.to_string()))),
         true => {
             ui.begin(format!("Generating origin key for {}", &origin))?;

@@ -88,7 +88,7 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
                 ui.para(&format!(
                     "You might want to create a certificate authority with: \
                                        `rioos setup {}'",
-                    &origin
+                    &ca
                 ))?;
             }
 
@@ -106,7 +106,7 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
                           https://docs.rioos.sh/docs/concepts-keys/#origin-keys",
             )?;
 
-
+            let mut api = "";
 
             if ask_create_api(ui, &api)? {
                 create_api(ui, &api, cache_path)?;
@@ -133,8 +133,9 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
                           https://docs.rioos.sh/docs/concepts-keys/#origin-keys",
             )?;
 
+            let mut service_account = "";
 
-            if ask_create_serviceaccount(ui, &service_acccount)? {
+            if ask_create_serviceaccount(ui, &service_account)? {
                 create_serviceaccount(ui, &service_account, cache_path)?;
                 generated_serviceaccount = true;
             } else {
@@ -171,7 +172,7 @@ fn ask_default_ca(ui: &mut UI) -> Result<bool> {
 
 //prompt if the certifying authority ca exists.
 fn prompt_ca(ui: &mut UI) -> Result<String> {
-    let default = env::var(CA_ENVVAR).or("ca").ok();
+    let default = env::var(CA_ENVVAR).or(env::var("ca")).ok();
 
     Ok(ui.prompt_ask(
         "Default certifying authority name",
