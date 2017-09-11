@@ -14,21 +14,24 @@ use rio_core::Error::InvalidOrigin;
 use command;
 use error::Result;
 
-pub const ORIGIN_ENVVAR: &'static str = "RIO_ORIGIN";
+pub const CA_ENVVAR: &'static str = "RIO_CA";
 
 pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
-    let mut generated_origin = false;
+    let mut generated_ca = false;
+    let mut generated_api = false;
+    let mut generated_serviceaccount = false;
 
     ui.br()?;
     ui.title("Rio/OS Setup")?;
     ui.para("Welcome to rio/os setup. Let's get started.")?;
 
-    ui.heading("Set up a default origin")?;
+    ui.heading("Set up a PKI infrastructure")?;
     ui.para(
-        "Every package in Rio/OS belongs to an origin, which indicates the person or \
+        "Every system in Rio/OS belongs to an origin, which indicates the person or \
                organization responsible for maintaining that package. Each origin also has \
                a key used to cryptographically sign packages in that origin.",
     )?;
+
     ui.para(
         "Selecting a default origin tells package building operations such as 'hab \
                   pkg build' what key should be used to sign the packages produced. If you \
@@ -36,101 +39,148 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
                   commands each time what origin to use.",
     )?;
     ui.para(
-        "For more information on origins and how they are used in building packages, \
-               please consult the docs at https://www.rioos.sh/docs/create-packages-build/",
+        "For more information on pki infrastructure and how they are used in building packages, \
+               please consult the docs at https://www.rioos.sh/docs/identity/",
     )?;
-    if ask_default_origin(ui)? {
+    if ask_default_ca(ui)? {
         ui.br()?;
         ui.para(
-            "Enter the name of your origin. If you plan to publish your packages \
+            "Enter the name of your certificate authority (CA). The default name is ca.crt, ca.key \
                       publicly, we recommend that you select one that is not already in use \
                       on the Rio/OS build service found at https://bldr.rioos.sh/.",
         )?;
-        ui.para(&format!(
-            "Origins must begin with a lowercase letter or number. \
-                Allowed characters include lowercase letters, numbers, _, -. \
-                No more than 255 characters {}.", generated_origin
-        ))?;
-        let mut origin = prompt_origin(ui)?;
 
-        while !ident::is_valid_origin_name(&origin) {
+        let mut ca = prompt_ca(ui)?;
+
+        while !ident::is_valid_ca_name(&ca) {
             ui.br()?;
-            ui.fatal(&format!("{}", InvalidOrigin(origin)))?;
+            ui.fatal(&format!("{}", InvalidOrigin(ca)))?;
             ui.br()?;
 
-            origin = prompt_origin(ui)?;
+            ca = prompt_ca(ui)?;
         }
 
-        //write_cli_config_origin(&origin)?;
-
         ui.br()?;
-        if is_origin_in_cache(&origin, cache_path) {
+        if is_ca_in_cache(&ca, cache_path) {
             ui.para(&format!(
-                "You already have an origin key for {} created and \
+                "You already have an certificate autority (CA) for {} created and \
                                    installed. Great work!",
-                &origin
+                &ca
             ))?;
         } else {
-            ui.heading("Create origin key pair")?;
+            ui.heading("Create certificate authority")?;
             ui.para(&format!(
-                "It doesn't look like you have a signing key for the origin \
-                                `{}'. Without it, you won't be able to build new packages \
-                                successfully.",
-                &origin
+                "It doesn't look like you have a certificate authority \
+                                `{}'. Without it, you won't be able to securely \
+                                connect your infrastructure.",
+                &ca
             ))?;
             ui.para(
-                "You can either create a new signing key now, or, if you are building \
-                       packages for an origin that already exists, ask the owner to give \
-                       you the signing key.",
-            )?;
-            ui.para(
-                "For more information on the use of origin keys, please consult \
+                "For more information on the use of certificate authority, please consult \
                           the documentation at \
-                          https://www.rioos.sh/docs/concepts-keys/#origin-keys",
+                          https://docs.rioos.sh/docs/concepts-keys/#origin-keys",
             )?;
-            if ask_create_origin(ui, &origin)? {
-                create_origin(ui, &origin, cache_path)?;
-                generated_origin = true;
+
+            if ask_create_ca(ui, &ca)? {
+                create_ca(ui, &ca, cache_path)?;
+                generated_ca = true;
             } else {
                 ui.para(&format!(
-                    "You might want to create an origin key later with: \
-                                       `hab origin key generate {}'",
-                    &origin
+                    "You might want to create a certificate authority with: \
+                                       `rioos setup {}'",
+                    &ca
+                ))?;
+            }
+
+            ui.heading("Create api key pair")?;
+            ui.para(&format!(
+                "It doesn't look like you have a api key pair \
+                                `{}'. Without it, you won't be able to securely \
+                                connect to your api server.",
+                &ca
+            ))?;
+
+            ui.para(
+                "For more information on the use of api key pair, please consult \
+                          the documentation at \
+                          https://docs.rioos.sh/docs/concepts-keys/#origin-keys",
+            )?;
+
+            let mut api = "";
+
+            if ask_create_api(ui, &api)? {
+                create_api(ui, &api, cache_path)?;
+                generated_api = true;
+            } else {
+                ui.para(&format!(
+                    "You might want to create an api key later with: \
+                                       `rioos setup {}'",
+                    &api
+                ))?;
+            }
+
+            ui.heading("Create service account key pair")?;
+            ui.para(&format!(
+                "It doesn't look like you have a service account key pair \
+                                `{}'. Without it, you won't be able to securely \
+                                connect to your api server.",
+                &ca
+            ))?;
+
+            ui.para(
+                "For more information on the use of service account key pairs, please consult \
+                          the documentation at \
+                          https://docs.rioos.sh/docs/concepts-keys/#origin-keys",
+            )?;
+
+            let mut service_account = "";
+
+            if ask_create_serviceaccount(ui, &service_account)? {
+                create_serviceaccount(ui, &service_account, cache_path)?;
+                generated_serviceaccount = true;
+            } else {
+                ui.para(&format!(
+                    "You might want to create a service account key later with: \
+                                       `rioos setup {}'",
+                    &service_account
                 ))?;
             }
         }
+
+
     } else {
         ui.para("Okay, maybe another time.")?;
     }
 
 
-    ui.heading("CLI Setup Complete")?;
+    ui.heading("Rio/OS Setup Complete")?;
     ui.para(&format!(
-        "That's all for now. Thanks for using Rio/OS! {}", generated_origin
+        "That's all for now. Thanks for using Rio/OS! {} {} {}",
+        generated_ca,
+        generated_api,
+        generated_serviceaccount
     ))?;
     Ok(())
 }
 
-fn ask_default_origin(ui: &mut UI) -> Result<bool> {
-    Ok(ui.prompt_yes_no("Set up a default origin?", Some(true))?)
-}
-
-fn ask_create_origin(ui: &mut UI, origin: &str) -> Result<bool> {
+fn ask_default_ca(ui: &mut UI) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create an origin key for `{}'?", origin),
+        "Set up a default certificate authority (CA)?",
         Some(true),
     )?)
 }
 
-/*fn write_cli_config_origin(origin: &str) -> Result<()> {
-    /*let mut config = config::load()?;
-    config.origin = Some(origin.to_string());
-    config::save(&config)
-    */
-    Ok(())
-}*/
+//prompt if the certifying authority ca exists.
+fn prompt_ca(ui: &mut UI) -> Result<String> {
+    let default = env::var(CA_ENVVAR).or(env::var("ca")).ok();
 
-fn is_origin_in_cache(origin: &str, cache_path: &Path) -> bool {
+    Ok(ui.prompt_ask(
+        "Default certifying authority name",
+        default.as_ref().map(|x| &**x),
+    )?)
+}
+
+fn is_ca_in_cache(origin: &str, cache_path: &Path) -> bool {
     match SigKeyPair::get_latest_pair_for(origin, cache_path, None) {
         Ok(pair) => {
             match pair.secret() {
@@ -142,39 +192,44 @@ fn is_origin_in_cache(origin: &str, cache_path: &Path) -> bool {
     }
 }
 
-fn create_origin(ui: &mut UI, origin: &str, cache_path: &Path) -> Result<()> {
+
+fn ask_create_ca(ui: &mut UI, ca: &str) -> Result<bool> {
+    Ok(ui.prompt_yes_no(
+        &format!("Create a certifate authority `{}'?", ca),
+        Some(true),
+    )?)
+}
+
+
+fn create_ca(ui: &mut UI, origin: &str, cache_path: &Path) -> Result<()> {
     let result = command::origin::key::generate::start(ui, &origin, cache_path);
     ui.br()?;
     result
 }
 
-fn prompt_origin(ui: &mut UI) -> Result<String> {
-    /*let config = config::load()?;
-    let default = match config.origin {
-        Some(o) => {
-            ui.para(&format!(
-                "You already have a default origin set up as `{}', but feel \
-                                free to change it if you wish.",
-                &o
-            ))?;
-            Some(o)
-        }
-        None => env::var(ORIGIN_ENVVAR).or(env::var("USER")).ok(),
-    };
-    Ok(ui.prompt_ask(
-        "Default origin name",
-        default.as_ref().map(|x| &**x),
-    )?)
-    */
-    let tet = env::var(ORIGIN_ENVVAR).or(env::var("USER"));
-    ui.para(&format!(
-        "Testing {:?}", tet))?;
 
-    Ok(
-        format!(
-            "You already have a default origin set up as `{}', but feel \
-                            free to change it if you wish.",
-            "test"
-        )
-    )
+fn ask_create_api(ui: &mut UI, api: &str) -> Result<bool> {
+    Ok(ui.prompt_yes_no(
+        &format!("Create an api key pair `{}'?", api),
+        Some(true),
+    )?)
+}
+
+fn create_api(ui: &mut UI, api: &str, cache_path: &Path) -> Result<()> {
+    let result = command::origin::key::generate::start(ui, &api, cache_path);
+    ui.br()?;
+    result
+}
+
+fn ask_create_serviceaccount(ui: &mut UI, service_account: &str) -> Result<bool> {
+    Ok(ui.prompt_yes_no(
+        &format!("Create a service account `{}'?", service_account),
+        Some(true),
+    )?)
+}
+
+fn create_serviceaccount(ui: &mut UI, service_account: &str, cache_path: &Path) -> Result<()> {
+    let result = command::origin::key::generate::start(ui, &service_account, cache_path);
+    ui.br()?;
+    result
 }

@@ -2,7 +2,6 @@
 
 //! Libraries  module used by builder api
 
-extern crate base64;
 extern crate bodyparser;
 extern crate rioos_builder_protocol as protocol;
 #[macro_use]

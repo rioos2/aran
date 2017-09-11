@@ -23,6 +23,7 @@ regex = "0.2.1"
 serde = "1.0.11"
 serde_derive = "*"
 serde_json = "1.0.2"
+openssl = "0.9.17"
 # JW: Temporarily use master branch of git until serde 1.0+ is available in crate release
 sodiumoxide = { git = "https://github.com/dnaq/sodiumoxide" }
 time = "*"

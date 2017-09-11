@@ -367,8 +367,8 @@ fn split_version(version: &str) -> Result<(Vec<&str>, Option<String>)> {
     Ok((version_parts, extension))
 }
 
-/// Is the string a valid origin name?
-pub fn is_valid_origin_name(origin: &str) -> bool {
+/// Is the string a valid ca name?
+pub fn is_valid_ca_name(origin: &str) -> bool {
     origin.chars().count() <= 255 && ORIGIN_NAME_RE.is_match(origin)
 }
 
@@ -614,17 +614,17 @@ mod tests {
 
     #[test]
     fn check_origin_name() {
-        assert!(super::is_valid_origin_name("foo"));
-        assert!(super::is_valid_origin_name("foo_bar"));
-        assert!(super::is_valid_origin_name("foo-bar"));
-        assert!(super::is_valid_origin_name("0xdeadbeef"));
+        assert!(super::is_valid_ca_name("foo"));
+        assert!(super::is_valid_ca_name("foo_bar"));
+        assert!(super::is_valid_ca_name("foo-bar"));
+        assert!(super::is_valid_ca_name("0xdeadbeef"));
 
-        assert!(!super::is_valid_origin_name("Core"));
-        assert!(!super::is_valid_origin_name(" foo"));
-        assert!(!super::is_valid_origin_name("foo "));
-        assert!(!super::is_valid_origin_name("!foo"));
-        assert!(!super::is_valid_origin_name("foo bar"));
-        assert!(!super::is_valid_origin_name("0xDEADBEEF"));
+        assert!(!super::is_valid_ca_name("Core"));
+        assert!(!super::is_valid_ca_name(" foo"));
+        assert!(!super::is_valid_ca_name("foo "));
+        assert!(!super::is_valid_ca_name("!foo"));
+        assert!(!super::is_valid_ca_name("foo bar"));
+        assert!(!super::is_valid_ca_name("0xDEADBEEF"));
 
     }
 }

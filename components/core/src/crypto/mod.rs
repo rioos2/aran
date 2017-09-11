@@ -1,18 +1,8 @@
 // Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
-//! Habitat core encryption and cryptography.
+
+//! Rio/OS core encryption and cryptography.
 //!
 //! This module uses [libsodium](https://github.com/jedisct1/libsodium) and its Rust counterpart
 //! [sodiumoxide](https://github.com/dnaq/sodiumoxide) for cryptographic operations.
@@ -21,7 +11,6 @@
 //!
 //! - All public keys, certificates, and signatures are to be referred to as **public**.
 //! - All secret or private keys are to be referred to as **secret**.
-//! - All symmetric encryption keys are to be referred to as **secret**.
 //! - In general, the word `key` by itself does not indicate something as
 //! **public** or **secret**. The exceptions to this rule are as follows:
 //!     - if the word key appears in a URL, then we are referring to a public key to
@@ -231,44 +220,25 @@ use sodiumoxide::init as nacl_init;
 use env as henv;
 use fs::cache_key_path;
 
-/// The suffix on the end of a public sig/box file
-pub static PUBLIC_KEY_SUFFIX: &'static str = "pub";
+/// The suffix on the end of a public X509 certs file
+pub static PUBLIC_KEY_SUFFIX: &'static str = "csr";
 
-/// The suffix on the end of a public sig file
-pub static SECRET_SIG_KEY_SUFFIX: &'static str = "sig.key";
-
-/// The suffix on the end of a secret box file
-pub static SECRET_BOX_KEY_SUFFIX: &'static str = "box.key";
-
-/// The suffix on the end of a secret symmetric key file
-pub static SECRET_SYM_KEY_SUFFIX: &'static str = "sym.key";
-
-/// The hashing function we're using during sign/verify
-/// See also: https://download.libsodium.org/doc/hashing/generic_hashing.html
-pub static SIG_HASH_TYPE: &'static str = "BLAKE2b";
+/// The suffix on the end of a public X509 key file
+pub static SECRET_SIG_KEY_SUFFIX: &'static str = "key";
 
 /// This environment variable allows you to override the fs::CACHE_KEY_PATH
 /// at runtime. This is useful for testing.
-pub static CACHE_KEY_PATH_ENV_VAR: &'static str = "HAB_CACHE_KEY_PATH";
+pub static CACHE_KEY_PATH_ENV_VAR: &'static str = "RIO_CACHE_KEY_PATH";
 
 /// Create secret key files with these permissions
 static PUBLIC_KEY_PERMISSIONS: u32 = 0o400;
 static SECRET_KEY_PERMISSIONS: u32 = 0o400;
 
-pub static HART_FORMAT_VERSION: &'static str = "HART-1";
-pub static BOX_FORMAT_VERSION: &'static str = "BOX-1";
-
 pub const PUBLIC_SIG_KEY_VERSION: &'static str = "SIG-PUB-1";
 pub const SECRET_SIG_KEY_VERSION: &'static str = "SIG-SEC-1";
-pub const PUBLIC_BOX_KEY_VERSION: &'static str = "BOX-PUB-1";
-pub const SECRET_BOX_KEY_VERSION: &'static str = "BOX-SEC-1";
-pub const SECRET_SYM_KEY_VERSION: &'static str = "SYM-SEC-1";
 
-pub use self::keys::box_key_pair::BoxKeyPair;
-pub use self::keys::sym_key::SymKey;
 pub use self::keys::sig_key_pair::SigKeyPair;
 
-pub mod artifact;
 pub mod hash;
 pub mod keys;
 
@@ -289,7 +259,6 @@ pub mod test_support {
     use std::fs::File;
     use std::path::PathBuf;
 
-    use time;
 
     use error as herror;
 

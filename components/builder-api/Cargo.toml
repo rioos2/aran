@@ -2,16 +2,16 @@
 name = "rioos_aran_api"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
-description = "RIO/OS HTTP API gateway"
+description = "RIO/OS API Gateway"
 build = "../bldr-build.rs"
 workspace = "../../"
 
 [[bin]]
 name = "rios-apiserver"
+path = "src/main.rs"
 doc = false
 
 [dependencies]
-base64 = "*"
 bodyparser = "0.7.0"
 env_logger = "*"
 hyper = "0.10.12"

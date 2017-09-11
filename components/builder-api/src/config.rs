@@ -174,71 +174,40 @@ mod tests {
 
 /*
 
-const (
-	// KubernetesDir is the directory kubernetes owns for storing various configuration files
-	KubernetesDir = "/etc/kubernetes"
 
-	ManifestsSubDirName = "manifests"
+//Generator of private key/certificate pairs
 
-	CACertAndKeyBaseName = "ca"
-	CACertName           = "ca.crt"
-	CAKeyName            = "ca.key"
+use std::io::{File, Open, Write};
 
-	APIServerCertAndKeyBaseName = "apiserver"
-	APIServerCertName           = "apiserver.crt"
-	APIServerKeyName            = "apiserver.key"
+use openssl::crypto::hash::Type;
+use openssl::crypto::pkey::PKey;
+use openssl::crypto::rsa::RSA;
+use openssl::x509::X509Generator;
+use openssl::x509::extension::{Extension, KeyUsageOption};
 
-	APIServerKubeletClientCertAndKeyBaseName = "apiserver-kubelet-client"
-	APIServerKubeletClientCertName           = "apiserver-kubelet-client.crt"
-	APIServerKubeletClientKeyName            = "apiserver-kubelet-client.key"
+fn generate_server_cert() -> Result<X509> {
+    //let (ca_cert, ca_key) = X509Generator::new().generate().unwrap();
 
-	ServiceAccountKeyBaseName    = "sa"
-	ServiceAccountPublicKeyName  = "sa.pub"
-	ServiceAccountPrivateKeyName = "sa.key"
+    let ca_rsa = RSA::generate(2048).unwrap();
+    let ca_pkey = PKey::from_rsa(rsa).unwrap();
 
-	FrontProxyCACertAndKeyBaseName = "front-proxy-ca"
-	FrontProxyCACertName           = "front-proxy-ca.crt"
-	FrontProxyCAKeyName            = "front-proxy-ca.key"
 
-	FrontProxyClientCertAndKeyBaseName = "front-proxy-client"
-	FrontProxyClientCertName           = "front-proxy-client.crt"
-	FrontProxyClientKeyName            = "front-proxy-client.key"
+    let server_rsa = RSA::generate(2048).unwrap();
+    let server_pkey = PKey::from_rsa(rsa).unwrap();
 
-	AdminKubeConfigFileName             = "admin.conf"
-	KubeletKubeConfigFileName           = "kubelet.conf"
-	ControllerManagerKubeConfigFileName = "controller-manager.conf"
-	SchedulerKubeConfigFileName         = "scheduler.conf"
 
-	// Some well-known users and groups in the core Kubernetes authorization system
+    let csr = X509Generator::new().add_name("CN".to_owned(), "example.com".to_owned()).request(&server_pkey).unwrap();
+    X509Generator::new().sign_cert(&ca_key, &csr)
 
-	ControllerManagerUser   = "system:kube-controller-manager"
-	SchedulerUser           = "system:kube-scheduler"
-	MastersGroup            = "system:masters"
-	NodesGroup              = "system:nodes"
-	NodesClusterRoleBinding = "system:node"
 
-	// Constants for what we name our ServiceAccounts with limited access to the cluster in case of RBAC
-	KubeDNSServiceAccountName   = "kube-dns"
-	KubeProxyServiceAccountName = "kube-proxy"
+    let cert_path = Path::new("ca.crt");
+    let mut file = File::open_mode(&cert_path, Open, Write).unwrap();
+    assert!(cert.write_pem(&mut file).is_ok());
 
-	// APICallRetryInterval defines how long kubeadm should wait before retrying a failed API operation
-	APICallRetryInterval = 500 * time.Millisecond
-	// DiscoveryRetryInterval specifies how long kubeadm should wait before retrying to connect to the master when doing discovery
-	DiscoveryRetryInterval = 5 * time.Second
+    let pkey_path = Path::new("ca.key");
+    let mut file = File::open_mode(&pkey_path, Open, Write).unwrap();
+    assert!(pkey.write_pem(&mut file).is_ok());
 
-	// Minimum amount of nodes the Service subnet should allow.
-	// We need at least ten, because the DNS service is always at the tenth cluster clusterIP
-	MinimumAddressesInServiceSubnet = 10
 
-	// DefaultTokenDuration specifies the default amount of time that a bootstrap token will be valid
-	// Default behaviour is "never expire" == 0
-	DefaultTokenDuration = 0
-
-	// LabelNodeRoleMaster specifies that a node is a master
-	// It's copied over to kubeadm until it's merged in core: https://github.com/kubernetes/kubernetes/pull/39112
-	LabelNodeRoleMaster = "node-role.kubernetes.io/master"
-
-	// MinExternalEtcdVersion indicates minimum external etcd version which kubeadm supports
-	MinExternalEtcdVersion = "3.0.14"
-)
+}
 */
