@@ -79,7 +79,11 @@ impl DeploymentDS {
             let assembly = Self::collect_spec(&row, &datastore)?;
             assemblys_collection.push(assembly);
         }
-        response.set_assemblys(assemblys_collection);
+        response.set_assemblys(
+            assemblys_collection,
+            "AssemblyList".to_string(),
+            "v1".to_string(),
+        );
         Ok(Some(response))
     }
 
@@ -181,7 +185,11 @@ impl DeploymentDS {
         for row in rows {
             assembly_factorys_collection.push(row_to_assembly_factory(&row)?)
         }
-        response.set_assemblys_factory(assembly_factorys_collection);
+        response.set_assemblys_factory(
+            assembly_factorys_collection,
+            "AssemblyFactoryList".to_string(),
+            "v1".to_string(),
+        );
         Ok(Some(response))
     }
 
@@ -267,7 +275,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let plan: String = row.get("plan");
     let properties: String = row.get("properties");
     let type_meta: String = row.get("type_meta");
-    let object_meta: String =row.get("object_meta");
+    let object_meta: String = row.get("object_meta");
     let external_management_resource: Vec<String> = row.get("external_management_resource");
     let component_collection: String = row.get("component_collection");
     let opssettings: String = row.get("opssettings");

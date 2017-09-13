@@ -4,7 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{nodesrv,asmsrv};
+use protocol::{nodesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -22,10 +22,10 @@ impl NodeDS {
         let rows = &conn.query(
             "SELECT * FROM insert_node_v1($1,$2,$3,$4)",
             &[
-            &(spec_str as String),
-            &(status_str as String),
-            &(object_meta as String),
-            &(type_meta as String),
+                &(spec_str as String),
+                &(status_str as String),
+                &(object_meta as String),
+                &(type_meta as String),
             ],
         ).map_err(Error::NodeCreate)?;
 
@@ -50,7 +50,7 @@ impl NodeDS {
         for row in rows {
             node_collection.push(row_to_node(&row)?)
         }
-        response.set_node_collection(node_collection);
+        response.set_node_collection(node_collection, "NodeList".to_string(), "v1".to_string());
         Ok(Some(response))
     }
 

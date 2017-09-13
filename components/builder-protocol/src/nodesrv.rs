@@ -64,7 +64,7 @@ impl Node {
         self.type_meta = v;
     }
 
-    pub fn get_type_meta(&self) -> &asmsrv::TypeMeta{
+    pub fn get_type_meta(&self) -> &asmsrv::TypeMeta {
         &self.type_meta
     }
 
@@ -75,7 +75,6 @@ impl Node {
     pub fn get_object_meta(&self) -> &asmsrv::ObjectMeta {
         &self.object_meta
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -358,7 +357,9 @@ impl NodeInfo {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeGetResponse {
-    results: Vec<Node>,
+    kind: String,
+    apiVersion: String,
+    items: Vec<Node>,
 }
 
 impl NodeGetResponse {
@@ -366,7 +367,9 @@ impl NodeGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_node_collection(&mut self, v: Vec<Node>) {
-        self.results = v;
+    pub fn set_node_collection(&mut self, v: Vec<Node>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.apiVersion = s;
     }
 }

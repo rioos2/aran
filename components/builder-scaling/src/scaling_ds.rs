@@ -4,7 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{scalesrv,asmsrv};
+use protocol::{scalesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -57,7 +57,7 @@ impl ScalingDS {
         for row in rows {
             hs_collection.push(row_to_hs(&row)?)
         }
-        response.set_hs_collection(hs_collection);
+        response.set_hs_collection(hs_collection, "ScalingList".to_string(), "v1".to_string());
         Ok(Some(response))
     }
 

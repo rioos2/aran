@@ -231,7 +231,9 @@ impl Condition {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblysGetResponse {
-    results: Vec<Assembly>,
+    kind: String,
+    apiVersion: String,
+    items: Vec<Assembly>,
 }
 
 
@@ -239,10 +241,11 @@ impl AssemblysGetResponse {
     pub fn new() -> AssemblysGetResponse {
         ::std::default::Default::default()
     }
-
     // Param is passed by value, moved
-    pub fn set_assemblys(&mut self, v: Vec<Assembly>) {
-        self.results = v;
+    pub fn set_assemblys(&mut self, v: Vec<Assembly>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.apiVersion = s;
     }
 }
 
@@ -290,6 +293,8 @@ impl AssemblyFactory {
     pub fn new() -> AssemblyFactory {
         ::std::default::Default::default()
     }
+
+
 
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
@@ -492,7 +497,6 @@ impl OwnerReferences {
     pub fn set_block_owner_deletion(&mut self, v: bool) {
         self.block_owner_deletion = v;
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -511,7 +515,6 @@ impl Labels {
     pub fn set_key2(&mut self, v: ::std::string::String) {
         self.key2 = v;
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -530,7 +533,6 @@ impl Annotations {
     pub fn set_key2(&mut self, v: ::std::string::String) {
         self.key2 = v;
     }
-
 }
 
 
@@ -594,7 +596,6 @@ impl TypeMeta {
     pub fn set_api_version(&mut self, v: ::std::string::String) {
         self.api_version = v;
     }
-
 }
 
 
@@ -651,7 +652,9 @@ impl AssemblyFactoryGet {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactoryGetResponse {
     // message fields
-    results: Vec<AssemblyFactory>,
+    kind: String,
+    apiVersion: String,
+    items: Vec<AssemblyFactory>,
 }
 
 
@@ -661,8 +664,10 @@ impl AssemblyFactoryGetResponse {
     }
 
     // Param is passed by value, moved
-    pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>) {
-        self.results = v;
+    pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.apiVersion = s;
     }
 }
 

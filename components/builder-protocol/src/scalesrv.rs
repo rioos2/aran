@@ -299,7 +299,9 @@ impl Status {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScalingGetResponse {
-    results: Vec<HorizontalScaling>,
+    kind: String,
+    apiVersion: String,
+    items: Vec<HorizontalScaling>,
 }
 
 
@@ -308,7 +310,9 @@ impl HorizontalScalingGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_hs_collection(&mut self, v: Vec<HorizontalScaling>) {
-        self.results = v;
+    pub fn set_hs_collection(&mut self, v: Vec<HorizontalScaling>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.apiVersion = s;
     }
 }
