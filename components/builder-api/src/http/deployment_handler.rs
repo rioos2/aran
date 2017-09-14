@@ -9,7 +9,7 @@ use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, ComponentCollection, Properties, OpsSettings, TypeMeta, ObjectMeta, Labels, Annotations,OwnerReferences };
+use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, ComponentCollection, Properties, OpsSettings, TypeMeta, ObjectMeta, Labels, Annotations, OwnerReferences};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
@@ -100,25 +100,25 @@ struct ObjectMetaReq {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
- struct LabelsReq {
-     group: String,
-     key2: String,
- }
+struct LabelsReq {
+    group: String,
+    key2: String,
+}
 
- #[derive(Clone, Debug, Serialize, Deserialize)]
-  struct AnnotationsReq {
-      key1: String,
-      key2: String,
-  }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct AnnotationsReq {
+    key1: String,
+    key2: String,
+}
 
-  #[derive(Clone, Debug, Serialize, Deserialize)]
-  struct OwnerReferencesReq {
-      kind: String,
-      api_version: String,
-      name: String,
-      uid: String,
-      block_owner_deletion: bool,
-  }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct OwnerReferencesReq {
+    kind: String,
+    api_version: String,
+    name: String,
+    uid: String,
+    block_owner_deletion: bool,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ComponentReq {
@@ -184,13 +184,13 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                 object_meta.set_created_at(body.object_meta.created_at);
                 object_meta.set_cluster_name(body.object_meta.cluster_name);
                 let mut labels = Labels::new();
-                    labels.set_group(body.object_meta.labels.group);
-                    labels.set_key2(body.object_meta.labels.key2);
-                    object_meta.set_labels(labels);
+                labels.set_group(body.object_meta.labels.group);
+                labels.set_key2(body.object_meta.labels.key2);
+                object_meta.set_labels(labels);
                 let mut annotations = Annotations::new();
-                        annotations.set_key1(body.object_meta.annotations.key1);
-                        annotations.set_key2(body.object_meta.annotations.key2);
-                    object_meta.set_annotations(annotations);
+                annotations.set_key1(body.object_meta.annotations.key1);
+                annotations.set_key2(body.object_meta.annotations.key2);
+                object_meta.set_annotations(annotations);
                 let mut owner_references_collection = Vec::new();
                 for data in body.object_meta.owner_references {
                     let mut owner_references = OwnerReferences::new();
@@ -356,13 +356,13 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 object_meta.set_created_at(body.object_meta.created_at);
                 object_meta.set_cluster_name(body.object_meta.cluster_name);
                 let mut labels = Labels::new();
-                    labels.set_group(body.object_meta.labels.group);
-                    labels.set_key2(body.object_meta.labels.key2);
-                    object_meta.set_labels(labels);
+                labels.set_group(body.object_meta.labels.group);
+                labels.set_key2(body.object_meta.labels.key2);
+                object_meta.set_labels(labels);
                 let mut annotations = Annotations::new();
-                        annotations.set_key1(body.object_meta.annotations.key1);
-                        annotations.set_key2(body.object_meta.annotations.key2);
-                    object_meta.set_annotations(annotations);
+                annotations.set_key1(body.object_meta.annotations.key1);
+                annotations.set_key2(body.object_meta.annotations.key2);
+                object_meta.set_annotations(annotations);
                 let mut owner_references_collection = Vec::new();
                 for data in body.object_meta.owner_references {
                     let mut owner_references = OwnerReferences::new();

@@ -65,7 +65,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
         assemblys_get: get "/assemblys" => XHandler::new(assembly_list).before(basic.clone()),
         assembly: get "/assemblys/:id" => XHandler::new(assembly_show).before(basic.clone()),
-        assembly_status: put "/assemblys/status/:id" => XHandler::new(assembly_status_update).before(basic.clone()),
+        assembly_status: put "/assemblys/:id/status" => XHandler::new(assembly_status_update).before(basic.clone()),
 
         //scaling API: horizontal scaling
         horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),
