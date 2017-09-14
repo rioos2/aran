@@ -87,15 +87,19 @@ impl DeploymentDS {
         Ok(Some(response))
     }
 
-    pub fn assembly_status_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<()> {
+    pub fn assembly_status_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let asm_id = assembly.get_id().parse::<i64>().unwrap();
         let status_str = serde_json::to_string(assembly.get_status()).unwrap();
-        conn.execute(
-            "SELECT set_assembly_status_v1($1, $2)",
+        let rows = &conn.query(
+            "SELECT * FROM set_assembly_status_v1($1, $2)",
             &[&asm_id, &(status_str as String)],
         ).map_err(Error::AsmSetStatus)?;
-        Ok(())
+        for row in rows {
+            let assembly = Self::collect_spec(&row, &datastore)?;
+            return Ok(Some(assembly));
+        }
+        Ok(None)
     }
 
     pub fn assembly_factory_create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
