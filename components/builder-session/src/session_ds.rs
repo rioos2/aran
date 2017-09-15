@@ -279,6 +279,7 @@ fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
     account.set_id(id.to_string());
     account.set_email(row.get("email"));
     account.set_name(row.get("name"));
+    account.set_password(row.get("password"));
     account.set_apikey(row.get("api_key"));
     account
 }
