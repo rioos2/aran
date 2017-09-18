@@ -69,15 +69,17 @@ impl PasswordAuthClient {
         match SessionDS::get_account(&datastore, &account_get) {
             Ok(opt_account) => {
                 let account = opt_account.unwrap();
-
-                 GoofyCrypto::new()
-                     .verify_password(&account.get_password().to_string(), &account_get.get_password())
-                     .map_err(|e| {
-                     error::Error::Auth(AuthErr {
-                             error: String::from("Password match not found"),
-                             error_description: format!("{}", e),
-                         })
-                 })?;
+                GoofyCrypto::new()
+                    .verify_password(
+                        &account.get_password().to_string(),
+                        &account_get.get_password(),
+                    )
+                    .map_err(|e| {
+                        error::Error::Auth(AuthErr {
+                            error: String::from("Password match not found"),
+                            error_description: format!("{}", e),
+                        })
+                    })?;
 
                 Ok(account)
             }

@@ -57,20 +57,20 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
         //deploy API: assembly_factory
         assembly_factorys: post "/assemblyfactorys" => XHandler::new(assembly_factory_create).before(basic.clone()),
-        assemblys_factory: get "/assemblyfactorys/:id" => XHandler::new(assembly_factory_show).before(basic.clone()),
-        assemblys_factorys_get: get "/assemblyfactorys" => XHandler::new(assembly_factory_list).before(basic.clone()),
-        assembly_factory_status: put "/assemblyfactorys/status/:id" => XHandler::new(assembly_factory_status_update).before(basic.clone()),
+        assemblys_factory_show: get "/assemblyfactorys/:id" => XHandler::new(assembly_factory_show).before(basic.clone()),
+        assemblys_factorys_list: get "/assemblyfactorys" => XHandler::new(assembly_factory_list).before(basic.clone()),
+        assembly_factory_status: put "/assemblyfactorys/:id/status" => XHandler::new(assembly_factory_status_update).before(basic.clone()),
 
         //deploy API: assembly
         assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
-        assemblys_get: get "/assemblys" => XHandler::new(assembly_list).before(basic.clone()),
-        assembly: get "/assemblys/:id" => XHandler::new(assembly_show).before(basic.clone()),
+        assemblys_list: get "/assemblys" => XHandler::new(assembly_list).before(basic.clone()),
+        assembly_show: get "/assemblys/:id" => XHandler::new(assembly_show).before(basic.clone()),
         assembly_status: put "/assemblys/:id/status" => XHandler::new(assembly_status_update).before(basic.clone()),
 
         //scaling API: horizontal scaling
         horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),
         horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(hs_list).before(basic.clone()),
-        horizontal_scaling_status: put "/horizontalscaling/status/:id" => XHandler::new(hs_status_update).before(basic.clone()),
+        horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(hs_status_update).before(basic.clone()),
 
         //authorization API: for roles
         roles: post "/roles" => XHandler::new(roles_create).before(basic.clone()),
@@ -86,8 +86,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
         //node API
         nodes: post "/nodes" => XHandler::new(node_create).before(basic.clone()),
-        nodes: get "/nodes" => XHandler::new(node_list).before(basic.clone()),
-        node_status: put "/node/status/:id" => XHandler::new(node_status_update).before(basic.clone()),
+        nodes_list: get "/nodes" => XHandler::new(node_list).before(basic.clone()),
+        node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
 
     );
 

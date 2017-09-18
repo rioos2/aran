@@ -21,7 +21,7 @@ impl GoofyCrypto {
     }
 
     pub fn verify_password(&mut self, actual_password: &str, attempted_password: &str) -> error::Result<()> {
-        let verified = pbkdf2_check(attempted_password, &actual_password[..]);
+        let verified = pbkdf2_check(attempted_password, actual_password);
 
         match verified {
             Ok(result) => {
