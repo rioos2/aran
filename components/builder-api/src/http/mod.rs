@@ -88,7 +88,6 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         nodes: post "/nodes" => XHandler::new(node_create).before(basic.clone()),
         nodes_list: get "/nodes" => XHandler::new(node_list).before(basic.clone()),
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
-
     );
 
     let mut chain = Chain::new(router);

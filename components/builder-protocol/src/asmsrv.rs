@@ -294,8 +294,6 @@ impl AssemblyFactory {
         ::std::default::Default::default()
     }
 
-
-
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }

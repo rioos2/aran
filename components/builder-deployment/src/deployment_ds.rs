@@ -163,15 +163,22 @@ impl DeploymentDS {
         Ok(None)
     }
 
-    pub fn assembly_factory_status_update(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<()> {
+    pub fn assembly_factory_status_update(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
         let asm_fac_id = assembly_fac.get_id().parse::<i64>().unwrap();
         let status_str = serde_json::to_string(assembly_fac.get_status()).unwrap();
-        conn.execute(
-            "SELECT set_assembly_factorys_status_v1($1, $2)",
+        let rows = &conn.query(
+            "SELECT * FROM set_assembly_factorys_status_v1($1, $2)",
             &[&asm_fac_id, &(status_str as String)],
         ).map_err(Error::AsmFactorySetStatus)?;
-        Ok(())
+        for row in rows {
+            let mut assembly_factory = row_to_assembly_factory(&row)?;
+            let plan_url = assembly_factory.get_plan();
+            let data = Self::plan_show(&datastore, plan_url.clone())?;
+            assembly_factory.set_plan_data(data);
+            return Ok(Some(assembly_factory));
+        }
+        Ok(None)
     }
 
 
