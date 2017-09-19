@@ -31,13 +31,13 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     id: String,
+    type_meta: TypeMeta,
+    object_meta: ObjectMeta,
     name: String,
     uri: String,
     description: String,
     parent_id: String,
     tags: Vec<String>,
-    type_meta: TypeMeta,
-    object_meta: ObjectMeta,
     node: String,
     ip: String,
     urls: String,

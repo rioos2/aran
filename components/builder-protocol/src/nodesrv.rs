@@ -24,11 +24,11 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
     id: String,
+    object_meta: asmsrv::ObjectMeta,
+    type_meta: asmsrv::TypeMeta,
     spec: Spec,
     status: Status,
     created_at: String,
-    object_meta: asmsrv::ObjectMeta,
-    type_meta: asmsrv::TypeMeta,
 }
 
 impl Node {

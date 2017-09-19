@@ -29,6 +29,8 @@ impl Migratable for SecretProcedures {
             r#"CREATE TABLE  IF NOT EXISTS secret (
              id bigint PRIMARY KEY DEFAULT next_id_v1('sec_id_seq'),
              data text,
+             object_meta text,
+             type_meta text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
              )"#,
@@ -41,11 +43,13 @@ impl Migratable for SecretProcedures {
         migrator.migrate(
             "secretsrv",
             r#"CREATE OR REPLACE FUNCTION insert_secret_v1 (
-                data text
+                data text,
+                object_meta text,
+                type_meta text
             ) RETURNS SETOF secret AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO secret(data)
-                                        VALUES (data)
+                                    RETURN QUERY INSERT INTO secret(data,object_meta,type_meta)
+                                        VALUES (data,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
