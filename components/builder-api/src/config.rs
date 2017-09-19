@@ -7,7 +7,7 @@ use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
-use rio_net::config::{PasswordCfg, ShieldCfg, PasswordAuth, ShieldAuth, RouterAddr, RouterCfg};
+use rio_net::config::{PasswordCfg, ShieldCfg, PasswordAuth, ShieldAuth, RouterAddr, RouterCfg, PrometheusCfg, Prometheus};
 use rio_core::config::ConfigFile;
 
 use error::Error;
@@ -24,7 +24,9 @@ pub struct Config {
     pub github: PasswordCfg,
     //RIO Shield
     pub shield: ShieldCfg,
-    //
+
+    pub prometheus: PrometheusCfg,
+
     // Whether to log events for funnel metrics
     pub events_enabled: bool,
     /// Where to record log events for funnel metrics
@@ -39,6 +41,7 @@ impl Default for Config {
             ui: UiCfg::default(),
             github: PasswordCfg::default(),
             shield: ShieldCfg::default(),
+            prometheus: PrometheusCfg::default(),
             events_enabled: false,
             log_dir: env::temp_dir().to_string_lossy().into_owned(),
         }
@@ -74,6 +77,13 @@ impl ShieldAuth for Config {
 
     fn github_client_secret(&self) -> &str {
         &self.github.client_secret
+    }
+}
+
+
+impl Prometheus for Config {
+    fn prometheus_url(&self) -> &str {
+        &self.prometheus.url
     }
 }
 

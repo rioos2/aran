@@ -19,6 +19,8 @@ use serde::{Serialize, Serializer};
 use std::result;
 use std::str::FromStr;
 use asmsrv;
+use std::collections::BTreeMap;
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -371,5 +373,198 @@ impl NodeGetResponse {
         self.items = v;
         self.kind = r;
         self.apiVersion = s;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct NodeMetricGetResponse {
+    title: String,
+    guages: Guages,
+    statistics: Statistics,
+    osusages: Osusages,
+}
+
+impl NodeMetricGetResponse {
+    pub fn new() -> NodeMetricGetResponse {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_guages(&mut self, v: Guages) {
+        self.guages = v;
+    }
+    pub fn set_statistics(&mut self, v: Statistics) {
+        self.statistics = v;
+    }
+    pub fn set_osusages(&mut self, v: Osusages) {
+        self.osusages = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Guages {
+    title: String,
+    counters: Vec<Counters>,
+}
+impl Guages {
+    pub fn new() -> Guages {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_counters(&mut self, v: Vec<Counters>) {
+        self.counters = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Counters {
+    name: String,
+    description: String,
+    cpu: String,
+    counter: String,
+}
+impl Counters {
+    pub fn new() -> Counters {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+    pub fn set_cpu(&mut self, v: ::std::string::String) {
+        self.cpu = v;
+    }
+    pub fn set_counter(&mut self, v: ::std::string::String) {
+        self.counter = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Statistics {
+    title: String,
+    nodes: Vec<Nodes>,
+}
+impl Statistics {
+    pub fn new() -> Statistics {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_nodes(&mut self, v: Vec<Nodes>) {
+        self.nodes = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Nodes {
+    name: String,
+    description: String,
+    cpu: String,
+    counter: String,
+    cost_of_consumption: String,
+    health: String,
+}
+impl Nodes {
+    pub fn new() -> Counters {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+    pub fn set_cpu(&mut self, v: ::std::string::String) {
+        self.cpu = v;
+    }
+    pub fn set_counter(&mut self, v: ::std::string::String) {
+        self.counter = v;
+    }
+    pub fn set_cost_of_consumption(&mut self, v: ::std::string::String) {
+        self.cost_of_consumption = v;
+    }
+    pub fn set_health(&mut self, v: ::std::string::String) {
+        self.health = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Osusages {
+    title: String,
+    from_date: String,
+    to_date: String,
+    cumulative: Cumulative,
+    item: Item,
+}
+impl Osusages {
+    pub fn new() -> Osusages {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_from_date(&mut self, v: ::std::string::String) {
+        self.from_date = v;
+    }
+    pub fn set_to_date(&mut self, v: ::std::string::String) {
+        self.to_date = v;
+    }
+    pub fn set_cumulative(&mut self, v: Cumulative) {
+        self.cumulative = v;
+    }
+    pub fn set_item(&mut self, v: Item) {
+        self.item = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Cumulative {
+    cpu: String,
+    counter: String,
+    alert: String,
+}
+
+impl Cumulative {
+    pub fn new() -> Cumulative {
+        ::std::default::Default::default()
+    }
+    pub fn set_cpu(&mut self, v: ::std::string::String) {
+        self.cpu = v;
+    }
+    pub fn set_counter(&mut self, v: ::std::string::String) {
+        self.counter = v;
+    }
+    pub fn set_alert(&mut self, v: ::std::string::String) {
+        self.alert = v;
+    }
+}
+
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Item {
+    cpu: BTreeMap<String, String>,
+    name: String,
+}
+impl Item {
+    pub fn new() -> Item {
+        ::std::default::Default::default()
+    }
+    // pub fn set_cpu(&mut self, v: ::std::string::String) {
+    //     self.cpu = v;
+    // }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_cpu(&mut self, k: ::std::string::String, v: ::std::string::String) {
+        println!("{:?}", k);
+        println!("{:?}", v);
+        self.cpu.insert(k.into(), v.into());
     }
 }

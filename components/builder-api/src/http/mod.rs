@@ -7,6 +7,7 @@ pub mod scaling_handler;
 pub mod authorize_handler;
 pub mod auth_handler;
 pub mod node_handler;
+pub mod secret_handler;
 
 
 use std::sync::{mpsc, Arc};
@@ -14,6 +15,7 @@ use std::thread::{self, JoinHandle};
 
 use rio_net::http::middleware::*;
 use rio_net::auth::default::PasswordAuthClient;
+use rio_net::auth::prometheus::PrometheusClient;
 
 // turn it on later
 //use rio_core::event::EventLogger;
@@ -30,7 +32,7 @@ use self::auth_handler::*;
 use self::scaling_handler::*;
 use self::authorize_handler::*;
 use self::node_handler::*;
-
+use self::secret_handler::*;
 
 use db::data_store::*;
 
@@ -42,6 +44,7 @@ const HTTP_THREAD_COUNT: usize = 128;
 pub fn router(config: Arc<Config>) -> Result<Chain> {
     let basic = Authenticated::new(&*config);
     //let bioshield = Shielded::new(&*config);
+    //let prometheus = Prometheused::new(&*config);
 
     let router =
         router!(
@@ -88,12 +91,21 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         nodes: post "/nodes" => XHandler::new(node_create).before(basic.clone()),
         nodes_list: get "/nodes" => XHandler::new(node_list).before(basic.clone()),
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
+        node_metrics: get "/metrics" => XHandler::new(node_metrics).before(basic.clone()),
+
+
+        //secret API
+        secret: post "/secret" => XHandler::new(secret_create).before(basic.clone()),
     );
 
     let mut chain = Chain::new(router);
 
     chain.link(persistent::Read::<PasswordAuthCli>::both(
         PasswordAuthClient::new(&*config),
+    ));
+
+    chain.link(persistent::Read::<PrometheusCli>::both(
+        PrometheusClient::new(&*config),
     ));
 
     chain.link(persistent::Read::<DataStoreBroker>::both(

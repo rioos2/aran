@@ -64,6 +64,96 @@ impl NodeDS {
         ).map_err(Error::NodeSetStatus)?;
         Ok(())
     }
+
+    pub fn node_metrics(datastore: &DataStoreConn) -> Result<Option<nodesrv::NodeMetricGetResponse>> {
+        // let conn = datastore.pool.get_shard(0)?;
+
+        // let rows = &conn.query("SELECT * FROM get_nodes_v1()", &[]).map_err(
+        //     Error::NodeList,
+        // )?;
+
+        let mut response = nodesrv::NodeMetricGetResponse::new();
+        response.set_title("Command center operations".to_string());
+
+        let gua = "{
+                        \"title\":\"Cumulative operations counter\",
+                        \"counters\":[
+                        {
+                            \"name\":\"cpu\",
+                            \"description\":\"CPU ..Throttled\",
+                            \"cpu\":\"percentage\",
+                            \"counter\":\"100\"
+                        },
+                        {
+                            \"name\":\"ram\",
+                            \"description\":\"RAM ..Throttled\",
+                            \"cpu\":\"percentage\",
+                            \"counter\":\"100\"
+                        },
+                        {
+                            \"name\":\"disk\",
+                            \"description\":\"DISK ..Throttled\",
+                            \"cpu\":\"percentage\",
+                            \"counter\":\"100\"
+                        }
+                        ]
+                    }";
+        let type_gua: nodesrv::Guages = serde_json::from_str(gua).unwrap();
+        response.set_guages(type_gua);
+
+        // let sta = "{
+        //     \"title\":\"Statistics of the nodes\",
+        //     \"nodes\":[
+        //     {
+        //         \"name\":\"name_of_the_node\",
+        //         \"description\":\"CPU ..Throttled\",
+        //         \"cpu\":\"percentage\",
+        //         \"counter\":\"100\",
+        //         \"cost_of_consumption\":\"2000 USD\",
+        //         \"health\":\"green/red/yellow\"
+        //     },
+        //     {
+        //         \"name\":\"name_of_the_node\",
+        //         \"description\":\"CPU ..Throttled\",
+        //         \"cpu\":\"percentage\",
+        //         \"counter\":\"100\",
+        //         \"cost_of_consumption\":\"2000 USD\",
+        //         \"health\":\"green/red/yellow\"
+        //     }
+        //     ]
+        // },";
+        // let type_sta: nodesrv::Statistics = serde_json::from_str(sta).unwrap();
+        // response.set_statistics(type_sta);
+
+        // let os = "{
+        //     \"title\":\"Operating systems consumed\",
+        //     \"from_date\":\"2001-01-11:10:1010Z\",
+        //     \"to_date\":\"2011-01-11:10:1010Z\",
+        //     \"cumulative\":{
+        //         \"cpu\":\"percentage\",
+        //         \"counter\":\"90\",
+        //         \"alerts\":\"no\"
+        //     },
+        //     \"item\":{
+        //         \"name\":\"name_of_the_os\",
+        //         \"cpu\":{
+        //
+        //             \"1504157541.068\":\"276.88\",
+        //
+        //             \"1504157541.068\":\"276.88\",
+        //     }
+        //     }
+        // }";
+
+        // let mut res = nodesrv::Item::new();
+        // res.set_cpu("vino".to_string(), "hai".to_string());
+        //
+        //
+        // let type_os: nodesrv::Osusages = serde_json::from_str(os).unwrap();
+        // response.set_osusages(type_os);
+        // println!("---------------------------------------{:?}", response);
+        Ok(Some(response))
+    }
 }
 
 fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {

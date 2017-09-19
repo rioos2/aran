@@ -7,7 +7,7 @@ use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
 use protocol::nodesrv::{Node, Spec, Status, Capacity, Range, FixedRange, InfiniteRange, Conditions, Taints, Addresses, NodeAddress, NodeInfo};
-use protocol::asmsrv::{TypeMeta, ObjectMeta, Labels, Annotations,OwnerReferences };
+use protocol::asmsrv::{TypeMeta, ObjectMeta, Labels, Annotations, OwnerReferences};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NodeCreateReq {
@@ -36,25 +36,25 @@ struct ObjectMetaReq {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
- struct LabelsReq {
-     group: String,
-     key2: String,
- }
+struct LabelsReq {
+    group: String,
+    key2: String,
+}
 
- #[derive(Clone, Debug, Serialize, Deserialize)]
-  struct AnnotationsReq {
-      key1: String,
-      key2: String,
-  }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct AnnotationsReq {
+    key1: String,
+    key2: String,
+}
 
-  #[derive(Clone, Debug, Serialize, Deserialize)]
-  struct OwnerReferencesReq {
-      kind: String,
-      api_version: String,
-      name: String,
-      uid: String,
-      block_owner_deletion: bool,
-  }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct OwnerReferencesReq {
+    kind: String,
+    api_version: String,
+    name: String,
+    uid: String,
+    block_owner_deletion: bool,
+}
 #[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SpecReq {
@@ -311,13 +311,13 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 object_meta.set_created_at(body.object_meta.created_at);
                 object_meta.set_cluster_name(body.object_meta.cluster_name);
                 let mut labels = Labels::new();
-                    labels.set_group(body.object_meta.labels.group);
-                    labels.set_key2(body.object_meta.labels.key2);
-                    object_meta.set_labels(labels);
+                labels.set_group(body.object_meta.labels.group);
+                labels.set_key2(body.object_meta.labels.key2);
+                object_meta.set_labels(labels);
                 let mut annotations = Annotations::new();
-                        annotations.set_key1(body.object_meta.annotations.key1);
-                        annotations.set_key2(body.object_meta.annotations.key2);
-                    object_meta.set_annotations(annotations);
+                annotations.set_key1(body.object_meta.annotations.key1);
+                annotations.set_key2(body.object_meta.annotations.key2);
+                object_meta.set_annotations(annotations);
                 let mut owner_references_collection = Vec::new();
                 for data in body.object_meta.owner_references {
                     let mut owner_references = OwnerReferences::new();
@@ -512,6 +512,16 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
 
     match NodeDS::node_status_update(&conn, &node_create) {
         Ok(node) => Ok(render_json(status::Ok, &node)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+pub fn node_metrics(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match NodeDS::node_metrics(&conn) {
+        Ok(node_list) => Ok(render_json(status::Ok, &node_list)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
