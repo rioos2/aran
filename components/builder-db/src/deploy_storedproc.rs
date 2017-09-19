@@ -39,7 +39,6 @@ impl Migratable for DeployProcedures {
              node text,
              ip text,
              urls text,
-             component_collection text,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
@@ -62,12 +61,11 @@ impl Migratable for DeployProcedures {
                 node text,
                 ip text,
                 urls text,
-                component_collection text,
                 status text
                         ) RETURNS SETOF assembly AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,object_meta,type_meta,node,ip,urls,component_collection,status)
-                                        VALUES (name, uri, description,parent_id, tags,object_meta, type_meta,node,ip,urls,component_collection,status)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,object_meta,type_meta,node,ip,urls,status)
+                                        VALUES (name, uri, description,parent_id, tags,object_meta, type_meta,node,ip,urls,status)
                                         RETURNING *;
                                     RETURN;
                                 END

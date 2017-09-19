@@ -23,7 +23,7 @@ impl DeploymentDS {
         let object_meta = serde_json::to_string(assembly.get_object_meta()).unwrap();
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
@@ -35,7 +35,6 @@ impl DeploymentDS {
                 &(assembly.get_node() as String),
                 &(assembly.get_ip() as String),
                 &(assembly.get_urls() as String),
-                &(assembly.get_component_collection() as String),
                 &(status_str as String),
             ],
         ).map_err(Error::AssemblyCreate)?;
@@ -245,7 +244,6 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
     let parent_id: String = row.get("parent_id");
-    let component_collection: String = row.get("component_collection");
     let status: String = row.get("status");
     let node: String = row.get("node");
     let ip: String = row.get("ip");
@@ -262,7 +260,6 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_type_meta(type_meta_obj);
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as String);
-    assembly.set_component_collection(component_collection as String);
     let status_obj: asmsrv::Status = serde_json::from_str(&status).unwrap();
     assembly.set_status(status_obj);
     assembly.set_node(node as String);
