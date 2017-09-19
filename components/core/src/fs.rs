@@ -1,33 +1,31 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
+// Copyright (c) 2017 RioCorp Inc.
+
 
 use std::env;
 use std::path::{Path, PathBuf};
 
 use users;
 
-use package::{Identifiable, PackageInstall, PackageIdent};
+use package::{Identifiable, PackageIdent};
 use env as henv;
-use error::Result;
 
-/// The default root path of the Habitat filesystem
-pub const ROOT_PATH: &'static str = "hab";
+/// The default root path of the Rio/OS filesystem
+pub const ROOT_PATH: &'static str = "rioos";
 /// The default path for any analytics related files
-pub const CACHE_ANALYTICS_PATH: &'static str = "hab/cache/analytics";
+pub const CACHE_ANALYTICS_PATH: &'static str = "rioos/cache/analytics";
 /// The default download root path for package artifacts, used on package installation
-pub const CACHE_ARTIFACT_PATH: &'static str = "hab/cache/artifacts";
+pub const CACHE_ARTIFACT_PATH: &'static str = "rioos/cache/artifacts";
 /// The default path where cryptographic keys are stored
-pub const CACHE_KEY_PATH: &'static str = "hab/cache/keys";
+pub const CACHE_KEY_PATH: &'static str = "rioos/cache/keys";
 /// The default path where source artifacts are downloaded, extracted, & compiled
-pub const CACHE_SRC_PATH: &'static str = "hab/cache/src";
+pub const CACHE_SRC_PATH: &'static str = "rioos/cache/src";
 /// The default path where SSL-related artifacts are placed
-pub const CACHE_SSL_PATH: &'static str = "hab/cache/ssl";
+pub const CACHE_SSL_PATH: &'static str = "rioos/cache/ssl";
 /// The root path containing all locally installed packages
-pub const PKG_PATH: &'static str = "hab/pkgs";
+pub const PKG_PATH: &'static str = "rioos/pkgs";
 /// The environment variable pointing to the filesystem root. This exists for internal
-/// Habitat team usage and is not intended to be used by Habitat consumers.
-/// Using this variable could lead to broken supervisor services and it should
-/// be used with extreme caution.
+/// team usage and is not intended to be used by consumers.
+
 pub const FS_ROOT_ENVVAR: &'static str = "FS_ROOT";
 pub const SYSTEMDRIVE_ENVVAR: &'static str = "SYSTEMDRIVE";
 
@@ -240,32 +238,6 @@ pub fn find_command(command: &str) -> Option<PathBuf> {
         }
         None => None,
     }
-}
-
-/// Returns the absolute path to the given command from a given package installation.
-///
-/// If the command is not found, then `None` is returned.
-///
-/// # Failures
-///
-/// * The path entries metadata cannot be loaded
-pub fn find_command_in_pkg(command: &str, pkg_install: &PackageInstall, fs_root_path: &Path) -> Result<Option<PathBuf>> {
-    for path in try!(pkg_install.paths()) {
-        let stripped = path.strip_prefix("/").expect(&format!(
-            "Package path missing / prefix {}",
-            path.to_string_lossy()
-        ));
-        let candidate = fs_root_path.join(stripped).join(command);
-        if candidate.is_file() {
-            return Ok(Some(path.join(command)));
-        } else {
-            match find_command_with_pathext(&candidate) {
-                Some(result) => return Ok(Some(result)),
-                None => {}
-            }
-        }
-    }
-    Ok(None)
 }
 
 // Windows relies on path extensions to resolve commands like `docker` to `docker.exe`

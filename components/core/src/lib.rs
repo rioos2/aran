@@ -1,7 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 //! A module containing
-
 extern crate base64;
 extern crate errno;
 extern crate hex;

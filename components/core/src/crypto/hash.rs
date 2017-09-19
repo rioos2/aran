@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
+// Copyright (c) 2017 RioCorp Inc.
 
 use std::fs::File;
 use std::io::{BufReader, Read};

@@ -16,6 +16,7 @@ use libarchive;
 use regex;
 use toml;
 
+use openssl;
 use package::{self, Identifiable};
 
 pub type Result<T> = result::Result<T, Error>;
@@ -23,6 +24,8 @@ pub type Result<T> = result::Result<T, Error>;
 /// Core error types
 #[derive(Debug)]
 pub enum Error {
+    /// Occurs when an error occurrs in openssl
+    X509Error(openssl::error::ErrorStack),
     /// Occurs when a `habitat_core::package::PackageArchive` is being read.
     ArchiveError(libarchive::error::ArchiveError),
     /// An invalid path to a keyfile was given.
@@ -131,6 +134,7 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
+            Error::X509Error(ref err) => format!("{}", err),
             Error::ArchiveError(ref err) => format!("{}", err),
             Error::BadKeyPath(ref e) => {
                 format!(
@@ -298,6 +302,7 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
+            Error::X509Error(ref err) => err.description(),
             Error::ArchiveError(ref err) => err.description(),
             Error::BadKeyPath(_) => "An absolute path to a file on disk is required",
             Error::ConfigFileIO(_, _) => "Unable to read the raw contents of a configuration file",
@@ -407,5 +412,11 @@ impl From<num::ParseIntError> for Error {
 impl From<regex::Error> for Error {
     fn from(err: regex::Error) -> Self {
         Error::RegexParse(err)
+    }
+}
+
+impl From<openssl::error::ErrorStack> for Error {
+    fn from(err: openssl::error::ErrorStack) -> Self {
+        Error::X509Error(err)
     }
 }
