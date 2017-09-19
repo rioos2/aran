@@ -19,15 +19,16 @@ use serde::{Serialize, Serializer};
 use std::result;
 use std::str::FromStr;
 use asmsrv;
+use std::collections::BTreeMap;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
     id: String,
+    object_meta: asmsrv::ObjectMeta,
+    type_meta: asmsrv::TypeMeta,
     spec: Spec,
     status: Status,
     created_at: String,
-    object_meta: asmsrv::ObjectMeta,
-    type_meta: asmsrv::TypeMeta,
 }
 
 impl Node {
@@ -79,9 +80,9 @@ impl Node {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Spec {
-    assemblyCIDR: String,
-    externalID: String,
-    providerID: String,
+    assembly_cidr: String,
+    external_id: String,
+    provider_id: String,
     unschedulable: bool,
     taints: Vec<Taints>,
 }
@@ -90,14 +91,14 @@ impl Spec {
     pub fn new() -> Spec {
         ::std::default::Default::default()
     }
-    pub fn set_assemblyCIDR(&mut self, v: ::std::string::String) {
-        self.assemblyCIDR = v;
+    pub fn set_assembly_cidr(&mut self, v: ::std::string::String) {
+        self.assembly_cidr = v;
     }
-    pub fn set_externalID(&mut self, v: ::std::string::String) {
-        self.externalID = v;
+    pub fn set_external_id(&mut self, v: ::std::string::String) {
+        self.external_id = v;
     }
-    pub fn set_providerID(&mut self, v: ::std::string::String) {
-        self.providerID = v;
+    pub fn set_provider_id(&mut self, v: ::std::string::String) {
+        self.provider_id = v;
     }
 
     pub fn set_unschedulable(&mut self, v: bool) {
@@ -114,7 +115,7 @@ pub struct Taints {
     key: String,
     value: String,
     effect: String,
-    timeAdded: String,
+    time_added: String,
 }
 
 impl Taints {
@@ -130,19 +131,19 @@ impl Taints {
     pub fn set_effect(&mut self, v: ::std::string::String) {
         self.effect = v;
     }
-    pub fn set_timeAdded(&mut self, v: ::std::string::String) {
-        self.timeAdded = v;
+    pub fn set_time_added(&mut self, v: ::std::string::String) {
+        self.time_added = v;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Status {
-    capacity: Capacity,
-    allocatable: Capacity,
+    capacity: BTreeMap<String, String>,
+    allocatable: BTreeMap<String, String>,
     phase: String,
     conditions: Vec<Conditions>,
     addresses: Vec<Addresses>,
-    nodeInfo: NodeInfo,
+    node_info: NodeInfo,
 }
 
 impl Status {
@@ -150,14 +151,14 @@ impl Status {
         ::std::default::Default::default()
     }
 
-    pub fn set_capacity(&mut self, v: Capacity) {
+    pub fn set_capacity(&mut self, v: BTreeMap<String, String>) {
         self.capacity = v;
     }
-    pub fn set_allocatable(&mut self, v: Capacity) {
+    pub fn set_allocatable(&mut self, v: BTreeMap<String, String>) {
         self.allocatable = v;
     }
-    pub fn set_nodeInfo(&mut self, v: NodeInfo) {
-        self.nodeInfo = v;
+    pub fn set_node_info(&mut self, v: NodeInfo) {
+        self.node_info = v;
     }
     pub fn set_phase(&mut self, v: ::std::string::String) {
         self.phase = v;
@@ -170,98 +171,14 @@ impl Status {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Capacity {
-    cpu: Range,
-    mem: Range,
-    disk: Range,
-}
 
-impl Capacity {
-    pub fn new() -> Capacity {
-        ::std::default::Default::default()
-    }
-
-    pub fn set_cpu(&mut self, v: Range) {
-        self.cpu = v;
-    }
-    pub fn set_mem(&mut self, v: Range) {
-        self.mem = v;
-    }
-    pub fn set_disk(&mut self, v: Range) {
-        self.disk = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Range {
-    fixed_range: FixedRange,
-    infinite_range: InfiniteRange,
-    quantity: String,
-    format: String,
-}
-
-impl Range {
-    pub fn new() -> Range {
-        ::std::default::Default::default()
-    }
-
-    pub fn set_fixed_range(&mut self, v: FixedRange) {
-        self.fixed_range = v;
-    }
-    pub fn set_infinite_range(&mut self, v: InfiniteRange) {
-        self.infinite_range = v;
-    }
-    pub fn set_quantity(&mut self, v: ::std::string::String) {
-        self.quantity = v;
-    }
-    pub fn set_format(&mut self, v: ::std::string::String) {
-        self.format = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct FixedRange {
-    value: String,
-    scale: String,
-}
-
-impl FixedRange {
-    pub fn new() -> FixedRange {
-        ::std::default::Default::default()
-    }
-    pub fn set_value(&mut self, v: ::std::string::String) {
-        self.value = v;
-    }
-    pub fn set_scale(&mut self, v: ::std::string::String) {
-        self.scale = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct InfiniteRange {
-    unscale: String,
-    scale: String,
-}
-
-impl InfiniteRange {
-    pub fn new() -> InfiniteRange {
-        ::std::default::Default::default()
-    }
-    pub fn set_unscale(&mut self, v: ::std::string::String) {
-        self.unscale = v;
-    }
-    pub fn set_scale(&mut self, v: ::std::string::String) {
-        self.scale = v;
-    }
-}
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Conditions {
-    conditionType: String,
+    condition_type: String,
     status: String,
-    lastHeartbeatTime: String,
-    lastTransitionTime: String,
+    last_heartbeat_time: String,
+    last_transition_time: String,
     reason: String,
     message: String,
 }
@@ -270,17 +187,17 @@ impl Conditions {
     pub fn new() -> Conditions {
         ::std::default::Default::default()
     }
-    pub fn set_conditionType(&mut self, v: ::std::string::String) {
-        self.conditionType = v;
+    pub fn set_condition_type(&mut self, v: ::std::string::String) {
+        self.condition_type = v;
     }
     pub fn set_status(&mut self, v: ::std::string::String) {
         self.status = v;
     }
-    pub fn set_lastHeartbeatTime(&mut self, v: ::std::string::String) {
-        self.lastHeartbeatTime = v;
+    pub fn set_last_heartbeat_time(&mut self, v: ::std::string::String) {
+        self.last_heartbeat_time = v;
     }
-    pub fn set_lastTransitionTime(&mut self, v: ::std::string::String) {
-        self.lastTransitionTime = v;
+    pub fn set_last_transition_time(&mut self, v: ::std::string::String) {
+        self.last_transition_time = v;
     }
     pub fn set_reason(&mut self, v: ::std::string::String) {
         self.reason = v;
@@ -290,9 +207,11 @@ impl Conditions {
     }
 }
 
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Addresses {
-    nodeAddress: NodeAddress,
+    node_type: String,
+    addresses: String,
 }
 
 impl Addresses {
@@ -300,24 +219,8 @@ impl Addresses {
         ::std::default::Default::default()
     }
 
-    pub fn set_nodeAddress(&mut self, v: NodeAddress) {
-        self.nodeAddress = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct NodeAddress {
-    nodeType: String,
-    addresses: String,
-}
-
-impl NodeAddress {
-    pub fn new() -> NodeAddress {
-        ::std::default::Default::default()
-    }
-
-    pub fn set_nodeType(&mut self, v: ::std::string::String) {
-        self.nodeType = v;
+    pub fn set_node_type(&mut self, v: ::std::string::String) {
+        self.node_type = v;
     }
     pub fn set_addresses(&mut self, v: ::std::string::String) {
         self.addresses = v;
@@ -327,10 +230,10 @@ impl NodeAddress {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeInfo {
-    machineID: String,
-    systemUUID: String,
-    kernelVersion: String,
-    oSImage: String,
+    machine_id: String,
+    system_uuid: String,
+    kernel_version: String,
+    os_image: String,
     architecture: String,
 }
 
@@ -338,17 +241,17 @@ impl NodeInfo {
     pub fn new() -> NodeInfo {
         ::std::default::Default::default()
     }
-    pub fn set_machineID(&mut self, v: ::std::string::String) {
-        self.machineID = v;
+    pub fn set_machine_id(&mut self, v: ::std::string::String) {
+        self.machine_id = v;
     }
-    pub fn set_systemUUID(&mut self, v: ::std::string::String) {
-        self.systemUUID = v;
+    pub fn set_system_uuid(&mut self, v: ::std::string::String) {
+        self.system_uuid = v;
     }
-    pub fn set_kernelVersion(&mut self, v: ::std::string::String) {
-        self.kernelVersion = v;
+    pub fn set_kernel_version(&mut self, v: ::std::string::String) {
+        self.kernel_version = v;
     }
-    pub fn set_oSImage(&mut self, v: ::std::string::String) {
-        self.oSImage = v;
+    pub fn set_os_image(&mut self, v: ::std::string::String) {
+        self.os_image = v;
     }
     pub fn set_architecture(&mut self, v: ::std::string::String) {
         self.architecture = v;
@@ -371,5 +274,198 @@ impl NodeGetResponse {
         self.items = v;
         self.kind = r;
         self.apiVersion = s;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct NodeMetricGetResponse {
+    title: String,
+    guages: Guages,
+    statistics: Statistics,
+    osusages: Osusages,
+}
+
+impl NodeMetricGetResponse {
+    pub fn new() -> NodeMetricGetResponse {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_guages(&mut self, v: Guages) {
+        self.guages = v;
+    }
+    pub fn set_statistics(&mut self, v: Statistics) {
+        self.statistics = v;
+    }
+    pub fn set_osusages(&mut self, v: Osusages) {
+        self.osusages = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Guages {
+    title: String,
+    counters: Vec<Counters>,
+}
+impl Guages {
+    pub fn new() -> Guages {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_counters(&mut self, v: Vec<Counters>) {
+        self.counters = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Counters {
+    name: String,
+    description: String,
+    cpu: String,
+    counter: String,
+}
+impl Counters {
+    pub fn new() -> Counters {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+    pub fn set_cpu(&mut self, v: ::std::string::String) {
+        self.cpu = v;
+    }
+    pub fn set_counter(&mut self, v: ::std::string::String) {
+        self.counter = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Statistics {
+    title: String,
+    nodes: Vec<Nodes>,
+}
+impl Statistics {
+    pub fn new() -> Statistics {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_nodes(&mut self, v: Vec<Nodes>) {
+        self.nodes = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Nodes {
+    name: String,
+    description: String,
+    cpu: String,
+    counter: String,
+    cost_of_consumption: String,
+    health: String,
+}
+impl Nodes {
+    pub fn new() -> Counters {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+    pub fn set_cpu(&mut self, v: ::std::string::String) {
+        self.cpu = v;
+    }
+    pub fn set_counter(&mut self, v: ::std::string::String) {
+        self.counter = v;
+    }
+    pub fn set_cost_of_consumption(&mut self, v: ::std::string::String) {
+        self.cost_of_consumption = v;
+    }
+    pub fn set_health(&mut self, v: ::std::string::String) {
+        self.health = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Osusages {
+    title: String,
+    from_date: String,
+    to_date: String,
+    cumulative: Cumulative,
+    item: Item,
+}
+impl Osusages {
+    pub fn new() -> Osusages {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_from_date(&mut self, v: ::std::string::String) {
+        self.from_date = v;
+    }
+    pub fn set_to_date(&mut self, v: ::std::string::String) {
+        self.to_date = v;
+    }
+    pub fn set_cumulative(&mut self, v: Cumulative) {
+        self.cumulative = v;
+    }
+    pub fn set_item(&mut self, v: Item) {
+        self.item = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Cumulative {
+    cpu: String,
+    counter: String,
+    alert: String,
+}
+
+impl Cumulative {
+    pub fn new() -> Cumulative {
+        ::std::default::Default::default()
+    }
+    pub fn set_cpu(&mut self, v: ::std::string::String) {
+        self.cpu = v;
+    }
+    pub fn set_counter(&mut self, v: ::std::string::String) {
+        self.counter = v;
+    }
+    pub fn set_alert(&mut self, v: ::std::string::String) {
+        self.alert = v;
+    }
+}
+
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Item {
+    cpu: BTreeMap<String, String>,
+    name: String,
+}
+impl Item {
+    pub fn new() -> Item {
+        ::std::default::Default::default()
+    }
+    // pub fn set_cpu(&mut self, v: ::std::string::String) {
+    //     self.cpu = v;
+    // }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_cpu(&mut self, k: ::std::string::String, v: ::std::string::String) {
+        println!("{:?}", k);
+        println!("{:?}", v);
+        self.cpu.insert(k.into(), v.into());
     }
 }

@@ -18,6 +18,7 @@ use super::net_err_to_http;
 // use super::super::error::Error;
 use super::super::auth::default::PasswordAuthClient;
 use super::super::auth::shield::ShieldClient;
+use super::super::auth::prometheus::PrometheusClient;
 use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;
@@ -60,6 +61,14 @@ impl Handler for XHandler {
         self.0.handle(req)
     }
 }
+
+
+pub struct PrometheusCli;
+
+impl Key for PrometheusCli {
+    type Value = PrometheusClient;
+}
+
 
 pub struct PasswordAuthCli;
 

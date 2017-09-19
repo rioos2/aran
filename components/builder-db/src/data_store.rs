@@ -11,6 +11,7 @@ use deploy_storedproc::*;
 use plan_storedproc::*;
 use scale_storedproc::*;
 use node_storedproc::*;
+use secret_storedproc::*;
 
 
 /// A messaging Broker for proxying messages from clients to one or more `RouteSrv` and vice versa.
@@ -77,6 +78,7 @@ impl DataStoreConn {
         PlanProcedures::new()?.migrate(migrator)?;
         ScaleProcedures::new()?.migrate(migrator)?;
         NodeProcedures::new()?.migrate(migrator)?;
+        SecretProcedures::new()?.migrate(migrator)?;
         Ok(())
     }
 }

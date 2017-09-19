@@ -39,7 +39,6 @@ impl Migratable for DeployProcedures {
              node text,
              ip text,
              urls text,
-             component_collection text,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
@@ -62,12 +61,11 @@ impl Migratable for DeployProcedures {
                 node text,
                 ip text,
                 urls text,
-                component_collection text,
                 status text
                         ) RETURNS SETOF assembly AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,object_meta,type_meta,node,ip,urls,component_collection,status)
-                                        VALUES (name, uri, description,parent_id, tags,object_meta, type_meta,node,ip,urls,component_collection,status)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,object_meta,type_meta,node,ip,urls,status)
+                                        VALUES (name, uri, description,parent_id, tags,object_meta, type_meta,node,ip,urls,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -203,9 +201,11 @@ impl Migratable for DeployProcedures {
 
         migrator.migrate(
             "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION set_assembly_factorys_status_v1 (aid bigint, asm_fac_status text) RETURNS void AS $$
+            r#"CREATE OR REPLACE FUNCTION set_assembly_factorys_status_v1 (aid bigint, asm_fac_status text)  RETURNS SETOF assembly_factory AS $$
                             BEGIN
-                                UPDATE assembly_factory SET status=asm_fac_status, updated_at=now() WHERE id=aid;
+                            RETURN QUERY UPDATE assembly_factory SET status=asm_fac_status, updated_at=now() WHERE id=aid
+                            RETURNING *;
+                            RETURN;
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;

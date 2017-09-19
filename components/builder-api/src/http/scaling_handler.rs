@@ -10,11 +10,11 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
-use protocol::asmsrv::{ObjectMeta,Labels,Annotations,OwnerReferences, TypeMeta};
+use protocol::asmsrv::{ObjectMeta, OwnerReferences, TypeMeta};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-
+use std::collections::BTreeMap;
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -96,31 +96,20 @@ struct ObjectMetaReq {
     uid: String,
     created_at: String,
     cluster_name: String,
-    labels: LabelsReq,
-    annotations: AnnotationsReq,
+    labels: BTreeMap<String, String>,
+    annotations: BTreeMap<String, String>,
     owner_references: Vec<OwnerReferencesReq>,
 }
 
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
- struct LabelsReq {
-     group: String,
-     key2: String,
- }
-
- #[derive(Clone, Debug, Serialize, Deserialize)]
-  struct AnnotationsReq {
-      key1: String,
-      key2: String,
-  }
-
-  #[derive(Clone, Debug, Serialize, Deserialize)]
-  struct OwnerReferencesReq {
-      kind: String,
-      api_version: String,
-      name: String,
-      uid: String,
-      block_owner_deletion: bool,
-  }
+struct OwnerReferencesReq {
+    kind: String,
+    api_version: String,
+    name: String,
+    uid: String,
+    block_owner_deletion: bool,
+}
 
 pub fn hs_create(req: &mut Request) -> IronResult<Response> {
     let mut hs_create = HorizontalScaling::new();
@@ -208,14 +197,8 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 object_meta.set_uid(body.object_meta.uid);
                 object_meta.set_created_at(body.object_meta.created_at);
                 object_meta.set_cluster_name(body.object_meta.cluster_name);
-                let mut labels = Labels::new();
-                    labels.set_group(body.object_meta.labels.group);
-                    labels.set_key2(body.object_meta.labels.key2);
-                    object_meta.set_labels(labels);
-                let mut annotations = Annotations::new();
-                        annotations.set_key1(body.object_meta.annotations.key1);
-                        annotations.set_key2(body.object_meta.annotations.key2);
-                    object_meta.set_annotations(annotations);
+                object_meta.set_labels(body.object_meta.labels);
+                object_meta.set_annotations(body.object_meta.annotations);
                 let mut owner_references_collection = Vec::new();
                 for data in body.object_meta.owner_references {
                     let mut owner_references = OwnerReferences::new();

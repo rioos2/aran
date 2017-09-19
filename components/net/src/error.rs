@@ -14,6 +14,7 @@ use auth;
 #[derive(Debug)]
 pub enum Error {
     Auth(auth::default::AuthErr),
+    Prometheus(auth::prometheus::AuthErr),
     GitHubAPI(hyper::status::StatusCode, HashMap<String, String>),
     IO(io::Error),
     Json(serde_json::Error),
@@ -31,6 +32,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Auth(ref e) => format!("GitHub Authentication error, {}", e),
+            Error::Prometheus(ref e) => format!("Prometheus error, {}", e),
             Error::GitHubAPI(ref c, ref m) => format!("[{}] {:?}", c, m),
             Error::HTTP(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
@@ -48,6 +50,7 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Auth(_) => "GitHub authorization error.",
+            Error::Prometheus(_) => "Prometheus error.",
             Error::GitHubAPI(_, _) => "GitHub API error.",
             Error::IO(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
@@ -69,6 +72,12 @@ impl From<io::Error> for Error {
 impl From<auth::default::AuthErr> for Error {
     fn from(err: auth::default::AuthErr) -> Self {
         Error::Auth(err)
+    }
+}
+
+impl From<auth::prometheus::AuthErr> for Error {
+    fn from(err: auth::prometheus::AuthErr) -> Self {
+        Error::Prometheus(err)
     }
 }
 

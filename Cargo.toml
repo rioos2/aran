@@ -9,6 +9,7 @@ members = [
   "components/builder-authorize",
   "components/builder-protocol",
   "components/builder-session",
+  "components/builder-secret",
   "components/common",
   "components/core",
   "components/http-client",

@@ -2,1269 +2,1263 @@
 ---
 title: Rio/OS
 version: v1
-
-baseUri: https://{rootUri}/{version}
+baseUri: 'https://{rootUri}/{version}'
 baseUriParameters:
-    rootUri:
-        description: |
-            The root URI for the particular installation of Rio/OS API server
-        example: localhost:9636
+  rootUri:
+    description: |
+      The root URI for the particular installation of Rio/OS API server
+    example: 'localhost:9636'
 mediaType: application/json
 schemas:
-    - netError: |
-        {
-            "properties": {
-                "code": {
-                    "type": "integer",
-                    "required": true
-                },
-                "msg": {
-                    "type": "string",
-                    "required": true
-                }
-            }
-        }
-    - assemblyfactory: |
-        {
-          "name": "ubuntu",
-          "uri": "/v1/assemblys/assembly_factorys",
-          "description": "ubuntuinstallation",
-          "tags": [
-            "ubuntu"
-          ],
-          "replicas": 5,
+  - netError: |
+      {
           "properties": {
-            "domain": "megambox.com",
-            "cloudsetting": "/clouds/one",
-            "region": "chennai",
-            "storage_type": "ssd"
+              "code": {
+                  "type": "integer",
+                  "required": true
+              },
+              "msg": {
+                  "type": "string",
+                  "required": true
+              }
+          }
+      }
+  - assemblyfactory: |
+      {
+        "name": "ubuntu",
+        "uri": "/v1/assemblys/assembly_factorys",
+        "description": "ubuntuinstallation",
+        "tags": [
+          "ubuntu"
+        ],
+        "replicas": 5,
+        "properties": {
+          "domain": "megambox.com",
+          "cloudsetting": "/clouds/one",
+          "region": "chennai",
+          "storage_type": "ssd"
+        },
+        "type_meta": {
+          "kind": "Assemblyfactory",
+          "api_version": "v1"
+        },
+        "object_meta": {
+          "name": "xyz",
+          "namespace": "",
+          "uid": "",
+          "created_at": "",
+          "cluster_name": "",
+          "labels": {
+            "group": "development",
+            "key2": "value2"
           },
-          "type_meta": {
-            "kind": "Assemblyfactory",
-            "api_version": "v1"
+          "annotations": {
+            "key1": "value1",
+            "key2": "value2"
           },
-          "object_meta": {
-            "name": "xyz",
-            "namespace": "",
+          "owner_references": [{
+            "kind": "Node",
+            "api_version": "v1",
+            "name": "ddd",
             "uid": "",
-            "created_at": "",
-            "cluster_name": "",
-            "labels": {
-              "group": "development",
-              "key2": "value2"
-            },
-            "annotations": {
-              "key1": "value1",
-              "key2": "value2"
-            },
-            "owner_references": [{
-              "kind": "Node",
-              "api_version": "v1",
-              "name": "ddd",
-              "uid": "",
-              "block_owner_deletion": true
-            }]
-          },
-          "plan": "/v3/plan/apache",
-          "external_management_resource": [
-            "safsf"
-          ],
-          "component_collection": {
-            "flavor": "/url",
-            "network": "/url"
-          },
-          "status": {
-            "phase": "pending",
+            "block_owner_deletion": true
+          }]
+        },
+        "plan": "/v3/plan/apache",
+        "external_management_resource": [
+          "safsf"
+        ],
+        "component_collection": {
+          "flavor": "/url",
+          "network": "/url"
+        },
+        "status": {
+          "phase": "pending",
+          "message": "",
+          "reason": "",
+          "conditions": [{
             "message": "",
             "reason": "",
-            "conditions": [{
+            "status": " ",
+            "last_transition_time": " ",
+            "last_probe_time": " ",
+            "condition_type": " "
+          }]
+        },
+        "opssettings": {
+          "nodeselector": "",
+          "priority": " ",
+          "nodename": " ",
+          "restartpolicy": " "
+        }
+      }
+  - assembly: |
+      {
+         "name": "ubuntu",
+         "uri": "/v1/assemblys",
+         "description": "ubuntuinstallation",
+         "parent_id": "780970728630525952",
+         "tags": [
+         "ubuntu"
+         ],
+         "type_meta": {
+           "kind": "Assembly",
+           "api_version": "v1"
+           },
+           "object_meta": {
+             "name": "xyz",
+             "namespace": "",
+             "uid": "",
+             "created_at": "",
+             "cluster_name": "",
+             "labels": {
+               "group": "development",
+               "key2": "value2"
+               },
+               "annotations": {
+                 "key1": "value1",
+                 "key2": "value2"
+                 },
+                 "owner_references": [{
+                 "kind": "Node",
+                 "api_version": "v1",
+                 "name": "ddd",
+                 "uid": "",
+                 "block_owner_deletion": true
+                 }]
+                 },
+                 "component_collection": "",
+                 "node": "",
+                 "ip": "",
+                 "urls": "",
+                 "status": {
+                   "phase": "pending32",
+                   "message": "",
+                   "reason": "",
+                   "conditions": [{
+                   "message": "",
+                   "reason": "",
+                   "status": " ",
+                   "last_transition_time": " ",
+                   "last_probe_time": "",
+                   "condition_type": " "
+                   }]
+                   }
+                   }
+/healthz:
+  get:
+    description: Returns the health of the service
+    responses:
+      '200':
+        description: Service is healthy
+      '500':
+        description: Server fault
+      '503':
+        description: Service temporarily unavailable
+/assemblyfactorys:
+  post:
+    description: Create a new assemblyfactory
+    body:
+      application/json:
+        schema: assemblyfactory
+        example: |
+          {
+            "name": "ubuntu",
+            "uri": "/v1/assemblys/assembly_factorys",
+            "description": "ubuntuinstallation",
+            "tags": [
+              "ubuntu"
+            ],
+            "replicas": 5,
+            "properties": {
+              "domain": "megambox.com",
+              "cloudsetting": "/clouds/one",
+              "region": "chennai",
+              "storage_type": "ssd"
+            },
+            "type_meta": {
+              "kind": "Assemblyfactory",
+              "api_version": "v1"
+            },
+            "object_meta": {
+              "name": "xyz",
+              "namespace": "",
+              "uid": "",
+              "created_at": "",
+              "cluster_name": "",
+              "labels": {
+                "group": "development",
+                "key2": "value2"
+              },
+              "annotations": {
+                "key1": "value1",
+                "key2": "value2"
+              },
+              "owner_references": [{
+                "kind": "Node",
+                "api_version": "v1",
+                "name": "ddd",
+                "uid": "",
+                "block_owner_deletion": true
+              }]
+            },
+            "plan": "/v3/plan/apache",
+            "external_management_resource": [
+              "safsf"
+            ],
+            "component_collection": {
+              "flavor": "/url",
+              "network": "/url"
+            },
+            "status": {
+              "phase": "pending",
               "message": "",
               "reason": "",
-              "status": " ",
-              "lastTransitionTime": " ",
-              "lastProbeTime": " ",
-              "conditionType": " "
-            }]
-          },
-          "opssettings": {
-            "nodeselector": "",
-            "priority": " ",
-            "nodename": " ",
-            "restartpolicy": " "
+              "conditions": [{
+                "message": "",
+                "reason": "",
+                "status": " ",
+                "last_transition_time": " ",
+                "last_probe_time": " ",
+                "condition_type": " "
+              }]
+            },
+            "opssettings": {
+              "nodeselector": "",
+              "priority": " ",
+              "nodename": " ",
+              "restartpolicy": " "
+            }
           }
-        }
-    - assembly:  |
-         {
-            "name": "ubuntu",
-            "uri": "/v1/assemblys",
-            "description": "ubuntuinstallation",
-            "parent_id": "780970728630525952",
-            "tags": [
-            "ubuntu"
-            ],
-            "type_meta": {
-              "kind": "Assembly",
-              "api_version": "v1"
-              },
-              "object_meta": {
-                "name": "xyz",
-                "namespace": "",
-                "uid": "",
-                "created_at": "",
-                "cluster_name": "",
-                "labels": {
-                  "group": "development",
-                  "key2": "value2"
+    responses:
+      '201':
+        body:
+          application/json:
+            example: |
+              {
+                "id": "806942220681879552",
+                "name": "ubuntu",
+                "uri": "/v1/assemblyfactorys",
+                "description": "ubuntuinstallation",
+                "tags": [
+                  "ubuntu"
+                ],
+                "replicas": 5,
+                "properties": {
+                  "domain": "megambox.com",
+                  "cloudsetting": "/clouds/one",
+                  "region": "chennai",
+                  "storage_type": "ssd"
+                },
+                "type_meta": {
+                  "kind": "Assemblyfactory",
+                  "api_version": "v1"
+                },
+                "object_meta": {
+                  "name": "xyz",
+                  "namespace": "",
+                  "uid": "",
+                  "created_at": "",
+                  "cluster_name": "",
+                  "labels": {
+                    "group": "development",
+                    "key2": "value2"
                   },
                   "annotations": {
                     "key1": "value1",
                     "key2": "value2"
-                    },
-                    "owner_references": [{
+                  },
+                  "owner_references": [{
                     "kind": "Node",
                     "api_version": "v1",
                     "name": "ddd",
                     "uid": "",
                     "block_owner_deletion": true
-                    }]
+                  }]
+                },
+                "plan": "/v3/plan/apache",
+                "external_management_resource": [
+                  "safsf"
+                ],
+                "component_collection": {
+                  "flavor": "/url",
+                  "network": "/url"
+                },
+                "status": {
+                  "phase": "pending",
+                  "message": "",
+                  "reason": "",
+                  "conditions": [{
+                    "message": "",
+                    "reason": "",
+                    "status": " ",
+                    "last_transition_time": " ",
+                    "last_probe_time": " ",
+                    "condition_type": " "
+                  }]
+                },
+                "opssettings": {
+                  "nodeselector": "",
+                  "priority": " ",
+                  "nodename": " ",
+                  "restartpolicy": " "
+                }
+                "created_at": "2017-09-15T07:37:23.937385+00:00"
+              }
+      '400':
+        description: Received a malformed JSON body
+      '404':
+        description: Project does not exist with corresponding projectId
+      '422':
+        description: Invalid or missing projectId in body
+  get:
+    description: Get list of assemblyfactory
+    responses:
+      '200':
+        body:
+          application/json:
+            schema: job
+            example: |
+              {
+                "kind": "AssemblyfactoryList",
+                "apiVersion": "v1",
+                "items":[
+                      {
+                        "id": "806942220681879552",
+                        "name": "ubuntu",
+                        "uri": "/v1/assemblyfactorys",
+                        "description": "ubuntuinstallation",
+                        "tags": [
+                          "ubuntu"
+                        ],
+                        "replicas": 5,
+                        "properties": {
+                          "domain": "megambox.com",
+                          "cloudsetting": "/clouds/one",
+                          "region": "chennai",
+                          "storage_type": "ssd"
+                        },
+                        "type_meta": {
+                          "kind": "Assemblyfactory",
+                          "api_version": "v1"
+                        },
+                        "object_meta": {
+                          "name": "xyz",
+                          "namespace": "",
+                          "uid": "",
+                          "created_at": "",
+                          "cluster_name": "",
+                          "labels": {
+                            "group": "development",
+                            "key2": "value2"
+                          },
+                          "annotations": {
+                            "key1": "value1",
+                            "key2": "value2"
+                          },
+                          "owner_references": [{
+                            "kind": "Node",
+                            "api_version": "v1",
+                            "name": "ddd",
+                            "uid": "",
+                            "block_owner_deletion": true
+                          }]
+                        },
+                        "plan": "/v3/plan/apache",
+                        "external_management_resource": [
+                          "safsf"
+                        ],
+                        "component_collection": {
+                          "flavor": "/url",
+                          "network": "/url"
+                        },
+                        "status": {
+                          "phase": "pending",
+                          "message": "",
+                          "reason": "",
+                          "conditions": [{
+                            "message": "",
+                            "reason": "",
+                            "status": " ",
+                            "last_transition_time": " ",
+                            "last_probe_time": " ",
+                            "condition_type": " "
+                          }]
+                        },
+                        "opssettings": {
+                          "nodeselector": "",
+                          "priority": " ",
+                          "nodename": " ",
+                          "restartpolicy": " "
+                        }
+                        "created_at": "2017-09-15T07:37:23.937385+00:00"
+                      }
+                ]
+
+              }
+      '400':
+        description: Received a jobId that was not a number
+  '/{id}':
+    get:
+      description: Get the assemblyfactory for the given id
+      responses:
+        '200':
+          body:
+            application/json:
+              schema: assemblyfactory
+              example: |
+                {
+                  "id": "806942220681879552",
+                  "name": "ubuntu",
+                  "uri": "/v1/assemblyfactorys",
+                  "description": "ubuntuinstallation",
+                  "tags": [
+                    "ubuntu"
+                  ],
+                  "replicas": 5,
+                  "properties": {
+                    "domain": "megambox.com",
+                    "cloudsetting": "/clouds/one",
+                    "region": "chennai",
+                    "storage_type": "ssd"
+                  },
+                  "type_meta": {
+                    "kind": "Assemblyfactory",
+                    "api_version": "v1"
+                  },
+                  "object_meta": {
+                    "name": "xyz",
+                    "namespace": "",
+                    "uid": "",
+                    "created_at": "",
+                    "cluster_name": "",
+                    "labels": {
+                      "group": "development",
+                      "key2": "value2"
                     },
-                    "component_collection": "",
-                    "node": "",
-                    "ip": "",
-                    "urls": "",
-                    "status": {
-                      "phase": "pending32",
-                      "message": "",
-                      "reason": "",
-                      "conditions": [{
+                    "annotations": {
+                      "key1": "value1",
+                      "key2": "value2"
+                    },
+                    "owner_references": [{
+                      "kind": "Node",
+                      "api_version": "v1",
+                      "name": "ddd",
+                      "uid": "",
+                      "block_owner_deletion": true
+                    }]
+                  },
+                  "plan": "/v3/plan/apache",
+                  "external_management_resource": [
+                    "safsf"
+                  ],
+                  "component_collection": {
+                    "flavor": "/url",
+                    "network": "/url"
+                  },
+                  "status": {
+                    "phase": "pending",
+                    "message": "",
+                    "reason": "",
+                    "conditions": [{
                       "message": "",
                       "reason": "",
                       "status": " ",
-                      "lastTransitionTime": " ",
-                      "lastProbeTime": "",
-                      "conditionType": " "
-                      }]
-                      }
-                      }
-/healthz:
-    get:
-        description: Returns the health of the service
-        responses:
-            200:
-                description: Service is healthy
-            500:
-                description: Server fault
-            503:
-                description: Service temporarily unavailable
-/assemblyfactorys:
-    post:
-        description: Create a new assemblyfactory
-        body:
+                      "last_transition_time": " ",
+                      "last_probe_time": " ",
+                      "condition_type": " "
+                    }]
+                  },
+                  "opssettings": {
+                    "nodeselector": "",
+                    "priority": " ",
+                    "nodename": " ",
+                    "restartpolicy": " "
+                  }
+                  "created_at": "2017-09-15T07:37:23.937385+00:00"
+                }
+        '400':
+          description: Received a jobId that was not a number
+  '/{id}/status':
+    put:
+      description: update the status of the assemblyfactory for the given id
+      body:
+        application/json:
+          schema: assemblyfactory
+          example: |
+            {
+                 "id": "806942220681879552",
+                 "name":"ubuntu",
+                 "uri":"/v1/assemblys/assembly_factorys",
+                 "description":"ubuntuinstallation",
+                 "tags":[
+                         "ubuntu"
+                       ],
+                 "replicas":5,
+                 "properties":{
+                           "domain":"megambox.com",
+                           "cloudsetting":"/clouds/one",
+                           "region":"chennai",
+                           "storage_type":"ssd"
+                       },
+                 "type_meta":{
+                           "kind":"Assemblyfactory",
+                           "api_version":"v1"
+                       },
+                 "object_meta":{
+                             "name":"xyz",
+                             "namespace":"",
+                             "uid":"",
+                             "created_at":"",
+                             "cluster_name":"",
+                             "labels":{
+                                   "group":"development",
+                                   "key2":"value2"
+                                 },
+                             "annotations":{
+                                   "key1":"value1",
+                                   "key2":"value2"
+                                 },
+                             "owner_references":[
+                                   {
+                                   "kind":"Node",
+                                   "api_version":"v1",
+                                   "name":"ddd",
+                                   "uid":"",
+                                   "block_owner_deletion":true
+                                   }
+                                 ]
+                               },
+                     "plan":"/v3/plan/apache",
+                     "external_management_resource":[
+                                   "safsf"
+                                   ],
+                     "component_collection":{
+                                   "flavor":"/url",
+                                   "network":"/url"
+                                   },
+                     "status":{
+                           "phase":"pending",
+                           "message":"",
+                           "reason":"",
+                           "conditions":[
+                               {
+                                 "message":"",
+                                 "reason":"",
+                                 "status":" ",
+                                 "last_transition_time":" ",
+                                 "last_probe_time":" ",
+                                 "condition_type":" "
+                                 }
+                               ]
+                             },
+                             "opssettings":{
+                             "nodeselector":"",
+                             "priority":" ",
+                             "nodename":" ",
+                             "restartpolicy":" "
+                           }
+                         }
+      responses:
+        '201':
+          body:
             application/json:
-                schema: assemblyfactory
-                example: |
-                    {
-                      "name": "ubuntu",
-                      "uri": "/v1/assemblys/assembly_factorys",
-                      "description": "ubuntuinstallation",
-                      "tags": [
+              example: |
+                {
+                {
+                  "id": "806942220681879552",
+                  "name":"ubuntu",
+                  "uri":"/v1/assemblyfactorys",
+                  "description":"ubuntuinstallation",
+                  "tags":[
+                          "ubuntu"
+                          ],
+                  "replicas":5,
+                  "properties":{
+                          "domain":"megambox.com",
+                          "cloudsetting":"/clouds/one",
+                          "region":"chennai",
+                          "storage_type":"ssd"
+                      },
+                  "type_meta":{
+                          "kind":"Assemblyfactory",
+                          "api_version":"v1"
+                      },
+                  "object_meta":{
+                            "name":"xyz",
+                            "namespace":"",
+                            "uid":"",
+                            "created_at":"",
+                            "cluster_name":"",
+                            "labels":{
+                                  "group":"development",
+                                  "key2":"value2"
+                                },
+                            "annotations":{
+                                  "key1":"value1",
+                                  "key2":"value2"
+                                },
+                            "owner_references":[
+                                  {
+                                  "kind":"Node",
+                                  "api_version":"v1",
+                                  "name":"ddd",
+                                  "uid":"",
+                                  "block_owner_deletion":true
+                                  }
+                                ]
+                              },
+                    "plan":"/v3/plan/apache",
+                    "external_management_resource":[
+                                  "safsf"
+                                  ],
+                    "component_collection":{
+                                  "flavor":"/url",
+                                  "network":"/url"
+                                  },
+                    "status":{
+                          "phase":"pending",
+                          "message":"",
+                          "reason":"",
+                          "conditions":[
+                              {
+                                "message":"",
+                                "reason":"",
+                                "status":" ",
+                                "last_transition_time":" ",
+                                "last_probe_time":" ",
+                                "condition_type":" "
+                                }
+                              ]
+                            },
+                            "opssettings":{
+                            "nodeselector":"",
+                            "priority":" ",
+                            "nodename":" ",
+                            "restartpolicy":" "
+                          }
+                          "created_at":"2017-09-15T07:37:23.937385+00:00"
+                }
+                }
+        '400':
+          description: Received a malformed JSON body
+        '404':
+          description: Project does not exist with corresponding projectId
+        '422':
+          description: Invalid or missing projectId in body
+/assemblys:
+  post:
+    description: Create a new assembly
+    body:
+      application/json:
+        schema: assembly
+        example: |
+          {
+              "name": "ubuntu",
+              "uri": "/v1/assemblys",
+              "description": "ubuntuinstallation",
+              "parent_id": "780970728630525952",
+              "tags": [
+                  "ubuntu"
+                  ],
+              "type_meta": {
+                    "kind": "Assembly",
+                    "api_version": "v1"
+                    },
+              "object_meta": {
+                  "name": "xyz",
+                  "namespace": "",
+                  "uid": "",
+                  "created_at": "",
+                  "cluster_name": "",
+                  "labels": {
+                    "group": "development",
+                    "key2": "value2"
+                    },
+                  "annotations": {
+                    "key1": "value1",
+                    "key2": "value2"
+                 },
+                 "owner_references": [{
+                 "kind": "Node",
+                 "api_version": "v1",
+                 "name": "ddd",
+                 "uid": "",
+                 "block_owner_deletion": true
+                 }]
+                 },
+                 "component_collection": "",
+                 "node": "",
+                 "ip": "",
+                 "urls": "",
+                 "status": {
+                   "phase": "pending32",
+                   "message": "",
+                   "reason": "",
+                   "conditions": [{
+                   "message": "",
+                   "reason": "",
+                   "status": " ",
+                   "last_transition_time": " ",
+                   "last_probe_time": "",
+                   "condition_type": " "
+                   }]
+                   }
+                   }
+    responses:
+      '201':
+        body:
+          application/json:
+            example: |
+              {
+                "id": "806223216472236032",
+                "name": "ubuntu",
+                "uri": "/v1/assemblys",
+                "description": "ubuntuinstallation",
+                "parent_id": "780970728630525952",
+                "tags": [
                         "ubuntu"
-                      ],
-                      "replicas": 5,
-                      "properties": {
-                        "domain": "megambox.com",
-                        "cloudsetting": "/clouds/one",
-                        "region": "chennai",
-                        "storage_type": "ssd"
-                      },
-                      "type_meta": {
-                        "kind": "Assemblyfactory",
+                        ],
+                "type_meta": {
+                        "kind": "Assembly",
                         "api_version": "v1"
-                      },
-                      "object_meta": {
+                          },
+               "object_meta": {
                         "name": "xyz",
                         "namespace": "",
                         "uid": "",
                         "created_at": "",
                         "cluster_name": "",
                         "labels": {
-                          "group": "development",
-                          "key2": "value2"
-                        },
+                                "group": "development",
+                                "key2": "value2"
+                                },
                         "annotations": {
-                          "key1": "value1",
-                          "key2": "value2"
-                        },
+                                "key1": "value1",
+                                "key2": "value2"
+                                },
                         "owner_references": [{
-                          "kind": "Node",
-                          "api_version": "v1",
-                          "name": "ddd",
-                          "uid": "",
-                          "block_owner_deletion": true
-                        }]
-                      },
-                      "plan": "/v3/plan/apache",
-                      "external_management_resource": [
-                        "safsf"
-                      ],
-                      "component_collection": {
-                        "flavor": "/url",
-                        "network": "/url"
-                      },
-                      "status": {
-                        "phase": "pending",
-                        "message": "",
-                        "reason": "",
-                        "conditions": [{
-                          "message": "",
-                          "reason": "",
-                          "status": " ",
-                          "lastTransitionTime": " ",
-                          "lastProbeTime": " ",
-                          "conditionType": " "
-                        }]
-                      },
-                      "opssettings": {
-                        "nodeselector": "",
-                        "priority": " ",
-                        "nodename": " ",
-                        "restartpolicy": " "
-                      }
-                    }
-        responses:
-            201:
-                body:
-                    application/json:
-                        example: |
-                            {
-                              "id": "806942220681879552",
-                              "name": "ubuntu",
-                              "uri": "/v1/assemblyfactorys",
-                              "description": "ubuntuinstallation",
-                              "tags": [
-                                "ubuntu"
-                              ],
-                              "replicas": 5,
-                              "properties": {
-                                "domain": "megambox.com",
-                                "cloudsetting": "/clouds/one",
-                                "region": "chennai",
-                                "storage_type": "ssd"
-                              },
-                              "type_meta": {
-                                "kind": "Assemblyfactory",
-                                "api_version": "v1"
-                              },
-                              "object_meta": {
-                                "name": "xyz",
-                                "namespace": "",
+                                "kind": "Node",
+                                "api_version": "v1",
+                                "name": "ddd",
                                 "uid": "",
-                                "created_at": "",
-                                "cluster_name": "",
-                                "labels": {
+                                "block_owner_deletion": true
+                                }]
+                                },
+                  "component_collection": "",
+                  "node": "",
+                  "ip": "",
+                  "urls": "",
+                  "status": {
+                       "phase": "pending32",
+                       "message": "",
+                       "reason": "",
+                       "conditions": [{
+                       "message": "",
+                       "reason": "",
+                       "status": " ",
+                       "last_transition_time": " ",
+                       "last_probe_time": "",
+                       "condition_type": " "
+                       }]
+                       }
+                  "spec": null,
+                  "created_at": "2017-09-14T07:51:27.793960+00:00"
+                       }
+      '400':
+        description: Received a malformed JSON body
+      '404':
+        description: Project does not exist with corresponding projectId
+      '422':
+        description: Invalid or missing projectId in body
+  get:
+    description: Get list of assemblys
+    responses:
+      '200':
+        body:
+          application/json:
+            schema: job
+            example: |
+              {
+                "kind": "AssemblyList"
+                "apiVersion": "v1",
+                "items":[
+                {
+                  "id": "806223216472236032",
+                  "name": "ubuntu",
+                  "uri": "/v1/assemblys",
+                  "description": "ubuntuinstallation",
+                  "parent_id": "780970728630525952",
+                  "tags": [
+                          "ubuntu"
+                          ],
+                  "type_meta": {
+                          "kind": "Assembly",
+                          "api_version": "v1"
+                            },
+                 "object_meta": {
+                          "name": "xyz",
+                          "namespace": "",
+                          "uid": "",
+                          "created_at": "",
+                          "cluster_name": "",
+                          "labels": {
                                   "group": "development",
                                   "key2": "value2"
-                                },
-                                "annotations": {
+                                  },
+                          "annotations": {
                                   "key1": "value1",
                                   "key2": "value2"
-                                },
-                                "owner_references": [{
+                                  },
+                          "owner_references": [{
                                   "kind": "Node",
                                   "api_version": "v1",
                                   "name": "ddd",
                                   "uid": "",
                                   "block_owner_deletion": true
-                                }]
-                              },
-                              "plan": "/v3/plan/apache",
-                              "external_management_resource": [
-                                "safsf"
-                              ],
-                              "component_collection": {
-                                "flavor": "/url",
-                                "network": "/url"
-                              },
-                              "status": {
-                                "phase": "pending",
-                                "message": "",
-                                "reason": "",
-                                "conditions": [{
-                                  "message": "",
-                                  "reason": "",
-                                  "status": " ",
-                                  "lastTransitionTime": " ",
-                                  "lastProbeTime": " ",
-                                  "conditionType": " "
-                                }]
-                              },
-                              "opssettings": {
-                                "nodeselector": "",
-                                "priority": " ",
-                                "nodename": " ",
-                                "restartpolicy": " "
-                              }
-                              "created_at": "2017-09-15T07:37:23.937385+00:00"
-                            }
-            400:
-                description: Received a malformed JSON body
-            404:
-                description: Project does not exist with corresponding projectId
-            422:
-                description: Invalid or missing projectId in body
-    get:
-        description: Get list of assemblyfactory
-        responses:
-            200:
-                body:
-                    application/json:
-                        schema: job
-                        example: |
-                          {
-                            "kind": "AssemblyfactoryList",
-                            "apiVersion": "v1",
-                            "items":[
-                                  {
-                                    "id": "806942220681879552",
-                                    "name": "ubuntu",
-                                    "uri": "/v1/assemblyfactorys",
-                                    "description": "ubuntuinstallation",
-                                    "tags": [
-                                      "ubuntu"
-                                    ],
-                                    "replicas": 5,
-                                    "properties": {
-                                      "domain": "megambox.com",
-                                      "cloudsetting": "/clouds/one",
-                                      "region": "chennai",
-                                      "storage_type": "ssd"
-                                    },
-                                    "type_meta": {
-                                      "kind": "Assemblyfactory",
-                                      "api_version": "v1"
-                                    },
-                                    "object_meta": {
-                                      "name": "xyz",
-                                      "namespace": "",
-                                      "uid": "",
-                                      "created_at": "",
-                                      "cluster_name": "",
-                                      "labels": {
-                                        "group": "development",
-                                        "key2": "value2"
-                                      },
-                                      "annotations": {
-                                        "key1": "value1",
-                                        "key2": "value2"
-                                      },
-                                      "owner_references": [{
-                                        "kind": "Node",
-                                        "api_version": "v1",
-                                        "name": "ddd",
-                                        "uid": "",
-                                        "block_owner_deletion": true
-                                      }]
-                                    },
-                                    "plan": "/v3/plan/apache",
-                                    "external_management_resource": [
-                                      "safsf"
-                                    ],
-                                    "component_collection": {
-                                      "flavor": "/url",
-                                      "network": "/url"
-                                    },
-                                    "status": {
-                                      "phase": "pending",
-                                      "message": "",
-                                      "reason": "",
-                                      "conditions": [{
-                                        "message": "",
-                                        "reason": "",
-                                        "status": " ",
-                                        "lastTransitionTime": " ",
-                                        "lastProbeTime": " ",
-                                        "conditionType": " "
-                                      }]
-                                    },
-                                    "opssettings": {
-                                      "nodeselector": "",
-                                      "priority": " ",
-                                      "nodename": " ",
-                                      "restartpolicy": " "
-                                    }
-                                    "created_at": "2017-09-15T07:37:23.937385+00:00"
-                                  }
-                            ]
+                                  }]
+                                  },
+                    "component_collection": "",
+                    "node": "",
+                    "ip": "",
+                    "urls": "",
+                    "status": {
+                         "phase": "pending32",
+                         "message": "",
+                         "reason": "",
+                         "conditions": [{
+                         "message": "",
+                         "reason": "",
+                         "status": " ",
+                         "last_transition_time": " ",
+                         "last_probe_time": "",
+                         "condition_type": " "
+                         }]
+                         }
+                    "spec": null,
+                    "created_at": "2017-09-14T07:51:27.793960+00:00"
+                         }
+                ]
 
-                          }
-            400:
-                description: Received a jobId that was not a number
-    /{id}:
-        get:
-            description: Get the assemblyfactory for the given id
-            responses:
-                200:
-                    body:
-                        application/json:
-                            schema: assemblyfactory
-                            example: |
-                                {
-                                  "id": "806942220681879552",
-                                  "name": "ubuntu",
-                                  "uri": "/v1/assemblyfactorys",
-                                  "description": "ubuntuinstallation",
-                                  "tags": [
-                                    "ubuntu"
-                                  ],
-                                  "replicas": 5,
-                                  "properties": {
-                                    "domain": "megambox.com",
-                                    "cloudsetting": "/clouds/one",
-                                    "region": "chennai",
-                                    "storage_type": "ssd"
-                                  },
-                                  "type_meta": {
-                                    "kind": "Assemblyfactory",
-                                    "api_version": "v1"
-                                  },
-                                  "object_meta": {
-                                    "name": "xyz",
-                                    "namespace": "",
-                                    "uid": "",
-                                    "created_at": "",
-                                    "cluster_name": "",
-                                    "labels": {
-                                      "group": "development",
-                                      "key2": "value2"
-                                    },
-                                    "annotations": {
-                                      "key1": "value1",
-                                      "key2": "value2"
-                                    },
-                                    "owner_references": [{
-                                      "kind": "Node",
-                                      "api_version": "v1",
-                                      "name": "ddd",
-                                      "uid": "",
-                                      "block_owner_deletion": true
-                                    }]
-                                  },
-                                  "plan": "/v3/plan/apache",
-                                  "external_management_resource": [
-                                    "safsf"
-                                  ],
-                                  "component_collection": {
-                                    "flavor": "/url",
-                                    "network": "/url"
-                                  },
-                                  "status": {
-                                    "phase": "pending",
-                                    "message": "",
-                                    "reason": "",
-                                    "conditions": [{
-                                      "message": "",
-                                      "reason": "",
-                                      "status": " ",
-                                      "lastTransitionTime": " ",
-                                      "lastProbeTime": " ",
-                                      "conditionType": " "
-                                    }]
-                                  },
-                                  "opssettings": {
-                                    "nodeselector": "",
-                                    "priority": " ",
-                                    "nodename": " ",
-                                    "restartpolicy": " "
-                                  }
-                                  "created_at": "2017-09-15T07:37:23.937385+00:00"
-                                }
-                400:
-                    description: Received a jobId that was not a number
-    /{id}/status:
-        put:
-            description: update the status of the assemblyfactory for the given id
-            body:
-                application/json:
-                    schema: assemblyfactory
-                    example: |
-                        {
-                             "id": "806942220681879552",
-                             "name":"ubuntu",
-                             "uri":"/v1/assemblys/assembly_factorys",
-                             "description":"ubuntuinstallation",
-                             "tags":[
-                                     "ubuntu"
-                                   ],
-                             "replicas":5,
-                             "properties":{
-                                       "domain":"megambox.com",
-                                       "cloudsetting":"/clouds/one",
-                                       "region":"chennai",
-                                       "storage_type":"ssd"
-                                   },
-                             "type_meta":{
-                                       "kind":"Assemblyfactory",
-                                       "api_version":"v1"
-                                   },
-                             "object_meta":{
-                                         "name":"xyz",
-                                         "namespace":"",
-                                         "uid":"",
-                                         "created_at":"",
-                                         "cluster_name":"",
-                                         "labels":{
-                                               "group":"development",
-                                               "key2":"value2"
-                                             },
-                                         "annotations":{
-                                               "key1":"value1",
-                                               "key2":"value2"
-                                             },
-                                         "owner_references":[
-                                               {
-                                               "kind":"Node",
-                                               "api_version":"v1",
-                                               "name":"ddd",
-                                               "uid":"",
-                                               "block_owner_deletion":true
-                                               }
-                                             ]
-                                           },
-                                 "plan":"/v3/plan/apache",
-                                 "external_management_resource":[
-                                               "safsf"
-                                               ],
-                                 "component_collection":{
-                                               "flavor":"/url",
-                                               "network":"/url"
-                                               },
-                                 "status":{
-                                       "phase":"pending",
-                                       "message":"",
-                                       "reason":"",
-                                       "conditions":[
-                                           {
-                                             "message":"",
-                                             "reason":"",
-                                             "status":" ",
-                                             "lastTransitionTime":" ",
-                                             "lastProbeTime":" ",
-                                             "conditionType":" "
-                                             }
-                                           ]
-                                         },
-                                         "opssettings":{
-                                         "nodeselector":"",
-                                         "priority":" ",
-                                         "nodename":" ",
-                                         "restartpolicy":" "
-                                       }
-                                     }
-            responses:
-                201:
-                    body:
-                        application/json:
-                            example: |
-                                  {
-                                  {
-                                    "id": "806942220681879552",
-                                    "name":"ubuntu",
-                                    "uri":"/v1/assemblyfactorys",
-                                    "description":"ubuntuinstallation",
-                                    "tags":[
-                                            "ubuntu"
-                                            ],
-                                    "replicas":5,
-                                    "properties":{
-                                            "domain":"megambox.com",
-                                            "cloudsetting":"/clouds/one",
-                                            "region":"chennai",
-                                            "storage_type":"ssd"
-                                        },
-                                    "type_meta":{
-                                            "kind":"Assemblyfactory",
-                                            "api_version":"v1"
-                                        },
-                                    "object_meta":{
-                                              "name":"xyz",
-                                              "namespace":"",
-                                              "uid":"",
-                                              "created_at":"",
-                                              "cluster_name":"",
-                                              "labels":{
-                                                    "group":"development",
-                                                    "key2":"value2"
-                                                  },
-                                              "annotations":{
-                                                    "key1":"value1",
-                                                    "key2":"value2"
-                                                  },
-                                              "owner_references":[
-                                                    {
-                                                    "kind":"Node",
-                                                    "api_version":"v1",
-                                                    "name":"ddd",
-                                                    "uid":"",
-                                                    "block_owner_deletion":true
-                                                    }
-                                                  ]
-                                                },
-                                      "plan":"/v3/plan/apache",
-                                      "external_management_resource":[
-                                                    "safsf"
-                                                    ],
-                                      "component_collection":{
-                                                    "flavor":"/url",
-                                                    "network":"/url"
-                                                    },
-                                      "status":{
-                                            "phase":"pending",
-                                            "message":"",
-                                            "reason":"",
-                                            "conditions":[
-                                                {
-                                                  "message":"",
-                                                  "reason":"",
-                                                  "status":" ",
-                                                  "lastTransitionTime":" ",
-                                                  "lastProbeTime":" ",
-                                                  "conditionType":" "
-                                                  }
-                                                ]
-                                              },
-                                              "opssettings":{
-                                              "nodeselector":"",
-                                              "priority":" ",
-                                              "nodename":" ",
-                                              "restartpolicy":" "
-                                            }
-                                            "created_at":"2017-09-15T07:37:23.937385+00:00"
-                                  }
-                                  }
-                400:
-                    description: Received a malformed JSON body
-                404:
-                    description: Project does not exist with corresponding projectId
-                422:
-                    description: Invalid or missing projectId in body
-/assemblys:
-    post:
-        description: Create a new assembly
-        body:
+              }
+      '400':
+        description: Received a jobId that was not a number
+  '/{id}':
+    get:
+      description: Get the assembly for the given id
+      responses:
+        '200':
+          body:
             application/json:
-                schema: assembly
-                example: |
-                    {
-                        "name": "ubuntu",
-                        "uri": "/v1/assemblys",
-                        "description": "ubuntuinstallation",
-                        "parent_id": "780970728630525952",
-                        "tags": [
-                            "ubuntu"
-                            ],
-                        "type_meta": {
-                              "kind": "Assembly",
-                              "api_version": "v1"
-                              },
-                        "object_meta": {
-                            "name": "xyz",
-                            "namespace": "",
-                            "uid": "",
-                            "created_at": "",
-                            "cluster_name": "",
-                            "labels": {
+              schema: job
+              example: |
+                {
+                  "id": "806223216472236032",
+                  "name": "ubuntu",
+                  "uri": "/v1/assemblys",
+                  "description": "ubuntuinstallation",
+                  "parent_id": "780970728630525952",
+                  "tags": [
+                          "ubuntu"
+                          ],
+                  "type_meta": {
+                          "kind": "Assembly",
+                          "api_version": "v1"
+                            },
+                 "object_meta": {
+                          "name": "xyz",
+                          "namespace": "",
+                          "uid": "",
+                          "created_at": "",
+                          "cluster_name": "",
+                          "labels": {
+                                  "group": "development",
+                                  "key2": "value2"
+                                  },
+                          "annotations": {
+                                  "key1": "value1",
+                                  "key2": "value2"
+                                  },
+                          "owner_references": [{
+                                  "kind": "Node",
+                                  "api_version": "v1",
+                                  "name": "ddd",
+                                  "uid": "",
+                                  "block_owner_deletion": true
+                                  }]
+                                  },
+                    "component_collection": "",
+                    "node": "",
+                    "ip": "",
+                    "urls": "",
+                    "status": {
+                         "phase": "pending32",
+                         "message": "",
+                         "reason": "",
+                         "conditions": [{
+                         "message": "",
+                         "reason": "",
+                         "status": " ",
+                         "last_transition_time": " ",
+                         "last_probe_time": "",
+                         "condition_type": " "
+                         }]
+                         }
+                    "spec": null,
+                    "created_at": "2017-09-14T07:51:27.793960+00:00"
+                         }
+        '400':
+          description: Received a jobId that was not a number
+  '/{id}/status':
+    put:
+      description: Update the status of the assembly for the given id
+      body:
+        application/json:
+          schema: assembly
+          example: |
+            {
+              "id": "806223216472236032",
+              "name": "ubuntu",
+              "uri": "/v1/assemblys",
+              "description": "ubuntuinstallation",
+              "parent_id": "780970728630525952",
+              "tags": [
+                      "ubuntu"
+                      ],
+              "type_meta": {
+                      "kind": "Assembly",
+                      "api_version": "v1"
+                        },
+             "object_meta": {
+                      "name": "xyz",
+                      "namespace": "",
+                      "uid": "",
+                      "created_at": "",
+                      "cluster_name": "",
+                      "labels": {
                               "group": "development",
                               "key2": "value2"
                               },
-                            "annotations": {
+                      "annotations": {
                               "key1": "value1",
                               "key2": "value2"
-                           },
-                           "owner_references": [{
-                           "kind": "Node",
-                           "api_version": "v1",
-                           "name": "ddd",
-                           "uid": "",
-                           "block_owner_deletion": true
-                           }]
-                           },
-                           "component_collection": "",
-                           "node": "",
-                           "ip": "",
-                           "urls": "",
-                           "status": {
-                             "phase": "pending32",
-                             "message": "",
-                             "reason": "",
-                             "conditions": [{
-                             "message": "",
-                             "reason": "",
-                             "status": " ",
-                             "lastTransitionTime": " ",
-                             "lastProbeTime": "",
-                             "conditionType": " "
-                             }]
-                             }
-                             }
-        responses:
-            201:
-                body:
-                    application/json:
-                        example: |
-                            {
-                              "id": "806223216472236032",
-                              "name": "ubuntu",
-                              "uri": "/v1/assemblys",
-                              "description": "ubuntuinstallation",
-                              "parent_id": "780970728630525952",
-                              "tags": [
-                                      "ubuntu"
-                                      ],
-                              "type_meta": {
-                                      "kind": "Assembly",
-                                      "api_version": "v1"
-                                        },
-                             "object_meta": {
-                                      "name": "xyz",
-                                      "namespace": "",
-                                      "uid": "",
-                                      "created_at": "",
-                                      "cluster_name": "",
-                                      "labels": {
-                                              "group": "development",
-                                              "key2": "value2"
-                                              },
-                                      "annotations": {
-                                              "key1": "value1",
-                                              "key2": "value2"
-                                              },
-                                      "owner_references": [{
-                                              "kind": "Node",
-                                              "api_version": "v1",
-                                              "name": "ddd",
-                                              "uid": "",
-                                              "block_owner_deletion": true
-                                              }]
-                                              },
-                                "component_collection": "",
-                                "node": "",
-                                "ip": "",
-                                "urls": "",
-                                "status": {
-                                     "phase": "pending32",
-                                     "message": "",
-                                     "reason": "",
-                                     "conditions": [{
-                                     "message": "",
-                                     "reason": "",
-                                     "status": " ",
-                                     "lastTransitionTime": " ",
-                                     "lastProbeTime": "",
-                                     "conditionType": " "
-                                     }]
-                                     }
-                                "spec": null,
-                                "created_at": "2017-09-14T07:51:27.793960+00:00"
-                                     }
-            400:
-                description: Received a malformed JSON body
-            404:
-                description: Project does not exist with corresponding projectId
-            422:
-                description: Invalid or missing projectId in body
-    get:
-        description: Get list of assemblys
-        responses:
-            200:
-                body:
-                    application/json:
-                        schema: job
-                        example: |
-                          {
-                            "kind": "AssemblyList"
-                            "apiVersion": "v1",
-                            "items":[
-                            {
-                              "id": "806223216472236032",
-                              "name": "ubuntu",
-                              "uri": "/v1/assemblys",
-                              "description": "ubuntuinstallation",
-                              "parent_id": "780970728630525952",
-                              "tags": [
-                                      "ubuntu"
-                                      ],
-                              "type_meta": {
-                                      "kind": "Assembly",
-                                      "api_version": "v1"
-                                        },
-                             "object_meta": {
-                                      "name": "xyz",
-                                      "namespace": "",
-                                      "uid": "",
-                                      "created_at": "",
-                                      "cluster_name": "",
-                                      "labels": {
-                                              "group": "development",
-                                              "key2": "value2"
-                                              },
-                                      "annotations": {
-                                              "key1": "value1",
-                                              "key2": "value2"
-                                              },
-                                      "owner_references": [{
-                                              "kind": "Node",
-                                              "api_version": "v1",
-                                              "name": "ddd",
-                                              "uid": "",
-                                              "block_owner_deletion": true
-                                              }]
-                                              },
-                                "component_collection": "",
-                                "node": "",
-                                "ip": "",
-                                "urls": "",
-                                "status": {
-                                     "phase": "pending32",
-                                     "message": "",
-                                     "reason": "",
-                                     "conditions": [{
-                                     "message": "",
-                                     "reason": "",
-                                     "status": " ",
-                                     "lastTransitionTime": " ",
-                                     "lastProbeTime": "",
-                                     "conditionType": " "
-                                     }]
-                                     }
-                                "spec": null,
-                                "created_at": "2017-09-14T07:51:27.793960+00:00"
-                                     }
-                            ]
-
-                          }
-            400:
-                description: Received a jobId that was not a number
-    /{id}:
-        get:
-            description: Get the assembly for the given id
-            responses:
-                200:
-                    body:
-                        application/json:
-                            schema: job
-                            example: |
-                                {
-                                  "id": "806223216472236032",
-                                  "name": "ubuntu",
-                                  "uri": "/v1/assemblys",
-                                  "description": "ubuntuinstallation",
-                                  "parent_id": "780970728630525952",
-                                  "tags": [
-                                          "ubuntu"
-                                          ],
-                                  "type_meta": {
-                                          "kind": "Assembly",
-                                          "api_version": "v1"
-                                            },
-                                 "object_meta": {
-                                          "name": "xyz",
-                                          "namespace": "",
-                                          "uid": "",
-                                          "created_at": "",
-                                          "cluster_name": "",
-                                          "labels": {
-                                                  "group": "development",
-                                                  "key2": "value2"
-                                                  },
-                                          "annotations": {
-                                                  "key1": "value1",
-                                                  "key2": "value2"
-                                                  },
-                                          "owner_references": [{
-                                                  "kind": "Node",
-                                                  "api_version": "v1",
-                                                  "name": "ddd",
-                                                  "uid": "",
-                                                  "block_owner_deletion": true
-                                                  }]
-                                                  },
-                                    "component_collection": "",
-                                    "node": "",
-                                    "ip": "",
-                                    "urls": "",
-                                    "status": {
-                                         "phase": "pending32",
-                                         "message": "",
-                                         "reason": "",
-                                         "conditions": [{
-                                         "message": "",
-                                         "reason": "",
-                                         "status": " ",
-                                         "lastTransitionTime": " ",
-                                         "lastProbeTime": "",
-                                         "conditionType": " "
-                                         }]
-                                         }
-                                    "spec": null,
-                                    "created_at": "2017-09-14T07:51:27.793960+00:00"
-                                         }
-                400:
-                    description: Received a jobId that was not a number
-    /{id}/status:
-        put:
-            description: Update the status of the assembly for the given id
-            body:
-                application/json:
-                    schema: assembly
-                    example: |
-                        {
-                          "id": "806223216472236032",
-                          "name": "ubuntu",
-                          "uri": "/v1/assemblys",
-                          "description": "ubuntuinstallation",
-                          "parent_id": "780970728630525952",
-                          "tags": [
-                                  "ubuntu"
-                                  ],
-                          "type_meta": {
-                                  "kind": "Assembly",
-                                  "api_version": "v1"
-                                    },
-                         "object_meta": {
-                                  "name": "xyz",
-                                  "namespace": "",
+                              },
+                      "owner_references": [{
+                              "kind": "Node",
+                              "api_version": "v1",
+                              "name": "ddd",
+                              "uid": "",
+                              "block_owner_deletion": true
+                              }]
+                              },
+                "component_collection": "",
+                "node": "",
+                "ip": "",
+                "urls": "",
+                "status": {
+                     "phase": "pending32",
+                     "message": "",
+                     "reason": "",
+                     "conditions": [{
+                     "message": "",
+                     "reason": "",
+                     "status": " ",
+                     "last_transition_time": " ",
+                     "last_probe_time": "",
+                     "condition_type": " "
+                     }]
+                     }
+                "spec": null,
+                "created_at": "2017-09-14T07:51:27.793960+00:00"
+                     }
+      responses:
+        '201':
+          body:
+            application/json:
+              example: |
+                {
+                  "id": "806223216472236032",
+                  "name": "ubuntu",
+                  "uri": "/v1/assemblys",
+                  "description": "ubuntuinstallation",
+                  "parent_id": "780970728630525952",
+                  "tags": [
+                          "ubuntu"
+                          ],
+                  "type_meta": {
+                          "kind": "Assembly",
+                          "api_version": "v1"
+                            },
+                 "object_meta": {
+                          "name": "xyz",
+                          "namespace": "",
+                          "uid": "",
+                          "created_at": "",
+                          "cluster_name": "",
+                          "labels": {
+                                  "group": "development",
+                                  "key2": "value2"
+                                  },
+                          "annotations": {
+                                  "key1": "value1",
+                                  "key2": "value2"
+                                  },
+                          "owner_references": [{
+                                  "kind": "Node",
+                                  "api_version": "v1",
+                                  "name": "ddd",
                                   "uid": "",
-                                  "created_at": "",
-                                  "cluster_name": "",
-                                  "labels": {
-                                          "group": "development",
-                                          "key2": "value2"
-                                          },
-                                  "annotations": {
-                                          "key1": "value1",
-                                          "key2": "value2"
-                                          },
-                                  "owner_references": [{
-                                          "kind": "Node",
-                                          "api_version": "v1",
-                                          "name": "ddd",
-                                          "uid": "",
-                                          "block_owner_deletion": true
-                                          }]
-                                          },
-                            "component_collection": "",
-                            "node": "",
-                            "ip": "",
-                            "urls": "",
-                            "status": {
-                                 "phase": "pending32",
-                                 "message": "",
-                                 "reason": "",
-                                 "conditions": [{
-                                 "message": "",
-                                 "reason": "",
-                                 "status": " ",
-                                 "lastTransitionTime": " ",
-                                 "lastProbeTime": "",
-                                 "conditionType": " "
-                                 }]
-                                 }
-                            "spec": null,
-                            "created_at": "2017-09-14T07:51:27.793960+00:00"
-                                 }
-            responses:
-                201:
-                    body:
-                        application/json:
-                            example: |
-                                {
-                                  "id": "806223216472236032",
-                                  "name": "ubuntu",
-                                  "uri": "/v1/assemblys",
-                                  "description": "ubuntuinstallation",
-                                  "parent_id": "780970728630525952",
-                                  "tags": [
-                                          "ubuntu"
-                                          ],
-                                  "type_meta": {
-                                          "kind": "Assembly",
-                                          "api_version": "v1"
-                                            },
-                                 "object_meta": {
-                                          "name": "xyz",
-                                          "namespace": "",
-                                          "uid": "",
-                                          "created_at": "",
-                                          "cluster_name": "",
-                                          "labels": {
-                                                  "group": "development",
-                                                  "key2": "value2"
-                                                  },
-                                          "annotations": {
-                                                  "key1": "value1",
-                                                  "key2": "value2"
-                                                  },
-                                          "owner_references": [{
-                                                  "kind": "Node",
-                                                  "api_version": "v1",
-                                                  "name": "ddd",
-                                                  "uid": "",
-                                                  "block_owner_deletion": true
-                                                  }]
-                                                  },
-                                    "component_collection": "",
-                                    "node": "",
-                                    "ip": "",
-                                    "urls": "",
-                                    "status": {
-                                         "phase": "pending32",
-                                         "message": "",
-                                         "reason": "",
-                                         "conditions": [{
-                                         "message": "",
-                                         "reason": "",
-                                         "status": " ",
-                                         "lastTransitionTime": " ",
-                                         "lastProbeTime": "",
-                                         "conditionType": " "
-                                         }]
-                                         }
-                                    "spec": null,
-                                    "created_at": "2017-09-14T07:51:27.793960+00:00"
-                                         }
-                400:
-                    description: Received a malformed JSON body
-                404:
-                    description: Project does not exist with corresponding projectId
-                422:
-                    description: Invalid or missing projectId in body
+                                  "block_owner_deletion": true
+                                  }]
+                                  },
+                    "component_collection": "",
+                    "node": "",
+                    "ip": "",
+                    "urls": "",
+                    "status": {
+                         "phase": "pending32",
+                         "message": "",
+                         "reason": "",
+                         "conditions": [{
+                         "message": "",
+                         "reason": "",
+                         "status": " ",
+                         "last_transition_time": " ",
+                         "last_probe_time": "",
+                         "condition_type": " "
+                         }]
+                         }
+                    "spec": null,
+                    "created_at": "2017-09-14T07:51:27.793960+00:00"
+                         }
+        '400':
+          description: Received a malformed JSON body
+        '404':
+          description: Project does not exist with corresponding projectId
+        '422':
+          description: Invalid or missing projectId in body
 /horizontalscaling:
-    post:
-        description: Create a new horizontalscaling policy
+  post:
+    description: Create a new horizontalscaling policy
+    body:
+      application/json:
+        schema: horizontalscaling
+        example: ''
+    responses:
+      '201':
         body:
-            application/json:
-                schema: horizontalscaling
-                example: |
+          application/json:
+            example: ''
+      '400':
+        description: Received a malformed JSON body
+      '404':
+        description: Project does not exist with corresponding projectId
+      '422':
+        description: Invalid or missing projectId in body
+  get:
+    description: Get list of horizontalscaling policy
+    responses:
+      '200':
+        body:
+          application/json:
+            schema: job
+            example: |
+              {
+                  "id": "73089155726360582",
+                  "origin": "core",
+                  "project": "nginx",
+                  "version": "1.0.0",
+                  "release": "20170505001756",
 
-        responses:
-            201:
-                body:
-                    application/json:
-                        example: |
-            400:
-                description: Received a malformed JSON body
-            404:
-                description: Project does not exist with corresponding projectId
-            422:
-                description: Invalid or missing projectId in body
+              }
+      '400':
+        description: Received a jobId that was not a number
+  '/{id}':
     get:
-        description: Get list of horizontalscaling policy
-        responses:
-            200:
-                body:
-                    application/json:
-                        schema: job
-                        example: |
-                          {
-                              "id": "73089155726360582",
-                              "origin": "core",
-                              "project": "nginx",
-                              "version": "1.0.0",
-                              "release": "20170505001756",
-
-                          }
-            400:
-                description: Received a jobId that was not a number
-    /{id}:
-        get:
-            description: Get the horizontalscaling policy by horizontalscaling id
-            responses:
-                200:
-                    body:
-                        application/json:
-                            schema: job
-                            example: |
-                              {
-                                  "id": "73089155726360582",
-                                  "origin": "core",
-                                  "project": "nginx",
-                                  "version": "1.0.0",
-                                  "release": "20170505001756",
-                                  "state": "Complete",
-                                  "created_at": "2017-05-05 00:42:35.213765+00",
-                                  "build_started_at": "2017-05-05 00:43:11.729835+00",
-                                  "build_finished_at": "2017-05-05 00:44:00.896919+00"
-                              }
-                400:
-                    description: Received a jobId that was not a number
-    /{id}/status:
-        put:
-            description: Update the status of the horizontalscaling policy for the given id
-            body:
-                application/json:
-                    schema: assemblysCreate
-                    example: |
-            responses:
-                201:
-                    body:
-                        application/json:
-                            example: |
-
-                400:
-                    description: Received a malformed JSON body
-                404:
-                    description: Project does not exist with corresponding projectId
-                422:
-                    description: Invalid or missing projectId in body
+      description: Get the horizontalscaling policy by horizontalscaling id
+      responses:
+        '200':
+          body:
+            application/json:
+              schema: job
+              example: |
+                {
+                    "id": "73089155726360582",
+                    "origin": "core",
+                    "project": "nginx",
+                    "version": "1.0.0",
+                    "release": "20170505001756",
+                    "state": "Complete",
+                    "created_at": "2017-05-05 00:42:35.213765+00",
+                    "build_started_at": "2017-05-05 00:43:11.729835+00",
+                    "build_finished_at": "2017-05-05 00:44:00.896919+00"
+                }
+        '400':
+          description: Received a jobId that was not a number
+  '/{id}/status':
+    put:
+      description: Update the status of the horizontalscaling policy for the given id
+      body:
+        application/json:
+          schema: assemblysCreate
+          example: ''
+      responses:
+        '201':
+          body:
+            application/json:
+              example: ''
+        '400':
+          description: Received a malformed JSON body
+        '404':
+          description: Project does not exist with corresponding projectId
+        '422':
+          description: Invalid or missing projectId in body
 /nodes:
-    post:
-        description: Create a new node
+  post:
+    description: Create a new node
+    body:
+      application/json:
+        schema: node
+        example: ''
+    responses:
+      '201':
         body:
-            application/json:
-                schema: node
-                example: |
-
-        responses:
-            201:
-                body:
-                    application/json:
-                        example: |
-            400:
-                description: Received a malformed JSON body
-            404:
-                description: Project does not exist with corresponding projectId
-            422:
-                description: Invalid or missing projectId in body
+          application/json:
+            example: ''
+      '400':
+        description: Received a malformed JSON body
+      '404':
+        description: Project does not exist with corresponding projectId
+      '422':
+        description: Invalid or missing projectId in body
+  get:
+    description: Get list of nodes
+    responses:
+      '200':
+        body:
+          application/json:
+            schema: node
+            example: ''
+      '400':
+        description: Received a jobId that was not a number
+  '/{id}':
     get:
-        description: Get list of nodes
-        responses:
-            200:
-                body:
-                    application/json:
-                        schema: node
-                        example: |
-            400:
-                description: Received a jobId that was not a number
-    /{id}:
-        get:
-            description: Get the node for the given id
-            responses:
-                200:
-                    body:
-                        application/json:
-                            schema: node
-                            example: |
-                400:
-                    description: Received a jobId that was not a number
-    /{id}/status:
-        put:
-            description: Update the status of the node for the given id
-            body:
-                application/json:
-                    schema: node
-                    example: |
-                        {
-                          "project_id": "core/nginx"
-                        }
-            responses:
-                201:
-                    body:
-                        application/json:
-                            example: |
-                400:
-                    description: Received a malformed JSON body
-                404:
-                    description: Project does not exist with corresponding projectId
-                422:
-                    description: Invalid or missing projectId in body
+      description: Get the node for the given id
+      responses:
+        '200':
+          body:
+            application/json:
+              schema: node
+              example: ''
+        '400':
+          description: Received a jobId that was not a number
+  '/{id}/status':
+    put:
+      description: Update the status of the node for the given id
+      body:
+        application/json:
+          schema: node
+          example: |
+            {
+              "project_id": "core/nginx"
+            }
+      responses:
+        '201':
+          body:
+            application/json:
+              example: ''
+        '400':
+          description: Received a malformed JSON body
+        '404':
+          description: Project does not exist with corresponding projectId
+        '422':
+          description: Invalid or missing projectId in body
 /roles:
-    post:
-        description: Create a new role
+  post:
+    description: Create a new role
+    body:
+      application/json:
+        schema: role
+        example: ''
+    responses:
+      '201':
         body:
-            application/json:
-                schema: role
-                example: |
-
-        responses:
-            201:
-                body:
-                    application/json:
-                        example: |
-
-            400:
-                description: Received a malformed JSON body
-            404:
-                description: Project does not exist with corresponding projectId
-            422:
-                description: Invalid or missing projectId in body
+          application/json:
+            example: ''
+      '400':
+        description: Received a malformed JSON body
+      '404':
+        description: Project does not exist with corresponding projectId
+      '422':
+        description: Invalid or missing projectId in body
+  get:
+    description: Get list of roles
+    responses:
+      '200':
+        body:
+          application/json:
+            schema: job
+            example: ''
+      '400':
+        description: Received a jobId that was not a number
+  '/{role_id}':
     get:
-        description: Get list of roles
-        responses:
-            200:
-                body:
-                    application/json:
-                        schema: job
-                        example: |
-            400:
-                description: Received a jobId that was not a number
-    /{role_id}:
-        get:
-            description: Get the role for the given role_id
-            responses:
-                200:
-                    body:
-                        application/json:
-                            schema: job
-                            example: |
-                400:
-                    description: Received a jobId that was not a number
+      description: Get the role for the given role_id
+      responses:
+        '200':
+          body:
+            application/json:
+              schema: job
+              example: ''
+        '400':
+          description: Received a jobId that was not a number
 /permission:
-    post:
-        description: Create a new permission
+  post:
+    description: Create a new permission
+    body:
+      application/json:
+        schema: permission
+        example: ''
+    responses:
+      '201':
         body:
-            application/json:
-                schema: permission
-                example: |
-        responses:
-            201:
-                body:
-                    application/json:
-                        example: |
-            400:
-                description: Received a malformed JSON body
-            404:
-                description: Project does not exist with corresponding projectId
-            422:
-                description: Invalid or missing projectId in body
+          application/json:
+            example: ''
+      '400':
+        description: Received a malformed JSON body
+      '404':
+        description: Project does not exist with corresponding projectId
+      '422':
+        description: Invalid or missing projectId in body
+  get:
+    description: Get list of permissions
+    responses:
+      '200':
+        body:
+          application/json:
+            schema: job
+            example: ''
+      '400':
+        description: Received a jobId that was not a number
+  '/{id}':
     get:
-        description: Get list of permissions
-        responses:
-            200:
-                body:
-                    application/json:
-                        schema: job
-                        example: |
-            400:
-                description: Received a jobId that was not a number
-    /{id}:
-        get:
-            description: Get the permission for the given id
-            responses:
-                200:
-                    body:
-                        application/json:
-                            schema: job
-                            example: |
-                              {
-                                  "id": "73089155726360582",
-                                  "origin": "core",
-                                  "project": "nginx",
-                                  "version": "1.0.0",
-                                  "release": "20170505001756",
-                                  "state": "Complete",
-                                  "created_at": "2017-05-05 00:42:35.213765+00",
-                                  "build_started_at": "2017-05-05 00:43:11.729835+00",
-                                  "build_finished_at": "2017-05-05 00:44:00.896919+00"
-                              }
-                400:
-                    description: Received a jobId that was not a number
+      description: Get the permission for the given id
+      responses:
+        '200':
+          body:
+            application/json:
+              schema: job
+              example: |
+                {
+                    "id": "73089155726360582",
+                    "origin": "core",
+                    "project": "nginx",
+                    "version": "1.0.0",
+                    "release": "20170505001756",
+                    "state": "Complete",
+                    "created_at": "2017-05-05 00:42:35.213765+00",
+                    "build_started_at": "2017-05-05 00:43:11.729835+00",
+                    "build_finished_at": "2017-05-05 00:44:00.896919+00"
+                }
+        '400':
+          description: Received a jobId that was not a number

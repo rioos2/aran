@@ -1,5 +1,5 @@
 // Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-    
+
 use std::fmt;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
@@ -12,6 +12,8 @@ pub const DEFAULT_GITHUB_URL: &'static str = "https://api.github.com";
 /// associated to the habitat-sh GitHub account and is configured to re-direct and point to a local
 /// builder-api.
 ///
+pub const DEFAULT_PROMETHEUS_URL: &'static str = "https://api.github.com";
+
 /// See https://github.com/settings/connections/applications/0c2f738a7d0bd300de10
 pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";
 /// Default Client Secret for development purposes only. See the `DEV_GITHUB_CLIENT_ID` for
@@ -69,6 +71,23 @@ impl Default for ShieldCfg {
             client_id: DEV_GITHUB_CLIENT_ID.to_string(),
             client_secret: DEV_GITHUB_CLIENT_SECRET.to_string(),
         }
+    }
+}
+
+pub trait Prometheus {
+    fn prometheus_url(&self) -> &str;
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct PrometheusCfg {
+    /// URL to Prometheus API
+    pub url: String,
+}
+
+impl Default for PrometheusCfg {
+    fn default() -> Self {
+        PrometheusCfg { url: DEFAULT_PROMETHEUS_URL.to_string() }
     }
 }
 
