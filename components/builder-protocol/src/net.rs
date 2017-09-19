@@ -160,7 +160,8 @@ impl error::Error for NetError {
 
 impl Serialize for ErrCode {
     fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_u64(self.to_owned() as u64)
     }
@@ -168,7 +169,8 @@ impl Serialize for ErrCode {
 
 impl Serialize for NetError {
     fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let mut strukt = try!(serializer.serialize_struct("error", 2));
         try!(strukt.serialize_field("code", &self.get_code()));

@@ -22,6 +22,8 @@ use asmsrv;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScaling {
     id: String,
+    object_meta: asmsrv::ObjectMeta,
+    type_meta: asmsrv::TypeMeta,
     name: String,
     description: String,
     tags: Vec<String>,
@@ -32,8 +34,6 @@ pub struct HorizontalScaling {
     spec: Spec,
     status: Status,
     created_at: String,
-    object_meta: asmsrv::ObjectMeta,
-    type_meta: asmsrv::TypeMeta,
 }
 impl HorizontalScaling {
     pub fn new() -> HorizontalScaling {

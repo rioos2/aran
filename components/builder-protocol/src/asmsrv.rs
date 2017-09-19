@@ -24,19 +24,20 @@ use std::fmt;
 use error::{Error, Result};
 use std::str::FromStr;
 use plansrv;
+use std::collections::BTreeMap;
+
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     id: String,
+    type_meta: TypeMeta,
+    object_meta: ObjectMeta,
     name: String,
     uri: String,
     description: String,
     parent_id: String,
     tags: Vec<String>,
-    type_meta: TypeMeta,
-    object_meta: ObjectMeta,
-    component_collection: String,
     node: String,
     ip: String,
     urls: String,
@@ -120,14 +121,6 @@ impl Assembly {
         &self.object_meta
     }
 
-    pub fn set_component_collection(&mut self, v: ::std::string::String) {
-        self.component_collection = v;
-    }
-
-    pub fn get_component_collection(&self) -> ::std::string::String {
-        self.component_collection.clone()
-    }
-
     pub fn set_node(&mut self, v: ::std::string::String) {
         self.node = v;
     }
@@ -200,9 +193,9 @@ pub struct Condition {
     message: String,
     reason: String,
     status: String,
-    lastTransitionTime: String,
-    lastProbeTime: String,
-    conditionType: String,
+    last_transition_time: String,
+    last_probe_time: String,
+    condition_type: String,
 }
 
 impl Condition {
@@ -218,14 +211,14 @@ impl Condition {
     pub fn set_status(&mut self, v: ::std::string::String) {
         self.status = v;
     }
-    pub fn set_lastTransitionTime(&mut self, v: ::std::string::String) {
-        self.lastTransitionTime = v;
+    pub fn set_last_transition_time(&mut self, v: ::std::string::String) {
+        self.last_transition_time = v;
     }
-    pub fn set_lastProbeTime(&mut self, v: ::std::string::String) {
-        self.lastProbeTime = v;
+    pub fn set_last_probe_time(&mut self, v: ::std::string::String) {
+        self.last_probe_time = v;
     }
-    pub fn set_conditionType(&mut self, v: ::std::string::String) {
-        self.conditionType = v;
+    pub fn set_condition_type(&mut self, v: ::std::string::String) {
+        self.condition_type = v;
     }
 }
 
@@ -293,8 +286,6 @@ impl AssemblyFactory {
     pub fn new() -> AssemblyFactory {
         ::std::default::Default::default()
     }
-
-
 
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
@@ -430,8 +421,8 @@ pub struct ObjectMeta {
     uid: String,
     created_at: String,
     cluster_name: String,
-    labels: Labels,
-    annotations: Annotations,
+    labels: BTreeMap<String, String>,
+    annotations: BTreeMap<String, String>,
     owner_references: Vec<OwnerReferences>,
 }
 
@@ -455,11 +446,11 @@ impl ObjectMeta {
     pub fn set_cluster_name(&mut self, v: ::std::string::String) {
         self.cluster_name = v;
     }
-    pub fn set_labels(&mut self, v: Labels) {
+    pub fn set_labels(&mut self, v: BTreeMap<String, String>) {
         self.labels = v;
     }
 
-    pub fn set_annotations(&mut self, v: Annotations) {
+    pub fn set_annotations(&mut self, v: BTreeMap<String, String>) {
         self.annotations = v;
     }
 
@@ -496,42 +487,6 @@ impl OwnerReferences {
     }
     pub fn set_block_owner_deletion(&mut self, v: bool) {
         self.block_owner_deletion = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Labels {
-    group: String,
-    key2: String,
-}
-
-impl Labels {
-    pub fn new() -> Labels {
-        ::std::default::Default::default()
-    }
-    pub fn set_group(&mut self, v: ::std::string::String) {
-        self.group = v;
-    }
-    pub fn set_key2(&mut self, v: ::std::string::String) {
-        self.key2 = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Annotations {
-    key1: String,
-    key2: String,
-}
-
-impl Annotations {
-    pub fn new() -> Annotations {
-        ::std::default::Default::default()
-    }
-    pub fn set_key1(&mut self, v: ::std::string::String) {
-        self.key1 = v;
-    }
-    pub fn set_key2(&mut self, v: ::std::string::String) {
-        self.key2 = v;
     }
 }
 
@@ -597,9 +552,6 @@ impl TypeMeta {
         self.api_version = v;
     }
 }
-
-
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct OpsSettings {
@@ -668,42 +620,5 @@ impl AssemblyFactoryGetResponse {
         self.items = v;
         self.kind = r;
         self.apiVersion = s;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub enum CommonStatus {
-    Pending,
-    Processing,
-    Complete,
-    Rejected,
-    Failed,
-    Dispatched,
-}
-
-impl CommonStatus {
-    pub fn from_str(value: String) -> CommonStatus {
-        match &value[..] {
-            "Dispatched" => CommonStatus::Dispatched,
-            "Pending" => CommonStatus::Pending,
-            "Processing" => CommonStatus::Processing,
-            "Complete" => CommonStatus::Complete,
-            "Rejected" => CommonStatus::Rejected,
-            "Failed" => CommonStatus::Failed,
-            _ => CommonStatus::Pending,
-        }
-    }
-}
-
-impl fmt::Display for CommonStatus {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            CommonStatus::Dispatched => write!(f, "Dispatched"),
-            CommonStatus::Pending => write!(f, "Pending"),
-            CommonStatus::Processing => write!(f, "Processing"),
-            CommonStatus::Rejected => write!(f, "Rejected"),
-            CommonStatus::Complete => write!(f, "Complete"),
-            CommonStatus::Failed => write!(f, "Failed"),
-        }
     }
 }
