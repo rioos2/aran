@@ -10,15 +10,33 @@ use rio_core::Error::InvalidOrigin;
 
 use error::{Error, Result};
 
+//creates the certificate authority or self signed.
 pub fn start(ui: &mut UI, origin: &str, cache: &Path) -> Result<()> {
     match ident::is_valid_ca_name(origin) {
         false => Err(Error::from(InvalidOrigin(origin.to_string()))),
         true => {
-            ui.begin(format!("Generating origin key for {}", &origin))?;
-            let pair = SigKeyPair::generate_pair_for_origin(origin, cache)?;
+            ui.begin(format!("Generating key for {}", &origin))?;
+            let pair = SigKeyPair::root_ca(origin, cache)?;
 
             ui.end(format!(
-                "Generated origin key pair {}.",
+                "Generated key pair {}.",
+                &pair.name
+            ))?;
+            Ok(())
+        }
+    }
+}
+
+//creates the signed certificate by certificate authority.
+pub fn signed(ui: &mut UI, origin: &str, cache: &Path) -> Result<()> {
+    match ident::is_valid_ca_name(origin) {
+        false => Err(Error::from(InvalidOrigin(origin.to_string()))),
+        true => {
+            ui.begin(format!("Generating key for {}", &origin))?;
+            let pair = SigKeyPair::signed_with(origin, cache)?;
+
+            ui.end(format!(
+                "Generated key pair {}.",
                 &pair.name
             ))?;
             Ok(())

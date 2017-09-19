@@ -66,9 +66,13 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
                 "Filepath to configuration file. [default: /var/lib/rioos/api.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 9636]")
         )
+        /*
+        TO-DO: Don't remove this code. We don't have ability in openssl crate today to
+        sign certificates using CSR.
+        For now we'll use the ./tools/localup.sh script
         (@subcommand setup =>
             (about: "Setup the api server")
-        )
+        )*/
 
     )
 }
