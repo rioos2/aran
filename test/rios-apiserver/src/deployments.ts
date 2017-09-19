@@ -11,7 +11,7 @@ describe('Assembly_factory API', function() {
     request.post('/assemblyfactorys')
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .send({"name":"ubuntu","uri":"/v1/assemblys/assembly_factorys","description":"ubuntuinstallation","tags":["ubuntu"],"replicas":5,"properties":{"domain":"megambox.com","cloudsetting":"/clouds/one","region":"chennai","storage_type":"ssd"},"type_meta":{"kind":"Assemblyfactory","api_version":"v1"},"object_meta":{"name":"xyz","namespace":"","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"},"owner_references":[{"kind":"Node","api_version":"v1","name":"ddd","uid":"","block_owner_deletion":true}]},"plan":"/v3/plan/apache","plan_data":null,"external_management_resource":["safsf"],"component_collection":{"flavor":"/url","network":"/url"},"status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":" ","conditionType":" "}]},"opssettings":{"nodeselector":"","priority":" ","nodename":" ","restartpolicy":" "}})
+      .send({"name":"ubuntu","uri":"/v1/assemblys/assembly_factorys","description":"ubuntuinstallation","tags":["ubuntu"],"replicas":5,"properties":{"domain":"megambox.com","cloudsetting":"/clouds/one","region":"chennai","storage_type":"ssd"},"type_meta":{"kind":"Assemblyfactory","api_version":"v1"},"object_meta":{"name":"xyz","namespace":"","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"},"owner_references":[{"kind":"Node","api_version":"v1","name":"ddd","uid":"","block_owner_deletion":true}]},"plan":"/v3/plan/apache","plan_data":null,"external_management_resource":["safsf"],"component_collection":{"flavor":"/url","network":"/url"},"status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":" ","condition_type":" "}]},"opssettings":{"nodeselector":"","priority":" ","nodename":" ","restartpolicy":" "}})
       .expect(200)
       .end(function(err, res) {
         expect(res.body.name).to.equal("ubuntu");
@@ -31,7 +31,7 @@ describe('Assembly_factory API', function() {
   it('returns the assembly_factorys_status_update by id', function(done) {
     request.put('/assembly_factorys/status/'+ globalAny.asm_fac_id)
       .set('Authorization', globalAny.bobo_bearer)
-      .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":"","conditionType":" "}]}})
+      .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":"","condition_type":" "}]}})
       .expect(200)
       .end(function(err, res) {
        expect(res.body);
@@ -55,7 +55,7 @@ describe('Assembly_factory API', function() {
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .send({"name": "ubuntu","uri":"/v1/assemblys","description":"ubuntuinstallation","tags": ["ubuntu"]",type_meta":{"kind":"Assemblyfactory","api_version":"v1"},"object_meta":{"name":"xyz","namespace":"","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"},"owner_references":[{"kind":"Node","api_version":"v1","name":"ddd","uid":"","block_owner_deletion":true}]},"type_meta":{"kind":"Assemblyfactory","api_version":"v1"},"object_meta":{"name":"xyz","namespace":"","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"},"owner_references":[{"kind":"Node","api_version":"v1","name":"ddd","uid":"","block_owner_deletion":true}]}"parent_id":globalAny.asm_fac_id,
-         "component_collection": " ","urls": " ", "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":" ","conditionType":" "}]},"node":"","ip":"" })
+         "component_collection": " ","urls": " ", "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":" ","condition_type":" "}]},"node":"","ip":"" })
         .expect(200)
         .end(function(err, res) {
           expect(res.body.name).to.equal("ubuntu");
@@ -77,7 +77,7 @@ describe('Assembly_factory API', function() {
     it('returns the assemblys_status_update by id', function(done) {
       request.put('/assemblys/status/'+ globalAny.asm.id)
         .set('Authorization', globalAny.bobo_bearer)
-        .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","lastTransitionTime":" ","lastProbeTime":"","conditionType":" "}]}})
+        .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":"","condition_type":" "}]}})
         .expect(200)
         .end(function(err, res) {
          expect(res.body);
