@@ -211,7 +211,7 @@ impl Conditions {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Addresses {
     node_type: String,
-    addresses: String,
+    address: String,
 }
 
 impl Addresses {
@@ -222,8 +222,8 @@ impl Addresses {
     pub fn set_node_type(&mut self, v: ::std::string::String) {
         self.node_type = v;
     }
-    pub fn set_addresses(&mut self, v: ::std::string::String) {
-        self.addresses = v;
+    pub fn set_address(&mut self, v: ::std::string::String) {
+        self.address = v;
     }
 }
 

@@ -93,10 +93,13 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
         node_metrics: get "/metrics" => XHandler::new(node_metrics).before(basic.clone()),
 
-
         //secret API
-        secret: post "/secret" => XHandler::new(secret_create).before(basic.clone()),
+        secrets: post "/secret" => XHandler::new(secret_create).before(basic.clone()),
         secret_show: get "/secret/:id" => XHandler::new(secret_show).before(basic.clone()),
+
+        //serviceAccount API
+        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(service_create).before(basic.clone()),
+
     );
 
     let mut chain = Chain::new(router);

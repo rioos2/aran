@@ -21,10 +21,7 @@ pub enum Error {
     IO(io::Error),
     SecretCreate(postgres::error::Error),
     SecretGet(postgres::error::Error),
-    HSSetStatus(postgres::error::Error),
-    ProjectJobsGet(postgres::error::Error),
-    UnknownVCS,
-    UnknownJobState,
+    ServiceAccountCreate(postgres::error::Error),
 }
 
 
@@ -41,10 +38,7 @@ impl fmt::Display for Error {
             Error::IO(ref e) => format!("{}", e),
             Error::SecretCreate(ref e) => format!("Database error creating a secret, {}", e),
             Error::SecretGet(ref e) => format!("Database error get secret, {}", e),
-            Error::HSSetStatus(ref e) => format!("Database error while update status, {}", e),
-            Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
-            Error::UnknownVCS => format!("Unknown VCS"),
-            Error::UnknownJobState => format!("Unknown Job State"),
+            Error::ServiceAccountCreate(ref e) => format!("Database error creating a service_account, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -61,10 +55,7 @@ impl error::Error for Error {
             Error::InvalidUrl => "Bad Url!",
             Error::SecretCreate(ref err) => err.description(),
             Error::SecretGet(ref err) => err.description(),
-            Error::HSSetStatus(ref err) => err.description(),
-            Error::ProjectJobsGet(ref err) => err.description(),
-            Error::UnknownJobState => "Unknown Job State",
-            Error::UnknownVCS => "Unknown VCS",
+            Error::ServiceAccountCreate(ref err) => err.description(),
         }
     }
 }

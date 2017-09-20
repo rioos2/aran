@@ -417,7 +417,7 @@ impl AssemblyFactory {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectMeta {
     name: String,
-    namespace: String,
+    origin: String,
     uid: String,
     created_at: String,
     cluster_name: String,
@@ -433,8 +433,8 @@ impl ObjectMeta {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
-    pub fn set_namespace(&mut self, v: ::std::string::String) {
-        self.namespace = v;
+    pub fn set_origin(&mut self, v: ::std::string::String) {
+        self.origin = v;
     }
     pub fn set_uid(&mut self, v: ::std::string::String) {
         self.uid = v;

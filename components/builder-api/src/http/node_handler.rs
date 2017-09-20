@@ -60,7 +60,7 @@ struct ConditionsReq {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct AddressesReq {
     node_type: String,
-    addresses: String,
+    address: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -86,7 +86,7 @@ struct TypeMetaReq {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ObjectMetaReq {
     name: String,
-    namespace: String,
+    origin: String,
     uid: String,
     created_at: String,
     cluster_name: String,
@@ -154,7 +154,7 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 for addr in body.status.addresses {
                     let mut addresses = Addresses::new();
                     addresses.set_node_type(addr.node_type);
-                    addresses.set_addresses(addr.addresses);
+                    addresses.set_address(addr.address);
                     addresse_collection.push(addresses);
                 }
                 status.set_addresses(addresse_collection);
@@ -170,7 +170,7 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
 
                 let mut object_meta = ObjectMeta::new();
                 object_meta.set_name(body.object_meta.name);
-                object_meta.set_namespace(body.object_meta.namespace);
+                object_meta.set_origin(body.object_meta.origin);
                 object_meta.set_uid(body.object_meta.uid);
                 object_meta.set_created_at(body.object_meta.created_at);
                 object_meta.set_cluster_name(body.object_meta.cluster_name);
@@ -257,7 +257,7 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
                 for addr in body.status.addresses {
                     let mut addresses = Addresses::new();
                     addresses.set_node_type(addr.node_type);
-                    addresses.set_addresses(addr.addresses);
+                    addresses.set_address(addr.address);
                     addresse_collection.push(addresses);
                 }
                 status.set_addresses(addresse_collection);
