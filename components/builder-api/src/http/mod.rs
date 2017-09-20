@@ -48,7 +48,10 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
     let router =
         router!(
+
+        //the status for api server, and overall for command center
         status: get "/healthz" => status,
+        healthz_all: get "/healthz/overall" => XHandler::new(healthz_all).before(basic.clone()),
 
         //auth API for login (default password auth)
         authenticate: post "/authenticate" => default_authenticate,
@@ -91,8 +94,6 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         nodes: post "/nodes" => XHandler::new(node_create).before(basic.clone()),
         nodes_list: get "/nodes" => XHandler::new(node_list).before(basic.clone()),
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
-        node_metrics: get "/metrics" => XHandler::new(node_metrics).before(basic.clone()),
-
 
         //secret API
         secret: post "/secret" => XHandler::new(secret_create).before(basic.clone()),
@@ -136,7 +137,6 @@ pub fn run(config: Arc<Config>) -> Result<JoinHandle<()>> {
 
     let mut mount = Mount::new();
 
-    //TO-DO: I think we don't have a / URL, but we'll probably show some static files.
     if let Some(ref path) = config.ui.root {
         debug!("Mounting UI at filepath {}", path);
         mount.mount("/", Static::new(path));

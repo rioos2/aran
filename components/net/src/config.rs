@@ -21,11 +21,7 @@ pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";
 pub const DEV_GITHUB_CLIENT_SECRET: &'static str = "438223113eeb6e7edf2d2f91a232b72de72b9bdf";
 
 
-pub trait PasswordAuth {
-    fn github_url(&self) -> &str;
-    fn github_client_id(&self) -> &str;
-    fn github_client_secret(&self) -> &str;
-}
+pub trait PasswordAuth {}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct PasswordCfg {

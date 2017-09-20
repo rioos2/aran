@@ -7,26 +7,20 @@ use std::path::{Path, PathBuf};
 use users;
 
 use package::{Identifiable, PackageIdent};
-use env as henv;
+use env as renv;
 
 /// The default root path of the Rio/OS filesystem
 pub const ROOT_PATH: &'static str = "rioos";
-/// The default path for any analytics related files
-pub const CACHE_ANALYTICS_PATH: &'static str = "rioos/cache/analytics";
-/// The default download root path for package artifacts, used on package installation
-pub const CACHE_ARTIFACT_PATH: &'static str = "rioos/cache/artifacts";
-/// The default path where cryptographic keys are stored
-pub const CACHE_KEY_PATH: &'static str = "rioos/cache/keys";
-/// The default path where source artifacts are downloaded, extracted, & compiled
-pub const CACHE_SRC_PATH: &'static str = "rioos/cache/src";
-/// The default path where SSL-related artifacts are placed
-pub const CACHE_SSL_PATH: &'static str = "rioos/cache/ssl";
+/// The default path where TLS-related keys are placed
+pub const CACHE_KEY_PATH: &'static str = "rioos/config/keys";
+/// The default path where TLS-related artifacts are placed
+pub const CACHE_CONFIG_PATH: &'static str = "rioos/config";
 /// The root path containing all locally installed packages
 pub const PKG_PATH: &'static str = "rioos/pkgs";
 /// The environment variable pointing to the filesystem root. This exists for internal
 /// team usage and is not intended to be used by consumers.
 
-pub const FS_ROOT_ENVVAR: &'static str = "FS_ROOT";
+pub const FS_ROOT_ENVVAR: &'static str = "RIOOS_HOME";
 pub const SYSTEMDRIVE_ENVVAR: &'static str = "SYSTEMDRIVE";
 
 lazy_static! {
@@ -35,10 +29,8 @@ lazy_static! {
     /// WARNING: On Windows this variable mutates on first call if an environment variable with
     ///          the key of `FS_ROOT_ENVVAR` is set.
     pub static ref FS_ROOT_PATH: PathBuf = {
-        // JW TODO: When Windows container studios are available the platform reflection should
-        // be removed.
         if cfg!(target_os = "windows") {
-            match (henv::var(FS_ROOT_ENVVAR), henv::var(SYSTEMDRIVE_ENVVAR)) {
+            match (renv::var(FS_ROOT_ENVVAR), renv::var(SYSTEMDRIVE_ENVVAR)) {
                 (Ok(path), _) =>  PathBuf::from(path),
                 (Err(_), Ok(system_drive)) => PathBuf::from(format!("{}{}", system_drive, "/")),
                 (Err(_), Err(_)) => unreachable!("Windows should always have a SYSTEMDRIVE environment variable.")
@@ -49,28 +41,6 @@ lazy_static! {
     };
 
     static ref EUID: u32 = users::get_effective_uid();
-
-    static ref MY_CACHE_ANALYTICS_PATH: PathBuf = {
-        if *EUID == 0u32 {
-            PathBuf::from(CACHE_ANALYTICS_PATH)
-        } else {
-            match env::home_dir() {
-                Some(home) => home.join(format!(".{}", CACHE_ANALYTICS_PATH)),
-                None => PathBuf::from(CACHE_ANALYTICS_PATH),
-            }
-        }
-    };
-
-    static ref MY_CACHE_ARTIFACT_PATH: PathBuf = {
-        if *EUID == 0u32 {
-            PathBuf::from(CACHE_ARTIFACT_PATH)
-        } else {
-            match env::home_dir() {
-                Some(home) => home.join(format!(".{}", CACHE_ARTIFACT_PATH)),
-                None => PathBuf::from(CACHE_ARTIFACT_PATH),
-            }
-        }
-    };
 
     static ref MY_CACHE_KEY_PATH: PathBuf = {
         if *EUID == 0u32 {
@@ -83,46 +53,21 @@ lazy_static! {
         }
     };
 
-    static ref MY_CACHE_SRC_PATH: PathBuf = {
+    static ref MY_CACHE_CONFIG_PATH: PathBuf = {
         if *EUID == 0u32 {
-            PathBuf::from(CACHE_SRC_PATH)
+            PathBuf::from(CACHE_CONFIG_PATH)
         } else {
             match env::home_dir() {
-                Some(home) => home.join(format!(".{}", CACHE_SRC_PATH)),
-                None => PathBuf::from(CACHE_SRC_PATH),
-            }
-        }
-    };
-
-    static ref MY_CACHE_SSL_PATH: PathBuf = {
-        if *EUID == 0u32 {
-            PathBuf::from(CACHE_SSL_PATH)
-        } else {
-            match env::home_dir() {
-                Some(home) => home.join(format!(".{}", CACHE_SSL_PATH)),
-                None => PathBuf::from(CACHE_SSL_PATH),
+                Some(home) => home.join(format!(".{}", CACHE_CONFIG_PATH)),
+                None => PathBuf::from(CACHE_CONFIG_PATH),
             }
         }
     };
 }
 
-/// Returns the path to the analytics cache, optionally taking a custom filesystem root.
-pub fn cache_analytics_path(fs_root_path: Option<&Path>) -> PathBuf {
-    match fs_root_path {
-        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_ANALYTICS_PATH),
-        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_ANALYTICS_PATH),
-    }
-}
-
-/// Returns the path to the artifacts cache, optionally taking a custom filesystem root.
-pub fn cache_artifact_path(fs_root_path: Option<&Path>) -> PathBuf {
-    match fs_root_path {
-        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_ARTIFACT_PATH),
-        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_ARTIFACT_PATH),
-    }
-}
 
 /// Returns the path to the keys cache, optionally taking a custom filesystem root.
+/// TO-DO: Not used currently, needed for `setup` command.
 pub fn cache_key_path(fs_root_path: Option<&Path>) -> PathBuf {
     match fs_root_path {
         Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_KEY_PATH),
@@ -130,19 +75,20 @@ pub fn cache_key_path(fs_root_path: Option<&Path>) -> PathBuf {
     }
 }
 
-/// Returns the path to the src cache, optionally taking a custom filesystem root.
-pub fn cache_src_path(fs_root_path: Option<&Path>) -> PathBuf {
+/// Returns the path to the config cache ssl, optionally taking a custom filesystem root.
+/// This is the same directory like $RIOOS_HOME/config
+pub fn cache_ssl_path(fs_root_path: Option<&Path>) -> PathBuf {
     match fs_root_path {
-        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_SRC_PATH),
-        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_SRC_PATH),
+        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_CONFIG_PATH),
+        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_CONFIG_PATH),
     }
 }
 
-/// Returns the path to the SSL cache, optionally taking a custom filesystem root.
-pub fn cache_ssl_path(fs_root_path: Option<&Path>) -> PathBuf {
+/// Returns the path to the config cache, optionally taking a custom filesystem root.
+pub fn cache_config_path(fs_root_path: Option<&Path>) -> PathBuf {
     match fs_root_path {
-        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_SSL_PATH),
-        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_SSL_PATH),
+        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_CONFIG_PATH),
+        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_CONFIG_PATH),
     }
 }
 
@@ -221,7 +167,7 @@ pub fn find_command(command: &str) -> Option<PathBuf> {
 
     // Find the command by checking each entry in `PATH`. If we still can't find it, give up and
     // return `None`.
-    match henv::var_os("PATH") {
+    match renv::var_os("PATH") {
         Some(paths) => {
             for path in env::split_paths(&paths) {
                 let candidate = PathBuf::from(&path).join(command);
@@ -245,7 +191,7 @@ pub fn find_command(command: &str) -> Option<PathBuf> {
 // We should only search with PATHEXT if the file does not already have an extension.
 fn find_command_with_pathext(candidate: &PathBuf) -> Option<PathBuf> {
     if candidate.extension().is_none() {
-        match henv::var_os("PATHEXT") {
+        match renv::var_os("PATHEXT") {
             Some(pathexts) => {
                 for pathext in env::split_paths(&pathexts) {
                     let mut source_candidate = candidate.to_path_buf();

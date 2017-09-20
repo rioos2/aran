@@ -285,9 +285,9 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn node_metrics(req: &mut Request) -> IronResult<Response> {
+pub fn healthz_all(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
-    match NodeDS::node_metrics(&conn) {
+    match NodeDS::healthz_all(&conn) {
         Ok(node_list) => Ok(render_json(status::Ok, &node_list)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),

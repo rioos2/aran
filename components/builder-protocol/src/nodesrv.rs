@@ -278,14 +278,14 @@ impl NodeGetResponse {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct NodeMetricGetResponse {
+pub struct HeathzAllGetResponse {
     title: String,
     guages: Guages,
     statistics: Statistics,
     osusages: Osusages,
 }
 
-impl NodeMetricGetResponse {
+impl HealthzAllGetResponse {
     pub fn new() -> NodeMetricGetResponse {
         ::std::default::Default::default()
     }
