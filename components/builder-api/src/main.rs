@@ -113,6 +113,7 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 }
 
 fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
+    println!("--> {:?} ",CFG_DEFAULT_FILE.to_str());
     let mut config = match args.value_of("config") {
         Some(cfg_path) => try!(Config::from_file(cfg_path)),
         None => Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(Config::default()),

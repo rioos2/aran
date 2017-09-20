@@ -15,6 +15,7 @@ doc = false
 bodyparser = "0.7.0"
 env_logger = "*"
 hyper = "0.10.12"
+hyper-native-tls="0.2.4"
 iron = "*"
 log = "*"
 mount = "*"

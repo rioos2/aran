@@ -38,7 +38,7 @@ impl Default for HttpCfg {
     fn default() -> Self {
         HttpCfg {
             listen: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
-            port: 8080,
+            port: 8080,        
         }
     }
 }
