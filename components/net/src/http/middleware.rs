@@ -18,7 +18,7 @@ use super::net_err_to_http;
 // use super::super::error::Error;
 use super::super::auth::default::PasswordAuthClient;
 use super::super::auth::shield::ShieldClient;
-use super::super::auth::prometheus::PrometheusClient;
+use super::super::metrics::prometheus::PrometheusClient;
 use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;

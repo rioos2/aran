@@ -39,6 +39,7 @@ pub mod config;
 pub mod error;
 pub mod http;
 pub mod auth;
+pub mod metrics;
 pub mod server;
 use std::process::Command;
 

@@ -27,6 +27,9 @@ features = [ "suggestions", "color", "unstable" ]
 [dependencies.rioos_core]
 path = "../core"
 
+[dependencies.rioos_net]
+path = "../net"
+
 [dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
 

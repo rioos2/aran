@@ -21,13 +21,12 @@ use std::path::PathBuf;
 use rio_core::config::ConfigFile;
 use rio_core::env as renv;
 use rio_core::crypto::{init, default_cache_key_path};
+use rio_core::fs::cache_config_path;
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 
 use api::{command, Config, Error, Result};
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
-
-const CFG_DEFAULT_PATH: &'static str = "/var/lib/rioos/api.toml";
 
 lazy_static! {
     /// The default filesystem root path to base all commands from. This is lazily generated on
@@ -41,6 +40,8 @@ lazy_static! {
             PathBuf::from("/")
         }
     };
+
+    static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*cache_config_path(Some(&*FS_ROOT.as_path())).join("api.toml").to_str().unwrap());
 }
 
 fn main() {
@@ -63,7 +64,7 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
         (@subcommand start =>
             (about: "Run the api server")
             (@arg config: -c --config +takes_value
-                "Filepath to configuration file. [default: /var/lib/rioos/api.toml]")
+                "Filepath to configuration file. [default: /var/lib/rioos/config/rioos.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 9636]")
         )
         /*
@@ -96,7 +97,13 @@ fn sub_cli_setup(ui: &mut UI) -> Result<()> {
 }
 
 fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
-    ui.heading("Aran")?;
+    ui.heading(r#"
+    ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗     █████╗ ██████╗  █████╗ ███╗   ██╗
+    ██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔══██╗██╔══██╗██╔══██╗████╗  ██║
+    ██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ███████║██████╔╝███████║██╔██╗ ██║
+    ██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ██╔══██║██╔══██╗██╔══██║██║╚██╗██║
+    ██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ██║  ██║██║  ██║██║  ██║██║ ╚████║
+    "#)?;
 
     let config = match config_from_args(&matches) {
         Ok(result) => result,
@@ -108,7 +115,7 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
     let mut config = match args.value_of("config") {
         Some(cfg_path) => try!(Config::from_file(cfg_path)),
-        None => Config::from_file(CFG_DEFAULT_PATH).unwrap_or(Config::default()),
+        None => Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(Config::default()),
     };
     if let Some(port) = args.value_of("port") {
         if u16::from_str(port).map(|p| config.http.port = p).is_err() {
