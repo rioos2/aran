@@ -20,11 +20,8 @@ pub enum Error {
     InvalidUrl,
     IO(io::Error),
     SecretCreate(postgres::error::Error),
-    HSGet(postgres::error::Error),
-    HSSetStatus(postgres::error::Error),
-    ProjectJobsGet(postgres::error::Error),
-    UnknownVCS,
-    UnknownJobState,
+    SecretGet(postgres::error::Error),
+    ServiceAccountCreate(postgres::error::Error),
 }
 
 
@@ -39,12 +36,9 @@ impl fmt::Display for Error {
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
-            Error::SecretCreate(ref e) => format!("Database error creating a horizontal_scaling, {}", e),
-            Error::HSGet(ref e) => format!("Database error get horizontal_scaling, {}", e),
-            Error::HSSetStatus(ref e) => format!("Database error while update status, {}", e),
-            Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
-            Error::UnknownVCS => format!("Unknown VCS"),
-            Error::UnknownJobState => format!("Unknown Job State"),
+            Error::SecretCreate(ref e) => format!("Database error creating a secret, {}", e),
+            Error::SecretGet(ref e) => format!("Database error get secret, {}", e),
+            Error::ServiceAccountCreate(ref e) => format!("Database error creating a service_account, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -60,11 +54,8 @@ impl error::Error for Error {
             Error::IO(ref err) => err.description(),
             Error::InvalidUrl => "Bad Url!",
             Error::SecretCreate(ref err) => err.description(),
-            Error::HSGet(ref err) => err.description(),
-            Error::HSSetStatus(ref err) => err.description(),
-            Error::ProjectJobsGet(ref err) => err.description(),
-            Error::UnknownJobState => "Unknown Job State",
-            Error::UnknownVCS => "Unknown VCS",
+            Error::SecretGet(ref err) => err.description(),
+            Error::ServiceAccountCreate(ref err) => err.description(),
         }
     }
 }

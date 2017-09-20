@@ -211,7 +211,7 @@ impl Conditions {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Addresses {
     node_type: String,
-    addresses: String,
+    address: String,
 }
 
 impl Addresses {
@@ -222,8 +222,8 @@ impl Addresses {
     pub fn set_node_type(&mut self, v: ::std::string::String) {
         self.node_type = v;
     }
-    pub fn set_addresses(&mut self, v: ::std::string::String) {
-        self.addresses = v;
+    pub fn set_address(&mut self, v: ::std::string::String) {
+        self.address = v;
     }
 }
 
@@ -286,7 +286,7 @@ pub struct HeathzAllGetResponse {
 }
 
 impl HealthzAllGetResponse {
-    pub fn new() -> NodeMetricGetResponse {
+    pub fn new() -> HealthzAllGetResponse {
         ::std::default::Default::default()
     }
     pub fn set_title(&mut self, v: ::std::string::String) {
@@ -348,7 +348,7 @@ impl Counters {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Statistics {
     title: String,
-    nodes: Vec<Nodes>,
+    nodes: Vec<NodeStatistic>,
 }
 impl Statistics {
     pub fn new() -> Statistics {
@@ -357,13 +357,13 @@ impl Statistics {
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
-    pub fn set_nodes(&mut self, v: Vec<Nodes>) {
+    pub fn set_node_statistics(&mut self, v: Vec<NodeStatistic) {
         self.nodes = v;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Nodes {
+pub struct NodeStatistic {
     name: String,
     description: String,
     cpu: String,
@@ -371,7 +371,7 @@ pub struct Nodes {
     cost_of_consumption: String,
     health: String,
 }
-impl Nodes {
+impl NodeStatistic {
     pub fn new() -> Counters {
         ::std::default::Default::default()
     }

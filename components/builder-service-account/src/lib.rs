@@ -21,7 +21,7 @@ extern crate toml;
 
 extern crate url as extern_url;
 
-pub mod secret_ds;
+pub mod service_account_ds;
 pub mod error;
 
 pub use self::error::{Error, Result};

@@ -65,15 +65,11 @@ impl NodeDS {
         Ok(())
     }
 
-    pub fn healthz_all(datastore: &DataStoreConn) -> Result<Option<nodesrv::NodeMetricGetResponse>> {
-        // let conn = datastore.pool.get_shard(0)?;
-
-        // let rows = &conn.query("SELECT * FROM get_nodes_v1()", &[]).map_err(
-        //     Error::NodeList,
-        // )?;
-
-        let mut response = nodesrv::NodeMetricGetResponse::new();
-        response.set_title("Command center operations".to_string());
+    pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::NodeMetricGetResponse>> {
+        //make the url randomized, by storing mocks.
+        let content = client.overall("token", "59c2402c120000d2009c0a4e").map_err(
+             Error::NodeList,
+        )?;
 
         Ok(Some(response))
     }

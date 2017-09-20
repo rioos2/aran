@@ -7,7 +7,7 @@ pub mod scaling_handler;
 pub mod authorize_handler;
 pub mod auth_handler;
 pub mod node_handler;
-pub mod secret_handler;
+pub mod service_account_handler;
 
 
 use std::sync::{mpsc, Arc};
@@ -32,7 +32,7 @@ use self::auth_handler::*;
 use self::scaling_handler::*;
 use self::authorize_handler::*;
 use self::node_handler::*;
-use self::secret_handler::*;
+use self::service_account_handler::*;
 
 use db::data_store::*;
 
@@ -96,7 +96,12 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
 
         //secret API
-        secret: post "/secret" => XHandler::new(secret_create).before(basic.clone()),
+        secrets: post "/secret" => XHandler::new(secret_create).before(basic.clone()),
+        secret_show: get "/secret/:id" => XHandler::new(secret_show).before(basic.clone()),
+
+        //serviceAccount API
+        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(service_create).before(basic.clone()),
+
     );
 
     let mut chain = Chain::new(router);
