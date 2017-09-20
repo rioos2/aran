@@ -1,3 +1,5 @@
+// Copyright (c) 2017 RioCorp Inc.
+
 pub mod ident;
 pub mod install;
 pub mod metadata;
