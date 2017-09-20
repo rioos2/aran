@@ -70,3 +70,23 @@ impl Secret {
         self.created_at.clone()
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SecretGet {
+    id: String,
+}
+
+impl SecretGet {
+    pub fn new() -> SecretGet {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+}

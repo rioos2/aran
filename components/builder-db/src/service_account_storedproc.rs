@@ -5,27 +5,27 @@
 use error::Result;
 use migration::{Migratable, Migrator};
 
-pub struct SecretProcedures;
+pub struct ServiceAccountProcedure;
 
-impl SecretProcedures {
-    pub fn new() -> Result<SecretProcedures> {
-        Ok(SecretProcedures)
+impl ServiceAccountProcedure {
+    pub fn new() -> Result<ServiceAccountProcedure> {
+        Ok(ServiceAccountProcedure)
     }
 }
 
-impl Migratable for SecretProcedures {
+impl Migratable for ServiceAccountProcedure {
     fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
-        debug!("=> START: secretsrv");
+        debug!("=> START: servicesrv");
         // The core asms table
         migrator.migrate(
-            "secretsrv",
+            "servicesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS sec_id_seq;"#,
         )?;
 
         debug!("=> [✓] sec_id_seq");
 
         migrator.migrate(
-            "secretsrv",
+            "servicesrv",
             r#"CREATE TABLE  IF NOT EXISTS secret (
              id bigint PRIMARY KEY DEFAULT next_id_v1('sec_id_seq'),
              data text,
@@ -41,7 +41,7 @@ impl Migratable for SecretProcedures {
 
         // Insert a new job into the jobs table
         migrator.migrate(
-            "secretsrv",
+            "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_secret_v1 (
                 data text,
                 object_meta text,
@@ -58,7 +58,19 @@ impl Migratable for SecretProcedures {
         )?;
         debug!("=> [✓] fn: insert_secret_v1");
 
-        debug!("=> DONE: secretsrv");
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_secret_v1 (sid bigint) RETURNS SETOF secret AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM secret WHERE id = sid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_secret_v1");
+
+        debug!("=> DONE: servicesrv");
 
         Ok(())
     }

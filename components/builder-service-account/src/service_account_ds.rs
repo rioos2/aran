@@ -4,17 +4,17 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{secretsrv, asmsrv};
+use protocol::{servicesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
 use std::collections::BTreeMap;
 
 
-pub struct SecretDS;
+pub struct ServiceAccountDS;
 
-impl SecretDS {
-    pub fn secret_create(datastore: &DataStoreConn, secret_create: &secretsrv::Secret) -> Result<Option<secretsrv::Secret>> {
+impl ServiceAccountDS {
+    pub fn secret_create(datastore: &DataStoreConn, secret_create: &servicesrv::Secret) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
         let spec_str = serde_json::to_string(secret_create.get_data()).unwrap();
         let object_meta = serde_json::to_string(secret_create.get_object_meta()).unwrap();
@@ -33,11 +33,24 @@ impl SecretDS {
         debug!("◖☩ DONE:secret_create ");
         return Ok(Some(secret.clone()));
     }
+    pub fn secret_show(datastore: &DataStoreConn, get_secret: &servicesrv::SecretGet) -> Result<Option<servicesrv::Secret>> {
+        let conn = datastore.pool.get_shard(0)?;
+        debug!("◖☩ START: secret_show {:?}", get_secret.get_id());
+        let secret_id = get_secret.get_id().parse::<i64>().unwrap();
+        let rows = &conn.query("SELECT * FROM get_secret_v1($1)", &[&secret_id])
+            .map_err(Error::SecretGet)?;
+        debug!(">● ROWS: secret_show =>\n{:?}", &rows);
+        for row in rows {
+            let secret = row_to_secret(&row)?;
+            return Ok(Some(secret));
+        }
+        Ok(None)
+    }
 }
 
 
-fn row_to_secret(row: &postgres::rows::Row) -> Result<secretsrv::Secret> {
-    let mut secret = secretsrv::Secret::new();
+fn row_to_secret(row: &postgres::rows::Row) -> Result<servicesrv::Secret> {
+    let mut secret = servicesrv::Secret::new();
     debug!("◖☩ START: row_to_secret");
     let id: i64 = row.get("id");
     let data: String = row.get("data");

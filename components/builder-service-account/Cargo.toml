@@ -1,5 +1,5 @@
 [package]
-name = "rioos_builder_secretsrv"
+name = "rioos_builder_servicesrv"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS Deployment library"

@@ -12,33 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::error::Error as StdError;
-use std::collections::HashMap;
+// use std::error::Error as StdError;
+// use std::collections::HashMap;
 use std::fmt;
-use std::io::Read;
-use std::result::Result as StdResult;
-use std::time::Duration;
+// use std::io::Read;
+// use std::result::Result as StdResult;
+// use std::time::Duration;
 
-use hyper::{self, Url};
-use hyper::status::StatusCode;
-use hyper::header::{Authorization, Accept, Bearer, UserAgent, qitem};
-use hyper::mime::{Mime, TopLevel, SubLevel};
-use hyper::net::HttpsConnector;
-use hyper_openssl::OpensslClient;
-use protocol::{net, sessionsrv};
-use serde_json;
+// use hyper::{self, Url};
+// use hyper::status::StatusCode;
+// use hyper::header::{Authorization, Accept, Bearer, UserAgent, qitem};
+// use hyper::mime::{Mime, TopLevel, SubLevel};
+// use hyper::net::HttpsConnector;
+// use hyper_openssl::OpensslClient;
+// use protocol::{net, sessionsrv};
+
+// use serde_json;
 
 use config;
-use error::{Error, Result};
 
-const USER_AGENT: &'static str = "Habitat-Builder";
-const HTTP_TIMEOUT: u64 = 3_000;
+// use error::{Error, Result};
+
+// const USER_AGENT: &'static str = "Habitat-Builder";
+// const HTTP_TIMEOUT: u64 = 3_000;
 // These OAuth scopes are required for a user to be authenticated. If this list is updated, then
 // the front-end also needs to be updated in `components/builder-web/app/util.ts`. Both the
 // front-end app and back-end app should have identical requirements to make things easier for
 // our users and less cumbersome for us to message out.
 // https://developer.github.com/v3/oauth/#scopes
-const AUTH_SCOPES: &'static [&'static str] = &["user:email", "read:org"];
+// const AUTH_SCOPES: &'static [&'static str] = &["user:email", "read:org"];
 
 #[derive(Clone)]
 pub struct PrometheusClient {
@@ -380,16 +382,16 @@ pub struct User {
     pub updated_at: Option<String>,
 }
 
-impl From<User> for sessionsrv::Account {
-    fn from(user: User) -> sessionsrv::Account {
-        let mut account = sessionsrv::Account::new();
-        account.set_name(user.login);
-        if let Some(email) = user.email {
-            account.set_email(email);
-        }
-        account
-    }
-}
+// impl From<User> for sessionsrv::Account {
+//     fn from(user: User) -> sessionsrv::Account {
+//         let mut account = sessionsrv::Account::new();
+//         account.set_name(user.login);
+//         if let Some(email) = user.email {
+//             account.set_email(email);
+//         }
+//         account
+//     }
+// }
 
 // #[derive(Debug, Serialize, Deserialize)]
 // pub struct Email {
@@ -447,19 +449,19 @@ impl fmt::Display for AuthErr {
 //     AuthErr,
 // }
 //
-fn http_get(url: Url, token: &str) -> StdResult<hyper::client::response::Response, net::NetError> {
-    hyper_client()
-        .get(url)
-        .header(Accept(vec![
-            qitem(
-                Mime(TopLevel::Application, SubLevel::Json, vec![])
-            ),
-        ]))
-        .header(Authorization(Bearer { token: token.to_owned() }))
-        .header(UserAgent(USER_AGENT.to_string()))
-        .send()
-        .map_err(hyper_to_net_err)
-}
+// fn http_get(url: Url, token: &str) -> StdResult<hyper::client::response::Response, net::NetError> {
+//     hyper_client()
+//         .get(url)
+//         .header(Accept(vec![
+//             qitem(
+//                 Mime(TopLevel::Application, SubLevel::Json, vec![])
+//             ),
+//         ]))
+//         .header(Authorization(Bearer { token: token.to_owned() }))
+//         .header(UserAgent(USER_AGENT.to_string()))
+//         .send()
+//         .map_err(hyper_to_net_err)
+// }
 //
 // fn http_post(url: Url) -> StdResult<hyper::client::response::Response, net::NetError> {
 //     hyper_client()
@@ -474,15 +476,15 @@ fn http_get(url: Url, token: &str) -> StdResult<hyper::client::response::Respons
 //         .map_err(hyper_to_net_err)
 // }
 //
-fn hyper_client() -> hyper::Client {
-    let ssl = OpensslClient::new().unwrap();
-    let connector = HttpsConnector::new(ssl);
-    let mut client = hyper::Client::with_connector(connector);
-    client.set_read_timeout(Some(Duration::from_millis(HTTP_TIMEOUT)));
-    client.set_write_timeout(Some(Duration::from_millis(HTTP_TIMEOUT)));
-    client
-}
-//
-fn hyper_to_net_err(err: hyper::error::Error) -> net::NetError {
-    net::err(net::ErrCode::BAD_REMOTE_REPLY, err.description())
-}
+// fn hyper_client() -> hyper::Client {
+//     let ssl = OpensslClient::new().unwrap();
+//     let connector = HttpsConnector::new(ssl);
+//     let mut client = hyper::Client::with_connector(connector);
+//     client.set_read_timeout(Some(Duration::from_millis(HTTP_TIMEOUT)));
+//     client.set_write_timeout(Some(Duration::from_millis(HTTP_TIMEOUT)));
+//     client
+// }
+// //
+// fn hyper_to_net_err(err: hyper::error::Error) -> net::NetError {
+//     net::err(net::ErrCode::BAD_REMOTE_REPLY, err.description())
+// }

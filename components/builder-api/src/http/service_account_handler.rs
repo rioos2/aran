@@ -1,12 +1,12 @@
 use bodyparser;
 use rio_net::http::controller::*;
-use secret::secret_ds::SecretDS;
+use service::service_account_ds::ServiceAccountDS;
 use iron::prelude::*;
 use iron::status;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use protocol::secretsrv::Secret;
+use protocol::servicesrv::{Secret, SecretGet};
 use protocol::asmsrv::{ObjectMeta, OwnerReferences, TypeMeta};
 use std::collections::BTreeMap;
 
@@ -83,11 +83,34 @@ pub fn secret_create(req: &mut Request) -> IronResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match SecretDS::secret_create(&conn, &secret_create) {
+    match ServiceAccountDS::secret_create(&conn, &secret_create) {
         Ok(secret) => Ok(render_json(status::Ok, &secret)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+
+pub fn secret_show(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut secret_get = SecretGet::new();
+    secret_get.set_id(id.to_string());
+
+    match ServiceAccountDS::secret_show(&conn, &secret_get) {
+        Ok(secret) => Ok(render_json(status::Ok, &secret)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }
