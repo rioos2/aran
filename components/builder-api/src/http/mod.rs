@@ -21,6 +21,7 @@ use rio_net::metrics::prometheus::PrometheusClient;
 //use rio_core::event::EventLogger;
 
 use iron::prelude::*;
+use hyper_native_tls::NativeTlsServer;
 use mount::Mount;
 use persistent;
 use staticfile::Static;
@@ -154,7 +155,15 @@ pub fn run(config: Arc<Config>) -> Result<JoinHandle<()>> {
         .spawn(move || {
             let mut server = Iron::new(mount);
             server.threads = HTTP_THREAD_COUNT;
-            server.http(&config.http).unwrap();
+
+            match config.http.use_tls {
+                Some(_) => {
+                    let tls = NativeTlsServer::new(&config.http.tls_pkcs12_file, "RIO123").unwrap();
+                    server.https(&config.http, tls).unwrap()
+                }
+                None => server.http(&config.http).unwrap(),
+            };
+
             tx.send(()).unwrap();
         })
         .unwrap();

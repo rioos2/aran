@@ -17,6 +17,7 @@ extern crate rioos_builder_servicesrv as service;
 
 extern crate rioos_builder_db as db;
 extern crate hyper;
+extern crate hyper_native_tls;
 extern crate iron;
 #[macro_use]
 extern crate log;
