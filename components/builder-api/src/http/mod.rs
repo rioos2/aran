@@ -15,7 +15,7 @@ use std::thread::{self, JoinHandle};
 
 use rio_net::http::middleware::*;
 use rio_net::auth::default::PasswordAuthClient;
-use rio_net::auth::prometheus::PrometheusClient;
+use rio_net::metrics::prometheus::PrometheusClient;
 
 // turn it on later
 //use rio_core::event::EventLogger;

@@ -1,14 +1,18 @@
+
+use std::collections::BTreeMap;
 use bodyparser;
-use rio_net::http::controller::*;
-use node::node_ds::NodeDS;
 use iron::prelude::*;
 use iron::status;
-use protocol::net::{self, ErrCode};
+use persistent;
 use router::Router;
+
+use protocol::net::{self, ErrCode};
+use rio_net::http::controller::*;
+use rio_net::http::middleware::PrometheusCli;
+use node::node_ds::NodeDS;
 use db::data_store::Broker;
 use protocol::nodesrv::{Node, Spec, Status, Conditions, Taints, Addresses, NodeInfo};
 use protocol::asmsrv::{TypeMeta, ObjectMeta, OwnerReferences};
-use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NodeCreateReq {
@@ -286,9 +290,10 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn healthz_all(req: &mut Request) -> IronResult<Response> {
-    let conn = Broker::connect().unwrap();
-    match NodeDS::healthz_all(&conn) {
-        Ok(node_list) => Ok(render_json(status::Ok, &node_list)),
+    let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
+
+    match NodeDS::healthz_all(&promcli) {
+        Ok(health_all) => Ok(render_json(status::Ok, &health_all)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),

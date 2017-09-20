@@ -7,6 +7,8 @@ use error::{Result, Error};
 use protocol::{nodesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
+use rio_net::metrics::prometheus::{Contents, PrometheusClient};
+
 use serde_json;
 
 pub struct NodeDS;
@@ -65,11 +67,12 @@ impl NodeDS {
         Ok(())
     }
 
-    pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::NodeMetricGetResponse>> {
-        //make the url randomized, by storing mocks.
-        let content = client.overall("token", "59c2402c120000d2009c0a4e").map_err(
-             Error::NodeList,
-        )?;
+    //this doesn't have typemeta and objectmeta, maybe we should add it.
+    pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
+        //make the url randomized, by storing lots of mocks.
+        let content = client.overall("token", "59c2402c120000d2009c0a4e").unwrap_or(Contents {data: "".to_string()});
+
+        let response: nodesrv::HealthzAllGetResponse = serde_json::from_str(&content.data).unwrap();
 
         Ok(Some(response))
     }

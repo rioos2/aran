@@ -225,7 +225,7 @@ impl Condition {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblysGetResponse {
     kind: String,
-    apiVersion: String,
+    api_version: String,
     items: Vec<Assembly>,
 }
 
@@ -238,7 +238,7 @@ impl AssemblysGetResponse {
     pub fn set_assemblys(&mut self, v: Vec<Assembly>, r: ::std::string::String, s: ::std::string::String) {
         self.items = v;
         self.kind = r;
-        self.apiVersion = s;
+        self.api_version = s;
     }
 }
 
@@ -605,7 +605,7 @@ impl AssemblyFactoryGet {
 pub struct AssemblyFactoryGetResponse {
     // message fields
     kind: String,
-    apiVersion: String,
+    api_version: String,
     items: Vec<AssemblyFactory>,
 }
 
@@ -619,6 +619,6 @@ impl AssemblyFactoryGetResponse {
     pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>, r: ::std::string::String, s: ::std::string::String) {
         self.items = v;
         self.kind = r;
-        self.apiVersion = s;
+        self.api_version = s;
     }
 }

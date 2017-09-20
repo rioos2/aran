@@ -16,7 +16,7 @@ extern crate rioos_common as common;
 extern crate log;
 
 use std::str::FromStr;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use rio_core::config::ConfigFile;
 use rio_core::env as renv;
@@ -41,7 +41,7 @@ lazy_static! {
         }
     };
 
-    static  ref CFG_DEFAULT_FILE: &'static str =  &PathBuf::from(&*cache_config_path(Some(&*FS_ROOT.as_path())).to_str().unwrap()).to_str().unwrap();
+    static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*cache_config_path(Some(&*FS_ROOT.as_path())).join("api.toml").to_str().unwrap());
 }
 
 fn main() {
@@ -115,7 +115,7 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
     let mut config = match args.value_of("config") {
         Some(cfg_path) => try!(Config::from_file(cfg_path)),
-        None => Config::from_file(CFG_DEFAULT_FILE).unwrap_or(Config::default()),
+        None => Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(Config::default()),
     };
     if let Some(port) = args.value_of("port") {
         if u16::from_str(port).map(|p| config.http.port = p).is_err() {

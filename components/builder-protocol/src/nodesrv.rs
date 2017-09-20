@@ -261,7 +261,7 @@ impl NodeInfo {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeGetResponse {
     kind: String,
-    apiVersion: String,
+    api_version: String,
     items: Vec<Node>,
 }
 
@@ -273,12 +273,12 @@ impl NodeGetResponse {
     pub fn set_node_collection(&mut self, v: Vec<Node>, r: ::std::string::String, s: ::std::string::String) {
         self.items = v;
         self.kind = r;
-        self.apiVersion = s;
+        self.api_version = s;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct HeathzAllGetResponse {
+pub struct HealthzAllGetResponse {
     title: String,
     guages: Guages,
     statistics: Statistics,
@@ -357,7 +357,7 @@ impl Statistics {
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
-    pub fn set_node_statistics(&mut self, v: Vec<NodeStatistic) {
+    pub fn set_node_statistics(&mut self, v: Vec<NodeStatistic>) {
         self.nodes = v;
     }
 }

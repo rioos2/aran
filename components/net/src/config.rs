@@ -12,7 +12,7 @@ pub const DEFAULT_GITHUB_URL: &'static str = "https://api.github.com";
 /// associated to the habitat-sh GitHub account and is configured to re-direct and point to a local
 /// builder-api.
 ///
-pub const DEFAULT_PROMETHEUS_URL: &'static str = "https://api.github.com";
+pub const DEFAULT_PROMETHEUS_URL: &'static str = "http://www.mocky.io";
 
 /// See https://github.com/settings/connections/applications/0c2f738a7d0bd300de10
 pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";
