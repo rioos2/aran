@@ -64,7 +64,7 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
         (@subcommand start =>
             (about: "Run the api server")
             (@arg config: -c --config +takes_value
-                "Filepath to configuration file. [default: /var/lib/rioos/config/rioos.toml]")
+                "Filepath to configuration file. [default: /var/lib/rioos/config/api.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 9636]")
         )
         /*
