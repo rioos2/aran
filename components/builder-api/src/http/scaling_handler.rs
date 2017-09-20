@@ -92,7 +92,7 @@ struct TypeMetaReq {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ObjectMetaReq {
     name: String,
-    namespace: String,
+    origin: String,
     uid: String,
     created_at: String,
     cluster_name: String,
@@ -193,7 +193,7 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
 
                 let mut object_meta = ObjectMeta::new();
                 object_meta.set_name(body.object_meta.name);
-                object_meta.set_namespace(body.object_meta.namespace);
+                object_meta.set_origin(body.object_meta.origin);
                 object_meta.set_uid(body.object_meta.uid);
                 object_meta.set_created_at(body.object_meta.created_at);
                 object_meta.set_cluster_name(body.object_meta.cluster_name);

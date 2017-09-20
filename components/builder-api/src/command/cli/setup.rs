@@ -81,6 +81,8 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
                           https://docs.rioos.sh/docs/concepts-keys/#origin-keys",
         )?;
 
+        let api = "";
+
         if ask_create_api(ui, &api)? {
             create_api(ui, &api, cache_path)?;
             generated_api = true;
@@ -108,6 +110,7 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
                           https://docs.rioos.sh/docs/concepts-keys/#origin-keys",
         )?;
 
+        let service_account = "";
 
         if ask_create_serviceaccount(ui, &service_account)? {
             create_serviceaccount(ui, &service_account, cache_path)?;

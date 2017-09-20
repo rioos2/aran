@@ -13,7 +13,7 @@ extern crate rioos_builder_session as session;
 extern crate rioos_builder_scalesrv as scale;
 extern crate rioos_builder_authsrv as authorize;
 extern crate rioos_builder_nodesrv as node;
-extern crate rioos_builder_secretsrv as secret;
+extern crate rioos_builder_servicesrv as service;
 
 extern crate rioos_builder_db as db;
 extern crate hyper;

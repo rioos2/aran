@@ -34,7 +34,7 @@ pub mod scalesrv;
 pub mod routesrv;
 pub mod nodesrv;
 pub mod plansrv;
-pub mod secretsrv;
+pub mod servicesrv;
 
 
 pub use self::error::{Error, Result};
