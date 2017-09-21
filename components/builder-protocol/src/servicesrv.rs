@@ -189,6 +189,34 @@ impl ServiceAccount {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ServiceAccountGet {
+    name: String,
+    origin: String,
+}
+
+impl ServiceAccountGet {
+    pub fn new() -> ServiceAccountGet {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_origin(&mut self, v: ::std::string::String) {
+        self.origin = v;
+    }
+
+    pub fn get_origin(&self) -> ::std::string::String {
+        self.origin.clone()
+    }
+}
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ServiceAccountGetResponse {

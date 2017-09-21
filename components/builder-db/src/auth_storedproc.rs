@@ -305,9 +305,21 @@ impl Migratable for AuthProcedures {
 
         migrator.migrate(
             "originsrv",
-            r#"CREATE OR REPLACE FUNCTION get_origin_v1() RETURNS SETOF origins AS $$
+            r#"CREATE OR REPLACE FUNCTION get_origins_v1() RETURNS SETOF origins AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM origins;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_origins_v1");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION get_origin_v1 (org_name text) RETURNS SETOF origins AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM origins WHERE name = org_name;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,

@@ -65,3 +65,24 @@ impl OriginGetResponse {
         self.api_version = s;
     }
 }
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct OriginGet {
+    name: String,
+}
+
+impl OriginGet {
+    pub fn new() -> OriginGet {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+}
