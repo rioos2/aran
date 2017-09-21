@@ -102,10 +102,13 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         secret_show: get "/secret/:id" => XHandler::new(secret_show).before(basic.clone()),
 
         //serviceAccount API
-        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(service_create).before(basic.clone()),
+        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(service_account_create).before(basic.clone()),
+        service_account: get "/serviceaccounts" => XHandler::new(service_account_list).before(basic.clone()),
 
         //Origin API
-        origin: post "/origins" => XHandler::new(origin_create).before(basic.clone()),
+        origins: post "/origins" => XHandler::new(origin_create).before(basic.clone()),
+        origin: get "/origins" => XHandler::new(origin_list).before(basic.clone()),
+
     );
 
     let mut chain = Chain::new(router);

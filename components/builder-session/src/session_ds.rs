@@ -3,7 +3,7 @@
 //! The PostgreSQL backend for the SessionDS.
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{sessionsrv, asmsrv, servicesrv};
+use protocol::{sessionsrv, asmsrv, servicesrv, originsrv};
 use postgres;
 use privilege;
 use db::data_store::DataStoreConn;
@@ -182,7 +182,7 @@ impl SessionDS {
             Ok(None)
         }
     }
-    pub fn origin_create(datastore: &DataStoreConn, org_create: &sessionsrv::Origin) -> Result<Option<sessionsrv::Origin>> {
+    pub fn origin_create(datastore: &DataStoreConn, org_create: &originsrv::Origin) -> Result<Option<originsrv::Origin>> {
         let conn = datastore.pool.get_shard(0)?;
         let id = org_create
             .get_object_meta()
@@ -204,6 +204,23 @@ impl SessionDS {
         let origin = row_to_origin(&rows.get(0))?;
         return Ok(Some(origin.clone()));
     }
+
+    pub fn origin_list(datastore: &DataStoreConn) -> Result<Option<originsrv::OriginGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_origin_v1()", &[]).map_err(
+            Error::OriginGetResponse,
+        )?;
+
+        let mut response = originsrv::OriginGetResponse::new();
+
+        let mut org_collection = Vec::new();
+        for row in rows {
+            org_collection.push(row_to_origin(&row)?)
+        }
+        response.set_org_collection(org_collection, "OriginList".to_string(), "v1".to_string());
+        Ok(Some(response))
+    }
 }
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
@@ -218,8 +235,8 @@ fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
 }
 
 
-fn row_to_origin(row: &postgres::rows::Row) -> Result<sessionsrv::Origin> {
-    let mut origin_data = sessionsrv::Origin::new();
+fn row_to_origin(row: &postgres::rows::Row) -> Result<originsrv::Origin> {
+    let mut origin_data = originsrv::Origin::new();
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");

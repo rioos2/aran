@@ -189,6 +189,26 @@ impl ServiceAccount {
     }
 }
 
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ServiceAccountGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<ServiceAccount>,
+}
+
+impl ServiceAccountGetResponse {
+    pub fn new() -> ServiceAccountGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_service_collection(&mut self, v: Vec<ServiceAccount>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectReference {
     kind: String,
