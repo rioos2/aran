@@ -11,7 +11,7 @@ use session::session_ds::SessionDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::sessionsrv::Origin;
+use protocol::originsrv::Origin;
 use protocol::net::{self, ErrCode};
 
 // use router::Router;
@@ -77,5 +77,15 @@ pub fn origin_create(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+pub fn origin_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match SessionDS::origin_list(&conn) {
+        Ok(org_list) => Ok(render_json(status::Ok, &org_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }
