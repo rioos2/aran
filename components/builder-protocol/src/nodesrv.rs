@@ -261,7 +261,7 @@ impl NodeInfo {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeGetResponse {
     kind: String,
-    apiVersion: String,
+    api_version: String,
     items: Vec<Node>,
 }
 
@@ -273,20 +273,20 @@ impl NodeGetResponse {
     pub fn set_node_collection(&mut self, v: Vec<Node>, r: ::std::string::String, s: ::std::string::String) {
         self.items = v;
         self.kind = r;
-        self.apiVersion = s;
+        self.api_version = s;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct NodeMetricGetResponse {
+pub struct HealthzAllGetResponse {
     title: String,
     guages: Guages,
     statistics: Statistics,
     osusages: Osusages,
 }
 
-impl NodeMetricGetResponse {
-    pub fn new() -> NodeMetricGetResponse {
+impl HealthzAllGetResponse {
+    pub fn new() -> HealthzAllGetResponse {
         ::std::default::Default::default()
     }
     pub fn set_title(&mut self, v: ::std::string::String) {
@@ -348,7 +348,7 @@ impl Counters {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Statistics {
     title: String,
-    nodes: Vec<Nodes>,
+    nodes: Vec<NodeStatistic>,
 }
 impl Statistics {
     pub fn new() -> Statistics {
@@ -357,13 +357,13 @@ impl Statistics {
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
-    pub fn set_nodes(&mut self, v: Vec<Nodes>) {
+    pub fn set_node_statistics(&mut self, v: Vec<NodeStatistic>) {
         self.nodes = v;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Nodes {
+pub struct NodeStatistic {
     name: String,
     description: String,
     cpu: String,
@@ -371,7 +371,7 @@ pub struct Nodes {
     cost_of_consumption: String,
     health: String,
 }
-impl Nodes {
+impl NodeStatistic {
     pub fn new() -> Counters {
         ::std::default::Default::default()
     }

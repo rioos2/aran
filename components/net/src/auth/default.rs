@@ -26,24 +26,14 @@ const TOKEN_LEN: usize = 18;
 
 
 #[derive(Clone)]
-pub struct PasswordAuthClient {
-    pub url: String,
-    pub web_url: String,
-    pub client_id: String,
-    pub client_secret: String,
-}
+pub struct PasswordAuthClient {}
 
 impl PasswordAuthClient {
     pub fn new<T>(config: &T) -> Self
     where
         T: config::PasswordAuth,
     {
-        PasswordAuthClient {
-            url: config.github_url().to_string(),
-            web_url: config.github_url().to_string(),
-            client_id: config.github_client_id().to_string(),
-            client_secret: config.github_client_secret().to_string(),
-        }
+        PasswordAuthClient {}
     }
 
     //Generates a token of 15 ascii random character

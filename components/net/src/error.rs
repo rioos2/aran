@@ -1,5 +1,6 @@
 // Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
 //
+use protocol;
 use std::collections::HashMap;
 use std::error;
 use std::fmt;
@@ -14,14 +15,13 @@ use auth;
 #[derive(Debug)]
 pub enum Error {
     Auth(auth::default::AuthErr),
-    Prometheus(auth::prometheus::AuthErr),
-    GitHubAPI(hyper::status::StatusCode, HashMap<String, String>),
+    PrometheusAPI(hyper::status::StatusCode, HashMap<String, String>),
     IO(io::Error),
     Json(serde_json::Error),
     MaxHops,
     HTTP(hyper::status::StatusCode),
     RequiredConfigField(&'static str),
-    /// Crypto library error
+    NetError(protocol::net::NetError), //local conversion of protocol::net::NetError. errors are bloated though. need to rewrite 
     CryptoError(String),
     Sys,
 }
@@ -32,14 +32,14 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Auth(ref e) => format!("GitHub Authentication error, {}", e),
-            Error::Prometheus(ref e) => format!("Prometheus error, {}", e),
-            Error::GitHubAPI(ref c, ref m) => format!("[{}] {:?}", c, m),
+            Error::PrometheusAPI(ref c, ref m) => format!("[{}] {:?}", c, m),
             Error::HTTP(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
             Error::MaxHops => format!("Received a message containing too many network hops"),
             Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
+            Error::NetError(ref e) =>  format!("Net error: {}", e),
             Error::Sys => format!("Internal system error"),
         };
         write!(f, "{}", msg)
@@ -50,14 +50,14 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Auth(_) => "GitHub authorization error.",
-            Error::Prometheus(_) => "Prometheus error.",
-            Error::GitHubAPI(_, _) => "GitHub API error.",
+            Error::PrometheusAPI(_, _) => "Prometheus API error.",
             Error::IO(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::Json(ref err) => err.description(),
             Error::MaxHops => "Received a message containing too many network hops",
             Error::CryptoError(_) => "Crypto error",
             Error::RequiredConfigField(_) => "Missing required field in configuration.",
+            Error::NetError(_) =>  "Network error.",
             Error::Sys => "Internal system error",
         }
     }
@@ -75,14 +75,14 @@ impl From<auth::default::AuthErr> for Error {
     }
 }
 
-impl From<auth::prometheus::AuthErr> for Error {
-    fn from(err: auth::prometheus::AuthErr) -> Self {
-        Error::Prometheus(err)
-    }
-}
-
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Error {
         Error::Json(err)
+    }
+}
+
+impl From<protocol::net::NetError> for Error {
+    fn from(err: protocol::net::NetError) -> Error {
+        Error::NetError(err)
     }
 }

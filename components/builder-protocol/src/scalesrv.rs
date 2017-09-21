@@ -300,7 +300,7 @@ impl Status {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScalingGetResponse {
     kind: String,
-    apiVersion: String,
+    api_version: String,
     items: Vec<HorizontalScaling>,
 }
 
@@ -313,6 +313,6 @@ impl HorizontalScalingGetResponse {
     pub fn set_hs_collection(&mut self, v: Vec<HorizontalScaling>, r: ::std::string::String, s: ::std::string::String) {
         self.items = v;
         self.kind = r;
-        self.apiVersion = s;
+        self.api_version = s;
     }
 }

@@ -81,6 +81,8 @@ function rioos::util::create_serving_certkey {
     mv "serving-${id}-key.pem" "serving-${id}.key"
     mv "serving-${id}.pem" "serving-${id}.crt"
     rm -f "serving-${id}.csr"
+    openssl pkcs12 -export -inkey "serving-${id}.key"  -in "serving-${id}.crt" -name "serving-${id}_name" -out "serving-${id}.pfx" -password pass:RIO123
+
 EOF
 }
 

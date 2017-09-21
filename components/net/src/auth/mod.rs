@@ -5,4 +5,3 @@
 pub mod default;
 pub mod shield;
 pub mod goofy_crypto;
-pub mod prometheus;
