@@ -69,6 +69,20 @@ impl ServiceAccountDS {
         return Ok(Some(service_account.clone()));
     }
 
+    pub fn service_account_show(datastore: &DataStoreConn, get_service: &servicesrv::ServiceAccountGet) -> Result<Option<servicesrv::ServiceAccount>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_service_account_by_origin_v1($1,$2)",
+            &[&get_service.get_name(), &get_service.get_origin()],
+        ).map_err(Error::ServiceAccountGet)?;
+        debug!(">● ROWS: secret_show =>\n{:?}", &rows);
+        for row in rows {
+            let serv = row_to_service_account(&row)?;
+            return Ok(Some(serv));
+        }
+        Ok(None)
+    }
+
     pub fn service_account_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::ServiceAccountGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 

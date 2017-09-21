@@ -23,6 +23,7 @@ pub enum Error {
     SecretGet(postgres::error::Error),
     ServiceAccountCreate(postgres::error::Error),
     ServiceAccountGetResponse(postgres::error::Error),
+    ServiceAccountGet(postgres::error::Error),
 }
 
 
@@ -46,6 +47,7 @@ impl fmt::Display for Error {
                     e
                 )
             }
+            Error::ServiceAccountGet(ref e) => format!("Error retrive service_account , {}", e),
 
         };
         write!(f, "{}", msg)
@@ -65,6 +67,7 @@ impl error::Error for Error {
             Error::SecretGet(ref err) => err.description(),
             Error::ServiceAccountCreate(ref err) => err.description(),
             Error::ServiceAccountGetResponse(ref err) => err.description(),
+            Error::ServiceAccountGet(ref err) => err.description(),
 
         }
     }
