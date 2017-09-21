@@ -21,7 +21,6 @@ use std::str::FromStr;
 use asmsrv;
 use std::collections::BTreeMap;
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {
     id: String,
@@ -89,11 +88,20 @@ impl ObjectMetaData {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
+    pub fn get_origin(&self) -> ::std::string::String {
+        self.origin.clone()
+    }
     pub fn set_origin(&mut self, v: ::std::string::String) {
         self.origin = v;
     }
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
     pub fn set_uid(&mut self, v: ::std::string::String) {
         self.uid = v;
+    }
+    pub fn get_uid(&self) -> ::std::string::String {
+        self.uid.clone()
     }
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;

@@ -8,7 +8,7 @@ pub mod authorize_handler;
 pub mod auth_handler;
 pub mod node_handler;
 pub mod service_account_handler;
-
+pub mod origin_handler;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -32,6 +32,7 @@ use self::auth_handler::*;
 use self::scaling_handler::*;
 use self::authorize_handler::*;
 use self::node_handler::*;
+use self::origin_handler::*;
 use self::service_account_handler::*;
 
 use db::data_store::*;
@@ -100,6 +101,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         //serviceAccount API
         service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(service_create).before(basic.clone()),
 
+        //Origin API
+        origin: post "/origins" => XHandler::new(origin_create).before(basic.clone()),
     );
 
     let mut chain = Chain::new(router);

@@ -25,7 +25,7 @@ use std::result;
 use std::fmt;
 use error::{Error, Result};
 use std::str::FromStr;
-
+use {asmsrv, servicesrv};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize)]
 pub struct SessionCreate {
@@ -527,33 +527,44 @@ impl Account {
     }
 }
 
-
-#[derive(PartialEq, Clone, Default)]
-pub struct AccountInvitationListRequest {
-    account_id: String,
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Origin {
+    id: String,
+    object_meta: servicesrv::ObjectMetaData,
+    type_meta: asmsrv::TypeMeta,
+    created_at: String,
 }
-
-impl AccountInvitationListRequest {
-    pub fn new() -> AccountInvitationListRequest {
+impl Origin {
+    pub fn new() -> Origin {
         ::std::default::Default::default()
     }
-}
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
 
+    pub fn set_type_meta(&mut self, v: asmsrv::TypeMeta) {
+        self.type_meta = v;
+    }
 
-#[derive(PartialEq, Clone, Default)]
-pub struct AccountOriginInvitation {
-    // message fields
-    id: String,
-    origin_invitation_id: String,
-    account_id: String,
-    account_name: String,
-    origin_id: String,
-    origin_name: String,
-    owner_id: String,
-}
+    pub fn get_type_meta(&self) -> &asmsrv::TypeMeta {
+        &self.type_meta
+    }
 
-impl AccountOriginInvitation {
-    pub fn new() -> AccountOriginInvitation {
-        ::std::default::Default::default()
+    pub fn set_object_meta(&mut self, v: servicesrv::ObjectMetaData) {
+        self.object_meta = v;
+    }
+
+    pub fn get_object_meta(&self) -> &servicesrv::ObjectMetaData {
+        &self.object_meta
+    }
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
     }
 }
