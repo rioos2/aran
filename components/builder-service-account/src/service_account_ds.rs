@@ -68,6 +68,26 @@ impl ServiceAccountDS {
         debug!("◖☩ DONE:service_account_create ");
         return Ok(Some(service_account.clone()));
     }
+
+    pub fn service_account_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::ServiceAccountGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_service_account_v1()", &[])
+            .map_err(Error::ServiceAccountGetResponse)?;
+
+        let mut response = servicesrv::ServiceAccountGetResponse::new();
+
+        let mut service_collection = Vec::new();
+        for row in rows {
+            service_collection.push(row_to_service_account(&row)?)
+        }
+        response.set_service_collection(
+            service_collection,
+            "ServiceAccountList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
 }
 
 

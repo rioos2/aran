@@ -118,6 +118,19 @@ impl Migratable for ServiceAccountProcedure {
         )?;
         debug!("=> [✓] fn: insert_service_account_v1");
 
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_service_account_v1() RETURNS SETOF service_account AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM service_account;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_service_account_v1");
+
+
         debug!("=> DONE: servicesrv");
 
         Ok(())
