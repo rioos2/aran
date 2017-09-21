@@ -254,7 +254,8 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_urls(urls as String);
     assembly.set_uri(uri as String);
     assembly.set_tags(tags as Vec<String>);
-    let object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    let mut object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    object_meta_obj.set_name(id.to_string() as String);
     assembly.set_object_meta(object_meta_obj);
     let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
     assembly.set_type_meta(type_meta_obj);
@@ -305,7 +306,8 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     assembly_factory.set_status(status_obj);
     assembly_factory.set_plan(plan as String);
     assembly_factory.set_replicas(replicas as u64);
-    let object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    let mut object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    object_meta_obj.set_name(id.to_string() as String);
     assembly_factory.set_object_meta(object_meta_obj);
     let properties_obj: asmsrv::Properties = serde_json::from_str(&properties).unwrap();
     assembly_factory.set_properties(properties_obj);
@@ -342,6 +344,13 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     plan.set_camp_version(camp_version as String);
     plan.set_origin(origin as String);
     plan.set_artifacts(artifacts as Vec<String>);
+    // let mut split = services.split(",");
+    // let mut service_collection = Vec::new();
+    // for data in split {
+    //     let object_service: plansrv::Service = serde_json::from_str(&data).unwrap();
+    //     service_collection.push(object_service);
+    // }
+    // plan.set_services(service_collection);
     plan.set_services(services as String);
     plan.set_created_at(created_at.to_rfc3339());
 

@@ -1422,3 +1422,61 @@ schemas:
                 }
                 "created_at":"2017-09-21T05:35:27.342741+00:00"
               }
+/origins:
+  post:
+    description: |
+      Create a new origin
+    body:
+      application/json:
+        example: |
+          {
+          "type_meta":{
+            "kind":"Origin",
+            "api_version":"v1"
+            },
+          "object_meta":{
+              "name":"megam",
+              "origin":"default",
+              "uid":"811264199798824960",
+              "created_at":"",
+              "cluster_name":"",
+              "labels":{
+                "group":"development",
+                "key2":"value2"
+                },
+              "annotations":{
+                "key1":"value1",
+                "key2":"value2"
+                }
+                }
+                }
+    responses:
+      201:
+        description: |
+          Succesfully created a new origin
+        body:
+          application/json:
+            example: |
+              {
+               "id":"811266539113160704",
+               "type_meta":{
+                "kind":"Origin",
+                "api_version":"v1"
+                },
+               "object_meta":{
+                  "name":"megam",
+                  "origin":"default",
+                  "uid":"811264199798824960",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    }
+                    }
+                 "created_at":"2017-09-21T06:51:38.763014+00:00"
+                    }

@@ -49,23 +49,18 @@ impl ServiceAccountDS {
 
     pub fn service_account_create(datastore: &DataStoreConn, service_create: &servicesrv::ServiceAccount) -> Result<Option<servicesrv::ServiceAccount>> {
         let conn = datastore.pool.get_shard(0)?;
-        let id = service_create
-            .get_object_meta()
-            .get_uid()
-            .parse::<i64>()
-            .unwrap();
         let secret_str = serde_json::to_string(service_create.get_secrets()).unwrap();
         let object_meta = serde_json::to_string(service_create.get_object_meta()).unwrap();
         let type_meta = serde_json::to_string(service_create.get_type_meta()).unwrap();
         debug!("◖☩ START: service_account_create ");
         let rows = &conn.query(
-            "SELECT * FROM insert_service_account_v1($1,$2,$3,$4)",
+            "SELECT * FROM insert_service_account_v1($1,$2,$3,$4,$5)",
             &[
                 &(service_create.get_object_meta().get_origin() as String),
-                &(id),
+                &(service_create.get_object_meta().get_name() as String),
                 &(secret_str as String),
-                &(type_meta as String),
                 &(object_meta as String),
+                &(type_meta as String),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
         debug!(">● ROWS: service_account_create =>\n{:?}", &rows);

@@ -98,18 +98,21 @@ impl Migratable for ServiceAccountProcedure {
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_service_account_v1 (
-                origin_id bigint,
+                origin_name text,
                 name text,
                 secrets text,
                 object_meta text,
                 type_meta text
             ) RETURNS SETOF service_account AS $$
-                                BEGIN
-                                    RETURN QUERY INSERT INTO service_account(origin_id,name,secrets,object_meta,type_meta)
-                                        VALUES (origin_id,name,secrets,object_meta,type_meta)
-                                        RETURNING *;
-                                    RETURN;
-                                END
+            DECLARE
+               this_origin origins%rowtype;
+            BEGIN
+                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
+                 RETURN QUERY INSERT INTO service_account(origin_id,name,secrets,object_meta,type_meta)
+                     VALUES (this_origin.id,name,secrets,object_meta,type_meta)
+                     RETURNING *;
+                 RETURN;
+            END
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
