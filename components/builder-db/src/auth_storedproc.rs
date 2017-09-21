@@ -228,7 +228,7 @@ impl Migratable for AuthProcedures {
             "originsrv",
             r#"CREATE TABLE IF NOT EXISTS origins (
                     id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('origin_id_seq'),
-                    name text,
+                    name text UNIQUE,
                     owner_id bigint,
                     type_meta text,
                     object_meta text,

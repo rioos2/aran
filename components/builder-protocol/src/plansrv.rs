@@ -17,6 +17,8 @@ use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
 use std::result;
 use std::str::FromStr;
+use std::collections::BTreeMap;
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Plan {
@@ -73,5 +75,31 @@ impl Plan {
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Service {
+    name: String,
+    description: String,
+    href: String,
+    characteristics: BTreeMap<String, String>,
+}
+
+impl Service {
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+
+    pub fn set_href(&mut self, v: ::std::string::String) {
+        self.href = v;
+    }
+
+    pub fn set_characteristics(&mut self, v: BTreeMap<String, String>) {
+        self.characteristics = v;
     }
 }
