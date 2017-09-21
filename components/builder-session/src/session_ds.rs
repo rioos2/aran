@@ -192,16 +192,17 @@ impl SessionDS {
         let object_meta = serde_json::to_string(org_create.get_object_meta()).unwrap();
         let type_meta = serde_json::to_string(org_create.get_type_meta()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM insert_secret_v1($1,$2,$3,$4)",
+            "SELECT * FROM insert_origin_v1($1,$2,$3,$4,$5)",
             &[
-                &(org_create.get_object_meta().get_name() as String),
+                &(org_create.get_object_meta().get_origin() as String),
                 &(id),
-                &(object_meta as String),
+                &(org_create.get_object_meta().get_name() as String),
                 &(type_meta as String),
+                &(object_meta as String),
             ],
         ).map_err(Error::OriginCreate)?;
-        let secret = row_to_origin(&rows.get(0))?;
-        return Ok(Some(secret.clone()));
+        let origin = row_to_origin(&rows.get(0))?;
+        return Ok(Some(origin.clone()));
     }
 }
 
@@ -218,17 +219,17 @@ fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
 
 
 fn row_to_origin(row: &postgres::rows::Row) -> Result<sessionsrv::Origin> {
-    let mut service_account = sessionsrv::Origin::new();
+    let mut origin_data = sessionsrv::Origin::new();
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
 
-    service_account.set_id(id.to_string() as String);
+    origin_data.set_id(id.to_string() as String);
     let object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
-    service_account.set_object_meta(object_meta_obj);
+    origin_data.set_object_meta(object_meta_obj);
     let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
-    service_account.set_type_meta(type_meta_obj);
-    service_account.set_created_at(created_at.to_rfc3339());
-    Ok(service_account)
+    origin_data.set_type_meta(type_meta_obj);
+    origin_data.set_created_at(created_at.to_rfc3339());
+    Ok(origin_data)
 }

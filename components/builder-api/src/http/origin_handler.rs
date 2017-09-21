@@ -72,7 +72,7 @@ pub fn origin_create(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match SessionDS::origin_create(&conn, &org_create) {
-        Ok(secret) => Ok(render_json(status::Ok, &secret)),
+        Ok(origin) => Ok(render_json(status::Ok, &origin)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
