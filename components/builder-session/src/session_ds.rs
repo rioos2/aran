@@ -1,12 +1,14 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 //! The PostgreSQL backend for the SessionDS.
-
+use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::sessionsrv;
+use protocol::{sessionsrv, asmsrv, servicesrv};
 use postgres;
 use privilege;
 use db::data_store::DataStoreConn;
+use serde_json;
+
 
 pub struct SessionDS;
 
@@ -180,97 +182,27 @@ impl SessionDS {
             Ok(None)
         }
     }
-
-    /*pub fn get_origins_by_account(&self, request: &sessionsrv::AccountOriginListRequest) -> Result<sessionsrv::AccountOriginListResponse> {
-        let conn = self.pool.get(request)?;
-        let rows = conn.query(
-            "SELECT * FROM get_account_origins_v1($1)",
-            &[&(request.get_account_id() as i64)],
-        ).map_err(Error::OriginAccountList)?;
-        let mut response = sessionsrv::AccountOriginListResponse::new();
-        response.set_account_id(request.get_account_id());
-        let mut origins = protobuf::RepeatedField::new();
-
-        if rows.len() > 0 {
-            for row in rows.iter() {
-                origins.push(row.get("origin_name"));
-            }
-        }
-        response.set_origins(origins);
-        Ok(response)
-    }
-
-    pub fn accept_origin_invitation(&self, request: &sessionsrv::AccountOriginInvitationAcceptRequest) -> Result<()> {
-        let conn = self.pool.get(request)?;
-        let tr = conn.transaction().map_err(Error::DbTransactionStart)?;
-        tr.execute(
-            "SELECT * FROM accept_account_invitation_v1($1, $2)",
-            &[&(request.get_invite_id() as i64), &request.get_ignore()],
-        ).map_err(Error::AccountOriginInvitationAccept)?;
-        tr.commit().map_err(Error::DbTransactionCommit)?;
-        Ok(())
-    }
-
-    pub fn create_origin(&self, request: &sessionsrv::AccountOriginCreate) -> Result<()> {
-        let conn = self.pool.get(request)?;
-        conn.execute(
-            "SELECT * FROM insert_account_origin_v1($1, $2, $3, $4)",
+    pub fn origin_create(datastore: &DataStoreConn, org_create: &sessionsrv::Origin) -> Result<Option<sessionsrv::Origin>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let id = org_create
+            .get_object_meta()
+            .get_uid()
+            .parse::<i64>()
+            .unwrap();
+        let object_meta = serde_json::to_string(org_create.get_object_meta()).unwrap();
+        let type_meta = serde_json::to_string(org_create.get_type_meta()).unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM insert_secret_v1($1,$2,$3,$4)",
             &[
-                &(request.get_account_id() as i64),
-                &request.get_account_name(),
-                &(request.get_origin_id() as i64),
-                &request.get_origin_name(),
+                &(org_create.get_object_meta().get_name() as String),
+                &(id),
+                &(object_meta as String),
+                &(type_meta as String),
             ],
         ).map_err(Error::OriginCreate)?;
-        Ok(())
+        let secret = row_to_origin(&rows.get(0))?;
+        return Ok(Some(secret.clone()));
     }
-
-    pub fn create_account_origin_invitation(&self, invitation_create: &sessionsrv::AccountOriginInvitationCreate) -> Result<()> {
-        let conn = self.pool.get(invitation_create)?;
-        let _rows = conn.query(
-            "SELECT * FROM insert_account_invitation_v1($1, $2, $3, $4, $5, $6)",
-            &[
-                &(invitation_create.get_origin_id() as i64),
-                &invitation_create.get_origin_name(),
-                &(invitation_create.get_origin_invitation_id() as i64),
-                &(invitation_create.get_account_id() as i64),
-                &invitation_create.get_account_name(),
-                &(invitation_create.get_owner_id() as i64),
-            ],
-        ).map_err(Error::AccountOriginInvitationCreate)?;
-        Ok(())
-    }
-
-    pub fn list_invitations(&self, ailr: &sessionsrv::AccountInvitationListRequest) -> Result<sessionsrv::AccountInvitationListResponse> {
-        let conn = self.pool.get(ailr)?;
-        let rows = &conn.query(
-            "SELECT * FROM get_invitations_for_account_v1($1)",
-            &[&(ailr.get_account_id() as i64)],
-        ).map_err(Error::AccountOriginInvitationList)?;
-
-        let mut response = sessionsrv::AccountInvitationListResponse::new();
-        response.set_account_id(ailr.get_account_id());
-        let mut invitations = protobuf::RepeatedField::new();
-        for row in rows {
-            let mut oi = sessionsrv::AccountOriginInvitation::new();
-            let oi_id: i64 = row.get("id");
-            oi.set_id(oi_id as u64);
-            let oi_account_id: i64 = row.get("account_id");
-            oi.set_account_id(oi_account_id as u64);
-            oi.set_account_name(row.get("account_name"));
-            let oi_origin_id: i64 = row.get("origin_id");
-            oi.set_origin_id(oi_origin_id as u64);
-            oi.set_origin_name(row.get("origin_name"));
-            let oi_owner_id: i64 = row.get("owner_id");
-            oi.set_owner_id(oi_owner_id as u64);
-            let oi_origin_invitation_id: i64 = row.get("origin_invitation_id");
-            oi.set_origin_invitation_id(oi_origin_invitation_id as u64);
-            invitations.push(oi);
-        }
-        response.set_invitations(invitations);
-        Ok(response)
-    }
-    */
 }
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
@@ -282,4 +214,21 @@ fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
     account.set_password(row.get("password"));
     account.set_apikey(row.get("api_key"));
     account
+}
+
+
+fn row_to_origin(row: &postgres::rows::Row) -> Result<sessionsrv::Origin> {
+    let mut service_account = sessionsrv::Origin::new();
+    let id: i64 = row.get("id");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+    let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
+
+    service_account.set_id(id.to_string() as String);
+    let object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
+    service_account.set_object_meta(object_meta_obj);
+    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
+    service_account.set_type_meta(type_meta_obj);
+    service_account.set_created_at(created_at.to_rfc3339());
+    Ok(service_account)
 }

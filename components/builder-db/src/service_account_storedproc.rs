@@ -82,6 +82,8 @@ impl Migratable for ServiceAccountProcedure {
             "servicesrv",
             r#"CREATE TABLE  IF NOT EXISTS service_account(
              id bigint PRIMARY KEY DEFAULT next_id_v1('service_id_seq'),
+             origin_id bigint REFERENCES origins(id),
+             name text,
              secrets text,
              object_meta text,
              type_meta text,
@@ -96,13 +98,15 @@ impl Migratable for ServiceAccountProcedure {
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_service_account_v1 (
+                origin_id bigint,
+                name text,
                 secrets text,
                 object_meta text,
                 type_meta text
             ) RETURNS SETOF service_account AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO service_account(secrets,object_meta,type_meta)
-                                        VALUES (secrets,object_meta,type_meta)
+                                    RETURN QUERY INSERT INTO service_account(origin_id,name,secrets,object_meta,type_meta)
+                                        VALUES (origin_id,name,secrets,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END

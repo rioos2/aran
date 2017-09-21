@@ -29,7 +29,7 @@ impl Migratable for AuthProcedures {
         migrator.migrate(
             "authsrv",
             r#"CREATE TABLE  IF NOT EXISTS accounts (
-         id bigint PRIMARY KEY DEFAULT next_id_v1('account_id_seq'),
+         id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('account_id_seq'),
          name text,
          email text UNIQUE,
          first_name text,
@@ -227,9 +227,11 @@ impl Migratable for AuthProcedures {
         migrator.migrate(
             "originsrv",
             r#"CREATE TABLE IF NOT EXISTS origins (
-                    id bigint PRIMARY KEY DEFAULT next_id_v1('origin_id_seq'),
-                    name text UNIQUE,
+                    id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('origin_id_seq'),
+                    name text,
                     owner_id bigint,
+                    type_meta text,
+                    object_meta text,
                     session_sync bool DEFAULT false,
                     created_at timestamptz DEFAULT now(),
                     updated_at timestamptz
@@ -240,14 +242,21 @@ impl Migratable for AuthProcedures {
 
         migrator.migrate(
             "originsrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS origin_mem_id_seq;"#,
+        )?;
+
+        debug!("=> [✓] origin_id_seq");
+
+        migrator.migrate(
+            "originsrv",
             r#"CREATE TABLE IF NOT EXISTS origin_members (
+                    id bigint PRIMARY KEY DEFAULT next_id_v1('origin_mem_id_seq'),
                     origin_id bigint REFERENCES origins(id),
-                    origin_name text,
-                    account_id bigint,
+                    origin_name text ,
+                    account_id bigint REFERENCES accounts(id),
                     account_name text,
                     created_at timestamptz DEFAULT now(),
-                    updated_at timestamptz,
-                    PRIMARY KEY (origin_id, account_id)
+                    updated_at timestamptz
                 )"#,
         )?;
 
@@ -275,16 +284,16 @@ impl Migratable for AuthProcedures {
             r#"CREATE OR REPLACE FUNCTION insert_origin_v1 (
                      origin_name text,
                      origin_owner_id bigint,
-                     origin_owner_name text
+                     origin_owner_name text,
+                     origin_type_meta text,
+                     origin_object_meta text
                  ) RETURNS SETOF origins AS $$
                      DECLARE
                        inserted_origin origins;
                      BEGIN
-                         INSERT INTO origins (name, owner_id)
-                                VALUES (origin_name, origin_owner_id) RETURNING * into inserted_origin;
+                         INSERT INTO origins (name, owner_id,type_meta,object_meta)
+                                VALUES (origin_name, origin_owner_id,origin_type_meta,origin_object_meta) RETURNING * into inserted_origin;
                          PERFORM insert_origin_member_v1(inserted_origin.id, origin_name, origin_owner_id, origin_owner_name);
-                         PERFORM insert_origin_channel_v1(inserted_origin.id, origin_owner_id, 'unstable');
-                         PERFORM insert_origin_channel_v1(inserted_origin.id, origin_owner_id, 'stable');
                          RETURN NEXT inserted_origin;
                          RETURN;
                      END
