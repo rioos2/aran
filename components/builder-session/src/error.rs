@@ -32,6 +32,7 @@ pub enum Error {
     OriginAccountList(postgres::error::Error),
     OriginCreate(postgres::error::Error),
     OriginGetResponse(postgres::error::Error),
+    OriginGet(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -57,6 +58,8 @@ impl fmt::Display for Error {
             Error::OriginAccountList(ref e) => format!("Error listing origins for account in database, {}", e),
             Error::OriginCreate(ref e) => format!("Error creating origin for account in database, {}", e),
             Error::OriginGetResponse(ref e) => format!("Error retrive origin for account in database, {}", e),
+            Error::OriginGet(ref e) => format!("Error retrive origin by name, {}", e),
+
         };
         write!(f, "{}", msg)
     }
@@ -83,7 +86,7 @@ impl error::Error for Error {
             Error::OriginAccountList(ref err) => err.description(),
             Error::OriginCreate(ref err) => err.description(),
             Error::OriginGetResponse(ref err) => err.description(),
-
+            Error::OriginGet(ref err) => err.description(),
         }
     }
 }

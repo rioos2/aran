@@ -11,10 +11,9 @@ use session::session_ds::SessionDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::originsrv::Origin;
+use protocol::originsrv::{Origin, OriginGet};
 use protocol::net::{self, ErrCode};
-
-// use router::Router;
+use router::Router;
 use protocol::servicesrv::ObjectMetaData;
 use protocol::asmsrv::TypeMeta;
 use db::data_store::Broker;
@@ -84,6 +83,25 @@ pub fn origin_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match SessionDS::origin_list(&conn) {
         Ok(org_list) => Ok(render_json(status::Ok, &org_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
+pub fn origin_show(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        org_name
+    };
+    let conn = Broker::connect().unwrap();
+
+    let mut org_get = OriginGet::new();
+    org_get.set_name(org_name);
+    match SessionDS::origin_show(&conn, &org_get) {
+        Ok(origin) => Ok(render_json(status::Ok, &origin)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),

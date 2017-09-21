@@ -208,7 +208,7 @@ impl SessionDS {
     pub fn origin_list(datastore: &DataStoreConn) -> Result<Option<originsrv::OriginGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_origin_v1()", &[]).map_err(
+        let rows = &conn.query("SELECT * FROM get_origins_v1()", &[]).map_err(
             Error::OriginGetResponse,
         )?;
 
@@ -220,6 +220,17 @@ impl SessionDS {
         }
         response.set_org_collection(org_collection, "OriginList".to_string(), "v1".to_string());
         Ok(Some(response))
+    }
+
+    pub fn origin_show(datastore: &DataStoreConn, get_origin: &originsrv::OriginGet) -> Result<Option<originsrv::Origin>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query("SELECT * FROM get_origin_v1($1)", &[&get_origin.get_name()])
+            .map_err(Error::OriginGet)?;
+        for row in rows {
+            let origin = row_to_origin(&row)?;
+            return Ok(Some(origin));
+        }
+        Ok(None)
     }
 }
 

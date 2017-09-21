@@ -108,6 +108,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         //Origin API
         origins: post "/origins" => XHandler::new(origin_create).before(basic.clone()),
         origin: get "/origins" => XHandler::new(origin_list).before(basic.clone()),
+        origin_show: get "/origins/:origin" => XHandler::new(origin_show).before(basic.clone()),
+
 
     );
 
