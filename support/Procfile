@@ -1,2 +1,2 @@
 pg: support/db/start.sh
-api: target/debug/rios-apiserver start
+api: target/debug/rioos-apiserver start

@@ -1,4 +1,5 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
+// Copyright (c) 2017 RiioCorp Inc
+//
 
 use std::fmt;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
@@ -12,7 +13,7 @@ pub const DEFAULT_GITHUB_URL: &'static str = "https://api.github.com";
 /// associated to the habitat-sh GitHub account and is configured to re-direct and point to a local
 /// builder-api.
 ///
-pub const DEFAULT_PROMETHEUS_URL: &'static str = "http://www.mocky.io";
+pub const DEFAULT_PROMETHEUS_URL: &'static str = "http://127.0.0.1:9090/v1/api";
 
 /// See https://github.com/settings/connections/applications/0c2f738a7d0bd300de10
 pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";

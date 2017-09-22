@@ -226,6 +226,8 @@ impl Key for Authenticated {
 /// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
+        println!("--> {}", req.url);
+
         let session = {
             let email = req.headers.get::<XAuthRioOSEmail>();
             //This is malformed header actually.
@@ -233,7 +235,6 @@ impl BeforeMiddleware for Authenticated {
                 let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:2");
                 return Err(IronError::new(err, Status::Unauthorized));
             }
-
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
                     match req.extensions.get_mut::<DataStoreBroker>() {

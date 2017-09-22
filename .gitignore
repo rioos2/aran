@@ -2,6 +2,8 @@
 dump.rdb
 target
 terraform.tfstate*
+test/prometheus/node1/node1
+test/prometheus/node1/node2
 .delivery/cli.toml
 .tags*
 log/
