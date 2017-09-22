@@ -33,7 +33,7 @@ lazy_static! {
     /// first call and reflects on the presence and value of the environment variable keyed as
     /// `FS_ROOT_ENVVAR`.
     static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*cache_config_path(None).join("api.toml").to_str().unwrap());
-    static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*cache_config_path(None).join("serving-rioos-api-server.pfx").to_str().unwrap());
+    static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*cache_config_path(None).join("serving-rioos-apiserver.pfx").to_str().unwrap());
 }
 
 fn main() {
@@ -118,8 +118,10 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
             let mut default_config = Config::default();
 
             if let Some(identity_pkcs12_file) = SERVING_TLS_PFX.to_str() {
-                default_config.http.port = 9443;
-                default_config.http.tls_pkcs12_file = Some(identity_pkcs12_file.to_string());
+                if SERVING_TLS_PFX.exists() {
+                    default_config.http.port = 7443;
+                    default_config.http.tls_pkcs12_file = Some(identity_pkcs12_file.to_string());
+                }
             };
 
             Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(default_config)
