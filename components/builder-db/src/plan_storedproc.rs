@@ -60,7 +60,6 @@ impl Migratable for PlanProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
         debug!("=> [✓] fn: get_plan_v1");
 
         migrator.migrate(

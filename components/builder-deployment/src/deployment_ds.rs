@@ -46,6 +46,37 @@ impl DeploymentDS {
         Ok(None)
     }
 
+    pub fn assembly_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
+        let conn = datastore.pool.get_shard(0)?;
+        debug!("◖☩ START: assemby_create ");
+        let asm_id = assembly.get_id().parse::<i64>().unwrap();
+        let type_meta = serde_json::to_string(assembly.get_type_meta()).unwrap();
+        let object_meta = serde_json::to_string(assembly.get_object_meta()).unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            &[
+                &asm_id,
+                &(assembly.get_name() as String),
+                &(assembly.get_uri() as String),
+                &(assembly.get_description() as String),
+                &(assembly.get_parent_id() as String),
+                &(assembly.get_tags() as Vec<String>),
+                &(object_meta as String),
+                &(type_meta as String),
+                &(assembly.get_node() as String),
+                &(assembly.get_ip() as String),
+                &(assembly.get_urls() as String),
+            ],
+        ).map_err(Error::AssemblyUpdate)?;
+
+        debug!(">● ROWS: assemby_create =>\n{:?}", &rows);
+        for row in rows {
+            let assembly = Self::collect_spec(&row, &datastore)?;
+            return Ok(Some(assembly));
+        }
+        Ok(None)
+    }
+
     pub fn assembly_show(datastore: &DataStoreConn, get_assembly: &asmsrv::AssemblyGet) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_show {:?}", get_assembly.get_id());
