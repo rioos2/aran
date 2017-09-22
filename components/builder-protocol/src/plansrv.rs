@@ -30,7 +30,7 @@ pub struct Plan {
     url: String,
     origin: String,
     artifacts: Vec<String>,
-    services: String,
+    services: Vec<Service>,
     created_at: String,
 }
 impl Plan {
@@ -61,7 +61,7 @@ impl Plan {
         self.url = v;
     }
 
-    pub fn set_services(&mut self, v: ::std::string::String) {
+    pub fn set_services(&mut self, v: Vec<Service>) {
         self.services = v;
     }
 
