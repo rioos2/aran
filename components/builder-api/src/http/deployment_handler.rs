@@ -190,6 +190,12 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                 assembly_create.set_ip(body.ip);
                 assembly_create.set_urls(body.urls);
             }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
@@ -406,6 +412,12 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 type_meta.set_kind(body.type_meta.kind);
                 type_meta.set_api_version(body.type_meta.api_version);
                 assembly_factory_create.set_type_meta(type_meta);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
