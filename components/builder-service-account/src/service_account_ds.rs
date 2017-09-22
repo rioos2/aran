@@ -47,6 +47,27 @@ impl ServiceAccountDS {
         Ok(None)
     }
 
+    pub fn secret_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::SecretGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_secrets_v1()", &[]).map_err(
+            Error::SecretGetResponse,
+        )?;
+
+        let mut response = servicesrv::SecretGetResponse::new();
+
+        let mut secret_collection = Vec::new();
+        for row in rows {
+            secret_collection.push(row_to_secret(&row)?)
+        }
+        response.set_secret_collection(
+            secret_collection,
+            "SecretList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
+
     pub fn service_account_create(datastore: &DataStoreConn, service_create: &servicesrv::ServiceAccount) -> Result<Option<servicesrv::ServiceAccount>> {
         let conn = datastore.pool.get_shard(0)?;
         let secret_str = serde_json::to_string(service_create.get_secrets()).unwrap();

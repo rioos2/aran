@@ -73,6 +73,18 @@ impl Migratable for ServiceAccountProcedure {
 
         migrator.migrate(
             "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_secrets_v1() RETURNS SETOF secret AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM secret;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_secrets_v1");
+
+        migrator.migrate(
+            "servicesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS service_id_seq;"#,
         )?;
 

@@ -141,6 +141,25 @@ impl SecretGet {
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SecretGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<Secret>,
+}
+
+impl SecretGetResponse {
+    pub fn new() -> SecretGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_secret_collection(&mut self, v: Vec<Secret>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ServiceAccount {
     id: String,
     object_meta: ObjectMetaData,

@@ -21,6 +21,7 @@ pub enum Error {
     IO(io::Error),
     SecretCreate(postgres::error::Error),
     SecretGet(postgres::error::Error),
+    SecretGetResponse(postgres::error::Error),
     ServiceAccountCreate(postgres::error::Error),
     ServiceAccountGetResponse(postgres::error::Error),
     ServiceAccountGet(postgres::error::Error),
@@ -40,6 +41,7 @@ impl fmt::Display for Error {
             Error::IO(ref e) => format!("{}", e),
             Error::SecretCreate(ref e) => format!("Database error creating a secret, {}", e),
             Error::SecretGet(ref e) => format!("Database error get secret, {}", e),
+            Error::SecretGetResponse(ref e) => format!("Error retrive secret_list database, {}", e),
             Error::ServiceAccountCreate(ref e) => format!("Database error creating a service_account, {}", e),
             Error::ServiceAccountGetResponse(ref e) => {
                 format!(
@@ -65,6 +67,7 @@ impl error::Error for Error {
             Error::InvalidUrl => "Bad Url!",
             Error::SecretCreate(ref err) => err.description(),
             Error::SecretGet(ref err) => err.description(),
+            Error::SecretGetResponse(ref err) => err.description(),
             Error::ServiceAccountCreate(ref err) => err.description(),
             Error::ServiceAccountGetResponse(ref err) => err.description(),
             Error::ServiceAccountGet(ref err) => err.description(),
