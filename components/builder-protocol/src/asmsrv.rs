@@ -276,7 +276,7 @@ pub struct AssemblyFactory {
     plan: String,
     plan_data: Option<plansrv::Plan>,
     external_management_resource: Vec<String>,
-    component_collection: ComponentCollection,
+    component_collection: BTreeMap<String, String>,
     status: Status,
     opssettings: OpsSettings,
     created_at: String,
@@ -376,14 +376,13 @@ impl AssemblyFactory {
     }
 
 
-    pub fn set_component_collection(&mut self, v: ComponentCollection) {
+    pub fn set_component_collection(&mut self, v: BTreeMap<String, String>) {
         self.component_collection = v;
     }
 
-    pub fn get_component_collection(&self) -> &ComponentCollection {
+    pub fn get_component_collection(&self) -> &BTreeMap<String, String> {
         &self.component_collection
     }
-
 
     pub fn set_status(&mut self, v: Status) {
         self.status = v;
@@ -490,24 +489,6 @@ impl OwnerReferences {
     }
 }
 
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct ComponentCollection {
-    flavor: String,
-    network: String,
-}
-
-impl ComponentCollection {
-    pub fn new() -> ComponentCollection {
-        ::std::default::Default::default()
-    }
-    pub fn set_flavor(&mut self, v: ::std::string::String) {
-        self.flavor = v;
-    }
-    pub fn set_network(&mut self, v: ::std::string::String) {
-        self.network = v;
-    }
-}
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Properties {

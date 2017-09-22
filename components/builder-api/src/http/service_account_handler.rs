@@ -107,6 +107,16 @@ pub fn secret_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+pub fn secret_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match ServiceAccountDS::secret_list(&conn) {
+        Ok(service_list) => Ok(render_json(status::Ok, &service_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
 pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
     let (org_name, ser_name) = {
         let params = req.extensions.get::<Router>().unwrap();

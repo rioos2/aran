@@ -101,10 +101,9 @@ impl SessionDS {
 
     pub fn get_account_by_id(datastore: &DataStoreConn, account_get_id: &sessionsrv::AccountGetId) -> Result<Option<sessionsrv::Account>> {
         let conn = datastore.pool.get_shard(0)?;
-        let rows = conn.query(
-            "SELECT * FROM get_account_by_id_v1($1)",
-            &[&(account_get_id.get_id())],
-        ).map_err(Error::AccountGetById)?;
+        let id = account_get_id.get_id().parse::<i64>().unwrap();
+        let rows = conn.query("SELECT * FROM get_account_by_id_v1($1)", &[&id])
+            .map_err(Error::AccountGetById)?;
         if rows.len() != 0 {
             let row = rows.get(0);
             Ok(Some(row_to_account(row)))

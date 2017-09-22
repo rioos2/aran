@@ -62,12 +62,15 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,
+        account_get_by_id: get "/accounts/:id" => account_get_by_id,
+        account_get_by_name: get "/accounts/:name" => account_get,
 
         //deploy API: assembly_factory
         assembly_factorys: post "/assemblyfactorys" => XHandler::new(assembly_factory_create).before(basic.clone()),
         assemblys_factory_show: get "/assemblyfactorys/:id" => XHandler::new(assembly_factory_show).before(basic.clone()),
         assemblys_factorys_list: get "/assemblyfactorys" => XHandler::new(assembly_factory_list).before(basic.clone()),
         assembly_factory_status: put "/assemblyfactorys/:id/status" => XHandler::new(assembly_factory_status_update).before(basic.clone()),
+        plan_list: get "/plans" => XHandler::new(plan_list).before(basic.clone()),
 
         //deploy API: assembly
         assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
@@ -98,18 +101,19 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
 
         //secret API
-        secrets: post "/secret" => XHandler::new(secret_create).before(basic.clone()),
-        secret_show: get "/secret/:id" => XHandler::new(secret_show).before(basic.clone()),
+        secrets: post "/secrets" => XHandler::new(secret_create).before(basic.clone()),
+        secrets_list: get "/secrets" => XHandler::new(secret_list).before(basic.clone()),
+        secret_show: get "/secrets/:id" => XHandler::new(secret_show).before(basic.clone()),
 
         //serviceAccount API
         service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_create,
-        service_account: get "/serviceaccounts" => service_account_list,
+        service_account_list: get "/serviceaccounts" => service_account_list,
         service_account_get: get "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_show,
 
 
         //Origin API
         origins: post "/origins" => origin_create,
-        origin: get "/origins" =>origin_list,
+        origin_list: get "/origins" =>origin_list,
         origin_show: get "/origins/:origin" => origin_show,
 
 

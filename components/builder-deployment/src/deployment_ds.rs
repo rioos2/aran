@@ -9,7 +9,7 @@ use protocol::plansrv;
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-
+use std::collections::BTreeMap;
 
 pub struct DeploymentDS;
 
@@ -229,6 +229,23 @@ impl DeploymentDS {
 
         Ok(None)
     }
+
+    pub fn plan_list(datastore: &DataStoreConn) -> Result<Option<plansrv::PlanGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_plans_v1()", &[]).map_err(
+            Error::PlanGetResponse,
+        )?;
+
+        let mut response = plansrv::PlanGetResponse::new();
+
+        let mut plan_collection = Vec::new();
+        for row in rows {
+            plan_collection.push(row_to_plan(&row)?)
+        }
+        response.set_plan_collection(plan_collection, "PlanList".to_string(), "v1".to_string());
+        Ok(Some(response))
+    }
 }
 
 fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
@@ -298,8 +315,8 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     assembly_factory.set_tags(tags as Vec<String>);
     assembly_factory.set_external_management_resource(external_management_resource as Vec<String>);
     assembly_factory.set_created_at(created_at.to_rfc3339());
-    let component_collection_obj: asmsrv::ComponentCollection = serde_json::from_str(&component_collection).unwrap();
-    assembly_factory.set_component_collection(component_collection_obj);
+    let com_obj: BTreeMap<String, String> = serde_json::from_str(&component_collection).unwrap();
+    assembly_factory.set_component_collection(com_obj);
     let opssettings_obj: asmsrv::OpsSettings = serde_json::from_str(&opssettings).unwrap();
     assembly_factory.set_opssettings(opssettings_obj);
     let status_obj: asmsrv::Status = serde_json::from_str(&status).unwrap();

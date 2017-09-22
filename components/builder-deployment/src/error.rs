@@ -9,7 +9,6 @@ use std::error;
 use std::fmt;
 use std::io;
 use std::result;
-use std::path::PathBuf;
 use db;
 
 
@@ -26,18 +25,9 @@ pub enum Error {
     AssemblyFactoryCreate(postgres::error::Error),
     AssemblyFactoryGet(postgres::error::Error),
     PlanGet(postgres::error::Error),
-    JobMarkArchived(postgres::error::Error),
-    JobPending(postgres::error::Error),
-    JobReset(postgres::error::Error),
-    JobSetLogUrl(postgres::error::Error),
+    PlanGetResponse(postgres::error::Error),
     AsmFactorySetStatus(postgres::error::Error),
     AsmSetStatus(postgres::error::Error),
-    LogDirDoesNotExist(PathBuf, io::Error),
-    LogDirIsNotDir(PathBuf),
-    LogDirNotWritable(PathBuf),
-    ProjectJobsGet(postgres::error::Error),
-    UnknownVCS,
-    UnknownJobState,
 }
 
 
@@ -57,18 +47,9 @@ impl fmt::Display for Error {
             Error::AssemblyFactoryCreate(ref e) => format!("Database error creating a new assembly factory, {}", e),
             Error::AssemblyFactoryGet(ref e) => format!("Database error getting assembly factory data, {}", e),
             Error::PlanGet(ref e) => format!("Database error getting plan data, {}", e),
-            Error::JobMarkArchived(ref e) => format!("Database error marking job as archived, {}", e),
-            Error::JobPending(ref e) => format!("Database error getting pending jobs, {}", e),
-            Error::JobReset(ref e) => format!("Database error reseting jobs, {}", e),
-            Error::JobSetLogUrl(ref e) => format!("Database error setting job log URL, {}", e),
+            Error::PlanGetResponse(ref e) => format!("Database error listing plan_factory data, {}", e),
             Error::AsmFactorySetStatus(ref e) => format!("Database error setting Assembly Factory status, {}", e),
             Error::AsmSetStatus(ref e) => format!("Database error setting Assembly status, {}", e),
-            Error::LogDirDoesNotExist(ref path, ref e) => format!("Build log directory {:?} doesn't exist!: {:?}", path, e),
-            Error::LogDirIsNotDir(ref path) => format!("Build log directory {:?} is not a directory!", path),
-            Error::LogDirNotWritable(ref path) => format!("Build log directory {:?} is not writable!", path),
-            Error::ProjectJobsGet(ref e) => format!("Database error getting jobs for project, {}", e),
-            Error::UnknownVCS => format!("Unknown VCS"),
-            Error::UnknownJobState => format!("Unknown Job State"),
         };
         write!(f, "{}", msg)
     }
@@ -88,18 +69,9 @@ impl error::Error for Error {
             Error::AssemblyFactoryCreate(ref err) => err.description(),
             Error::AssemblyFactoryGet(ref err) => err.description(),
             Error::PlanGet(ref err) => err.description(),
-            Error::JobMarkArchived(ref err) => err.description(),
-            Error::JobPending(ref err) => err.description(),
-            Error::JobReset(ref err) => err.description(),
-            Error::JobSetLogUrl(ref err) => err.description(),
+            Error::PlanGetResponse(ref err) => err.description(),
             Error::AsmFactorySetStatus(ref err) => err.description(),
             Error::AsmSetStatus(ref err) => err.description(),
-            Error::LogDirDoesNotExist(_, ref err) => err.description(),
-            Error::LogDirIsNotDir(_) => "Build log directory is not a directory",
-            Error::LogDirNotWritable(_) => "Build log directory is not writable",
-            Error::ProjectJobsGet(ref err) => err.description(),
-            Error::UnknownJobState => "Unknown Job State",
-            Error::UnknownVCS => "Unknown VCS",
         }
     }
 }

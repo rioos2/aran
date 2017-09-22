@@ -2,8 +2,6 @@
 
 //! A collection of auth [origin] for the HTTP server
 
-use std::env;
-
 use bodyparser;
 use rio_core::event::*;
 use rio_net::http::controller::*;
