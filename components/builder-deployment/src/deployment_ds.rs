@@ -21,7 +21,6 @@ impl DeploymentDS {
         let status_str = serde_json::to_string(assembly.get_status()).unwrap();
         let type_meta = serde_json::to_string(assembly.get_type_meta()).unwrap();
         let object_meta = serde_json::to_string(assembly.get_object_meta()).unwrap();
-
         let rows = &conn.query(
             "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
@@ -350,7 +349,7 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     let camp_version: String = row.get("camp_version");
     let origin: String = row.get("origin");
     let artifacts: Vec<String> = row.get("artifacts");
-    let services: String = row.get("services");
+    let services: Vec<String> = row.get("services");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     plan.set_id(id.to_string() as String);
@@ -361,16 +360,13 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     plan.set_camp_version(camp_version as String);
     plan.set_origin(origin as String);
     plan.set_artifacts(artifacts as Vec<String>);
-    // let mut split = services.split(",");
-    // let mut service_collection = Vec::new();
-    // for data in split {
-    //     let object_service: plansrv::Service = serde_json::from_str(&data).unwrap();
-    //     service_collection.push(object_service);
-    // }
-    // plan.set_services(service_collection);
-    plan.set_services(services as String);
+    let mut service_collection = Vec::new();
+    for data in services {
+        let object_service: plansrv::Service = serde_json::from_str(&data).unwrap();
+        service_collection.push(object_service);
+    }
+    plan.set_services(service_collection);
     plan.set_created_at(created_at.to_rfc3339());
-
     debug!("◖☩ PLAN: row_to_plan =>\n{:?}", plan);
     debug!("◖☩ DONE: row_to_assemby_factory");
     Ok(plan)
