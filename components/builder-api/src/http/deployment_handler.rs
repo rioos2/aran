@@ -9,7 +9,7 @@ use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, ComponentCollection, Properties, OpsSettings, TypeMeta, ObjectMeta, OwnerReferences};
+use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, Properties, OpsSettings, TypeMeta, ObjectMeta, OwnerReferences};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
@@ -70,7 +70,7 @@ struct AssemblyFacCreateReq {
     replicas: u64,
     plan: String,
     external_management_resource: Vec<String>,
-    component_collection: ComponentReq,
+    component_collection: BTreeMap<String, String>,
     status: StatusReq,
     opssettings: OpsSettingsReq,
 }
@@ -101,7 +101,6 @@ struct ObjectMetaReq {
     owner_references: Vec<OwnerReferencesReq>,
 }
 
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct OwnerReferencesReq {
     kind: String,
@@ -109,12 +108,6 @@ struct OwnerReferencesReq {
     name: String,
     uid: String,
     block_owner_deletion: bool,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ComponentReq {
-    flavor: String,
-    network: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -310,13 +303,7 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 assembly_factory_create.set_tags(body.tags);
                 assembly_factory_create.set_external_management_resource(body.external_management_resource);
                 assembly_factory_create.set_plan(body.plan);
-
-                let mut component_collection = ComponentCollection::new();
-                component_collection.set_flavor(body.component_collection.flavor);
-                component_collection.set_network(body.component_collection.network);
-
-                assembly_factory_create.set_component_collection(component_collection);
-
+                assembly_factory_create.set_component_collection(body.component_collection);
                 let mut status = Status::new();
                 status.set_phase(body.status.phase);
                 status.set_message(body.status.message);
