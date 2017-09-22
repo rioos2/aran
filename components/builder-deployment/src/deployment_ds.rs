@@ -229,6 +229,23 @@ impl DeploymentDS {
 
         Ok(None)
     }
+
+    pub fn plan_list(datastore: &DataStoreConn) -> Result<Option<plansrv::PlanGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_plans_v1()", &[]).map_err(
+            Error::PlanGetResponse,
+        )?;
+
+        let mut response = plansrv::PlanGetResponse::new();
+
+        let mut plan_collection = Vec::new();
+        for row in rows {
+            plan_collection.push(row_to_plan(&row)?)
+        }
+        response.set_plan_collection(plan_collection, "PlanList".to_string(), "v1".to_string());
+        Ok(Some(response))
+    }
 }
 
 fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {

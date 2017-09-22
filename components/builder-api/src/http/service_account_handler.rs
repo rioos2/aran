@@ -107,7 +107,6 @@ pub fn secret_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-
 pub fn secret_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::secret_list(&conn) {

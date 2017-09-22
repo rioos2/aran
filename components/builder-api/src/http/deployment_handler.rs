@@ -442,11 +442,20 @@ pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response>
     }
 }
 
-
 pub fn assembly_factory_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_list(&conn) {
         Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+pub fn plan_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match DeploymentDS::plan_list(&conn) {
+        Ok(plan_list) => Ok(render_json(status::Ok, &plan_list)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),

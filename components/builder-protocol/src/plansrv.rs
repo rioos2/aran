@@ -103,3 +103,22 @@ impl Service {
         self.characteristics = v;
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PlanGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<Plan>,
+}
+
+impl PlanGetResponse {
+    pub fn new() -> PlanGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_plan_collection(&mut self, v: Vec<Plan>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
+}
