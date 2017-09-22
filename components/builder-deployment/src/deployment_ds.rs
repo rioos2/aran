@@ -382,7 +382,6 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     let artifacts: Vec<String> = row.get("artifacts");
     let services: Vec<String> = row.get("services");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
-
     plan.set_id(id.to_string() as String);
     plan.set_name(name as String);
     plan.set_url(url as String);
