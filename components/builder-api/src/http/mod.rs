@@ -62,6 +62,8 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,
+        account_get_by_id: get "/accounts/:id" => account_get_by_id,
+        account_get_by_name: get "/accounts/:name" => account_get,
 
         //deploy API: assembly_factory
         assembly_factorys: post "/assemblyfactorys" => XHandler::new(assembly_factory_create).before(basic.clone()),

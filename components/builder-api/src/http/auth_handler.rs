@@ -9,6 +9,7 @@ use session::session_ds::SessionDS;
 use iron::prelude::*;
 use iron::status;
 use persistent;
+use router::Router;
 use iron::typemap;
 use protocol::net::{self, ErrCode};
 use protocol::sessionsrv::*;
@@ -158,25 +159,17 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
 
 
 pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
-    let mut account_get_by_id = AccountGetId::new();
-    {
-
-        match req.get::<bodyparser::Struct<AccountGetReq>>() {
-            Ok(Some(body)) => {
-                if body.id.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `id`",
-                    )));
-                }
-                account_get_by_id.set_id(body.id.to_string());
-            }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
         }
-    }
+    };
 
     let conn = Broker::connect().unwrap();
-
+    let mut account_get_by_id = AccountGetId::new();
+    account_get_by_id.set_id(id.to_string());
     match SessionDS::get_account_by_id(&conn, &account_get_by_id) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
         Err(err) => Ok(render_net_error(
@@ -188,23 +181,13 @@ pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
 
 
 pub fn account_get(req: &mut Request) -> IronResult<Response> {
+    let name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let name = params.find("name").unwrap().to_owned();
+        name
+    };
     let mut account_get = AccountGet::new();
-    {
-
-        match req.get::<bodyparser::Struct<AccountGetReq>>() {
-            Ok(Some(body)) => {
-                if body.name.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `name`",
-                    )));
-                }
-                account_get.set_name(body.name.to_string());
-            }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
-        }
-    }
-
+    account_get.set_email(name);
     let conn = Broker::connect().unwrap();
 
     match SessionDS::get_account(&conn, &account_get) {
@@ -215,7 +198,6 @@ pub fn account_get(req: &mut Request) -> IronResult<Response> {
 
     }
 }
-
 
 pub fn session_get(req: &mut Request) -> IronResult<Response> {
     let mut session_get = SessionGet::new();
