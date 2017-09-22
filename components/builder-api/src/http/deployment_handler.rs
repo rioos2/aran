@@ -239,6 +239,54 @@ pub fn assembly_list(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+    let mut assembly_create = Assembly::new();
+    {
+        match req.get::<bodyparser::Struct<AssemblyCreateReq>>() {
+            Ok(Some(body)) => {
+                if body.name.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `name`",
+                    )));
+                }
+                if body.parent_id.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `parent_id`",
+                    )));
+                }
+                assembly_create.set_id(id.to_string());
+                assembly_create.set_name(body.name);
+                assembly_create.set_uri(body.uri);
+                assembly_create.set_description(body.description);
+                assembly_create.set_tags(body.tags);
+                assembly_create.set_parent_id(body.parent_id);
+                assembly_create.set_node(body.node);
+                assembly_create.set_ip(body.ip);
+                assembly_create.set_urls(body.urls);
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+
+    let conn = Broker::connect().unwrap();
+
+    match DeploymentDS::assembly_update(&conn, &assembly_create) {
+        Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
+}
 
 pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
     let id = {
@@ -397,6 +445,9 @@ pub fn assembly_factory_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+
+
+
 pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
@@ -452,6 +503,8 @@ pub fn assembly_factory_list(req: &mut Request) -> IronResult<Response> {
         )),
     }
 }
+
+
 
 pub fn plan_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();

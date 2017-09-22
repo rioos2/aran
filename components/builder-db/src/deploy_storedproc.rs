@@ -100,6 +100,19 @@ impl Migratable for DeployProcedures {
 
         migrator.migrate(
             "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_name text, asm_uri text, asm_description text,asm_parent_id text, asm_tags text[],asm_object_meta text,asm_type_meta text,asm_node text,asm_ip text,asm_urls text) RETURNS SETOF assembly AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE assembly SET name=asm_name,uri=asm_uri,description=asm_description,parent_id=asm_parent_id,tags=asm_tags,object_meta=asm_object_meta,type_meta=asm_type_meta,node=asm_node,ip=asm_ip,urls=asm_urls,updated_at=now() WHERE id=aid
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        debug!("=> [✓] fn: set_assembly_status_v1");
+
+        migrator.migrate(
+            "asmsrv",
             r#"CREATE OR REPLACE FUNCTION set_assembly_status_v1 (aid bigint, asm_status text) RETURNS SETOF assembly AS $$
                             BEGIN
                                 RETURN QUERY UPDATE assembly SET status=asm_status, updated_at=now() WHERE id=aid
