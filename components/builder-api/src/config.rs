@@ -76,8 +76,7 @@ impl Prometheus for Config {
 pub struct HttpCfg {
     pub listen: IpAddr,
     pub port: u16,
-    pub use_tls: Option<bool>,
-    pub tls_pkcs12_file: String,
+    pub tls_pkcs12_file: Option<String>,
 }
 
 impl Default for HttpCfg {
@@ -85,8 +84,7 @@ impl Default for HttpCfg {
         HttpCfg {
             listen: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
             port: 9636,
-            use_tls: None,
-            tls_pkcs12_file: "".to_string(),
+            tls_pkcs12_file: None,
         }
     }
 }

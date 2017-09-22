@@ -10,18 +10,18 @@ use package::{Identifiable, PackageIdent};
 use env as renv;
 
 /// The default root path of the Rio/OS filesystem
-pub const ROOT_PATH: &'static str = "rioos";
+pub const ROOT_PATH: &'static str = "/var/lib/rioos";
 /// The default path where TLS-related keys are placed
-pub const CACHE_KEY_PATH: &'static str = "rioos/config/keys";
+pub const CACHE_KEY_PATH: &'static str = "config";
 /// The default path where TLS-related artifacts are placed
-pub const CACHE_CONFIG_PATH: &'static str = "rioos/config";
+pub const CACHE_CONFIG_PATH: &'static str = "config";
+
 /// The root path containing all locally installed packages
 pub const PKG_PATH: &'static str = "rioos/pkgs";
+
 /// The environment variable pointing to the filesystem root. This exists for internal
 /// team usage and is not intended to be used by consumers.
-
 pub const FS_ROOT_ENVVAR: &'static str = "RIOOS_HOME";
-pub const SYSTEMDRIVE_ENVVAR: &'static str = "SYSTEMDRIVE";
 
 lazy_static! {
     /// The default filesystem root path.
@@ -29,39 +29,26 @@ lazy_static! {
     /// WARNING: On Windows this variable mutates on first call if an environment variable with
     ///          the key of `FS_ROOT_ENVVAR` is set.
     pub static ref FS_ROOT_PATH: PathBuf = {
-        if cfg!(target_os = "windows") {
-            match (renv::var(FS_ROOT_ENVVAR), renv::var(SYSTEMDRIVE_ENVVAR)) {
-                (Ok(path), _) =>  PathBuf::from(path),
-                (Err(_), Ok(system_drive)) => PathBuf::from(format!("{}{}", system_drive, "/")),
-                (Err(_), Err(_)) => unreachable!("Windows should always have a SYSTEMDRIVE environment variable.")
+            match renv::var(FS_ROOT_ENVVAR) {
+                Ok(path) =>  PathBuf::from(path),
+                Err(_) => {
+                    if *EUID == 0u32 {
+                        PathBuf::from(renv::var(FS_ROOT_ENVVAR).unwrap_or(ROOT_PATH.to_string()))
+                    } else {
+                       env::home_dir().unwrap()
+                    }
+                },
             }
-        } else {
-            PathBuf::from("/")
-        }
-    };
+     };
 
     static ref EUID: u32 = users::get_effective_uid();
 
     static ref MY_CACHE_KEY_PATH: PathBuf = {
-        if *EUID == 0u32 {
-            PathBuf::from(CACHE_KEY_PATH)
-        } else {
-            match env::home_dir() {
-                Some(home) => home.join(format!(".{}", CACHE_KEY_PATH)),
-                None => PathBuf::from(CACHE_KEY_PATH),
-            }
-        }
+        FS_ROOT_PATH.join(format!("{}", CACHE_KEY_PATH))
     };
 
     static ref MY_CACHE_CONFIG_PATH: PathBuf = {
-        if *EUID == 0u32 {
-            PathBuf::from(CACHE_CONFIG_PATH)
-        } else {
-            match env::home_dir() {
-                Some(home) => home.join(format!(".{}", CACHE_CONFIG_PATH)),
-                None => PathBuf::from(CACHE_CONFIG_PATH),
-            }
-        }
+        FS_ROOT_PATH.join(format!("{}", CACHE_CONFIG_PATH))
     };
 }
 

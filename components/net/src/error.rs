@@ -1,5 +1,5 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
-//
+// Copyright (c) 2017 RioCorp Inc
+
 use protocol;
 use std::collections::HashMap;
 use std::error;
@@ -21,7 +21,7 @@ pub enum Error {
     MaxHops,
     HTTP(hyper::status::StatusCode),
     RequiredConfigField(&'static str),
-    NetError(protocol::net::NetError), //local conversion of protocol::net::NetError. errors are bloated though. need to rewrite 
+    NetError(protocol::net::NetError), //local conversion of protocol::net::NetError. errors are bloated though. need to rewrite
     CryptoError(String),
     Sys,
 }

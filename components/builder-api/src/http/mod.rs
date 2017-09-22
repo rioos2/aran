@@ -42,6 +42,8 @@ use db::data_store::*;
 // See: http://172.16.2.131:9633/iron/prelude/struct.Iron.html#method.http
 const HTTP_THREAD_COUNT: usize = 128;
 
+const TLS_PKCS12_PWD: &'static str = "RIO123";
+
 /// Create a new `iron::Chain` containing a Router and it's required middleware
 pub fn router(config: Arc<Config>) -> Result<Chain> {
     let basic = Authenticated::new(&*config);
@@ -172,10 +174,10 @@ pub fn run(config: Arc<Config>) -> Result<JoinHandle<()>> {
             let mut server = Iron::new(mount);
             server.threads = HTTP_THREAD_COUNT;
 
-            match config.http.use_tls {
-                Some(_) => {
-                    let tls = NativeTlsServer::new(&config.http.tls_pkcs12_file, "RIO123").unwrap();
-                    server.https(&config.http, tls).unwrap()
+            match config.http.tls_pkcs12_file {
+                Some(ref tls_location) => {
+                    let tls = NativeTlsServer::new(tls_location,TLS_PKCS12_PWD).unwrap();
+                    server.https(&config.http,tls).unwrap()
                 }
                 None => server.http(&config.http).unwrap(),
             };
