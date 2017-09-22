@@ -14,7 +14,5 @@ sudo -E pacman -S --noconfirm \
   npm \
   openssl \
   pkg-config \
-  protobuf \
   postgresql \
-  wget \
-  zeromq
+  wget

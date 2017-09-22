@@ -32,16 +32,8 @@ lazy_static! {
     /// The default filesystem root path to base all commands from. This is lazily generated on
     /// first call and reflects on the presence and value of the environment variable keyed as
     /// `FS_ROOT_ENVVAR`.
-    static ref FS_ROOT: PathBuf = {
-        use rio_core::fs::FS_ROOT_ENVVAR;
-        if let Some(root) = renv::var(FS_ROOT_ENVVAR).ok() {
-            PathBuf::from(root)
-        } else {
-            PathBuf::from("/")
-        }
-    };
-
-    static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*cache_config_path(Some(&*FS_ROOT.as_path())).join("api.toml").to_str().unwrap());
+    static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*cache_config_path(None).join("api.toml").to_str().unwrap());
+    static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*cache_config_path(None).join("serving-rioos-api-server.pfx").to_str().unwrap());
 }
 
 fn main() {
@@ -66,6 +58,7 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
             (@arg config: -c --config +takes_value
                 "Filepath to configuration file. [default: /var/lib/rioos/config/api.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 9636]")
+
         )
         /*
         TO-DO: Don't remove this code. We don't have ability in openssl crate today to
@@ -93,31 +86,46 @@ fn exec_subcommand_if_called(ui: &mut UI, app_matches: &clap::ArgMatches) -> Res
 fn sub_cli_setup(ui: &mut UI) -> Result<()> {
     init();
 
-    command::cli::setup::start(ui, &default_cache_key_path(Some(&*FS_ROOT)))
+    command::cli::setup::start(ui, &default_cache_key_path(None))
 }
 
 fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
-    ui.heading(r#"
+    ui.heading(
+        r#"
     ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗     █████╗ ██████╗  █████╗ ███╗   ██╗
     ██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔══██╗██╔══██╗██╔══██╗████╗  ██║
     ██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ███████║██████╔╝███████║██╔██╗ ██║
     ██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ██╔══██║██╔══██╗██╔══██║██║╚██╗██║
     ██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ██║  ██║██║  ██║██║  ██║██║ ╚████║
-    "#)?;
+    "#,
+    )?;
 
     let config = match config_from_args(&matches) {
         Ok(result) => result,
         Err(e) => return Err(e),
     };
-    start(config)
+    start(ui, config)
 }
 
+///
+///
 fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
-    println!("--> {:?} ",CFG_DEFAULT_FILE.to_str());
     let mut config = match args.value_of("config") {
         Some(cfg_path) => try!(Config::from_file(cfg_path)),
-        None => Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(Config::default()),
+        None => {
+            /// Override with the default tls config if the pkcs12 file named
+            /// serving-rioos-api-server.pfx exists
+            let mut default_config = Config::default();
+
+            if let Some(identity_pkcs12_file) = SERVING_TLS_PFX.to_str() {
+                default_config.http.port = 9443;
+                default_config.http.tls_pkcs12_file = Some(identity_pkcs12_file.to_string());
+            };
+
+            Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(default_config)
+        }
     };
+
     if let Some(port) = args.value_of("port") {
         if u16::from_str(port).map(|p| config.http.port = p).is_err() {
             return Err(Error::BadPort(port.to_string()));
@@ -127,11 +135,12 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
     Ok(config)
 }
 
+
 /// Starts the aran-api server.
 /// # Failures
 /// * Fails if the postgresql dbr fails to be found - cannot bind to the port, etc.
-fn start(config: Config) -> Result<()> {
-    api::server::run(config)
+fn start(ui: &mut UI, config: Config) -> Result<()> {
+    api::server::run(ui, config)
 }
 
 

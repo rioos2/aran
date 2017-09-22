@@ -7,6 +7,8 @@ use rio_net::server::NetIdent;
 use config::Config;
 use error::Result;
 use http;
+use common::ui::UI;
+
 
 /// The main server for the Builder-API application. This should be run on the main thread.
 pub struct Server {
@@ -25,19 +27,20 @@ impl Server {
     /// # Errors
     ///
     /// * HTTPS server could not start
-    pub fn run(&mut self) -> Result<()> {
+    pub fn run(&mut self, ui: &mut UI,) -> Result<()> {
         let cfg1 = self.config.clone();
 
-        println!(
-            "Rio/OS API listening on {}:{}",
-            self.config.http.listen,
-            self.config.http.port
-        );
-        info!("rioos-api is ready to go.");
         let http = try!(http::run(cfg1));
 
+        ui.para(&format!(
+            "Rio/OS API listening on {}:{}",
+            self.config.http.listen,
+            self.config.http.port)
+        )?;
+        ui.para("rioos-api is ready to go.")?;
+
         http.join().unwrap();
-        
+
         Ok(())
     }
 }
@@ -46,6 +49,6 @@ impl NetIdent for Server {}
 
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.
-pub fn run(config: Config) -> Result<()> {
-    Server::new(config).run()
+pub fn run(ui: &mut UI, config: Config) -> Result<()> {
+    Server::new(config).run(ui)
 }

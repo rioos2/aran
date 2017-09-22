@@ -197,7 +197,8 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                 assembly_create.set_ip(body.ip);
                 assembly_create.set_urls(body.urls);
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            Err(err) => println!("Error ......: {:?}", err),
+            Ok(None) => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
 

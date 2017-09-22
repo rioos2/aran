@@ -26,7 +26,8 @@ use config;
 const USER_AGENT: &'static str = "Rio/OS Aran";
 const HTTP_TIMEOUT: u64 = 3_000;
 
-
+/// Read the expression query language as per this link
+//https://prometheus.io/docs/querying/basics/
 #[derive(Clone)]
 pub struct PrometheusClient {
     pub url: String,
@@ -40,10 +41,43 @@ impl PrometheusClient {
         PrometheusClient { url: config.prometheus_url().to_string() }
     }
 
-    /// Returns the contents of the node metrics
-    pub fn overall(&self, token: &str, path: &str) -> Result<Contents> {
+    /// Returns the instant vector metric for all nodes
+    /// https://prometheus.io/docs/querying/basics/
+    //  Here is a query
+    ///   https://<prometheus_url>?query/cpu_total{job="prometheus",group="nodes"}
+    /// The above is actually <metric name>{<label name>=<label value>, ...}
+    /// where
+    ///       metric_name = cpu_total
+    ///       label_name  = job (first label)
+    ///       label_value = prometheus (first labels value)
+    ///       label_name  = group (first label)
+    ///       label_value = nodes (first labels value)
+    pub fn pull_gauge(&self, token: &str, path: &str) -> Result<Contents> {
         let url = Url::parse(&format!(
-            "{}/v2/{}",
+            "{}/api/v1/query?{}",
+            self.url,
+            path
+        )).unwrap();
+
+        let mut rep = http_get(url, token)?;
+        let mut body = String::new();
+        rep.read_to_string(&mut body)?;
+
+        if rep.status != StatusCode::Ok {
+            let err: HashMap<String, String> = serde_json::from_str(&body)?;
+            return Err(error::Error::PrometheusAPI(rep.status, err));
+        }
+
+        let  contents: Contents = Contents { data: body };
+
+        Ok(contents)
+    }
+
+    /// Returns the contents of the node metrics
+    ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
+    pub fn pull_osusage(&self, token: &str, path: &str) -> Result<Contents> {
+        let url = Url::parse(&format!(
+            "{}/api/v1/query_range?{}",
             self.url,
             path
         )).unwrap();

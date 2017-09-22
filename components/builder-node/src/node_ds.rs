@@ -70,7 +70,7 @@ impl NodeDS {
     //this doesn't have typemeta and objectmeta, maybe we should add it.
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
         //make the url randomized, by storing lots of mocks.
-        let content = client.overall("token", "59c2402c120000d2009c0a4e").unwrap_or(Contents {data: "".to_string()});
+        let content = client.pull_gauge("token", "59c2402c120000d2009c0a4e").unwrap_or(Contents {data: "".to_string()});
 
         let response: nodesrv::HealthzAllGetResponse = serde_json::from_str(&content.data).unwrap();
 

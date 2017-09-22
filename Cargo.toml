@@ -1,6 +1,5 @@
 [workspace]
 members = [
-  "components/builder-admin",
   "components/builder-api",
   "components/builder-core",
   "components/builder-db",
@@ -13,6 +12,5 @@ members = [
   "components/common",
   "components/core",
   "components/http-client",
-  "components/net",
-  "components/op"
+  "components/net"
 ]
