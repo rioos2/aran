@@ -141,6 +141,25 @@ impl SecretGet {
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SecretGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<Secret>,
+}
+
+impl SecretGetResponse {
+    pub fn new() -> SecretGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_secret_collection(&mut self, v: Vec<Secret>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ServiceAccount {
     id: String,
     object_meta: ObjectMetaData,
@@ -186,6 +205,54 @@ impl ServiceAccount {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ServiceAccountGet {
+    name: String,
+    origin: String,
+}
+
+impl ServiceAccountGet {
+    pub fn new() -> ServiceAccountGet {
+        ::std::default::Default::default()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_origin(&mut self, v: ::std::string::String) {
+        self.origin = v;
+    }
+
+    pub fn get_origin(&self) -> ::std::string::String {
+        self.origin.clone()
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ServiceAccountGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<ServiceAccount>,
+}
+
+impl ServiceAccountGetResponse {
+    pub fn new() -> ServiceAccountGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_service_collection(&mut self, v: Vec<ServiceAccount>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
     }
 }
 

@@ -82,6 +82,18 @@ impl Migratable for PlanProcedures {
 
         debug!("=> [✓] fn: get_plan_v1");
 
+        migrator.migrate(
+            "plansrv",
+            r#"CREATE OR REPLACE FUNCTION get_plans_v1() RETURNS SETOF plan_factory AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM plan_factory;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_plans_v1");
+
         // The core plans table
         debug!("=> DONE: plansrv");
 

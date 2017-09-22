@@ -6,7 +6,7 @@ use iron::status;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use protocol::servicesrv::{Secret, SecretGet, ObjectReference, ServiceAccount, ObjectMetaData};
+use protocol::servicesrv::{Secret, SecretGet, ObjectReference, ServiceAccount, ObjectMetaData, ServiceAccountGet};
 use protocol::asmsrv::TypeMeta;
 use std::collections::BTreeMap;
 
@@ -107,7 +107,17 @@ pub fn secret_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn service_create(req: &mut Request) -> IronResult<Response> {
+pub fn secret_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match ServiceAccountDS::secret_list(&conn) {
+        Ok(service_list) => Ok(render_json(status::Ok, &service_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
     let (org_name, ser_name) = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("origin").unwrap().to_owned();
@@ -152,5 +162,35 @@ pub fn service_create(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+pub fn service_account_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match ServiceAccountDS::service_account_list(&conn) {
+        Ok(service_list) => Ok(render_json(status::Ok, &service_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
+pub fn service_account_show(req: &mut Request) -> IronResult<Response> {
+    let (org_name, ser_name) = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        let ser_name = params.find("serviceaccount").unwrap().to_owned();
+        (org_name, ser_name)
+    };
+    let mut serv_get = ServiceAccountGet::new();
+    serv_get.set_name(ser_name);
+    serv_get.set_origin(org_name);
+    let conn = Broker::connect().unwrap();
+    match ServiceAccountDS::service_account_show(&conn, &serv_get) {
+        Ok(origin) => Ok(render_json(status::Ok, &origin)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }

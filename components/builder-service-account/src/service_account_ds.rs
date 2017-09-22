@@ -47,6 +47,27 @@ impl ServiceAccountDS {
         Ok(None)
     }
 
+    pub fn secret_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::SecretGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_secrets_v1()", &[]).map_err(
+            Error::SecretGetResponse,
+        )?;
+
+        let mut response = servicesrv::SecretGetResponse::new();
+
+        let mut secret_collection = Vec::new();
+        for row in rows {
+            secret_collection.push(row_to_secret(&row)?)
+        }
+        response.set_secret_collection(
+            secret_collection,
+            "SecretList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
+
     pub fn service_account_create(datastore: &DataStoreConn, service_create: &servicesrv::ServiceAccount) -> Result<Option<servicesrv::ServiceAccount>> {
         let conn = datastore.pool.get_shard(0)?;
         let secret_str = serde_json::to_string(service_create.get_secrets()).unwrap();
@@ -67,6 +88,40 @@ impl ServiceAccountDS {
         let service_account = row_to_service_account(&rows.get(0))?;
         debug!("◖☩ DONE:service_account_create ");
         return Ok(Some(service_account.clone()));
+    }
+
+    pub fn service_account_show(datastore: &DataStoreConn, get_service: &servicesrv::ServiceAccountGet) -> Result<Option<servicesrv::ServiceAccount>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_service_account_by_origin_v1($1,$2)",
+            &[&get_service.get_name(), &get_service.get_origin()],
+        ).map_err(Error::ServiceAccountGet)?;
+        debug!(">● ROWS: secret_show =>\n{:?}", &rows);
+        for row in rows {
+            let serv = row_to_service_account(&row)?;
+            return Ok(Some(serv));
+        }
+        Ok(None)
+    }
+
+    pub fn service_account_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::ServiceAccountGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_service_account_v1()", &[])
+            .map_err(Error::ServiceAccountGetResponse)?;
+
+        let mut response = servicesrv::ServiceAccountGetResponse::new();
+
+        let mut service_collection = Vec::new();
+        for row in rows {
+            service_collection.push(row_to_service_account(&row)?)
+        }
+        response.set_service_collection(
+            service_collection,
+            "ServiceAccountList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
     }
 }
 

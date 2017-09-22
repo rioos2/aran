@@ -73,6 +73,18 @@ impl Migratable for ServiceAccountProcedure {
 
         migrator.migrate(
             "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_secrets_v1() RETURNS SETOF secret AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM secret;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_secrets_v1");
+
+        migrator.migrate(
+            "servicesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS service_id_seq;"#,
         )?;
 
@@ -117,6 +129,35 @@ impl Migratable for ServiceAccountProcedure {
                             "#,
         )?;
         debug!("=> [✓] fn: insert_service_account_v1");
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_service_account_v1() RETURNS SETOF service_account AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM service_account;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_service_account_v1");
+
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_service_account_by_origin_v1(ser_name text,org_name text) RETURNS SETOF service_account AS $$
+                DECLARE
+                this_origin origins%rowtype;
+                        BEGIN
+                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
+                         RETURN QUERY SELECT * FROM service_account WHERE origin_id=this_origin.id AND name=ser_name;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_service_account_by_origin_v1");
+
 
         debug!("=> DONE: servicesrv");
 

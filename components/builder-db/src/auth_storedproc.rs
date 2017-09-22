@@ -280,6 +280,12 @@ impl Migratable for AuthProcedures {
         debug!("=> [✓] fn: insert_origin_member_v1");
 
         migrator.migrate(
+            "plansrv",
+            r#"INSERT INTO origins (name,object_meta,type_meta) VALUES ('rioos-system','{"name":"","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}','{"kind":"Origin","api_version":"v1"}')"#,
+        )?;
+        debug!("=> [✓] plan_factory_ubuntu");
+
+        migrator.migrate(
             "originsrv",
             r#"CREATE OR REPLACE FUNCTION insert_origin_v1 (
                      origin_name text,
@@ -301,6 +307,31 @@ impl Migratable for AuthProcedures {
         )?;
 
         debug!("=> [✓] fn: insert_origin_v1");
+
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION get_origins_v1() RETURNS SETOF origins AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM origins;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_origins_v1");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION get_origin_v1 (org_name text) RETURNS SETOF origins AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM origins WHERE name = org_name;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        debug!("=> [✓] fn: get_origin_v1");
 
         migrator.migrate(
             "originsrv",

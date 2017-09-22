@@ -31,6 +31,8 @@ pub enum Error {
     AccountOriginInvitationAccept(postgres::error::Error),
     OriginAccountList(postgres::error::Error),
     OriginCreate(postgres::error::Error),
+    OriginGetResponse(postgres::error::Error),
+    OriginGet(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -45,28 +47,18 @@ impl fmt::Display for Error {
             Error::HTTP(ref e) => format!("{}", e),
             Error::HyperError(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
-            Error::AccountIdFromString(ref e) => {
-                format!("Cannot convert from string to Account ID, {}", e)
-            }
+            Error::AccountIdFromString(ref e) => format!("Cannot convert from string to Account ID, {}", e),
             Error::AccountCreate(ref e) => format!("Error creating account in database, {}", e),
             Error::AccountGet(ref e) => format!("Error getting account from database, {}", e),
             Error::AccountGetById(ref e) => format!("Error getting account from database, {}", e),
             Error::SessionGet(ref e) => format!("Error getting session from database, {}", e),
-            Error::AccountOriginInvitationCreate(ref e) => {
-                format!("Error creating invitation in database, {}", e)
-            }
-            Error::AccountOriginInvitationList(ref e) => {
-                format!("Error listing invitation in database, {}", e)
-            }
-            Error::AccountOriginInvitationAccept(ref e) => {
-                format!("Error accepting invitation in database, {}", e)
-            }
-            Error::OriginAccountList(ref e) => {
-                format!("Error listing origins for account in database, {}", e)
-            }
-            Error::OriginCreate(ref e) => {
-                format!("Error creating origin for account in database, {}", e)
-            }
+            Error::AccountOriginInvitationCreate(ref e) => format!("Error creating invitation in database, {}", e),
+            Error::AccountOriginInvitationList(ref e) => format!("Error listing invitation in database, {}", e),
+            Error::AccountOriginInvitationAccept(ref e) => format!("Error accepting invitation in database, {}", e),
+            Error::OriginAccountList(ref e) => format!("Error listing origins for account in database, {}", e),
+            Error::OriginCreate(ref e) => format!("Error creating origin for account in database, {}", e),
+            Error::OriginGetResponse(ref e) => format!("Error retrive origin for account in database, {}", e),
+            Error::OriginGet(ref e) => format!("Error retrive origin by name, {}", e),
 
         };
         write!(f, "{}", msg)
@@ -93,6 +85,8 @@ impl error::Error for Error {
             Error::AccountOriginInvitationAccept(ref err) => err.description(),
             Error::OriginAccountList(ref err) => err.description(),
             Error::OriginCreate(ref err) => err.description(),
+            Error::OriginGetResponse(ref err) => err.description(),
+            Error::OriginGet(ref err) => err.description(),
         }
     }
 }
