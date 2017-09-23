@@ -4,6 +4,7 @@
 
 use error::Result;
 use migration::{Migratable, Migrator};
+use common::ui::UI;
 
 pub struct AuthProcedures;
 
@@ -15,15 +16,14 @@ impl AuthProcedures {
 
 // Just make sure you always address the columns by name, not by position.
 impl Migratable for AuthProcedures {
-    fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
-        debug!("=> START: authsrv");
+    fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
+        ui.begin("Authprocedure");
 
         // The core account_id_seq table
         migrator.migrate(
             "authsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS account_id_seq;"#,
         )?;
-        debug!("=> [✓] account_id_seq");
 
         // Create table accounts
         migrator.migrate(
@@ -45,7 +45,7 @@ impl Migratable for AuthProcedures {
          created_at timestamptz DEFAULT now())"#,
         )?;
 
-        debug!("=> [✓] accounts");
+        ui.para("[✓] accounts");
 
         // Insert a new account into the accounts table
         migrator.migrate(
@@ -72,8 +72,6 @@ impl Migratable for AuthProcedures {
                         $$ LANGUAGE plpgsql VOLATILE
                         "#,
         )?;
-
-        debug!("=> [✓] fn: insert_account_v1");
 
 
         migrator.migrate(
@@ -107,8 +105,6 @@ impl Migratable for AuthProcedures {
                 $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: select_or_insert_account_v1");
-
         // Select all account from accounts table
         migrator.migrate(
             "authsrv",
@@ -120,8 +116,6 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_accounts_v1");
-
         // Select account from accounts table by id
         migrator.migrate(
             "authsrv",
@@ -132,8 +126,6 @@ impl Migratable for AuthProcedures {
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        debug!("=> [✓] fn:  get_account_by_id_v1");
 
         // Select account from accounts table by email
         migrator.migrate(
@@ -148,9 +140,6 @@ impl Migratable for AuthProcedures {
                 $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_account_by_email_v1");
-
-
         migrator.migrate(
             "authsrv",
             r#"CREATE TABLE IF NOT EXISTS account_sessions (
@@ -164,7 +153,8 @@ impl Migratable for AuthProcedures {
                         UNIQUE (account_id)
                         )"#,
         )?;
-        debug!("=> [✓] fn: account_sessions_v1");
+
+        ui.para("[✓] account_session");
 
         migrator.migrate(
             "authsrv",
@@ -215,14 +205,12 @@ impl Migratable for AuthProcedures {
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: get_account_session_v1");
 
         migrator.migrate(
             "originsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS origin_id_seq;"#,
         )?;
 
-        debug!("=> [✓] origin_id_seq");
 
         migrator.migrate(
             "originsrv",
@@ -238,14 +226,13 @@ impl Migratable for AuthProcedures {
              )"#,
         )?;
 
-        debug!("=> [✓] origins");
+        ui.para("[✓] origins");
 
         migrator.migrate(
             "originsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS origin_mem_id_seq;"#,
         )?;
 
-        debug!("=> [✓] origin_id_seq");
 
         migrator.migrate(
             "originsrv",
@@ -260,7 +247,8 @@ impl Migratable for AuthProcedures {
                 )"#,
         )?;
 
-        debug!("=> [✓] fn: origin_members");
+        ui.para("[✓] origin_members");
+
 
         migrator.migrate(
             "originsrv",
@@ -277,13 +265,14 @@ impl Migratable for AuthProcedures {
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: insert_origin_member_v1");
-
+        ///When the record rioos-system origin exists, do nothing.
         migrator.migrate(
-            "plansrv",
-            r#"INSERT INTO origins (name,object_meta,type_meta) VALUES ('rioos-system','{"name":"","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}','{"kind":"Origin","api_version":"v1"}')"#,
+            "originsrv",
+            r#"INSERT INTO origins (name,object_meta,type_meta) VALUES ('rioos-system','{"name":"","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}','{"kind":"Origin","api_version":"v1"}')
+            ON CONFLICT (name) DO NOTHING"#,
         )?;
-        debug!("=> [✓] plan_factory_ubuntu");
+
+        ui.para("[✓] origins: rioos-system");
 
         migrator.migrate(
             "originsrv",
@@ -306,8 +295,6 @@ impl Migratable for AuthProcedures {
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: insert_origin_v1");
-
 
         migrator.migrate(
             "originsrv",
@@ -319,8 +306,6 @@ impl Migratable for AuthProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_origins_v1");
-
         migrator.migrate(
             "originsrv",
             r#"CREATE OR REPLACE FUNCTION get_origin_v1 (org_name text) RETURNS SETOF origins AS $$
@@ -330,8 +315,6 @@ impl Migratable for AuthProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        debug!("=> [✓] fn: get_origin_v1");
 
         migrator.migrate(
             "originsrv",
@@ -346,7 +329,6 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: list_origin_members_v1");
 
         migrator.migrate(
             "originsrv",
@@ -361,8 +343,6 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: check_account_in_origin_members_v1");
-
         migrator.migrate(
             "originsrv",
             r#"CREATE OR REPLACE FUNCTION list_origin_by_account_id_v1 (
@@ -375,8 +355,6 @@ impl Migratable for AuthProcedures {
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        debug!("=> [✓] fn: list_origin_by_account_id_v1");
 
         migrator.migrate(
             "accountsrv",
@@ -391,7 +369,7 @@ impl Migratable for AuthProcedures {
                        )"#,
         )?;
 
-        debug!("=> [✓] account_origins");
+        ui.para("[✓] account_origins");
 
         migrator.migrate(
             "accountsrv",
@@ -407,8 +385,6 @@ impl Migratable for AuthProcedures {
                 $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: insert_account_origin_v1");
-
         migrator.migrate(
             "accountsrv",
             r#"CREATE OR REPLACE FUNCTION get_account_origins_v1 (
@@ -421,15 +397,11 @@ impl Migratable for AuthProcedures {
                 $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_account_origin_v1");
-
         // The core role_id_seq table
         migrator.migrate(
             "authsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS role_id_seq;"#,
         )?;
-
-        debug!("=> [✓] role_id_seq");
 
         // Create table roles
         migrator.migrate(
@@ -442,7 +414,7 @@ impl Migratable for AuthProcedures {
          created_at timestamptz DEFAULT now())"#,
         )?;
 
-        debug!("=> [✓] roles");
+        ui.para("[✓] roles");
 
         // Insert a new role into the roles table
         migrator.migrate(
@@ -460,7 +432,6 @@ impl Migratable for AuthProcedures {
                         $$ LANGUAGE plpgsql VOLATILE
                         "#,
         )?;
-        debug!("=> [✓] fn: insert_role_v1");
 
         // Select all role from roles table by id
         migrator.migrate(
@@ -473,8 +444,6 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_roles_v1");
-
         // Select role from roles table by id
         migrator.migrate(
             "authsrv",
@@ -486,15 +455,11 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_role_v1");
-
         // The core role_id_seq table
         migrator.migrate(
             "authsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS perm_id_seq;"#,
         )?;
-
-        debug!("=> [✓] perm_id_seq");
 
 
         // Create table permissions
@@ -509,7 +474,7 @@ impl Migratable for AuthProcedures {
          created_at timestamptz DEFAULT now())"#,
         )?;
 
-        debug!("=> [✓] users");
+        ui.para("[✓] permissions");
 
         // Insert a new permission into the permissions table
         migrator.migrate(
@@ -531,8 +496,6 @@ impl Migratable for AuthProcedures {
                 $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: insert_permission_v1");
-
         // Select all permission from permissions table by id
         migrator.migrate(
             "authsrv",
@@ -544,8 +507,6 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_permissions_v1");
-
         // Select permission from permissions table by id
         migrator.migrate(
             "authsrv",
@@ -556,8 +517,6 @@ impl Migratable for AuthProcedures {
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        debug!("=> [✓] fn: get_permission_v1");
 
         migrator.migrate(
             "authsrv",
@@ -586,7 +545,7 @@ impl Migratable for AuthProcedures {
                    $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> DONE: authsrv");
+        ui.end("AuthProcedure");
 
         Ok(())
 

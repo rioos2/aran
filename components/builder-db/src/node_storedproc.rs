@@ -4,6 +4,7 @@
 
 use error::Result;
 use migration::{Migratable, Migrator};
+use common::ui::UI;
 
 pub struct NodeProcedures;
 
@@ -14,15 +15,13 @@ impl NodeProcedures {
 }
 
 impl Migratable for NodeProcedures {
-    fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
-        debug!("=> START: nodesrv");
-        // The core asms table
+    fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
+        ui.begin("NodeProcedure");
+
         migrator.migrate(
             "nodesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS node_id_seq;"#,
         )?;
-
-        debug!("=> [✓] node_id_seq");
 
         migrator.migrate(
             "nodesrv",
@@ -36,7 +35,7 @@ impl Migratable for NodeProcedures {
              type_meta text)"#,
         )?;
 
-        debug!("=> [✓] node");
+        ui.para("[✓] node");
 
 
         // Insert a new job into the jobs table
@@ -57,7 +56,6 @@ impl Migratable for NodeProcedures {
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] fn: insert_node_v1");
 
         migrator.migrate(
             "nodesrv",
@@ -69,8 +67,6 @@ impl Migratable for NodeProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_nodes_v1");
-
         migrator.migrate(
             "nodesrv",
             r#"CREATE OR REPLACE FUNCTION set_node_status_v1 (nid bigint, node_status text) RETURNS void AS $$
@@ -80,11 +76,7 @@ impl Migratable for NodeProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: set_node_status_v1");
-
-
-        // The core plans table
-        debug!("=> DONE: nodesrv");
+        ui.end("Nodeprocedure");
 
         Ok(())
     }

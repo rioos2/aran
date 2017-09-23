@@ -13,6 +13,7 @@ pub mod origin_handler;
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
 
+use common::ui::UI;
 use rio_net::http::middleware::*;
 use rio_net::auth::default::PasswordAuthClient;
 use rio_net::metrics::prometheus::PrometheusClient;
@@ -45,11 +46,11 @@ const HTTP_THREAD_COUNT: usize = 128;
 const TLS_PKCS12_PWD: &'static str = "RIO123";
 
 /// Create a new `iron::Chain` containing a Router and it's required middleware
-pub fn router(config: Arc<Config>) -> Result<Chain> {
+pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
     let basic = Authenticated::new(&*config);
     //let bioshield = Shielded::new(&*config);
     //let prometheus = Prometheused::new(&*config);
-
+    ui.begin("Router ");
     let router =
         router!(
 
@@ -136,13 +137,15 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
     chain.link(persistent::Read::<DataStoreBroker>::both(
         ({
              let ds = DataStoreConn::new().unwrap();
-             ds.setup().unwrap().clone()
+             ds.setup(ui).unwrap().clone()
          }),
     ));
 
     chain.link_before(DataStoreBroker);
 
     chain.link_after(Cors);
+
+    ui.end("Router ");
     Ok(chain)
 }
 
@@ -156,7 +159,7 @@ pub fn router(config: Arc<Config>) -> Result<Chain> {
 /// # Panics
 ///
 /// * Listener crashed during startup
-pub fn run(config: Arc<Config>) -> Result<JoinHandle<()>> {
+pub fn run(config: Arc<Config>,  ui: &mut UI) -> Result<JoinHandle<()>> {
     let (tx, rx) = mpsc::sync_channel(1);
 
     let mut mount = Mount::new();
@@ -165,7 +168,8 @@ pub fn run(config: Arc<Config>) -> Result<JoinHandle<()>> {
         debug!("Mounting UI at filepath {}", path);
         mount.mount("/", Static::new(path));
     }
-    let chain = try!(router(config.clone()));
+
+    let chain = try!(router(config.clone(), ui));
     mount.mount("/api/v1", chain);
 
     let handle = thread::Builder::new()

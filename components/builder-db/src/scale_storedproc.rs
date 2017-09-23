@@ -4,6 +4,7 @@
 
 use error::Result;
 use migration::{Migratable, Migrator};
+use common::ui::UI;
 
 pub struct ScaleProcedures;
 
@@ -14,15 +15,13 @@ impl ScaleProcedures {
 }
 
 impl Migratable for ScaleProcedures {
-    fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
-        debug!("=> START: scalesrv");
+    fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
+        ui.begin("Scaleprocedure");
         // The core asms table
         migrator.migrate(
             "scalesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS hs_id_seq;"#,
         )?;
-
-        debug!("=> [✓] hs_id_seq");
 
         migrator.migrate(
             "scalesrv",
@@ -43,7 +42,7 @@ impl Migratable for ScaleProcedures {
              type_meta text)"#,
         )?;
 
-        debug!("=> [✓] horizontal_scaling");
+        ui.para("[✓] horizontal_scaling");
 
 
         // Insert a new job into the jobs table
@@ -71,7 +70,6 @@ impl Migratable for ScaleProcedures {
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] fn: insert_hs_v1");
 
         migrator.migrate(
             "scalesrv",
@@ -83,9 +81,6 @@ impl Migratable for ScaleProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_hs_v1");
-
-
         migrator.migrate(
             "scalesrv",
             r#"CREATE OR REPLACE FUNCTION set_hs_status_v1 (hid bigint, hs_status text) RETURNS void AS $$
@@ -95,11 +90,7 @@ impl Migratable for ScaleProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: set_hs_status_v1");
-
-
-        // The core plans table
-        debug!("=> DONE: scalesrv");
+        ui.end("Scaleprocedure");
 
         Ok(())
     }

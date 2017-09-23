@@ -1,7 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 //! A module containing the middleware of the HTTP server
-
+use std::io::Read;
 use iron::Handler;
 use iron::headers::{self, Authorization, Bearer};
 use iron::method::Method;
@@ -23,7 +23,6 @@ use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;
 use super::token_target::*;
-
 
 use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
@@ -58,6 +57,21 @@ impl XHandler {
 
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
+        println!("==========={}:{}:{}==========", req.version, req.method, req.url);
+        println!("Headers:");
+        println!("========");
+        for hv in req.headers.iter() {
+            println!(" {}", hv);
+        }
+        println!("Body:");
+        println!("=====");
+        let mut b = String::new();
+
+        let r = req.body.by_ref().read_to_string(&mut b);
+        if r.is_ok() {
+            println!(" {}", b);
+        }
+        println!("[✓]========{}:{}==========", req.method, req.url);
         self.0.handle(req)
     }
 }
@@ -226,7 +240,7 @@ impl Key for Authenticated {
 /// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        println!("--> {}", req.url);
+        println!("==AUTH  {}:{}==========", req.method, req.url);
 
         let session = {
             let email = req.headers.get::<XAuthRioOSEmail>();
