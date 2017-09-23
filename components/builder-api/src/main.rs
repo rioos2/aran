@@ -90,7 +90,7 @@ fn sub_cli_setup(ui: &mut UI) -> Result<()> {
 }
 
 fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
-    ui.heading(
+    ui.begin(
         r#"
     ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗     █████╗ ██████╗  █████╗ ███╗   ██╗
     ██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔══██╗██╔══██╗██╔══██╗████╗  ██║

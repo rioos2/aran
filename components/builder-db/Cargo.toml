@@ -26,5 +26,8 @@ path = "../core"
 [dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
 
+[dependencies.rioos_common]
+path = "../common"
+
 [features]
 functional = []

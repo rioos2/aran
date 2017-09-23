@@ -4,6 +4,7 @@
 
 use error::Result;
 use migration::{Migratable, Migrator};
+use common::ui::UI;
 
 pub struct ServiceAccountProcedure;
 
@@ -14,15 +15,13 @@ impl ServiceAccountProcedure {
 }
 
 impl Migratable for ServiceAccountProcedure {
-    fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
-        debug!("=> START: servicesrv");
+    fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
+        ui.begin("ServiceAccountProcedure");
         // The core asms table
         migrator.migrate(
             "servicesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS sec_id_seq;"#,
         )?;
-
-        debug!("=> [✓] sec_id_seq");
 
         migrator.migrate(
             "servicesrv",
@@ -36,7 +35,7 @@ impl Migratable for ServiceAccountProcedure {
              )"#,
         )?;
 
-        debug!("=> [✓] secret");
+        ui.para("[✓] secret");
 
 
         // Insert a new job into the jobs table
@@ -68,9 +67,6 @@ impl Migratable for ServiceAccountProcedure {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_secret_v1");
-
-
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION get_secrets_v1() RETURNS SETOF secret AS $$
@@ -81,14 +77,10 @@ impl Migratable for ServiceAccountProcedure {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_secrets_v1");
-
         migrator.migrate(
             "servicesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS service_id_seq;"#,
         )?;
-
-        debug!("=> [✓] ser_id_seq");
 
         migrator.migrate(
             "servicesrv",
@@ -104,7 +96,7 @@ impl Migratable for ServiceAccountProcedure {
              )"#,
         )?;
 
-        debug!("=> [✓] service_account");
+        ui.para("[✓] service_account");
 
         // Insert a new job into the jobs table
         migrator.migrate(
@@ -128,7 +120,6 @@ impl Migratable for ServiceAccountProcedure {
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] fn: insert_service_account_v1");
 
         migrator.migrate(
             "servicesrv",
@@ -139,9 +130,6 @@ impl Migratable for ServiceAccountProcedure {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        debug!("=> [✓] fn: get_service_account_v1");
-
 
         migrator.migrate(
             "servicesrv",
@@ -156,10 +144,7 @@ impl Migratable for ServiceAccountProcedure {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_service_account_by_origin_v1");
-
-
-        debug!("=> DONE: servicesrv");
+        ui.end("ServiceAccountProcedure");
 
         Ok(())
     }

@@ -30,14 +30,14 @@ impl Server {
     pub fn run(&mut self, ui: &mut UI,) -> Result<()> {
         let cfg1 = self.config.clone();
 
-        ui.title(&format!(
+        ui.begin(&format!(
             "Rio/OS API listening on {}:{}",
             self.config.http.listen,
             self.config.http.port)
         )?;
         ui.heading("Ready to go.")?;
 
-        let http = try!(http::run(cfg1));
+        let http = try!(http::run(cfg1, ui));
 
         http.join().unwrap();
 
