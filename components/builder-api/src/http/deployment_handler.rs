@@ -356,10 +356,8 @@ pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
 pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
     let mut assembly_factory_create = AssemblyFactory::new();
     {
-        println!("**********************************************");
         match req.get::<bodyparser::Struct<AssemblyFacCreateReq>>() {
             Ok(Some(body)) => {
-                println!("___________________body{:?}", body.name);
                 if body.name.len() <= 0 {
                     return Ok(Response::with((
                         status::UnprocessableEntity,

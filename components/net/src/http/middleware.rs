@@ -70,12 +70,12 @@ impl Handler for XHandler {
         }
         println!("Body:");
         println!("=====");
-        // let mut b = String::new();
-        //
-        // let r = req.body.by_ref().read_to_string(&mut b);
-        // if r.is_ok() {
-        //     println!(" {}", b);
-        // }
+        let mut b = String::new();
+
+        let r = req.body.by_ref().read_to_string(&mut b);
+        if r.is_ok() {
+            println!(" {}", b);
+        }
         println!("[✓]========{}:{}==========", req.method, req.url);
         self.0.handle(req)
     }
