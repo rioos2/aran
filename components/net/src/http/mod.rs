@@ -19,6 +19,7 @@ pub fn net_err_to_http(err: ErrCode) -> Status {
         ErrCode::BAD_REMOTE_REPLY => Status::BadGateway,
         ErrCode::ENTITY_NOT_FOUND => Status::NotFound,
         ErrCode::NO_SHARD => Status::ServiceUnavailable,
+        ErrCode::MALFORMED_DATA => Status::UnprocessableEntity,
         ErrCode::ACCESS_DENIED => Status::Unauthorized,
         ErrCode::SESSION_EXPIRED => Status::Unauthorized,
         ErrCode::ENTITY_CONFLICT => Status::Conflict,
