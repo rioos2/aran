@@ -83,7 +83,7 @@ In a terminal do,
 
 ```
 
-cd $HOME/software/prometheus/node1
+cd test/prometheus/node1
 
 ./node1
 
@@ -92,7 +92,7 @@ In another terminal do,
 
 ```
 
-cd $HOME/software/prometheus/node2
+cd test/prometheus/node2
 
 ./node2
 

@@ -21,8 +21,9 @@ impl ServiceAccountDS {
         let type_meta = serde_json::to_string(secret_create.get_type_meta()).unwrap();
         debug!("◖☩ START: secret_create ");
         let rows = &conn.query(
-            "SELECT * FROM insert_secret_v1($1,$2,$3)",
+            "SELECT * FROM insert_secret_v1($1,$2,$3,$4)",
             &[
+                &(secret_create.get_object_meta().get_origin() as String),
                 &(data_str as String),
                 &(object_meta as String),
                 &(type_meta as String),
@@ -45,6 +46,28 @@ impl ServiceAccountDS {
             return Ok(Some(secret));
         }
         Ok(None)
+    }
+
+    pub fn secret_show_by_origin(datastore: &DataStoreConn, get_secret: &servicesrv::SecretGet) -> Result<Option<servicesrv::SecretGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_secrets_by_origin_v1($1)",
+            &[&(get_secret.get_id() as String)],
+        ).map_err(Error::SecretGetResponse)?;
+
+        let mut response = servicesrv::SecretGetResponse::new();
+
+        let mut secret_collection = Vec::new();
+        for row in rows {
+            secret_collection.push(row_to_secret(&row)?)
+        }
+        response.set_secret_collection(
+            secret_collection,
+            "SecretList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
     }
 
     pub fn secret_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::SecretGetResponse>> {

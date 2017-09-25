@@ -25,8 +25,9 @@ impl Migratable for ServiceAccountProcedure {
 
         migrator.migrate(
             "servicesrv",
-            r#"CREATE TABLE  IF NOT EXISTS secret (
+            r#"CREATE TABLE  IF NOT EXISTS secrets (
              id bigint PRIMARY KEY DEFAULT next_id_v1('sec_id_seq'),
+             origin_id bigint REFERENCES origins(id),
              data text,
              object_meta text,
              type_meta text,
@@ -42,13 +43,17 @@ impl Migratable for ServiceAccountProcedure {
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_secret_v1 (
+                origin_name text,
                 data text,
                 object_meta text,
                 type_meta text
-            ) RETURNS SETOF secret AS $$
-                                BEGIN
-                                    RETURN QUERY INSERT INTO secret(data,object_meta,type_meta)
-                                        VALUES (data,object_meta,type_meta)
+            ) RETURNS SETOF secrets AS $$
+            DECLARE
+               this_origin origins%rowtype;
+            BEGIN
+                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
+                                    RETURN QUERY INSERT INTO secrets(origin_id,data,object_meta,type_meta)
+                                        VALUES (this_origin.id,data,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -59,9 +64,9 @@ impl Migratable for ServiceAccountProcedure {
 
         migrator.migrate(
             "servicesrv",
-            r#"CREATE OR REPLACE FUNCTION get_secret_v1 (sid bigint) RETURNS SETOF secret AS $$
+            r#"CREATE OR REPLACE FUNCTION get_secret_v1 (sid bigint) RETURNS SETOF secrets AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM secret WHERE id = sid;
+                          RETURN QUERY SELECT * FROM secrets WHERE id = sid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -69,13 +74,28 @@ impl Migratable for ServiceAccountProcedure {
 
         migrator.migrate(
             "servicesrv",
-            r#"CREATE OR REPLACE FUNCTION get_secrets_v1() RETURNS SETOF secret AS $$
+            r#"CREATE OR REPLACE FUNCTION get_secrets_v1() RETURNS SETOF secrets AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM secret;
+                          RETURN QUERY SELECT * FROM secrets;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
+
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_secrets_by_origin_v1(org_name text) RETURNS SETOF secrets AS $$
+                DECLARE
+                this_origin origins%rowtype;
+                        BEGIN
+                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
+                         RETURN QUERY SELECT * FROM secrets WHERE origin_id=this_origin.id;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
 
         migrator.migrate(
             "servicesrv",

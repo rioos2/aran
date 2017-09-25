@@ -18,7 +18,7 @@ use hyper::mime::{Mime, TopLevel, SubLevel};
 use hyper_openssl::OpensslClient;
 */
 use hyper::net::HttpConnector;
-use protocol::{net};
+use protocol::net;
 use serde_json;
 
 use config;
@@ -44,7 +44,7 @@ impl PrometheusClient {
     /// Returns the instant vector metric for all nodes
     /// https://prometheus.io/docs/querying/basics/
     //  Here is a query
-    ///   https://<prometheus_url>?query/cpu_total{job="prometheus",group="nodes"}
+    ///   https://<prometheus_url>?query/query=cpu_total{job="prometheus",group="nodes"}
     /// The above is actually <metric name>{<label name>=<label value>, ...}
     /// where
     ///       metric_name = cpu_total
@@ -53,12 +53,8 @@ impl PrometheusClient {
     ///       label_name  = group (first label)
     ///       label_value = nodes (first labels value)
     pub fn pull_gauge(&self, token: &str, path: &str) -> Result<Contents> {
-        let url = Url::parse(&format!(
-            "{}/query?{}",
-            self.url,
-            path
-        )).unwrap();
 
+        let url = Url::parse(&format!("{}/query?query={}", self.url, token)).unwrap();
         let mut rep = http_get(url, token)?;
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
@@ -68,7 +64,7 @@ impl PrometheusClient {
             return Err(error::Error::PrometheusAPI(rep.status, err));
         }
 
-        let  contents: Contents = Contents { data: body };
+        let contents: Contents = Contents { data: body };
         println!("== pull gauge {:?}", contents);
         Ok(contents)
     }
@@ -76,11 +72,7 @@ impl PrometheusClient {
     /// Returns the contents of the node metrics
     ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
     pub fn pull_osusage(&self, token: &str, path: &str) -> Result<Contents> {
-        let url = Url::parse(&format!(
-            "{}/query_range?{}",
-            self.url,
-            path
-        )).unwrap();
+        let url = Url::parse(&format!("{}/query_range?{}", self.url, path)).unwrap();
 
         let mut rep = http_get(url, token)?;
         let mut body = String::new();
@@ -91,7 +83,7 @@ impl PrometheusClient {
             return Err(error::Error::PrometheusAPI(rep.status, err));
         }
 
-        let  contents: Contents = Contents { data: body };
+        let contents: Contents = Contents { data: body };
 
         Ok(contents)
     }

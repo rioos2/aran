@@ -70,6 +70,12 @@ pub fn secret_create(req: &mut Request) -> IronResult<Response> {
                 type_meta.set_api_version(body.type_meta.api_version);
                 secret_create.set_type_meta(type_meta);
             }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
@@ -117,6 +123,26 @@ pub fn secret_list(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+pub fn secret_show_by_origin(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        org_name
+    };
+    let conn = Broker::connect().unwrap();
+
+    let mut secret_get = SecretGet::new();
+    secret_get.set_id(org_name);
+
+    match ServiceAccountDS::secret_show_by_origin(&conn, &secret_get) {
+        Ok(secret) => Ok(render_json(status::Ok, &secret)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
 pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
     let (org_name, ser_name) = {
         let params = req.extensions.get::<Router>().unwrap();
@@ -149,6 +175,12 @@ pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
                 type_meta.set_kind(body.type_meta.kind);
                 type_meta.set_api_version(body.type_meta.api_version);
                 service_create.set_type_meta(type_meta);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

@@ -217,6 +217,12 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 hs_create.set_type_meta(type_meta);
 
             }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
@@ -260,6 +266,12 @@ pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
                 status.set_current_replicas(body.status.current_replicas);
                 status.set_desired_replicas(body.status.desired_replicas);
                 hs_update.set_status(status);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

@@ -124,6 +124,7 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<AssemblyCreateReq>>() {
             Ok(Some(body)) => {
+
                 if body.name.len() <= 0 {
                     return Ok(Response::with((
                         status::UnprocessableEntity,
@@ -278,6 +279,12 @@ pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
                 assembly_create.set_ip(body.ip);
                 assembly_create.set_urls(body.urls);
             }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
@@ -324,6 +331,12 @@ pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
                 status.set_conditions(condition_collection);
                 assembly.set_status(status);
             }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
@@ -343,8 +356,10 @@ pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
 pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
     let mut assembly_factory_create = AssemblyFactory::new();
     {
+        println!("**********************************************");
         match req.get::<bodyparser::Struct<AssemblyFacCreateReq>>() {
             Ok(Some(body)) => {
+                println!("___________________body{:?}", body.name);
                 if body.name.len() <= 0 {
                     return Ok(Response::with((
                         status::UnprocessableEntity,
@@ -456,9 +471,6 @@ pub fn assembly_factory_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-
-
-
 pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
@@ -489,6 +501,12 @@ pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response>
                 }
                 status.set_conditions(condition_collection);
                 assembly_factory.set_status(status);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
