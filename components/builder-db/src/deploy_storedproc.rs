@@ -4,6 +4,7 @@
 
 use error::Result;
 use migration::{Migratable, Migrator};
+use common::ui::UI;
 
 pub struct DeployProcedures;
 
@@ -14,16 +15,14 @@ impl DeployProcedures {
 }
 
 impl Migratable for DeployProcedures {
-    fn migrate(&self, migrator: &mut Migrator) -> Result<()> {
-        debug!("=> START: asmsrv");
+    fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
+        ui.begin("Deployprocedure");
 
         // The core asms table
         migrator.migrate(
             "asmsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS asm_id_seq;"#,
         )?;
-
-        debug!("=> [✓] asm_id_seq");
 
         migrator.migrate(
             "asmsrv",
@@ -44,7 +43,7 @@ impl Migratable for DeployProcedures {
              created_at timestamptz DEFAULT now())"#,
         )?;
 
-        debug!("=> [✓] assembly");
+        ui.para("[✓] assembly");
 
 
         // Insert a new job into the jobs table
@@ -72,7 +71,6 @@ impl Migratable for DeployProcedures {
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] fn: insert_assembly_v1");
 
         migrator.migrate(
             "asmsrv",
@@ -84,8 +82,6 @@ impl Migratable for DeployProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_assembly_v1");
-
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION get_assemblys_v1() RETURNS SETOF assembly AS $$
@@ -95,8 +91,6 @@ impl Migratable for DeployProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        debug!("=> [✓] fn: get_assemblys_v1");
 
         migrator.migrate(
             "asmsrv",
@@ -109,8 +103,6 @@ impl Migratable for DeployProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: set_assembly_status_v1");
-
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION set_assembly_status_v1 (aid bigint, asm_status text) RETURNS SETOF assembly AS $$
@@ -122,16 +114,11 @@ impl Migratable for DeployProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: set_assembly_status_v1");
-
-
         // The core asms_facttory table
         migrator.migrate(
             "asmsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS asm_fact_id_seq;"#,
         )?;
-
-        debug!("=> [✓] asm_fact_id_seq");
 
         migrator.migrate(
             "asmsrv",
@@ -154,7 +141,7 @@ impl Migratable for DeployProcedures {
              created_at timestamptz DEFAULT now())"#,
         )?;
 
-        debug!("=> [✓] assembly_factory");
+        ui.para("[✓] assembly_factory");
 
         // Insert a new assembly_factory into the assembly_factory table
         migrator.migrate(
@@ -183,7 +170,6 @@ impl Migratable for DeployProcedures {
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-        debug!("=> [✓] fn: insert_assembly_factory_v1");
 
         // Just make sure you always address the columns by name, not by position.
         migrator.migrate(
@@ -196,9 +182,6 @@ impl Migratable for DeployProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        debug!("=> [✓] fn: get_assembly_factory_v1");
-
-
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION get_assemblys_factory_v1() RETURNS SETOF assembly_factory AS $$
@@ -208,9 +191,6 @@ impl Migratable for DeployProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        debug!("=> [✓] fn: get_assemblys_factory_v1");
-
 
         migrator.migrate(
             "asmsrv",
@@ -223,9 +203,7 @@ impl Migratable for DeployProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        debug!("=> [✓] fn: set_assembly_factorys_status_v1");
-
-        debug!("=> DONE: asmsrv");
+        ui.end("DeployProcedure");
 
         Ok(())
     }

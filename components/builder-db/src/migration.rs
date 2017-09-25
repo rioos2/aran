@@ -4,6 +4,7 @@
 use postgres;
 use protocol::ShardId;
 
+use common::ui::UI;
 use rcore::crypto::hash::hash_string;
 use error::{Error, Result};
 
@@ -19,7 +20,7 @@ pub struct Migrator<'a> {
 
 /// Provides an interface for migrating the implementing type for `Migratables`.
 pub trait Migratable {
-    fn migrate(&self, migrator: &mut Migrator) -> Result<()>;
+    fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()>;
 }
 
 

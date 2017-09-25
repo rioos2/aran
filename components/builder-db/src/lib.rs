@@ -61,6 +61,7 @@ extern crate serde_derive;
 extern crate fallible_iterator;
 extern crate rioos_builder_protocol as protocol;
 extern crate rioos_core as rcore;
+extern crate rioos_common as common;
 extern crate iron;
 
 pub mod config;
