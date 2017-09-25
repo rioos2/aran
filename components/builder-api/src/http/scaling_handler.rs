@@ -231,6 +231,7 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
 pub fn hs_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match ScalingDS::hs_list(&conn) {

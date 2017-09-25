@@ -3,6 +3,7 @@
 //! A collection of deployment [assembly, assembly_factory] for the HTTP server
 
 use bodyparser;
+use ansi_term::Colour;
 use rio_core::event::*;
 use rio_net::http::controller::*;
 use deploy::deployment_ds::DeploymentDS;
@@ -14,7 +15,7 @@ use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
 use std::collections::BTreeMap;
-
+use common::ui;
 
 define_event_log!();
 
@@ -120,6 +121,7 @@ pub struct OpsSettingsReq {
 
 
 pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
+
     let mut assembly_create = Assembly::new();
     {
         match req.get::<bodyparser::Struct<AssemblyCreateReq>>() {
@@ -200,6 +202,12 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", assembly_create),
+    );
+
     let conn = Broker::connect().unwrap();
 
     match DeploymentDS::assembly_create(&conn, &assembly_create) {
@@ -234,6 +242,7 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
 pub fn assembly_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_list(&conn) {
@@ -423,6 +432,12 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", assembly_factory_create),
+    );
+
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_create(&conn, &assembly_factory_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
@@ -505,6 +520,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> IronResult<Response>
     }
 }
 
+#[allow(unused_variables)]
 pub fn assembly_factory_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_list(&conn) {
@@ -516,7 +532,7 @@ pub fn assembly_factory_list(req: &mut Request) -> IronResult<Response> {
 }
 
 
-
+#[allow(unused_variables)]
 pub fn plan_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::plan_list(&conn) {

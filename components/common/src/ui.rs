@@ -729,3 +729,22 @@ impl Write for ProgressBar {
         self.bar.flush()
     }
 }
+
+/// Ideally wanted to use the commons::ui::UI, but take a hack  here by directly assuming we have a colored shell.
+/// this is not good though.
+/// May be we should pass the UI into the Handler code.
+pub fn rawdump<T: ToString>(color: Colour, symbol: char, message: T) {
+    print!(
+        "{}",
+        color.paint(format!("{} {}", symbol, message.to_string()))
+    );
+
+}
+
+pub fn rawdumpln<T: ToString>(color: Colour, symbol: char, message: T) {
+    println!(
+        "{}",
+        color.paint(format!("{} {}", symbol, message.to_string()))
+    );
+
+}

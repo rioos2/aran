@@ -1,7 +1,9 @@
 // Copyright (c) 2017 RiioCorp Inc
 //
 
+extern crate ansi_term;
 extern crate fnv;
+extern crate rioos_common as common;
 extern crate rioos_builder_protocol as protocol;
 extern crate rioos_core as core;
 extern crate rioos_builder_db as db;
