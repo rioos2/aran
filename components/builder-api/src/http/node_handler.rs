@@ -218,6 +218,7 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
 pub fn node_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match NodeDS::node_list(&conn) {

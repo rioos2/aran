@@ -83,6 +83,7 @@ pub fn origin_create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
 pub fn origin_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match SessionDS::origin_list(&conn) {

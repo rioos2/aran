@@ -113,6 +113,7 @@ pub fn secret_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
 pub fn secret_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::secret_list(&conn) {
@@ -197,6 +198,7 @@ pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
 pub fn service_account_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_list(&conn) {

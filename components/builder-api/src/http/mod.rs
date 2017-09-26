@@ -45,6 +45,7 @@ const HTTP_THREAD_COUNT: usize = 128;
 
 const TLS_PKCS12_PWD: &'static str = "RIO123";
 
+#[allow(unused_must_use)]
 /// Create a new `iron::Chain` containing a Router and it's required middleware
 pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
     let basic = Authenticated::new(&*config);

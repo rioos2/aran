@@ -83,6 +83,7 @@ pub fn roles_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
 pub fn roles_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
 
@@ -130,6 +131,7 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
 pub fn permissions_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match AuthorizeDS::permissions_list(&conn) {

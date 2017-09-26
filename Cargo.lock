@@ -2,6 +2,7 @@
 name = "rioos_net"
 version = "0.0.0"
 dependencies = [
+ "ansi_term 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "fnv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.10.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper-openssl 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -13,6 +14,7 @@ dependencies = [
  "rioos_builder_db 0.0.0",
  "rioos_builder_protocol 0.0.0",
  "rioos_builder_session 0.0.0",
+ "rioos_common 0.0.0",
  "rioos_core 0.0.0",
  "rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -932,6 +934,7 @@ dependencies = [
 name = "rioos_aran_api"
 version = "0.0.0"
 dependencies = [
+ "ansi_term 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bodyparser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",

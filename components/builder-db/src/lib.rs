@@ -69,11 +69,18 @@ pub mod error;
 pub mod pool;
 pub mod async;
 pub mod test;
+#[allow(unused_must_use)]
 pub mod data_store;
+#[allow(unused_must_use)]
 pub mod auth_storedproc;
+#[allow(unused_must_use)]
 pub mod node_storedproc;
+#[allow(unused_must_use)]
 pub mod deploy_storedproc;
+#[allow(unused_must_use)]
 pub mod plan_storedproc;
+#[allow(unused_must_use)]
 pub mod scale_storedproc;
+#[allow(unused_must_use)]
 pub mod service_account_storedproc;
 pub mod migration;

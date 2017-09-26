@@ -28,6 +28,7 @@ const TOKEN_LEN: usize = 18;
 #[derive(Clone)]
 pub struct PasswordAuthClient {}
 
+#[allow(unused_variables)]
 impl PasswordAuthClient {
     pub fn new<T>(config: &T) -> Self
     where

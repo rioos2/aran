@@ -5,6 +5,7 @@ authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@m
 workspace = "../../"
 
 [dependencies]
+ansi_term = "*"
 rand = "*" # Or a newer version
 fnv = "*"
 rioos_builder_protocol = { path = "../builder-protocol" }
@@ -21,6 +22,9 @@ serde_derive = "*"
 serde_json = "1.0.2"
 time = "*"
 unicase = "1.4.2"
+
+[dependencies.rioos_common]
+path = "../common"
 
 [dependencies.rioos_builder_db]
 path = "../builder-db"

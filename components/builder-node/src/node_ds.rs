@@ -69,13 +69,21 @@ impl NodeDS {
     }
 
     //this doesn't have typemeta and objectmeta, maybe we should add it.
-    pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
+    pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::Statistics>> {
         //make the url randomized, by storing lots of mocks.
         let mut health_checker = Collector::new(client);
         let gauges = health_checker.gauges();
 
-        let response: nodesrv::HealthzAllGetResponse = serde_json::from_str(&gauges.unwrap().first().unwrap()).unwrap();
+        // println!(
+        //     "***************guages**************************{:?}\n",
+        //     &gauges.unwrap().first().unwrap()
+        // );
 
+        // let response: nodesrv::HealthzAllGetResponse = serde_json::from_str(&gauges.unwrap().first().unwrap()).unwrap();
+
+        let response: nodesrv::Statistics = serde_json::from_str(&gauges.unwrap().first().unwrap()).unwrap();
+
+        // let response = nodesrv::HealthzAllGetResponse::new();
         Ok(Some(response))
     }
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 //! A module containing the middleware of the HTTP server
-use std::io::Read;
+
 use iron::Handler;
 use iron::headers::{self, Authorization, Bearer};
 use iron::method::Method;
@@ -12,10 +12,9 @@ use iron::typemap::Key;
 use unicase::UniCase;
 use protocol::sessionsrv::*;
 use protocol::net::{self, ErrCode};
+use ansi_term::Colour;
 
-// use serde_json;
-use super::net_err_to_http;
-// use super::super::error::Error;
+use super::rendering::*;
 use super::super::auth::default::PasswordAuthClient;
 use super::super::auth::shield::ShieldClient;
 use super::super::metrics::prometheus::PrometheusClient;
@@ -26,6 +25,7 @@ use super::token_target::*;
 
 use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
+use common::ui;
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
 pub struct XHandler(Chain);
@@ -57,26 +57,29 @@ impl XHandler {
 
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
-        println!(
-            "==========={}:{}:{}==========",
-            req.version,
-            req.method,
-            req.url
+        ///// Maybe move this Request to a seperate method.
+        ui::rawdumpln(
+            Colour::Green,
+            '→',
+            "------------------------------------------------------------------------------------",
         );
-        println!("Headers:");
-        println!("========");
-        for hv in req.headers.iter() {
-            println!(" {}", hv);
-        }
-        println!("Body:");
-        println!("=====");
-        let mut b = String::new();
+        ui::rawdumpln(
+            Colour::Cyan,
+            ' ',
+            format!("======= {}:{}:{}", req.version, req.method, req.url),
+        );
+        ui::rawdumpln(Colour::Blue, ' ', "Headers:");
+        ui::rawdumpln(Colour::White, ' ', "========");
 
-        let r = req.body.by_ref().read_to_string(&mut b);
-        if r.is_ok() {
-            println!(" {}", b);
+        for hv in req.headers.iter() {
+            ui::rawdump(Colour::Purple, ' ', hv);
         }
-        println!("[✓]========{}:{}==========", req.method, req.url);
+        ui::rawdumpln(Colour::Blue, ' ', "Body");
+        ui::rawdumpln(Colour::White, ' ', "========");
+        ui::rawdumpln(Colour::Purple, ' ', "»");
+
+        //// dump ends.
+
         self.0.handle(req)
     }
 }
@@ -145,9 +148,12 @@ impl Authenticated {
 
                 let session = try!(session_create(datastore, &session_tk));
                 let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
+                let err = net::err(
+                    ErrCode::ACCESS_DENIED,
+                    "Feature flags in session are not active",
+                );
                 if !flags.contains(self.features) {
-                    let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:0");
-                    return Err(IronError::new(err, Status::Forbidden));
+                    return Err(render_json_error(&err, Status::Forbidden, &err));
                 }
 
                 return Ok(session);
@@ -155,9 +161,14 @@ impl Authenticated {
             Err(err) => {
                 let nerr = net::err(
                     ErrCode::DATA_STORE,
-                    format!("{} {}", "net::todo-change-it-auth-1", err.to_string()),
+                    format!(
+                        "{}: Couldn't find {} {} in session.",
+                        email,
+                        token,
+                        err.to_string()
+                    ),
                 );
-                return Err(IronError::new(nerr, Status::Unauthorized));
+                return Err(render_json_error(&nerr, Status::Unauthorized, &nerr));
             }
 
         }
@@ -245,28 +256,49 @@ impl Key for Authenticated {
 /// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        println!("==AUTH  {}:{}==========", req.method, req.url);
+        ui::rawdumpln(
+            Colour::Yellow,
+            '☛',
+            format!("======= {}:{}:{}", req.version, req.method, req.url),
+        );
 
         let session = {
             let email = req.headers.get::<XAuthRioOSEmail>();
-            //This is malformed header actually.
+
             if email.is_none() {
-                let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:2");
-                return Err(IronError::new(err, Status::Unauthorized));
+                let err = net::err(
+                    ErrCode::ACCESS_DENIED,
+                    format!("Email not found. Missing header X-AUTH-RIOOS-EMAIL."),
+                );
+                return Err(render_json_error(&err, Status::Unauthorized, &err));
             }
+
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
                     match req.extensions.get_mut::<DataStoreBroker>() {
                         Some(broker) => self.authenticate(broker, email.unwrap(), token)?,
                         None => {
-                            let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
-                            return Err(IronError::new(err, Status::Unauthorized));
+                            let err = net::err(
+                                ErrCode::ACCESS_DENIED,
+                                format!(
+                                    "Unavailable datastore. Unable to authentication for {} and {}.",
+                                    email.unwrap(),
+                                    token
+                                ),
+                            );
+                            return Err(render_json_error(&err, Status::Unauthorized, &err));
                         }
                     }
                 }
                 _ => {
-                    let err = net::err(ErrCode::ACCESS_DENIED, "net:auth:1");
-                    return Err(IronError::new(err, Status::Unauthorized));
+                    let err = net::err(
+                        ErrCode::ACCESS_DENIED,
+                        format!(
+                            "Malformed header, Authorization bearer token not found for  {}.",
+                            email.unwrap()
+                        ),
+                    );
+                    return Err(render_json_error(&err, Status::Unauthorized, &err));
                 }
             }
         };
@@ -289,6 +321,20 @@ impl AfterMiddleware for Cors {
         res.headers.set(headers::AccessControlAllowMethods(
             vec![Method::Put, Method::Delete],
         ));
+
+        ui::rawdumpln(
+            Colour::Green,
+            ' ',
+            format!("Response {}:{}:{}", _req.version, _req.method, _req.url),
+        );
+        ui::rawdumpln(Colour::White, ' ', "========");
+        ui::rawdumpln(Colour::Purple, ' ', res.to_string());
+        ui::rawdumpln(
+            Colour::Cyan,
+            '✓',
+            "------------------------------------------------------------------------------------",
+        );
+
         Ok(res)
     }
 }
@@ -298,11 +344,14 @@ pub fn session_create(conn: &DataStoreConn, request: &SessionCreate) -> IronResu
     match SessionDS::account_create(&conn, &request) {
         Ok(session) => return Ok(session),
         Err(e) => {
-            error!("Unexpected error, err={:?}", e);
-            let err = net::err(ErrCode::BAD_REMOTE_REPLY, "net:session-create:3");
-            let status = net_err_to_http(ErrCode::BUG);
-            let body = format!("{}\n", err);
-            return Err(IronError::new(err, (body, status)));
+            let err = net::err(
+                ErrCode::DATA_STORE,
+                format!(
+                    "{}: Couldn not create session for the account.",
+                    e.to_string()
+                ),
+            );
+            return Err(render_json_error(&err, Status::Unauthorized, &err));
         }
     }
 }
