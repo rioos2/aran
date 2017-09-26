@@ -20,6 +20,8 @@ use std::result;
 use std::str::FromStr;
 use asmsrv;
 use std::collections::BTreeMap;
+use serde_json;
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -277,31 +279,31 @@ impl NodeGetResponse {
     }
 }
 
-// #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-// pub struct HealthzAllGetResponse {
-//     title: String,
-//     guages: Guages,
-//     statistics: Statistics,
-//     osusages: Osusages,
-// }
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HealthzAllGetResponse {
+    title: String,
+    guages: Guages,
+    // statistics: PromResponse,
+    osusages: Osusages,
+}
 
-// impl HealthzAllGetResponse {
-//     pub fn new() -> HealthzAllGetResponse {
-//         ::std::default::Default::default()
-//     }
-//     pub fn set_title(&mut self, v: ::std::string::String) {
-//         self.title = v;
-//     }
-//     pub fn set_guages(&mut self, v: Guages) {
-//         self.guages = v;
-//     }
-//     pub fn set_statistics(&mut self, v: Statistics) {
-//         self.statistics = v;
-//     }
-//     pub fn set_osusages(&mut self, v: Osusages) {
-//         self.osusages = v;
-//     }
-// }
+impl HealthzAllGetResponse {
+    pub fn new() -> HealthzAllGetResponse {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_guages(&mut self, v: Guages) {
+        self.guages = v;
+    }
+    // pub fn set_statistics(&mut self, v: PromResponse) {
+    //     self.statistics = v;
+    // }
+    pub fn set_osusages(&mut self, v: Osusages) {
+        self.osusages = v;
+    }
+}
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Guages {
@@ -342,59 +344,6 @@ impl Counters {
     }
     pub fn set_counter(&mut self, v: ::std::string::String) {
         self.counter = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Statistics {
-    status: String,
-    data: NodeStatistic,
-}
-impl Statistics {
-    pub fn new() -> Statistics {
-        ::std::default::Default::default()
-    }
-    pub fn set_status(&mut self, v: ::std::string::String) {
-        self.status = v;
-    }
-    pub fn set_data(&mut self, v: NodeStatistic) {
-        self.data = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct NodeStatistic {
-    resultType: String,
-    result: Vec<ResultData>,
-}
-
-impl NodeStatistic {
-    pub fn new() -> NodeStatistic {
-        ::std::default::Default::default()
-    }
-    pub fn set_resultType(&mut self, v: ::std::string::String) {
-        self.resultType = v;
-    }
-    pub fn set_result(&mut self, v: Vec<ResultData>) {
-        self.result = v;
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct ResultData {
-    metric: BTreeMap<String, String>,
-    value: Vec<(f64, String)>,
-}
-
-impl ResultData {
-    pub fn new() -> ResultData {
-        ::std::default::Default::default()
-    }
-    pub fn set_metric(&mut self, v: BTreeMap<String, String>) {
-        self.metric = v;
-    }
-    pub fn set_value(&mut self, v: ::std::vec::Vec<(f64, String)>) {
-        self.value = v;
     }
 }
 
@@ -449,8 +398,6 @@ impl Cumulative {
     }
 }
 
-
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Item {
     cpu: BTreeMap<String, String>,
@@ -471,4 +418,68 @@ impl Item {
         println!("{:?}", v);
         self.cpu.insert(k.into(), v.into());
     }
+}
+
+
+type Timestamp = f64;
+type Value = String;
+
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StatusData {
+    Success,
+    Error,
+}
+
+
+#[derive(Debug)]
+pub enum Error {
+    BadRequest(String),
+    InvalidExpression(String),
+    Timeout(String),
+    InvalidResponse(serde_json::Error),
+    Unexpected(u16),
+}
+
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct MatrixItem {
+    pub metric: BTreeMap<String, String>,
+    pub values: Vec<Scalar>,
+}
+pub type Matrix = Vec<MatrixItem>;
+
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct InstantVecItem {
+    pub metric: BTreeMap<String, String>,
+    pub value: Scalar,
+}
+pub type InstantVec = Vec<InstantVecItem>;
+
+pub type Scalar = (Timestamp, Value);
+
+pub type Str = (Timestamp, String);
+
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "resultType", content = "result")]
+#[serde(rename_all = "lowercase")]
+pub enum Data {
+    Matrix(Matrix),
+    Vector(InstantVec),
+    Scalar(Scalar),
+    String(Str),
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct PromResponse {
+    pub status: StatusData,
+    pub data: Data,
+    #[serde(rename = "errorType")]
+    #[serde(default)]
+    pub error_type: Option<String>,
+    #[serde(default)]
+    pub error: Option<String>,
 }
