@@ -41,12 +41,32 @@ impl Migratable for PlanProcedures {
         )?;
         ui.para("[✓] plan_factory");
 
+
         migrator.migrate(
             "plansrv",
-            r#"INSERT INTO plan_factory(name,url,description,tags,camp_version,origin,artifacts,services)VALUES ('1_virtualmachine_ubuntu','/v3/plan/ubuntu','Ubuntu is a Debian-based Linux operating system.','{"linux", "ubuntu", "xenial", "14.04"}','1.2', 'vertice:2.0','{}',
-            '{"{\"name\":\"Trusty\", \"description\":\"Ubuntu is a Debian-based Linux operating system.Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"type\":\"org.megam.vm::provided_by\",\"14.04\":\"vertice\",\"type\":\"org.megam.java::env\",\"http.port\":\"8080\"}}"}')"#,
+            r#"INSERT INTO plan_factory(name,url,description,tags,camp_version,origin,artifacts,services)VALUES ('1_virtualmachine_ubuntu','/v3/plan/ubuntu','Ubuntu is a Debian-based Linux operating system','{"linux", "ubuntu", "xenial", "14.04"}','1.2', 'rioos:2.0','{}',
+            '{"{\"name\":\"Trusty\",\"description\":\"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"type\":\"io.riocorp.vm::provided_by\",\"version\":\"14.04\",\"provided_by\":\"rioos\"}}"}')"#,
+
         )?;
+
         ui.para("[✓] plan_factory_ubuntu");
+
+
+        migrator.migrate(
+            "plansrv",
+            r#"INSERT INTO plan_factory(name,url,description,tags,camp_version,origin,artifacts,services)VALUES ('2_application_java','/v3/plan/java','The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.','{"tomcat","java","jdk"}','1.2', 'rioos:2.0','{}','{"{\"name\":\"tomcat\",\"description\":\"\",\"href\":\"http://tomcat.apache.org/\",\"characteristics\":{\"os\":\"centos\",\"http.port\":\"3000\",\"username\":\"megam\",\"password\":\"team4megam\",\"version\":\"4.2\",\"provided_by\":\"rioos\",\"image\":\"java.png\"}}"}')"#,
+
+        )?;
+
+        ui.para("[✓] plan_factory_java");
+
+
+        migrator.migrate(
+            "plansrv",
+            r#"INSERT INTO plan_factory(name,url,description,tags,camp_version,origin,artifacts,services)VALUES ('2_application_rails','/v3/plan/rails','Rails is a web application framework written in Ruby.','{"rails", "ruby", "ror"}','1.2', 'rioos:2.0','{}','{"{\"name\":\"rails\",\"description\":\"\",\"href\":\"http://rubyonrails.org/\",\"characteristics\":{\"os\":\"centos\",\"http.port\":\"3000\",\"version\":\"4.2\",\"provided_by\":\"rioos\",\"image\":\"rails.png\"}}"}')"#,
+
+        )?;
+        ui.para("[✓] plan_factory_rails");
 
         migrator.migrate(
             "plansrv",
