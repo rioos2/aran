@@ -56,10 +56,6 @@ impl PrometheusClient {
 
         let url = Url::parse(&format!("{}/query?query={}", self.url, token)).unwrap();
         let mut rep = http_get(url, token)?;
-        println!(
-            "-----------------------------Response-------------------{:?}",
-            rep
-        );
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
 
@@ -67,7 +63,6 @@ impl PrometheusClient {
             let err: HashMap<String, String> = serde_json::from_str(&body)?;
             return Err(error::Error::PrometheusAPI(rep.status, err));
         }
-        println!("--------------------------------{:?}", body);
         let contents: Contents = Contents { data: body };
         println!("== pull gauge {:?}", contents);
         Ok(contents)

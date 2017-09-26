@@ -24,6 +24,7 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {
     id: String,
+    secret_type: String,
     object_meta: ObjectMetaData,
     type_meta: asmsrv::TypeMeta,
     data: BTreeMap<String, String>,
@@ -39,6 +40,14 @@ impl Secret {
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
     }
+
+    pub fn set_secret_type(&mut self, v: ::std::string::String) {
+        self.secret_type = v;
+    }
+    pub fn get_secret_type(&self) -> ::std::string::String {
+        self.secret_type.clone()
+    }
+
     pub fn set_data(&mut self, v: BTreeMap<String, String>) {
         self.data = v;
     }

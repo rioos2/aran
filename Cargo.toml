@@ -9,6 +9,8 @@ members = [
   "components/builder-protocol",
   "components/builder-session",
   "components/builder-service-account",
+  "components/builder-network",
+  "components/builder-storage",
   "components/common",
   "components/core",
   "components/http-client",

@@ -13,6 +13,8 @@ use plan_storedproc::*;
 use scale_storedproc::*;
 use node_storedproc::*;
 use service_account_storedproc::*;
+use network_storedproc::*;
+use storage_storedproc::*;
 
 
 /// A messaging Broker for proxying messages from clients to one or more `RouteSrv` and vice versa.
@@ -76,12 +78,14 @@ impl DataStoreConn {
         //wanted to do it using an identifier string that when matched will call the
         //migratable interface trait objects
         //this is more like flatMap in scala and we are good now.
-        AuthProcedures::new()?.migrate(migrator,ui)?;
-        DeployProcedures::new()?.migrate(migrator,ui)?;
-        PlanProcedures::new()?.migrate(migrator,ui)?;
-        ScaleProcedures::new()?.migrate(migrator,ui)?;
-        NodeProcedures::new()?.migrate(migrator,ui)?;
-        ServiceAccountProcedure::new()?.migrate(migrator,ui)?;
+        AuthProcedures::new()?.migrate(migrator, ui)?;
+        DeployProcedures::new()?.migrate(migrator, ui)?;
+        PlanProcedures::new()?.migrate(migrator, ui)?;
+        ScaleProcedures::new()?.migrate(migrator, ui)?;
+        NodeProcedures::new()?.migrate(migrator, ui)?;
+        NetworkProcedures::new()?.migrate(migrator, ui)?;
+        StorageProcedures::new()?.migrate(migrator, ui)?;
+        ServiceAccountProcedure::new()?.migrate(migrator, ui)?;
         Ok(())
     }
 }
