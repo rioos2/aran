@@ -50,7 +50,6 @@ const TLS_PKCS12_PWD: &'static str = "RIO123";
 pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
     let basic = Authenticated::new(&*config);
     //let bioshield = Shielded::new(&*config);
-    //let prometheus = Prometheused::new(&*config);
     ui.begin("Router ");
     let router =
         router!(
@@ -105,11 +104,14 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         nodes: post "/nodes" => XHandler::new(node_create).before(basic.clone()),
         nodes_list: get "/nodes" => XHandler::new(node_list).before(basic.clone()),
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
+        node_metrics: get "/node_metrics" => healthz_all,
 
         //secret API
         secrets: post "/secrets" => XHandler::new(secret_create).before(basic.clone()),
         secrets_list: get "/secrets" => XHandler::new(secret_list).before(basic.clone()),
         secret_show: get "/secrets/:id" => XHandler::new(secret_show).before(basic.clone()),
+        secret_show_by_origin: get "/secrets/:origin" => XHandler::new(secret_show_by_origin).before(basic.clone()),
+
 
         //serviceAccount API
         service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_create,
@@ -160,7 +162,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 /// # Panics
 ///
 /// * Listener crashed during startup
-pub fn run(config: Arc<Config>,  ui: &mut UI) -> Result<JoinHandle<()>> {
+pub fn run(config: Arc<Config>, ui: &mut UI) -> Result<JoinHandle<()>> {
     let (tx, rx) = mpsc::sync_channel(1);
 
     let mut mount = Mount::new();
@@ -181,8 +183,8 @@ pub fn run(config: Arc<Config>,  ui: &mut UI) -> Result<JoinHandle<()>> {
 
             match config.http.tls_pkcs12_file {
                 Some(ref tls_location) => {
-                    let tls = NativeTlsServer::new(tls_location,TLS_PKCS12_PWD).unwrap();
-                    server.https(&config.http,tls).unwrap()
+                    let tls = NativeTlsServer::new(tls_location, TLS_PKCS12_PWD).unwrap();
+                    server.https(&config.http, tls).unwrap()
                 }
                 None => server.http(&config.http).unwrap(),
             };

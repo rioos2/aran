@@ -197,6 +197,12 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 type_meta.set_api_version(body.type_meta.api_version);
                 node_create.set_type_meta(type_meta);
             }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }

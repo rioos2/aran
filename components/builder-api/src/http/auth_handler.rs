@@ -75,6 +75,12 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
                 account_get.set_password(body.password);
 
             }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
@@ -141,6 +147,12 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 account_create.set_approval(body.approval);
                 account_create.set_suspend(body.suspend);
                 account_create.set_registration_ip_address(body.registration_ip_address);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

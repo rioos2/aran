@@ -41,6 +41,12 @@ pub fn roles_create(req: &mut Request) -> IronResult<Response> {
                 roles.set_description(body.description);
 
             }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
@@ -104,6 +110,12 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
                 permissions.set_name(body.name);
                 permissions.set_description(body.description);
 
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }

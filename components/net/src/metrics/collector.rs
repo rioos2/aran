@@ -2,20 +2,18 @@
 
 //! A module containing the health insight for the datacenter
 
-use super::super::error::{Result};
+use super::super::error::Result;
 use metrics::prometheus::PrometheusClient;
 
 const GAUGE_SCOPES: &'static [&'static str] = &["cpu_total", "ram_total", "disk_total"];
 
 /// const STATISTICS_SCOPES: &'static [&'static str] = &["cpu"];
-
 #[derive(Clone)]
 pub struct Collector<'a> {
     client: &'a PrometheusClient,
 }
 
 impl<'a> Collector<'a> {
-
     pub fn new(prom: &'a PrometheusClient) -> Self {
         Collector { client: &*prom }
     }
