@@ -27,6 +27,7 @@ impl Migratable for ServiceAccountProcedure {
             "servicesrv",
             r#"CREATE TABLE  IF NOT EXISTS secrets (
              id bigint PRIMARY KEY DEFAULT next_id_v1('sec_id_seq'),
+             secret_type text,
              origin_id bigint REFERENCES origins(id),
              data text,
              object_meta text,
@@ -43,6 +44,7 @@ impl Migratable for ServiceAccountProcedure {
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_secret_v1 (
+                secret_type text,
                 origin_name text,
                 data text,
                 object_meta text,
@@ -52,8 +54,8 @@ impl Migratable for ServiceAccountProcedure {
                this_origin origins%rowtype;
             BEGIN
                 SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO secrets(origin_id,data,object_meta,type_meta)
-                                        VALUES (this_origin.id,data,object_meta,type_meta)
+                                    RETURN QUERY INSERT INTO secrets(secret_type,origin_id,data,object_meta,type_meta)
+                                        VALUES (secret_type,this_origin.id,data,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END

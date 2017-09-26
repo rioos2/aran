@@ -35,6 +35,9 @@ pub mod routesrv;
 pub mod nodesrv;
 pub mod plansrv;
 pub mod servicesrv;
+pub mod netsrv;
+pub mod storagesrv;
+
 
 
 pub use self::error::{Error, Result};

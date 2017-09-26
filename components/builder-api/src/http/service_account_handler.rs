@@ -13,6 +13,7 @@ use std::collections::BTreeMap;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SecretCreateReq {
     data: BTreeMap<String, String>,
+    secret_type: String,
     object_meta: ObjectMetaReq,
     type_meta: TypeMetaReq,
 }
@@ -69,6 +70,7 @@ pub fn secret_create(req: &mut Request) -> IronResult<Response> {
                 type_meta.set_kind(body.type_meta.kind);
                 type_meta.set_api_version(body.type_meta.api_version);
                 secret_create.set_type_meta(type_meta);
+                secret_create.set_secret_type(body.secret_type);
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(

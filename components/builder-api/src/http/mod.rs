@@ -9,6 +9,8 @@ pub mod auth_handler;
 pub mod node_handler;
 pub mod service_account_handler;
 pub mod origin_handler;
+pub mod network_handler;
+pub mod storage_handler;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -36,6 +38,8 @@ use self::authorize_handler::*;
 use self::node_handler::*;
 use self::origin_handler::*;
 use self::service_account_handler::*;
+use self::network_handler::*;
+use self::storage_handler::*;
 
 use db::data_store::*;
 
@@ -123,6 +127,13 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         origins: post "/origins" => origin_create,
         origin_list: get "/origins" =>origin_list,
         origin_show: get "/origins/:origin" => origin_show,
+
+
+        //Network API
+        networks: post "/networks" => XHandler::new(network_create).before(basic.clone()),
+
+        //Storage API
+        storages: post "/storages" => XHandler::new(storage_create).before(basic.clone()),
 
 
     );

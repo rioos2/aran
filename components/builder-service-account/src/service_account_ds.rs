@@ -21,8 +21,9 @@ impl ServiceAccountDS {
         let type_meta = serde_json::to_string(secret_create.get_type_meta()).unwrap();
         debug!("◖☩ START: secret_create ");
         let rows = &conn.query(
-            "SELECT * FROM insert_secret_v1($1,$2,$3,$4)",
+            "SELECT * FROM insert_secret_v1($1,$2,$3,$4,$5)",
             &[
+                &(secret_create.get_secret_type() as String),
                 &(secret_create.get_object_meta().get_origin() as String),
                 &(data_str as String),
                 &(object_meta as String),
@@ -153,6 +154,7 @@ fn row_to_secret(row: &postgres::rows::Row) -> Result<servicesrv::Secret> {
     let mut secret = servicesrv::Secret::new();
     debug!("◖☩ START: row_to_secret");
     let id: i64 = row.get("id");
+    let secret_type = row.get("secret_type");
     let data: String = row.get("data");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
@@ -165,6 +167,7 @@ fn row_to_secret(row: &postgres::rows::Row) -> Result<servicesrv::Secret> {
     secret.set_object_meta(object_meta_obj);
     let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
     secret.set_type_meta(type_meta_obj);
+    secret.set_secret_type(secret_type);
     secret.set_created_at(created_at.to_rfc3339());
     debug!("◖☩ ASM: row_to_secret =>\n{:?}", secret);
     debug!("◖☩ DONE: row_to_secret");

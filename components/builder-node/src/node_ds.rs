@@ -70,7 +70,7 @@ impl NodeDS {
 
     //this doesn't have typemeta and objectmeta, maybe we should add it.
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::PromResponse>> {
-        let mut response = nodesrv::HealthzAllGetResponse::new();
+        // let mut response = nodesrv::HealthzAllGetResponse::new();
         //make the url randomized, by storing lots of mocks.
         let mut health_checker = Collector::new(client);
         let gauges = health_checker.gauges();

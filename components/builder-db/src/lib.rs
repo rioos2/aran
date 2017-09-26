@@ -83,4 +83,8 @@ pub mod plan_storedproc;
 pub mod scale_storedproc;
 #[allow(unused_must_use)]
 pub mod service_account_storedproc;
+#[allow(unused_must_use)]
+pub mod network_storedproc;
+#[allow(unused_must_use)]
+pub mod storage_storedproc;
 pub mod migration;
