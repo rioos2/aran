@@ -34,6 +34,27 @@ impl StorageDS {
         let storage = row_to_storage(&rows.get(0))?;
         return Ok(Some(storage.clone()));
     }
+
+    pub fn storage_list(datastore: &DataStoreConn) -> Result<Option<storagesrv::StorageGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_storages_v1()", &[]).map_err(
+            Error::StorageGetResponse,
+        )?;
+
+        let mut response = storagesrv::StorageGetResponse::new();
+
+        let mut storage_collection = Vec::new();
+        for row in rows {
+            storage_collection.push(row_to_storage(&row)?)
+        }
+        response.set_storage_collection(
+            storage_collection,
+            "StorageList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
 }
 
 fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {

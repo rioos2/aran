@@ -103,3 +103,14 @@ pub fn storage_create(req: &mut Request) -> IronResult<Response> {
 
     }
 }
+
+#[allow(unused_variables)]
+pub fn storage_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match StorageDS::storage_list(&conn) {
+        Ok(storage_list) => Ok(render_json(status::Ok, &storage_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}

@@ -134,6 +134,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //Storage API
         storages: post "/storages" => XHandler::new(storage_create).before(basic.clone()),
+        storages_list: get "/storages" => XHandler::new(storage_list).before(basic.clone()),
+
 
 
     );
