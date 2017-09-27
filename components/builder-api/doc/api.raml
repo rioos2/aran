@@ -2403,6 +2403,200 @@ schemas:
                 },
                 "created_at": "2017-09-27T04:38:12.156829+00:00"
           }
+  '/{id}/status':
+    put:
+      description: |
+        Update an existing storage status
+      body:
+        application/json:
+          example:
+            {
+              "type_meta":
+                {
+                  "kind":"Origin",
+                  "api_version":"v1"
+                },
+                "object_meta":
+                  {
+                  "name":"megam",
+                  "origin":"rioo",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":
+                    {
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":
+                    {
+                    "key1":"value1",
+                    "key2":"value2"
+                    }
+                  },
+                  "name":"iscsi",
+                  "host_ip":"192.168.1.100",
+                  "storage_type":"iscsi",
+                  "parameters":
+                  {
+                    "pool_name": "iscsi-pool",
+                    "user_id": "iscsi-user",
+                    "password": "iscsi-password"
+
+                  },
+                  "status":
+                    {
+                    "health_status": "pending",
+                    "message": "",
+                    "reason": ""
+                    }
+                    }
+      responses:
+        204:
+          description: |
+            Succesfully updated the storage status
+          body:
+            example: |
+              {
+              "id":"815766986318422016",
+              "type_meta":
+                {
+                  "kind":"Origin",
+                  "api_version":"v1"
+                },
+                "object_meta":
+                  {
+                  "name":"megam",
+                  "origin":"rioo",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":
+                    {
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":
+                    {
+                    "key1":"value1",
+                    "key2":"value2"
+                    }
+                  },
+                  "name":"iscsi",
+                  "host_ip":"192.168.1.100",
+                  "storage_type":"iscsi",
+                  "parameters":
+                  {
+                    "pool_name": "iscsi-pool",
+                    "user_id": "iscsi-user",
+                    "password": "iscsi-password"
+
+                  },
+                  "status":
+                    {
+                    "health_status": "pending",
+                    "message": "",
+                    "reason": ""
+                    },
+                  "created_at":"2017-09-27T11:53:13.876230+00:00"
+              }
+  '/{id}':
+    put:
+      description: |
+        Update an existing Storage
+      body:
+        application/json:
+          example: |
+             {
+             "type_meta":
+               {
+                 "kind":"Origin",
+                 "api_version":"v1"
+               },
+               "object_meta":
+                 {
+                 "name":"megam",
+                 "origin":"rioo",
+                 "uid":"",
+                 "created_at":"",
+                 "cluster_name":"",
+                 "labels":
+                   {
+                   "group":"development",
+                   "key2":"value2"
+                   },
+                 "annotations":
+                   {
+                   "key1":"value1",
+                   "key2":"value2"
+                   }
+                 },
+                 "name":"nfs",
+                 "host_ip":"192.168.1.100",
+                 "storage_type":"iscsi",
+                 "parameters":
+                 {
+                   "pool_name": "iscsi-pool",
+                   "user_id": "iscsi-user",
+                   "password": "iscsi-password"
+
+                 },
+                 "status":
+                   {
+                   "health_status": "pending",
+                   "message": "",
+                   "reason": ""
+                   }
+             }
+      responses:
+        204:
+          description: |
+            Succesfully updated the Storage
+          body:
+            example: |
+              {
+              "id":"815766986318422016",
+              "type_meta":
+                {
+                  "kind":"Origin",
+                  "api_version":"v1"
+                },
+                "object_meta":
+                  {
+                  "name":"megam",
+                  "origin":"rioo",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":
+                    {
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":
+                    {
+                    "key1":"value1",
+                    "key2":"value2"
+                    }
+                  },
+                  "name":"nfs",
+                  "host_ip":"192.168.1.100",
+                  "storage_type":"iscsi",
+                  "parameters":
+                  {
+                    "pool_name": "iscsi-pool",
+                    "user_id": "iscsi-user",
+                    "password": "iscsi-password"
+
+                  },
+                  "status":
+                    {
+                    "health_status": "pending",
+                    "message": "",
+                    "reason": ""
+                    },
+                  "created_at":"2017-09-27T11:53:13.876230+00:00"
+              }
 /plans:
   get:
     description: |

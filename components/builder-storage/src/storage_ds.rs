@@ -67,6 +67,43 @@ impl StorageDS {
         }
         Ok(None)
     }
+
+    pub fn storage_status_update(datastore: &DataStoreConn, storage_create: &storagesrv::Storage) -> Result<Option<storagesrv::Storage>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let storage_id = storage_create.get_id().parse::<i64>().unwrap();
+        let status_str = serde_json::to_string(storage_create.get_status()).unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM set_storage_status_v1($1, $2)",
+            &[&storage_id, &(status_str as String)],
+        ).map_err(Error::StorageSetStatus)?;
+        for row in rows {
+            let storage = row_to_storage(&row)?;
+            return Ok(Some(storage));
+        }
+        Ok(None)
+    }
+
+    pub fn storage_update(datastore: &DataStoreConn, storage_create: &storagesrv::Storage) -> Result<Option<storagesrv::Storage>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let storage_id = storage_create.get_id().parse::<i64>().unwrap();
+        let object_meta = serde_json::to_string(storage_create.get_object_meta()).unwrap();
+        let type_meta = serde_json::to_string(storage_create.get_type_meta()).unwrap();
+        let parameter_str = serde_json::to_string(storage_create.get_parameters()).unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM update_storage_v1($1,$2,$3,$4,$5,$6,$7)",
+            &[
+                &storage_id,
+                &(object_meta as String),
+                &(type_meta as String),
+                &(storage_create.get_name() as String),
+                &(storage_create.get_host_ip() as String),
+                &(storage_create.get_storage_type() as String),
+                &(parameter_str as String),
+            ],
+        ).map_err(Error::StorageCreate)?;
+        let storage = row_to_storage(&rows.get(0))?;
+        return Ok(Some(storage.clone()));
+    }
 }
 
 fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
