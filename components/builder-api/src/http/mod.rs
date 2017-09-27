@@ -70,7 +70,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //auth API for creating new account
         signup: post "/accounts" => account_create,
         account_get_by_id: get "/accounts/:id" => account_get_by_id,
-        account_get_by_name: get "/accounts/:name" => account_get,
+        account_get_by_name: get "/accounts/name/:name" => account_get,
 
         //deploy API: assembly_factory
         assembly_factorys: post "/assemblyfactorys" => XHandler::new(assembly_factory_create).before(basic.clone()),
@@ -108,7 +108,6 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         nodes: post "/nodes" => XHandler::new(node_create).before(basic.clone()),
         nodes_list: get "/nodes" => XHandler::new(node_list).before(basic.clone()),
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
-        node_metrics: get "/nodemetrics" => healthz_all,
 
         //secret API
         secrets: post "/secrets" => XHandler::new(secret_create).before(basic.clone()),
@@ -116,18 +115,15 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         secret_show: get "/secrets/:id" => XHandler::new(secret_show).before(basic.clone()),
         secret_show_by_origin: get "/secrets/:origin" => XHandler::new(secret_show_by_origin).before(basic.clone()),
 
-
         //serviceAccount API
         service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_create,
         service_account_list: get "/serviceaccounts" => service_account_list,
         service_account_get: get "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_show,
 
-
         //Origin API
         origins: post "/origins" => origin_create,
         origin_list: get "/origins" =>origin_list,
         origin_show: get "/origins/:origin" => origin_show,
-
 
         //Network API
         networks: post "/networks" => XHandler::new(network_create).before(basic.clone()),
@@ -136,6 +132,10 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         storages: post "/storages" => XHandler::new(storage_create).before(basic.clone()),
         storages_list: get "/storages" => XHandler::new(storage_list).before(basic.clone()),
         storages_show: get "/storages/:id" => XHandler::new(storage_show).before(basic.clone()),
+        storage_status: put "storages/:id/status" => XHandler::new(storage_status_update).before(basic.clone()),
+        storage_update: put "storages/:id" => XHandler::new(storage_update).before(basic.clone()),
+
+        //DataCenter API
 
     );
 

@@ -65,30 +65,10 @@ impl Roles {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct RolesGet {
-    id: String,
-}
-
-impl RolesGet {
-    pub fn new() -> RolesGet {
-        ::std::default::Default::default()
-    }
-
-    // Param is passed by value, moved
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-
-    pub fn get_id(&self) -> ::std::string::String {
-        self.id.clone()
-    }
-}
-
-
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct RolesGetResponse {
-    results: Vec<Roles>,
+    kind: String,
+    api_version: String,
+    items: Vec<Roles>,
 }
 
 
@@ -96,10 +76,11 @@ impl RolesGetResponse {
     pub fn new() -> RolesGetResponse {
         ::std::default::Default::default()
     }
-
     // Param is passed by value, moved
-    pub fn set_roles(&mut self, v: Vec<Roles>) {
-        self.results = v;
+    pub fn set_roles(&mut self, v: Vec<Roles>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
     }
 }
 
@@ -160,38 +141,10 @@ impl Permissions {
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct PermissionsGet {
-    id: String,
-    role_id: String,
-}
-
-impl PermissionsGet {
-    pub fn new() -> PermissionsGet {
-        ::std::default::Default::default()
-    }
-
-    // Param is passed by value, moved
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-
-    pub fn get_id(&self) -> ::std::string::String {
-        self.id.clone()
-    }
-
-    pub fn set_role_id(&mut self, v: ::std::string::String) {
-        self.role_id = v;
-    }
-
-    pub fn get_role_id(&self) -> ::std::string::String {
-        self.role_id.clone()
-    }
-}
-
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct PermissionsGetResponse {
-    results: Vec<Permissions>,
+    kind: String,
+    api_version: String,
+    items: Vec<Permissions>,
 }
 
 
@@ -200,8 +153,9 @@ impl PermissionsGetResponse {
         ::std::default::Default::default()
     }
 
-    // Param is passed by value, moved
-    pub fn set_permissions(&mut self, v: Vec<Permissions>) {
-        self.results = v;
+    pub fn set_permissions(&mut self, v: Vec<Permissions>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
     }
 }

@@ -92,6 +92,39 @@ impl Migratable for StorageProcedures {
 
         ui.para("[✓] get_storages_v1");
 
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION set_storage_status_v1 (sid bigint, storage_status text) RETURNS SETOF storages AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE storages SET status=storage_status, updated_at=now() WHERE id=sid
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        ui.para("[✓] set_storage_status_v1");
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION update_storage_v1(
+            sid bigint,
+            s_object_meta text,
+            s_type_meta text,
+            s_name text,
+            s_host_ip text,
+            s_storage_type text,
+            s_parameters text) RETURNS SETOF storages AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE storages SET object_meta=s_object_meta,type_meta=s_type_meta,name=s_name,host_ip=s_host_ip,storage_type=s_storage_type,parameters=s_parameters,updated_at=now() WHERE id=sid
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        ui.para("[✓] update_storage_v1");
+
         ui.end("StorageProcedures");
 
         Ok(())

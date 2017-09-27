@@ -10,8 +10,8 @@ use iron::status;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use protocol::authsrv::{Roles, Permissions, PermissionsGet, RolesGet};
-
+use protocol::authsrv::{Roles, Permissions};
+use protocol::asmsrv::IdGet;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct RolesCreateReq {
@@ -72,7 +72,7 @@ pub fn roles_show(req: &mut Request) -> IronResult<Response> {
     };
     let conn = Broker::connect().unwrap();
 
-    let mut roles_get = RolesGet::new();
+    let mut roles_get = IdGet::new();
     roles_get.set_id(id.to_string());
 
     match AuthorizeDS::roles_show(&conn, &roles_get) {
@@ -104,6 +104,13 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
                     return Ok(Response::with((
                         status::UnprocessableEntity,
                         "Missing value for field: `name`",
+                    )));
+                }
+
+                if body.role_id.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `role_id`",
                     )));
                 }
                 permissions.set_role_id(body.role_id);
@@ -153,7 +160,7 @@ pub fn get_rolebased_permissions(req: &mut Request) -> IronResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    let mut perm_get = PermissionsGet::new();
+    let mut perm_get = IdGet::new();
     perm_get.set_id(id.to_string());
 
     match AuthorizeDS::get_rolebased_permissions(&conn, &perm_get) {
@@ -175,7 +182,7 @@ pub fn permissions_show(req: &mut Request) -> IronResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    let mut perms_get = PermissionsGet::new();
+    let mut perms_get = IdGet::new();
     perms_get.set_id(id.to_string());
     match AuthorizeDS::permissions_show(&conn, &perms_get) {
         Ok(perms) => Ok(render_json(status::Ok, &perms)),
@@ -196,9 +203,9 @@ pub fn get_specfic_permission_based_role(req: &mut Request) -> IronResult<Respon
     };
     let conn = Broker::connect().unwrap();
 
-    let mut perms_get = PermissionsGet::new();
+    let mut perms_get = IdGet::new();
     perms_get.set_id(perm_id);
-    perms_get.set_role_id(role_id);
+    perms_get.set_name(role_id);
     match AuthorizeDS::get_specfic_permission_based_role(&conn, &perms_get) {
         Ok(perms) => Ok(render_json(status::Ok, &perms)),
         Err(err) => Ok(render_net_error(
