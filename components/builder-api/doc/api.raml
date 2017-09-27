@@ -64,7 +64,7 @@ schemas:
             "block_owner_deletion": true
           }]
         },
-        "plan": "/v3/plan/apache",
+        "plan": "/v3/plan/ubuntu",
         "external_management_resource": [
           "safsf"
         ],
@@ -199,10 +199,8 @@ schemas:
                 "block_owner_deletion": true
               }]
             },
-            "plan": "/v3/plan/apache",
-            "external_management_resource": [
-              "safsf"
-            ],
+            "plan": "/v3/plan/ubuntu",
+            "external_management_resource": [],
             "component_collection": {
               "flavor": "/url",
               "network": "/url"
@@ -273,26 +271,31 @@ schemas:
                     "block_owner_deletion": true
                   }]
                 },
-                "plan": "/v3/plan/apache",
+                "plan": "/v3/plan/ubuntu",
                 "plan_data":{
-                      "id":"811195758203133952",
-                      "name":"3_webserver_apache",
-                      "description":"Apache is the most widely used web server software",
-                      "tags":[
-                      "apache",
-                      "httpd"
-                      ],
-                      "camp_version":"1.2",
-                      "url":"/v3/plan/apache",
-                      "origin":"vertice:2.0",
-                      "artifacts":[
-                      ],
-                      "services":"[{\"name\":\"Apache\",\"description\":\"Apache is the most widely used web server software. Developed and maintained by Apache Software Foundation\",\"href\":\"https://www.apache.org\",\n \"characteristics\":[{\"type\":\"org.megam.webserver::provided_by\",\"2.4.18\":\"vertice\"},{\n \"type:\"org.megam.webserver::display_image\",\"image\":\"apache.png\"},{\"(or) type\":\"org.megam.webserver::display_image_url\",\"url\":\"https://testing/apache.png\"},{\"type\":\"org.megam.webserver::inputs\",\"os\":\"centos\"},{\"type\":\"org.megam.webserver::env\",\"http.port\":\"80\"}]}]",
-                      "created_at":"2017-09-21T04:30:59.889162+00:00"
-                      },
-                "external_management_resource": [
-                  "safsf"
-                ],
+                    "id":"815547791504842752",
+                    "name":"1_virtualmachine_ubuntu",
+                    "description":"Ubuntu is a Debian-based Linux operating system",
+                    "tags":["linux","ubuntu","xenial","14.04"],
+                    "camp_version":"1.2",
+                    "url":"/v3/plan/ubuntu",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                          {
+                            "name":"Trusty",
+                            "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                            "href":"https://www.ubuntu.com",
+                            "characteristics":{
+                            "provided_by":"rioos",
+                            "type":"io.riocorp.vm::provided_by",
+                            "version":"14.04"
+                            }
+                            }
+                            ],
+                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                    }
+                "external_management_resource": [],
                 "component_collection": {
                   "flavor": "/url",
                   "network": "/url"
@@ -377,26 +380,31 @@ schemas:
                             "block_owner_deletion": true
                           }]
                         },
-                        "plan": "/v3/plan/apache",
+                        "plan": "/v3/plan/ubuntu",
                         "plan_data":{
-                              "id":"811195758203133952",
-                              "name":"3_webserver_apache",
-                              "description":"Apache is the most widely used web server software",
-                              "tags":[
-                              "apache",
-                              "httpd"
-                              ],
-                              "camp_version":"1.2",
-                              "url":"/v3/plan/apache",
-                              "origin":"vertice:2.0",
-                              "artifacts":[
-                              ],
-                              "services":"[{\"name\":\"Apache\",\"description\":\"Apache is the most widely used web server software. Developed and maintained by Apache Software Foundation\",\"href\":\"https://www.apache.org\",\n \"characteristics\":[{\"type\":\"org.megam.webserver::provided_by\",\"2.4.18\":\"vertice\"},{\n \"type:\"org.megam.webserver::display_image\",\"image\":\"apache.png\"},{\"(or) type\":\"org.megam.webserver::display_image_url\",\"url\":\"https://testing/apache.png\"},{\"type\":\"org.megam.webserver::inputs\",\"os\":\"centos\"},{\"type\":\"org.megam.webserver::env\",\"http.port\":\"80\"}]}]",
-                              "created_at":"2017-09-21T04:30:59.889162+00:00"
-                              },
-                        "external_management_resource": [
-                          "safsf"
-                        ],
+                            "id":"815547791504842752",
+                            "name":"1_virtualmachine_ubuntu",
+                            "description":"Ubuntu is a Debian-based Linux operating system",
+                            "tags":["linux","ubuntu","xenial","14.04"],
+                            "camp_version":"1.2",
+                            "url":"/v3/plan/ubuntu",
+                            "origin":"rioos:2.0",
+                            "artifacts":[],
+                            "services":[
+                                  {
+                                    "name":"Trusty",
+                                    "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                                    "href":"https://www.ubuntu.com",
+                                    "characteristics":{
+                                    "provided_by":"rioos",
+                                    "type":"io.riocorp.vm::provided_by",
+                                    "version":"14.04"
+                                    }
+                                    }
+                                    ],
+                            "created_at":"2017-09-27T04:37:42.763175+00:00"
+                            }
+                        "external_management_resource": [],
                         "component_collection": {
                           "flavor": "/url",
                           "network": "/url"
@@ -477,26 +485,31 @@ schemas:
                     "block_owner_deletion": true
                   }]
                 },
-                "plan": "/v3/plan/apache",
+                "plan": "/v3/plan/ubuntu",
                 "plan_data":{
-                      "id":"811195758203133952",
-                      "name":"3_webserver_apache",
-                      "description":"Apache is the most widely used web server software",
-                      "tags":[
-                      "apache",
-                      "httpd"
-                      ],
-                      "camp_version":"1.2",
-                      "url":"/v3/plan/apache",
-                      "origin":"vertice:2.0",
-                      "artifacts":[
-                      ],
-                      "services":"[{\"name\":\"Apache\",\"description\":\"Apache is the most widely used web server software. Developed and maintained by Apache Software Foundation\",\"href\":\"https://www.apache.org\",\n \"characteristics\":[{\"type\":\"org.megam.webserver::provided_by\",\"2.4.18\":\"vertice\"},{\n \"type:\"org.megam.webserver::display_image\",\"image\":\"apache.png\"},{\"(or) type\":\"org.megam.webserver::display_image_url\",\"url\":\"https://testing/apache.png\"},{\"type\":\"org.megam.webserver::inputs\",\"os\":\"centos\"},{\"type\":\"org.megam.webserver::env\",\"http.port\":\"80\"}]}]",
-                      "created_at":"2017-09-21T04:30:59.889162+00:00"
-                      },
-                "external_management_resource": [
-                  "safsf"
-                ],
+                    "id":"815547791504842752",
+                    "name":"1_virtualmachine_ubuntu",
+                    "description":"Ubuntu is a Debian-based Linux operating system",
+                    "tags":["linux","ubuntu","xenial","14.04"],
+                    "camp_version":"1.2",
+                    "url":"/v3/plan/ubuntu",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                          {
+                            "name":"Trusty",
+                            "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                            "href":"https://www.ubuntu.com",
+                            "characteristics":{
+                            "provided_by":"rioos",
+                            "type":"io.riocorp.vm::provided_by",
+                            "version":"14.04"
+                            }
+                            }
+                            ],
+                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                    }
+                "external_management_resource": [],
                 "component_collection": {
                   "flavor": "/url",
                   "network": "/url"
@@ -572,26 +585,31 @@ schemas:
                   "block_owner_deletion": true
                 }]
               },
-              "plan": "/v3/plan/apache",
+              "plan": "/v3/plan/ubuntu",
               "plan_data":{
-                    "id":"811195758203133952",
-                    "name":"3_webserver_apache",
-                    "description":"Apache is the most widely used web server software",
-                    "tags":[
-                    "apache",
-                    "httpd"
-                    ],
-                    "camp_version":"1.2",
-                    "url":"/v3/plan/apache",
-                    "origin":"vertice:2.0",
-                    "artifacts":[
-                    ],
-                    "services":"[{\"name\":\"Apache\",\"description\":\"Apache is the most widely used web server software. Developed and maintained by Apache Software Foundation\",\"href\":\"https://www.apache.org\",\n \"characteristics\":[{\"type\":\"org.megam.webserver::provided_by\",\"2.4.18\":\"vertice\"},{\n \"type:\"org.megam.webserver::display_image\",\"image\":\"apache.png\"},{\"(or) type\":\"org.megam.webserver::display_image_url\",\"url\":\"https://testing/apache.png\"},{\"type\":\"org.megam.webserver::inputs\",\"os\":\"centos\"},{\"type\":\"org.megam.webserver::env\",\"http.port\":\"80\"}]}]",
-                    "created_at":"2017-09-21T04:30:59.889162+00:00"
-                    },
-              "external_management_resource": [
-                "safsf"
-              ],
+                  "id":"815547791504842752",
+                  "name":"1_virtualmachine_ubuntu",
+                  "description":"Ubuntu is a Debian-based Linux operating system",
+                  "tags":["linux","ubuntu","xenial","14.04"],
+                  "camp_version":"1.2",
+                  "url":"/v3/plan/ubuntu",
+                  "origin":"rioos:2.0",
+                  "artifacts":[],
+                  "services":[
+                        {
+                          "name":"Trusty",
+                          "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                          "href":"https://www.ubuntu.com",
+                          "characteristics":{
+                          "provided_by":"rioos",
+                          "type":"io.riocorp.vm::provided_by",
+                          "version":"14.04"
+                          }
+                          }
+                          ],
+                  "created_at":"2017-09-27T04:37:42.763175+00:00"
+                  }
+              "external_management_resource": [],
               "component_collection": {
                 "flavor": "/url",
                 "network": "/url"
@@ -663,26 +681,31 @@ schemas:
                     "block_owner_deletion": true
                   }]
                 },
-                "plan": "/v3/plan/apache",
+                "plan": "/v3/plan/ubuntu",
                 "plan_data":{
-                      "id":"811195758203133952",
-                      "name":"3_webserver_apache",
-                      "description":"Apache is the most widely used web server software",
-                      "tags":[
-                      "apache",
-                      "httpd"
-                      ],
-                      "camp_version":"1.2",
-                      "url":"/v3/plan/apache",
-                      "origin":"vertice:2.0",
-                      "artifacts":[
-                      ],
-                      "services":"[{\"name\":\"Apache\",\"description\":\"Apache is the most widely used web server software. Developed and maintained by Apache Software Foundation\",\"href\":\"https://www.apache.org\",\n \"characteristics\":[{\"type\":\"org.megam.webserver::provided_by\",\"2.4.18\":\"vertice\"},{\n \"type:\"org.megam.webserver::display_image\",\"image\":\"apache.png\"},{\"(or) type\":\"org.megam.webserver::display_image_url\",\"url\":\"https://testing/apache.png\"},{\"type\":\"org.megam.webserver::inputs\",\"os\":\"centos\"},{\"type\":\"org.megam.webserver::env\",\"http.port\":\"80\"}]}]",
-                      "created_at":"2017-09-21T04:30:59.889162+00:00"
-                      },
-                "external_management_resource": [
-                  "safsf"
-                ],
+                    "id":"815547791504842752",
+                    "name":"1_virtualmachine_ubuntu",
+                    "description":"Ubuntu is a Debian-based Linux operating system",
+                    "tags":["linux","ubuntu","xenial","14.04"],
+                    "camp_version":"1.2",
+                    "url":"/v3/plan/ubuntu",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                          {
+                            "name":"Trusty",
+                            "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                            "href":"https://www.ubuntu.com",
+                            "characteristics":{
+                            "provided_by":"rioos",
+                            "type":"io.riocorp.vm::provided_by",
+                            "version":"14.04"
+                            }
+                            }
+                            ],
+                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                    }
+                "external_management_resource": [],
                 "component_collection": {
                   "flavor": "/url",
                   "network": "/url"
@@ -865,26 +888,31 @@ schemas:
                               }
                               ]
                               },
-                              "plan":"/v3/plan/apache",
+                              "plan":"/v3/plan/ubuntu",
                               "plan_data":{
-                                "id":"811195758203133952",
-                                "name":"3_webserver_apache",
-                                "description":"Apache is the most widely used web server software",
-                                "tags":[
-                                "apache",
-                                "httpd"
-                                ],
-                                "camp_version":"1.2",
-                                "url":"/v3/plan/apache",
-                                "origin":"vertice:2.0",
-                                "artifacts":[
-                                ],
-                                "services":"[{\"name\":\"Apache\",\"description\":\"Apache is the most widely used web server software. Developed and maintained by Apache Software Foundation\",\"href\":\"https://www.apache.org\",\n \"characteristics\":[{\"type\":\"org.megam.webserver::provided_by\",\"2.4.18\":\"vertice\"},{\n \"type:\"org.megam.webserver::display_image\",\"image\":\"apache.png\"},{\"(or) type\":\"org.megam.webserver::display_image_url\",\"url\":\"https://testing/apache.png\"},{\"type\":\"org.megam.webserver::inputs\",\"os\":\"centos\"},{\"type\":\"org.megam.webserver::env\",\"http.port\":\"80\"}]}]",
-                                "created_at":"2017-09-21T04:30:59.889162+00:00"
-                                },
-                                "external_management_resource":[
-                                "safsf"
-                                ],
+                                  "id":"815547791504842752",
+                                  "name":"1_virtualmachine_ubuntu",
+                                  "description":"Ubuntu is a Debian-based Linux operating system",
+                                  "tags":["linux","ubuntu","xenial","14.04"],
+                                  "camp_version":"1.2",
+                                  "url":"/v3/plan/ubuntu",
+                                  "origin":"rioos:2.0",
+                                  "artifacts":[],
+                                  "services":[
+                                        {
+                                          "name":"Trusty",
+                                          "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                                          "href":"https://www.ubuntu.com",
+                                          "characteristics":{
+                                          "provided_by":"rioos",
+                                          "type":"io.riocorp.vm::provided_by",
+                                          "version":"14.04"
+                                          }
+                                          }
+                                          ],
+                                  "created_at":"2017-09-27T04:37:42.763175+00:00"
+                                  }
+                                "external_management_resource":[],
                                 "component_collection":{
                                   "flavor":"/url",
                                   "network":"/url"
@@ -1022,26 +1050,31 @@ schemas:
                                   }
                                   ]
                                   },
-                                  "plan":"/v3/plan/apache",
+                                  "plan":"/v3/plan/ubuntu",
                                   "plan_data":{
-                                    "id":"811195758203133952",
-                                    "name":"3_webserver_apache",
-                                    "description":"Apache is the most widely used web server software",
-                                    "tags":[
-                                    "apache",
-                                    "httpd"
-                                    ],
-                                    "camp_version":"1.2",
-                                    "url":"/v3/plan/apache",
-                                    "origin":"vertice:2.0",
-                                    "artifacts":[
-                                    ],
-                                    "services":"[{\"name\":\"Apache\",\"description\":\"Apache is the most widely used web server software. Developed and maintained by Apache Software Foundation\",\"href\":\"https://www.apache.org\",\n \"characteristics\":[{\"type\":\"org.megam.webserver::provided_by\",\"2.4.18\":\"vertice\"},{\n \"type:\"org.megam.webserver::display_image\",\"image\":\"apache.png\"},{\"(or) type\":\"org.megam.webserver::display_image_url\",\"url\":\"https://testing/apache.png\"},{\"type\":\"org.megam.webserver::inputs\",\"os\":\"centos\"},{\"type\":\"org.megam.webserver::env\",\"http.port\":\"80\"}]}]",
-                                    "created_at":"2017-09-21T04:30:59.889162+00:00"
-                                    },
-                                    "external_management_resource":[
-                                    "safsf"
-                                    ],
+                                      "id":"815547791504842752",
+                                      "name":"1_virtualmachine_ubuntu",
+                                      "description":"Ubuntu is a Debian-based Linux operating system",
+                                      "tags":["linux","ubuntu","xenial","14.04"],
+                                      "camp_version":"1.2",
+                                      "url":"/v3/plan/ubuntu",
+                                      "origin":"rioos:2.0",
+                                      "artifacts":[],
+                                      "services":[
+                                            {
+                                              "name":"Trusty",
+                                              "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                                              "href":"https://www.ubuntu.com",
+                                              "characteristics":{
+                                              "provided_by":"rioos",
+                                              "type":"io.riocorp.vm::provided_by",
+                                              "version":"14.04"
+                                              }
+                                              }
+                                              ],
+                                      "created_at":"2017-09-27T04:37:42.763175+00:00"
+                                      },
+                                    "external_management_resource":[],
                                     "component_collection":{
                                       "flavor":"/url",
                                       "network":"/url"
@@ -1067,7 +1100,7 @@ schemas:
                                           "nodename":" ",
                                           "restartpolicy":" "
                                           },
-                                          "created_at":"2017-09-21T04:37:53.934998+00:00"
+                                      "created_at":"2017-09-21T04:37:53.934998+00:00"
 
                         },
                       "created_at":"2017-09-21T04:34:32.840553+00:00"
@@ -1135,7 +1168,99 @@ schemas:
                           "condition_type": " "
                            }]
                            }
-                    "spec":null,
+                    "spec":{
+                      "id":"811199221985189888",
+                      "name":"ubuntu",
+                      "uri":"/v1/assemblys/assembly_factorys",
+                      "description":"ubuntuinstallation",
+                      "tags":[],
+                      "replicas":5,
+                      "properties":{
+                        "domain":"megambox.com",
+                        "cloudsetting":"/clouds/one",
+                        "region":"chennai",
+                        "storage_type":"ssd"
+                        },
+                        "type_meta":{
+                          "kind":"Assemblyfactory",
+                          "api_version":"v1"
+                          },
+                          "object_meta":{
+                            "name":"xyz",
+                            "origin":"",
+                            "uid":"",
+                            "created_at":"",
+                            "cluster_name":"",
+                            "labels":{
+                              "group":"development",
+                              "key2":"value2"
+                              },
+                              "annotations":{
+                                "key1":"value1",
+                                "key2":"value2"
+                                },
+                                "owner_references":[
+                                {
+                                "kind":"Assemblyfactory",
+                                "api_version":"v1",
+                                "name":"ddd",
+                                "uid":"",
+                                "block_owner_deletion":true
+                                }
+                                ]
+                                },
+                                "plan":"/v3/plan/ubuntu",
+                                "plan_data":{
+                                    "id":"815547791504842752",
+                                    "name":"1_virtualmachine_ubuntu",
+                                    "description":"Ubuntu is a Debian-based Linux operating system",
+                                    "tags":["linux","ubuntu","xenial","14.04"],
+                                    "camp_version":"1.2",
+                                    "url":"/v3/plan/ubuntu",
+                                    "origin":"rioos:2.0",
+                                    "artifacts":[],
+                                    "services":[
+                                          {
+                                            "name":"Trusty",
+                                            "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                                            "href":"https://www.ubuntu.com",
+                                            "characteristics":{
+                                            "provided_by":"rioos",
+                                            "type":"io.riocorp.vm::provided_by",
+                                            "version":"14.04"
+                                            }
+                                            }
+                                            ],
+                                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                                    }
+                                  "external_management_resource":[],
+                                  "component_collection":{
+                                    "flavor":"/url",
+                                    "network":"/url"
+                                    },
+                                    "status":{
+                                      "phase":"pending",
+                                      "message":"",
+                                      "reason":"",
+                                      "conditions":[
+                                      {
+                                      "message":"",
+                                      "reason":"",
+                                      "status":" ",
+                                      "last_transition_time":" ",
+                                      "last_probe_time":" ",
+                                      "condition_type":" "
+                                      }
+                                      ]
+                                      },
+                                      "opssettings":{
+                                        "nodeselector":"",
+                                        "priority":" ",
+                                        "nodename":" ",
+                                        "restartpolicy":" "
+                                        },
+                                        "created_at":"2017-09-21T04:37:53.934998+00:00"
+                                        },
                     "created_at":"2017-09-21T04:34:32.840553+00:00"
                 }
         '400':
@@ -1262,6 +1387,119 @@ schemas:
           description: Project does not exist with corresponding projectId
         '422':
           description: Invalid or missing projectId in body
+  '/{id}':
+    put:
+      description: |
+        Update an existing resource
+      body:
+        application/json:
+          example: |
+            {
+             "id":"811197535086452736",
+             "name": "ubuntu",
+             "uri": "/v1/assemblys",
+             "description": "ubuntuinstallation",
+             "parent_id": "780970728630525952",
+             "tags": ["ubuntu"],
+             "type_meta": {
+                "kind": "Assembly",
+                "api_version": "v1"
+                  },
+             "object_meta": {
+                 "name": "xyz",
+                 "origin": "",
+                 "uid": "",
+                 "created_at": "",
+                 "cluster_name": "",
+                 "labels": {
+                    "group": "development",
+                    "key2": "value2"
+                   },
+                  "annotations": {
+                     "key1": "value1",
+                     "key2": "value2"
+                     },
+                  "owner_references": [{
+                     "kind": "Assembly",
+                     "api_version": "v1",
+                     "name": "ddd",
+                     "uid": "",
+                     "block_owner_deletion": true
+                     }]
+                 },
+               "node": "server1",
+               "ip": "",
+               "urls": "",
+               "status": {
+                  "phase": "pendin",
+                  "message": "",
+                  "reason": "",
+                  "conditions": [{
+                      "message": "",
+                      "reason": "",
+                      "status": " ",
+                      "last_transition_time": " ",
+                      "last_probe_time": "",
+                      "condition_type": " "
+                       }]
+                     }
+            }
+      responses:
+        204:
+          description: |
+            Succesfully updated assembly
+          body:
+            example:
+              {
+               "id":"811197535086452736",
+               "name": "ubuntu",
+               "uri": "/v1/assemblys",
+               "description": "ubuntuinstallation",
+               "parent_id": "780970728630525952",
+               "tags": ["ubuntu"],
+               "type_meta": {
+                  "kind": "Assembly",
+                  "api_version": "v1"
+                    },
+               "object_meta": {
+                   "name": "xyz",
+                   "origin": "",
+                   "uid": "",
+                   "created_at": "",
+                   "cluster_name": "",
+                   "labels": {
+                      "group": "development",
+                      "key2": "value2"
+                     },
+                    "annotations": {
+                       "key1": "value1",
+                       "key2": "value2"
+                       },
+                    "owner_references": [{
+                       "kind": "Assembly",
+                       "api_version": "v1",
+                       "name": "ddd",
+                       "uid": "",
+                       "block_owner_deletion": true
+                       }]
+                   },
+                 "node": "server1",
+                 "ip": "",
+                 "urls": "",
+                 "status": {
+                    "phase": "pendin",
+                    "message": "",
+                    "reason": "",
+                    "conditions": [{
+                        "message": "",
+                        "reason": "",
+                        "status": " ",
+                        "last_transition_time": " ",
+                        "last_probe_time": "",
+                        "condition_type": " "
+                         }]
+                       }
+              }
 /secrets:
   post:
     description: |
@@ -1271,6 +1509,7 @@ schemas:
         schema: secret
         example: |
           {
+          "secret_type": "root",
           "data":{
             "username":"USERNAME",
             "password":"PASSWORD",
@@ -1281,12 +1520,12 @@ schemas:
             "<anykey>":"<any value>"
             },
           "type_meta":{
-            "kind":"Assembly",
+            "kind":"Secret",
             "api_version":"v1"
             },
           "object_meta":{
             "name":"xyz",
-            "origin":"",
+            "origin":"default",
             "uid":"",
             "created_at":"",
             "cluster_name":"",
@@ -1309,6 +1548,7 @@ schemas:
             example: |
               {
               "id":"811228191262777344",
+              "secret_type": "root",
               "data":{
                 "username":"USERNAME",
                 "password":"PASSWORD",
@@ -1350,7 +1590,12 @@ schemas:
             application/json:
               example: |
                 {
+                "kind": "SecretList"
+                "api_version": v1,
+                items:[
+                {
                 "id":"811228191262777344",
+                "secret_type": "root",
                 "data":{
                   "username":"USERNAME",
                   "password":"PASSWORD",
@@ -1366,7 +1611,7 @@ schemas:
                 },
                 "object_meta":{
                   "name":"xyz",
-                  "origin":"",
+                  "origin":"default",
                   "uid":"",
                   "created_at":"",
                   "cluster_name":"",
@@ -1381,6 +1626,8 @@ schemas:
                   }
                 "created_at":"2017-09-21T05:35:27.342741+00:00"
                 }
+                ]
+              }
   '/{id}':
     get:
       description: Retrieve secrets by id
@@ -1419,9 +1666,58 @@ schemas:
                     "key1":"value1",
                     "key2":"value2"
                 }
-                }
+                },
                 "created_at":"2017-09-21T05:35:27.342741+00:00"
               }
+  '/{origin}':
+    get:
+      description: |
+        Retrieve all secrets within the origin
+      responses:
+        200:
+          description: |
+            Succesfully all secrets within the origin
+          body:
+            example:
+              {
+              "kind": "SecretList",
+              "api_version": v1,
+              items:[
+              {
+              "id":"811228191262777344",
+              "secret_type": "root",
+              "data":{
+                "username":"USERNAME",
+                "password":"PASSWORD",
+                "rsa_key":"PRIVATEKEY",
+                "rsa_pub":"PUBLICKEY",
+                "tls_key":"PRIVATEKEY",
+                "tls_pub":"PUBLICKEY",
+                "<anykey>":"<any value>"
+              },
+              "type_meta":{
+                "kind":"Secret",
+                "api_version":"v1"
+              },
+              "object_meta":{
+                "name":"xyz",
+                "origin":"default",
+                "uid":"",
+                "created_at":"",
+                "cluster_name":"",
+                "labels":{
+                  "group":"development",
+                  "key2":"value2"
+                },
+                "annotations":{
+                  "key1":"value1",
+                  "key2":"value2"
+                }
+                },
+              "created_at":"2017-09-21T05:35:27.342741+00:00"
+              }
+              ]
+            }
 /origins:
   post:
     description: |
@@ -1447,9 +1743,9 @@ schemas:
               "annotations":{
                 "key1":"value1",
                 "key2":"value2"
-                }
-                }
-                }
+                },
+                },
+              }
     responses:
       201:
         description: |
@@ -1476,7 +1772,328 @@ schemas:
                   "annotations":{
                     "key1":"value1",
                     "key2":"value2"
-                    }
-                    }
+                    },
+                    },
                  "created_at":"2017-09-21T06:51:38.763014+00:00"
                     }
+  get:
+    description: |
+      Retrieve origins
+    responses:
+      200:
+        description: |
+          Succesfully retrieved origins
+        body:
+          example: |
+            {
+              kind:"OriginList",
+              api_version:"v1",
+              items:[
+              {
+               "id":"811266539113160704",
+               "type_meta":{
+                "kind":"Origin",
+                "api_version":"v1"
+                },
+               "object_meta":{
+                  "name":"megam",
+                  "origin":"default",
+                  "uid":"811264199798824960",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    },
+                  },
+                 "created_at":"2017-09-21T06:51:38.763014+00:00"
+                    }
+              ]
+            }
+  '/{origin}':
+    get:
+      description: |
+        Retrieve origin with origin name
+      responses:
+        200:
+          description: |
+            Succesfully retrieved origin with origin name
+          body:
+            example:
+              {
+               "id":"811266539113160704",
+               "type_meta":{
+                "kind":"Origin",
+                "api_version":"v1"
+                },
+               "object_meta":{
+                  "name":"megam",
+                  "origin":"default",
+                  "uid":"811264199798824960",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    },
+                  },
+                 "created_at":"2017-09-21T06:51:38.763014+00:00"
+                    }
+/storages:
+  post:
+    description: |
+      Create a new storage
+    body:
+      application/json:
+        example: |
+          {
+              "type_meta":{
+              "kind":"Storage",
+              "api_version":"v1"
+              },
+              "object_meta":{
+                "name":"megam",
+                "origin":"rioo",
+                "uid":" ",
+                "created_at":"",
+                "cluster_name":"",
+                "labels":{
+                  "group":"development",
+                  "key2":"value2"
+                  },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    }
+                    },
+                "name":"iscsi",
+                "host_ip":"192.168.1.100",
+                "storage_type":"iscsi",
+                "parameters":{
+                      "pool_name":"iscsi-pool",
+                      "user_id":"iscsi-user",
+                      "password":"iscsi-password"
+                      },
+                "status":{
+                        "health_status":"",
+                        "message":"",
+                        "reason":""
+                        }
+            }
+    responses:
+      201:
+        description: |
+          Succesfully created a new storage
+        body:
+          application/json:
+            example: |
+              {
+                "id": "815548029221216256",
+                "type_meta":{
+                  "kind":"Storage",
+                  "api_version":"v1"
+                  },
+                "object_meta":{
+                    "name":"megam",
+                    "origin":"rioo",
+                    "uid":" ",
+                    "created_at":"",
+                    "cluster_name":"",
+                    "labels":{
+                      "group":"development",
+                      "key2":"value2"
+                      },
+                    "annotations":{
+                      "key1":"value1",
+                      "key2":"value2"
+                    }
+                  },
+                  "name":"iscsi",
+                  "host_ip":"192.168.1.100",
+                  "storage_type":"iscsi",
+                  "parameters":{
+                    "pool_name":"iscsi-pool",
+                    "user_id":"iscsi-user",
+                    "password":"iscsi-password"
+                    },
+                  "status":{
+                      "health_status":"",
+                      "message":"",
+                      "reason":""
+                      }
+                  "created_at": "2017-09-27T04:38:12.156829+00:00"
+                }
+  get:
+    description: |
+      Retrieve storages
+    responses:
+      200:
+        description: |
+          Succesfully retrieved storages
+        body:
+          application/json:
+            example: |
+              {
+                  "kind": "StorageList",
+                  "api_version": "v1",
+                  "items":[
+                    {
+                  "id": "815548029221216256",
+                  "type_meta":{
+                    "kind":"Storage",
+                    "api_version":"v1"
+                    },
+                  "object_meta":{
+                      "name":"megam",
+                      "origin":"rioo",
+                      "uid":" ",
+                      "created_at":"",
+                      "cluster_name":"",
+                      "labels":{
+                        "group":"development",
+                        "key2":"value2"
+                        },
+                      "annotations":{
+                        "key1":"value1",
+                        "key2":"value2"
+                      }
+                    },
+                    "name":"iscsi",
+                    "host_ip":"192.168.1.100",
+                    "storage_type":"iscsi",
+                    "parameters":{
+                      "pool_name":"iscsi-pool",
+                      "user_id":"iscsi-user",
+                      "password":"iscsi-password"
+                      },
+                    "status":{
+                        "health_status":"",
+                        "message":"",
+                        "reason":""
+                        }
+                    "created_at": "2017-09-27T04:38:12.156829+00:00"
+                  }
+                ]
+              }
+/plans:
+  get:
+    description: |
+      Retrieve plan_factory
+    responses:
+      200:
+        description: |
+          Succesfully retrieved plan_factory
+        body:
+          example: |
+            {
+            "kind":"PlanList",
+            "api_version":"v1",
+            "items":[
+                  {
+                    "id":"815547791504842752",
+                    "name":"1_virtualmachine_ubuntu",
+                    "description":"Ubuntu is a Debian-based Linux operating system",
+                    "tags":["linux","ubuntu","xenial","14.04"],
+                    "camp_version":"1.2",
+                    "url":"/v3/plan/ubuntu",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                          {
+                            "name":"Trusty",
+                            "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                            "href":"https://www.ubuntu.com",
+                            "characteristics":{
+                              "provided_by":"rioos",
+                              "type":"io.riocorp.vm::provided_by",
+                              "version":"14.04"
+                              }
+                              }
+                              ],
+                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                    },
+                  {
+                    "id":"815547791513239552",
+                    "name":"2_application_java",
+                    "description":"The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.",
+                    "tags":["tomcat","java","jdk"],
+                    "camp_version":"1.2",
+                    "url":"/v3/plan/java",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                            {
+                              "name":"tomcat",
+                              "description":"",
+                              "href":"http://tomcat.apache.org/",
+                              "characteristics":{
+                                "http.port":"3000",
+                                "image":"java.png",
+                                "os":"centos",
+                                "password":"team4megam",
+                                "provided_by":"rioos",
+                                "username":"megam",
+                                "version":"4.2"
+                              }
+                              }
+                              ],
+                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                    },
+                    {
+                    "id":"815547791521636352",
+                    "name":"2_application_rails",
+                    "description":"Rails is a web application framework written in Ruby.",
+                    "tags":["rails","ruby","ror"],
+                    "camp_version":"1.2",
+                    "url":"/v3/plan/rails",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                              {
+                                "name":"rails",
+                                "description":"",
+                                "href":"http://rubyonrails.org/",
+                                "characteristics":{
+                                  "http.port":"3000",
+                                  "image":"rails.png",
+                                  "os":"centos",
+                                  "provided_by":"rioos",
+                                  "version":"4.2"
+                                  }
+                                  }
+                                  ],
+                 "created_at":"2017-09-27T04:37:42.763175+00:00"
+                 }
+                 ]
+            }
+/nodes:
+  post:
+    description: |
+      Create a new resource
+    body:
+      application/json: !!null
+    responses:
+      201:
+        description: |
+          Succesfully created a new resource
+        headers:
+          Location:
+            description: |
+              Location of the newly created resource
+            type: string
+            required: false
+  get:
+    description: |
+      Retrieve resource
+    responses:
+      200:
+        description: |
+          Succesfully retrieved resource

@@ -6,8 +6,8 @@ use iron::status;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use protocol::servicesrv::{Secret, SecretGet, ObjectReference, ServiceAccount, ObjectMetaData, ServiceAccountGet};
-use protocol::asmsrv::TypeMeta;
+use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData};
+use protocol::asmsrv::{TypeMeta, IdGet};
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -56,6 +56,12 @@ pub fn secret_create(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<SecretCreateReq>>() {
             Ok(Some(body)) => {
+                if body.object_meta.origin.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `origin`",
+                    )));
+                }
                 secret_create.set_data(body.data);
                 let mut object_meta = ObjectMetaData::new();
                 object_meta.set_name(body.object_meta.name);
@@ -104,7 +110,7 @@ pub fn secret_show(req: &mut Request) -> IronResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    let mut secret_get = SecretGet::new();
+    let mut secret_get = IdGet::new();
     secret_get.set_id(id.to_string());
 
     match ServiceAccountDS::secret_show(&conn, &secret_get) {
@@ -134,7 +140,7 @@ pub fn secret_show_by_origin(req: &mut Request) -> IronResult<Response> {
     };
     let conn = Broker::connect().unwrap();
 
-    let mut secret_get = SecretGet::new();
+    let mut secret_get = IdGet::new();
     secret_get.set_id(org_name);
 
     match ServiceAccountDS::secret_show_by_origin(&conn, &secret_get) {
@@ -219,9 +225,9 @@ pub fn service_account_show(req: &mut Request) -> IronResult<Response> {
         let ser_name = params.find("serviceaccount").unwrap().to_owned();
         (org_name, ser_name)
     };
-    let mut serv_get = ServiceAccountGet::new();
-    serv_get.set_name(ser_name);
-    serv_get.set_origin(org_name);
+    let mut serv_get = IdGet::new();
+    serv_get.set_id(ser_name);
+    serv_get.set_name(org_name);
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_show(&conn, &serv_get) {
         Ok(origin) => Ok(render_json(status::Ok, &origin)),

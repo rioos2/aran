@@ -10,9 +10,9 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use protocol::net::{self, ErrCode};
-// use router::Router;
+use router::Router;
 use protocol::servicesrv::ObjectMetaData;
-use protocol::asmsrv::TypeMeta;
+use protocol::asmsrv::{TypeMeta, IdGet};
 use protocol::storagesrv::{Storage, Status};
 
 use db::data_store::Broker;
@@ -101,5 +101,39 @@ pub fn storage_create(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+#[allow(unused_variables)]
+pub fn storage_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match StorageDS::storage_list(&conn) {
+        Ok(storage_list) => Ok(render_json(status::Ok, &storage_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
+pub fn storage_show(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut storage_get = IdGet::new();
+    storage_get.set_id(id.to_string());
+
+    match StorageDS::storage_show(&conn, &storage_get) {
+        Ok(storage) => Ok(render_json(status::Ok, &storage)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }

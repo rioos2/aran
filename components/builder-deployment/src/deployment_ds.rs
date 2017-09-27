@@ -4,8 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::asmsrv;
-use protocol::plansrv;
+use protocol::{asmsrv, plansrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -77,7 +76,7 @@ impl DeploymentDS {
         Ok(None)
     }
 
-    pub fn assembly_show(datastore: &DataStoreConn, get_assembly: &asmsrv::AssemblyGet) -> Result<Option<asmsrv::Assembly>> {
+    pub fn assembly_show(datastore: &DataStoreConn, get_assembly: &asmsrv::IdGet) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_show {:?}", get_assembly.get_id());
         let asm_id = get_assembly.get_id().parse::<i64>().unwrap();

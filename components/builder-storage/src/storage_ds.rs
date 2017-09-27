@@ -34,11 +34,43 @@ impl StorageDS {
         let storage = row_to_storage(&rows.get(0))?;
         return Ok(Some(storage.clone()));
     }
+
+    pub fn storage_list(datastore: &DataStoreConn) -> Result<Option<storagesrv::StorageGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_storages_v1()", &[]).map_err(
+            Error::StorageGetResponse,
+        )?;
+
+        let mut response = storagesrv::StorageGetResponse::new();
+
+        let mut storage_collection = Vec::new();
+        for row in rows {
+            storage_collection.push(row_to_storage(&row)?)
+        }
+        response.set_storage_collection(
+            storage_collection,
+            "StorageList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
+
+    pub fn storage_show(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::Storage>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let storage_id = get_storage.get_id().parse::<i64>().unwrap();
+        let rows = &conn.query("SELECT * FROM get_storage_v1($1)", &[&storage_id])
+            .map_err(Error::StorageGet)?;
+        for row in rows {
+            let storage = row_to_storage(&row)?;
+            return Ok(Some(storage));
+        }
+        Ok(None)
+    }
 }
 
 fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
     let mut storage = storagesrv::Storage::new();
-    debug!("◖☩ START: row_to_secret");
     let id: i64 = row.get("id");
     let name: String = row.get("name");
     let storage_type: String = row.get("storage_type");
