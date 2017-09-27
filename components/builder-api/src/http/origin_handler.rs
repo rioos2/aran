@@ -48,6 +48,12 @@ pub fn origin_create(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<OriginCreateReq>>() {
             Ok(Some(body)) => {
+                if body.object_meta.uid.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `uid`",
+                    )));
+                }
                 let mut object_meta = ObjectMetaData::new();
                 object_meta.set_name(body.object_meta.name);
                 object_meta.set_origin(body.object_meta.origin);

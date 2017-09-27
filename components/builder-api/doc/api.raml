@@ -152,6 +152,274 @@ schemas:
         description: Server fault
       '503':
         description: Service temporarily unavailable
+/accounts:
+  post:
+    description: |
+      Create a new account
+    body:
+      application/json:
+        example: |
+          {
+          "name": "megam",
+          "email":"info",
+          "first_name":"vino",
+          "last_name": "v",
+          "phone":"9994048897",
+          "api_key": "1234567890",
+          "password": "vino123",
+          "states":"safa",
+          "approval":"zfdgdg",
+          "suspend":"true",
+          "registration_ip_address": ""
+          }
+    responses:
+      201:
+        description: |
+          Succesfully created a new account
+        body:
+          example: |
+            {
+            "id":"815717538049581056",
+            "email":"info",
+            "name":"megam",
+            "token":"JDbYVymDVcy2Hkrw10",
+            "api_key":"1234567890",
+            "flags":0
+            }
+  '/{id}':
+    get:
+      description: |
+        Retrieve account by id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved account
+          body:
+            example: |
+              {
+                "id":"815717538049581056",
+                "name":"megam",
+                "email":"info",
+                "first_name":"",
+                "last_name":"",
+                "phone":"",
+                "token":"",
+                "api_key":"1234567890",
+                "password":"$rpbkdf2$0$AAAEAA==$LAeZD5019IS2Y81HcrCbBg==$0olZUb9QNkmzuqLwXOWD4xVPsm77pWlauUZHR+yFXpk=$",
+                "states":"",
+                "approval":"",
+                "suspend":"",
+                "registration_ip_address":"",
+                "created_at":""
+                }
+  '/name/{name}':
+    get:
+      description: |
+        Retrieve account by name
+      responses:
+        200:
+          description: |
+            Succesfully retrieved account by name
+          body:
+            example: |
+              {
+               "id":"815717538049581056",
+               "name":"megam",
+               "email":"info",
+               "first_name":"",
+               "last_name":"",
+               "phone":"",
+               "token":"",
+               "api_key":"1234567890",
+               "password":"$rpbkdf2$0$AAAEAA==$LAeZD5019IS2Y81HcrCbBg==$0olZUb9QNkmzuqLwXOWD4xVPsm77pWlauUZHR+yFXpk=$",
+               "states":"",
+               "approval":"",
+               "suspend":"",
+               "registration_ip_address":"",
+               "created_at":""
+               }
+/authenticate:
+  post:
+    description: |
+      Create a new resource
+    body:
+      application/json:
+        example: |
+           {
+              "email": "info",
+              "password": "vino123"
+           }
+    responses:
+      201:
+        description: |
+          Succesfully created a new resource
+        body:
+          example:
+            {
+              "id":"815717538049581056",
+              "email":"info",
+              "name":"megam",
+              "token":"vZxWOvEGFt5V8hOjaV",
+              "api_key":"1234567890",
+              "flags":0}
+
+            }
+/roles:
+  post:
+    description: |
+      Create a new resource
+    body:
+      application/json:
+        example: |
+          {
+          "name":"ubunturole/rios:superuser",
+          "description":"uperuser of RIO/OS. God given powers. instance",
+          }
+    responses:
+      201:
+        description: |
+          Succesfully created a new resource
+        body:
+          example: |
+            {
+              "id":"815697391196839936",
+              "name":"ubunturole/rios:superuser",
+              "description":"uperuser of RIO/OS. God given powers. instance",
+              "created_at":"2017-09-27T09:34:57.491496+00:00"
+            }
+  get:
+    description: |
+      Retrieve resource
+    responses:
+      200:
+        description: |
+          Succesfully retrieved resource
+        body:
+          example: |
+            {
+              "kind": "RolesList",
+              "api_version": "v1",
+              "items":[
+              {
+              "id":"815697391196839936",
+              "name":"ubunturole/rios:superuser",
+              "description":"uperuser of RIO/OS. God given powers. instance",
+              "created_at":"2017-09-27T09:34:57.491496+00:00"
+              }
+              ]
+            }
+  '/{role_id}':
+    get:
+      description: |
+        Retrieve role based on role_id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved role
+          body:
+            example: |
+              {
+              "id":"815697391196839936",
+              "name":"ubunturole/rios:superuser",
+              "description":"uperuser of RIO/OS. God given powers. instance",
+              "created_at":"2017-09-27T09:34:57.491496+00:00"
+              }
+/permissions:
+  post:
+    description: |
+      Create a new permission
+    body:
+      application/json:
+        example: |
+          {
+            "role_id": "815697391196839936",
+            "name": "rioos.assembly.get",
+            "description":"Read only access to all the users  VMs, Containers"
+          }
+    responses:
+      201:
+        description: |
+          Succesfully created a new permission
+        body:
+          example: |
+            {
+                "id": "815711108869398528",
+                "role_id": "815697391196839936",
+                "name": "rioos.assembly.get",
+                "description":"Read only access to all the users  VMs, Containers",
+                "created_at":"2017-09-27T10:02:12.765440+00:00"
+            }
+  get:
+    description: |
+      Retrieve permissions
+    responses:
+      200:
+        description: |
+          Succesfully retrieved permissions
+        body:
+          example: |
+            {
+              "kind": "PermissionList",
+              "api_version": "v1",
+              "items":[
+                  {
+                    "id":"815697391196839936",
+                    "name":"ubunturole/rios:superuser",
+                    "description":"uperuser of RIO/OS. God given powers. instance",
+                    "created_at":"2017-09-27T09:34:57.491496+00:00"
+            }
+            ]
+          }
+  '/{per_id}':
+    get:
+      description: |
+        Retrieve permission based on permission id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved permission based on permission id
+       example:
+         {
+         "id": "815711108869398528",
+         "role_id": "815697391196839936",
+         "name": "rioos.assembly.get",
+         "description":"Read only access to all the users  VMs, Containers",
+         "created_at":"2017-09-27T10:02:12.765440+00:00"
+         }
+  '/roles/{id}':
+    get:
+      description: |
+        Retrieve permission based on role_id
+      responses:
+        200:
+          description: |
+            Succesfully permission based on role_id
+          body:
+            example: |
+              {
+                "id": "815711108869398528",
+                "role_id": "815697391196839936",
+                "name": "rioos.assembly.get",
+                "description":"Read only access to all the users  VMs, Containers",
+                "created_at":"2017-09-27T10:02:12.765440+00:00"
+                }
+  '/{per_id}/roles/{rid}':
+    get:
+      description: |
+        Retrieve permission based on permission id and role_id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved permission
+          body:
+            example:
+              {
+                "id": "815711108869398528",
+                "role_id": "815697391196839936",
+                "name": "rioos.assembly.get",
+                "description":"Read only access to all the users  VMs, Containers",
+                "created_at":"2017-09-27T10:02:12.765440+00:00"
+                }
 /assemblyfactorys:
   post:
     description: Create a new assemblyfactory
@@ -1847,6 +2115,112 @@ schemas:
                   },
                  "created_at":"2017-09-21T06:51:38.763014+00:00"
                     }
+  '/{origin}/serviceaccounts/{serviceaccount}':
+    post:
+      description: |
+        Create a new serviceaccount under origin
+      body:
+        example: |
+          {
+          "secrets":{
+            "kind":"Secret",
+            "name":"<name of the secret key>",
+            "origin":"default",
+            "uid":"the id of secret"
+            },
+            "type_meta":{
+              "kind":"ServiceAccount",
+              "api_version":"v1"
+              },
+            "object_meta":{
+                  "name":"xyz",
+                  "origin":"default",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                      "group":"development",
+                      "key2":"value2"
+                      },
+                  "annotations":{
+                        "key1":"value1",
+                        "key2":"value2"
+                        }
+                      }
+                    }
+      responses:
+        200:
+          description: |
+            Succesfully retrieved resource
+          body:
+            example: |
+              {
+              id:"815639946302857216",
+              "secrets":{
+                "kind":"Secret",
+                "name":"<name of the secret key>",
+                "origin":"default",
+                "uid":"the id of secret"
+                },
+                "type_meta":{
+                  "kind":"ServiceAccount",
+                  "api_version":"v1"
+                  },
+                "object_meta":{
+                      "name":"xyz",
+                      "origin":"default",
+                      "uid":"",
+                      "created_at":"",
+                      "cluster_name":"",
+                      "labels":{
+                          "group":"development",
+                          "key2":"value2"
+                          },
+                      "annotations":{
+                            "key1":"value1",
+                            "key2":"value2"
+                            }
+                          },
+                  "created_at": "2017-09-27T07:40:49.527289+00:00"
+              }
+    get:
+      description: |
+        Retrieve resource
+      responses:
+        200:
+          description: |
+            Succesfully retrieved resource
+          body:
+            example: |
+              {
+                "id":"815639946302857216",
+                "secrets":{
+                  "kind":"Secret",
+                  "name":"<name of the secret key>",
+                  "origin":"default",
+                  "uid":"the id of secret"
+                  },
+                "type_meta":{
+                    "kind":"ServiceAccount",
+                    "api_version":"v1"
+                    },
+               "object_meta":{
+                    "name":"xyz",
+                    "origin":"default",
+                    "uid":"",
+                    "created_at":"",
+                    "cluster_name":"",
+                    "labels":{
+                        "group":"development",
+                        "key2":"value2"
+                        },
+                    "annotations":{
+                          "key1":"value1",
+                          "key2":"value2"
+                          }
+                        },
+                "created_at": "2017-09-27T07:40:49.527289+00:00"
+               }
 /storages:
   post:
     description: |
@@ -2156,19 +2530,462 @@ schemas:
 /nodes:
   post:
     description: |
-      Create a new resource
+      Create a new node
     body:
-      application/json: !!null
+      application/json:
+        example: |
+          {
+            "spec":{
+                "assembly_cidr":"",
+                "external_id":"",
+                "provider_id":"",
+                "unschedulable":false,
+                "taints":[
+                        {
+                          "key":"",
+                          "value":"",
+                          "effect":"",
+                          "time_added":""
+                          }
+                        ]
+                },
+              "status":{
+                  "capacity":{
+                          "cpu":"4",
+                          "memory":"16331164Ki",
+                          "storage":"16228764Mb"
+                          },
+                  "allocatable":{
+                            "cpu":"4",
+                            "memory":"16331164Ki",
+                            "storage":"16228764Mb"
+                            },
+                  "phase":"",
+                  "addresses":[
+                            {
+                            "node_type":"",
+                            "address":""
+                            }
+                            ],
+                  "node_info":{
+                            "machine_id":"",
+                            "system_uuid":"",
+                            "kernel_version":"",
+                            "os_image":"",
+                            "architecture":""
+                            },
+                  "conditions":[
+                            {
+                            "condition_type":"",
+                            "status":"",
+                            "last_heartbeat_time":"",
+                            "last_transition_time":"",
+                            "reason":"",
+                            "message":""
+                            }
+                            ]
+                  },
+                "object_meta":{
+                      "name":"xyz",
+                      "origin":"",
+                      "uid":"",
+                      "created_at":"",
+                      "cluster_name":"",
+                      "labels":{
+                          "group":"development",
+                          "key2":"value2"
+                          },
+                      "annotations":{
+                        "key1":"value1",
+                        "key2":"value2"
+                      },
+                      "owner_references":[
+                          {
+                          "kind":"Node",
+                          "api_version":"v1",
+                          "name":"ddd",
+                          "uid":"",
+                          "block_owner_deletion":true
+                      }
+                      ]
+                  },
+                  "type_meta":{
+                      "kind":"Node",
+                      "api_version":"v1"
+                      }
+                    }
     responses:
       201:
         description: |
           Succesfully created a new resource
-        headers:
-          Location:
-            description: |
-              Location of the newly created resource
-            type: string
-            required: false
+        body:
+          example: |
+            {
+              "id": "815639946302857216",
+              "spec":{
+                  "assembly_cidr":"",
+                  "external_id":"",
+                  "provider_id":"",
+                  "unschedulable":false,
+                  "taints":[
+                          {
+                            "key":"",
+                            "value":"",
+                            "effect":"",
+                            "time_added":""
+                            }
+                          ]
+                  },
+                "status":{
+                    "capacity":{
+                            "cpu":"4",
+                            "memory":"16331164Ki",
+                            "storage":"16228764Mb"
+                            },
+                    "allocatable":{
+                              "cpu":"4",
+                              "memory":"16331164Ki",
+                              "storage":"16228764Mb"
+                              },
+                    "phase":"",
+                    "addresses":[
+                              {
+                              "node_type":"",
+                              "address":""
+                              }
+                              ],
+                    "node_info":{
+                              "machine_id":"",
+                              "system_uuid":"",
+                              "kernel_version":"",
+                              "os_image":"",
+                              "architecture":""
+                              },
+                    "conditions":[
+                              {
+                              "condition_type":"",
+                              "status":"",
+                              "last_heartbeat_time":"",
+                              "last_transition_time":"",
+                              "reason":"",
+                              "message":""
+                              }
+                              ]
+                    },
+                  "object_meta":{
+                        "name":"xyz",
+                        "origin":"",
+                        "uid":"",
+                        "created_at":"",
+                        "cluster_name":"",
+                        "labels":{
+                            "group":"development",
+                            "key2":"value2"
+                            },
+                        "annotations":{
+                          "key1":"value1",
+                          "key2":"value2"
+                        },
+                        "owner_references":[
+                            {
+                            "kind":"Node",
+                            "api_version":"v1",
+                            "name":"ddd",
+                            "uid":"",
+                            "block_owner_deletion":true
+                        }
+                        ]
+                    },
+                    "type_meta":{
+                        "kind":"Node",
+                        "api_version":"v1"
+                        },
+                    "created_at":"2017-09-27T07:40:49.527289+00:00"
+                        }
+  get:
+    description: |
+      Retrieve all node
+    responses:
+      200:
+        description: |
+          Succesfully retrieved all node
+        body:
+          application/json:
+            example: |
+              {
+                kind: "NodeList",
+                api_version: "v1",
+                items:[
+                      {
+                      "id": "815639946302857216",
+                      "spec":{
+                              "assembly_cidr":"",
+                              "external_id":"",
+                              "provider_id":"",
+                              "unschedulable":false,
+                              "taints":[
+                                  {
+                                  "key":"",
+                                  "value":"",
+                                  "effect":"",
+                                  "time_added":""
+                                }
+                                ]
+                        },
+                        "status":{
+                                "capacity":{
+                                      "cpu":"4",
+                                      "memory":"16331164Ki",
+                                      "storage":"16228764Mb"
+                                  },
+                                  "allocatable":{
+                                        "cpu":"4",
+                                        "memory":"16331164Ki",
+                                        "storage":"16228764Mb"
+                                  },
+                                  "phase":"",
+                                  "addresses":[
+                                          {
+                                          "node_type":"",
+                                          "address":""
+                                        }
+                                  ],
+                                  "node_info":{
+                                          "machine_id":"",
+                                          "system_uuid":"",
+                                          "kernel_version":"",
+                                          "os_image":"",
+                                          "architecture":""
+                                   },
+                                   "conditions":[
+                                            {
+                                            "condition_type":"",
+                                            "status":"",
+                                            "last_heartbeat_time":"",
+                                            "last_transition_time":"",
+                                            "reason":"",
+                                            "message":""
+                                          }
+                                          ]
+                          },
+                          "object_meta":{
+                                  "name":"xyz",
+                                  "origin":"",
+                                  "uid":"",
+                                  "created_at":"",
+                                  "cluster_name":"",
+                                  "labels":{
+                                          "group":"development",
+                                          "key2":"value2"
+                                  },
+                                  "annotations":{
+                                            "key1":"value1",
+                                            "key2":"value2"
+                                  },
+                                  "owner_references":[
+                                        {
+                                        "kind":"Node",
+                                        "api_version":"v1",
+                                        "name":"ddd",
+                                        "uid":"",
+                                        "block_owner_deletion":true
+                                    }
+                                    ]
+                          },
+                          "type_meta":{
+                                  "kind":"Node",
+                                  "api_version":"v1"
+                          },
+                          "created_at":"2017-09-27T07:40:49.527289+00:00"
+                        }
+                        ]
+                      }
+  '/{id}/status':
+    put:
+      description: |
+        Update node data
+      body:
+        application/json:
+          example: |
+            {
+            "id": "815639946302857216",
+            "spec":{
+                "assembly_cidr":"",
+                "external_id":"",
+                "provider_id":"",
+                "unschedulable":false,
+                "taints":[
+                        {
+                          "key":"",
+                          "value":"",
+                          "effect":"",
+                          "time_added":""
+                          }
+                        ]
+                },
+              "status":{
+                  "capacity":{
+                          "cpu":"4",
+                          "memory":"16331164Ki",
+                          "storage":"16228764Mb"
+                          },
+                  "allocatable":{
+                            "cpu":"4",
+                            "memory":"16331164Ki",
+                            "storage":"16228764Mb"
+                            },
+                  "phase":"",
+                  "addresses":[
+                            {
+                            "node_type":"",
+                            "address":""
+                            }
+                            ],
+                  "node_info":{
+                            "machine_id":"",
+                            "system_uuid":"",
+                            "kernel_version":"",
+                            "os_image":"",
+                            "architecture":""
+                            },
+                  "conditions":[
+                            {
+                            "condition_type":"",
+                            "status":"",
+                            "last_heartbeat_time":"",
+                            "last_transition_time":"",
+                            "reason":"",
+                            "message":""
+                            }
+                            ]
+                  },
+                "object_meta":{
+                      "name":"xyz",
+                      "origin":"",
+                      "uid":"",
+                      "created_at":"",
+                      "cluster_name":"",
+                      "labels":{
+                          "group":"development",
+                          "key2":"value2"
+                          },
+                      "annotations":{
+                        "key1":"value1",
+                        "key2":"value2"
+                      },
+                      "owner_references":[
+                          {
+                          "kind":"Node",
+                          "api_version":"v1",
+                          "name":"ddd",
+                          "uid":"",
+                          "block_owner_deletion":true
+                      }
+                      ]
+                  },
+                  "type_meta":{
+                      "kind":"Node",
+                      "api_version":"v1"
+                      },
+                  "created_at":"2017-09-27T07:40:49.527289+00:00"
+                      }
+      responses:
+        204:
+          description: |
+            Succesfully updated the node
+          body:
+            example: |
+              {
+                "id": "815639946302857216",
+                "spec":{
+                "assembly_cidr":"",
+                "external_id":"",
+                "provider_id":"",
+                "unschedulable":false,
+                "taints":[
+                        {
+                          "key":"",
+                          "value":"",
+                          "effect":"",
+                          "time_added":""
+                          }
+                        ]
+                },
+              "status":{
+                  "capacity":{
+                          "cpu":"4",
+                          "memory":"16331164Ki",
+                          "storage":"16228764Mb"
+                          },
+                  "allocatable":{
+                            "cpu":"4",
+                            "memory":"16331164Ki",
+                            "storage":"16228764Mb"
+                            },
+                  "phase":"",
+                  "addresses":[
+                            {
+                            "node_type":"",
+                            "address":""
+                            }
+                            ],
+                  "node_info":{
+                            "machine_id":"",
+                            "system_uuid":"",
+                            "kernel_version":"",
+                            "os_image":"",
+                            "architecture":""
+                            },
+                  "conditions":[
+                            {
+                            "condition_type":"",
+                            "status":"",
+                            "last_heartbeat_time":"",
+                            "last_transition_time":"",
+                            "reason":"",
+                            "message":""
+                            }
+                            ]
+                  },
+                "object_meta":{
+                      "name":"xyz",
+                      "origin":"",
+                      "uid":"",
+                      "created_at":"",
+                      "cluster_name":"",
+                      "labels":{
+                          "group":"development",
+                          "key2":"value2"
+                          },
+                      "annotations":{
+                        "key1":"value1",
+                        "key2":"value2"
+                      },
+                      "owner_references":[
+                          {
+                          "kind":"Node",
+                          "api_version":"v1",
+                          "name":"ddd",
+                          "uid":"",
+                          "block_owner_deletion":true
+                      }
+                      ]
+                  },
+                  "type_meta":{
+                      "kind":"Node",
+                      "api_version":"v1"
+                      },
+                  "created_at":"2017-09-27T07:40:49.527289+00:00"
+                      }
+/healthz/overall:
+  get:
+    description: |
+      Retrieve metrics data from prometheus
+    responses:
+      200:
+        description: |
+          Succesfully retrieved metrics
+/serviceaccounts:
   get:
     description: |
       Retrieve resource
@@ -2176,3 +2993,455 @@ schemas:
       200:
         description: |
           Succesfully retrieved resource
+        body:
+          example: |
+            {
+              kind:"ServiceAccountList",
+              api_version:"v1",
+              items:[
+              {
+                id:"815639946302857216",
+                "secrets":{
+                  "kind":"Secret",
+                  "name":"<name of the secret key>",
+                  "origin":"default",
+                  "uid":"the id of secret"
+                  },
+                  "type_meta":{
+                    "kind":"ServiceAccount",
+                    "api_version":"v1"
+                    },
+                  "object_meta":{
+                        "name":"xyz",
+                        "origin":"default",
+                        "uid":"",
+                        "created_at":"",
+                        "cluster_name":"",
+                        "labels":{
+                            "group":"development",
+                            "key2":"value2"
+                            },
+                        "annotations":{
+                              "key1":"value1",
+                              "key2":"value2"
+                              }
+                            },
+                    "created_at": "2017-09-27T07:40:49.527289+00:00"
+                            }
+              ]
+            }
+/horizontalscaling:
+  post:
+    description: |
+      Create a new scaling policy
+    body:
+      application/json:
+        example: |
+          {
+          "object_meta":{
+            "name":"xyz",
+            "origin":"",
+            "uid":"",
+            "created_at":"",
+            "cluster_name":"",
+            "labels":{
+                "group":"development",
+                "key2":"value2"
+                },
+                "annotations":{
+                  "key1":"value1",
+                  "key2":"value2"
+                  },
+                "owner_references":[
+                  {
+                    "kind":"HorizontalScaling",
+                    "api_version":"v1",
+                    "name":"ddd",
+                    "uid":"",
+                    "block_owner_deletion":true
+                    }
+                    ]
+                },
+                "type_meta":{
+                      "kind":"HorizontalScaling",
+                      "api_version":"v1"
+                },
+                "name":"example1",
+                "description":"Horizontal auto scale",
+                "tags":["horizontal scale","loadbalancer"],
+                "scale_type":"AUTOHS",
+                "representation_skew":"ACTIVE",
+                "state":"data",
+                "metadata":[],
+                "spec":{
+                    "scale_target_ref":"ASM001",
+                    "min_replicas":4,
+                    "max_replicas":5,
+                    "metrics":[
+                          {
+                          "metric_type":"Resource",
+                          "object":{
+                            "target":"hits_as_per_second",
+                            "target_value":1000,
+                            "metric_time_spec":{
+                              "scale_up_by":"5m",
+                              "scale_up_wait_time":"5m",
+                              "scale_down_by":"5m",
+                              "scale_down_wait_time":"5m"
+                            }
+                          },
+                          "resource":{
+                            "name":"memory",
+                            "min_target_value":"2",
+                            "max_target_value":"4",
+                            "metric_time_spec":{
+                              "scale_up_by":"5m",
+                              "scale_up_wait_time":"5m",
+                              "scale_down_by":"5m",
+                              "scale_down_wait_time":"5m"
+                              }
+                              }
+                              }
+                              ]
+                        },
+                        "status":{
+                              "last_scale_time":"",
+                              "current_replicas":1,
+                              "desired_replicas":1
+                        },
+          }
+    responses:
+      201:
+        description: |
+          Succesfully created a new scaling policy
+        body:
+          example:
+            {
+            "id":"815739610230431744",
+            "object_meta":{
+              "name":"xyz",
+              "origin":"",
+              "uid":"",
+              "created_at":"",
+              "cluster_name":"",
+              "labels":{
+                  "group":"development",
+                  "key2":"value2"
+                  },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    },
+                  "owner_references":[
+                    {
+                      "kind":"HorizontalScaling",
+                      "api_version":"v1",
+                      "name":"ddd",
+                      "uid":"",
+                      "block_owner_deletion":true
+                      }
+                      ]
+                  },
+                  "type_meta":{
+                        "kind":"HorizontalScaling",
+                        "api_version":"v1"
+                  },
+                  "name":"example1",
+                  "description":"Horizontal auto scale",
+                  "tags":["horizontal scale","loadbalancer"],
+                  "scale_type":"AUTOHS",
+                  "representation_skew":"ACTIVE",
+                  "state":"data",
+                  "metadata":[],
+                  "spec":{
+                      "scale_target_ref":"ASM001",
+                      "min_replicas":4,
+                      "max_replicas":5,
+                      "metrics":[
+                            {
+                            "metric_type":"Resource",
+                            "object":{
+                              "target":"hits_as_per_second",
+                              "target_value":1000,
+                              "metric_time_spec":{
+                                "scale_up_by":"5m",
+                                "scale_up_wait_time":"5m",
+                                "scale_down_by":"5m",
+                                "scale_down_wait_time":"5m"
+                              }
+                            },
+                            "resource":{
+                              "name":"memory",
+                              "min_target_value":"2",
+                              "max_target_value":"4",
+                              "metric_time_spec":{
+                                "scale_up_by":"5m",
+                                "scale_up_wait_time":"5m",
+                                "scale_down_by":"5m",
+                                "scale_down_wait_time":"5m"
+                                }
+                                }
+                                }
+                                ]
+                          },
+                          "status":{
+                                "last_scale_time":"",
+                                "current_replicas":1,
+                                "desired_replicas":1
+                          },
+                          "created_at":"2017-09-27T10:58:50.393036+00:00"
+            }
+  get:
+    description: |
+      Retrieve all scaling policy
+    responses:
+      200:
+        description: |
+          Succesfully retrieved scaling policy
+        body:
+          example: |
+            {
+              "kind":"ScalingList",
+              "api_version": "v1",
+              items:
+              [
+              {
+              "id":"815739610230431744",
+              "object_meta":{
+                "name":"xyz",
+                "origin":"",
+                "uid":"",
+                "created_at":"",
+                "cluster_name":"",
+                "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                    "annotations":{
+                      "key1":"value1",
+                      "key2":"value2"
+                      },
+                    "owner_references":[
+                      {
+                        "kind":"HorizontalScaling",
+                        "api_version":"v1",
+                        "name":"ddd",
+                        "uid":"",
+                        "block_owner_deletion":true
+                        }
+                        ]
+                    },
+                    "type_meta":{
+                          "kind":"HorizontalScaling",
+                          "api_version":"v1"
+                    },
+                    "name":"example1",
+                    "description":"Horizontal auto scale",
+                    "tags":["horizontal scale","loadbalancer"],
+                    "scale_type":"AUTOHS",
+                    "representation_skew":"ACTIVE",
+                    "state":"data",
+                    "metadata":[],
+                    "spec":{
+                        "scale_target_ref":"ASM001",
+                        "min_replicas":4,
+                        "max_replicas":5,
+                        "metrics":[
+                              {
+                              "metric_type":"Resource",
+                              "object":{
+                                "target":"hits_as_per_second",
+                                "target_value":1000,
+                                "metric_time_spec":{
+                                  "scale_up_by":"5m",
+                                  "scale_up_wait_time":"5m",
+                                  "scale_down_by":"5m",
+                                  "scale_down_wait_time":"5m"
+                                }
+                              },
+                              "resource":{
+                                "name":"memory",
+                                "min_target_value":"2",
+                                "max_target_value":"4",
+                                "metric_time_spec":{
+                                  "scale_up_by":"5m",
+                                  "scale_up_wait_time":"5m",
+                                  "scale_down_by":"5m",
+                                  "scale_down_wait_time":"5m"
+                                  }
+                                  }
+                                  }
+                                  ]
+                            },
+                            "status":{
+                                  "last_scale_time":"",
+                                  "current_replicas":1,
+                                  "desired_replicas":1
+                            },
+                            "created_at":"2017-09-27T10:58:50.393036+00:00"
+                            }
+                            ]
+                        }
+  '/{id}/status':
+    put:
+      description: |
+        Update an existing scaling policy
+      body:
+        application/json:
+          example: |
+            {
+            "id":"815739610230431744",
+            "object_meta":{
+              "name":"xyz",
+              "origin":"",
+              "uid":"",
+              "created_at":"",
+              "cluster_name":"",
+              "labels":{
+                  "group":"development",
+                  "key2":"value2"
+                  },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    },
+                  "owner_references":[
+                    {
+                      "kind":"HorizontalScaling",
+                      "api_version":"v1",
+                      "name":"ddd",
+                      "uid":"",
+                      "block_owner_deletion":true
+                      }
+                      ]
+                  },
+                  "type_meta":{
+                        "kind":"HorizontalScaling",
+                        "api_version":"v1"
+                  },
+                  "name":"example1",
+                  "description":"Horizontal auto scale",
+                  "tags":["horizontal scale","loadbalancer"],
+                  "scale_type":"AUTOHS",
+                  "representation_skew":"ACTIVE",
+                  "state":"data",
+                  "metadata":[],
+                  "spec":{
+                      "scale_target_ref":"ASM001",
+                      "min_replicas":4,
+                      "max_replicas":5,
+                      "metrics":[
+                            {
+                            "metric_type":"Resource",
+                            "object":{
+                              "target":"hits_as_per_second",
+                              "target_value":1000,
+                              "metric_time_spec":{
+                                "scale_up_by":"5m",
+                                "scale_up_wait_time":"5m",
+                                "scale_down_by":"5m",
+                                "scale_down_wait_time":"5m"
+                              }
+                            },
+                            "resource":{
+                              "name":"memory",
+                              "min_target_value":"2",
+                              "max_target_value":"4",
+                              "metric_time_spec":{
+                                "scale_up_by":"5m",
+                                "scale_up_wait_time":"5m",
+                                "scale_down_by":"5m",
+                                "scale_down_wait_time":"5m"
+                                }
+                                }
+                                }
+                                ]
+                          },
+                          "status":{
+                                "last_scale_time":"",
+                                "current_replicas":1,
+                                "desired_replicas":1
+                          },
+                          "created_at":"2017-09-27T10:58:50.393036+00:00"
+            }
+      responses:
+        204:
+          description: |
+            Succesfully updated scaling policy
+          body:
+            example: |
+              {
+              "id":"815739610230431744",
+              "object_meta":{
+                "name":"xyz",
+                "origin":"",
+                "uid":"",
+                "created_at":"",
+                "cluster_name":"",
+                "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                    "annotations":{
+                      "key1":"value1",
+                      "key2":"value2"
+                      },
+                    "owner_references":[
+                      {
+                        "kind":"HorizontalScaling",
+                        "api_version":"v1",
+                        "name":"ddd",
+                        "uid":"",
+                        "block_owner_deletion":true
+                        }
+                        ]
+                    },
+                    "type_meta":{
+                          "kind":"HorizontalScaling",
+                          "api_version":"v1"
+                    },
+                    "name":"example1",
+                    "description":"Horizontal auto scale",
+                    "tags":["horizontal scale","loadbalancer"],
+                    "scale_type":"AUTOHS",
+                    "representation_skew":"ACTIVE",
+                    "state":"data",
+                    "metadata":[],
+                    "spec":{
+                        "scale_target_ref":"ASM001",
+                        "min_replicas":4,
+                        "max_replicas":5,
+                        "metrics":[
+                              {
+                              "metric_type":"Resource",
+                              "object":{
+                                "target":"hits_as_per_second",
+                                "target_value":1000,
+                                "metric_time_spec":{
+                                  "scale_up_by":"5m",
+                                  "scale_up_wait_time":"5m",
+                                  "scale_down_by":"5m",
+                                  "scale_down_wait_time":"5m"
+                                }
+                              },
+                              "resource":{
+                                "name":"memory",
+                                "min_target_value":"2",
+                                "max_target_value":"4",
+                                "metric_time_spec":{
+                                  "scale_up_by":"5m",
+                                  "scale_up_wait_time":"5m",
+                                  "scale_down_by":"5m",
+                                  "scale_down_wait_time":"5m"
+                                  }
+                                  }
+                                  }
+                                  ]
+                            },
+                            "status":{
+                                  "last_scale_time":"",
+                                  "current_replicas":1,
+                                  "desired_replicas":1
+                            },
+                            "created_at":"2017-09-27T10:58:50.393036+00:00"
+              }
