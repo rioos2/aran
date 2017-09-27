@@ -56,6 +56,12 @@ pub fn secret_create(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<SecretCreateReq>>() {
             Ok(Some(body)) => {
+                if body.object_meta.origin.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `origin`",
+                    )));
+                }
                 secret_create.set_data(body.data);
                 let mut object_meta = ObjectMetaData::new();
                 object_meta.set_name(body.object_meta.name);
