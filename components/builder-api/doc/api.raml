@@ -1983,6 +1983,52 @@ schemas:
                   }
                 ]
               }
+  '/{id}':
+    get:
+      description: |
+        Retrieve storage by id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved storage by id
+          body:
+            example: |
+              {
+              "id": "815548029221216256",
+              "type_meta":{
+                "kind":"Storage",
+                "api_version":"v1"
+                },
+              "object_meta":{
+                  "name":"megam",
+                  "origin":"rioo",
+                  "uid":" ",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                      "group":"development",
+                      "key2":"value2"
+                      },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                  }
+                  },
+               "name":"iscsi",
+               "host_ip":"192.168.1.100",
+               "storage_type":"iscsi",
+               "parameters":{
+                  "pool_name":"iscsi-pool",
+                  "user_id":"iscsi-user",
+                  "password":"iscsi-password"
+                  },
+               "status":{
+                 "health_status":"",
+                 "message":"",
+                 "reason":""
+                },
+                "created_at": "2017-09-27T04:38:12.156829+00:00"
+          }
 /plans:
   get:
     description: |
@@ -2016,10 +2062,43 @@ schemas:
                               "type":"io.riocorp.vm::provided_by",
                               "version":"14.04"
                               }
-                              }
+                              },
+                              {
+                                "name":"Xenial",
+                                "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 16.04 LTS of the Ubuntu Linux-based operating system.",
+                                "href":"https://www.ubuntu.com",
+                                "characteristics":{
+                                  "provided_by":"rioos",
+                                  "type":"io.riocorp.vm::provided_by",
+                                  "version":"16.04"
+                                  }
+                                  }
                               ],
                     "created_at":"2017-09-27T04:37:42.763175+00:00"
                     },
+                    {
+                      "id":"815635670654533632",
+                      "name":"1_virtualmachine_centos",
+                      "description":"Centos operating system",
+                      "tags":["centos"],
+                      "camp_version":"1.2",
+                      "url":"/v3/plan/centos",
+                      "origin":"rioos:2.0",
+                      "artifacts":[],
+                      "services":[
+                            {
+                              "name":"Centos",
+                              "description":"Centos 7.4.",
+                              "href":"https://www.centos.com",
+                              "characteristics":{
+                                "provided_by":"rioos",
+                                "type":"io.riocorp.vm::provided_by",
+                                "version":"7.4"
+                                }
+                                }
+                                ],
+                      "created_at":"2017-09-27T04:37:42.763175+00:00"
+                      },
                   {
                     "id":"815547791513239552",
                     "name":"2_application_java",

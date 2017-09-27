@@ -1768,6 +1768,41 @@ items:[
     }
   ]
 }
+</code></pre></div></div></div></div></div></div></div></div><div class="panel panel-white resource-modal"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_storages__id_"><span class="parent">/storages</span>/{id}</a> <span class="methods"><a href="#storages__id__get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_storages__id_" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#storages__id__get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Retrieve storage by id</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="storages__id__get"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent">/storages</span>/{id}</h4></div><div class="modal-body"><div class="alert alert-info"><p>Retrieve storage by id</p></div><ul class="nav nav-tabs"><li class="active"><a href="#storages__id__get_request" data-toggle="tab">Request</a></li><li><a href="#storages__id__get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="storages__id__get_request"><h3>URI Parameters</h3><ul><li><strong>id</strong>: <em>required (string)</em></li></ul></div><div class="tab-pane" id="storages__id__get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><p>Succesfully retrieved storage by id</p><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
+"id": "815548029221216256",
+"type_meta":{
+  "kind":"Storage",
+  "api_version":"v1"
+  },
+"object_meta":{
+    "name":"megam",
+    "origin":"rioo",
+    "uid":" ",
+    "created_at":"",
+    "cluster_name":"",
+    "labels":{
+        "group":"development",
+        "key2":"value2"
+        },
+    "annotations":{
+      "key1":"value1",
+      "key2":"value2"
+    }
+    },
+ "name":"iscsi",
+ "host_ip":"192.168.1.100",
+ "storage_type":"iscsi",
+ "parameters":{
+    "pool_name":"iscsi-pool",
+    "user_id":"iscsi-user",
+    "password":"iscsi-password"
+    },
+ "status":{
+   "health_status":"",
+   "message":"",
+   "reason":""
+  },
+  "created_at": "2017-09-27T04:38:12.156829+00:00"
 </code></pre></div></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="plans" class="panel-title">/plans</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white resource-modal"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_plans"><span class="parent"></span>/plans</a> <span class="methods"><a href="#plans_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_plans" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#plans_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Retrieve plan_factory</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="plans_get"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent"></span>/plans</h4></div><div class="modal-body"><div class="alert alert-info"><p>Retrieve plan_factory</p></div><ul class="nav nav-tabs"><li class="active"><a href="#plans_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="plans_get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><p>Succesfully retrieved plan_factory</p><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
 "kind":"PlanList",
 "api_version":"v1",
@@ -1791,10 +1826,43 @@ items:[
                   "type":"io.riocorp.vm::provided_by",
                   "version":"14.04"
                   }
-                  }
+                  },
+                  {
+                    "name":"Xenial",
+                    "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 16.04 LTS of the Ubuntu Linux-based operating system.",
+                    "href":"https://www.ubuntu.com",
+                    "characteristics":{
+                      "provided_by":"rioos",
+                      "type":"io.riocorp.vm::provided_by",
+                      "version":"16.04"
+                      }
+                      }
                   ],
         "created_at":"2017-09-27T04:37:42.763175+00:00"
         },
+        {
+          "id":"815635670654533632",
+          "name":"1_virtualmachine_centos",
+          "description":"Centos operating system",
+          "tags":["centos"],
+          "camp_version":"1.2",
+          "url":"/v3/plan/centos",
+          "origin":"rioos:2.0",
+          "artifacts":[],
+          "services":[
+                {
+                  "name":"Centos",
+                  "description":"Centos 7.4.",
+                  "href":"https://www.centos.com",
+                  "characteristics":{
+                    "provided_by":"rioos",
+                    "type":"io.riocorp.vm::provided_by",
+                    "version":"7.4"
+                    }
+                    }
+                    ],
+          "created_at":"2017-09-27T04:37:42.763175+00:00"
+          },
       {
         "id":"815547791513239552",
         "name":"2_application_java",

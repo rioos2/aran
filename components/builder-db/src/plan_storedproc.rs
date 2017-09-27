@@ -45,12 +45,20 @@ impl Migratable for PlanProcedures {
         migrator.migrate(
             "plansrv",
             r#"INSERT INTO plan_factory(name,url,description,tags,camp_version,origin,artifacts,services)VALUES ('1_virtualmachine_ubuntu','/v3/plan/ubuntu','Ubuntu is a Debian-based Linux operating system','{"linux", "ubuntu", "xenial", "14.04"}','1.2', 'rioos:2.0','{}',
-            '{"{\"name\":\"Trusty\",\"description\":\"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"type\":\"io.riocorp.vm::provided_by\",\"version\":\"14.04\",\"provided_by\":\"rioos\"}}"}')"#,
+            '{"{\"name\":\"Trusty\",\"description\":\"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"type\":\"io.riocorp.vm::provided_by\",\"version\":\"14.04\",\"provided_by\":\"rioos\"}}","{\"name\":\"Xenial\",\"description\":\"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 16.04 LTS of the Ubuntu Linux-based operating system.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"type\":\"io.riocorp.vm::provided_by\",\"version\":\"16.04\",\"provided_by\":\"rioos\"}}"}')"#,
 
         )?;
 
         ui.para("[✓] plan_factory_ubuntu");
 
+        migrator.migrate(
+            "plansrv",
+            r#"INSERT INTO plan_factory(name,url,description,tags,camp_version,origin,artifacts,services)VALUES ('1_virtualmachine_centos','/v3/plan/centos','centos operating system','{"centos"}','1.2', 'rioos:2.0','{}',
+            '{"{\"name\":\"Centos\",\"description\":\"centos 7.4.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"type\":\"io.riocorp.vm::provided_by\",\"version\":\"7.4\",\"provided_by\":\"rioos\"}}"}')"#,
+
+        )?;
+
+        ui.para("[✓] plan_factory_centos");
 
         migrator.migrate(
             "plansrv",
