@@ -42,7 +42,6 @@ struct StatusReq {
     conditions: Vec<ConditionReq>,
 }
 
-#[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ConditionReq {
     message: String,

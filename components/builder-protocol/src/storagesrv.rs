@@ -132,3 +132,142 @@ impl StorageGetResponse {
         self.api_version = s;
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct DataCenter {
+    id: String,
+    object_meta: servicesrv::ObjectMetaData,
+    type_meta: asmsrv::TypeMeta,
+    name: String,
+    nodes: Vec<String>,
+    networks: Vec<String>,
+    storage: String,
+    advanced_settings: BTreeMap<String, String>,
+    flag: String,
+    currency: String,
+    status: DcStatus,
+    created_at: String,
+}
+impl DataCenter {
+    pub fn new() -> DataCenter {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_flag(&mut self, v: ::std::string::String) {
+        self.flag = v;
+    }
+    pub fn get_flag(&self) -> ::std::string::String {
+        self.flag.clone()
+    }
+
+    pub fn set_currency(&mut self, v: ::std::string::String) {
+        self.currency = v;
+    }
+    pub fn get_currency(&self) -> ::std::string::String {
+        self.currency.clone()
+    }
+
+    pub fn set_networks(&mut self, v: ::std::vec::Vec<String>) {
+        self.networks = v;
+    }
+    pub fn get_networks(&self) -> ::std::vec::Vec<String> {
+        self.networks.clone()
+    }
+
+    pub fn set_nodes(&mut self, v: ::std::vec::Vec<String>) {
+        self.nodes = v;
+    }
+    pub fn get_nodes(&self) -> ::std::vec::Vec<String> {
+        self.nodes.clone()
+    }
+
+    pub fn set_storage(&mut self, v: ::std::string::String) {
+        self.storage = v;
+    }
+    pub fn get_storage(&self) -> ::std::string::String {
+        self.storage.clone()
+    }
+
+    pub fn set_type_meta(&mut self, v: asmsrv::TypeMeta) {
+        self.type_meta = v;
+    }
+
+    pub fn get_type_meta(&self) -> &asmsrv::TypeMeta {
+        &self.type_meta
+    }
+
+    pub fn set_status(&mut self, v: DcStatus) {
+        self.status = v;
+    }
+
+    pub fn get_status(&self) -> &DcStatus {
+        &self.status
+    }
+
+    pub fn set_advanced_settings(&mut self, v: BTreeMap<String, String>) {
+        self.advanced_settings = v;
+    }
+
+    pub fn get_advanced_settings(&self) -> &BTreeMap<String, String> {
+        &self.advanced_settings
+    }
+
+    pub fn set_object_meta(&mut self, v: servicesrv::ObjectMetaData) {
+        self.object_meta = v;
+    }
+
+    pub fn get_object_meta(&self) -> &servicesrv::ObjectMetaData {
+        &self.object_meta
+    }
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct DcStatus {
+    health_status: String,
+    reason: String,
+    message: String,
+    conditions: Vec<asmsrv::Condition>,
+}
+
+impl DcStatus {
+    pub fn new() -> DcStatus {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_health_status(&mut self, v: ::std::string::String) {
+        self.health_status = v;
+    }
+
+    pub fn set_reason(&mut self, v: ::std::string::String) {
+        self.reason = v;
+    }
+
+    pub fn set_message(&mut self, v: ::std::string::String) {
+        self.message = v;
+    }
+
+    pub fn set_conditions(&mut self, v: Vec<asmsrv::Condition>) {
+        self.conditions = v;
+    }
+}
