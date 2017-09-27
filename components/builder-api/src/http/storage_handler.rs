@@ -12,8 +12,8 @@ use iron::typemap;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use protocol::servicesrv::ObjectMetaData;
-use protocol::asmsrv::{TypeMeta, IdGet};
-use protocol::storagesrv::{Storage, Status};
+use protocol::asmsrv::{TypeMeta, IdGet, Condition};
+use protocol::storagesrv::{Storage, Status, DataCenter, DcStatus};
 
 use db::data_store::Broker;
 use std::collections::BTreeMap;
@@ -56,10 +56,42 @@ struct StatusReq {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct CommonStatusReq {
+struct StorageStatusReq {
     status: StatusReq,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct DataCenterReq {
+    type_meta: TypeMetaReq,
+    object_meta: ObjectMetaReq,
+    name: String,
+    nodes: Vec<String>,
+    networks: Vec<String>,
+    storage: String,
+    advanced_settings: BTreeMap<String, String>,
+    flag: String,
+    currency: String,
+    status: DcStatusReq,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct DcStatusReq {
+    health_status: String,
+    message: String,
+    reason: String,
+    conditions: Vec<ConditionReq>,
+}
+
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct ConditionReq {
+    message: String,
+    reason: String,
+    status: String,
+    last_transition_time: String,
+    last_probe_time: String,
+    condition_type: String,
+}
 
 pub fn storage_create(req: &mut Request) -> IronResult<Response> {
     let mut storage_create = Storage::new();
@@ -207,7 +239,7 @@ pub fn storage_status_update(req: &mut Request) -> IronResult<Response> {
     let mut storage_create = Storage::new();
     storage_create.set_id(id.to_string());
     {
-        match req.get::<bodyparser::Struct<CommonStatusReq>>() {
+        match req.get::<bodyparser::Struct<StorageStatusReq>>() {
             Ok(Some(body)) => {
                 let mut status = Status::new();
                 status.set_health_status(body.status.health_status);
@@ -229,6 +261,68 @@ pub fn storage_status_update(req: &mut Request) -> IronResult<Response> {
 
     match StorageDS::storage_status_update(&conn, &storage_create) {
         Ok(storage_create) => Ok(render_json(status::Ok, &storage_create)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
+}
+
+pub fn data_center_create(req: &mut Request) -> IronResult<Response> {
+    let mut dc_create = DataCenter::new();
+    {
+        match req.get::<bodyparser::Struct<DataCenterReq>>() {
+            Ok(Some(body)) => {
+                let mut object_meta = ObjectMetaData::new();
+                object_meta.set_name(body.object_meta.name);
+                object_meta.set_origin(body.object_meta.origin);
+                object_meta.set_uid(body.object_meta.uid);
+                object_meta.set_created_at(body.object_meta.created_at);
+                object_meta.set_cluster_name(body.object_meta.cluster_name);
+                object_meta.set_labels(body.object_meta.labels);
+                object_meta.set_annotations(body.object_meta.annotations);
+                dc_create.set_object_meta(object_meta);
+                let mut type_meta = TypeMeta::new();
+                type_meta.set_kind(body.type_meta.kind);
+                type_meta.set_api_version(body.type_meta.api_version);
+                dc_create.set_type_meta(type_meta);
+                dc_create.set_name(body.name);
+                dc_create.set_networks(body.networks);
+                dc_create.set_storage(body.storage);
+                dc_create.set_advanced_settings(body.advanced_settings);
+                dc_create.set_nodes(body.nodes);
+                let mut status = DcStatus::new();
+                status.set_health_status(body.status.health_status);
+                status.set_message(body.status.message);
+                status.set_reason(body.status.reason);
+                let mut condition_collection = Vec::new();
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_last_transition_time(data.last_transition_time);
+                    condition.set_last_probe_time(data.last_probe_time);
+                    condition.set_condition_type(data.condition_type);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
+                dc_create.set_status(status);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+
+    let conn = Broker::connect().unwrap();
+
+    match StorageDS::data_center_create(&conn, &dc_create) {
+        Ok(dc_create) => Ok(render_json(status::Ok, &dc_create)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),

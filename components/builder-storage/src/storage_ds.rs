@@ -104,6 +104,31 @@ impl StorageDS {
         let storage = row_to_storage(&rows.get(0))?;
         return Ok(Some(storage.clone()));
     }
+
+    pub fn data_center_create(datastore: &DataStoreConn, dc_create: &storagesrv::DataCenter) -> Result<Option<storagesrv::DataCenter>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let object_meta = serde_json::to_string(dc_create.get_object_meta()).unwrap();
+        let type_meta = serde_json::to_string(dc_create.get_type_meta()).unwrap();
+        let status_str = serde_json::to_string(dc_create.get_status()).unwrap();
+        let adv_str = serde_json::to_string(dc_create.get_advanced_settings()).unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM insert_dc_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            &[
+                &(object_meta as String),
+                &(type_meta as String),
+                &(dc_create.get_name() as String),
+                &(dc_create.get_nodes() as Vec<String>),
+                &(dc_create.get_networks() as Vec<String>),
+                &(dc_create.get_storage() as String),
+                &(adv_str as String),
+                &(dc_create.get_flag() as String),
+                &(dc_create.get_currency() as String),
+                &(status_str as String),
+            ],
+        ).map_err(Error::DcCreate)?;
+        let dc = row_to_dc(&rows.get(0))?;
+        return Ok(Some(dc.clone()));
+    }
 }
 
 fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
@@ -131,7 +156,40 @@ fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
     storage.set_host_ip(host_ip);
     storage.set_storage_type(storage_type);
     storage.set_created_at(created_at.to_rfc3339());
-    debug!("◖☩ ASM: row_to_secret =>\n{:?}", storage);
-    debug!("◖☩ DONE: row_to_secret");
     Ok(storage)
+}
+
+
+fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
+    let mut dc = storagesrv::DataCenter::new();
+    let id: i64 = row.get("id");
+    let name: String = row.get("name");
+    let storage: String = row.get("storage");
+    let flag: String = row.get("flag");
+    let currency: String = row.get("currency");
+    let networks: Vec<String> = row.get("networks");
+    let nodes: Vec<String> = row.get("nodes");
+    let advanced_settings: String = row.get("advanced_settings");
+    let status: String = row.get("status");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+    let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
+
+    dc.set_id(id.to_string() as String);
+    let adv_obj: BTreeMap<String, String> = serde_json::from_str(&advanced_settings).unwrap();
+    dc.set_advanced_settings(adv_obj);
+    let object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
+    dc.set_object_meta(object_meta_obj);
+    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
+    dc.set_type_meta(type_meta_obj);
+    let status: storagesrv::DcStatus = serde_json::from_str(&status).unwrap();
+    dc.set_status(status);
+    dc.set_name(name);
+    dc.set_networks(networks);
+    dc.set_storage(storage);
+    dc.set_flag(flag);
+    dc.set_currency(currency);
+    dc.set_nodes(nodes);
+    dc.set_created_at(created_at.to_rfc3339());
+    Ok(dc)
 }

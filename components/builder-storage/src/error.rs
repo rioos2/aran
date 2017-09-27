@@ -22,6 +22,7 @@ pub enum Error {
     StorageGetResponse(postgres::error::Error),
     StorageGet(postgres::error::Error),
     StorageSetStatus(postgres::error::Error),
+    DcCreate(postgres::error::Error),
     IO(io::Error),
 }
 
@@ -39,6 +40,7 @@ impl fmt::Display for Error {
             Error::StorageGetResponse(ref e) => format!("Database error list storages, {}", e),
             Error::StorageGet(ref e) => format!("Database error retrive the storage, {}", e),
             Error::StorageSetStatus(ref e) => format!("Database error updating the storage, {}", e),
+            Error::DcCreate(ref e) => format!("Database error creating a data_center, {}", e),
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
         };
@@ -58,6 +60,7 @@ impl error::Error for Error {
             Error::StorageGetResponse(ref err) => err.description(),
             Error::StorageGet(ref err) => err.description(),
             Error::StorageSetStatus(ref err) => err.description(),
+            Error::DcCreate(ref err) => err.description(),
             Error::InvalidUrl => "Bad Url!",
         }
     }

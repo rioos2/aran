@@ -136,6 +136,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         storage_update: put "storages/:id" => XHandler::new(storage_update).before(basic.clone()),
 
         //DataCenter API
+        data_center: post "/datacenters" => XHandler::new(data_center_create).before(basic.clone()),
 
     );
 

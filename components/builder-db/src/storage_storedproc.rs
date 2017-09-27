@@ -125,6 +125,60 @@ impl Migratable for StorageProcedures {
 
         ui.para("[✓] update_storage_v1");
 
+
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS dc_id_seq;"#,
+        )?;
+
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE TABLE  IF NOT EXISTS data_center (
+             id bigint PRIMARY KEY DEFAULT next_id_v1('dc_id_seq'),
+             object_meta text,
+             type_meta text,
+             name text,
+             nodes text[],
+             networks text[],
+             storage text,
+             advanced_settings text,
+             flag text,
+             currency text,
+             status text,
+             updated_at timestamptz,
+             created_at timestamptz DEFAULT now()
+             )"#,
+        )?;
+
+        ui.para("[✓] data_center");
+
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION insert_dc_v1 (
+                object_meta text,
+                type_meta text,
+                name text,
+                nodes text[],
+                networks text[],
+                storage text,
+                advanced_settings text,
+                flag text,
+                currency text,
+                status text
+            ) RETURNS SETOF data_center AS $$
+                                BEGIN
+                                    RETURN QUERY INSERT INTO data_center(object_meta,type_meta,name,nodes,networks,storage,advanced_settings,flag,currency,status)
+                                        VALUES (object_meta,type_meta,name,nodes,networks,storage,advanced_settings,flag,currency,status)
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#,
+        )?;
+
+
+        ui.para("[✓] insert_dc_v1");
+
         ui.end("StorageProcedures");
 
         Ok(())
