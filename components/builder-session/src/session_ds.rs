@@ -221,9 +221,9 @@ impl SessionDS {
         Ok(Some(response))
     }
 
-    pub fn origin_show(datastore: &DataStoreConn, get_origin: &originsrv::OriginGet) -> Result<Option<originsrv::Origin>> {
+    pub fn origin_show(datastore: &DataStoreConn, get_origin: &asmsrv::IdGet) -> Result<Option<originsrv::Origin>> {
         let conn = datastore.pool.get_shard(0)?;
-        let rows = &conn.query("SELECT * FROM get_origin_v1($1)", &[&get_origin.get_name()])
+        let rows = &conn.query("SELECT * FROM get_origin_v1($1)", &[&get_origin.get_id()])
             .map_err(Error::OriginGet)?;
         for row in rows {
             let origin = row_to_origin(&row)?;

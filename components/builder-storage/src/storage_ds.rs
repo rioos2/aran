@@ -55,11 +55,22 @@ impl StorageDS {
         );
         Ok(Some(response))
     }
+
+    pub fn storage_show(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::Storage>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let storage_id = get_storage.get_id().parse::<i64>().unwrap();
+        let rows = &conn.query("SELECT * FROM get_storage_v1($1)", &[&storage_id])
+            .map_err(Error::StorageGet)?;
+        for row in rows {
+            let storage = row_to_storage(&row)?;
+            return Ok(Some(storage));
+        }
+        Ok(None)
+    }
 }
 
 fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
     let mut storage = storagesrv::Storage::new();
-    debug!("◖☩ START: row_to_secret");
     let id: i64 = row.get("id");
     let name: String = row.get("name");
     let storage_type: String = row.get("storage_type");

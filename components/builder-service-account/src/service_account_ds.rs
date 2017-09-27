@@ -35,7 +35,7 @@ impl ServiceAccountDS {
         debug!("◖☩ DONE:secret_create ");
         return Ok(Some(secret.clone()));
     }
-    pub fn secret_show(datastore: &DataStoreConn, get_secret: &servicesrv::SecretGet) -> Result<Option<servicesrv::Secret>> {
+    pub fn secret_show(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: secret_show {:?}", get_secret.get_id());
         let secret_id = get_secret.get_id().parse::<i64>().unwrap();
@@ -49,7 +49,7 @@ impl ServiceAccountDS {
         Ok(None)
     }
 
-    pub fn secret_show_by_origin(datastore: &DataStoreConn, get_secret: &servicesrv::SecretGet) -> Result<Option<servicesrv::SecretGetResponse>> {
+    pub fn secret_show_by_origin(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::SecretGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -114,11 +114,11 @@ impl ServiceAccountDS {
         return Ok(Some(service_account.clone()));
     }
 
-    pub fn service_account_show(datastore: &DataStoreConn, get_service: &servicesrv::ServiceAccountGet) -> Result<Option<servicesrv::ServiceAccount>> {
+    pub fn service_account_show(datastore: &DataStoreConn, get_service: &asmsrv::IdGet) -> Result<Option<servicesrv::ServiceAccount>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_service_account_by_origin_v1($1,$2)",
-            &[&get_service.get_name(), &get_service.get_origin()],
+            &[&get_service.get_id(), &get_service.get_name()],
         ).map_err(Error::ServiceAccountGet)?;
         debug!(">● ROWS: secret_show =>\n{:?}", &rows);
         for row in rows {

@@ -19,12 +19,12 @@ impl Migratable for StorageProcedures {
         ui.begin("StorageProcedures");
 
         migrator.migrate(
-            "netsrv",
+            "storagesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS storage_id_seq;"#,
         )?;
 
         migrator.migrate(
-            "nodesrv",
+            "storagesrv",
             r#"CREATE TABLE  IF NOT EXISTS storages (
              id bigint PRIMARY KEY DEFAULT next_id_v1('storage_id_seq'),
              object_meta text,
@@ -44,7 +44,7 @@ impl Migratable for StorageProcedures {
 
         // Insert a new job into the jobs table
         migrator.migrate(
-            "nodesrv",
+            "storagesrv",
             r#"CREATE OR REPLACE FUNCTION insert_storage_v1 (
                 object_meta text,
                 type_meta text,
@@ -68,10 +68,23 @@ impl Migratable for StorageProcedures {
         ui.para("[✓] insert_storage_v1");
 
         migrator.migrate(
-            "servicesrv",
+            "storagesrv",
             r#"CREATE OR REPLACE FUNCTION get_storages_v1() RETURNS SETOF storages AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM storages;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        ui.para("[✓] get_storages_v1");
+
+
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION get_storage_v1 (sid bigint) RETURNS SETOF storages AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM storages WHERE id = sid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,

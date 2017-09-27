@@ -10,7 +10,7 @@ use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, AssemblyGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, Properties, OpsSettings, TypeMeta, ObjectMeta, OwnerReferences};
+use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, Properties, OpsSettings, TypeMeta, ObjectMeta, OwnerReferences};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
@@ -232,7 +232,7 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    let mut asm_get = AssemblyGet::new();
+    let mut asm_get = IdGet::new();
     asm_get.set_id(id.to_string());
 
     match DeploymentDS::assembly_show(&conn, &asm_get) {

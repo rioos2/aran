@@ -9,11 +9,11 @@ use session::session_ds::SessionDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::originsrv::{Origin, OriginGet};
+use protocol::originsrv::Origin;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use protocol::servicesrv::ObjectMetaData;
-use protocol::asmsrv::TypeMeta;
+use protocol::asmsrv::{TypeMeta, IdGet};
 use db::data_store::Broker;
 use std::collections::BTreeMap;
 
@@ -103,8 +103,8 @@ pub fn origin_show(req: &mut Request) -> IronResult<Response> {
     };
     let conn = Broker::connect().unwrap();
 
-    let mut org_get = OriginGet::new();
-    org_get.set_name(org_name);
+    let mut org_get = IdGet::new();
+    org_get.set_id(org_name);
     match SessionDS::origin_show(&conn, &org_get) {
         Ok(origin) => Ok(render_json(status::Ok, &origin)),
         Err(err) => Ok(render_net_error(

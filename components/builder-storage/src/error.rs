@@ -20,7 +20,7 @@ pub enum Error {
     InvalidUrl,
     StorageCreate(postgres::error::Error),
     StorageGetResponse(postgres::error::Error),
-    NodeSetStatus(postgres::error::Error),
+    StorageGet(postgres::error::Error),
     IO(io::Error),
 }
 
@@ -36,7 +36,7 @@ impl fmt::Display for Error {
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::StorageCreate(ref e) => format!("Database error creating a storage, {}", e),
             Error::StorageGetResponse(ref e) => format!("Database error list storages, {}", e),
-            Error::NodeSetStatus(ref e) => format!("Database error update node status, {}", e),
+            Error::StorageGet(ref e) => format!("Database error retrive the storage, {}", e),
             Error::InvalidUrl => format!("Bad URL!"),
             Error::IO(ref e) => format!("{}", e),
         };
@@ -54,7 +54,7 @@ impl error::Error for Error {
             Error::IO(ref err) => err.description(),
             Error::StorageCreate(ref err) => err.description(),
             Error::StorageGetResponse(ref err) => err.description(),
-            Error::NodeSetStatus(ref err) => err.description(),
+            Error::StorageGet(ref err) => err.description(),
             Error::InvalidUrl => "Bad Url!",
         }
     }

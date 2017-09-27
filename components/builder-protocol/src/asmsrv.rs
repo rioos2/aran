@@ -243,15 +243,15 @@ impl AssemblysGetResponse {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct AssemblyGet {
+pub struct IdGet {
     id: String,
+    name: String,
 }
 
-impl AssemblyGet {
-    pub fn new() -> AssemblyGet {
+impl IdGet {
+    pub fn new() -> IdGet {
         ::std::default::Default::default()
     }
-
     // Param is passed by value, moved
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
@@ -259,6 +259,14 @@ impl AssemblyGet {
 
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
     }
 }
 

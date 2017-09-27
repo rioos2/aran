@@ -129,27 +129,6 @@ impl ObjectMetaData {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct SecretGet {
-    id: String,
-}
-
-impl SecretGet {
-    pub fn new() -> SecretGet {
-        ::std::default::Default::default()
-    }
-
-    // Param is passed by value, moved
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-
-    pub fn get_id(&self) -> ::std::string::String {
-        self.id.clone()
-    }
-}
-
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SecretGetResponse {
     kind: String,
     api_version: String,
@@ -214,35 +193,6 @@ impl ServiceAccount {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct ServiceAccountGet {
-    name: String,
-    origin: String,
-}
-
-impl ServiceAccountGet {
-    pub fn new() -> ServiceAccountGet {
-        ::std::default::Default::default()
-    }
-
-    // Param is passed by value, moved
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-
-    pub fn get_name(&self) -> ::std::string::String {
-        self.name.clone()
-    }
-
-    pub fn set_origin(&mut self, v: ::std::string::String) {
-        self.origin = v;
-    }
-
-    pub fn get_origin(&self) -> ::std::string::String {
-        self.origin.clone()
     }
 }
 
