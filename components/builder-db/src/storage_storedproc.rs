@@ -140,6 +140,7 @@ impl Migratable for StorageProcedures {
              name text,
              nodes text[],
              networks text[],
+             enabled bool,
              storage text,
              advanced_settings text,
              flag text,
@@ -160,6 +161,7 @@ impl Migratable for StorageProcedures {
                 name text,
                 nodes text[],
                 networks text[],
+                enabled bool,
                 storage text,
                 advanced_settings text,
                 flag text,
@@ -167,8 +169,8 @@ impl Migratable for StorageProcedures {
                 status text
             ) RETURNS SETOF data_center AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO data_center(object_meta,type_meta,name,nodes,networks,storage,advanced_settings,flag,currency,status)
-                                        VALUES (object_meta,type_meta,name,nodes,networks,storage,advanced_settings,flag,currency,status)
+                                    RETURN QUERY INSERT INTO data_center(object_meta,type_meta,name,nodes,networks,enabled,storage,advanced_settings,flag,currency,status)
+                                        VALUES (object_meta,type_meta,name,nodes,networks,enabled,storage,advanced_settings,flag,currency,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -178,6 +180,18 @@ impl Migratable for StorageProcedures {
 
 
         ui.para("[✓] insert_dc_v1");
+
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION get_data_centers_v1() RETURNS SETOF data_center AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM data_center;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        ui.para("[✓] get_data_centers_v1");
 
         ui.end("StorageProcedures");
 
