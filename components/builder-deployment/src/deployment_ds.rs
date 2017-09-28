@@ -372,7 +372,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
 fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     let mut plan = plansrv::Plan::new();
     let id: i64 = row.get("id");
-    let name: String = row.get("name");
+    let name: String = row.get("group_name");
     let url: String = row.get("url");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");

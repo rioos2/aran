@@ -112,13 +112,14 @@ impl StorageDS {
         let status_str = serde_json::to_string(dc_create.get_status()).unwrap();
         let adv_str = serde_json::to_string(dc_create.get_advanced_settings()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM insert_dc_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            "SELECT * FROM insert_dc_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
                 &(object_meta as String),
                 &(type_meta as String),
                 &(dc_create.get_name() as String),
                 &(dc_create.get_nodes() as Vec<String>),
                 &(dc_create.get_networks() as Vec<String>),
+                &(dc_create.get_enabled() as bool),
                 &(dc_create.get_storage() as String),
                 &(adv_str as String),
                 &(dc_create.get_flag() as String),
@@ -128,6 +129,26 @@ impl StorageDS {
         ).map_err(Error::DcCreate)?;
         let dc = row_to_dc(&rows.get(0))?;
         return Ok(Some(dc.clone()));
+    }
+
+    pub fn data_center_list(datastore: &DataStoreConn) -> Result<Option<storagesrv::DcGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_data_centers_v1()", &[])
+            .map_err(Error::DcGetResponse)?;
+
+        let mut response = storagesrv::DcGetResponse::new();
+
+        let mut dc_collection = Vec::new();
+        for row in rows {
+            dc_collection.push(row_to_dc(&row)?)
+        }
+        response.set_dc_collection(
+            dc_collection,
+            "DataCenterList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
     }
 }
 
@@ -168,6 +189,7 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     let flag: String = row.get("flag");
     let currency: String = row.get("currency");
     let networks: Vec<String> = row.get("networks");
+    let enabled: bool = row.get("enabled");
     let nodes: Vec<String> = row.get("nodes");
     let advanced_settings: String = row.get("advanced_settings");
     let status: String = row.get("status");
@@ -188,6 +210,7 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     dc.set_networks(networks);
     dc.set_storage(storage);
     dc.set_flag(flag);
+    dc.set_enabled(enabled);
     dc.set_currency(currency);
     dc.set_nodes(nodes);
     dc.set_created_at(created_at.to_rfc3339());

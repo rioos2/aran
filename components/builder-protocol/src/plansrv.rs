@@ -23,7 +23,7 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Plan {
     id: String,
-    name: String,
+    group_name: String,
     description: String,
     tags: Vec<String>,
     camp_version: String,
@@ -42,7 +42,7 @@ impl Plan {
     }
 
     pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
+        self.group_name = v;
     }
 
     pub fn set_description(&mut self, v: ::std::string::String) {

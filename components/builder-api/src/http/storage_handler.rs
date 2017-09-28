@@ -54,6 +54,7 @@ struct DataCenterReq {
     storage: String,
     advanced_settings: BTreeMap<String, String>,
     flag: String,
+    enabled: bool,
     currency: String,
     status: deployment_handler::StatusReq,
 }
@@ -273,6 +274,7 @@ pub fn data_center_create(req: &mut Request) -> IronResult<Response> {
                 }
                 status.set_conditions(condition_collection);
                 dc_create.set_status(status);
+                dc_create.set_enabled(body.enabled);
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(
@@ -292,5 +294,17 @@ pub fn data_center_create(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+
+#[allow(unused_variables)]
+pub fn data_center_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match StorageDS::data_center_list(&conn) {
+        Ok(data_center_list) => Ok(render_json(status::Ok, &data_center_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }

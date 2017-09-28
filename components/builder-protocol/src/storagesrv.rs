@@ -141,6 +141,7 @@ pub struct DataCenter {
     name: String,
     nodes: Vec<String>,
     networks: Vec<String>,
+    enabled: bool,
     storage: String,
     advanced_settings: BTreeMap<String, String>,
     flag: String,
@@ -238,5 +239,32 @@ impl DataCenter {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+
+    pub fn set_enabled(&mut self, v: bool) {
+        self.enabled = v;
+    }
+    pub fn get_enabled(&self) -> bool {
+        self.enabled.clone()
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct DcGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<DataCenter>,
+}
+
+impl DcGetResponse {
+    pub fn new() -> DcGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_dc_collection(&mut self, v: Vec<DataCenter>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
     }
 }

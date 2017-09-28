@@ -2182,7 +2182,7 @@ id:"815639946302857216",
 "items":[
       {
         "id":"815547791504842752",
-        "name":"1_virtualmachine_ubuntu",
+        "group_name":"1_virtualmachine_ubuntu",
         "description":"Ubuntu is a Debian-based Linux operating system",
         "tags":["linux","ubuntu","xenial","14.04"],
         "camp_version":"1.2",
@@ -2215,7 +2215,7 @@ id:"815639946302857216",
         },
         {
           "id":"815635670654533632",
-          "name":"1_virtualmachine_centos",
+          "group_name":"1_virtualmachine_centos",
           "description":"Centos operating system",
           "tags":["centos"],
           "camp_version":"1.2",
@@ -2238,7 +2238,7 @@ id:"815639946302857216",
           },
       {
         "id":"815547791513239552",
-        "name":"2_application_java",
+        "group_name":"2_application_java",
         "description":"The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.",
         "tags":["tomcat","java","jdk"],
         "camp_version":"1.2",
@@ -2265,7 +2265,7 @@ id:"815639946302857216",
         },
         {
         "id":"815547791521636352",
-        "name":"2_application_rails",
+        "group_name":"2_application_rails",
         "description":"Rails is a web application framework written in Ruby.",
         "tags":["rails","ruby","ror"],
         "camp_version":"1.2",
@@ -2334,7 +2334,7 @@ id:"815639946302857216",
                   {
                   "condition_type":"",
                   "status":"",
-                  "last_heartbeat_time":"",
+                  "last_probe_time":"",
                   "last_transition_time":"",
                   "reason":"",
                   "message":""
@@ -2415,7 +2415,7 @@ id:"815639946302857216",
                   {
                   "condition_type":"",
                   "status":"",
-                  "last_heartbeat_time":"",
+                  "last_probe_time":"",
                   "last_transition_time":"",
                   "reason":"",
                   "message":""
@@ -2501,7 +2501,7 @@ id:"815639946302857216",
                               {
                               "condition_type":"",
                               "status":"",
-                              "last_heartbeat_time":"",
+                              "last_probe_time":"",
                               "last_transition_time":"",
                               "reason":"",
                               "message":""
@@ -2585,7 +2585,7 @@ id:"815639946302857216",
                 {
                 "condition_type":"",
                 "status":"",
-                "last_heartbeat_time":"",
+                "last_probe_time":"",
                 "last_transition_time":"",
                 "reason":"",
                 "message":""
@@ -2667,7 +2667,7 @@ id:"815639946302857216",
               {
               "condition_type":"",
               "status":"",
-              "last_heartbeat_time":"",
+              "last_probe_time":"",
               "last_transition_time":"",
               "reason":"",
               "message":""
@@ -3121,4 +3121,181 @@ id:"815639946302857216",
               },
               "created_at":"2017-09-27T10:58:50.393036+00:00"
 }
-</code></pre></div></div></div></div></div></div></div></div></div></div></div></div><div class="col-md-3"><div id="sidebar" class="hidden-print affix" role="complementary"><ul class="nav nav-pills nav-stacked"><li><a href="#healthz">/healthz</a></li><li><a href="#accounts">/accounts</a></li><li><a href="#authenticate">/authenticate</a></li><li><a href="#roles">/roles</a></li><li><a href="#permissions">/permissions</a></li><li><a href="#assemblyfactorys">/assemblyfactorys</a></li><li><a href="#assemblys">/assemblys</a></li><li><a href="#secrets">/secrets</a></li><li><a href="#origins">/origins</a></li><li><a href="#storages">/storages</a></li><li><a href="#plans">/plans</a></li><li><a href="#nodes">/nodes</a></li><li><a href="#healthz_overall">/healthz/overall</a></li><li><a href="#serviceaccounts">/serviceaccounts</a></li><li><a href="#horizontalscaling">/horizontalscaling</a></li></ul></div></div></div></div></body></html>
+</code></pre></div></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="datacenters" class="panel-title">/datacenters</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white resource-modal"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_datacenters"><span class="parent"></span>/datacenters</a> <span class="methods"><a href="#datacenters_post"><span class="badge badge_post">post</span></a> <a href="#datacenters_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_datacenters" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#datacenters_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><p>Create a new datacenter</p></div><div class="clearfix"></div></div><div onclick="window.location.href = '#datacenters_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Retrieve datacenter</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="datacenters_post"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_post">post</span> <span class="parent"></span>/datacenters</h4></div><div class="modal-body"><div class="alert alert-info"><p>Create a new datacenter</p></div><ul class="nav nav-tabs"><li class="active"><a href="#datacenters_post_request" data-toggle="tab">Request</a></li><li><a href="#datacenters_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="datacenters_post_request"><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
+"type_meta":
+  {
+  "kind":"DataCenter",
+  "api_version":"v1"
+  },
+"object_meta":
+  {
+    "name":"megam",
+    "origin":"rioo",
+    "uid":"814310923685601280",
+    "created_at":"",
+    "cluster_name":"",
+    "labels":
+      {
+        "group":"development",
+        "key2":"value2"
+        },
+    "annotations":
+      {
+      "key1":"value1",
+      "key2":"value2"
+      }
+      },
+    "name":"chennai",
+    "nodes":["12345678","&lt;node_id&gt;"],
+    "storage": "12345678 &lt;storage_id&gt;",
+    "networks": ["12345678","&lt;network_id&gt;"],
+    "enabled": true,
+    "advanced_settings":
+      {
+        "storage":"true",
+        "storage":"false",
+        "storage": "true"
+      },
+    "flag":"ch.png",
+    "currency":"rs",
+    "status":
+      {
+        "phase":"",
+        "message": "",
+        "reason": "",
+        "conditions":
+          [
+            {
+              "message":"",
+              "reason":"",
+              "status":" ",
+              "last_transition_time":" ",
+              "last_probe_time":" ",
+              "condition_type":" "
+              }
+              ]
+              }
+              }
+</code></pre></div></div><div class="tab-pane" id="datacenters_post_response"><h2>HTTP status code <a href="http://httpstatus.es/201" target="_blank">201</a></h2><p>Succesfully created a new datacenter</p><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
+"id": "816323282880962560",
+"type_meta":
+  {
+  "kind":"DataCenter",
+  "api_version":"v1"
+  },
+"object_meta":
+  {
+    "name":"megam",
+    "origin":"rioo",
+    "uid":"814310923685601280",
+    "created_at":"",
+    "cluster_name":"",
+    "labels":
+      {
+        "group":"development",
+        "key2":"value2"
+        },
+    "annotations":
+      {
+      "key1":"value1",
+      "key2":"value2"
+      }
+      },
+    "name":"chennai",
+    "nodes":["12345678","&lt;node_id&gt;"],
+    "storage": "12345678 &lt;storage_id&gt;",
+    "networks": ["12345678","&lt;network_id&gt;"],
+    "enabled": true,
+    "advanced_settings":
+      {
+        "storage":"true",
+        "storage":"false",
+        "storage": "true"
+      },
+    "flag":"ch.png",
+    "currency":"rs",
+    "status":
+      {
+        "phase":"",
+        "message": "",
+        "reason": "",
+        "conditions":
+          [
+            {
+              "message":"",
+              "reason":"",
+              "status":" ",
+              "last_transition_time":" ",
+              "last_probe_time":" ",
+              "condition_type":" "
+              }
+              ]
+              },
+        "created_at": "2017-09-28T06:18:29.595025+00:00"
+              }
+</code></pre></div></div></div></div></div></div></div><div class="modal fade" tabindex="0" id="datacenters_get"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent"></span>/datacenters</h4></div><div class="modal-body"><div class="alert alert-info"><p>Retrieve datacenter</p></div><ul class="nav nav-tabs"><li class="active"><a href="#datacenters_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="datacenters_get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><p>Succesfully retrieved datacenter</p><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
+"kind": "DataCenterList",
+"api_version": "v1",
+"items":
+[
+{
+"id": "816323282880962560",
+"type_meta":
+  {
+  "kind":"Origin",
+  "api_version":"v1"
+  },
+"object_meta":
+  {
+    "name":"megam",
+    "origin":"rioo",
+    "uid":"814310923685601280",
+    "created_at":"",
+    "cluster_name":"",
+    "labels":
+      {
+        "group":"development",
+        "key2":"value2"
+        },
+    "annotations":
+      {
+      "key1":"value1",
+      "key2":"value2"
+      }
+      },
+    "name":"chennai",
+    "nodes":["12345678","&lt;node_id&gt;"],
+    "storage": "12345678 &lt;storage_id&gt;",
+    "networks": ["12345678","&lt;network_id&gt;"],
+    "enabled": true,
+    "advanced_settings":
+      {
+        "storage":"true",
+        "storage":"false",
+        "storage": "true"
+      },
+    "flag":"ch.png",
+    "currency":"rs",
+    "status":
+      {
+        "phase":"",
+        "message": "",
+        "reason": "",
+        "conditions":
+          [
+            {
+              "message":"",
+              "reason":"",
+              "status":" ",
+              "last_transition_time":" ",
+              "last_probe_time":" ",
+              "condition_type":" "
+              }
+              ]
+              },
+        "created_at": "2017-09-28T06:18:29.595025+00:00"
+              }
+              ]
+            }
+}
+</code></pre></div></div></div></div></div></div></div></div></div></div></div></div><div class="col-md-3"><div id="sidebar" class="hidden-print affix" role="complementary"><ul class="nav nav-pills nav-stacked"><li><a href="#healthz">/healthz</a></li><li><a href="#accounts">/accounts</a></li><li><a href="#authenticate">/authenticate</a></li><li><a href="#roles">/roles</a></li><li><a href="#permissions">/permissions</a></li><li><a href="#assemblyfactorys">/assemblyfactorys</a></li><li><a href="#assemblys">/assemblys</a></li><li><a href="#secrets">/secrets</a></li><li><a href="#origins">/origins</a></li><li><a href="#storages">/storages</a></li><li><a href="#plans">/plans</a></li><li><a href="#nodes">/nodes</a></li><li><a href="#healthz_overall">/healthz/overall</a></li><li><a href="#serviceaccounts">/serviceaccounts</a></li><li><a href="#horizontalscaling">/horizontalscaling</a></li><li><a href="#datacenters">/datacenters</a></li></ul></div></div></div></div></body></html>
