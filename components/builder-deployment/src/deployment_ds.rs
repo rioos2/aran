@@ -376,7 +376,6 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     let url: String = row.get("url");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
-    let camp_version: String = row.get("camp_version");
     let origin: String = row.get("origin");
     let artifacts: Vec<String> = row.get("artifacts");
     let services: Vec<String> = row.get("services");
@@ -386,7 +385,6 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     plan.set_url(url as String);
     plan.set_description(description as String);
     plan.set_tags(tags as Vec<String>);
-    plan.set_camp_version(camp_version as String);
     plan.set_origin(origin as String);
     plan.set_artifacts(artifacts as Vec<String>);
     let mut service_collection = Vec::new();
