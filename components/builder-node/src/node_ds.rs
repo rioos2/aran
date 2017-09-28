@@ -9,7 +9,6 @@ use postgres;
 use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::Collector;
-
 use serde_json;
 
 pub struct NodeDS;
@@ -69,16 +68,16 @@ impl NodeDS {
     }
 
     //this doesn't have typemeta and objectmeta, maybe we should add it.
-    pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::PromResponse>> {
-        // let mut response = nodesrv::HealthzAllGetResponse::new();
+    pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
+        let mut response = nodesrv::HealthzAllGetResponse::new();
         //make the url randomized, by storing lots of mocks.
         let mut health_checker = Collector::new(client);
-        let gauges = health_checker.gauges();
+        let gauges = health_checker.metrics();
 
-        let static_res: nodesrv::PromResponse = serde_json::from_str(&gauges.unwrap().first().unwrap()).unwrap();
+        // let static_res: nodesrv::PromResponse = serde_json::from_str(&gauges.unwrap().first().unwrap()).unwrap();
 
         // response.set_statistics(static_res);
-        Ok(Some(static_res))
+        Ok(Some(response))
     }
 }
 

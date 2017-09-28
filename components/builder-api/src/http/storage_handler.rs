@@ -254,6 +254,8 @@ pub fn data_center_create(req: &mut Request) -> IronResult<Response> {
                 dc_create.set_type_meta(type_meta);
                 dc_create.set_name(body.name);
                 dc_create.set_networks(body.networks);
+                dc_create.set_flag(body.flag);
+                dc_create.set_currency(body.currency);
                 dc_create.set_storage(body.storage);
                 dc_create.set_advanced_settings(body.advanced_settings);
                 dc_create.set_nodes(body.nodes);

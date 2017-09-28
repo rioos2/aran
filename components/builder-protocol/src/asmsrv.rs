@@ -26,8 +26,6 @@ use std::str::FromStr;
 use plansrv;
 use std::collections::BTreeMap;
 
-
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     id: String,

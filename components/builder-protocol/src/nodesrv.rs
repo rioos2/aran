@@ -247,8 +247,10 @@ impl NodeGetResponse {
 pub struct HealthzAllGetResponse {
     title: String,
     guages: Guages,
-    // statistics: PromResponse,
+    statistics: Statistics,
     osusages: Osusages,
+    from_date: String,
+    to_date: String,
 }
 
 impl HealthzAllGetResponse {
@@ -261,11 +263,17 @@ impl HealthzAllGetResponse {
     pub fn set_guages(&mut self, v: Guages) {
         self.guages = v;
     }
-    // pub fn set_statistics(&mut self, v: PromResponse) {
-    //     self.statistics = v;
-    // }
+    pub fn set_statistics(&mut self, v: Statistics) {
+        self.statistics = v;
+    }
     pub fn set_osusages(&mut self, v: Osusages) {
         self.osusages = v;
+    }
+    pub fn set_from_date(&mut self, v: ::std::string::String) {
+        self.from_date = v;
+    }
+    pub fn set_to_date(&mut self, v: ::std::string::String) {
+        self.to_date = v;
     }
 }
 
@@ -311,13 +319,64 @@ impl Counters {
     }
 }
 
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Statistics {
+    title: String,
+    nodes: Vec<NodeStatistic>,
+}
+impl Statistics {
+    pub fn new() -> Statistics {
+        ::std::default::Default::default()
+    }
+    pub fn set_status(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+    pub fn set_nodes(&mut self, v: Vec<NodeStatistic>) {
+        self.nodes = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct NodeStatistic {
+    name: String,
+    description: String,
+    cpu: String,
+    counter: String,
+    cost_of_consumption: String,
+    health: String,
+}
+impl NodeStatistic {
+    pub fn new() -> NodeStatistic {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+    pub fn set_cpu(&mut self, v: ::std::string::String) {
+        self.cpu = v;
+    }
+    pub fn set_counter(&mut self, v: ::std::string::String) {
+        self.counter = v;
+    }
+    pub fn set_cost_of_consumption(&mut self, v: ::std::string::String) {
+        self.cost_of_consumption = v;
+    }
+    pub fn set_health(&mut self, v: ::std::string::String) {
+        self.health = v;
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Osusages {
     title: String,
     from_date: String,
     to_date: String,
     cumulative: Cumulative,
-    item: Item,
+    item: Vec<Item>,
 }
 impl Osusages {
     pub fn new() -> Osusages {
@@ -335,7 +394,7 @@ impl Osusages {
     pub fn set_cumulative(&mut self, v: Cumulative) {
         self.cumulative = v;
     }
-    pub fn set_item(&mut self, v: Item) {
+    pub fn set_item(&mut self, v: Vec<Item>) {
         self.item = v;
     }
 }
@@ -364,86 +423,40 @@ impl Cumulative {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Item {
-    cpu: BTreeMap<String, String>,
+    id: String,
     name: String,
+    value: Vec<Value>,
 }
+
 impl Item {
     pub fn new() -> Item {
         ::std::default::Default::default()
     }
-    // pub fn set_cpu(&mut self, v: ::std::string::String) {
-    //     self.cpu = v;
-    // }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
-    pub fn set_cpu(&mut self, k: ::std::string::String, v: ::std::string::String) {
-        println!("{:?}", k);
-        println!("{:?}", v);
-        self.cpu.insert(k.into(), v.into());
+    pub fn set_value(&mut self, v: Vec<Value>) {
+        self.value = v;
     }
 }
 
-
-type Timestamp = f64;
-type Value = String;
-
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum StatusData {
-    Success,
-    Error,
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Value {
+    date: String,
+    value: String,
 }
 
-
-#[derive(Debug)]
-pub enum Error {
-    BadRequest(String),
-    InvalidExpression(String),
-    Timeout(String),
-    InvalidResponse(serde_json::Error),
-    Unexpected(u16),
-}
-
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct MatrixItem {
-    pub metric: BTreeMap<String, String>,
-    pub values: Vec<Scalar>,
-}
-pub type Matrix = Vec<MatrixItem>;
-
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct InstantVecItem {
-    pub metric: BTreeMap<String, String>,
-    pub value: Scalar,
-}
-pub type InstantVec = Vec<InstantVecItem>;
-
-pub type Scalar = (Timestamp, Value);
-
-pub type Str = (Timestamp, String);
-
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "resultType", content = "result")]
-#[serde(rename_all = "lowercase")]
-pub enum Data {
-    Matrix(Matrix),
-    Vector(InstantVec),
-    Scalar(Scalar),
-    String(Str),
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct PromResponse {
-    pub status: StatusData,
-    pub data: Data,
-    #[serde(rename = "errorType")]
-    #[serde(default)]
-    pub error_type: Option<String>,
-    #[serde(default)]
-    pub error: Option<String>,
+impl Value {
+    pub fn new() -> Value {
+        ::std::default::Default::default()
+    }
+    pub fn set_date(&mut self, v: ::std::string::String) {
+        self.date = v;
+    }
+    pub fn set_value(&mut self, v: ::std::string::String) {
+        self.value = v;
+    }
 }

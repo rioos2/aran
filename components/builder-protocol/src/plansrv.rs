@@ -86,24 +86,6 @@ pub struct Service {
     characteristics: BTreeMap<String, String>,
 }
 
-impl Service {
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-
-    pub fn set_description(&mut self, v: ::std::string::String) {
-        self.description = v;
-    }
-
-    pub fn set_href(&mut self, v: ::std::string::String) {
-        self.href = v;
-    }
-
-    pub fn set_characteristics(&mut self, v: BTreeMap<String, String>) {
-        self.characteristics = v;
-    }
-}
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct PlanGetResponse {
     kind: String,
