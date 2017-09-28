@@ -12,40 +12,24 @@ use iron::typemap;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use protocol::servicesrv::ObjectMetaData;
-use protocol::asmsrv::{TypeMeta, IdGet, Condition};
-use protocol::storagesrv::{Storage, Status, DataCenter, DcStatus};
+use protocol::asmsrv::{TypeMeta, IdGet, Condition, Status};
+use protocol::storagesrv::{Storage, StorageStatus, DataCenter};
 
 use db::data_store::Broker;
 use std::collections::BTreeMap;
+use http::{service_account_handler, deployment_handler};
 
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct StorageCreateReq {
-    type_meta: TypeMetaReq,
-    object_meta: ObjectMetaReq,
+    type_meta: deployment_handler::TypeMetaReq,
+    object_meta: service_account_handler::ObjectMetaReq,
     name: String,
     host_ip: String,
     storage_type: String,
     parameters: BTreeMap<String, String>,
     status: StatusReq,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct TypeMetaReq {
-    kind: String,
-    api_version: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ObjectMetaReq {
-    name: String,
-    origin: String,
-    uid: String,
-    created_at: String,
-    cluster_name: String,
-    labels: BTreeMap<String, String>,
-    annotations: BTreeMap<String, String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -62,8 +46,8 @@ struct StorageStatusReq {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DataCenterReq {
-    type_meta: TypeMetaReq,
-    object_meta: ObjectMetaReq,
+    type_meta: deployment_handler::TypeMetaReq,
+    object_meta: service_account_handler::ObjectMetaReq,
     name: String,
     nodes: Vec<String>,
     networks: Vec<String>,
@@ -71,26 +55,7 @@ struct DataCenterReq {
     advanced_settings: BTreeMap<String, String>,
     flag: String,
     currency: String,
-    status: DcStatusReq,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct DcStatusReq {
-    health_status: String,
-    message: String,
-    reason: String,
-    conditions: Vec<ConditionReq>,
-}
-
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ConditionReq {
-    message: String,
-    reason: String,
-    status: String,
-    last_transition_time: String,
-    last_probe_time: String,
-    condition_type: String,
+    status: deployment_handler::StatusReq,
 }
 
 pub fn storage_create(req: &mut Request) -> IronResult<Response> {
@@ -115,7 +80,7 @@ pub fn storage_create(req: &mut Request) -> IronResult<Response> {
                 storage_create.set_host_ip(body.host_ip);
                 storage_create.set_storage_type(body.storage_type);
                 storage_create.set_paramaters(body.parameters);
-                let mut status = Status::new();
+                let mut status = StorageStatus::new();
                 status.set_health_status(body.status.health_status);
                 status.set_message(body.status.message);
                 status.set_reason(body.status.reason);
@@ -241,7 +206,7 @@ pub fn storage_status_update(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<StorageStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
+                let mut status = StorageStatus::new();
                 status.set_health_status(body.status.health_status);
                 status.set_message(body.status.message);
                 status.set_reason(body.status.reason);
@@ -291,8 +256,8 @@ pub fn data_center_create(req: &mut Request) -> IronResult<Response> {
                 dc_create.set_storage(body.storage);
                 dc_create.set_advanced_settings(body.advanced_settings);
                 dc_create.set_nodes(body.nodes);
-                let mut status = DcStatus::new();
-                status.set_health_status(body.status.health_status);
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
                 status.set_message(body.status.message);
                 status.set_reason(body.status.reason);
                 let mut condition_collection = Vec::new();

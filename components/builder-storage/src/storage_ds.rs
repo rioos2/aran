@@ -150,7 +150,7 @@ fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
     storage.set_object_meta(object_meta_obj);
     let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
     storage.set_type_meta(type_meta_obj);
-    let status: storagesrv::Status = serde_json::from_str(&status).unwrap();
+    let status: storagesrv::StorageStatus = serde_json::from_str(&status).unwrap();
     storage.set_status(status);
     storage.set_name(name);
     storage.set_host_ip(host_ip);
@@ -182,7 +182,7 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     dc.set_object_meta(object_meta_obj);
     let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
     dc.set_type_meta(type_meta_obj);
-    let status: storagesrv::DcStatus = serde_json::from_str(&status).unwrap();
+    let status: asmsrv::Status = serde_json::from_str(&status).unwrap();
     dc.set_status(status);
     dc.set_name(name);
     dc.set_networks(networks);

@@ -14,7 +14,8 @@ use protocol::asmsrv::{ObjectMeta, OwnerReferences, TypeMeta};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use std::collections::BTreeMap;
+use http::deployment_handler;
+
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -28,8 +29,8 @@ struct HsCreateReq {
     metadata: Vec<String>,
     spec: SpecReq,
     status: StatusReq,
-    object_meta: ObjectMetaReq,
-    type_meta: TypeMetaReq,
+    object_meta: deployment_handler::ObjectMetaReq,
+    type_meta: deployment_handler::TypeMetaReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -83,33 +84,6 @@ struct HsStatusReq {
     status: StatusReq,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct TypeMetaReq {
-    kind: String,
-    api_version: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ObjectMetaReq {
-    name: String,
-    origin: String,
-    uid: String,
-    created_at: String,
-    cluster_name: String,
-    labels: BTreeMap<String, String>,
-    annotations: BTreeMap<String, String>,
-    owner_references: Vec<OwnerReferencesReq>,
-}
-
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct OwnerReferencesReq {
-    kind: String,
-    api_version: String,
-    name: String,
-    uid: String,
-    block_owner_deletion: bool,
-}
 
 pub fn hs_create(req: &mut Request) -> IronResult<Response> {
     let mut hs_create = HorizontalScaling::new();

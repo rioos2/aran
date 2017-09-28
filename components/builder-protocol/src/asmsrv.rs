@@ -568,28 +568,6 @@ impl OpsSettings {
     }
 }
 
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct AssemblyFactoryGet {
-    id: String,
-}
-
-impl AssemblyFactoryGet {
-    pub fn new() -> AssemblyFactoryGet {
-        ::std::default::Default::default()
-    }
-
-    // Param is passed by value, moved
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-
-    pub fn get_id(&self) -> ::std::string::String {
-        self.id.clone()
-    }
-}
-
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactoryGetResponse {
     // message fields

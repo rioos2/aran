@@ -15,32 +15,14 @@ use router::Router;
 use protocol::servicesrv::ObjectMetaData;
 use protocol::asmsrv::{TypeMeta, IdGet};
 use db::data_store::Broker;
-use std::collections::BTreeMap;
-
+use http::{service_account_handler, deployment_handler};
 
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct OriginCreateReq {
-    type_meta: TypeMetaReq,
-    object_meta: ObjectMetaReq,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct TypeMetaReq {
-    kind: String,
-    api_version: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ObjectMetaReq {
-    name: String,
-    origin: String,
-    uid: String,
-    created_at: String,
-    cluster_name: String,
-    labels: BTreeMap<String, String>,
-    annotations: BTreeMap<String, String>,
+    type_meta: deployment_handler::TypeMetaReq,
+    object_meta: service_account_handler::ObjectMetaReq,
 }
 
 pub fn origin_create(req: &mut Request) -> IronResult<Response> {
