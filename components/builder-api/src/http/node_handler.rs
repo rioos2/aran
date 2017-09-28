@@ -11,15 +11,17 @@ use rio_net::http::controller::*;
 use rio_net::http::middleware::PrometheusCli;
 use node::node_ds::NodeDS;
 use db::data_store::Broker;
-use protocol::nodesrv::{Node, Spec, Status, Conditions, Taints, Addresses, NodeInfo};
-use protocol::asmsrv::{TypeMeta, ObjectMeta, OwnerReferences};
+use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo};
+use protocol::asmsrv::{TypeMeta, ObjectMeta, OwnerReferences, Condition};
+use http::deployment_handler;
+
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NodeCreateReq {
     spec: SpecReq,
     status: StatusReq,
-    object_meta: ObjectMetaReq,
-    type_meta: TypeMetaReq,
+    object_meta: deployment_handler::ObjectMetaReq,
+    type_meta: deployment_handler::TypeMetaReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -44,22 +46,10 @@ struct StatusReq {
     capacity: BTreeMap<String, String>,
     allocatable: BTreeMap<String, String>,
     phase: String,
-    conditions: Vec<ConditionsReq>,
+    conditions: Vec<deployment_handler::ConditionReq>,
     addresses: Vec<AddressesReq>,
     node_info: NodeInfoReq,
 }
-
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ConditionsReq {
-    condition_type: String,
-    status: String,
-    last_heartbeat_time: String,
-    last_transition_time: String,
-    reason: String,
-    message: String,
-}
-
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct AddressesReq {
@@ -79,33 +69,6 @@ struct NodeInfoReq {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct CommonStatusReq {
     status: StatusReq,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct TypeMetaReq {
-    kind: String,
-    api_version: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ObjectMetaReq {
-    name: String,
-    origin: String,
-    uid: String,
-    created_at: String,
-    cluster_name: String,
-    labels: BTreeMap<String, String>,
-    annotations: BTreeMap<String, String>,
-    owner_references: Vec<OwnerReferencesReq>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct OwnerReferencesReq {
-    kind: String,
-    api_version: String,
-    name: String,
-    uid: String,
-    block_owner_deletion: bool,
 }
 
 
@@ -142,9 +105,9 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 let mut condition_collection = Vec::new();
 
                 for conn in body.status.conditions {
-                    let mut condition = Conditions::new();
+                    let mut condition = Condition::new();
                     condition.set_condition_type(conn.condition_type);
-                    condition.set_last_heartbeat_time(conn.last_heartbeat_time);
+                    condition.set_last_probe_time(conn.last_probe_time);
                     condition.set_last_transition_time(conn.last_transition_time);
                     condition.set_reason(conn.reason);
                     condition.set_status(conn.status);
@@ -252,9 +215,9 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
                 let mut condition_collection = Vec::new();
 
                 for conn in body.status.conditions {
-                    let mut condition = Conditions::new();
+                    let mut condition = Condition::new();
                     condition.set_condition_type(conn.condition_type);
-                    condition.set_last_heartbeat_time(conn.last_heartbeat_time);
+                    condition.set_last_probe_time(conn.last_probe_time);
                     condition.set_last_transition_time(conn.last_transition_time);
                     condition.set_reason(conn.reason);
                     condition.set_status(conn.status);

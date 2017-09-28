@@ -9,38 +9,32 @@ use db::data_store::Broker;
 use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData};
 use protocol::asmsrv::{TypeMeta, IdGet};
 use std::collections::BTreeMap;
+use http::deployment_handler;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SecretCreateReq {
     data: BTreeMap<String, String>,
     secret_type: String,
     object_meta: ObjectMetaReq,
-    type_meta: TypeMetaReq,
+    type_meta: deployment_handler::TypeMetaReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ServiceAccountCreateReq {
     secrets: ObjectReferenceReq,
     object_meta: ObjectMetaReq,
-    type_meta: TypeMetaReq,
-}
-
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct TypeMetaReq {
-    kind: String,
-    api_version: String,
+    type_meta: deployment_handler::TypeMetaReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct ObjectMetaReq {
-    name: String,
-    origin: String,
-    uid: String,
-    created_at: String,
-    cluster_name: String,
-    labels: BTreeMap<String, String>,
-    annotations: BTreeMap<String, String>,
+pub struct ObjectMetaReq {
+    pub name: String,
+    pub origin: String,
+    pub uid: String,
+    pub created_at: String,
+    pub cluster_name: String,
+    pub labels: BTreeMap<String, String>,
+    pub annotations: BTreeMap<String, String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

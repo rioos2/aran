@@ -10,7 +10,7 @@ use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, AssemblyFactoryGet, Status, Condition, Properties, OpsSettings, TypeMeta, ObjectMeta, OwnerReferences};
+use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, TypeMeta, ObjectMeta, OwnerReferences};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
@@ -35,21 +35,21 @@ struct AssemblyCreateReq {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct StatusReq {
-    phase: String,
-    message: String,
-    reason: String,
-    conditions: Vec<ConditionReq>,
+pub struct StatusReq {
+    pub phase: String,
+    pub message: String,
+    pub reason: String,
+    pub conditions: Vec<ConditionReq>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct ConditionReq {
-    message: String,
-    reason: String,
-    status: String,
-    last_transition_time: String,
-    last_probe_time: String,
-    condition_type: String,
+pub struct ConditionReq {
+    pub message: String,
+    pub reason: String,
+    pub status: String,
+    pub last_transition_time: String,
+    pub last_probe_time: String,
+    pub condition_type: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -84,30 +84,30 @@ struct PropReq {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct TypeMetaReq {
-    kind: String,
-    api_version: String,
+pub struct TypeMetaReq {
+    pub kind: String,
+    pub api_version: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct ObjectMetaReq {
-    name: String,
-    origin: String,
-    uid: String,
-    created_at: String,
-    cluster_name: String,
-    labels: BTreeMap<String, String>,
-    annotations: BTreeMap<String, String>,
-    owner_references: Vec<OwnerReferencesReq>,
+pub struct ObjectMetaReq {
+    pub name: String,
+    pub origin: String,
+    pub uid: String,
+    pub created_at: String,
+    pub cluster_name: String,
+    pub labels: BTreeMap<String, String>,
+    pub annotations: BTreeMap<String, String>,
+    pub owner_references: Vec<OwnerReferencesReq>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct OwnerReferencesReq {
-    kind: String,
-    api_version: String,
-    name: String,
-    uid: String,
-    block_owner_deletion: bool,
+pub struct OwnerReferencesReq {
+    pub kind: String,
+    pub api_version: String,
+    pub name: String,
+    pub uid: String,
+    pub block_owner_deletion: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -472,7 +472,7 @@ pub fn assembly_factory_show(req: &mut Request) -> IronResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    let mut asm_fac_get = AssemblyFactoryGet::new();
+    let mut asm_fac_get = IdGet::new();
     asm_fac_get.set_id(id.to_string());
 
     match DeploymentDS::assembly_factory_show(&conn, &asm_fac_get) {

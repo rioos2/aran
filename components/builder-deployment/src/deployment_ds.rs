@@ -166,7 +166,7 @@ impl DeploymentDS {
         return Ok(Some(assembly_factory.clone()));
     }
 
-    pub fn assembly_factory_show(datastore: &DataStoreConn, get_assembly_factory: &asmsrv::AssemblyFactoryGet) -> Result<Option<asmsrv::AssemblyFactory>> {
+    pub fn assembly_factory_show(datastore: &DataStoreConn, get_assembly_factory: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
         let asm_id = get_assembly_factory.get_id().parse::<i64>().unwrap();
 
@@ -234,7 +234,7 @@ impl DeploymentDS {
 
     pub fn collect_spec(row: &postgres::rows::Row, datastore: &DataStoreConn) -> Result<asmsrv::Assembly> {
         let mut assembly = row_to_assembly(&row)?;
-        let mut asm_fac_get = asmsrv::AssemblyFactoryGet::new();
+        let mut asm_fac_get = asmsrv::IdGet::new();
         asm_fac_get.set_id(assembly.get_parent_id());
         let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
         assembly.set_spec(data);

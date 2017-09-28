@@ -17,35 +17,20 @@ use protocol::netsrv::{Network, Status};
 
 use db::data_store::Broker;
 use std::collections::BTreeMap;
+use http::{service_account_handler, deployment_handler};
+
 
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NetworkCreateReq {
-    type_meta: TypeMetaReq,
-    object_meta: ObjectMetaReq,
+    type_meta: deployment_handler::TypeMetaReq,
+    object_meta: service_account_handler::ObjectMetaReq,
     name: String,
     host_ip: String,
     storage_type: String,
     parameters: BTreeMap<String, String>,
     status: StatusReq,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct TypeMetaReq {
-    kind: String,
-    api_version: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ObjectMetaReq {
-    name: String,
-    origin: String,
-    uid: String,
-    created_at: String,
-    cluster_name: String,
-    labels: BTreeMap<String, String>,
-    annotations: BTreeMap<String, String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

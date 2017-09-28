@@ -12,7 +12,7 @@ pub struct Storage {
     host_ip: String,
     storage_type: String,
     parameters: BTreeMap<String, String>,
-    status: Status,
+    status: StorageStatus,
     created_at: String,
 }
 impl Storage {
@@ -55,11 +55,11 @@ impl Storage {
         &self.type_meta
     }
 
-    pub fn set_status(&mut self, v: Status) {
+    pub fn set_status(&mut self, v: StorageStatus) {
         self.status = v;
     }
 
-    pub fn get_status(&self) -> &Status {
+    pub fn get_status(&self) -> &StorageStatus {
         &self.status
     }
 
@@ -89,14 +89,14 @@ impl Storage {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Status {
+pub struct StorageStatus {
     health_status: String,
     reason: String,
     message: String,
 }
 
-impl Status {
-    pub fn new() -> Status {
+impl StorageStatus {
+    pub fn new() -> StorageStatus {
         ::std::default::Default::default()
     }
 
@@ -145,7 +145,7 @@ pub struct DataCenter {
     advanced_settings: BTreeMap<String, String>,
     flag: String,
     currency: String,
-    status: DcStatus,
+    status: asmsrv::Status,
     created_at: String,
 }
 impl DataCenter {
@@ -209,11 +209,11 @@ impl DataCenter {
         &self.type_meta
     }
 
-    pub fn set_status(&mut self, v: DcStatus) {
+    pub fn set_status(&mut self, v: asmsrv::Status) {
         self.status = v;
     }
 
-    pub fn get_status(&self) -> &DcStatus {
+    pub fn get_status(&self) -> &asmsrv::Status {
         &self.status
     }
 
@@ -238,36 +238,5 @@ impl DataCenter {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
-    }
-}
-
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct DcStatus {
-    health_status: String,
-    reason: String,
-    message: String,
-    conditions: Vec<asmsrv::Condition>,
-}
-
-impl DcStatus {
-    pub fn new() -> DcStatus {
-        ::std::default::Default::default()
-    }
-
-    pub fn set_health_status(&mut self, v: ::std::string::String) {
-        self.health_status = v;
-    }
-
-    pub fn set_reason(&mut self, v: ::std::string::String) {
-        self.reason = v;
-    }
-
-    pub fn set_message(&mut self, v: ::std::string::String) {
-        self.message = v;
-    }
-
-    pub fn set_conditions(&mut self, v: Vec<asmsrv::Condition>) {
-        self.conditions = v;
     }
 }

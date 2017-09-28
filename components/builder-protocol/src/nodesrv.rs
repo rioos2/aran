@@ -143,7 +143,7 @@ pub struct Status {
     capacity: BTreeMap<String, String>,
     allocatable: BTreeMap<String, String>,
     phase: String,
-    conditions: Vec<Conditions>,
+    conditions: Vec<asmsrv::Condition>,
     addresses: Vec<Addresses>,
     node_info: NodeInfo,
 }
@@ -165,47 +165,11 @@ impl Status {
     pub fn set_phase(&mut self, v: ::std::string::String) {
         self.phase = v;
     }
-    pub fn set_conditions(&mut self, v: Vec<Conditions>) {
+    pub fn set_conditions(&mut self, v: Vec<asmsrv::Condition>) {
         self.conditions = v;
     }
     pub fn set_addresses(&mut self, v: Vec<Addresses>) {
         self.addresses = v;
-    }
-}
-
-
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Conditions {
-    condition_type: String,
-    status: String,
-    last_heartbeat_time: String,
-    last_transition_time: String,
-    reason: String,
-    message: String,
-}
-
-impl Conditions {
-    pub fn new() -> Conditions {
-        ::std::default::Default::default()
-    }
-    pub fn set_condition_type(&mut self, v: ::std::string::String) {
-        self.condition_type = v;
-    }
-    pub fn set_status(&mut self, v: ::std::string::String) {
-        self.status = v;
-    }
-    pub fn set_last_heartbeat_time(&mut self, v: ::std::string::String) {
-        self.last_heartbeat_time = v;
-    }
-    pub fn set_last_transition_time(&mut self, v: ::std::string::String) {
-        self.last_transition_time = v;
-    }
-    pub fn set_reason(&mut self, v: ::std::string::String) {
-        self.reason = v;
-    }
-    pub fn set_message(&mut self, v: ::std::string::String) {
-        self.message = v;
     }
 }
 
