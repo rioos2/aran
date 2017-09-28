@@ -26,7 +26,6 @@ pub struct Plan {
     group_name: String,
     description: String,
     tags: Vec<String>,
-    camp_version: String,
     url: String,
     origin: String,
     artifacts: Vec<String>,
@@ -51,10 +50,6 @@ impl Plan {
 
     pub fn set_tags(&mut self, v: ::std::vec::Vec<String>) {
         self.tags = v;
-    }
-
-    pub fn set_camp_version(&mut self, v: ::std::string::String) {
-        self.camp_version = v;
     }
 
     pub fn set_url(&mut self, v: ::std::string::String) {
