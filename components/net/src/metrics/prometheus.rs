@@ -52,7 +52,7 @@ impl PrometheusClient {
     ///       label_value = prometheus (first labels value)
     ///       label_name  = group (first label)
     ///       label_value = nodes (first labels value)
-    pub fn pull_gauge(&self, token: &str, path: &str) -> Result<Contents> {
+    pub fn pull_metrics(&self, token: &str, path: &str) -> Result<Contents> {
 
         let url = Url::parse(&format!("{}/query?query={}", self.url, token)).unwrap();
         let mut rep = http_get(url, token)?;
