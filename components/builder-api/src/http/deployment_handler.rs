@@ -10,7 +10,7 @@ use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, TypeMeta, ObjectMeta, OwnerReferences};
+use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
@@ -26,8 +26,6 @@ struct AssemblyCreateReq {
     tags: Vec<String>,
     parent_id: String,
     description: String,
-    object_meta: ObjectMetaReq,
-    type_meta: TypeMetaReq,
     node: String,
     status: StatusReq,
     ip: String,
@@ -57,7 +55,6 @@ struct CommonStatusReq {
     status: StatusReq,
 }
 
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct AssemblyFacCreateReq {
     name: String,
@@ -65,8 +62,6 @@ struct AssemblyFacCreateReq {
     description: String,
     tags: Vec<String>,
     properties: PropReq,
-    type_meta: TypeMetaReq,
-    object_meta: ObjectMetaReq,
     replicas: u64,
     plan: String,
     external_management_resource: Vec<String>,
@@ -87,27 +82,6 @@ struct PropReq {
 pub struct TypeMetaReq {
     pub kind: String,
     pub api_version: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ObjectMetaReq {
-    pub name: String,
-    pub origin: String,
-    pub uid: String,
-    pub created_at: String,
-    pub cluster_name: String,
-    pub labels: BTreeMap<String, String>,
-    pub annotations: BTreeMap<String, String>,
-    pub owner_references: Vec<OwnerReferencesReq>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct OwnerReferencesReq {
-    pub kind: String,
-    pub api_version: String,
-    pub name: String,
-    pub uid: String,
-    pub block_owner_deletion: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -162,32 +136,6 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                     condition_collection.push(condition);
                 }
                 status.set_conditions(condition_collection);
-
-                let mut object_meta = ObjectMeta::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                let mut owner_references_collection = Vec::new();
-                for data in body.object_meta.owner_references {
-                    let mut owner_references = OwnerReferences::new();
-                    owner_references.set_kind(data.kind);
-                    owner_references.set_api_version(data.api_version);
-                    owner_references.set_name(data.name);
-                    owner_references.set_uid(data.uid);
-                    owner_references.set_block_owner_deletion(data.block_owner_deletion);
-                    owner_references_collection.push(owner_references);
-                }
-                object_meta.set_owner_references(owner_references_collection);
-                assembly_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                assembly_create.set_type_meta(type_meta);
-
                 assembly_create.set_status(status);
                 assembly_create.set_ip(body.ip);
                 assembly_create.set_urls(body.urls);
@@ -396,26 +344,6 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 }
                 status.set_conditions(condition_collection);
                 assembly_factory_create.set_status(status);
-                let mut object_meta = ObjectMeta::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                let mut owner_references_collection = Vec::new();
-                for data in body.object_meta.owner_references {
-                    let mut owner_references = OwnerReferences::new();
-                    owner_references.set_kind(data.kind);
-                    owner_references.set_api_version(data.api_version);
-                    owner_references.set_name(data.name);
-                    owner_references.set_uid(data.uid);
-                    owner_references.set_block_owner_deletion(data.block_owner_deletion);
-                    owner_references_collection.push(owner_references);
-                }
-                object_meta.set_owner_references(owner_references_collection);
-                assembly_factory_create.set_object_meta(object_meta);
                 let mut opssettings = OpsSettings::new();
                 opssettings.set_nodeselector(body.opssettings.nodeselector);
                 opssettings.set_priority(body.opssettings.priority);
@@ -429,10 +357,6 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                 properties.set_region(body.properties.region);
                 properties.set_storage_type(body.properties.storage_type);
                 assembly_factory_create.set_properties(properties);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                assembly_factory_create.set_type_meta(type_meta);
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(

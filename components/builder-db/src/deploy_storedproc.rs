@@ -33,8 +33,6 @@ impl Migratable for DeployProcedures {
              description text,
              parent_id text,
              tags text[],
-             object_meta text,
-             type_meta text,
              node text,
              ip text,
              urls text,
@@ -55,16 +53,14 @@ impl Migratable for DeployProcedures {
                 description text,
                 parent_id text,
                 tags text[],
-                object_meta text,
-                type_meta text,
                 node text,
                 ip text,
                 urls text,
                 status text
                         ) RETURNS SETOF assembly AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,object_meta,type_meta,node,ip,urls,status)
-                                        VALUES (name, uri, description,parent_id, tags,object_meta, type_meta,node,ip,urls,status)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,node,ip,urls,status)
+                                        VALUES (name, uri, description,parent_id, tags,node,ip,urls,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -94,9 +90,9 @@ impl Migratable for DeployProcedures {
 
         migrator.migrate(
             "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_name text, asm_uri text, asm_description text,asm_parent_id text, asm_tags text[],asm_object_meta text,asm_type_meta text,asm_node text,asm_ip text,asm_urls text) RETURNS SETOF assembly AS $$
+            r#"CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_name text, asm_uri text, asm_description text,asm_parent_id text, asm_tags text[],asm_node text,asm_ip text,asm_urls text) RETURNS SETOF assembly AS $$
                             BEGIN
-                                RETURN QUERY UPDATE assembly SET name=asm_name,uri=asm_uri,description=asm_description,parent_id=asm_parent_id,tags=asm_tags,object_meta=asm_object_meta,type_meta=asm_type_meta,node=asm_node,ip=asm_ip,urls=asm_urls,updated_at=now() WHERE id=aid
+                                RETURN QUERY UPDATE assembly SET name=asm_name,uri=asm_uri,description=asm_description,parent_id=asm_parent_id,tags=asm_tags,node=asm_node,ip=asm_ip,urls=asm_urls,updated_at=now() WHERE id=aid
                                 RETURNING *;
                                 RETURN;
                             END
@@ -130,8 +126,6 @@ impl Migratable for DeployProcedures {
              tags text[],
              plan text,
              properties text,
-             type_meta text,
-             object_meta text,
              external_management_resource text[],
              component_collection text,
              opssettings text,
@@ -153,8 +147,6 @@ impl Migratable for DeployProcedures {
                 tags text[],
                 plan text,
                 properties text,
-                type_meta text,
-                object_meta text,
                 external_management_resource text[],
                 component_collection text,
                 opssettings text,
@@ -162,8 +154,8 @@ impl Migratable for DeployProcedures {
                 status text
                         ) RETURNS SETOF assembly_factory AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,type_meta,object_meta,external_management_resource,component_collection,opssettings,replicas,status)
-                                        VALUES (name, uri, description, tags,plan,properties,type_meta,object_meta,external_management_resource,component_collection,opssettings,replicas,status)
+                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, plan,properties,external_management_resource,component_collection,opssettings,replicas,status)
+                                        VALUES (name, uri, description, tags,plan,properties,external_management_resource,component_collection,opssettings,replicas,status)
                                         RETURNING *;
                                     RETURN;
                                 END

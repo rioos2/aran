@@ -92,20 +92,14 @@ impl<'a> Collector<'a> {
             let content = self.client.pull_metrics(scope, "");
             println!("-- scope {:?}\n{:?}\n", scope, content);
             if content.is_ok() {
-                println!(
-                    "==================content========================={:?}",
-                    content
-                );
                 let response: PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
                 content_datas.push(response);
             }
         }
-        println!(
-            "============content_datas==================={:?}",
-            content_datas
-        );
-        // PromResponse::sum_group(&self);
 
+        for data in content_datas.iter() {
+            data.sum_group();
+        }
         Ok(content_datas)
     }
 
@@ -135,20 +129,19 @@ pub trait SumGroup {
 }
 
 impl SumGroup for PromResponse {
-    // type Err = Error;
-
     fn sum_group(&self) {
-        println!("*************************************************");
-        // let items: Vec<PromResponse> = value.split("-").collect();
-        // let (architecture, platform) = match items.len() {
-        //     2 => {
-        //         (
-        //             Architecture::from_str(items[0].into())?,
-        //             Platform::from_str(items[1].into())?,
-        //         )
-        //     }
-        //     _ => return Err(Error::InvalidPackageTarget(value.to_string())),
-        // };
-        // Ok(PackageTarget::new(platform, architecture))
+        println!("---------------------------------------------------------");
+        // &self.status
+        println!(
+            "======================================================{:?}",
+            &self.data
+        );
+        // for item in &self.data.iter() {
+        //for val in item.value.iter() {
+        //     val.fold(0, |acc, &item| acc + item.value);
+        //     println!("{:?}", item.value);
+        // item
+        // }
+        // }
     }
 }

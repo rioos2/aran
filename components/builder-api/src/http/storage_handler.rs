@@ -11,20 +11,18 @@ use iron::status;
 use iron::typemap;
 use protocol::net::{self, ErrCode};
 use router::Router;
-use protocol::servicesrv::ObjectMetaData;
-use protocol::asmsrv::{TypeMeta, IdGet, Condition, Status};
+use protocol::asmsrv::{IdGet, Condition, Status};
 use protocol::storagesrv::{Storage, StorageStatus, DataCenter};
 
 use db::data_store::Broker;
 use std::collections::BTreeMap;
-use http::{service_account_handler, deployment_handler};
+use http::deployment_handler;
+
 
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct StorageCreateReq {
-    type_meta: deployment_handler::TypeMetaReq,
-    object_meta: service_account_handler::ObjectMetaReq,
     name: String,
     host_ip: String,
     storage_type: String,
@@ -46,8 +44,6 @@ struct StorageStatusReq {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DataCenterReq {
-    type_meta: deployment_handler::TypeMetaReq,
-    object_meta: service_account_handler::ObjectMetaReq,
     name: String,
     nodes: Vec<String>,
     networks: Vec<String>,
@@ -64,19 +60,6 @@ pub fn storage_create(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<StorageCreateReq>>() {
             Ok(Some(body)) => {
-                let mut object_meta = ObjectMetaData::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                storage_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                storage_create.set_type_meta(type_meta);
                 storage_create.set_name(body.name);
                 storage_create.set_host_ip(body.host_ip);
                 storage_create.set_storage_type(body.storage_type);
@@ -155,19 +138,6 @@ pub fn storage_update(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<StorageCreateReq>>() {
             Ok(Some(body)) => {
-                let mut object_meta = ObjectMetaData::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                storage_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                storage_create.set_type_meta(type_meta);
                 storage_create.set_name(body.name);
                 storage_create.set_host_ip(body.host_ip);
                 storage_create.set_storage_type(body.storage_type);
@@ -239,19 +209,6 @@ pub fn data_center_create(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<DataCenterReq>>() {
             Ok(Some(body)) => {
-                let mut object_meta = ObjectMetaData::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                dc_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                dc_create.set_type_meta(type_meta);
                 dc_create.set_name(body.name);
                 dc_create.set_networks(body.networks);
                 dc_create.set_flag(body.flag);
