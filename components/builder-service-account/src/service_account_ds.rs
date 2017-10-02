@@ -120,6 +120,7 @@ impl ServiceAccountDS {
             "SELECT * FROM get_service_account_by_origin_v1($1,$2)",
             &[&get_service.get_id(), &get_service.get_name()],
         ).map_err(Error::ServiceAccountGet)?;
+
         debug!(">● ROWS: secret_show =>\n{:?}", &rows);
         for row in rows {
             let serv = row_to_service_account(&row)?;
