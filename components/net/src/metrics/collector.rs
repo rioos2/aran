@@ -3,6 +3,7 @@
 //! A module containing the health insight for the datacenter
 
 use super::super::error::Result;
+use chrono::prelude::*;
 use metrics::prometheus::PrometheusClient;
 use serde_json;
 use std::collections::BTreeMap;
@@ -138,17 +139,34 @@ impl SumGroup for PromResponse {
     // type Err = Error;
 
     fn sum_group(&self) {
-        println!("*************************************************");
-        // let items: Vec<PromResponse> = value.split("-").collect();
-        // let (architecture, platform) = match items.len() {
-        //     2 => {
-        //         (
-        //             Architecture::from_str(items[0].into())?,
-        //             Platform::from_str(items[1].into())?,
-        //         )
-        //     }
-        //     _ => return Err(Error::InvalidPackageTarget(value.to_string())),
-        // };
-        // Ok(PackageTarget::new(platform, architecture))
+        use metrics::collector::Data;
+
+        if let Data::Vector(ref instancevec) = (*self).data {
+            println!("=> start sumgroup");
+            let local: DateTime<UTC> = UTC::now();
+            let initvec = vec!(InstantVecItem { metric: BTreeMap::new(), value: (local.timestamp() as  f64, "0".to_string()) });
+
+            println!("=> start sumgroup {:?}",initvec);
+            let sumvec = instancevec.iter().fold(initvec, |acc,  ref mut x| {
+                println!(" => accumultor is {:?}", acc);
+                println!(" => x          is {:?}", x);
+                acc.iter().map( |ref mut i|  {
+                    for (k, v) in &x.metric {
+                        i.metric.clone().insert(k.to_string(),v.to_string());
+                    };
+                    i.value.clone().0 = x.value.0;
+                    let b = x.value.1.trim().parse().unwrap_or(0);
+                    let a = i.value.clone().1.trim().parse().unwrap_or(0);
+                    i.value.clone().1 = (a + b).to_string()
+                });
+
+                println!(" => iterated   is {:?}", acc);
+
+                acc
+            });
+
+            println!("=> start sumgroup {:?}",sumvec);
+        }
+        println!("=> sumgroup done");
     }
 }

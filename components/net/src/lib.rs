@@ -1,6 +1,7 @@
 // Copyright (c) 2017 RiioCorp Inc
 //
 
+extern crate chrono;
 extern crate ansi_term;
 extern crate fnv;
 extern crate rioos_common as common;

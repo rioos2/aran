@@ -5,6 +5,7 @@ authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@m
 workspace = "../../"
 
 [dependencies]
+chrono = { version = "0.3.0", features = ["serde"] }
 ansi_term = "*"
 rand = "*" # Or a newer version
 fnv = "*"
