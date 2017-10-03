@@ -26,7 +26,7 @@ impl Migratable for StorageProcedures {
         migrator.migrate(
             "storagesrv",
             r#"CREATE TABLE  IF NOT EXISTS storages (
-             id bigint PRIMARY KEY DEFAULT next_id_v1('storage_id_seq'),
+             id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('storage_id_seq'),
              name text,
              host_ip text,
              storage_type text,
@@ -185,6 +185,64 @@ impl Migratable for StorageProcedures {
         )?;
 
         ui.para("[✓] get_data_centers_v1");
+
+
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS storages_pool_id_seq;"#,
+        )?;
+
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE TABLE  IF NOT EXISTS storages_pool (
+             id bigint PRIMARY KEY DEFAULT next_id_v1('storages_pool_id_seq'),
+             name text,
+             connector_id bigint REFERENCES storages(id),
+             parameters text,
+             storage_info text,
+             status text,
+             updated_at timestamptz,
+             created_at timestamptz DEFAULT now()
+             )"#,
+        )?;
+
+        ui.para("[✓] storages_pool");
+
+
+        // Insert a new job into the jobs table
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION insert_storage_pool_v1 (
+                name text,
+                connector_id bigint,
+                parameters text,
+                storage_info text,
+                status text
+            ) RETURNS SETOF storages_pool AS $$
+                                BEGIN
+                                    RETURN QUERY INSERT INTO storages_pool(name,connector_id,parameters,storage_info,status)
+                                        VALUES (name,connector_id,parameters,storage_info,status)
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#,
+        )?;
+
+
+        ui.para("[✓] insert_storage_pool_v1");
+
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION get_storage_pool_v1 (sid bigint) RETURNS SETOF storages_pool AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM storages_pool WHERE id = sid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        ui.para("[✓] get_storages_pool_v1");
 
         ui.end("StorageProcedures");
 

@@ -295,3 +295,109 @@ impl DcGetResponse {
         self.api_version = s;
     }
 }
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct StoragePool {
+    id: String,
+    object_meta: servicesrv::ObjectMetaData,
+    type_meta: asmsrv::TypeMeta,
+    name: String,
+    connector_id: String,
+    storage_info: Disks,
+    parameters: BTreeMap<String, String>,
+    status: asmsrv::Status,
+    created_at: String,
+}
+impl StoragePool {
+    pub fn new() -> StoragePool {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_connector_id(&mut self, v: ::std::string::String) {
+        self.connector_id = v;
+    }
+    pub fn get_connector_id(&self) -> ::std::string::String {
+        self.connector_id.clone()
+    }
+
+    pub fn set_type_meta(&mut self, v: asmsrv::TypeMeta) {
+        self.type_meta = v;
+    }
+
+    pub fn get_type_meta(&self) -> &asmsrv::TypeMeta {
+        &self.type_meta
+    }
+
+    pub fn set_status(&mut self, v: asmsrv::Status) {
+        self.status = v;
+    }
+
+    pub fn get_status(&self) -> &asmsrv::Status {
+        &self.status
+    }
+
+    pub fn set_storage_info(&mut self, v: Disks) {
+        self.storage_info = v;
+    }
+
+    pub fn get_storage_info(&self) -> &Disks {
+        &self.storage_info
+    }
+
+    pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {
+        self.parameters = v;
+    }
+
+    pub fn get_parameters(&self) -> &BTreeMap<String, String> {
+        &self.parameters
+    }
+
+
+    pub fn set_object_meta(&mut self, v: servicesrv::ObjectMetaData) {
+        self.object_meta = v;
+    }
+
+    pub fn get_object_meta(&self) -> &servicesrv::ObjectMetaData {
+        &self.object_meta
+    }
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct StoragePoolGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<StoragePool>,
+}
+
+impl StoragePoolGetResponse {
+    pub fn new() -> StoragePoolGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_storage_pool_collection(&mut self, v: Vec<StoragePool>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
+}

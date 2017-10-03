@@ -12,7 +12,7 @@ use iron::typemap;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use protocol::asmsrv::{IdGet, Condition, Status};
-use protocol::storagesrv::{Storage, DataCenter, Disks, Disk};
+use protocol::storagesrv::{Storage, DataCenter, Disks, Disk, StoragePool};
 
 use db::data_store::Broker;
 use std::collections::BTreeMap;
@@ -59,6 +59,15 @@ struct DataCenterReq {
     flag: String,
     enabled: bool,
     currency: String,
+    status: deployment_handler::StatusReq,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct StoragePoolCreateReq {
+    name: String,
+    connector_id: String,
+    parameters: BTreeMap<String, String>,
+    storage_info: DisksReq,
     status: deployment_handler::StatusReq,
 }
 
@@ -325,6 +334,100 @@ pub fn data_center_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match StorageDS::data_center_list(&conn) {
         Ok(data_center_list) => Ok(render_json(status::Ok, &data_center_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
+pub fn storage_pool_create(req: &mut Request) -> IronResult<Response> {
+    let mut storage_create = StoragePool::new();
+    {
+        match req.get::<bodyparser::Struct<StoragePoolCreateReq>>() {
+            Ok(Some(body)) => {
+                if body.connector_id.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `connector_id`",
+                    )));
+                }
+                storage_create.set_name(body.name);
+                storage_create.set_connector_id(body.connector_id);
+                storage_create.set_paramaters(body.parameters);
+
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
+                status.set_message(body.status.message);
+                status.set_reason(body.status.reason);
+
+                let mut condition_collection = Vec::new();
+
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_last_transition_time(data.last_transition_time);
+                    condition.set_last_probe_time(data.last_probe_time);
+                    condition.set_condition_type(data.condition_type);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
+                storage_create.set_status(status);
+
+                let mut disk_collection = Vec::new();
+
+                let mut disks = Disks::new();
+                for data in body.storage_info.disks {
+                    let mut disk = Disk::new();
+                    disk.set_disk(data.disk);
+                    disk.set_disk_type(data.disk_type);
+                    disk.set_point(data.point);
+                    disk.set_size(data.size);
+                    disk_collection.push(disk);
+                }
+                disks.set_disks(disk_collection);
+                storage_create.set_storage_info(disks);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+
+    let conn = Broker::connect().unwrap();
+
+    match StorageDS::storage_pool_create(&conn, &storage_create) {
+        Ok(storage) => Ok(render_json(status::Ok, &storage)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
+}
+
+#[allow(unused_variables)]
+pub fn storage_pool_list(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut storage_get = IdGet::new();
+    storage_get.set_id(id.to_string());
+
+    match StorageDS::storage_pool_list(&conn, &storage_get) {
+        Ok(storage) => Ok(render_json(status::Ok, &storage)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
