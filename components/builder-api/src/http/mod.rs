@@ -127,6 +127,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //Network API
         networks: post "/networks" => XHandler::new(network_create).before(basic.clone()),
+        network_list: get "/networks" => XHandler::new(network_list).before(basic.clone()),
+
 
         //Storage API
         storages: post "/storages" => XHandler::new(storage_create).before(basic.clone()),

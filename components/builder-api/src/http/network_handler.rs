@@ -11,62 +11,61 @@ use iron::status;
 use iron::typemap;
 use protocol::net::{self, ErrCode};
 // use router::Router;
-use protocol::servicesrv::ObjectMetaData;
-use protocol::asmsrv::TypeMeta;
-use protocol::netsrv::{Network, Status};
+// use protocol::servicesrv::ObjectMetaData;
+// use protocol::asmsrv::TypeMeta;
+use protocol::netsrv::{Network};
+use protocol::asmsrv::{Status, Condition};
 
 use db::data_store::Broker;
 use std::collections::BTreeMap;
-use http::{service_account_handler, deployment_handler};
+use http::{deployment_handler};
 
 
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NetworkCreateReq {
-    type_meta: deployment_handler::TypeMetaReq,
-    object_meta: service_account_handler::ObjectMetaReq,
     name: String,
-    host_ip: String,
-    storage_type: String,
-    parameters: BTreeMap<String, String>,
-    status: StatusReq,
+    network_type: String,
+    subnet_ip: String,
+    netmask: String,
+    gateway: String,
+    status: deployment_handler::StatusReq,
+    created_at: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct StatusReq {
-    health_status: String,
-    message: String,
-    reason: String,
-}
 
 pub fn network_create(req: &mut Request) -> IronResult<Response> {
     let mut net_create = Network::new();
     {
         match req.get::<bodyparser::Struct<NetworkCreateReq>>() {
             Ok(Some(body)) => {
-                let mut object_meta = ObjectMetaData::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                net_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                net_create.set_type_meta(type_meta);
                 net_create.set_name(body.name);
-                net_create.set_host_ip(body.host_ip);
-                net_create.set_storage_type(body.storage_type);
-                net_create.set_paramaters(body.parameters);
+                net_create.set_network_type(body.network_type);
+                net_create.set_subnet_ip(body.subnet_ip);
+                net_create.set_netmask(body.netmask);
+                net_create.set_gateway(body.gateway);
+
                 let mut status = Status::new();
-                status.set_health_status(body.status.health_status);
+                status.set_phase(body.status.phase);
                 status.set_message(body.status.message);
                 status.set_reason(body.status.reason);
+
+                let mut condition_collection = Vec::new();
+
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_last_transition_time(data.last_transition_time);
+                    condition.set_last_probe_time(data.last_probe_time);
+                    condition.set_condition_type(data.condition_type);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
                 net_create.set_status(status);
+
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(
@@ -86,5 +85,16 @@ pub fn network_create(req: &mut Request) -> IronResult<Response> {
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
+    }
+}
+
+#[allow(unused_variables)]
+pub fn network_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match NetworkDS::network_list(&conn) {
+        Ok(network_list) => Ok(render_json(status::Ok, &network_list)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }

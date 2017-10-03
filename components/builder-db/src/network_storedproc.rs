@@ -27,12 +27,11 @@ impl Migratable for NetworkProcedures {
             "nodesrv",
             r#"CREATE TABLE  IF NOT EXISTS networks (
              id bigint PRIMARY KEY DEFAULT next_id_v1('net_id_seq'),
-             object_meta text,
-             type_meta text,
              name text,
-             host_ip text,
-             storage_type text,
-             parameters text,
+             network_type text,
+             subnet_ip text,
+             netmask text,
+             gateway text,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
@@ -46,17 +45,16 @@ impl Migratable for NetworkProcedures {
         migrator.migrate(
             "nodesrv",
             r#"CREATE OR REPLACE FUNCTION insert_network_v1 (
-                object_meta text,
-                type_meta text,
                 name text,
-                host_ip text,
-                storage_type text,
-                parameters text,
+                network_type text,
+                subnet_ip text,
+                netmask text,
+                gateway text,
                 status text
             ) RETURNS SETOF networks AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO networks(object_meta, type_meta,name,host_ip,storage_type,parameters,status)
-                                        VALUES (object_meta, type_meta,name,host_ip,storage_type,parameters,status)
+                                    RETURN QUERY INSERT INTO networks(name,network_type,subnet_ip,netmask,gateway,status)
+                                        VALUES (name,network_type,subnet_ip,netmask,gateway,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -66,6 +64,18 @@ impl Migratable for NetworkProcedures {
 
 
         ui.para("[✓] insert_network_v1");
+
+        migrator.migrate(
+            "networksrv",
+            r#"CREATE OR REPLACE FUNCTION get_networks_v1() RETURNS SETOF networks AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM networks;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        ui.para("[✓] get_networks_v1");
 
         ui.end("NetworkProcedures");
 
