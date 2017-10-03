@@ -37,6 +37,7 @@ impl Migratable for DeployProcedures {
              ip text,
              urls text,
              status text,
+             volumes text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
         )?;
@@ -56,11 +57,12 @@ impl Migratable for DeployProcedures {
                 node text,
                 ip text,
                 urls text,
-                status text
+                status text,
+                volumes text
                         ) RETURNS SETOF assembly AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,node,ip,urls,status)
-                                        VALUES (name, uri, description,parent_id, tags,node,ip,urls,status)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,node,ip,urls,status,volumes)
+                                        VALUES (name, uri, description,parent_id, tags,node,ip,urls,status,volumes)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -90,9 +92,9 @@ impl Migratable for DeployProcedures {
 
         migrator.migrate(
             "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_name text, asm_uri text, asm_description text,asm_parent_id text, asm_tags text[],asm_node text,asm_ip text,asm_urls text) RETURNS SETOF assembly AS $$
+            r#"CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_name text, asm_uri text, asm_description text,asm_parent_id text, asm_tags text[],asm_node text,asm_ip text,asm_urls text,asm_volumes text) RETURNS SETOF assembly AS $$
                             BEGIN
-                                RETURN QUERY UPDATE assembly SET name=asm_name,uri=asm_uri,description=asm_description,parent_id=asm_parent_id,tags=asm_tags,node=asm_node,ip=asm_ip,urls=asm_urls,updated_at=now() WHERE id=aid
+                                RETURN QUERY UPDATE assembly SET name=asm_name,uri=asm_uri,description=asm_description,parent_id=asm_parent_id,tags=asm_tags,node=asm_node,ip=asm_ip,urls=asm_urls, volumes= asm_volumes,updated_at=now() WHERE id=aid
                                 RETURNING *;
                                 RETURN;
                             END

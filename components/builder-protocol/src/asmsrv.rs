@@ -37,9 +37,10 @@ pub struct Assembly {
     parent_id: String,
     tags: Vec<String>,
     node: String,
-    ip: String,
-    urls: String,
+    ips: BTreeMap<String, Vec<String>>,
+    urls: BTreeMap<String, String>,
     status: Status,
+    volumes: Vec<Volume>,
     spec: Option<AssemblyFactory>,
     created_at: String,
 }
@@ -72,12 +73,12 @@ impl Assembly {
         self.uri.clone()
     }
 
-    pub fn set_urls(&mut self, v: ::std::string::String) {
+    pub fn set_urls(&mut self, v: BTreeMap<String, String>) {
         self.urls = v;
     }
 
-    pub fn get_urls(&self) -> ::std::string::String {
-        self.urls.clone()
+    pub fn get_urls(&self) -> &BTreeMap<String, String> {
+        &self.urls
     }
 
     pub fn set_name(&mut self, v: ::std::string::String) {
@@ -127,12 +128,20 @@ impl Assembly {
         self.node.clone()
     }
 
-    pub fn set_ip(&mut self, v: ::std::string::String) {
-        self.ip = v;
+    pub fn set_ip(&mut self, v: BTreeMap<String, Vec<String>>) {
+        self.ips = v;
     }
 
-    pub fn get_ip(&self) -> ::std::string::String {
-        self.ip.clone()
+    pub fn get_ip(&self) -> &BTreeMap<String, Vec<String>> {
+        &self.ips
+    }
+
+    pub fn set_volumes(&mut self, v: Vec<Volume>) {
+        self.volumes = v;
+    }
+
+    pub fn get_volumes(&self) -> &Vec<Volume> {
+        &self.volumes
     }
 
     pub fn set_status(&mut self, v: Status) {
@@ -183,6 +192,28 @@ impl Status {
     }
     pub fn set_conditions(&mut self, v: Vec<Condition>) {
         self.conditions = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Volume {
+    id: String,
+    target: String,
+    volume_type: String,
+}
+
+impl Volume {
+    pub fn new() -> Volume {
+        ::std::default::Default::default()
+    }
+    pub fn set_target(&mut self, v: ::std::string::String) {
+        self.target = v;
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn set_volume_type(&mut self, v: ::std::string::String) {
+        self.volume_type = v;
     }
 }
 
