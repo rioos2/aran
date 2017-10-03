@@ -6,14 +6,16 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Network {
     id: String,
+    name: String,
+    network_type: String,
+    subnet_ip: String,
+    netmask: String,
+    gateway: String,
+    status: asmsrv::Status,
+    created_at: String,
     object_meta: servicesrv::ObjectMetaData,
     type_meta: asmsrv::TypeMeta,
-    name: String,
-    host_ip: String,
-    storage_type: String,
-    parameters: BTreeMap<String, String>,
-    status: Status,
-    created_at: String,
+
 }
 impl Network {
     pub fn new() -> Network {
@@ -33,20 +35,49 @@ impl Network {
         self.name.clone()
     }
 
-    pub fn set_host_ip(&mut self, v: ::std::string::String) {
-        self.host_ip = v;
+    pub fn set_subnet_ip(&mut self, v: ::std::string::String) {
+        self.subnet_ip = v;
     }
-    pub fn get_host_ip(&self) -> ::std::string::String {
-        self.host_ip.clone()
-    }
-
-    pub fn set_storage_type(&mut self, v: ::std::string::String) {
-        self.storage_type = v;
-    }
-    pub fn get_storage_type(&self) -> ::std::string::String {
-        self.storage_type.clone()
+    pub fn get_subnet_ip(&self) -> ::std::string::String {
+        self.subnet_ip.clone()
     }
 
+    pub fn set_network_type(&mut self, v: ::std::string::String) {
+        self.network_type = v;
+    }
+    pub fn get_network_type(&self) -> ::std::string::String {
+        self.network_type.clone()
+    }
+
+    pub fn set_netmask(&mut self, v: ::std::string::String) {
+        self.netmask = v;
+    }
+    pub fn get_netmask(&self) -> ::std::string::String {
+        self.netmask.clone()
+    }
+
+    pub fn set_gateway(&mut self, v: ::std::string::String) {
+        self.gateway = v;
+    }
+    pub fn get_gateway(&self) -> ::std::string::String {
+        self.gateway.clone()
+    }
+
+    pub fn set_status(&mut self, v: asmsrv::Status) {
+        self.status = v;
+    }
+
+    pub fn get_status(&self) -> &asmsrv::Status {
+        &self.status
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
     pub fn set_type_meta(&mut self, v: asmsrv::TypeMeta) {
         self.type_meta = v;
     }
@@ -55,23 +86,6 @@ impl Network {
         &self.type_meta
     }
 
-    pub fn set_status(&mut self, v: Status) {
-        self.status = v;
-    }
-
-    pub fn get_status(&self) -> &Status {
-        &self.status
-    }
-
-    pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {
-        self.parameters = v;
-    }
-
-    pub fn get_parameters(&self) -> &BTreeMap<String, String> {
-        &self.parameters
-    }
-
-
     pub fn set_object_meta(&mut self, v: servicesrv::ObjectMetaData) {
         self.object_meta = v;
     }
@@ -79,36 +93,23 @@ impl Network {
     pub fn get_object_meta(&self) -> &servicesrv::ObjectMetaData {
         &self.object_meta
     }
-    pub fn set_created_at(&mut self, v: ::std::string::String) {
-        self.created_at = v;
-    }
-
-    pub fn get_created_at(&self) -> ::std::string::String {
-        self.created_at.clone()
-    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Status {
-    health_status: String,
-    reason: String,
-    message: String,
+pub struct NetworkGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<Network>,
 }
 
-impl Status {
-    pub fn new() -> Status {
+impl NetworkGetResponse {
+    pub fn new() -> NetworkGetResponse {
         ::std::default::Default::default()
     }
-
-    pub fn set_health_status(&mut self, v: ::std::string::String) {
-        self.health_status = v;
-    }
-
-    pub fn set_reason(&mut self, v: ::std::string::String) {
-        self.reason = v;
-    }
-
-    pub fn set_message(&mut self, v: ::std::string::String) {
-        self.message = v;
+    // Param is passed by value, moved
+    pub fn set_network_collection(&mut self, v: Vec<Network>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
     }
 }
