@@ -10,7 +10,7 @@ use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings};
+use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
@@ -28,8 +28,9 @@ struct AssemblyCreateReq {
     description: String,
     node: String,
     status: StatusReq,
-    ip: String,
-    urls: String,
+    ips: BTreeMap<String, Vec<String>>,
+    urls: BTreeMap<String, String>,
+    volumes: Vec<VolumeReq>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -53,6 +54,13 @@ pub struct ConditionReq {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct CommonStatusReq {
     status: StatusReq,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct VolumeReq {
+    id: String,
+    target: String,
+    volume_type: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -137,7 +145,19 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                 }
                 status.set_conditions(condition_collection);
                 assembly_create.set_status(status);
-                assembly_create.set_ip(body.ip);
+                assembly_create.set_ip(body.ips);
+
+                let mut volume_collection = Vec::new();
+
+                for volume in body.volumes {
+                    let mut vol = Volume::new();
+                    vol.set_id(volume.id);
+                    vol.set_target(volume.target);
+                    vol.set_volume_type(volume.volume_type);
+                    volume_collection.push(vol);
+                }
+
+                assembly_create.set_volumes(volume_collection);
                 assembly_create.set_urls(body.urls);
             }
             Err(err) => {
@@ -232,8 +252,19 @@ pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
                 assembly_create.set_tags(body.tags);
                 assembly_create.set_parent_id(body.parent_id);
                 assembly_create.set_node(body.node);
-                assembly_create.set_ip(body.ip);
+                assembly_create.set_ip(body.ips);
                 assembly_create.set_urls(body.urls);
+                let mut volume_collection = Vec::new();
+
+                for volume in body.volumes {
+                    let mut vol = Volume::new();
+                    vol.set_id(volume.id);
+                    vol.set_target(volume.target);
+                    vol.set_volume_type(volume.volume_type);
+                    volume_collection.push(vol);
+                }
+
+                assembly_create.set_volumes(volume_collection);
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(

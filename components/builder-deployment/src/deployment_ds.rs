@@ -16,10 +16,12 @@ impl DeploymentDS {
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_create ");
-
+        let ips = serde_json::to_string(assembly.get_ip()).unwrap();
+        let urls = serde_json::to_string(assembly.get_urls()).unwrap();
+        let volumes = serde_json::to_string(assembly.get_volumes()).unwrap();
         let status_str = serde_json::to_string(assembly.get_status()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
@@ -27,9 +29,10 @@ impl DeploymentDS {
                 &(assembly.get_parent_id() as String),
                 &(assembly.get_tags() as Vec<String>),
                 &(assembly.get_node() as String),
-                &(assembly.get_ip() as String),
-                &(assembly.get_urls() as String),
+                &(ips as String),
+                &(urls as String),
                 &(status_str as String),
+                &(volumes as String),
             ],
         ).map_err(Error::AssemblyCreate)?;
 
@@ -45,8 +48,11 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_create ");
         let asm_id = assembly.get_id().parse::<i64>().unwrap();
+        let urls = serde_json::to_string(assembly.get_urls()).unwrap();
+        let volumes = serde_json::to_string(assembly.get_volumes()).unwrap();
+        let ips = serde_json::to_string(assembly.get_ip()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
                 &asm_id,
                 &(assembly.get_name() as String),
@@ -55,8 +61,9 @@ impl DeploymentDS {
                 &(assembly.get_parent_id() as String),
                 &(assembly.get_tags() as Vec<String>),
                 &(assembly.get_node() as String),
-                &(assembly.get_ip() as String),
-                &(assembly.get_urls() as String),
+                &(ips as String),
+                &(urls as String),
+                &(volumes as String),
             ],
         ).map_err(Error::AssemblyUpdate)?;
 
@@ -278,11 +285,13 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let status: String = row.get("status");
     let node: String = row.get("node");
     let ip: String = row.get("ip");
+    let volume: String = row.get("volumes");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     assembly.set_id(id.to_string() as String);
     assembly.set_name(name as String);
-    assembly.set_urls(urls as String);
+    let url_obj: BTreeMap<String, String> = serde_json::from_str(&urls).unwrap();
+    assembly.set_urls(url_obj);
     assembly.set_uri(uri as String);
     assembly.set_tags(tags as Vec<String>);
 
@@ -302,8 +311,11 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_parent_id(parent_id as String);
     let status_obj: asmsrv::Status = serde_json::from_str(&status).unwrap();
     assembly.set_status(status_obj);
+    let volume_obj: Vec<asmsrv::Volume> = serde_json::from_str(&volume).unwrap();
+    assembly.set_volumes(volume_obj);
     assembly.set_node(node as String);
-    assembly.set_ip(ip as String);
+    let ip_obj: BTreeMap<String, Vec<String>> = serde_json::from_str(&ip).unwrap();
+    assembly.set_ip(ip_obj);
     assembly.set_created_at(created_at.to_rfc3339());
 
     Ok(assembly)
