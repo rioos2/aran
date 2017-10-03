@@ -141,8 +141,6 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         storages_pool: post "/storagespool" => XHandler::new(storage_pool_create).before(basic.clone()),
         storages_pool_list: get "/storagespool/:id" => XHandler::new(storage_pool_list).before(basic.clone()),
 
-
-
         //DataCenter API
         data_center: post "/datacenters" => XHandler::new(data_center_create).before(basic.clone()),
         data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),

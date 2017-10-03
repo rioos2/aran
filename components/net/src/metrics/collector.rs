@@ -133,6 +133,8 @@ impl SumGroup for PromResponse {
     fn sum_group(&self) -> &Self {
 
         use metrics::collector::Data;
+        use std::collections::BTreeMap;
+
 
         if let Data::Vector(ref instancevec) = (*self).data {
             println!("=> start sumgroup");
@@ -150,12 +152,32 @@ impl SumGroup for PromResponse {
                 println!(" => x          is {:?}", x);
                 acc.iter()
                     .map(|ref mut i| {
+                        // let mut mutable_point = i;
+                        // {
+                        //     let InstantVecItem {
+                        //         metric: ref mut mut_ref_to_x,
+                        //         value: ref mut mut_ref_to_y,
+                        //     } = mutable_point;
+                        // }
+                        println!(" => i  is {:?}", i);
                         for (k, v) in &x.metric {
+                            println!(" => k  is {:?}", k);
+                            println!(" => v  is {:?}", v);
+                            // *mut_ref_to_x.insert("hai".to_string(), "hello".to_string());
                             i.metric.clone().insert(k.to_string(), v.to_string());
+                            println!(" => metric  is {:?}", i.metric);
                         }
                         i.value.clone().0 = x.value.0;
-                        let b = x.value.1.trim().parse().unwrap_or(0);
-                        let a = i.value.clone().1.trim().parse().unwrap_or(0);
+                        println!(" => value_first  is {:?}", i.value);
+                        println!(" => b_first  is {:?}", x.value.1);
+                        let b = x.value.1.trim().parse::<f64>().unwrap_or(1.0);
+                        println!(" => b  is {:?}", b);
+                        println!(" => i.value.clone() is {:?}", i.value.clone().1);
+                        let a = i.value.clone().1.trim().parse::<f64>().unwrap_or(1.0);
+                        println!(" => a  is {:?}", a);
+                        println!(" => value_last  is {:?}", i.value);
+                        println!(" => add_value  is {:?}", a + b);
+                        println!(" => add_value_str  is {:?}", (a + b).to_string());
                         i.value.clone().1 = (a + b).to_string()
                     })
                     .collect::<Vec<_>>();
