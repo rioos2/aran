@@ -65,10 +65,9 @@ impl NodeDS {
         let mut response = nodesrv::HealthzAllGetResponse::new();
         let mut health_checker = Collector::new(client);
 
-        let metric_response = health_checker.metrics();
-        println!(
-            "--------------metric_response-----------------{:?}",
-            metric_response
+        let metric_response = health_checker.metrics().unwrap(); //TO-DO: you need send back the correct error.
+        println!( "gauges =\n{:?}",
+            metric_response.0
         );
 
         //TO-DO: You need to add an Into which converts PromResponse to Gauges and PromResponse to Statistics

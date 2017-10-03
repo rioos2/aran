@@ -9,7 +9,6 @@ extern crate rioos_builder_protocol as protocol;
 extern crate rioos_core as rio_core;
 extern crate rioos_builder_db as db;
 extern crate linked_hash_map;
-
 #[macro_use]
 extern crate log;
 extern crate postgres;

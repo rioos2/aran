@@ -9,16 +9,10 @@ use std::path::{Path, PathBuf};
 use std::result;
 use std::str::FromStr;
 
-use regex::Regex;
-
 use error::{Error, Result};
 use util::perm;
 
 use super::{PUBLIC_KEY_PERMISSIONS, SECRET_KEY_PERMISSIONS};
-
-lazy_static! {
-    static ref ORIGIN_NAME_RE: Regex = Regex::new(r"\A[a-z0-9][a-z0-9_-]*\z").unwrap();
-}
 
 pub mod sig_key_pair;
 

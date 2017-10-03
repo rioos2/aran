@@ -1,8 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc
 //
 
-use std::error;
-use std::fmt;
 use std::result;
 
 pub enum Error {}
