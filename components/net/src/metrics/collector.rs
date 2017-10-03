@@ -97,6 +97,7 @@ impl<'a> Collector<'a> {
         }
 
         let gauges = self.set_gauges(Ok(content_datas.clone()));
+        println!("------guages-----------------------------{:?}", guages);
         let statistics = self.set_statistics(Ok(content_datas.clone()));
         Ok((gauges.unwrap(), statistics.unwrap()))
     }
@@ -157,8 +158,7 @@ impl SumGroup for PromResponse {
                         let a = i.value.clone().1.trim().parse().unwrap_or(0);
                         i.value.clone().1 = (a + b).to_string()
                     })
-                    .collect();
-
+                    .collect::<Vec<_>>();
                 println!(" => iterated   is {:?}", acc);
 
                 acc
