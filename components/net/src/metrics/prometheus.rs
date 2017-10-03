@@ -52,10 +52,10 @@ impl PrometheusClient {
     ///       label_value = prometheus (first labels value)
     ///       label_name  = group (first label)
     ///       label_value = nodes (first labels value)
-    pub fn pull_metrics(&self, token: &str, path: &str) -> Result<Contents> {
+    pub fn pull_metrics(&self, path: &str) -> Result<Contents> {
 
-        let url = Url::parse(&format!("{}/query?query={}", self.url, token)).unwrap();
-        let mut rep = http_get(url, token)?;
+        let url = Url::parse(&format!("{}/query?query={}", self.url, path)).unwrap();
+        let mut rep = http_get(url, path)?;
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
 
@@ -64,7 +64,6 @@ impl PrometheusClient {
             return Err(error::Error::PrometheusAPI(rep.status, err));
         }
         let contents: Contents = Contents { data: body };
-        println!("== pull gauge {:?}", contents);
         Ok(contents)
     }
 
