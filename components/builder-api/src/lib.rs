@@ -1,6 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 //! Libraries  module used by builder api
+extern crate regex;
 extern crate ansi_term;
 extern crate bodyparser;
 extern crate rioos_builder_protocol as protocol;
