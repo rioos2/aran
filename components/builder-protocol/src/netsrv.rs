@@ -1,8 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc.
 use {asmsrv, servicesrv};
-use std::collections::BTreeMap;
-
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Network {
     id: String,
@@ -15,7 +12,6 @@ pub struct Network {
     created_at: String,
     object_meta: servicesrv::ObjectMetaData,
     type_meta: asmsrv::TypeMeta,
-
 }
 impl Network {
     pub fn new() -> Network {
