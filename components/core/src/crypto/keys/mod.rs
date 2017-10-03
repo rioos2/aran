@@ -117,11 +117,6 @@ where
 }
 
 
-/// Is the string a valid ca name?
-pub fn is_valid_ca_name(name: &str) -> bool {
-    name.chars().count() <= 255 && ORIGIN_NAME_RE.is_match(name)
-}
-
 fn read_key_bytes(keyfile: &Path) -> Result<Vec<u8>> {
     let mut f = try!(File::open(keyfile));
     let mut s = String::new();
