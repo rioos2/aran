@@ -2,7 +2,7 @@
 
 //! A module containing the health insight for the datacenter
 
-use super::super::error::Result;
+use super::super::error::{self, Result};
 use chrono::prelude::*;
 use metrics::prometheus::PrometheusClient;
 use serde_json;
@@ -14,7 +14,7 @@ type Timestamp = f64;
 type Value = String;
 
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Status {
     Success,
@@ -32,7 +32,7 @@ pub enum Error {
 }
 
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MatrixItem {
     pub metric: BTreeMap<String, String>,
     pub values: Vec<Scalar>,
@@ -40,7 +40,7 @@ pub struct MatrixItem {
 pub type Matrix = Vec<MatrixItem>;
 
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct InstantVecItem {
     pub metric: BTreeMap<String, String>,
     pub value: Scalar,
@@ -52,7 +52,7 @@ pub type Scalar = (Timestamp, Value);
 pub type Str = (Timestamp, String);
 
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "resultType", content = "result")]
 #[serde(rename_all = "lowercase")]
 pub enum Data {
@@ -62,7 +62,7 @@ pub enum Data {
     String(Str),
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PromResponse {
     pub status: Status,
     pub data: Data,
@@ -85,52 +85,52 @@ impl<'a> Collector<'a> {
         Collector { client: &*prom }
     }
 
-    /// Change the return result as per you need.
-    pub fn metrics(&mut self) -> Result<Vec<PromResponse>> {
+    pub fn metrics(&mut self) -> Result<(Vec<PromResponse>, Vec<PromResponse>)> {
         let mut content_datas = vec![];
 
         for scope in GAUGE_SCOPES.iter() {
-            let content = self.client.pull_metrics(scope, "");
-            println!("-- scope {:?}\n{:?}\n", scope, content);
+            let content = self.client.pull_metrics(scope);
             if content.is_ok() {
                 let response: PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
                 content_datas.push(response);
             }
         }
 
-        for data in content_datas.iter() {
-            data.sum_group();
-        }
-        Ok(content_datas)
+        let gauges = self.set_gauges(Ok(content_datas.clone()));
+        let statistics = self.set_statistics(Ok(content_datas.clone()));
+        Ok((gauges.unwrap(), statistics.unwrap()))
     }
 
-    //This is bad, but use the same Collector and you need last_fetched data.
-    pub fn statistics(&self, gauges: Vec<String>) -> Result<Vec<String>> {
-        let content_datas = vec![];
-
-        if gauges.len() > 0 {
-            return Ok(gauges);
+    fn set_gauges(&self, response: Result<Vec<PromResponse>>) -> Result<Vec<PromResponse>> {
+        match response {
+            Ok(proms) => {
+                return Ok(
+                    proms
+                        .iter()
+                        .map(|p| (*p.sum_group()).clone())
+                        .collect::<Vec<_>>(),
+                )
+            }
+            _ => return Err(error::Error::CryptoError(String::new())),
         }
 
-        Ok(content_datas)
     }
 
-    /*pub fn osusages(&self, path: &str) -> Result<()> {
-        for scope in GAUGE_SCOPES.iter() {
-            client.collect_gauge(scope, "");
-            scopes.push(*scope);
+    fn set_statistics(&self, response: Result<Vec<PromResponse>>) -> Result<Vec<PromResponse>> {
+        match response {
+            Ok(proms) => return Ok(proms),
+            _ => return Err(error::Error::CryptoError(String::new())),
         }
-
-        Ok(scopes)
-    }*/
+    }
 }
 
 pub trait SumGroup {
-    fn sum_group(&self);
+    fn sum_group(&self) -> &PromResponse;
 }
 
 impl SumGroup for PromResponse {
-    fn sum_group(&self) {
+    fn sum_group(&self) -> &Self {
+
         use metrics::collector::Data;
 
         if let Data::Vector(ref instancevec) = (*self).data {
@@ -147,15 +147,17 @@ impl SumGroup for PromResponse {
             let sumvec = instancevec.iter().fold(initvec, |acc, ref mut x| {
                 println!(" => accumultor is {:?}", acc);
                 println!(" => x          is {:?}", x);
-                acc.iter().map(|ref mut i| {
-                    for (k, v) in &x.metric {
-                        i.metric.clone().insert(k.to_string(), v.to_string());
-                    }
-                    i.value.clone().0 = x.value.0;
-                    let b = x.value.1.trim().parse().unwrap_or(0);
-                    let a = i.value.clone().1.trim().parse().unwrap_or(0);
-                    i.value.clone().1 = (a + b).to_string()
-                });
+                acc.iter()
+                    .map(|ref mut i| {
+                        for (k, v) in &x.metric {
+                            i.metric.clone().insert(k.to_string(), v.to_string());
+                        }
+                        i.value.clone().0 = x.value.0;
+                        let b = x.value.1.trim().parse().unwrap_or(0);
+                        let a = i.value.clone().1.trim().parse().unwrap_or(0);
+                        i.value.clone().1 = (a + b).to_string()
+                    })
+                    .collect();
 
                 println!(" => iterated   is {:?}", acc);
 
@@ -165,5 +167,7 @@ impl SumGroup for PromResponse {
             println!("=> start sumgroup {:?}", sumvec);
         }
         println!("=> sumgroup done");
+        //i don't know if this is the right way to do so.
+        self
     }
 }
