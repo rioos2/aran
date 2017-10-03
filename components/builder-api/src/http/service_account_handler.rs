@@ -1,3 +1,4 @@
+use ansi_term::Colour;
 use bodyparser;
 use rio_net::http::controller::*;
 use service::service_account_ds::ServiceAccountDS;
@@ -10,6 +11,7 @@ use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaDa
 use protocol::asmsrv::{TypeMeta, IdGet};
 use std::collections::BTreeMap;
 use http::deployment_handler;
+use common::ui;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SecretCreateReq {
@@ -82,6 +84,12 @@ pub fn secret_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", secret_create),
+    );
+
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::secret_create(&conn, &secret_create) {
@@ -106,6 +114,12 @@ pub fn secret_show(req: &mut Request) -> IronResult<Response> {
 
     let mut secret_get = IdGet::new();
     secret_get.set_id(id.to_string());
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", secret_get),
+    );
 
     match ServiceAccountDS::secret_show(&conn, &secret_get) {
         Ok(secret) => Ok(render_json(status::Ok, &secret)),
@@ -132,11 +146,17 @@ pub fn secret_show_by_origin(req: &mut Request) -> IronResult<Response> {
         let org_name = params.find("origin").unwrap().to_owned();
         org_name
     };
+
     let conn = Broker::connect().unwrap();
 
     let mut secret_get = IdGet::new();
     secret_get.set_id(org_name);
 
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", secret_get),
+    );
     match ServiceAccountDS::secret_show_by_origin(&conn, &secret_get) {
         Ok(secret) => Ok(render_json(status::Ok, &secret)),
         Err(err) => Ok(render_net_error(
@@ -189,6 +209,12 @@ pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
         }
     }
 
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", service_create),
+    );
+
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::service_account_create(&conn, &service_create) {
@@ -222,6 +248,12 @@ pub fn service_account_show(req: &mut Request) -> IronResult<Response> {
     let mut serv_get = IdGet::new();
     serv_get.set_id(ser_name);
     serv_get.set_name(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", serv_get),
+    );
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_show(&conn, &serv_get) {
         Ok(origin) => Ok(render_json(status::Ok, &origin)),

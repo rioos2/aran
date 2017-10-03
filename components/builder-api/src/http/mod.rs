@@ -111,9 +111,9 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //secret API
         secrets: post "/secrets" => XHandler::new(secret_create).before(basic.clone()),
-        secrets_list: get "/secrets" => XHandler::new(secret_list).before(basic.clone()),
+        secrets_list: get "/secrets" => XHandler::new(secret_list),
         secret_show: get "/secrets/:id" => XHandler::new(secret_show).before(basic.clone()),
-        secret_show_by_origin: get "/secrets/:origin" => XHandler::new(secret_show_by_origin).before(basic.clone()),
+        secret_show_by_origin: get "/origins/:origin/secrets" => XHandler::new(secret_show_by_origin),
 
         //serviceAccount API
         service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_create,
