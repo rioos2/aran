@@ -12,7 +12,7 @@ use iron::typemap;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use protocol::asmsrv::{IdGet, Condition, Status};
-use protocol::storagesrv::{Storage, StorageStatus, DataCenter};
+use protocol::storagesrv::{Storage, DataCenter, Disks, Disk};
 
 use db::data_store::Broker;
 use std::collections::BTreeMap;
@@ -27,19 +27,26 @@ struct StorageCreateReq {
     host_ip: String,
     storage_type: String,
     parameters: BTreeMap<String, String>,
-    status: StatusReq,
+    storage_info: DisksReq,
+    status: deployment_handler::StatusReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct StatusReq {
-    health_status: String,
-    message: String,
-    reason: String,
+struct DisksReq {
+    disks: Vec<DiskReq>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct DiskReq {
+    disk: String,
+    disk_type: String,
+    point: String,
+    size: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct StorageStatusReq {
-    status: StatusReq,
+    status: deployment_handler::StatusReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -64,11 +71,40 @@ pub fn storage_create(req: &mut Request) -> IronResult<Response> {
                 storage_create.set_host_ip(body.host_ip);
                 storage_create.set_storage_type(body.storage_type);
                 storage_create.set_paramaters(body.parameters);
-                let mut status = StorageStatus::new();
-                status.set_health_status(body.status.health_status);
+
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
                 status.set_message(body.status.message);
                 status.set_reason(body.status.reason);
+
+                let mut condition_collection = Vec::new();
+
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_last_transition_time(data.last_transition_time);
+                    condition.set_last_probe_time(data.last_probe_time);
+                    condition.set_condition_type(data.condition_type);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
                 storage_create.set_status(status);
+
+                let mut disk_collection = Vec::new();
+
+                let mut disks = Disks::new();
+                for data in body.storage_info.disks {
+                    let mut disk = Disk::new();
+                    disk.set_disk(data.disk);
+                    disk.set_disk_type(data.disk_type);
+                    disk.set_point(data.point);
+                    disk.set_size(data.size);
+                    disk_collection.push(disk);
+                }
+                disks.set_disks(disk_collection);
+                storage_create.set_storage_info(disks);
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(
@@ -142,6 +178,19 @@ pub fn storage_update(req: &mut Request) -> IronResult<Response> {
                 storage_create.set_host_ip(body.host_ip);
                 storage_create.set_storage_type(body.storage_type);
                 storage_create.set_paramaters(body.parameters);
+                let mut disk_collection = Vec::new();
+
+                let mut disks = Disks::new();
+                for data in body.storage_info.disks {
+                    let mut disk = Disk::new();
+                    disk.set_disk(data.disk);
+                    disk.set_disk_type(data.disk_type);
+                    disk.set_point(data.point);
+                    disk.set_size(data.size);
+                    disk_collection.push(disk);
+                }
+                disks.set_disks(disk_collection);
+                storage_create.set_storage_info(disks);
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(
@@ -177,10 +226,24 @@ pub fn storage_status_update(req: &mut Request) -> IronResult<Response> {
     {
         match req.get::<bodyparser::Struct<StorageStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = StorageStatus::new();
-                status.set_health_status(body.status.health_status);
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
                 status.set_message(body.status.message);
                 status.set_reason(body.status.reason);
+
+                let mut condition_collection = Vec::new();
+
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_last_transition_time(data.last_transition_time);
+                    condition.set_last_probe_time(data.last_probe_time);
+                    condition.set_condition_type(data.condition_type);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
                 storage_create.set_status(status);
             }
             Err(err) => {

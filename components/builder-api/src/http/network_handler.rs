@@ -11,14 +11,11 @@ use iron::status;
 use iron::typemap;
 use protocol::net::{self, ErrCode};
 // use router::Router;
-// use protocol::servicesrv::ObjectMetaData;
-// use protocol::asmsrv::TypeMeta;
-use protocol::netsrv::{Network};
+use protocol::netsrv::Network;
 use protocol::asmsrv::{Status, Condition};
 
 use db::data_store::Broker;
-use std::collections::BTreeMap;
-use http::{deployment_handler};
+use http::deployment_handler;
 
 
 define_event_log!();

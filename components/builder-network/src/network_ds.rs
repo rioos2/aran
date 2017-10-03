@@ -8,7 +8,6 @@ use protocol::{servicesrv, asmsrv, netsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-use std::collections::BTreeMap;
 
 pub struct NetworkDS;
 
@@ -30,7 +29,7 @@ impl NetworkDS {
         let network = row_to_network(&rows.get(0))?;
         return Ok(Some(network.clone()));
     }
-    
+
     pub fn network_list(datastore: &DataStoreConn) -> Result<Option<netsrv::NetworkGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
@@ -51,7 +50,6 @@ impl NetworkDS {
         );
         Ok(Some(response))
     }
-
 }
 
 fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
@@ -65,7 +63,7 @@ fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
     let gateway: String = row.get("gateway");
     let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
-    let mut obj_meta = servicesrv::ObjectMetaData::new();
+    let obj_meta = servicesrv::ObjectMetaData::new();
     let mut type_meta = asmsrv::TypeMeta::new();
 
 

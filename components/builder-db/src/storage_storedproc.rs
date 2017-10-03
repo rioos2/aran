@@ -31,6 +31,7 @@ impl Migratable for StorageProcedures {
              host_ip text,
              storage_type text,
              parameters text,
+             storage_info text,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
@@ -48,11 +49,12 @@ impl Migratable for StorageProcedures {
                 host_ip text,
                 storage_type text,
                 parameters text,
+                storage_info text,
                 status text
             ) RETURNS SETOF storages AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO storages(name,host_ip,storage_type,parameters,status)
-                                        VALUES (name,host_ip,storage_type,parameters,status)
+                                    RETURN QUERY INSERT INTO storages(name,host_ip,storage_type,parameters,storage_info,status)
+                                        VALUES (name,host_ip,storage_type,parameters,storage_info,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -108,9 +110,10 @@ impl Migratable for StorageProcedures {
             s_name text,
             s_host_ip text,
             s_storage_type text,
-            s_parameters text) RETURNS SETOF storages AS $$
+            s_parameters text,
+            s_storage_info text) RETURNS SETOF storages AS $$
                             BEGIN
-                                RETURN QUERY UPDATE storages SET name=s_name,host_ip=s_host_ip,storage_type=s_storage_type,parameters=s_parameters,updated_at=now() WHERE id=sid
+                                RETURN QUERY UPDATE storages SET name=s_name,host_ip=s_host_ip,storage_type=s_storage_type,parameters=s_parameters,storage_info=s_storage_info,updated_at=now() WHERE id=sid
                                 RETURNING *;
                                 RETURN;
                             END

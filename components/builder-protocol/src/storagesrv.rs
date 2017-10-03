@@ -11,8 +11,9 @@ pub struct Storage {
     name: String,
     host_ip: String,
     storage_type: String,
+    storage_info: Disks,
     parameters: BTreeMap<String, String>,
-    status: StorageStatus,
+    status: asmsrv::Status,
     created_at: String,
 }
 impl Storage {
@@ -55,12 +56,20 @@ impl Storage {
         &self.type_meta
     }
 
-    pub fn set_status(&mut self, v: StorageStatus) {
+    pub fn set_status(&mut self, v: asmsrv::Status) {
         self.status = v;
     }
 
-    pub fn get_status(&self) -> &StorageStatus {
+    pub fn get_status(&self) -> &asmsrv::Status {
         &self.status
+    }
+
+    pub fn set_storage_info(&mut self, v: Disks) {
+        self.storage_info = v;
+    }
+
+    pub fn get_storage_info(&self) -> &Disks {
+        &self.storage_info
     }
 
     pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {
@@ -89,30 +98,48 @@ impl Storage {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct StorageStatus {
-    health_status: String,
-    reason: String,
-    message: String,
+pub struct Disks {
+    disks: Vec<Disk>,
 }
 
-impl StorageStatus {
-    pub fn new() -> StorageStatus {
+impl Disks {
+    pub fn new() -> Disks {
+        ::std::default::Default::default()
+    }
+    pub fn set_disks(&mut self, v: Vec<Disk>) {
+        self.disks = v;
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Disk {
+    disk: String,
+    disk_type: String,
+    point: String,
+    size: String,
+}
+
+impl Disk {
+    pub fn new() -> Disk {
         ::std::default::Default::default()
     }
 
-    pub fn set_health_status(&mut self, v: ::std::string::String) {
-        self.health_status = v;
+    pub fn set_disk(&mut self, v: ::std::string::String) {
+        self.disk = v;
     }
 
-    pub fn set_reason(&mut self, v: ::std::string::String) {
-        self.reason = v;
+    pub fn set_disk_type(&mut self, v: ::std::string::String) {
+        self.disk_type = v;
     }
 
-    pub fn set_message(&mut self, v: ::std::string::String) {
-        self.message = v;
+    pub fn set_point(&mut self, v: ::std::string::String) {
+        self.point = v;
+    }
+    pub fn set_size(&mut self, v: ::std::string::String) {
+        self.size = v;
     }
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct StorageGetResponse {
