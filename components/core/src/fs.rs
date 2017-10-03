@@ -6,7 +6,6 @@ use std::path::{Path, PathBuf};
 
 use users;
 
-use package::{Identifiable, PackageIdent};
 use env as renv;
 
 /// The default root path of the Rio/OS filesystem
@@ -16,8 +15,6 @@ pub const CACHE_KEY_PATH: &'static str = "config";
 /// The default path where TLS-related artifacts are placed
 pub const CACHE_CONFIG_PATH: &'static str = "config";
 
-/// The root path containing all locally installed packages
-pub const PKG_PATH: &'static str = "rioos/pkgs";
 
 /// The environment variable pointing to the filesystem root. This exists for internal
 /// team usage and is not intended to be used by consumers.
@@ -79,24 +76,6 @@ pub fn cache_config_path(fs_root_path: Option<&Path>) -> PathBuf {
     }
 }
 
-pub fn pkg_root_path(fs_root: Option<&Path>) -> PathBuf {
-    let mut buf = fs_root.map_or(PathBuf::from("/"), |p| p.into());
-    buf.push(PKG_PATH);
-    buf
-}
-
-pub fn pkg_install_path(ident: &PackageIdent, fs_root: Option<&Path>) -> PathBuf {
-    assert!(
-        ident.fully_qualified(),
-        "Cannot determine install path without fully qualified ident"
-    );
-    let mut pkg_path = pkg_root_path(fs_root);
-    pkg_path.push(&ident.origin);
-    pkg_path.push(&ident.name);
-    pkg_path.push(ident.version.as_ref().unwrap());
-    pkg_path.push(ident.release.as_ref().unwrap());
-    pkg_path
-}
 
 /// Returns the absolute path for a given command, if it exists, by searching the `PATH`
 /// environment variable.

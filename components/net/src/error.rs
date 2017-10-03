@@ -18,7 +18,6 @@ pub enum Error {
     PrometheusAPI(hyper::status::StatusCode, HashMap<String, String>),
     IO(io::Error),
     Json(serde_json::Error),
-    MaxHops,
     HTTP(hyper::status::StatusCode),
     RequiredConfigField(&'static str),
     NetError(protocol::net::NetError), //local conversion of protocol::net::NetError. errors are bloated though. need to rewrite
@@ -36,7 +35,6 @@ impl fmt::Display for Error {
             Error::HTTP(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
-            Error::MaxHops => format!("Received a message containing too many network hops"),
             Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
             Error::NetError(ref e) =>  format!("Net error: {}", e),
@@ -54,7 +52,6 @@ impl error::Error for Error {
             Error::IO(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::Json(ref err) => err.description(),
-            Error::MaxHops => "Received a message containing too many network hops",
             Error::CryptoError(_) => "Crypto error",
             Error::RequiredConfigField(_) => "Missing required field in configuration.",
             Error::NetError(_) =>  "Network error.",

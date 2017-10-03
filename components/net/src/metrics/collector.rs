@@ -97,10 +97,7 @@ impl<'a> Collector<'a> {
         }
 
         let gauges = self.set_gauges(Ok(content_datas.clone()));
-<<<<<<< HEAD
-=======
         println!("------guages-----------------------------{:?}", gauges);
->>>>>>> origin/master
         let statistics = self.set_statistics(Ok(content_datas.clone()));
         Ok((gauges.unwrap(), statistics.unwrap()))
     }

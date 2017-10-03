@@ -17,7 +17,6 @@ use regex;
 use toml;
 
 use openssl;
-use package::{self, Identifiable};
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -73,10 +72,6 @@ pub enum Error {
     CryptoError(String),
     /// Occurs when a file that should exist does not or could not be read.
     FileNotFound(String),
-    /// Occurs when a package identifier string cannot be successfully parsed.
-    InvalidPackageIdent(String),
-    /// Occurs when a package target string cannot be successfully parsed.
-    InvalidPackageTarget(String),
     /// Occurs when validating a package target for an unsupported architecture.
     InvalidArchitecture(String),
     /// Occurs when validating a package target for an unsupported platform.
@@ -87,18 +82,8 @@ pub enum Error {
     InvalidOrigin(String),
     /// Occurs when making lower level IO calls.
     IO(io::Error),
-    /// Occurs when a BIND or BIND_OPTIONAL MetaFile is read and contains a bad entry.
-    MetaFileBadBind,
-    /// Occurs when a package metadata file cannot be opened, read, or parsed.
-    MetaFileMalformed(package::metadata::MetaFile),
-    /// Occurs when a particular package metadata file is not found.
-    MetaFileNotFound(package::metadata::MetaFile),
-    /// When an IO error while accessing a MetaFile.
-    MetaFileIO(io::Error),
     /// Occurs when we can't find an outbound IP address
     NoOutboundAddr,
-    /// Occurs when a suitable installed package cannot be found.
-    PackageNotFound(package::PackageIdent),
     /// When an error occurs parsing an integer.
     ParseIntError(num::ParseIntError),
     /// Occurs when setting ownership or permissions on a file or directory fails.
@@ -123,8 +108,6 @@ pub enum Error {
     GetExitCodeProcessFailed(String),
     /// Occurs when a `WaitForSingleObject` win32 call returns an error.
     WaitForSingleObjectFailed(String),
-    /// Occurs when a `HabChild` constructor fails to return a process.
-    GetHabChildFailed(String),
     /// Occurs when a `TerminateProcess` win32 call returns an error.
     TerminateProcessFailed(String),
     /// When an error occurs attempting to interpret a sequence of u8 as a string.
@@ -235,20 +218,6 @@ impl fmt::Display for Error {
             Error::ConfigInvalidUsize(ref f) => format!("Invalid usize value in config, field={}", f),
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
             Error::FileNotFound(ref e) => format!("File not found at: {}", e),
-            Error::InvalidPackageIdent(ref e) => {
-                format!(
-                    "Invalid package identifier: {:?}. A valid identifier is in the form \
-                         origin/name (example: acme/redis)",
-                    e
-                )
-            }
-            Error::InvalidPackageTarget(ref e) => {
-                format!(
-                    "Invalid package target: {}. A valid target is in the form \
-                         architecture-platform (example: x86_64-linux)",
-                    e
-                )
-            }
             Error::InvalidArchitecture(ref e) => format!("Invalid architecture: {}.", e),
             Error::InvalidPlatform(ref e) => format!("Invalid platform: {}.", e),
             Error::InvalidServiceGroup(ref e) => {
@@ -267,18 +236,7 @@ impl fmt::Display for Error {
                 )
             }
             Error::IO(ref err) => format!("{}", err),
-            Error::MetaFileBadBind => format!("Bad value parsed from BIND or BIND_OPTIONAL"),
-            Error::MetaFileMalformed(ref e) => format!("MetaFile: {:?}, didn't contain a valid UTF-8 string", e),
-            Error::MetaFileNotFound(ref e) => format!("Couldn't read MetaFile: {}, not found", e),
-            Error::MetaFileIO(ref e) => format!("IO error while accessing MetaFile: {:?}", e),
             Error::NoOutboundAddr => format!("Failed to discover this hosts outbound IP address"),
-            Error::PackageNotFound(ref pkg) => {
-                if pkg.fully_qualified() {
-                    format!("Cannot find package: {}", pkg)
-                } else {
-                    format!("Cannot find a release of package: {}", pkg)
-                }
-            }
             Error::ParseIntError(ref e) => format!("{}", e),
             Error::PlanMalformed => format!("Failed to read or parse contents of Plan file"),
             Error::PermissionFailed(ref e) => format!("{}", e),
@@ -291,7 +249,6 @@ impl fmt::Display for Error {
             Error::GetExitCodeProcessFailed(ref e) => format!("{}", e),
             Error::CreateToolhelp32SnapshotFailed(ref e) => format!("{}", e),
             Error::WaitForSingleObjectFailed(ref e) => format!("{}", e),
-            Error::GetHabChildFailed(ref e) => format!("{}", e),
             Error::TerminateProcessFailed(ref e) => format!("{}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
         };
@@ -344,8 +301,6 @@ impl error::Error for Error {
             Error::ConfigInvalidUsize(_) => "Invalid usize value encountered while parsing a configuration file",
             Error::CryptoError(_) => "Crypto error",
             Error::FileNotFound(_) => "File not found",
-            Error::InvalidPackageIdent(_) => "Package identifiers must be in origin/name format (example: acme/redis)",
-            Error::InvalidPackageTarget(_) => "Package targets must be in architecture-platform format (example: x86_64-linux)",
             Error::InvalidArchitecture(_) => "Unsupported target architecture supplied.",
             Error::InvalidPlatform(_) => "Unsupported target platform supplied.",
             Error::InvalidServiceGroup(_) => "Service group strings must be in service.group format (example: redis.production)",
@@ -354,12 +309,7 @@ impl error::Error for Error {
                     Allowed characters include a - z, 0 - 9, _, and -. No more than 255 characters."
             }
             Error::IO(ref err) => err.description(),
-            Error::MetaFileBadBind => "Bad value parsed from BIND or BIND_OPTIONAL MetaFile",
-            Error::MetaFileMalformed(_) => "MetaFile didn't contain a valid UTF-8 string",
-            Error::MetaFileNotFound(_) => "Failed to read an archive's metafile",
-            Error::MetaFileIO(_) => "MetaFile could not be read or written to",
             Error::NoOutboundAddr => "Failed to discover the outbound IP address",
-            Error::PackageNotFound(_) => "Cannot find a package",
             Error::ParseIntError(_) => "Failed to parse an integer from a string!",
             Error::PermissionFailed(_) => "Failed to set permissions",
             Error::PlanMalformed => "Failed to read or parse contents of Plan file",
@@ -372,7 +322,6 @@ impl error::Error for Error {
             Error::WaitpidFailed(_) => "waitpid failed",
             Error::GetExitCodeProcessFailed(_) => "GetExitCodeProcess failed",
             Error::WaitForSingleObjectFailed(_) => "WaitForSingleObjectFailed failed",
-            Error::GetHabChildFailed(_) => "Failed to return a HabChild",
             Error::TerminateProcessFailed(_) => "Failed to call TerminateProcess",
             Error::Utf8Error(_) => "Failed to interpret a sequence of bytes as a string",
         }
