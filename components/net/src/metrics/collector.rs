@@ -159,6 +159,7 @@ impl SumGroup for PromResponse {
                         i.value.clone().1 = (a + b).to_string()
                     })
                     .collect::<Vec<_>>();
+
                 println!(" => iterated   is {:?}", acc);
 
                 acc
