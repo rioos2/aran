@@ -148,7 +148,7 @@ impl SumGroup for PromResponse {
                     let b = x.value.1.trim().parse().unwrap_or(0);
                     let a = i.value.clone().1.trim().parse().unwrap_or(0);
                     i.value.clone().1 = (a + b).to_string()
-                }).collect();
+                }).collect::<Vec<_>>();
 
                 println!(" => iterated   is {:?}", acc);
 
