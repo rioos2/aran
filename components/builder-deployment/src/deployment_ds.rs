@@ -18,18 +18,14 @@ impl DeploymentDS {
         debug!("◖☩ START: assemby_create ");
 
         let status_str = serde_json::to_string(assembly.get_status()).unwrap();
-        let type_meta = serde_json::to_string(assembly.get_type_meta()).unwrap();
-        let object_meta = serde_json::to_string(assembly.get_object_meta()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
                 &(assembly.get_description() as String),
                 &(assembly.get_parent_id() as String),
                 &(assembly.get_tags() as Vec<String>),
-                &(object_meta as String),
-                &(type_meta as String),
                 &(assembly.get_node() as String),
                 &(assembly.get_ip() as String),
                 &(assembly.get_urls() as String),
@@ -49,10 +45,8 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         debug!("◖☩ START: assemby_create ");
         let asm_id = assembly.get_id().parse::<i64>().unwrap();
-        let type_meta = serde_json::to_string(assembly.get_type_meta()).unwrap();
-        let object_meta = serde_json::to_string(assembly.get_object_meta()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
                 &asm_id,
                 &(assembly.get_name() as String),
@@ -60,8 +54,6 @@ impl DeploymentDS {
                 &(assembly.get_description() as String),
                 &(assembly.get_parent_id() as String),
                 &(assembly.get_tags() as Vec<String>),
-                &(object_meta as String),
-                &(type_meta as String),
                 &(assembly.get_node() as String),
                 &(assembly.get_ip() as String),
                 &(assembly.get_urls() as String),
@@ -133,8 +125,6 @@ impl DeploymentDS {
     pub fn assembly_factory_create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
         let status_str = serde_json::to_string(assembly_fac.get_status()).unwrap();
         let properties = serde_json::to_string(assembly_fac.get_properties()).unwrap();
-        let type_meta = serde_json::to_string(assembly_fac.get_type_meta()).unwrap();
-        let object_meta = serde_json::to_string(assembly_fac.get_object_meta()).unwrap();
         let component_collection = serde_json::to_string(assembly_fac.get_component_collection()).unwrap();
         let opssettings = serde_json::to_string(assembly_fac.get_opssettings()).unwrap();
 
@@ -142,7 +132,7 @@ impl DeploymentDS {
         debug!("◖☩ START: assembly_factory_create ");
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
+            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
                 &(assembly_fac.get_name() as String),
                 &(assembly_fac.get_uri() as String),
@@ -150,8 +140,6 @@ impl DeploymentDS {
                 &(assembly_fac.get_tags() as Vec<String>),
                 &(assembly_fac.get_plan() as String),
                 &(properties as String),
-                &(type_meta as String),
-                &(object_meta as String),
                 &(assembly_fac.get_external_management_resource() as Vec<String>),
                 &(component_collection as String),
                 &(opssettings as String),
@@ -279,7 +267,6 @@ impl DeploymentDS {
 
 fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let mut assembly = asmsrv::Assembly::new();
-    debug!("◖☩ START: row_to_assemby");
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
@@ -287,8 +274,6 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let uri: String = row.get("uri");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
-    let object_meta: String = row.get("object_meta");
-    let type_meta: String = row.get("type_meta");
     let parent_id: String = row.get("parent_id");
     let status: String = row.get("status");
     let node: String = row.get("node");
@@ -300,11 +285,19 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_urls(urls as String);
     assembly.set_uri(uri as String);
     assembly.set_tags(tags as Vec<String>);
-    let mut object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
-    object_meta_obj.set_name(id.to_string() as String);
-    assembly.set_object_meta(object_meta_obj);
-    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
-    assembly.set_type_meta(type_meta_obj);
+
+    let mut obj_meta = asmsrv::ObjectMeta::new();
+    let mut owner_collection = Vec::new();
+    let owner = asmsrv::OwnerReferences::new();
+    owner_collection.push(owner);
+    obj_meta.set_name(id.to_string() as String);
+    obj_meta.set_owner_references(owner_collection);
+    assembly.set_object_meta(obj_meta);
+    let mut type_meta = asmsrv::TypeMeta::new();
+    type_meta.set_kind("Assembly".to_string());
+    type_meta.set_api_version("v1".to_string());
+    assembly.set_type_meta(type_meta);
+
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as String);
     let status_obj: asmsrv::Status = serde_json::from_str(&status).unwrap();
@@ -313,15 +306,14 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_ip(ip as String);
     assembly.set_created_at(created_at.to_rfc3339());
 
-    debug!("◖☩ ASM: row_to_assemby =>\n{:?}", assembly);
-    debug!("◖☩ DONE: row_to_assemby");
     Ok(assembly)
 }
 
 
 fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::AssemblyFactory> {
+
     let mut assembly_factory = asmsrv::AssemblyFactory::new();
-    debug!("◖☩ START: row_to_assemby_factory");
+
     let id: i64 = row.get("id");
     let name: String = row.get("name");
     let uri: String = row.get("uri");
@@ -329,14 +321,13 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let tags: Vec<String> = row.get("tags");
     let plan: String = row.get("plan");
     let properties: String = row.get("properties");
-    let type_meta: String = row.get("type_meta");
-    let object_meta: String = row.get("object_meta");
     let external_management_resource: Vec<String> = row.get("external_management_resource");
     let component_collection: String = row.get("component_collection");
     let opssettings: String = row.get("opssettings");
     let status: String = row.get("status");
     let replicas: i64 = row.get("replicas");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+
     assembly_factory.set_id(id.to_string() as String);
     assembly_factory.set_name(name as String);
     assembly_factory.set_uri(uri as String);
@@ -352,19 +343,21 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     assembly_factory.set_status(status_obj);
     assembly_factory.set_plan(plan as String);
     assembly_factory.set_replicas(replicas as u64);
-    let mut object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
-    object_meta_obj.set_name(id.to_string() as String);
-    assembly_factory.set_object_meta(object_meta_obj);
     let properties_obj: asmsrv::Properties = serde_json::from_str(&properties).unwrap();
     assembly_factory.set_properties(properties_obj);
-    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
-    assembly_factory.set_type_meta(type_meta_obj);
 
-    debug!(
-        "◖☩ ASM: row_to_assemby_factory =>\n{:?}",
-        assembly_factory
-    );
-    debug!("◖☩ DONE: row_to_assemby_factory");
+    let mut obj_meta = asmsrv::ObjectMeta::new();
+    let mut owner_collection = Vec::new();
+    let owner = asmsrv::OwnerReferences::new();
+    owner_collection.push(owner);
+    obj_meta.set_name(id.to_string() as String);
+    obj_meta.set_owner_references(owner_collection);
+    assembly_factory.set_object_meta(obj_meta);
+    let mut type_meta = asmsrv::TypeMeta::new();
+    type_meta.set_kind("AssemblyFactory".to_string());
+    type_meta.set_api_version("v1".to_string());
+    assembly_factory.set_type_meta(type_meta);
+
     Ok(assembly_factory)
 }
 

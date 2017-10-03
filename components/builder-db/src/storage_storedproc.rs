@@ -27,8 +27,6 @@ impl Migratable for StorageProcedures {
             "storagesrv",
             r#"CREATE TABLE  IF NOT EXISTS storages (
              id bigint PRIMARY KEY DEFAULT next_id_v1('storage_id_seq'),
-             object_meta text,
-             type_meta text,
              name text,
              host_ip text,
              storage_type text,
@@ -46,8 +44,6 @@ impl Migratable for StorageProcedures {
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION insert_storage_v1 (
-                object_meta text,
-                type_meta text,
                 name text,
                 host_ip text,
                 storage_type text,
@@ -55,8 +51,8 @@ impl Migratable for StorageProcedures {
                 status text
             ) RETURNS SETOF storages AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO storages(object_meta, type_meta,name,host_ip,storage_type,parameters,status)
-                                        VALUES (object_meta, type_meta,name,host_ip,storage_type,parameters,status)
+                                    RETURN QUERY INSERT INTO storages(name,host_ip,storage_type,parameters,status)
+                                        VALUES (name,host_ip,storage_type,parameters,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -109,14 +105,12 @@ impl Migratable for StorageProcedures {
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION update_storage_v1(
             sid bigint,
-            s_object_meta text,
-            s_type_meta text,
             s_name text,
             s_host_ip text,
             s_storage_type text,
             s_parameters text) RETURNS SETOF storages AS $$
                             BEGIN
-                                RETURN QUERY UPDATE storages SET object_meta=s_object_meta,type_meta=s_type_meta,name=s_name,host_ip=s_host_ip,storage_type=s_storage_type,parameters=s_parameters,updated_at=now() WHERE id=sid
+                                RETURN QUERY UPDATE storages SET name=s_name,host_ip=s_host_ip,storage_type=s_storage_type,parameters=s_parameters,updated_at=now() WHERE id=sid
                                 RETURNING *;
                                 RETURN;
                             END
@@ -135,8 +129,6 @@ impl Migratable for StorageProcedures {
             "storagesrv",
             r#"CREATE TABLE  IF NOT EXISTS data_center (
              id bigint PRIMARY KEY DEFAULT next_id_v1('dc_id_seq'),
-             object_meta text,
-             type_meta text,
              name text,
              nodes text[],
              networks text[],
@@ -156,8 +148,6 @@ impl Migratable for StorageProcedures {
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION insert_dc_v1 (
-                object_meta text,
-                type_meta text,
                 name text,
                 nodes text[],
                 networks text[],
@@ -169,8 +159,8 @@ impl Migratable for StorageProcedures {
                 status text
             ) RETURNS SETOF data_center AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO data_center(object_meta,type_meta,name,nodes,networks,enabled,storage,advanced_settings,flag,currency,status)
-                                        VALUES (object_meta,type_meta,name,nodes,networks,enabled,storage,advanced_settings,flag,currency,status)
+                                    RETURN QUERY INSERT INTO data_center(name,nodes,networks,enabled,storage,advanced_settings,flag,currency,status)
+                                        VALUES (name,nodes,networks,enabled,storage,advanced_settings,flag,currency,status)
                                         RETURNING *;
                                     RETURN;
                                 END

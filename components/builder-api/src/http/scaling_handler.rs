@@ -10,11 +10,9 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
-use protocol::asmsrv::{ObjectMeta, OwnerReferences, TypeMeta};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use http::deployment_handler;
 
 define_event_log!();
 
@@ -29,8 +27,6 @@ struct HsCreateReq {
     metadata: Vec<String>,
     spec: SpecReq,
     status: StatusReq,
-    object_meta: deployment_handler::ObjectMetaReq,
-    type_meta: deployment_handler::TypeMetaReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -83,7 +79,6 @@ struct StatusReq {
 struct HsStatusReq {
     status: StatusReq,
 }
-
 
 pub fn hs_create(req: &mut Request) -> IronResult<Response> {
     let mut hs_create = HorizontalScaling::new();
@@ -164,32 +159,6 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 status.set_current_replicas(body.status.current_replicas);
                 status.set_desired_replicas(body.status.desired_replicas);
                 hs_create.set_status(status);
-
-                let mut object_meta = ObjectMeta::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                let mut owner_references_collection = Vec::new();
-                for data in body.object_meta.owner_references {
-                    let mut owner_references = OwnerReferences::new();
-                    owner_references.set_kind(data.kind);
-                    owner_references.set_api_version(data.api_version);
-                    owner_references.set_name(data.name);
-                    owner_references.set_uid(data.uid);
-                    owner_references.set_block_owner_deletion(data.block_owner_deletion);
-                    owner_references_collection.push(owner_references);
-                }
-                object_meta.set_owner_references(owner_references_collection);
-                hs_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                hs_create.set_type_meta(type_meta);
-
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(

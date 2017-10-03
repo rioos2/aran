@@ -15,15 +15,11 @@ pub struct StorageDS;
 impl StorageDS {
     pub fn storage_create(datastore: &DataStoreConn, storage_create: &storagesrv::Storage) -> Result<Option<storagesrv::Storage>> {
         let conn = datastore.pool.get_shard(0)?;
-        let object_meta = serde_json::to_string(storage_create.get_object_meta()).unwrap();
-        let type_meta = serde_json::to_string(storage_create.get_type_meta()).unwrap();
         let status_str = serde_json::to_string(storage_create.get_status()).unwrap();
         let parameter_str = serde_json::to_string(storage_create.get_parameters()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM insert_storage_v1($1,$2,$3,$4,$5,$6,$7)",
+            "SELECT * FROM insert_storage_v1($1,$2,$3,$4,$5)",
             &[
-                &(object_meta as String),
-                &(type_meta as String),
                 &(storage_create.get_name() as String),
                 &(storage_create.get_host_ip() as String),
                 &(storage_create.get_storage_type() as String),
@@ -86,15 +82,11 @@ impl StorageDS {
     pub fn storage_update(datastore: &DataStoreConn, storage_create: &storagesrv::Storage) -> Result<Option<storagesrv::Storage>> {
         let conn = datastore.pool.get_shard(0)?;
         let storage_id = storage_create.get_id().parse::<i64>().unwrap();
-        let object_meta = serde_json::to_string(storage_create.get_object_meta()).unwrap();
-        let type_meta = serde_json::to_string(storage_create.get_type_meta()).unwrap();
         let parameter_str = serde_json::to_string(storage_create.get_parameters()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM update_storage_v1($1,$2,$3,$4,$5,$6,$7)",
+            "SELECT * FROM update_storage_v1($1,$2,$3,$4,$5)",
             &[
                 &storage_id,
-                &(object_meta as String),
-                &(type_meta as String),
                 &(storage_create.get_name() as String),
                 &(storage_create.get_host_ip() as String),
                 &(storage_create.get_storage_type() as String),
@@ -107,15 +99,11 @@ impl StorageDS {
 
     pub fn data_center_create(datastore: &DataStoreConn, dc_create: &storagesrv::DataCenter) -> Result<Option<storagesrv::DataCenter>> {
         let conn = datastore.pool.get_shard(0)?;
-        let object_meta = serde_json::to_string(dc_create.get_object_meta()).unwrap();
-        let type_meta = serde_json::to_string(dc_create.get_type_meta()).unwrap();
         let status_str = serde_json::to_string(dc_create.get_status()).unwrap();
         let adv_str = serde_json::to_string(dc_create.get_advanced_settings()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM insert_dc_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM insert_dc_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
-                &(object_meta as String),
-                &(type_meta as String),
                 &(dc_create.get_name() as String),
                 &(dc_create.get_nodes() as Vec<String>),
                 &(dc_create.get_networks() as Vec<String>),
@@ -161,16 +149,16 @@ fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
     let parameters: String = row.get("parameters");
     let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
-    let object_meta: String = row.get("object_meta");
-    let type_meta: String = row.get("type_meta");
 
     storage.set_id(id.to_string() as String);
     let parameters_obj: BTreeMap<String, String> = serde_json::from_str(&parameters).unwrap();
     storage.set_paramaters(parameters_obj);
-    let object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
-    storage.set_object_meta(object_meta_obj);
-    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
-    storage.set_type_meta(type_meta_obj);
+    let object_meta = servicesrv::ObjectMetaData::new();
+    storage.set_object_meta(object_meta);
+    let mut type_meta = asmsrv::TypeMeta::new();
+    type_meta.set_kind("Storage".to_string());
+    type_meta.set_api_version("v1".to_string());
+    storage.set_type_meta(type_meta);
     let status: storagesrv::StorageStatus = serde_json::from_str(&status).unwrap();
     storage.set_status(status);
     storage.set_name(name);
@@ -194,16 +182,16 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     let advanced_settings: String = row.get("advanced_settings");
     let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
-    let object_meta: String = row.get("object_meta");
-    let type_meta: String = row.get("type_meta");
 
     dc.set_id(id.to_string() as String);
     let adv_obj: BTreeMap<String, String> = serde_json::from_str(&advanced_settings).unwrap();
     dc.set_advanced_settings(adv_obj);
-    let object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
-    dc.set_object_meta(object_meta_obj);
-    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
-    dc.set_type_meta(type_meta_obj);
+    let object_meta = servicesrv::ObjectMetaData::new();
+    dc.set_object_meta(object_meta);
+    let mut type_meta = asmsrv::TypeMeta::new();
+    type_meta.set_kind("Storage".to_string());
+    type_meta.set_api_version("v1".to_string());
+    dc.set_type_meta(type_meta);
     let status: asmsrv::Status = serde_json::from_str(&status).unwrap();
     dc.set_status(status);
     dc.set_name(name);

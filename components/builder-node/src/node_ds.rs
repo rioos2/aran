@@ -18,22 +18,15 @@ impl NodeDS {
         let conn = datastore.pool.get_shard(0)?;
         let spec_str = serde_json::to_string(node_create.get_spec()).unwrap();
         let status_str = serde_json::to_string(node_create.get_status()).unwrap();
-        let type_meta = serde_json::to_string(node_create.get_type_meta()).unwrap();
-        let object_meta = serde_json::to_string(node_create.get_object_meta()).unwrap();
-        debug!("◖☩ START: node_create ");
+
         let rows = &conn.query(
-            "SELECT * FROM insert_node_v1($1,$2,$3,$4)",
-            &[
-                &(spec_str as String),
-                &(status_str as String),
-                &(object_meta as String),
-                &(type_meta as String),
-            ],
+            "SELECT * FROM insert_node_v1($1,$2)",
+            &[&(spec_str as String), &(status_str as String)],
         ).map_err(Error::NodeCreate)?;
 
-        debug!(">● ROWS: node_create =>\n{:?}", &rows);
+
         let node = row_to_node(&rows.get(0))?;
-        debug!("◖☩ DONE: node_create ");
+
         return Ok(Some(node.clone()));
     }
 
@@ -73,6 +66,10 @@ impl NodeDS {
         let mut health_checker = Collector::new(client);
 
         let metric_response = health_checker.metrics();
+        println!(
+            "--------------metric_response-----------------{:?}",
+            metric_response
+        );
 
         //TO-DO: You need to add an Into which converts PromResponse to Gauges and PromResponse to Statistics
         // let lgauges: nodesrv::Gauges = metric_response.0;
@@ -86,26 +83,29 @@ impl NodeDS {
 
 fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {
     let mut node = nodesrv::Node::new();
-    debug!("◖☩ START: row_to_node");
 
     let id: i64 = row.get("id");
     let status: String = row.get("status");
     let spec: String = row.get("spec");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
-    let object_meta: String = row.get("object_meta");
-    let type_meta: String = row.get("type_meta");
 
     node.set_id(id.to_string() as String);
     let spec_obj: nodesrv::Spec = serde_json::from_str(&spec).unwrap();
     let status_obj: nodesrv::Status = serde_json::from_str(&status).unwrap();
     node.set_spec(spec_obj);
     node.set_status(status_obj);
+
+    let mut obj_meta = asmsrv::ObjectMeta::new();
+    let mut owner_collection = Vec::new();
+    let owner = asmsrv::OwnerReferences::new();
+    owner_collection.push(owner);
+    obj_meta.set_name(id.to_string() as String);
+    obj_meta.set_owner_references(owner_collection);
+    node.set_object_meta(obj_meta);
+    let mut type_meta = asmsrv::TypeMeta::new();
+    type_meta.set_kind("Node".to_string());
+    type_meta.set_api_version("v1".to_string());
+    node.set_type_meta(type_meta);
     node.set_created_at(created_at.to_rfc3339());
-    let object_meta_obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
-    node.set_object_meta(object_meta_obj);
-    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
-    node.set_type_meta(type_meta_obj);
-    debug!("◖☩ ASM: row_to_node =>\n{:?}", node);
-    debug!("◖☩ DONE: row_to_node");
     Ok(node)
 }

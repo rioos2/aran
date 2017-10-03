@@ -85,7 +85,7 @@ impl<'a> Collector<'a> {
         Collector { client: &*prom }
     }
 
-    pub fn metrics(&mut self) -> Result<(Vec<PromResponse>,Vec<PromResponse>)> {
+    pub fn metrics(&mut self) -> Result<(Vec<PromResponse>, Vec<PromResponse>)> {
         let mut content_datas = vec![];
 
         for scope in GAUGE_SCOPES.iter() {
@@ -96,15 +96,22 @@ impl<'a> Collector<'a> {
             }
         }
 
-
         let gauges = self.set_gauges(Ok(content_datas.clone()));
+        println!("------guages-----------------------------{:?}", guages);
         let statistics = self.set_statistics(Ok(content_datas.clone()));
         Ok((gauges.unwrap(), statistics.unwrap()))
     }
 
     fn set_gauges(&self, response: Result<Vec<PromResponse>>) -> Result<Vec<PromResponse>> {
         match response {
-            Ok(proms) => return Ok(proms.iter().map(|p| (*p.sum_group()).clone()).collect::<Vec<_>>()),
+            Ok(proms) => {
+                return Ok(
+                    proms
+                        .iter()
+                        .map(|p| (*p.sum_group()).clone())
+                        .collect::<Vec<_>>(),
+                )
+            }
             _ => return Err(error::Error::CryptoError(String::new())),
         }
 
@@ -124,6 +131,7 @@ pub trait SumGroup {
 
 impl SumGroup for PromResponse {
     fn sum_group(&self) -> &Self {
+
         use metrics::collector::Data;
 
         if let Data::Vector(ref instancevec) = (*self).data {
@@ -140,15 +148,17 @@ impl SumGroup for PromResponse {
             let sumvec = instancevec.iter().fold(initvec, |acc, ref mut x| {
                 println!(" => accumultor is {:?}", acc);
                 println!(" => x          is {:?}", x);
-                acc.iter().map(|ref mut i| {
-                    for (k, v) in &x.metric {
-                        i.metric.clone().insert(k.to_string(), v.to_string());
-                    }
-                    i.value.clone().0 = x.value.0;
-                    let b = x.value.1.trim().parse().unwrap_or(0);
-                    let a = i.value.clone().1.trim().parse().unwrap_or(0);
-                    i.value.clone().1 = (a + b).to_string()
-                }).collect::<Vec<_>>();
+                acc.iter()
+                    .map(|ref mut i| {
+                        for (k, v) in &x.metric {
+                            i.metric.clone().insert(k.to_string(), v.to_string());
+                        }
+                        i.value.clone().0 = x.value.0;
+                        let b = x.value.1.trim().parse().unwrap_or(0);
+                        let a = i.value.clone().1.trim().parse().unwrap_or(0);
+                        i.value.clone().1 = (a + b).to_string()
+                    })
+                    .collect::<Vec<_>>();
 
                 println!(" => iterated   is {:?}", acc);
 
