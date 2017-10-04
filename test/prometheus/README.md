@@ -110,3 +110,11 @@ cd $HOME/software/prometheus
 ```
 
 This will pickup the new `prometheus.yaml` in `$HOME/software/prometheus`.
+
+### testing
+
+```
+
+curl --header "X-AUTH-RIOOS-EMAIL:paul@riocorp.io" --header "Authorization:Bearer 1fJI78LW4jqBsZ6oXK"  http://localhost:9636/api/v1/healthz/overall
+
+```
