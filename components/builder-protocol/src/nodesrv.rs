@@ -328,7 +328,7 @@ impl Statistics {
     pub fn new() -> Statistics {
         ::std::default::Default::default()
     }
-    pub fn set_status(&mut self, v: ::std::string::String) {
+    pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
     pub fn set_nodes(&mut self, v: Vec<NodeStatistic>) {
@@ -540,16 +540,17 @@ impl Into<Counters> for PromResponse {
     }
 }
 
-impl Into<NodeStatistic> for PromResponse {
-    fn into(self) -> NodeStatistic {
-
-        let mut statistic = NodeStatistic::new();
-        println!(
-            "-------------------------------------------------------{:?}",
-            self
-        );
-        // statistic.set_status("Statistics".to_string());
-        // statistic.set_nodes(self.data);
-        statistic
+impl Into<Vec<NodeStatistic>> for PromResponse {
+    fn into(mut self) -> Vec<NodeStatistic> {
+        let mut collections = Vec::new();
+        if let Data::Vector(ref mut instancevec) = self.data {
+            for data in instancevec.into_iter() {
+                let mut node = NodeStatistic::new();
+                node.set_name(data.metric.get("instance").unwrap().to_owned());
+                node.set_counter(data.value.1.to_owned());
+                collections.push(node);
+            }
+        }
+        collections
     }
 }

@@ -65,28 +65,31 @@ impl NodeDS {
         let mut response = nodesrv::HealthzAllGetResponse::new();
         let mut health_checker = Collector::new(client);
 
-        let metric_response = health_checker.metrics().unwrap(); //TO-DO: you need send back the correct error.
+        let metric_response = health_checker.metrics().unwrap();
 
-        println!("statistics =\n{:?}", metric_response.1);
-
-        //TO-DO: You need to add an Into which converts PromResponse to Gauges and PromResponse to Statistics
         let mut coun_collection = Vec::new();
         for data in metric_response.0 {
             let lgauges: nodesrv::Counters = data.into();
             coun_collection.push(lgauges);
         }
+
         let mut guague = nodesrv::Guages::new();
         guague.set_title("Cumulative operations counter".to_string());
         guague.set_counters(coun_collection);
 
-        // let lstatistics: Vec<nodesrv::NodeStatistic> = metric_response.1.first().unwrap().into();
-        // println!(
-        //     "-----------------------statistics---------------{:?}",
-        //     lstatistics
-        // );
+
+        let mut lstatistics = vec![nodesrv::NodeStatistic::new()];
+
+        for st_data in metric_response.1 {
+            lstatistics = st_data.into();
+        }
+        let mut statistic = nodesrv::Statistics::new();
+        statistic.set_title("Statistics".to_string());
+        statistic.set_nodes(lstatistics);
+
         response.set_title("Command center operations".to_string());
         response.set_gauges(guague);
-        // response.set_statistics(lstatistics);
+        response.set_statistics(statistic);
 
         Ok(Some(response))
     }

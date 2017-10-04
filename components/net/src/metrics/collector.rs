@@ -9,8 +9,8 @@ use serde_json;
 use std::collections::BTreeMap;
 use protocol::nodesrv;
 
-
-const GAUGE_SCOPES: &'static [&'static str] = &["cpu_total", "ram_total", "disk_total"];
+const CPU_TOTAL: &'static str = "cpu_total";
+const GAUGE_SCOPES: &'static [&'static str] = &[CPU_TOTAL, "ram_total", "disk_total"];
 
 /// const STATISTICS_SCOPES: &'static [&'static str] = &["cpu"];
 #[derive(Clone)]
@@ -40,10 +40,10 @@ impl<'a> Collector<'a> {
 
     fn set_gauges(&self, response: Result<Vec<nodesrv::PromResponse>>) -> Result<Vec<nodesrv::PromResponse>> {
         match response {
-            Ok(mut proms) => {
+            Ok(proms) => {
                 return Ok(
                     proms
-                        .iter_mut()
+                        .into_iter()
                         .map(|mut p| (p.sum_group().clone()))
                         .collect::<Vec<_>>(),
                 )
@@ -54,7 +54,29 @@ impl<'a> Collector<'a> {
 
     fn set_statistics(&self, response: Result<Vec<nodesrv::PromResponse>>) -> Result<Vec<nodesrv::PromResponse>> {
         match response {
-            Ok(proms) => return Ok(proms),
+            Ok(proms) => {
+                return Ok(
+                    proms
+                        .into_iter()
+                        .filter(|x| {
+                            match (*x).data {
+                                nodesrv::Data::Vector(ref ins) => {
+                                    return (*ins)
+                                        .clone()
+                                        .into_iter()
+                                        .find(|m| {
+                                            m.metric.get("__name__").unwrap_or(&"nop".to_string()) == CPU_TOTAL
+                                        })
+                                        .is_some()
+                                }
+                                _ => return false,
+                            };
+
+                        })
+                        .collect::<Vec<_>>()
+                        .to_vec(),
+                )
+            }
             _ => return Err(error::Error::CryptoError(String::new())),
         }
     }
