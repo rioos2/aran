@@ -22,7 +22,6 @@ use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
     id: String,
@@ -425,7 +424,7 @@ impl Cumulative {
 pub struct Item {
     id: String,
     name: String,
-    value: Vec<Value>,
+    value: Vec<ValueData>,
 }
 
 impl Item {
@@ -438,19 +437,19 @@ impl Item {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
-    pub fn set_value(&mut self, v: Vec<Value>) {
+    pub fn set_value(&mut self, v: Vec<ValueData>) {
         self.value = v;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Value {
+pub struct ValueData {
     date: String,
     value: String,
 }
 
-impl Value {
-    pub fn new() -> Value {
+impl ValueData {
+    pub fn new() -> ValueData {
         ::std::default::Default::default()
     }
     pub fn set_date(&mut self, v: ::std::string::String) {
@@ -458,5 +457,98 @@ impl Value {
     }
     pub fn set_value(&mut self, v: ::std::string::String) {
         self.value = v;
+    }
+}
+
+
+
+type Timestamp = f64;
+type Value = String;
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StatusData {
+    Success,
+    Error,
+}
+
+
+#[derive(Debug)]
+pub enum Error {
+    BadRequest(String),
+    InvalidExpression(String),
+    Timeout(String),
+    InvalidResponse(serde_json::Error),
+    Unexpected(u16),
+}
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MatrixItem {
+    pub metric: BTreeMap<String, String>,
+    pub values: Vec<Scalar>,
+}
+pub type Matrix = Vec<MatrixItem>;
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct InstantVecItem {
+    pub metric: BTreeMap<String, String>,
+    pub value: Scalar,
+}
+pub type InstantVec = Vec<InstantVecItem>;
+
+pub type Scalar = (Timestamp, Value);
+
+pub type Str = (Timestamp, String);
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "resultType", content = "result")]
+#[serde(rename_all = "lowercase")]
+pub enum Data {
+    Matrix(Matrix),
+    Vector(InstantVec),
+    Scalar(Scalar),
+    String(Str),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PromResponse {
+    pub status: StatusData,
+    pub data: Data,
+    #[serde(rename = "errorType")]
+    #[serde(default)]
+    pub error_type: Option<String>,
+    #[serde(default)]
+    pub error: Option<String>,
+}
+
+
+
+impl Into<Guages> for PromResponse {
+    fn into(self) -> Guages {
+        let mut guages = Guages::new();
+        // guages.set_id(self.get_id());
+        // guages.set_email(self.get_email().to_owned());
+        // guages.set_name(self.get_name().to_owned());
+        // guages.set_token(self.get_token().to_owned());
+        // guages.set_apikey(self.get_apikey().to_owned());
+        guages
+    }
+}
+
+impl Into<NodeStatistic> for PromResponse {
+    fn into(self) -> NodeStatistic {
+
+        let mut statistic = NodeStatistic::new();
+        println!(
+            "-------------------------------------------------------{:?}",
+            self
+        );
+        // statistic.set_status("Statistics".to_string());
+        // statistic.set_nodes(self.data);
+        statistic
     }
 }

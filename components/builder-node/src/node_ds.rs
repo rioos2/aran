@@ -66,13 +66,16 @@ impl NodeDS {
         let mut health_checker = Collector::new(client);
 
         let metric_response = health_checker.metrics().unwrap(); //TO-DO: you need send back the correct error.
-        println!( "gauges =\n{:?}",
-            metric_response.0
-        );
+        println!("gauges =\n{:?}", metric_response.0);
+        println!("statistics =\n{:?}", metric_response.1);
 
         //TO-DO: You need to add an Into which converts PromResponse to Gauges and PromResponse to Statistics
-        // let lgauges: nodesrv::Gauges = metric_response.0;
-        // let lstatistics: nodesrv::Statistics = metric_response.1;
+        // let lgauges: nodesrv::Gauges = metric_response.0.into();
+        // let lstatistics: Vec<nodesrv::NodeStatistic> = metric_response.1.first().unwrap().into();
+        // println!(
+        //     "-----------------------statistics---------------{:?}",
+        //     lstatistics
+        // );
         // response.set_gauges(lgauges);
         // response.set_statistics(lstatistics);
 
