@@ -259,7 +259,7 @@ impl HealthzAllGetResponse {
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
-    pub fn set_guages(&mut self, v: Guages) {
+    pub fn set_gauges(&mut self, v: Guages) {
         self.guages = v;
     }
     pub fn set_statistics(&mut self, v: Statistics) {
@@ -527,15 +527,16 @@ pub struct PromResponse {
 
 
 
-impl Into<Guages> for PromResponse {
-    fn into(self) -> Guages {
-        let mut guages = Guages::new();
-        // guages.set_id(self.get_id());
-        // guages.set_email(self.get_email().to_owned());
-        // guages.set_name(self.get_name().to_owned());
-        // guages.set_token(self.get_token().to_owned());
-        // guages.set_apikey(self.get_apikey().to_owned());
-        guages
+impl Into<Counters> for PromResponse {
+    fn into(mut self) -> Counters {
+        let mut counters = Counters::new();
+        if let Data::Vector(ref mut instancevec) = self.data {
+            for data in instancevec.into_iter() {
+                counters.set_name(data.metric.get("__name__").unwrap().to_owned());
+                counters.set_counter(data.value.1.to_owned());
+            }
+        }
+        counters
     }
 }
 

@@ -33,12 +33,7 @@ impl<'a> Collector<'a> {
                 content_datas.push(response);
             }
         }
-        println!(
-            "-----------------------content_datas------------------------------------------{:?}",
-            content_datas
-        );
         let gauges = self.set_gauges(Ok(content_datas.clone()));
-        println!("--------gauges-----------------------------{:?}", gauges);
         let statistics = self.set_statistics(Ok(content_datas.clone()));
         Ok((gauges.unwrap(), statistics.unwrap()))
     }
@@ -73,7 +68,8 @@ impl SumGroup for nodesrv::PromResponse {
     fn sum_group(&mut self) -> Self {
 
         use self::nodesrv::Data;
-        if let Data::Vector(ref mut instantvec) = (*self).data {
+        let mut sum = Data::Vector(vec![]);
+        if let nodesrv::Data::Vector(ref mut instancevec) = (*self).data {
             let local: DateTime<UTC> = UTC::now();
             let initvec = vec![
                 nodesrv::InstantVecItem {
@@ -81,8 +77,8 @@ impl SumGroup for nodesrv::PromResponse {
                     value: (local.timestamp() as f64, "0".to_string()),
                 },
             ];
+            let instance_changed = instancevec.iter_mut().fold(initvec, |mut acc, ref mut x| {
 
-            instantvec.iter_mut().fold(initvec, |mut acc, ref mut x| {
                 acc.iter_mut()
                     .map(|ref mut i| {
                         for (k, v) in &x.metric {
@@ -90,15 +86,15 @@ impl SumGroup for nodesrv::PromResponse {
                         }
                         i.value.0 = x.value.clone().0;
                         let b = x.value.1.trim().parse::<f64>().unwrap_or(1.0);
-                        let a = i.value.clone().1.trim().parse::<f64>().unwrap_or(1.0);
-                        i.value.clone().1 = (a + b).to_string()
+                        let a = i.value.1.trim().parse::<f64>().unwrap_or(1.0);
+                        i.value.1 = (a + b).to_string();
                     })
                     .collect::<Vec<_>>();
                 acc
             });
-
+            sum = nodesrv::Data::Vector(instance_changed.to_vec());
         }
-
+        self.data = sum;
         (*self).clone()
     }
 }

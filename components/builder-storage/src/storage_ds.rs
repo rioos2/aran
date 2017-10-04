@@ -258,7 +258,7 @@ fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storagesrv::StorageP
     let mut storage = storagesrv::StoragePool::new();
     let id: i64 = row.get("id");
     let name: String = row.get("name");
-    let connector_id: String = row.get("connector_id");
+    let connector_id: i64 = row.get("connector_id");
     let parameters: String = row.get("parameters");
     let status: String = row.get("status");
     let sto_info: String = row.get("storage_info");
@@ -276,7 +276,7 @@ fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storagesrv::StorageP
     let status: asmsrv::Status = serde_json::from_str(&status).unwrap();
     storage.set_status(status);
     storage.set_name(name);
-    storage.set_connector_id(connector_id);
+    storage.set_connector_id(connector_id.to_string() as String);
     let disk: storagesrv::Disks = serde_json::from_str(&sto_info).unwrap();
     storage.set_storage_info(disk);
     storage.set_created_at(created_at.to_rfc3339());
