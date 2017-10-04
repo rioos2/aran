@@ -133,6 +133,7 @@ impl SumGroup for PromResponse {
         use metrics::collector::Data;
         use std::collections::BTreeMap;
 
+        let mut sum = Data::Vector(vec![]);
 
         if let Data::Vector(ref mut instancevec) = (*self).data {
             let local: DateTime<UTC> = UTC::now();
@@ -143,7 +144,7 @@ impl SumGroup for PromResponse {
                 },
             ];
 
-            instancevec.iter_mut().fold(initvec, |mut acc, ref mut x| {
+            let instance_changed = instancevec.iter_mut().fold(initvec, |mut acc, ref mut x| {
                 acc.iter_mut()
                     .map(|ref mut i| {
                         for (k, v) in &x.metric {
@@ -151,15 +152,15 @@ impl SumGroup for PromResponse {
                         }
                         i.value.0 = x.value.clone().0;
                         let b = x.value.1.trim().parse::<f64>().unwrap_or(1.0);
-                        let a = i.value.clone().1.trim().parse::<f64>().unwrap_or(1.0);
-                        i.value.clone().1 = (a + b).to_string()
+                        let a = i.value.1.trim().parse::<f64>().unwrap_or(1.0);
+                        i.value.1 = (a + b).to_string();
                     })
-                   .collect::<Vec<_>>();
+                    .collect::<Vec<_>>();
                 acc
             });
-
+            sum = Data::Vector(instance_changed.to_vec());
         }
-
+        self.data = sum;
         (*self).clone()
     }
 }
