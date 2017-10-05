@@ -13,7 +13,6 @@ pub struct AuthorizeDS;
 impl AuthorizeDS {
     pub fn roles_create(datastore: &DataStoreConn, roles: &authsrv::Roles) -> Result<Option<authsrv::Roles>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: roles_create ");
         let rows = &conn.query(
             "SELECT * FROM insert_role_v1 ($1,$2)",
             &[
@@ -22,7 +21,6 @@ impl AuthorizeDS {
             ],
         ).map_err(Error::RolesCreate)?;
 
-        debug!(">● ROWS: roles_create =>\n{:?}", &rows);
         for row in rows {
             let roles_create = row_to_roles(&row)?;
             return Ok(Some(roles_create));
@@ -32,12 +30,10 @@ impl AuthorizeDS {
 
     pub fn roles_show(datastore: &DataStoreConn, get_roles: &asmsrv::IdGet) -> Result<Option<authsrv::Roles>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: get_role {:?}", get_roles.get_id());
         let role_id = get_roles.get_id().parse::<i64>().unwrap();
         let rows = &conn.query("SELECT * FROM get_role_v1($1)", &[&role_id])
             .map_err(Error::RoleGet)?;
 
-        debug!(">● ROWS: get_role=>\n{:?}", &rows);
         for row in rows {
             let roles_get = row_to_roles(&row)?;
             return Ok(Some(roles_get));
@@ -56,7 +52,6 @@ impl AuthorizeDS {
 
         let mut roles_collection = Vec::new();
 
-        debug!(">● ROWS: roles_list=>\n{:?}", &rows);
         for row in rows {
             let roles = row_to_roles(&row)?;
             roles_collection.push(roles);
@@ -68,7 +63,6 @@ impl AuthorizeDS {
     pub fn permissions_create(datastore: &DataStoreConn, permissions: &authsrv::Permissions) -> Result<Option<authsrv::Permissions>> {
         let conn = datastore.pool.get_shard(0)?;
         let role_id = permissions.get_role_id().parse::<i64>().unwrap();
-        debug!("◖☩ START: permission_create ");
         let rows = &conn.query(
             "SELECT * FROM insert_permission_v1 ($1,$2,$3)",
             &[
@@ -78,7 +72,6 @@ impl AuthorizeDS {
             ],
         ).map_err(Error::PermissionsCreate)?;
 
-        debug!(">● ROWS: permission_create =>\n{:?}", &rows);
         for row in rows {
             let permissions_create = row_to_permissions(&row)?;
             return Ok(Some(permissions_create));
@@ -96,7 +89,6 @@ impl AuthorizeDS {
 
         let mut perm_collection = Vec::new();
 
-        debug!(">● ROWS: permissions_list=>\n{:?}", &rows);
         for row in rows {
             let perm = row_to_permissions(&row)?;
             perm_collection.push(perm);
@@ -111,15 +103,11 @@ impl AuthorizeDS {
 
     pub fn get_rolebased_permissions(datastore: &DataStoreConn, get_permission: &asmsrv::IdGet) -> Result<Option<authsrv::Permissions>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!(
-            "◖☩ START: get_rolebased_permissions {:?}",
-            get_permission.get_id()
-        );
+
         let role_id = get_permission.get_id().parse::<i64>().unwrap();
         let rows = &conn.query("SELECT * FROM get_permission_for_role_v1($1)", &[&role_id])
             .map_err(Error::RolePermissionsGet)?;
 
-        debug!(">● ROWS: get_rolebased_permissions=>\n{:?}", &rows);
         for row in rows {
             let permissions_get = row_to_permissions(&row)?;
             return Ok(Some(permissions_get));
@@ -129,12 +117,10 @@ impl AuthorizeDS {
 
     pub fn permissions_show(datastore: &DataStoreConn, get_perms: &asmsrv::IdGet) -> Result<Option<authsrv::Permissions>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: get_permission {:?}", get_perms.get_id());
         let perm_id = get_perms.get_id().parse::<i64>().unwrap();
         let rows = &conn.query("SELECT * FROM get_permission_v1($1)", &[&perm_id])
             .map_err(Error::PermissionGet)?;
 
-        debug!(">● ROWS: get_permission=>\n{:?}", &rows);
         for row in rows {
             let perm_get = row_to_permissions(&row)?;
             return Ok(Some(perm_get));
@@ -144,7 +130,6 @@ impl AuthorizeDS {
 
     pub fn get_specfic_permission_based_role(datastore: &DataStoreConn, get_perms: &asmsrv::IdGet) -> Result<Option<authsrv::Permissions>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: get_permission {:?}", get_perms.get_id());
         let perm_id = get_perms.get_id().parse::<i64>().unwrap();
         let role_id = get_perms.get_name().parse::<i64>().unwrap();
         let rows = &conn.query(
@@ -152,7 +137,6 @@ impl AuthorizeDS {
             &[&perm_id, &role_id],
         ).map_err(Error::PermissionGet)?;
 
-        debug!(">● ROWS: get_permission=>\n{:?}", &rows);
         for row in rows {
             let perm_get = row_to_permissions(&row)?;
             return Ok(Some(perm_get));
@@ -164,7 +148,6 @@ impl AuthorizeDS {
 
 fn row_to_roles(row: &postgres::rows::Row) -> Result<authsrv::Roles> {
     let mut roles = authsrv::Roles::new();
-    debug!("◖☩ START: row_to_roles");
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
@@ -176,15 +159,13 @@ fn row_to_roles(row: &postgres::rows::Row) -> Result<authsrv::Roles> {
     roles.set_description(description as String);
     roles.set_created_at(created_at.to_rfc3339());
 
-    debug!("◖☩ ASM: row_to_roles =>\n{:?}", roles);
-    debug!("◖☩ DONE: row_to_roles");
+
     Ok(roles)
 }
 
 
 fn row_to_permissions(row: &postgres::rows::Row) -> Result<authsrv::Permissions> {
     let mut permissions = authsrv::Permissions::new();
-    debug!("◖☩ START: row_to_permissions");
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
@@ -198,7 +179,6 @@ fn row_to_permissions(row: &postgres::rows::Row) -> Result<authsrv::Permissions>
     permissions.set_description(description as String);
     permissions.set_created_at(created_at.to_rfc3339());
 
-    debug!("◖☩ ASM: row_to_permissions =>\n{:?}", permissions);
-    debug!("◖☩ DONE: row_to_permissions");
+
     Ok(permissions)
 }

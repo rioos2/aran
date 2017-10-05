@@ -1,28 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//The protocol for the database marshall/unmarshall
-//for deployment (assembly, assembly_factory).
-
-#![allow(unknown_lints)]
-
-#![cfg_attr(rustfmt, rustfmt_skip)]
-
-#![allow(box_pointers)]
-#![allow(dead_code)]
-#![allow(missing_docs)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-#![allow(non_upper_case_globals)]
-#![allow(trivial_casts)]
-#![allow(unsafe_code)]
-#![allow(unused_imports)]
-#![allow(unused_results)]
-
-use serde::{Serialize, Serializer};
-use std::result;
-use std::fmt;
-use error::{Error, Result};
-use std::str::FromStr;
 use plansrv;
 use std::collections::BTreeMap;
 

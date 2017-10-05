@@ -172,7 +172,6 @@ impl StorageDS {
         let mut response = storagesrv::StoragePoolGetResponse::new();
 
         let mut storage_collection = Vec::new();
-        debug!(">● ROWS: storage_pool_list =>\n{:?}", &rows);
         for row in rows {
             storage_collection.push(row_to_storage_pool(&row)?)
         }
