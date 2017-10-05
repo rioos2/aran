@@ -62,7 +62,7 @@ impl NodeDS {
 
     //this doesn't have typemeta and objectmeta, maybe we should add it.
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
-        let mut response = nodesrv::HealthzAllGetResponse::new();
+        let mut res = nodesrv::HealthzAllGet::new();
         let mut health_checker = Collector::new(client);
 
         let metric_response = health_checker.metrics().unwrap();
@@ -87,9 +87,11 @@ impl NodeDS {
         statistic.set_title("Statistics".to_string());
         statistic.set_nodes(lstatistics);
 
-        response.set_title("Command center operations".to_string());
-        response.set_gauges(guague);
-        response.set_statistics(statistic);
+        res.set_title("Command center operations".to_string());
+        res.set_gauges(guague);
+        res.set_statistics(statistic);
+
+        let response: nodesrv::HealthzAllGetResponse = res.into();
 
         Ok(Some(response))
     }

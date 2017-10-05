@@ -21,6 +21,7 @@ use std::str::FromStr;
 use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
+use rand;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -243,7 +244,7 @@ impl NodeGetResponse {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct HealthzAllGetResponse {
+pub struct HealthzAllGet {
     title: String,
     guages: Guages,
     statistics: Statistics,
@@ -252,8 +253,8 @@ pub struct HealthzAllGetResponse {
     to_date: String,
 }
 
-impl HealthzAllGetResponse {
-    pub fn new() -> HealthzAllGetResponse {
+impl HealthzAllGet {
+    pub fn new() -> HealthzAllGet {
         ::std::default::Default::default()
     }
     pub fn set_title(&mut self, v: ::std::string::String) {
@@ -338,6 +339,9 @@ impl Statistics {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeStatistic {
+    id: String,
+    kind: String,
+    api_version: String,
     name: String,
     description: String,
     cpu: String,
@@ -349,6 +353,11 @@ impl NodeStatistic {
     pub fn new() -> NodeStatistic {
         ::std::default::Default::default()
     }
+
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
@@ -366,6 +375,12 @@ impl NodeStatistic {
     }
     pub fn set_health(&mut self, v: ::std::string::String) {
         self.health = v;
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
     }
 }
 
@@ -460,8 +475,6 @@ impl ValueData {
     }
 }
 
-
-
 type Timestamp = f64;
 type Value = String;
 
@@ -548,9 +561,52 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
                 let mut node = NodeStatistic::new();
                 node.set_name(data.metric.get("instance").unwrap().to_owned());
                 node.set_counter(data.value.1.to_owned());
+                node.set_id(rand::random::<u64>().to_string());
+                node.set_kind("Node".to_string());
+                node.set_api_version("v1".to_string());
                 collections.push(node);
             }
         }
         collections
+    }
+}
+
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HealthzAllGetResponse {
+    kind: String,
+    api_version: String,
+    id: String,
+    results: HealthzAllGet,
+}
+
+impl HealthzAllGetResponse {
+    pub fn new() -> HealthzAllGetResponse {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
+    }
+    pub fn set_results(&mut self, v: HealthzAllGet) {
+        self.results = v;
+    }
+}
+
+
+impl Into<HealthzAllGetResponse> for HealthzAllGet {
+    fn into(self) -> HealthzAllGetResponse {
+        let mut health = HealthzAllGetResponse::new();
+        health.set_results(self);
+        health.set_kind("ReportsStatistics".to_string());
+        health.set_api_version("v1".to_string());
+        health.set_id(rand::random::<u64>().to_string());
+        health
     }
 }
