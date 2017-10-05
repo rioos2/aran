@@ -3,7 +3,6 @@
 use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
-use rand;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -543,7 +542,13 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
                 let mut node = NodeStatistic::new();
                 node.set_name(data.metric.get("node").unwrap().to_owned());
                 node.set_counter(data.value.1.to_owned());
-                node.set_id(rand::random::<u64>().to_string());
+                node.set_id(
+                    data.metric
+                        .get("node")
+                        .unwrap()
+                        .replace(".", "_")
+                        .to_string(),
+                );
                 node.set_kind("Node".to_string());
                 node.set_api_version("v1".to_string());
                 collections.push(node);
@@ -588,7 +593,7 @@ impl Into<HealthzAllGetResponse> for HealthzAllGet {
         health.set_results(self);
         health.set_kind("ReportsStatistics".to_string());
         health.set_api_version("v1".to_string());
-        health.set_id(rand::random::<u64>().to_string());
+        health.set_id("ReportsStatistics".to_string());
         health
     }
 }

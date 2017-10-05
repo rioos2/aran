@@ -1,4 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc.
+use std::collections::BTreeMap;
 use {asmsrv, servicesrv};
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Network {
@@ -8,6 +9,7 @@ pub struct Network {
     subnet_ip: String,
     netmask: String,
     gateway: String,
+    bridge_hosts: BTreeMap<String, String>,
     status: asmsrv::Status,
     created_at: String,
     object_meta: servicesrv::ObjectMetaData,
@@ -80,6 +82,14 @@ impl Network {
 
     pub fn get_type_meta(&self) -> &asmsrv::TypeMeta {
         &self.type_meta
+    }
+
+    pub fn set_bridge_hosts(&mut self, v: BTreeMap<String, String>) {
+        self.bridge_hosts = v;
+    }
+
+    pub fn get_bridge_hosts(&self) -> &BTreeMap<String, String> {
+        &self.bridge_hosts
     }
 
     pub fn set_object_meta(&mut self, v: servicesrv::ObjectMetaData) {
