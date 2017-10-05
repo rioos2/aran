@@ -16,12 +16,12 @@ pub struct NodeDS;
 impl NodeDS {
     pub fn node_create(datastore: &DataStoreConn, node_create: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
         let conn = datastore.pool.get_shard(0)?;
-        let spec_str = serde_json::to_string(node_create.get_spec()).unwrap();
-        let status_str = serde_json::to_string(node_create.get_status()).unwrap();
-
         let rows = &conn.query(
             "SELECT * FROM insert_node_v1($1,$2)",
-            &[&(spec_str as String), &(status_str as String)],
+            &[
+                &(serde_json::to_string(node_create.get_spec()).unwrap()),
+                &(serde_json::to_string(node_create.get_status()).unwrap()),
+            ],
         ).map_err(Error::NodeCreate)?;
 
 
@@ -50,11 +50,12 @@ impl NodeDS {
 
     pub fn node_status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
-        let id = node.get_id().parse::<i64>().unwrap();
-        let status_str = serde_json::to_string(node.get_status()).unwrap();
         conn.execute(
             "SELECT set_node_status_v1($1, $2)",
-            &[&id, &(status_str as String)],
+            &[
+                &(node.get_id().parse::<i64>().unwrap()),
+                &(serde_json::to_string(node.get_status()).unwrap()),
+            ],
         ).map_err(Error::NodeSetStatus)?;
         Ok(())
     }
@@ -104,11 +105,9 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {
     let spec: String = row.get("spec");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
-    node.set_id(id.to_string() as String);
-    let spec_obj: nodesrv::Spec = serde_json::from_str(&spec).unwrap();
-    let status_obj: nodesrv::Status = serde_json::from_str(&status).unwrap();
-    node.set_spec(spec_obj);
-    node.set_status(status_obj);
+    node.set_id(id.to_string());
+    node.set_spec(serde_json::from_str(&spec).unwrap());
+    node.set_status(serde_json::from_str(&status).unwrap());
 
     let mut obj_meta = asmsrv::ObjectMeta::new();
     let mut owner_collection = Vec::new();

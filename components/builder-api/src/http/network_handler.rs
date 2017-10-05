@@ -13,6 +13,8 @@ use protocol::net::{self, ErrCode};
 // use router::Router;
 use protocol::netsrv::Network;
 use protocol::asmsrv::{Status, Condition};
+use std::collections::BTreeMap;
+
 
 use db::data_store::Broker;
 use http::deployment_handler;
@@ -27,6 +29,7 @@ struct NetworkCreateReq {
     subnet_ip: String,
     netmask: String,
     gateway: String,
+    bridge_hosts: BTreeMap<String, String>,
     status: deployment_handler::StatusReq,
     created_at: String,
 }
@@ -61,6 +64,7 @@ pub fn network_create(req: &mut Request) -> IronResult<Response> {
                     condition_collection.push(condition);
                 }
                 status.set_conditions(condition_collection);
+                net_create.set_bridge_hosts(body.bridge_hosts);
                 net_create.set_status(status);
 
             }

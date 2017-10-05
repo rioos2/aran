@@ -8,25 +8,22 @@ use protocol::{servicesrv, asmsrv, storagesrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-use std::collections::BTreeMap;
 
 pub struct StorageDS;
 
 impl StorageDS {
     pub fn storage_create(datastore: &DataStoreConn, storage_create: &storagesrv::Storage) -> Result<Option<storagesrv::Storage>> {
         let conn = datastore.pool.get_shard(0)?;
-        let status_str = serde_json::to_string(storage_create.get_status()).unwrap();
-        let sto_str = serde_json::to_string(storage_create.get_storage_info()).unwrap();
-        let parameter_str = serde_json::to_string(storage_create.get_parameters()).unwrap();
+
         let rows = &conn.query(
             "SELECT * FROM insert_storage_v1($1,$2,$3,$4,$5,$6)",
             &[
                 &(storage_create.get_name() as String),
                 &(storage_create.get_host_ip() as String),
                 &(storage_create.get_storage_type() as String),
-                &(parameter_str as String),
-                &(sto_str as String),
-                &(status_str as String),
+                &(serde_json::to_string(storage_create.get_parameters()).unwrap()),
+                &(serde_json::to_string(storage_create.get_storage_info()).unwrap()),
+                &(serde_json::to_string(storage_create.get_status()).unwrap()),
             ],
         ).map_err(Error::StorageCreate)?;
         let storage = row_to_storage(&rows.get(0))?;
@@ -56,9 +53,10 @@ impl StorageDS {
 
     pub fn storage_show(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::Storage>> {
         let conn = datastore.pool.get_shard(0)?;
-        let storage_id = get_storage.get_id().parse::<i64>().unwrap();
-        let rows = &conn.query("SELECT * FROM get_storage_v1($1)", &[&storage_id])
-            .map_err(Error::StorageGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_storage_v1($1)",
+            &[&(get_storage.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::StorageGet)?;
         for row in rows {
             let storage = row_to_storage(&row)?;
             return Ok(Some(storage));
@@ -68,11 +66,13 @@ impl StorageDS {
 
     pub fn storage_status_update(datastore: &DataStoreConn, storage_create: &storagesrv::Storage) -> Result<Option<storagesrv::Storage>> {
         let conn = datastore.pool.get_shard(0)?;
-        let storage_id = storage_create.get_id().parse::<i64>().unwrap();
-        let status_str = serde_json::to_string(storage_create.get_status()).unwrap();
+
         let rows = &conn.query(
             "SELECT * FROM set_storage_status_v1($1, $2)",
-            &[&storage_id, &(status_str as String)],
+            &[
+                &(storage_create.get_id().parse::<i64>().unwrap()),
+                &(serde_json::to_string(storage_create.get_status()).unwrap()),
+            ],
         ).map_err(Error::StorageSetStatus)?;
         for row in rows {
             let storage = row_to_storage(&row)?;
@@ -83,18 +83,15 @@ impl StorageDS {
 
     pub fn storage_update(datastore: &DataStoreConn, storage_create: &storagesrv::Storage) -> Result<Option<storagesrv::Storage>> {
         let conn = datastore.pool.get_shard(0)?;
-        let storage_id = storage_create.get_id().parse::<i64>().unwrap();
-        let sto_str = serde_json::to_string(storage_create.get_storage_info()).unwrap();
-        let parameter_str = serde_json::to_string(storage_create.get_parameters()).unwrap();
         let rows = &conn.query(
             "SELECT * FROM update_storage_v1($1,$2,$3,$4,$5,$6)",
             &[
-                &storage_id,
+                &(storage_create.get_id().parse::<i64>().unwrap()),
                 &(storage_create.get_name() as String),
                 &(storage_create.get_host_ip() as String),
                 &(storage_create.get_storage_type() as String),
-                &(parameter_str as String),
-                &(sto_str as String),
+                &(serde_json::to_string(storage_create.get_parameters()).unwrap()),
+                &(serde_json::to_string(storage_create.get_storage_info()).unwrap()),
             ],
         ).map_err(Error::StorageCreate)?;
         let storage = row_to_storage(&rows.get(0))?;
@@ -103,8 +100,6 @@ impl StorageDS {
 
     pub fn data_center_create(datastore: &DataStoreConn, dc_create: &storagesrv::DataCenter) -> Result<Option<storagesrv::DataCenter>> {
         let conn = datastore.pool.get_shard(0)?;
-        let status_str = serde_json::to_string(dc_create.get_status()).unwrap();
-        let adv_str = serde_json::to_string(dc_create.get_advanced_settings()).unwrap();
         let rows = &conn.query(
             "SELECT * FROM insert_dc_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
@@ -113,10 +108,10 @@ impl StorageDS {
                 &(dc_create.get_networks() as Vec<String>),
                 &(dc_create.get_enabled() as bool),
                 &(dc_create.get_storage() as String),
-                &(adv_str as String),
+                &(serde_json::to_string(dc_create.get_advanced_settings()).unwrap()),
                 &(dc_create.get_flag() as String),
                 &(dc_create.get_currency() as String),
-                &(status_str as String),
+                &(serde_json::to_string(dc_create.get_status()).unwrap()),
             ],
         ).map_err(Error::DcCreate)?;
         let dc = row_to_dc(&rows.get(0))?;
@@ -145,18 +140,14 @@ impl StorageDS {
 
     pub fn storage_pool_create(datastore: &DataStoreConn, storage_create: &storagesrv::StoragePool) -> Result<Option<storagesrv::StoragePool>> {
         let conn = datastore.pool.get_shard(0)?;
-        let connector_id = storage_create.get_connector_id().parse::<i64>().unwrap();
-        let status_str = serde_json::to_string(storage_create.get_status()).unwrap();
-        let sto_info = serde_json::to_string(storage_create.get_storage_info()).unwrap();
-        let parameter_str = serde_json::to_string(storage_create.get_parameters()).unwrap();
         let rows = &conn.query(
             "SELECT * FROM insert_storage_pool_v1($1,$2,$3,$4,$5)",
             &[
                 &(storage_create.get_name() as String),
-                &connector_id,
-                &(parameter_str as String),
-                &(sto_info as String),
-                &(status_str as String),
+                &(storage_create.get_connector_id().parse::<i64>().unwrap()),
+                &(serde_json::to_string(storage_create.get_parameters()).unwrap()),
+                &(serde_json::to_string(storage_create.get_storage_info()).unwrap()),
+                &(serde_json::to_string(storage_create.get_status()).unwrap()),
             ],
         ).map_err(Error::StoragePoolCreate)?;
         let storage = row_to_storage_pool(&rows.get(0))?;
@@ -195,22 +186,19 @@ fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
     let sto_info: String = row.get("storage_info");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
-    storage.set_id(id.to_string() as String);
-    let parameters_obj: BTreeMap<String, String> = serde_json::from_str(&parameters).unwrap();
-    storage.set_paramaters(parameters_obj);
+    storage.set_id(id.to_string());
+    storage.set_paramaters(serde_json::from_str(&parameters).unwrap());
     let object_meta = servicesrv::ObjectMetaData::new();
     storage.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
     type_meta.set_kind("Storage".to_string());
     type_meta.set_api_version("v1".to_string());
     storage.set_type_meta(type_meta);
-    let status: asmsrv::Status = serde_json::from_str(&status).unwrap();
-    storage.set_status(status);
+    storage.set_status(serde_json::from_str(&status).unwrap());
     storage.set_name(name);
     storage.set_host_ip(host_ip);
     storage.set_storage_type(storage_type);
-    let disk: storagesrv::Disks = serde_json::from_str(&sto_info).unwrap();
-    storage.set_storage_info(disk);
+    storage.set_storage_info(serde_json::from_str(&sto_info).unwrap());
     storage.set_created_at(created_at.to_rfc3339());
     Ok(storage)
 }
@@ -230,17 +218,15 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
-    dc.set_id(id.to_string() as String);
-    let adv_obj: BTreeMap<String, String> = serde_json::from_str(&advanced_settings).unwrap();
-    dc.set_advanced_settings(adv_obj);
+    dc.set_id(id.to_string());
+    dc.set_advanced_settings(serde_json::from_str(&advanced_settings).unwrap());
     let object_meta = servicesrv::ObjectMetaData::new();
     dc.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
     type_meta.set_kind("Storage".to_string());
     type_meta.set_api_version("v1".to_string());
     dc.set_type_meta(type_meta);
-    let status: asmsrv::Status = serde_json::from_str(&status).unwrap();
-    dc.set_status(status);
+    dc.set_status(serde_json::from_str(&status).unwrap());
     dc.set_name(name);
     dc.set_networks(networks);
     dc.set_storage(storage);
@@ -262,21 +248,18 @@ fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storagesrv::StorageP
     let sto_info: String = row.get("storage_info");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
-    storage.set_id(id.to_string() as String);
-    let parameters_obj: BTreeMap<String, String> = serde_json::from_str(&parameters).unwrap();
-    storage.set_paramaters(parameters_obj);
+    storage.set_id(id.to_string());
+    storage.set_paramaters(serde_json::from_str(&parameters).unwrap());
     let object_meta = servicesrv::ObjectMetaData::new();
     storage.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
     type_meta.set_kind("StoragePool".to_string());
     type_meta.set_api_version("v1".to_string());
     storage.set_type_meta(type_meta);
-    let status: asmsrv::Status = serde_json::from_str(&status).unwrap();
-    storage.set_status(status);
+    storage.set_status(serde_json::from_str(&status).unwrap());
     storage.set_name(name);
-    storage.set_connector_id(connector_id.to_string() as String);
-    let disk: storagesrv::Disks = serde_json::from_str(&sto_info).unwrap();
-    storage.set_storage_info(disk);
+    storage.set_connector_id(connector_id.to_string());
+    storage.set_storage_info(serde_json::from_str(&sto_info).unwrap());
     storage.set_created_at(created_at.to_rfc3339());
     Ok(storage)
 }

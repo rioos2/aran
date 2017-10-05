@@ -20,7 +20,6 @@ extern crate serde_derive;
 extern crate serde_json;
 
 extern crate time;
-extern crate rand;
 
 pub mod error;
 pub mod net;

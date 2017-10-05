@@ -8,7 +8,6 @@ use protocol::{servicesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-use std::collections::BTreeMap;
 
 
 pub struct ServiceAccountDS;
@@ -16,17 +15,15 @@ pub struct ServiceAccountDS;
 impl ServiceAccountDS {
     pub fn secret_create(datastore: &DataStoreConn, secret_create: &servicesrv::Secret) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
-        let data_str = serde_json::to_string(secret_create.get_data()).unwrap();
-        let object_meta = serde_json::to_string(secret_create.get_object_meta()).unwrap();
-        let type_meta = serde_json::to_string(secret_create.get_type_meta()).unwrap();
+
         let rows = &conn.query(
             "SELECT * FROM insert_secret_v1($1,$2,$3,$4,$5)",
             &[
                 &(secret_create.get_secret_type() as String),
                 &(secret_create.get_object_meta().get_origin() as String),
-                &(data_str as String),
-                &(object_meta as String),
-                &(type_meta as String),
+                &(serde_json::to_string(secret_create.get_data()).unwrap()),
+                &(serde_json::to_string(secret_create.get_object_meta()).unwrap()),
+                &(serde_json::to_string(secret_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::SecretCreate)?;
         let secret = row_to_secret(&rows.get(0))?;
@@ -34,9 +31,10 @@ impl ServiceAccountDS {
     }
     pub fn secret_show(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
-        let secret_id = get_secret.get_id().parse::<i64>().unwrap();
-        let rows = &conn.query("SELECT * FROM get_secret_v1($1)", &[&secret_id])
-            .map_err(Error::SecretGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_secret_v1($1)",
+            &[&(get_secret.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::SecretGet)?;
         for row in rows {
             let secret = row_to_secret(&row)?;
             return Ok(Some(secret));
@@ -89,17 +87,14 @@ impl ServiceAccountDS {
 
     pub fn service_account_create(datastore: &DataStoreConn, service_create: &servicesrv::ServiceAccount) -> Result<Option<servicesrv::ServiceAccount>> {
         let conn = datastore.pool.get_shard(0)?;
-        let secret_str = serde_json::to_string(service_create.get_secrets()).unwrap();
-        let object_meta = serde_json::to_string(service_create.get_object_meta()).unwrap();
-        let type_meta = serde_json::to_string(service_create.get_type_meta()).unwrap();
         let rows = &conn.query(
             "SELECT * FROM insert_service_account_v1($1,$2,$3,$4,$5)",
             &[
                 &(service_create.get_object_meta().get_origin() as String),
                 &(service_create.get_object_meta().get_name() as String),
-                &(secret_str as String),
-                &(object_meta as String),
-                &(type_meta as String),
+                &(serde_json::to_string(service_create.get_secrets()).unwrap()),
+                &(serde_json::to_string(service_create.get_object_meta()).unwrap()),
+                &(serde_json::to_string(service_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
         let service_account = row_to_service_account(&rows.get(0))?;
@@ -151,13 +146,10 @@ fn row_to_secret(row: &postgres::rows::Row) -> Result<servicesrv::Secret> {
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
 
-    secret.set_id(id.to_string() as String);
-    let data_obj: BTreeMap<String, String> = serde_json::from_str(&data).unwrap();
-    secret.set_data(data_obj);
-    let object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
-    secret.set_object_meta(object_meta_obj);
-    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
-    secret.set_type_meta(type_meta_obj);
+    secret.set_id(id.to_string());
+    secret.set_data(serde_json::from_str(&data).unwrap());
+    secret.set_object_meta(serde_json::from_str(&object_meta).unwrap());
+    secret.set_type_meta(serde_json::from_str(&type_meta).unwrap());
     secret.set_secret_type(secret_type);
     secret.set_created_at(created_at.to_rfc3339());
 
@@ -173,13 +165,10 @@ fn row_to_service_account(row: &postgres::rows::Row) -> Result<servicesrv::Servi
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
 
-    service_account.set_id(id.to_string() as String);
-    let secret_obj: servicesrv::ObjectReference = serde_json::from_str(&secrets).unwrap();
-    service_account.set_secrets(secret_obj);
-    let object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
-    service_account.set_object_meta(object_meta_obj);
-    let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
-    service_account.set_type_meta(type_meta_obj);
+    service_account.set_id(id.to_string());
+    service_account.set_secrets(serde_json::from_str(&secrets).unwrap());
+    service_account.set_object_meta(serde_json::from_str(&object_meta).unwrap());
+    service_account.set_type_meta(serde_json::from_str(&type_meta).unwrap());
     service_account.set_created_at(created_at.to_rfc3339());
 
     Ok(service_account)
