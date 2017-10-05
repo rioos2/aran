@@ -559,7 +559,7 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
         if let Data::Vector(ref mut instancevec) = self.data {
             for data in instancevec.into_iter() {
                 let mut node = NodeStatistic::new();
-                node.set_name(data.metric.get("instance").unwrap().to_owned());
+                node.set_name(data.metric.get("node").unwrap().to_owned());
                 node.set_counter(data.value.1.to_owned());
                 node.set_id(rand::random::<u64>().to_string());
                 node.set_kind("Node".to_string());

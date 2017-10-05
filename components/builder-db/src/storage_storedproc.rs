@@ -236,7 +236,7 @@ impl Migratable for StorageProcedures {
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION get_storage_pool_v1 (sid bigint) RETURNS SETOF storages_pool AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM storages_pool WHERE id = sid;
+                          RETURN QUERY SELECT * FROM storages_pool WHERE connector_id = sid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,

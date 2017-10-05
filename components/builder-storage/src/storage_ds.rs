@@ -172,6 +172,7 @@ impl StorageDS {
         let mut response = storagesrv::StoragePoolGetResponse::new();
 
         let mut storage_collection = Vec::new();
+        debug!(">● ROWS: storage_pool_list =>\n{:?}", &rows);
         for row in rows {
             storage_collection.push(row_to_storage_pool(&row)?)
         }
@@ -251,8 +252,6 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     dc.set_created_at(created_at.to_rfc3339());
     Ok(dc)
 }
-
-
 
 fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storagesrv::StoragePool> {
     let mut storage = storagesrv::StoragePool::new();

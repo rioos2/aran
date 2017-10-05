@@ -66,7 +66,10 @@ impl NodeDS {
         let mut health_checker = Collector::new(client);
 
         let metric_response = health_checker.metrics().unwrap();
-
+        println!(
+            "------------------------------metric--------------------------{:?}",
+            metric_response.1
+        );
         let mut coun_collection = Vec::new();
         for data in metric_response.0 {
             let lgauges: nodesrv::Counters = data.into();
