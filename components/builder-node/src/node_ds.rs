@@ -41,7 +41,6 @@ impl NodeDS {
 
         let mut node_collection = Vec::new();
 
-        debug!(">● ROWS: node_list =>\n{:?}", &rows);
         for row in rows {
             node_collection.push(row_to_node(&row)?)
         }

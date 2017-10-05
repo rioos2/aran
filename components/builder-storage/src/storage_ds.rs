@@ -252,8 +252,6 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     Ok(dc)
 }
 
-
-
 fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storagesrv::StoragePool> {
     let mut storage = storagesrv::StoragePool::new();
     let id: i64 = row.get("id");

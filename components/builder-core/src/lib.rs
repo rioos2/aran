@@ -4,7 +4,6 @@
 
 extern crate chrono;
 extern crate rioos_core as rio_core;
-extern crate rioos_builder_protocol as protocol;
 #[macro_use]
 extern crate log;
 extern crate statsd;

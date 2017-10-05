@@ -1,23 +1,5 @@
-#![allow(unknown_lints)]
+// Copyright (c) 2017 RioCorp Inc.
 
-#![cfg_attr(rustfmt, rustfmt_skip)]
-
-#![allow(box_pointers)]
-#![allow(dead_code)]
-#![allow(missing_docs)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-#![allow(non_upper_case_globals)]
-#![allow(trivial_casts)]
-#![allow(unsafe_code)]
-#![allow(unused_imports)]
-#![allow(unused_results)]
-
-use regex::Regex;
-use serde::ser::SerializeStruct;
-use serde::{Serialize, Serializer};
-use std::result;
-use std::str::FromStr;
 use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
@@ -559,7 +541,7 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
         if let Data::Vector(ref mut instancevec) = self.data {
             for data in instancevec.into_iter() {
                 let mut node = NodeStatistic::new();
-                node.set_name(data.metric.get("instance").unwrap().to_owned());
+                node.set_name(data.metric.get("node").unwrap().to_owned());
                 node.set_counter(data.value.1.to_owned());
                 node.set_id(rand::random::<u64>().to_string());
                 node.set_kind("Node".to_string());

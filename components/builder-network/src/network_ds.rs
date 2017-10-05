@@ -54,7 +54,6 @@ impl NetworkDS {
 
 fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
     let mut network = netsrv::Network::new();
-    debug!("◖☩ START: row_to_secret");
     let id: i64 = row.get("id");
     let name: String = row.get("name");
     let network_type: String = row.get("network_type");
@@ -80,7 +79,6 @@ fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
     type_meta.set_kind("Networks".to_string());
     type_meta.set_api_version("v1".to_string());
     network.set_type_meta(type_meta);
-    debug!("◖☩ ASM: row_to_secret =>\n{:?}", network);
-    debug!("◖☩ DONE: row_to_secret");
+
     Ok(network)
 }

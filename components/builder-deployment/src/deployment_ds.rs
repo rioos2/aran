@@ -15,7 +15,6 @@ pub struct DeploymentDS;
 impl DeploymentDS {
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: assemby_create ");
         let ips = serde_json::to_string(assembly.get_ip()).unwrap();
         let urls = serde_json::to_string(assembly.get_urls()).unwrap();
         let volumes = serde_json::to_string(assembly.get_volumes()).unwrap();
@@ -36,7 +35,6 @@ impl DeploymentDS {
             ],
         ).map_err(Error::AssemblyCreate)?;
 
-        debug!(">● ROWS: assemby_create =>\n{:?}", &rows);
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
@@ -46,7 +44,7 @@ impl DeploymentDS {
 
     pub fn assembly_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: assemby_create ");
+
         let asm_id = assembly.get_id().parse::<i64>().unwrap();
         let urls = serde_json::to_string(assembly.get_urls()).unwrap();
         let volumes = serde_json::to_string(assembly.get_volumes()).unwrap();
@@ -67,7 +65,7 @@ impl DeploymentDS {
             ],
         ).map_err(Error::AssemblyUpdate)?;
 
-        debug!(">● ROWS: assemby_create =>\n{:?}", &rows);
+
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
@@ -77,12 +75,12 @@ impl DeploymentDS {
 
     pub fn assembly_show(datastore: &DataStoreConn, get_assembly: &asmsrv::IdGet) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: assemby_show {:?}", get_assembly.get_id());
+
         let asm_id = get_assembly.get_id().parse::<i64>().unwrap();
         let rows = &conn.query("SELECT * FROM get_assembly_v1($1)", &[&asm_id])
             .map_err(Error::AssemblyGet)?;
 
-        debug!(">● ROWS: assemby_show =>\n{:?}", &rows);
+
 
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
@@ -101,7 +99,7 @@ impl DeploymentDS {
 
         let mut assemblys_collection = Vec::new();
 
-        debug!(">● ROWS: assemby_list =>\n{:?}", &rows);
+
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             assemblys_collection.push(assembly);
@@ -136,7 +134,7 @@ impl DeploymentDS {
         let opssettings = serde_json::to_string(assembly_fac.get_opssettings()).unwrap();
 
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: assembly_factory_create ");
+
 
         let rows = &conn.query(
             "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
@@ -155,9 +153,9 @@ impl DeploymentDS {
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
 
-        debug!(">● ROWS: assembly_factory_create =>\n{:?}", &rows);
+
         let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
-        debug!("◖☩ DONE: assembly_factory_create ");
+
         return Ok(Some(assembly_factory.clone()));
     }
 
@@ -165,15 +163,10 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         let asm_id = get_assembly_factory.get_id().parse::<i64>().unwrap();
 
-        debug!(
-            "◖☩ START: assemby_factory_show {:?}",
-            get_assembly_factory.get_id()
-        );
-
         let rows = &conn.query("SELECT * FROM get_assembly_factory_v1($1)", &[&asm_id])
             .map_err(Error::AssemblyFactoryGet)?;
 
-        debug!(">● ROWS: assemby_factory_show =>\n{:?}", &rows);
+
 
         for row in rows {
             let mut assembly_factory = row_to_assembly_factory(&row)?;
@@ -215,7 +208,7 @@ impl DeploymentDS {
 
         let mut assembly_factorys_collection = Vec::new();
 
-        debug!(">● ROWS: assembly_factory_list =>\n{:?}", &rows);
+
         for row in rows {
             assembly_factorys_collection.push(row_to_assembly_factory(&row)?)
         }
@@ -239,12 +232,12 @@ impl DeploymentDS {
     pub fn plan_show(datastore: &DataStoreConn, plan_url: String) -> Result<Option<plansrv::Plan>> {
         let url = plan_url.to_string();
         let conn = datastore.pool.get_shard(0)?;
-        debug!("◖☩ START: plan_show {:?}", plan_url);
+
 
         let rows = &conn.query("SELECT * FROM get_plan_v1($1)", &[&url])
             .map_err(Error::PlanGet)?;
 
-        debug!(">● ROWS: plan_show =>\n{:?}", &rows);
+
 
         for row in rows {
             let plan = row_to_plan(&row)?;
@@ -399,7 +392,6 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     }
     plan.set_services(service_collection);
     plan.set_created_at(created_at.to_rfc3339());
-    debug!("◖☩ PLAN: row_to_plan =>\n{:?}", plan);
-    debug!("◖☩ DONE: row_to_assemby_factory");
+
     Ok(plan)
 }

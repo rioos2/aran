@@ -2,6 +2,7 @@
 
 //! Libraries  module used by builder api
 extern crate regex;
+extern crate rand;
 extern crate ansi_term;
 extern crate bodyparser;
 extern crate rioos_builder_protocol as protocol;

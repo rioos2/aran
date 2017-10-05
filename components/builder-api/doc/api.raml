@@ -100,6 +100,40 @@ schemas:
         description: Server fault
       '503':
         description: Service temporarily unavailable
+  '/overall':
+    get:
+      description: |
+        Retrieve metrics data from prometheus
+      responses:
+        200:
+          description: |
+            Succesfully retrieved metrics
+/authenticate:
+  post:
+    description: |
+      Create a new resource
+    body:
+      application/json:
+        example: |
+           {
+              "email": "info",
+              "password": "vino123"
+           }
+    responses:
+      201:
+        description: |
+          Succesfully created a new resource
+        body:
+          example:
+            {
+              "id":"815717538049581056",
+              "email":"info",
+              "name":"megam",
+              "token":"vZxWOvEGFt5V8hOjaV",
+              "api_key":"1234567890",
+              "flags":0}
+
+            }
 /accounts:
   post:
     description: |
@@ -186,188 +220,241 @@ schemas:
                "registration_ip_address":"",
                "created_at":""
                }
-/authenticate:
+/origins:
   post:
     description: |
-      Create a new resource
-    body:
-      application/json:
-        example: |
-           {
-              "email": "info",
-              "password": "vino123"
-           }
-    responses:
-      201:
-        description: |
-          Succesfully created a new resource
-        body:
-          example:
-            {
-              "id":"815717538049581056",
-              "email":"info",
-              "name":"megam",
-              "token":"vZxWOvEGFt5V8hOjaV",
-              "api_key":"1234567890",
-              "flags":0}
-
-            }
-/roles:
-  post:
-    description: |
-      Create a new resource
+      Create a new origin
     body:
       application/json:
         example: |
           {
-          "name":"ubunturole/rios:superuser",
-          "description":"uperuser of RIO/OS. God given powers. instance",
-          }
+          "type_meta":{
+            "kind":"Origin",
+            "api_version":"v1"
+            },
+          "object_meta":{
+              "name":"megam",
+              "origin":"default",
+              "uid":"811264199798824960",
+              "created_at":"",
+              "cluster_name":"",
+              "labels":{
+                "group":"development",
+                "key2":"value2"
+                },
+              "annotations":{
+                "key1":"value1",
+                "key2":"value2"
+                },
+                },
+              }
     responses:
       201:
         description: |
-          Succesfully created a new resource
+          Succesfully created a new origin
         body:
-          example: |
-            {
-              "id":"815697391196839936",
-              "name":"ubunturole/rios:superuser",
-              "description":"uperuser of RIO/OS. God given powers. instance",
-              "created_at":"2017-09-27T09:34:57.491496+00:00"
-            }
+          application/json:
+            example: |
+              {
+               "id":"811266539113160704",
+               "type_meta":{
+                "kind":"Origin",
+                "api_version":"v1"
+                },
+               "object_meta":{
+                  "name":"megam",
+                  "origin":"default",
+                  "uid":"811264199798824960",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    },
+                    },
+                 "created_at":"2017-09-21T06:51:38.763014+00:00"
+                    }
   get:
     description: |
-      Retrieve resource
+      Retrieve origins
     responses:
       200:
         description: |
-          Succesfully retrieved resource
+          Succesfully retrieved origins
         body:
           example: |
             {
-              "kind": "RolesList",
-              "api_version": "v1",
-              "items":[
+              kind:"OriginList",
+              api_version:"v1",
+              items:[
               {
-              "id":"815697391196839936",
-              "name":"ubunturole/rios:superuser",
-              "description":"uperuser of RIO/OS. God given powers. instance",
-              "created_at":"2017-09-27T09:34:57.491496+00:00"
-              }
+               "id":"811266539113160704",
+               "type_meta":{
+                "kind":"Origin",
+                "api_version":"v1"
+                },
+               "object_meta":{
+                  "name":"megam",
+                  "origin":"default",
+                  "uid":"811264199798824960",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    },
+                  },
+                 "created_at":"2017-09-21T06:51:38.763014+00:00"
+                    }
               ]
             }
-  '/{role_id}':
+  '/{origin}':
     get:
       description: |
-        Retrieve role based on role_id
+        Retrieve origin with origin name
       responses:
         200:
           description: |
-            Succesfully retrieved role
-          body:
-            example: |
-              {
-              "id":"815697391196839936",
-              "name":"ubunturole/rios:superuser",
-              "description":"uperuser of RIO/OS. God given powers. instance",
-              "created_at":"2017-09-27T09:34:57.491496+00:00"
-              }
-/permissions:
-  post:
-    description: |
-      Create a new permission
-    body:
-      application/json:
-        example: |
-          {
-            "role_id": "815697391196839936",
-            "name": "rioos.assembly.get",
-            "description":"Read only access to all the users  VMs, Containers"
-          }
-    responses:
-      201:
-        description: |
-          Succesfully created a new permission
-        body:
-          example: |
-            {
-                "id": "815711108869398528",
-                "role_id": "815697391196839936",
-                "name": "rioos.assembly.get",
-                "description":"Read only access to all the users  VMs, Containers",
-                "created_at":"2017-09-27T10:02:12.765440+00:00"
-            }
-  get:
-    description: |
-      Retrieve permissions
-    responses:
-      200:
-        description: |
-          Succesfully retrieved permissions
-        body:
-          example: |
-            {
-              "kind": "PermissionList",
-              "api_version": "v1",
-              "items":[
-                  {
-                    "id":"815697391196839936",
-                    "name":"ubunturole/rios:superuser",
-                    "description":"uperuser of RIO/OS. God given powers. instance",
-                    "created_at":"2017-09-27T09:34:57.491496+00:00"
-            }
-            ]
-          }
-  '/{per_id}':
-    get:
-      description: |
-        Retrieve permission based on permission id
-      responses:
-        200:
-          description: |
-            Succesfully retrieved permission based on permission id
-       example:
-         {
-         "id": "815711108869398528",
-         "role_id": "815697391196839936",
-         "name": "rioos.assembly.get",
-         "description":"Read only access to all the users  VMs, Containers",
-         "created_at":"2017-09-27T10:02:12.765440+00:00"
-         }
-  '/roles/{id}':
-    get:
-      description: |
-        Retrieve permission based on role_id
-      responses:
-        200:
-          description: |
-            Succesfully permission based on role_id
-          body:
-            example: |
-              {
-                "id": "815711108869398528",
-                "role_id": "815697391196839936",
-                "name": "rioos.assembly.get",
-                "description":"Read only access to all the users  VMs, Containers",
-                "created_at":"2017-09-27T10:02:12.765440+00:00"
-                }
-  '/{per_id}/roles/{rid}':
-    get:
-      description: |
-        Retrieve permission based on permission id and role_id
-      responses:
-        200:
-          description: |
-            Succesfully retrieved permission
+            Succesfully retrieved origin with origin name
           body:
             example:
               {
-                "id": "815711108869398528",
-                "role_id": "815697391196839936",
-                "name": "rioos.assembly.get",
-                "description":"Read only access to all the users  VMs, Containers",
-                "created_at":"2017-09-27T10:02:12.765440+00:00"
-                }
+               "id":"811266539113160704",
+               "type_meta":{
+                "kind":"Origin",
+                "api_version":"v1"
+                },
+               "object_meta":{
+                  "name":"megam",
+                  "origin":"default",
+                  "uid":"811264199798824960",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                    },
+                  },
+                 "created_at":"2017-09-21T06:51:38.763014+00:00"
+                    }
+  '/{origin}/serviceaccounts/{serviceaccount}':
+    post:
+      description: |
+        Create a new serviceaccount under origin
+      body:
+        example: |
+          {
+          "secrets":{
+            "kind":"Secret",
+            "name":"<name of the secret key>",
+            "origin":"default",
+            "uid":"the id of secret"
+            },
+            "type_meta":{
+              "kind":"ServiceAccount",
+              "api_version":"v1"
+              },
+            "object_meta":{
+                  "name":"xyz",
+                  "origin":"default",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                      "group":"development",
+                      "key2":"value2"
+                      },
+                  "annotations":{
+                        "key1":"value1",
+                        "key2":"value2"
+                        }
+                      }
+                    }
+      responses:
+        200:
+          description: |
+            Succesfully retrieved resource
+          body:
+            example: |
+              {
+              id:"815639946302857216",
+              "secrets":{
+                "kind":"Secret",
+                "name":"<name of the secret key>",
+                "origin":"default",
+                "uid":"the id of secret"
+                },
+                "type_meta":{
+                  "kind":"ServiceAccount",
+                  "api_version":"v1"
+                  },
+                "object_meta":{
+                      "name":"xyz",
+                      "origin":"default",
+                      "uid":"",
+                      "created_at":"",
+                      "cluster_name":"",
+                      "labels":{
+                          "group":"development",
+                          "key2":"value2"
+                          },
+                      "annotations":{
+                            "key1":"value1",
+                            "key2":"value2"
+                            }
+                          },
+                  "created_at": "2017-09-27T07:40:49.527289+00:00"
+              }
+    get:
+      description: |
+        Retrieve resource
+      responses:
+        200:
+          description: |
+            Succesfully retrieved resource
+          body:
+            example: |
+              {
+                "id":"815639946302857216",
+                "secrets":{
+                  "kind":"Secret",
+                  "name":"<name of the secret key>",
+                  "origin":"default",
+                  "uid":"the id of secret"
+                  },
+                "type_meta":{
+                    "kind":"ServiceAccount",
+                    "api_version":"v1"
+                    },
+               "object_meta":{
+                    "name":"xyz",
+                    "origin":"default",
+                    "uid":"",
+                    "created_at":"",
+                    "cluster_name":"",
+                    "labels":{
+                        "group":"development",
+                        "key2":"value2"
+                        },
+                    "annotations":{
+                          "key1":"value1",
+                          "key2":"value2"
+                          }
+                        },
+                "created_at": "2017-09-27T07:40:49.527289+00:00"
+               }
 /assemblyfactorys:
   post:
     description: Create a new assemblyfactory
@@ -905,7 +992,7 @@ schemas:
            "parent_id": "811199221985189888",
            "tags": ["ubuntu"],
              "node": "",
-             "ip": "",
+             "ips": "",
              "urls": "",
              "status": {
                 "phase": "pending32",
@@ -1570,1453 +1657,6 @@ schemas:
                          }]
                        }
               }
-/secrets:
-  post:
-    description: |
-      Create a new secret
-    body:
-      application/json:
-        schema: secret
-        example: |
-          {
-          "secret_type": "root",
-          "data":{
-            "username":"USERNAME",
-            "password":"PASSWORD",
-            "rsa_key":"PRIVATEKEY",
-            "rsa_pub":"PUBLICKEY",
-            "tls_key":"PRIVATEKEY",
-            "tls_pub":"PUBLICKEY",
-            "<anykey>":"<any value>"
-            },
-          "type_meta":{
-            "kind":"Secret",
-            "api_version":"v1"
-            },
-          "object_meta":{
-            "name":"xyz",
-            "origin":"default",
-            "uid":"",
-            "created_at":"",
-            "cluster_name":"",
-            "labels":{
-              "group":"development",
-              "key2":"value2"
-              },
-            "annotations":{
-              "key1":"value1",
-              "key2":"value2"
-              }
-              }
-            }
-    responses:
-      201:
-        description: |
-          Succesfully created a new secret
-        body:
-          application/json:
-            example: |
-              {
-              "id":"811228191262777344",
-              "secret_type": "root",
-              "data":{
-                "username":"USERNAME",
-                "password":"PASSWORD",
-                "rsa_key":"PRIVATEKEY",
-                "rsa_pub":"PUBLICKEY",
-                "tls_key":"PRIVATEKEY",
-                "tls_pub":"PUBLICKEY",
-                "<anykey>":"<any value>"
-              },
-              "type_meta":{
-                "kind":"Secret",
-                "api_version":"v1"
-              },
-              "object_meta":{
-                "name":"xyz",
-                "origin":"",
-                "uid":"",
-                "created_at":"",
-                "cluster_name":"",
-                "labels":{
-                  "group":"development",
-                  "key2":"value2"
-                },
-                "annotations":{
-                  "key1":"value1",
-                  "key2":"value2"
-                }
-                }
-              "created_at":"2017-09-21T05:35:27.342741+00:00"
-              }
-  get:
-    description: |
-      Retrieve secrets
-    responses:
-      200:
-        description: |
-          Succesfully retrieved secrets
-        body:
-            application/json:
-              example: |
-                {
-                "kind": "SecretList"
-                "api_version": v1,
-                items:[
-                {
-                "id":"811228191262777344",
-                "secret_type": "root",
-                "data":{
-                  "username":"USERNAME",
-                  "password":"PASSWORD",
-                  "rsa_key":"PRIVATEKEY",
-                  "rsa_pub":"PUBLICKEY",
-                  "tls_key":"PRIVATEKEY",
-                  "tls_pub":"PUBLICKEY",
-                  "<anykey>":"<any value>"
-                },
-                "type_meta":{
-                  "kind":"Secret",
-                  "api_version":"v1"
-                },
-                "object_meta":{
-                  "name":"xyz",
-                  "origin":"default",
-                  "uid":"",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":{
-                    "group":"development",
-                    "key2":"value2"
-                  },
-                  "annotations":{
-                    "key1":"value1",
-                    "key2":"value2"
-                  }
-                  }
-                "created_at":"2017-09-21T05:35:27.342741+00:00"
-                }
-                ]
-              }
-  '/{id}':
-    get:
-      description: Retrieve secrets by id
-      responses:
-        '200':
-          body:
-            application/json:
-              schema: secrets
-              example: |
-                {
-                "id":"811228191262777344",
-                "data":{
-                  "username":"USERNAME",
-                  "password":"PASSWORD",
-                  "rsa_key":"PRIVATEKEY",
-                  "rsa_pub":"PUBLICKEY",
-                  "tls_key":"PRIVATEKEY",
-                  "tls_pub":"PUBLICKEY",
-                  "<anykey>":"<any value>"
-                  },
-                "type_meta":{
-                    "kind":"Secret",
-                    "api_version":"v1"
-                },
-                "object_meta":{
-                  "name":"xyz",
-                  "origin":"",
-                  "uid":"",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":{
-                    "group":"development",
-                    "key2":"value2"
-                },
-                  "annotations":{
-                    "key1":"value1",
-                    "key2":"value2"
-                }
-                },
-                "created_at":"2017-09-21T05:35:27.342741+00:00"
-              }
-  '/{origin}':
-    get:
-      description: |
-        Retrieve all secrets within the origin
-      responses:
-        200:
-          description: |
-            Succesfully all secrets within the origin
-          body:
-            example:
-              {
-              "kind": "SecretList",
-              "api_version": v1,
-              items:[
-              {
-              "id":"811228191262777344",
-              "secret_type": "root",
-              "data":{
-                "username":"USERNAME",
-                "password":"PASSWORD",
-                "rsa_key":"PRIVATEKEY",
-                "rsa_pub":"PUBLICKEY",
-                "tls_key":"PRIVATEKEY",
-                "tls_pub":"PUBLICKEY",
-                "<anykey>":"<any value>"
-              },
-              "type_meta":{
-                "kind":"Secret",
-                "api_version":"v1"
-              },
-              "object_meta":{
-                "name":"xyz",
-                "origin":"default",
-                "uid":"",
-                "created_at":"",
-                "cluster_name":"",
-                "labels":{
-                  "group":"development",
-                  "key2":"value2"
-                },
-                "annotations":{
-                  "key1":"value1",
-                  "key2":"value2"
-                }
-                },
-              "created_at":"2017-09-21T05:35:27.342741+00:00"
-              }
-              ]
-            }
-/origins:
-  post:
-    description: |
-      Create a new origin
-    body:
-      application/json:
-        example: |
-          {
-          "type_meta":{
-            "kind":"Origin",
-            "api_version":"v1"
-            },
-          "object_meta":{
-              "name":"megam",
-              "origin":"default",
-              "uid":"811264199798824960",
-              "created_at":"",
-              "cluster_name":"",
-              "labels":{
-                "group":"development",
-                "key2":"value2"
-                },
-              "annotations":{
-                "key1":"value1",
-                "key2":"value2"
-                },
-                },
-              }
-    responses:
-      201:
-        description: |
-          Succesfully created a new origin
-        body:
-          application/json:
-            example: |
-              {
-               "id":"811266539113160704",
-               "type_meta":{
-                "kind":"Origin",
-                "api_version":"v1"
-                },
-               "object_meta":{
-                  "name":"megam",
-                  "origin":"default",
-                  "uid":"811264199798824960",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":{
-                    "group":"development",
-                    "key2":"value2"
-                    },
-                  "annotations":{
-                    "key1":"value1",
-                    "key2":"value2"
-                    },
-                    },
-                 "created_at":"2017-09-21T06:51:38.763014+00:00"
-                    }
-  get:
-    description: |
-      Retrieve origins
-    responses:
-      200:
-        description: |
-          Succesfully retrieved origins
-        body:
-          example: |
-            {
-              kind:"OriginList",
-              api_version:"v1",
-              items:[
-              {
-               "id":"811266539113160704",
-               "type_meta":{
-                "kind":"Origin",
-                "api_version":"v1"
-                },
-               "object_meta":{
-                  "name":"megam",
-                  "origin":"default",
-                  "uid":"811264199798824960",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":{
-                    "group":"development",
-                    "key2":"value2"
-                    },
-                  "annotations":{
-                    "key1":"value1",
-                    "key2":"value2"
-                    },
-                  },
-                 "created_at":"2017-09-21T06:51:38.763014+00:00"
-                    }
-              ]
-            }
-  '/{origin}':
-    get:
-      description: |
-        Retrieve origin with origin name
-      responses:
-        200:
-          description: |
-            Succesfully retrieved origin with origin name
-          body:
-            example:
-              {
-               "id":"811266539113160704",
-               "type_meta":{
-                "kind":"Origin",
-                "api_version":"v1"
-                },
-               "object_meta":{
-                  "name":"megam",
-                  "origin":"default",
-                  "uid":"811264199798824960",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":{
-                    "group":"development",
-                    "key2":"value2"
-                    },
-                  "annotations":{
-                    "key1":"value1",
-                    "key2":"value2"
-                    },
-                  },
-                 "created_at":"2017-09-21T06:51:38.763014+00:00"
-                    }
-  '/{origin}/serviceaccounts/{serviceaccount}':
-    post:
-      description: |
-        Create a new serviceaccount under origin
-      body:
-        example: |
-          {
-          "secrets":{
-            "kind":"Secret",
-            "name":"<name of the secret key>",
-            "origin":"default",
-            "uid":"the id of secret"
-            },
-            "type_meta":{
-              "kind":"ServiceAccount",
-              "api_version":"v1"
-              },
-            "object_meta":{
-                  "name":"xyz",
-                  "origin":"default",
-                  "uid":"",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":{
-                      "group":"development",
-                      "key2":"value2"
-                      },
-                  "annotations":{
-                        "key1":"value1",
-                        "key2":"value2"
-                        }
-                      }
-                    }
-      responses:
-        200:
-          description: |
-            Succesfully retrieved resource
-          body:
-            example: |
-              {
-              id:"815639946302857216",
-              "secrets":{
-                "kind":"Secret",
-                "name":"<name of the secret key>",
-                "origin":"default",
-                "uid":"the id of secret"
-                },
-                "type_meta":{
-                  "kind":"ServiceAccount",
-                  "api_version":"v1"
-                  },
-                "object_meta":{
-                      "name":"xyz",
-                      "origin":"default",
-                      "uid":"",
-                      "created_at":"",
-                      "cluster_name":"",
-                      "labels":{
-                          "group":"development",
-                          "key2":"value2"
-                          },
-                      "annotations":{
-                            "key1":"value1",
-                            "key2":"value2"
-                            }
-                          },
-                  "created_at": "2017-09-27T07:40:49.527289+00:00"
-              }
-    get:
-      description: |
-        Retrieve resource
-      responses:
-        200:
-          description: |
-            Succesfully retrieved resource
-          body:
-            example: |
-              {
-                "id":"815639946302857216",
-                "secrets":{
-                  "kind":"Secret",
-                  "name":"<name of the secret key>",
-                  "origin":"default",
-                  "uid":"the id of secret"
-                  },
-                "type_meta":{
-                    "kind":"ServiceAccount",
-                    "api_version":"v1"
-                    },
-               "object_meta":{
-                    "name":"xyz",
-                    "origin":"default",
-                    "uid":"",
-                    "created_at":"",
-                    "cluster_name":"",
-                    "labels":{
-                        "group":"development",
-                        "key2":"value2"
-                        },
-                    "annotations":{
-                          "key1":"value1",
-                          "key2":"value2"
-                          }
-                        },
-                "created_at": "2017-09-27T07:40:49.527289+00:00"
-               }
-/storages:
-  post:
-    description: |
-      Create a new storage
-    body:
-      application/json:
-        example: |
-          {
-              "type_meta":{
-              "kind":"Storage",
-              "api_version":"v1"
-              },
-              "object_meta":{
-                "name":"megam",
-                "origin":"rioo",
-                "uid":" ",
-                "created_at":"",
-                "cluster_name":"",
-                "labels":{
-                  "group":"development",
-                  "key2":"value2"
-                  },
-                  "annotations":{
-                    "key1":"value1",
-                    "key2":"value2"
-                    }
-                    },
-                "name":"iscsi",
-                "host_ip":"192.168.1.100",
-                "storage_type":"iscsi",
-                "parameters":{
-                      "pool_name":"iscsi-pool",
-                      "user_id":"iscsi-user",
-                      "password":"iscsi-password"
-                      },
-                "status":{
-                        "health_status":"",
-                        "message":"",
-                        "reason":""
-                        }
-            }
-    responses:
-      201:
-        description: |
-          Succesfully created a new storage
-        body:
-          application/json:
-            example: |
-              {
-                "id": "815548029221216256",
-                "type_meta":{
-                  "kind":"Storage",
-                  "api_version":"v1"
-                  },
-                "object_meta":{
-                    "name":"megam",
-                    "origin":"rioo",
-                    "uid":" ",
-                    "created_at":"",
-                    "cluster_name":"",
-                    "labels":{
-                      "group":"development",
-                      "key2":"value2"
-                      },
-                    "annotations":{
-                      "key1":"value1",
-                      "key2":"value2"
-                    }
-                  },
-                  "name":"iscsi",
-                  "host_ip":"192.168.1.100",
-                  "storage_type":"iscsi",
-                  "parameters":{
-                    "pool_name":"iscsi-pool",
-                    "user_id":"iscsi-user",
-                    "password":"iscsi-password"
-                    },
-                  "status":{
-                      "health_status":"",
-                      "message":"",
-                      "reason":""
-                      }
-                  "created_at": "2017-09-27T04:38:12.156829+00:00"
-                }
-  get:
-    description: |
-      Retrieve storages
-    responses:
-      200:
-        description: |
-          Succesfully retrieved storages
-        body:
-          application/json:
-            example: |
-              {
-                  "kind": "StorageList",
-                  "api_version": "v1",
-                  "items":[
-                    {
-                  "id": "815548029221216256",
-                  "type_meta":{
-                    "kind":"Storage",
-                    "api_version":"v1"
-                    },
-                  "object_meta":{
-                      "name":"megam",
-                      "origin":"rioo",
-                      "uid":" ",
-                      "created_at":"",
-                      "cluster_name":"",
-                      "labels":{
-                        "group":"development",
-                        "key2":"value2"
-                        },
-                      "annotations":{
-                        "key1":"value1",
-                        "key2":"value2"
-                      }
-                    },
-                    "name":"iscsi",
-                    "host_ip":"192.168.1.100",
-                    "storage_type":"iscsi",
-                    "parameters":{
-                      "pool_name":"iscsi-pool",
-                      "user_id":"iscsi-user",
-                      "password":"iscsi-password"
-                      },
-                    "status":{
-                        "health_status":"",
-                        "message":"",
-                        "reason":""
-                        }
-                    "created_at": "2017-09-27T04:38:12.156829+00:00"
-                  }
-                ]
-              }
-  '/{id}':
-    get:
-      description: |
-        Retrieve storage by id
-      responses:
-        200:
-          description: |
-            Succesfully retrieved storage by id
-          body:
-            example: |
-              {
-              "id": "815548029221216256",
-              "type_meta":{
-                "kind":"Storage",
-                "api_version":"v1"
-                },
-              "object_meta":{
-                  "name":"megam",
-                  "origin":"rioo",
-                  "uid":" ",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":{
-                      "group":"development",
-                      "key2":"value2"
-                      },
-                  "annotations":{
-                    "key1":"value1",
-                    "key2":"value2"
-                  }
-                  },
-               "name":"iscsi",
-               "host_ip":"192.168.1.100",
-               "storage_type":"iscsi",
-               "parameters":{
-                  "pool_name":"iscsi-pool",
-                  "user_id":"iscsi-user",
-                  "password":"iscsi-password"
-                  },
-               "status":{
-                 "health_status":"",
-                 "message":"",
-                 "reason":""
-                },
-                "created_at": "2017-09-27T04:38:12.156829+00:00"
-          }
-  '/{id}/status':
-    put:
-      description: |
-        Update an existing storage status
-      body:
-        application/json:
-          example:
-            {
-              "type_meta":
-                {
-                  "kind":"Origin",
-                  "api_version":"v1"
-                },
-                "object_meta":
-                  {
-                  "name":"megam",
-                  "origin":"rioo",
-                  "uid":"",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":
-                    {
-                    "group":"development",
-                    "key2":"value2"
-                    },
-                  "annotations":
-                    {
-                    "key1":"value1",
-                    "key2":"value2"
-                    }
-                  },
-                  "name":"iscsi",
-                  "host_ip":"192.168.1.100",
-                  "storage_type":"iscsi",
-                  "parameters":
-                  {
-                    "pool_name": "iscsi-pool",
-                    "user_id": "iscsi-user",
-                    "password": "iscsi-password"
-
-                  },
-                  "status":
-                    {
-                    "health_status": "pending",
-                    "message": "",
-                    "reason": ""
-                    }
-                    }
-      responses:
-        204:
-          description: |
-            Succesfully updated the storage status
-          body:
-            example: |
-              {
-              "id":"815766986318422016",
-              "type_meta":
-                {
-                  "kind":"Origin",
-                  "api_version":"v1"
-                },
-                "object_meta":
-                  {
-                  "name":"megam",
-                  "origin":"rioo",
-                  "uid":"",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":
-                    {
-                    "group":"development",
-                    "key2":"value2"
-                    },
-                  "annotations":
-                    {
-                    "key1":"value1",
-                    "key2":"value2"
-                    }
-                  },
-                  "name":"iscsi",
-                  "host_ip":"192.168.1.100",
-                  "storage_type":"iscsi",
-                  "parameters":
-                  {
-                    "pool_name": "iscsi-pool",
-                    "user_id": "iscsi-user",
-                    "password": "iscsi-password"
-
-                  },
-                  "status":
-                    {
-                    "health_status": "pending",
-                    "message": "",
-                    "reason": ""
-                    },
-                  "created_at":"2017-09-27T11:53:13.876230+00:00"
-              }
-  '/{id}':
-    put:
-      description: |
-        Update an existing Storage
-      body:
-        application/json:
-          example: |
-             {
-             "type_meta":
-               {
-                 "kind":"Origin",
-                 "api_version":"v1"
-               },
-               "object_meta":
-                 {
-                 "name":"megam",
-                 "origin":"rioo",
-                 "uid":"",
-                 "created_at":"",
-                 "cluster_name":"",
-                 "labels":
-                   {
-                   "group":"development",
-                   "key2":"value2"
-                   },
-                 "annotations":
-                   {
-                   "key1":"value1",
-                   "key2":"value2"
-                   }
-                 },
-                 "name":"nfs",
-                 "host_ip":"192.168.1.100",
-                 "storage_type":"iscsi",
-                 "parameters":
-                 {
-                   "pool_name": "iscsi-pool",
-                   "user_id": "iscsi-user",
-                   "password": "iscsi-password"
-
-                 },
-                 "status":
-                   {
-                   "health_status": "pending",
-                   "message": "",
-                   "reason": ""
-                   }
-             }
-      responses:
-        204:
-          description: |
-            Succesfully updated the Storage
-          body:
-            example: |
-              {
-              "id":"815766986318422016",
-              "type_meta":
-                {
-                  "kind":"Origin",
-                  "api_version":"v1"
-                },
-                "object_meta":
-                  {
-                  "name":"megam",
-                  "origin":"rioo",
-                  "uid":"",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":
-                    {
-                    "group":"development",
-                    "key2":"value2"
-                    },
-                  "annotations":
-                    {
-                    "key1":"value1",
-                    "key2":"value2"
-                    }
-                  },
-                  "name":"nfs",
-                  "host_ip":"192.168.1.100",
-                  "storage_type":"iscsi",
-                  "parameters":
-                  {
-                    "pool_name": "iscsi-pool",
-                    "user_id": "iscsi-user",
-                    "password": "iscsi-password"
-
-                  },
-                  "status":
-                    {
-                    "health_status": "pending",
-                    "message": "",
-                    "reason": ""
-                    },
-                  "created_at":"2017-09-27T11:53:13.876230+00:00"
-              }
-/plans:
-  get:
-    description: |
-      Retrieve plan_factory
-    responses:
-      200:
-        description: |
-          Succesfully retrieved plan_factory
-        body:
-          example: |
-            {
-            "kind":"PlanList",
-            "api_version":"v1",
-            "items":[
-                  {
-                    "id":"815547791504842752",
-                    "group_name":"1_virtualmachine_ubuntu",
-                    "description":"Ubuntu is a Debian-based Linux operating system",
-                    "tags":["linux","ubuntu","xenial","14.04"],
-                    "url":"/v3/plan/ubuntu",
-                    "origin":"rioos:2.0",
-                    "artifacts":[],
-                    "services":[
-                          {
-                            "name":"trusty",
-                            "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
-                            "href":"https://www.ubuntu.com",
-                            "characteristics":{
-                              "image":"ubuntu.png",
-                              "version":"14.04"
-                              }
-                              },
-                              {
-                                "name":"xenial",
-                                "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 16.04 LTS of the Ubuntu Linux-based operating system.",
-                                "href":"https://www.ubuntu.com",
-                                "characteristics":{
-                                  "image":"ubuntu.png",
-                                  "version":"16.04"
-                                  }
-                                  }
-                              ],
-                    "created_at":"2017-09-27T04:37:42.763175+00:00"
-                    },
-                    {
-                      "id":"815635670654533632",
-                      "group_name":"1_virtualmachine_centos",
-                      "description":"Centos operating system",
-                      "tags":["centos"],
-                      "url":"/v3/plan/centos",
-                      "origin":"rioos:2.0",
-                      "artifacts":[],
-                      "services":[
-                            {
-                              "name":"Centos",
-                              "description":"Centos 7.4.",
-                              "href":"https://www.centos.com",
-                              "characteristics":{
-                                "image":"centos.png",
-                                "version":"7.4"
-                                }
-                                }
-                                ],
-                      "created_at":"2017-09-27T04:37:42.763175+00:00"
-                      },
-                  {
-                    "id":"815547791513239552",
-                    "group_name":"2_application_java",
-                    "description":"The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.",
-                    "tags":["tomcat","java","jdk"],
-                    "url":"/v3/plan/java",
-                    "origin":"rioos:2.0",
-                    "artifacts":[],
-                    "services":[
-                            {
-                              "name":"tomcat",
-                              "description":"",
-                              "href":"http://tomcat.apache.org/",
-                              "characteristics":{
-                                "http.port":"3000",
-                                "image":"java.png",
-                                "os":"centos",
-                                "password":"team4megam",
-                                "username":"megam",
-                                "version":"4.2"
-                              }
-                              }
-                              ],
-                    "created_at":"2017-09-27T04:37:42.763175+00:00"
-                    },
-                    {
-                    "id":"815547791521636352",
-                    "group_name":"2_application_rails",
-                    "description":"Rails is a web application framework written in Ruby.",
-                    "tags":["rails","ruby","ror"],
-                    "url":"/v3/plan/rails",
-                    "origin":"rioos:2.0",
-                    "artifacts":[],
-                    "services":[
-                              {
-                                "name":"rails",
-                                "description":"",
-                                "href":"http://rubyonrails.org/",
-                                "characteristics":{
-                                  "http.port":"3000",
-                                  "image":"rails.png",
-                                  "os":"centos",
-                                  "version":"4.2"
-                                  }
-                                  }
-                                  ],
-                 "created_at":"2017-09-27T04:37:42.763175+00:00"
-                 }
-                 ]
-            }
-/nodes:
-  post:
-    description: |
-      Create a new node
-    body:
-      application/json:
-        example: |
-          {
-            "spec":{
-                "assembly_cidr":"",
-                "external_id":"",
-                "provider_id":"",
-                "unschedulable":false,
-                "taints":[
-                        {
-                          "key":"",
-                          "value":"",
-                          "effect":"",
-                          "time_added":""
-                          }
-                        ]
-                },
-              "status":{
-                  "capacity":{
-                          "cpu":"4",
-                          "memory":"16331164Ki",
-                          "storage":"16228764Mb"
-                          },
-                  "allocatable":{
-                            "cpu":"4",
-                            "memory":"16331164Ki",
-                            "storage":"16228764Mb"
-                            },
-                  "phase":"",
-                  "addresses":[
-                            {
-                            "node_type":"",
-                            "address":""
-                            }
-                            ],
-                  "node_info":{
-                            "machine_id":"",
-                            "system_uuid":"",
-                            "kernel_version":"",
-                            "os_image":"",
-                            "architecture":""
-                            },
-                  "conditions":[
-                            {
-                            "condition_type":"",
-                            "status":"",
-                            "last_probe_time":"",
-                            "last_transition_time":"",
-                            "reason":"",
-                            "message":""
-                            }
-                            ]
-                  },
-                "object_meta":{
-                      "name":"xyz",
-                      "origin":"",
-                      "uid":"",
-                      "created_at":"",
-                      "cluster_name":"",
-                      "labels":{
-                          "group":"development",
-                          "key2":"value2"
-                          },
-                      "annotations":{
-                        "key1":"value1",
-                        "key2":"value2"
-                      },
-                      "owner_references":[
-                          {
-                          "kind":"Node",
-                          "api_version":"v1",
-                          "name":"ddd",
-                          "uid":"",
-                          "block_owner_deletion":true
-                      }
-                      ]
-                  },
-                  "type_meta":{
-                      "kind":"Node",
-                      "api_version":"v1"
-                      }
-                    }
-    responses:
-      201:
-        description: |
-          Succesfully created a new resource
-        body:
-          example: |
-            {
-              "id": "815639946302857216",
-              "spec":{
-                  "assembly_cidr":"",
-                  "external_id":"",
-                  "provider_id":"",
-                  "unschedulable":false,
-                  "taints":[
-                          {
-                            "key":"",
-                            "value":"",
-                            "effect":"",
-                            "time_added":""
-                            }
-                          ]
-                  },
-                "status":{
-                    "capacity":{
-                            "cpu":"4",
-                            "memory":"16331164Ki",
-                            "storage":"16228764Mb"
-                            },
-                    "allocatable":{
-                              "cpu":"4",
-                              "memory":"16331164Ki",
-                              "storage":"16228764Mb"
-                              },
-                    "phase":"",
-                    "addresses":[
-                              {
-                              "node_type":"",
-                              "address":""
-                              }
-                              ],
-                    "node_info":{
-                              "machine_id":"",
-                              "system_uuid":"",
-                              "kernel_version":"",
-                              "os_image":"",
-                              "architecture":""
-                              },
-                    "conditions":[
-                              {
-                              "condition_type":"",
-                              "status":"",
-                              "last_probe_time":"",
-                              "last_transition_time":"",
-                              "reason":"",
-                              "message":""
-                              }
-                              ]
-                    },
-                  "object_meta":{
-                        "name":"xyz",
-                        "origin":"",
-                        "uid":"",
-                        "created_at":"",
-                        "cluster_name":"",
-                        "labels":{
-                            "group":"development",
-                            "key2":"value2"
-                            },
-                        "annotations":{
-                          "key1":"value1",
-                          "key2":"value2"
-                        },
-                        "owner_references":[
-                            {
-                            "kind":"Node",
-                            "api_version":"v1",
-                            "name":"ddd",
-                            "uid":"",
-                            "block_owner_deletion":true
-                        }
-                        ]
-                    },
-                    "type_meta":{
-                        "kind":"Node",
-                        "api_version":"v1"
-                        },
-                    "created_at":"2017-09-27T07:40:49.527289+00:00"
-                        }
-  get:
-    description: |
-      Retrieve all node
-    responses:
-      200:
-        description: |
-          Succesfully retrieved all node
-        body:
-          application/json:
-            example: |
-              {
-                kind: "NodeList",
-                api_version: "v1",
-                items:[
-                      {
-                      "id": "815639946302857216",
-                      "spec":{
-                              "assembly_cidr":"",
-                              "external_id":"",
-                              "provider_id":"",
-                              "unschedulable":false,
-                              "taints":[
-                                  {
-                                  "key":"",
-                                  "value":"",
-                                  "effect":"",
-                                  "time_added":""
-                                }
-                                ]
-                        },
-                        "status":{
-                                "capacity":{
-                                      "cpu":"4",
-                                      "memory":"16331164Ki",
-                                      "storage":"16228764Mb"
-                                  },
-                                  "allocatable":{
-                                        "cpu":"4",
-                                        "memory":"16331164Ki",
-                                        "storage":"16228764Mb"
-                                  },
-                                  "phase":"",
-                                  "addresses":[
-                                          {
-                                          "node_type":"",
-                                          "address":""
-                                        }
-                                  ],
-                                  "node_info":{
-                                          "machine_id":"",
-                                          "system_uuid":"",
-                                          "kernel_version":"",
-                                          "os_image":"",
-                                          "architecture":""
-                                   },
-                                   "conditions":[
-                                            {
-                                            "condition_type":"",
-                                            "status":"",
-                                            "last_probe_time":"",
-                                            "last_transition_time":"",
-                                            "reason":"",
-                                            "message":""
-                                          }
-                                          ]
-                          },
-                          "object_meta":{
-                                  "name":"xyz",
-                                  "origin":"",
-                                  "uid":"",
-                                  "created_at":"",
-                                  "cluster_name":"",
-                                  "labels":{
-                                          "group":"development",
-                                          "key2":"value2"
-                                  },
-                                  "annotations":{
-                                            "key1":"value1",
-                                            "key2":"value2"
-                                  },
-                                  "owner_references":[
-                                        {
-                                        "kind":"Node",
-                                        "api_version":"v1",
-                                        "name":"ddd",
-                                        "uid":"",
-                                        "block_owner_deletion":true
-                                    }
-                                    ]
-                          },
-                          "type_meta":{
-                                  "kind":"Node",
-                                  "api_version":"v1"
-                          },
-                          "created_at":"2017-09-27T07:40:49.527289+00:00"
-                        }
-                        ]
-                      }
-  '/{id}/status':
-    put:
-      description: |
-        Update node data
-      body:
-        application/json:
-          example: |
-            {
-            "id": "815639946302857216",
-            "spec":{
-                "assembly_cidr":"",
-                "external_id":"",
-                "provider_id":"",
-                "unschedulable":false,
-                "taints":[
-                        {
-                          "key":"",
-                          "value":"",
-                          "effect":"",
-                          "time_added":""
-                          }
-                        ]
-                },
-              "status":{
-                  "capacity":{
-                          "cpu":"4",
-                          "memory":"16331164Ki",
-                          "storage":"16228764Mb"
-                          },
-                  "allocatable":{
-                            "cpu":"4",
-                            "memory":"16331164Ki",
-                            "storage":"16228764Mb"
-                            },
-                  "phase":"",
-                  "addresses":[
-                            {
-                            "node_type":"",
-                            "address":""
-                            }
-                            ],
-                  "node_info":{
-                            "machine_id":"",
-                            "system_uuid":"",
-                            "kernel_version":"",
-                            "os_image":"",
-                            "architecture":""
-                            },
-                  "conditions":[
-                            {
-                            "condition_type":"",
-                            "status":"",
-                            "last_probe_time":"",
-                            "last_transition_time":"",
-                            "reason":"",
-                            "message":""
-                            }
-                            ]
-                  },
-                "object_meta":{
-                      "name":"xyz",
-                      "origin":"",
-                      "uid":"",
-                      "created_at":"",
-                      "cluster_name":"",
-                      "labels":{
-                          "group":"development",
-                          "key2":"value2"
-                          },
-                      "annotations":{
-                        "key1":"value1",
-                        "key2":"value2"
-                      },
-                      "owner_references":[
-                          {
-                          "kind":"Node",
-                          "api_version":"v1",
-                          "name":"ddd",
-                          "uid":"",
-                          "block_owner_deletion":true
-                      }
-                      ]
-                  },
-                  "type_meta":{
-                      "kind":"Node",
-                      "api_version":"v1"
-                      },
-                  "created_at":"2017-09-27T07:40:49.527289+00:00"
-                      }
-      responses:
-        204:
-          description: |
-            Succesfully updated the node
-          body:
-            example: |
-              {
-                "id": "815639946302857216",
-                "spec":{
-                "assembly_cidr":"",
-                "external_id":"",
-                "provider_id":"",
-                "unschedulable":false,
-                "taints":[
-                        {
-                          "key":"",
-                          "value":"",
-                          "effect":"",
-                          "time_added":""
-                          }
-                        ]
-                },
-              "status":{
-                  "capacity":{
-                          "cpu":"4",
-                          "memory":"16331164Ki",
-                          "storage":"16228764Mb"
-                          },
-                  "allocatable":{
-                            "cpu":"4",
-                            "memory":"16331164Ki",
-                            "storage":"16228764Mb"
-                            },
-                  "phase":"",
-                  "addresses":[
-                            {
-                            "node_type":"",
-                            "address":""
-                            }
-                            ],
-                  "node_info":{
-                            "machine_id":"",
-                            "system_uuid":"",
-                            "kernel_version":"",
-                            "os_image":"",
-                            "architecture":""
-                            },
-                  "conditions":[
-                            {
-                            "condition_type":"",
-                            "status":"",
-                            "last_probe_time":"",
-                            "last_transition_time":"",
-                            "reason":"",
-                            "message":""
-                            }
-                            ]
-                  },
-                "object_meta":{
-                      "name":"xyz",
-                      "origin":"",
-                      "uid":"",
-                      "created_at":"",
-                      "cluster_name":"",
-                      "labels":{
-                          "group":"development",
-                          "key2":"value2"
-                          },
-                      "annotations":{
-                        "key1":"value1",
-                        "key2":"value2"
-                      },
-                      "owner_references":[
-                          {
-                          "kind":"Node",
-                          "api_version":"v1",
-                          "name":"ddd",
-                          "uid":"",
-                          "block_owner_deletion":true
-                      }
-                      ]
-                  },
-                  "type_meta":{
-                      "kind":"Node",
-                      "api_version":"v1"
-                      },
-                  "created_at":"2017-09-27T07:40:49.527289+00:00"
-                      }
-/healthz/overall:
-  get:
-    description: |
-      Retrieve metrics data from prometheus
-    responses:
-      200:
-        description: |
-          Succesfully retrieved metrics
-/serviceaccounts:
-  get:
-    description: |
-      Retrieve resource
-    responses:
-      200:
-        description: |
-          Succesfully retrieved resource
-        body:
-          example: |
-            {
-              kind:"ServiceAccountList",
-              api_version:"v1",
-              items:[
-              {
-                id:"815639946302857216",
-                "secrets":{
-                  "kind":"Secret",
-                  "name":"<name of the secret key>",
-                  "origin":"default",
-                  "uid":"the id of secret"
-                  },
-                  "type_meta":{
-                    "kind":"ServiceAccount",
-                    "api_version":"v1"
-                    },
-                  "object_meta":{
-                        "name":"xyz",
-                        "origin":"default",
-                        "uid":"",
-                        "created_at":"",
-                        "cluster_name":"",
-                        "labels":{
-                            "group":"development",
-                            "key2":"value2"
-                            },
-                        "annotations":{
-                              "key1":"value1",
-                              "key2":"value2"
-                              }
-                            },
-                    "created_at": "2017-09-27T07:40:49.527289+00:00"
-                            }
-              ]
-            }
 /horizontalscaling:
   post:
     description: |
@@ -3432,6 +2072,399 @@ schemas:
                             },
                             "created_at":"2017-09-27T10:58:50.393036+00:00"
               }
+/nodes:
+  post:
+    description: |
+      Create a new node
+    body:
+      application/json:
+        example: |
+          {
+            "spec":{
+                "assembly_cidr":"",
+                "external_id":"",
+                "provider_id":"",
+                "unschedulable":false,
+                "taints":[
+                        {
+                          "key":"",
+                          "value":"",
+                          "effect":"",
+                          "time_added":""
+                          }
+                        ]
+                },
+              "status":{
+                  "capacity":{
+                          "cpu":"4",
+                          "memory":"16331164Ki",
+                          "storage":"16228764Mb"
+                          },
+                  "allocatable":{
+                            "cpu":"4",
+                            "memory":"16331164Ki",
+                            "storage":"16228764Mb"
+                            },
+                  "phase":"",
+                  "addresses":[
+                            {
+                            "node_type":"",
+                            "address":""
+                            }
+                            ],
+                  "node_info":{
+                            "machine_id":"",
+                            "system_uuid":"",
+                            "kernel_version":"",
+                            "os_image":"",
+                            "architecture":""
+                            },
+                  "conditions":[
+                            {
+                            "condition_type":"",
+                            "status":"",
+                            "last_probe_time":"",
+                            "last_transition_time":"",
+                            "reason":"",
+                            "message":""
+                            }
+                            ]
+                  },
+                    }
+    responses:
+      201:
+        description: |
+          Succesfully created a new resource
+        body:
+          example: |
+            {
+              "id": "815639946302857216",
+              "spec":{
+                  "assembly_cidr":"",
+                  "external_id":"",
+                  "provider_id":"",
+                  "unschedulable":false,
+                  "taints":[
+                          {
+                            "key":"",
+                            "value":"",
+                            "effect":"",
+                            "time_added":""
+                            }
+                          ]
+                  },
+                "status":{
+                    "capacity":{
+                            "cpu":"4",
+                            "memory":"16331164Ki",
+                            "storage":"16228764Mb"
+                            },
+                    "allocatable":{
+                              "cpu":"4",
+                              "memory":"16331164Ki",
+                              "storage":"16228764Mb"
+                              },
+                    "phase":"",
+                    "addresses":[
+                              {
+                              "node_type":"",
+                              "address":""
+                              }
+                              ],
+                    "node_info":{
+                              "machine_id":"",
+                              "system_uuid":"",
+                              "kernel_version":"",
+                              "os_image":"",
+                              "architecture":""
+                              },
+                    "conditions":[
+                              {
+                              "condition_type":"",
+                              "status":"",
+                              "last_probe_time":"",
+                              "last_transition_time":"",
+                              "reason":"",
+                              "message":""
+                              }
+                              ]
+                    },
+                  "object_meta":{
+                        "name":"xyz",
+                        "origin":"",
+                        "uid":"",
+                        "created_at":"",
+                        "cluster_name":"",
+                        "labels":{
+                            "group":"development",
+                            "key2":"value2"
+                            },
+                        "annotations":{
+                          "key1":"value1",
+                          "key2":"value2"
+                        },
+                        "owner_references":[
+                            {
+                            "kind":"Node",
+                            "api_version":"v1",
+                            "name":"ddd",
+                            "uid":"",
+                            "block_owner_deletion":true
+                        }
+                        ]
+                    },
+                    "type_meta":{
+                        "kind":"Node",
+                        "api_version":"v1"
+                        },
+                    "created_at":"2017-09-27T07:40:49.527289+00:00"
+                        }
+  get:
+    description: |
+      Retrieve all node
+    responses:
+      200:
+        description: |
+          Succesfully retrieved all node
+        body:
+          application/json:
+            example: |
+              {
+                kind: "NodeList",
+                api_version: "v1",
+                items:[
+                      {
+                      "id": "815639946302857216",
+                      "spec":{
+                              "assembly_cidr":"",
+                              "external_id":"",
+                              "provider_id":"",
+                              "unschedulable":false,
+                              "taints":[
+                                  {
+                                  "key":"",
+                                  "value":"",
+                                  "effect":"",
+                                  "time_added":""
+                                }
+                                ]
+                        },
+                        "status":{
+                                "capacity":{
+                                      "cpu":"4",
+                                      "memory":"16331164Ki",
+                                      "storage":"16228764Mb"
+                                  },
+                                  "allocatable":{
+                                        "cpu":"4",
+                                        "memory":"16331164Ki",
+                                        "storage":"16228764Mb"
+                                  },
+                                  "phase":"",
+                                  "addresses":[
+                                          {
+                                          "node_type":"",
+                                          "address":""
+                                        }
+                                  ],
+                                  "node_info":{
+                                          "machine_id":"",
+                                          "system_uuid":"",
+                                          "kernel_version":"",
+                                          "os_image":"",
+                                          "architecture":""
+                                   },
+                                   "conditions":[
+                                            {
+                                            "condition_type":"",
+                                            "status":"",
+                                            "last_probe_time":"",
+                                            "last_transition_time":"",
+                                            "reason":"",
+                                            "message":""
+                                          }
+                                          ]
+                          },
+                          "object_meta":{
+                                  "name":"xyz",
+                                  "origin":"",
+                                  "uid":"",
+                                  "created_at":"",
+                                  "cluster_name":"",
+                                  "labels":{
+                                          "group":"development",
+                                          "key2":"value2"
+                                  },
+                                  "annotations":{
+                                            "key1":"value1",
+                                            "key2":"value2"
+                                  },
+                                  "owner_references":[
+                                        {
+                                        "kind":"Node",
+                                        "api_version":"v1",
+                                        "name":"ddd",
+                                        "uid":"",
+                                        "block_owner_deletion":true
+                                    }
+                                    ]
+                          },
+                          "type_meta":{
+                                  "kind":"Node",
+                                  "api_version":"v1"
+                          },
+                          "created_at":"2017-09-27T07:40:49.527289+00:00"
+                        }
+                        ]
+                      }
+  '/{id}/status':
+    put:
+      description: |
+        Update node data
+      body:
+        application/json:
+          example: |
+            {
+            "id": "815639946302857216",
+            "spec":{
+                "assembly_cidr":"",
+                "external_id":"",
+                "provider_id":"",
+                "unschedulable":false,
+                "taints":[
+                        {
+                          "key":"",
+                          "value":"",
+                          "effect":"",
+                          "time_added":""
+                          }
+                        ]
+                },
+              "status":{
+                  "capacity":{
+                          "cpu":"4",
+                          "memory":"16331164Ki",
+                          "storage":"16228764Mb"
+                          },
+                  "allocatable":{
+                            "cpu":"4",
+                            "memory":"16331164Ki",
+                            "storage":"16228764Mb"
+                            },
+                  "phase":"",
+                  "addresses":[
+                            {
+                            "node_type":"",
+                            "address":""
+                            }
+                            ],
+                  "node_info":{
+                            "machine_id":"",
+                            "system_uuid":"",
+                            "kernel_version":"",
+                            "os_image":"",
+                            "architecture":""
+                            },
+                  "conditions":[
+                            {
+                            "condition_type":"",
+                            "status":"",
+                            "last_probe_time":"",
+                            "last_transition_time":"",
+                            "reason":"",
+                            "message":""
+                            }
+                            ]
+                  },
+                      }
+      responses:
+        204:
+          description: |
+            Succesfully updated the node
+          body:
+            example: |
+              {
+                "id": "815639946302857216",
+                "spec":{
+                "assembly_cidr":"",
+                "external_id":"",
+                "provider_id":"",
+                "unschedulable":false,
+                "taints":[
+                        {
+                          "key":"",
+                          "value":"",
+                          "effect":"",
+                          "time_added":""
+                          }
+                        ]
+                },
+              "status":{
+                  "capacity":{
+                          "cpu":"4",
+                          "memory":"16331164Ki",
+                          "storage":"16228764Mb"
+                          },
+                  "allocatable":{
+                            "cpu":"4",
+                            "memory":"16331164Ki",
+                            "storage":"16228764Mb"
+                            },
+                  "phase":"",
+                  "addresses":[
+                            {
+                            "node_type":"",
+                            "address":""
+                            }
+                            ],
+                  "node_info":{
+                            "machine_id":"",
+                            "system_uuid":"",
+                            "kernel_version":"",
+                            "os_image":"",
+                            "architecture":""
+                            },
+                  "conditions":[
+                            {
+                            "condition_type":"",
+                            "status":"",
+                            "last_probe_time":"",
+                            "last_transition_time":"",
+                            "reason":"",
+                            "message":""
+                            }
+                            ]
+                  },
+                "object_meta":{
+                      "name":"xyz",
+                      "origin":"",
+                      "uid":"",
+                      "created_at":"",
+                      "cluster_name":"",
+                      "labels":{
+                          "group":"development",
+                          "key2":"value2"
+                          },
+                      "annotations":{
+                        "key1":"value1",
+                        "key2":"value2"
+                      },
+                      "owner_references":[
+                          {
+                          "kind":"Node",
+                          "api_version":"v1",
+                          "name":"ddd",
+                          "uid":"",
+                          "block_owner_deletion":true
+                      }
+                      ]
+                  },
+                  "type_meta":{
+                      "kind":"Node",
+                      "api_version":"v1"
+                      },
+                  "created_at":"2017-09-27T07:40:49.527289+00:00"
+                      }
 /datacenters:
   post:
     description: |
@@ -3630,4 +2663,927 @@ schemas:
                           }
                           ]
                         }
+            }
+/storageconnectors:
+  post:
+    description: |
+      Create a new storage
+    body:
+      application/json:
+        example: |
+          {
+                "name":"iscsi",
+                "host_ip":"192.168.1.100",
+                "storage_type":"iscsi",
+                "parameters":{
+                      "pool_name":"iscsi-pool",
+                      "user_id":"iscsi-user",
+                      "password":"iscsi-password"
+                      },
+                "status":{
+                        "health_status":"",
+                        "message":"",
+                        "reason":""
+                        }
+            }
+    responses:
+      201:
+        description: |
+          Succesfully created a new storage
+        body:
+          application/json:
+            example: |
+              {
+                "id": "815548029221216256",
+                "type_meta":{
+                  "kind":"StorageConnectors",
+                  "api_version":"v1"
+                  },
+                "object_meta":{
+                    "name":"megam",
+                    "origin":"rioo",
+                    "uid":" ",
+                    "created_at":"",
+                    "cluster_name":"",
+                    "labels":{
+                      "group":"development",
+                      "key2":"value2"
+                      },
+                    "annotations":{
+                      "key1":"value1",
+                      "key2":"value2"
+                    }
+                  },
+                  "name":"iscsi",
+                  "host_ip":"192.168.1.100",
+                  "storage_type":"iscsi",
+                  "parameters":{
+                    "pool_name":"iscsi-pool",
+                    "user_id":"iscsi-user",
+                    "password":"iscsi-password"
+                    },
+                  "status":{
+                      "health_status":"",
+                      "message":"",
+                      "reason":""
+                      }
+                  "created_at": "2017-09-27T04:38:12.156829+00:00"
+                }
+  get:
+    description: |
+      Retrieve storages
+    responses:
+      200:
+        description: |
+          Succesfully retrieved storages
+        body:
+          application/json:
+            example: |
+              {
+                  "kind": "StorageList",
+                  "api_version": "v1",
+                  "items":[
+                    {
+                  "id": "815548029221216256",
+                  "type_meta":{
+                    "kind":"Storage",
+                    "api_version":"v1"
+                    },
+                  "object_meta":{
+                      "name":"megam",
+                      "origin":"rioo",
+                      "uid":" ",
+                      "created_at":"",
+                      "cluster_name":"",
+                      "labels":{
+                        "group":"development",
+                        "key2":"value2"
+                        },
+                      "annotations":{
+                        "key1":"value1",
+                        "key2":"value2"
+                      }
+                    },
+                    "name":"iscsi",
+                    "host_ip":"192.168.1.100",
+                    "storage_type":"iscsi",
+                    "parameters":{
+                      "pool_name":"iscsi-pool",
+                      "user_id":"iscsi-user",
+                      "password":"iscsi-password"
+                      },
+                    "status":{
+                        "health_status":"",
+                        "message":"",
+                        "reason":""
+                        }
+                    "created_at": "2017-09-27T04:38:12.156829+00:00"
+                  }
+                ]
+              }
+  '/{id}':
+    get:
+      description: |
+        Retrieve storage by id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved storage by id
+          body:
+            example: |
+              {
+              "id": "815548029221216256",
+              "type_meta":{
+                "kind":"Storage",
+                "api_version":"v1"
+                },
+              "object_meta":{
+                  "name":"megam",
+                  "origin":"rioo",
+                  "uid":" ",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                      "group":"development",
+                      "key2":"value2"
+                      },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                  }
+                  },
+               "name":"iscsi",
+               "host_ip":"192.168.1.100",
+               "storage_type":"iscsi",
+               "parameters":{
+                  "pool_name":"iscsi-pool",
+                  "user_id":"iscsi-user",
+                  "password":"iscsi-password"
+                  },
+               "status":{
+                 "health_status":"",
+                 "message":"",
+                 "reason":""
+                },
+                "created_at": "2017-09-27T04:38:12.156829+00:00"
+          }
+  '/{id}/status':
+    put:
+      description: |
+        Update an existing storage status
+      body:
+        application/json:
+          example:
+            {
+              "type_meta":
+                {
+                  "kind":"Origin",
+                  "api_version":"v1"
+                },
+                "object_meta":
+                  {
+                  "name":"megam",
+                  "origin":"rioo",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":
+                    {
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":
+                    {
+                    "key1":"value1",
+                    "key2":"value2"
+                    }
+                  },
+                  "name":"iscsi",
+                  "host_ip":"192.168.1.100",
+                  "storage_type":"iscsi",
+                  "parameters":
+                  {
+                    "pool_name": "iscsi-pool",
+                    "user_id": "iscsi-user",
+                    "password": "iscsi-password"
+
+                  },
+                  "status":
+                    {
+                    "health_status": "pending",
+                    "message": "",
+                    "reason": ""
+                    }
+                    }
+      responses:
+        204:
+          description: |
+            Succesfully updated the storage status
+          body:
+            example: |
+              {
+              "id":"815766986318422016",
+              "type_meta":
+                {
+                  "kind":"Origin",
+                  "api_version":"v1"
+                },
+                "object_meta":
+                  {
+                  "name":"megam",
+                  "origin":"rioo",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":
+                    {
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":
+                    {
+                    "key1":"value1",
+                    "key2":"value2"
+                    }
+                  },
+                  "name":"iscsi",
+                  "host_ip":"192.168.1.100",
+                  "storage_type":"iscsi",
+                  "parameters":
+                  {
+                    "pool_name": "iscsi-pool",
+                    "user_id": "iscsi-user",
+                    "password": "iscsi-password"
+
+                  },
+                  "status":
+                    {
+                    "health_status": "pending",
+                    "message": "",
+                    "reason": ""
+                    },
+                  "created_at":"2017-09-27T11:53:13.876230+00:00"
+              }
+  '/{id}':
+    put:
+      description: |
+        Update an existing Storage
+      body:
+        application/json:
+          example: |
+             {
+             "type_meta":
+               {
+                 "kind":"Origin",
+                 "api_version":"v1"
+               },
+               "object_meta":
+                 {
+                 "name":"megam",
+                 "origin":"rioo",
+                 "uid":"",
+                 "created_at":"",
+                 "cluster_name":"",
+                 "labels":
+                   {
+                   "group":"development",
+                   "key2":"value2"
+                   },
+                 "annotations":
+                   {
+                   "key1":"value1",
+                   "key2":"value2"
+                   }
+                 },
+                 "name":"nfs",
+                 "host_ip":"192.168.1.100",
+                 "storage_type":"iscsi",
+                 "parameters":
+                 {
+                   "pool_name": "iscsi-pool",
+                   "user_id": "iscsi-user",
+                   "password": "iscsi-password"
+
+                 },
+                 "status":
+                   {
+                   "health_status": "pending",
+                   "message": "",
+                   "reason": ""
+                   }
+             }
+      responses:
+        204:
+          description: |
+            Succesfully updated the Storage
+          body:
+            example: |
+              {
+              "id":"815766986318422016",
+              "type_meta":
+                {
+                  "kind":"Origin",
+                  "api_version":"v1"
+                },
+                "object_meta":
+                  {
+                  "name":"megam",
+                  "origin":"rioo",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":
+                    {
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                  "annotations":
+                    {
+                    "key1":"value1",
+                    "key2":"value2"
+                    }
+                  },
+                  "name":"nfs",
+                  "host_ip":"192.168.1.100",
+                  "storage_type":"iscsi",
+                  "parameters":
+                  {
+                    "pool_name": "iscsi-pool",
+                    "user_id": "iscsi-user",
+                    "password": "iscsi-password"
+
+                  },
+                  "status":
+                    {
+                    "health_status": "pending",
+                    "message": "",
+                    "reason": ""
+                    },
+                  "created_at":"2017-09-27T11:53:13.876230+00:00"
+              }
+/strogespool:
+  post:
+    description: |
+      Create a new resource
+    body:
+      application/json: !!null
+    responses:
+      201:
+        description: |
+          Succesfully created a new resource
+        headers:
+          Location:
+            description: |
+              Location of the newly created resource
+            type: string
+            required: false
+/networks:
+  post:
+    description: |
+      Create a new resource
+    body:
+      application/json: !!null
+    responses:
+      201:
+        description: |
+          Succesfully created a new resource
+        headers:
+          Location:
+            description: |
+              Location of the newly created resource
+            type: string
+            required: false
+/serviceaccounts:
+  get:
+    description: |
+      Retrieve resource
+    responses:
+      200:
+        description: |
+          Succesfully retrieved resource
+        body:
+          example: |
+            {
+              kind:"ServiceAccountList",
+              api_version:"v1",
+              items:[
+              {
+                id:"815639946302857216",
+                "secrets":{
+                  "kind":"Secret",
+                  "name":"<name of the secret key>",
+                  "origin":"default",
+                  "uid":"the id of secret"
+                  },
+                  "type_meta":{
+                    "kind":"ServiceAccount",
+                    "api_version":"v1"
+                    },
+                  "object_meta":{
+                        "name":"xyz",
+                        "origin":"default",
+                        "uid":"",
+                        "created_at":"",
+                        "cluster_name":"",
+                        "labels":{
+                            "group":"development",
+                            "key2":"value2"
+                            },
+                        "annotations":{
+                              "key1":"value1",
+                              "key2":"value2"
+                              }
+                            },
+                    "created_at": "2017-09-27T07:40:49.527289+00:00"
+                            }
+              ]
+            }
+/secrets:
+  post:
+    description: |
+      Create a new secret
+    body:
+      application/json:
+        schema: secret
+        example: |
+          {
+          "secret_type": "root",
+          "data":{
+            "username":"USERNAME",
+            "password":"PASSWORD",
+            "rsa_key":"PRIVATEKEY",
+            "rsa_pub":"PUBLICKEY",
+            "tls_key":"PRIVATEKEY",
+            "tls_pub":"PUBLICKEY",
+            "<anykey>":"<any value>"
+            },
+          "type_meta":{
+            "kind":"Secret",
+            "api_version":"v1"
+            },
+          "object_meta":{
+            "name":"xyz",
+            "origin":"default",
+            "uid":"",
+            "created_at":"",
+            "cluster_name":"",
+            "labels":{
+              "group":"development",
+              "key2":"value2"
+              },
+            "annotations":{
+              "key1":"value1",
+              "key2":"value2"
+              }
+              }
+            }
+    responses:
+      201:
+        description: |
+          Succesfully created a new secret
+        body:
+          application/json:
+            example: |
+              {
+              "id":"811228191262777344",
+              "secret_type": "root",
+              "data":{
+                "username":"USERNAME",
+                "password":"PASSWORD",
+                "rsa_key":"PRIVATEKEY",
+                "rsa_pub":"PUBLICKEY",
+                "tls_key":"PRIVATEKEY",
+                "tls_pub":"PUBLICKEY",
+                "<anykey>":"<any value>"
+              },
+              "type_meta":{
+                "kind":"Secret",
+                "api_version":"v1"
+              },
+              "object_meta":{
+                "name":"xyz",
+                "origin":"",
+                "uid":"",
+                "created_at":"",
+                "cluster_name":"",
+                "labels":{
+                  "group":"development",
+                  "key2":"value2"
+                },
+                "annotations":{
+                  "key1":"value1",
+                  "key2":"value2"
+                }
+                }
+              "created_at":"2017-09-21T05:35:27.342741+00:00"
+              }
+  get:
+    description: |
+      Retrieve secrets
+    responses:
+      200:
+        description: |
+          Succesfully retrieved secrets
+        body:
+            application/json:
+              example: |
+                {
+                "kind": "SecretList"
+                "api_version": v1,
+                items:[
+                {
+                "id":"811228191262777344",
+                "secret_type": "root",
+                "data":{
+                  "username":"USERNAME",
+                  "password":"PASSWORD",
+                  "rsa_key":"PRIVATEKEY",
+                  "rsa_pub":"PUBLICKEY",
+                  "tls_key":"PRIVATEKEY",
+                  "tls_pub":"PUBLICKEY",
+                  "<anykey>":"<any value>"
+                },
+                "type_meta":{
+                  "kind":"Secret",
+                  "api_version":"v1"
+                },
+                "object_meta":{
+                  "name":"xyz",
+                  "origin":"default",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                  },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                  }
+                  }
+                "created_at":"2017-09-21T05:35:27.342741+00:00"
+                }
+                ]
+              }
+  '/{id}':
+    get:
+      description: Retrieve secrets by id
+      responses:
+        '200':
+          body:
+            application/json:
+              schema: secrets
+              example: |
+                {
+                "id":"811228191262777344",
+                "data":{
+                  "username":"USERNAME",
+                  "password":"PASSWORD",
+                  "rsa_key":"PRIVATEKEY",
+                  "rsa_pub":"PUBLICKEY",
+                  "tls_key":"PRIVATEKEY",
+                  "tls_pub":"PUBLICKEY",
+                  "<anykey>":"<any value>"
+                  },
+                "type_meta":{
+                    "kind":"Secret",
+                    "api_version":"v1"
+                },
+                "object_meta":{
+                  "name":"xyz",
+                  "origin":"",
+                  "uid":"",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                }
+                },
+                "created_at":"2017-09-21T05:35:27.342741+00:00"
+              }
+  '/{origin}':
+    get:
+      description: |
+        Retrieve all secrets within the origin
+      responses:
+        200:
+          description: |
+            Succesfully all secrets within the origin
+          body:
+            example:
+              {
+              "kind": "SecretList",
+              "api_version": v1,
+              items:[
+              {
+              "id":"811228191262777344",
+              "secret_type": "root",
+              "data":{
+                "username":"USERNAME",
+                "password":"PASSWORD",
+                "rsa_key":"PRIVATEKEY",
+                "rsa_pub":"PUBLICKEY",
+                "tls_key":"PRIVATEKEY",
+                "tls_pub":"PUBLICKEY",
+                "<anykey>":"<any value>"
+              },
+              "type_meta":{
+                "kind":"Secret",
+                "api_version":"v1"
+              },
+              "object_meta":{
+                "name":"xyz",
+                "origin":"default",
+                "uid":"",
+                "created_at":"",
+                "cluster_name":"",
+                "labels":{
+                  "group":"development",
+                  "key2":"value2"
+                },
+                "annotations":{
+                  "key1":"value1",
+                  "key2":"value2"
+                }
+                },
+              "created_at":"2017-09-21T05:35:27.342741+00:00"
+              }
+              ]
+            }
+/roles:
+  post:
+    description: |
+      Create a new resource
+    body:
+      application/json:
+        example: |
+          {
+          "name":"ubunturole/rios:superuser",
+          "description":"uperuser of RIO/OS. God given powers. instance",
+          }
+    responses:
+      201:
+        description: |
+          Succesfully created a new resource
+        body:
+          example: |
+            {
+              "id":"815697391196839936",
+              "name":"ubunturole/rios:superuser",
+              "description":"uperuser of RIO/OS. God given powers. instance",
+              "created_at":"2017-09-27T09:34:57.491496+00:00"
+            }
+  get:
+    description: |
+      Retrieve resource
+    responses:
+      200:
+        description: |
+          Succesfully retrieved resource
+        body:
+          example: |
+            {
+              "kind": "RolesList",
+              "api_version": "v1",
+              "items":[
+              {
+              "id":"815697391196839936",
+              "name":"ubunturole/rios:superuser",
+              "description":"uperuser of RIO/OS. God given powers. instance",
+              "created_at":"2017-09-27T09:34:57.491496+00:00"
+              }
+              ]
+            }
+  '/{role_id}':
+    get:
+      description: |
+        Retrieve role based on role_id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved role
+          body:
+            example: |
+              {
+              "id":"815697391196839936",
+              "name":"ubunturole/rios:superuser",
+              "description":"uperuser of RIO/OS. God given powers. instance",
+              "created_at":"2017-09-27T09:34:57.491496+00:00"
+              }
+/permissions:
+  post:
+    description: |
+      Create a new permission
+    body:
+      application/json:
+        example: |
+          {
+            "role_id": "815697391196839936",
+            "name": "rioos.assembly.get",
+            "description":"Read only access to all the users  VMs, Containers"
+          }
+    responses:
+      201:
+        description: |
+          Succesfully created a new permission
+        body:
+          example: |
+            {
+                "id": "815711108869398528",
+                "role_id": "815697391196839936",
+                "name": "rioos.assembly.get",
+                "description":"Read only access to all the users  VMs, Containers",
+                "created_at":"2017-09-27T10:02:12.765440+00:00"
+            }
+  get:
+    description: |
+      Retrieve permissions
+    responses:
+      200:
+        description: |
+          Succesfully retrieved permissions
+        body:
+          example: |
+            {
+              "kind": "PermissionList",
+              "api_version": "v1",
+              "items":[
+                  {
+                    "id":"815697391196839936",
+                    "name":"ubunturole/rios:superuser",
+                    "description":"uperuser of RIO/OS. God given powers. instance",
+                    "created_at":"2017-09-27T09:34:57.491496+00:00"
+            }
+            ]
+          }
+  '/{per_id}':
+    get:
+      description: |
+        Retrieve permission based on permission id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved permission based on permission id
+       example:
+         {
+         "id": "815711108869398528",
+         "role_id": "815697391196839936",
+         "name": "rioos.assembly.get",
+         "description":"Read only access to all the users  VMs, Containers",
+         "created_at":"2017-09-27T10:02:12.765440+00:00"
+         }
+  '/roles/{id}':
+    get:
+      description: |
+        Retrieve permission based on role_id
+      responses:
+        200:
+          description: |
+            Succesfully permission based on role_id
+          body:
+            example: |
+              {
+                "id": "815711108869398528",
+                "role_id": "815697391196839936",
+                "name": "rioos.assembly.get",
+                "description":"Read only access to all the users  VMs, Containers",
+                "created_at":"2017-09-27T10:02:12.765440+00:00"
+                }
+  '/{per_id}/roles/{rid}':
+    get:
+      description: |
+        Retrieve permission based on permission id and role_id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved permission
+          body:
+            example:
+              {
+                "id": "815711108869398528",
+                "role_id": "815697391196839936",
+                "name": "rioos.assembly.get",
+                "description":"Read only access to all the users  VMs, Containers",
+                "created_at":"2017-09-27T10:02:12.765440+00:00"
+                }
+/plans:
+  get:
+    description: |
+      Retrieve plan_factory
+    responses:
+      200:
+        description: |
+          Succesfully retrieved plan_factory
+        body:
+          example: |
+            {
+            "kind":"PlanList",
+            "api_version":"v1",
+            "items":[
+                  {
+                    "id":"815547791504842752",
+                    "group_name":"1_virtualmachine_ubuntu",
+                    "description":"Ubuntu is a Debian-based Linux operating system",
+                    "tags":["linux","ubuntu","xenial","14.04"],
+                    "url":"/v3/plan/ubuntu",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                          {
+                            "name":"trusty",
+                            "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                            "href":"https://www.ubuntu.com",
+                            "characteristics":{
+                              "image":"ubuntu.png",
+                              "version":"14.04"
+                              }
+                              },
+                              {
+                                "name":"xenial",
+                                "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 16.04 LTS of the Ubuntu Linux-based operating system.",
+                                "href":"https://www.ubuntu.com",
+                                "characteristics":{
+                                  "image":"ubuntu.png",
+                                  "version":"16.04"
+                                  }
+                                  }
+                              ],
+                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                    },
+                    {
+                      "id":"815635670654533632",
+                      "group_name":"1_virtualmachine_centos",
+                      "description":"Centos operating system",
+                      "tags":["centos"],
+                      "url":"/v3/plan/centos",
+                      "origin":"rioos:2.0",
+                      "artifacts":[],
+                      "services":[
+                            {
+                              "name":"Centos",
+                              "description":"Centos 7.4.",
+                              "href":"https://www.centos.com",
+                              "characteristics":{
+                                "image":"centos.png",
+                                "version":"7.4"
+                                }
+                                }
+                                ],
+                      "created_at":"2017-09-27T04:37:42.763175+00:00"
+                      },
+                  {
+                    "id":"815547791513239552",
+                    "group_name":"2_application_java",
+                    "description":"The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.",
+                    "tags":["tomcat","java","jdk"],
+                    "url":"/v3/plan/java",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                            {
+                              "name":"tomcat",
+                              "description":"",
+                              "href":"http://tomcat.apache.org/",
+                              "characteristics":{
+                                "http.port":"3000",
+                                "image":"java.png",
+                                "os":"centos",
+                                "password":"team4megam",
+                                "username":"megam",
+                                "version":"4.2"
+                              }
+                              }
+                              ],
+                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                    },
+                    {
+                    "id":"815547791521636352",
+                    "group_name":"2_application_rails",
+                    "description":"Rails is a web application framework written in Ruby.",
+                    "tags":["rails","ruby","ror"],
+                    "url":"/v3/plan/rails",
+                    "origin":"rioos:2.0",
+                    "artifacts":[],
+                    "services":[
+                              {
+                                "name":"rails",
+                                "description":"",
+                                "href":"http://rubyonrails.org/",
+                                "characteristics":{
+                                  "http.port":"3000",
+                                  "image":"rails.png",
+                                  "os":"centos",
+                                  "version":"4.2"
+                                  }
+                                  }
+                                  ],
+                 "created_at":"2017-09-27T04:37:42.763175+00:00"
+                 }
+                 ]
             }

@@ -3,6 +3,7 @@
 //! A collection of auth [accounts, login, roles, permissions,] for the HTTP server
 
 use bodyparser;
+use rand;
 use rio_core::event::*;
 use rio_net::http::controller::*;
 use session::session_ds::SessionDS;
@@ -124,10 +125,8 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 }
 
                 if body.api_key.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `api_key`",
-                    )));
+                    let api_key = rand::random::<u64>().to_string();
+                    account_create.set_apikey(api_key);
                 }
 
                 //Don't know if this a good way to do so as why should PasswordAuthCli
@@ -135,13 +134,13 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 let authcli = req.get::<persistent::Read<PasswordAuthCli>>().unwrap();
                 let email = body.email.to_string();
 
+
                 account_create.set_token(authcli.token().unwrap());
                 account_create.set_name(body.name);
                 account_create.set_email(email.clone());
                 account_create.set_first_name(body.first_name);
                 account_create.set_last_name(body.last_name);
                 account_create.set_phone(body.phone);
-                account_create.set_apikey(body.api_key);
                 account_create.set_password(authcli.encrypt(body.password.clone()).unwrap());
                 account_create.set_states(body.states);
                 account_create.set_approval(body.approval);

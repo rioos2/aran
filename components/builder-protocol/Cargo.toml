@@ -13,11 +13,6 @@ serde_json = "1.0.2"
 serde_derive = "*"
 time = "*"
 regex = "*"
-lazy_static = "*"
-
-
-[dependencies.rioos_core]
-path = "../core"
 
 [build-dependencies]
 pkg-config = "0.3"

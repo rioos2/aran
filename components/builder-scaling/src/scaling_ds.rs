@@ -16,7 +16,6 @@ impl ScalingDS {
         let conn = datastore.pool.get_shard(0)?;
         let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
         let status_str = serde_json::to_string(hs.get_status()).unwrap();
-        debug!("◖☩ START: hs_create ");
         let rows = &conn.query(
             "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
@@ -32,9 +31,7 @@ impl ScalingDS {
             ],
         ).map_err(Error::HSCreate)?;
 
-        debug!(">● ROWS: hs_create =>\n{:?}", &rows);
         let hs = row_to_hs(&rows.get(0))?;
-        debug!("◖☩ DONE: hs_create ");
         return Ok(Some(hs.clone()));
     }
 
@@ -49,7 +46,6 @@ impl ScalingDS {
 
         let mut hs_collection = Vec::new();
 
-        debug!(">● ROWS: assemby_list =>\n{:?}", &rows);
         for row in rows {
             hs_collection.push(row_to_hs(&row)?)
         }

@@ -14,7 +14,6 @@ extern crate crypto;
 extern crate hyper;
 extern crate hyper_openssl;
 extern crate iron;
-extern crate lazy_static;
 #[macro_use]
 extern crate log;
 extern crate num_cpus;
