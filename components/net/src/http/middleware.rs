@@ -28,22 +28,6 @@ use session::session_ds::SessionDS;
 use common::ui;
 
 
-// Can't Copy or Debug the fn.
-#[allow(missing_debug_implementations, missing_copy_implementations)]
-pub struct C(pub fn(&mut Request) -> AranResult<Response>);
-
-impl Handler for C {
-    fn call(&self, req: &mut Request) -> Result<Response, Box<Error + Send>> {
-        let C(f) = *self;
-        match f(req) {
-            Ok(resp) => Ok(resp),
-            Err(e) => match e.response() {
-                Some(response) => Ok(response),
-                None => Err(std_error(e)),
-            },
-        }
-    }
-}
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
 pub struct XHandler(Chain);

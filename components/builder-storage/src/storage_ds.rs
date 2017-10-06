@@ -154,6 +154,25 @@ impl StorageDS {
         return Ok(Some(storage.clone()));
     }
 
+    pub fn storage_pool_list_all(datastore: &DataStoreConn) -> Result<Option<storagesrv::StoragePoolGetResponse>>  {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_storage_pool_all_v1()", &[])
+            .map_err(Error::StoragePoolGetResponse)?;
+
+        let mut response = storagesrv::StoragePoolGetResponse::new();
+        let mut storage_collection = Vec::new();
+        for row in rows {
+            storage_collection.push(row_to_storage_pool(&row)?)
+        }
+        response.set_storage_pool_collection(
+            storage_collection,
+            "StoragePoolList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
+
     pub fn storage_pool_list(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::StoragePoolGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
         let connector_id = get_storage.get_id().parse::<i64>().unwrap();
