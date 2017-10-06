@@ -186,6 +186,18 @@ impl Migratable for StorageProcedures {
 
         ui.para("[✓] get_data_centers_v1");
 
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION get_data_center_v1(did bigint) RETURNS SETOF data_center AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM data_center WHERE id = did;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        ui.para("[✓] get_data_center_v1");
+
 
         migrator.migrate(
             "storagesrv",
