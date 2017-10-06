@@ -108,10 +108,90 @@ schemas:
         200:
           description: |
             Succesfully retrieved metrics
+          body:
+            example: |
+              {
+                "kind":"ReportsStatistics",
+                "api_version":"v1",
+                "id":"ReportsStatistics",
+                "results":
+                  {
+                  "title":"Command center operations",
+                  "guages":
+                    {
+                    "title":"Cumulative operations counter",
+                    "counters":
+                      [
+                      {
+                      "name":"cpu_total",
+                      "description":"",
+                      "cpu":"",
+                      "counter":"13.434637664697133"
+                      },
+                      {
+                      "name":"ram_total",
+                      "description":"",
+                      "cpu":"",
+                      "counter":"23.434637664697135"
+                      },
+                      {
+                      "name":"disk_total",
+                      "description":"",
+                      "cpu":"",
+                      "counter":"33.434637664697135"
+                      }
+                      ]
+                      },
+                      "statistics":
+                        {
+                        "title":"Statistics",
+                        "nodes":
+                          [
+                          {
+                          "id":"first_riocorp_io",
+                          "kind":"Node",
+                          "api_version":"v1",
+                          "name":"first.riocorp.io",
+                          "description":"",
+                          "cpu":"",
+                          "counter":"10.304252570041308",
+                          "cost_of_consumption":"",
+                          "health":""
+                          },
+                          {
+                          "id":"second_riocorp_io",
+                          "kind":"Node",
+                          "api_version":"v1",
+                          "name":"second.riocorp.io",
+                          "description":"",
+                          "cpu":"",
+                          "counter":"3.130385094655825",
+                          "cost_of_consumption":"",
+                          "health":""
+                          }
+                          ]
+                          },
+                          "osusages":
+                            {
+                            "title":"",
+                            "from_date":"",
+                            "to_date":"",
+                            "cumulative":
+                              {
+                              "cpu":"",
+                              "counter":"",
+                              "alert":""
+                              },
+                              "item":[]
+                              },
+                              "from_date":"",
+                              "to_date":""
+                              }
+                              }
 /authenticate:
   post:
     description: |
-      Create a new resource
+      login with email and password
     body:
       application/json:
         example: |
@@ -122,7 +202,7 @@ schemas:
     responses:
       201:
         description: |
-          Succesfully created a new resource
+          Succesfully login
         body:
           example:
             {
@@ -131,8 +211,7 @@ schemas:
               "name":"megam",
               "token":"vZxWOvEGFt5V8hOjaV",
               "api_key":"1234567890",
-              "flags":0}
-
+              "flags":0
             }
 /accounts:
   post:
@@ -634,7 +713,7 @@ schemas:
                           "api_version": "v1"
                         },
                         "object_meta": {
-                          "name": "xyz",
+                          "name": "806942220681879552",
                           "origin": "",
                           "uid": "",
                           "created_at": "",
@@ -737,7 +816,7 @@ schemas:
                   "api_version": "v1"
                 },
                 "object_meta": {
-                  "name": "xyz",
+                  "name": "806942220681879552",
                   "origin": "",
                   "uid": "",
                   "created_at": "",
@@ -816,47 +895,6 @@ schemas:
           schema: assemblyfactory
           example: |
             {
-              "id": "806942220681879552",
-              "name": "ubuntu",
-              "uri": "/v1/assemblyfactorys",
-              "description": "ubuntuinstallation",
-              "tags": [
-                "ubuntu"
-              ],
-              "replicas": 5,
-              "properties": {
-                "domain": "megambox.com",
-                "cloudsetting": "/clouds/one",
-                "region": "chennai",
-                "storage_type": "ssd"
-              },
-              "plan": "/v3/plan/ubuntu",
-              "plan_data":{
-                  "id":"815547791504842752",
-                  "name":"1_virtualmachine_ubuntu",
-                  "description":"Ubuntu is a Debian-based Linux operating system",
-                  "tags":["linux","ubuntu","xenial","14.04"],
-                  "url":"/v3/plan/ubuntu",
-                  "origin":"rioos:2.0",
-                  "artifacts":[],
-                  "services":[
-                        {
-                          "name":"Trusty",
-                          "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
-                          "href":"https://www.ubuntu.com",
-                          "characteristics":{
-                          "image":"ubuntu.png",
-                          "version":"14.04"
-                          }
-                          }
-                          ],
-                  "created_at":"2017-09-27T04:37:42.763175+00:00"
-                  }
-              "external_management_resource": [],
-              "component_collection": {
-                "flavor": "/url",
-                "network": "/url"
-              },
               "status": {
                 "phase": "pending",
                 "message": "",
@@ -870,13 +908,6 @@ schemas:
                   "condition_type": " "
                 }]
               },
-              "opssettings": {
-                "nodeselector": "",
-                "priority": " ",
-                "nodename": " ",
-                "restartpolicy": " "
-              }
-              "created_at": "2017-09-15T07:37:23.937385+00:00"
             }
       responses:
         '201':
@@ -992,8 +1023,18 @@ schemas:
            "parent_id": "811199221985189888",
            "tags": ["ubuntu"],
              "node": "",
-             "ips": "",
-             "urls": "",
+             "ips":
+               {
+               "private_ipv4":["198.168.0.15","192.168.0.25"]
+               },
+             "volumes":
+               [
+               {"id":"",
+               "target":"",
+               "volume_type":""
+               }
+               ],
+             "urls": {"vnc_console":"http://10.0.0.1:8969/"},
              "status": {
                 "phase": "pending32",
                 "message": "",
@@ -1025,7 +1066,7 @@ schemas:
                   "api_version": "v1"
                     },
                "object_meta": {
-                   "name": "xyz",
+                   "name": "811197535086452736",
                    "origin": "",
                    "uid": "",
                    "created_at": "",
@@ -1047,8 +1088,18 @@ schemas:
                        }]
                    },
                  "node": "",
-                 "ip": "",
-                 "urls": "",
+                 "ips":
+                   {
+                   "private_ipv4":["198.168.0.15","192.168.0.25"]
+                   },
+                 "volumes":
+                   [
+                   {"id":"",
+                   "target":"",
+                   "volume_type":""
+                   }
+                   ],
+                 "urls": {"vnc_console":"http://10.0.0.1:8969/"},
                  "status": {
                     "phase": "pending32",
                     "message": "",
@@ -1184,7 +1235,7 @@ schemas:
                       "api_version": "v1"
                         },
                    "object_meta": {
-                       "name": "xyz",
+                       "name": "811197535086452736",
                        "origin": "",
                        "uid": "",
                        "created_at": "",
@@ -1206,8 +1257,17 @@ schemas:
                            }]
                        },
                      "node": "",
-                     "ip": "",
-                     "urls": "",
+                     "ips":
+                       {
+                       "private_ipv4":["198.168.0.15","192.168.0.25"]
+                       },
+                     "volumes":
+                       [
+                       {"id":"",
+                       "target":"",
+                       "volume_type":""
+                       }
+                       ],
                      "status": {
                         "phase": "pending32",
                         "message": "",
@@ -1240,7 +1300,7 @@ schemas:
                             "api_version":"v1"
                             },
                             "object_meta":{
-                              "name":"xyz",
+                              "name":"811199221985189888",
                               "origin":"",
                               "uid":"",
                               "created_at":"",
@@ -1364,8 +1424,18 @@ schemas:
                          }]
                      },
                    "node": "",
-                   "ip": "",
-                   "urls": "",
+                   "ips":
+                     {
+                     "private_ipv4":["198.168.0.15","192.168.0.25"]
+                     },
+                   "volumes":
+                     [
+                     {"id":"",
+                     "target":"",
+                     "volume_type":""
+                     }
+                     ],
+                   "urls": {"vnc_console":"http://10.0.0.1:8969/"},
                    "status": {
                       "phase": "pending32",
                       "message": "",
@@ -1397,7 +1467,7 @@ schemas:
                           "api_version":"v1"
                           },
                           "object_meta":{
-                            "name":"xyz",
+                            "name":"811199221985189888",
                             "origin":"",
                             "uid":"",
                             "created_at":"",
@@ -1482,17 +1552,8 @@ schemas:
           schema: assembly
           example: |
             {
-             "id":"811197535086452736",
-             "name": "ubuntu",
-             "uri": "/v1/assemblys",
-             "description": "ubuntuinstallation",
-             "parent_id": "780970728630525952",
-             "tags": ["ubuntu"],
-               "node": "",
-               "ip": "",
-               "urls": "",
                "status": {
-                  "phase": "pendin",
+                  "phase": "ready",
                   "message": "",
                   "reason": "",
                   "conditions": [{
@@ -1503,9 +1564,7 @@ schemas:
                       "last_probe_time": "",
                       "condition_type": " "
                        }]
-                       }
-                "spec":null,
-                "created_at":"2017-09-21T04:34:32.840553+00:00"
+                     }
             }
       responses:
         '201':
@@ -1517,14 +1576,14 @@ schemas:
                  "name": "ubuntu",
                  "uri": "/v1/assemblys",
                  "description": "ubuntuinstallation",
-                 "parent_id": "780970728630525952",
+                 "parent_id": "811199221985189888",
                  "tags": ["ubuntu"],
                  "type_meta": {
                     "kind": "Assembly",
                     "api_version": "v1"
                       },
                  "object_meta": {
-                     "name": "xyz",
+                     "name": "811197535086452736",
                      "origin": "",
                      "uid": "",
                      "created_at": "",
@@ -1546,10 +1605,19 @@ schemas:
                          }]
                      },
                    "node": "",
-                   "ip": "",
-                   "urls": "",
+                   "ips":
+                     {
+                     "private_ipv4":["198.168.0.15","192.168.0.25"]
+                     },
+                   "volumes":
+                     [
+                     {"id":"",
+                     "target":"",
+                     "volume_type":""
+                     }
+                     ],
                    "status": {
-                      "phase": "pendin",
+                      "phase": "ready",
                       "message": "",
                       "reason": "",
                       "conditions": [{
@@ -1561,7 +1629,97 @@ schemas:
                           "condition_type": " "
                            }]
                            }
-                    "spec":null,
+                    "spec":{
+                      "id":"811199221985189888",
+                      "name":"ubuntu",
+                      "uri":"/v1/assemblys/assembly_factorys",
+                      "description":"ubuntuinstallation",
+                      "tags":[],
+                      "replicas":5,
+                      "properties":{
+                        "domain":"megambox.com",
+                        "cloudsetting":"/clouds/one",
+                        "region":"chennai",
+                        "storage_type":"ssd"
+                        },
+                        "type_meta":{
+                          "kind":"Assemblyfactory",
+                          "api_version":"v1"
+                          },
+                          "object_meta":{
+                            "name":"811199221985189888",
+                            "origin":"",
+                            "uid":"",
+                            "created_at":"",
+                            "cluster_name":"",
+                            "labels":{
+                              "group":"development",
+                              "key2":"value2"
+                              },
+                              "annotations":{
+                                "key1":"value1",
+                                "key2":"value2"
+                                },
+                                "owner_references":[
+                                {
+                                "kind":"Assemblyfactory",
+                                "api_version":"v1",
+                                "name":"ddd",
+                                "uid":"",
+                                "block_owner_deletion":true
+                                }
+                                ]
+                                },
+                                "plan":"/v3/plan/ubuntu",
+                                "plan_data":{
+                                    "id":"815547791504842752",
+                                    "name":"1_virtualmachine_ubuntu",
+                                    "description":"Ubuntu is a Debian-based Linux operating system",
+                                    "tags":["linux","ubuntu","xenial","14.04"],
+                                    "url":"/v3/plan/ubuntu",
+                                    "origin":"rioos:2.0",
+                                    "artifacts":[],
+                                    "services":[
+                                          {
+                                            "name":"trusty",
+                                            "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                                            "href":"https://www.ubuntu.com",
+                                            "characteristics":{
+                                            "image":"ubuntu.png",
+                                            "version":"14.04"
+                                            }
+                                            }
+                                            ],
+                                    "created_at":"2017-09-27T04:37:42.763175+00:00"
+                                    }
+                                  "external_management_resource":[],
+                                  "component_collection":{
+                                    "flavor":"/url",
+                                    "network":"/url"
+                                    },
+                                    "status":{
+                                      "phase":"pending",
+                                      "message":"",
+                                      "reason":"",
+                                      "conditions":[
+                                      {
+                                      "message":"",
+                                      "reason":"",
+                                      "status":" ",
+                                      "last_transition_time":" ",
+                                      "last_probe_time":" ",
+                                      "condition_type":" "
+                                      }
+                                      ]
+                                      },
+                                      "opssettings":{
+                                        "nodeselector":"",
+                                        "priority":" ",
+                                        "nodename":" ",
+                                        "restartpolicy":" "
+                                        },
+                                        "created_at":"2017-09-21T04:37:53.934998+00:00"
+                                        },
                     "created_at":"2017-09-21T04:34:32.840553+00:00"
                 }
         '400':
@@ -1585,21 +1743,18 @@ schemas:
              "parent_id": "780970728630525952",
              "tags": ["ubuntu"],
                "node": "server1",
-               "ip": "",
-               "urls": "",
-               "status": {
-                  "phase": "pendin",
-                  "message": "",
-                  "reason": "",
-                  "conditions": [{
-                      "message": "",
-                      "reason": "",
-                      "status": " ",
-                      "last_transition_time": " ",
-                      "last_probe_time": "",
-                      "condition_type": " "
-                       }]
-                     }
+               "ips":
+                 {
+                 "private_ipv4":["198.168.0.15","192.168.0.25"]
+                 },
+               "volumes":
+                 [
+                 {"id":"",
+                 "target":"",
+                 "volume_type":""
+                 }
+                 ],
+               "urls": {"vnc_console":"http://10.0.0.1:8969/"},
             }
       responses:
         204:
@@ -1641,10 +1796,20 @@ schemas:
                        }]
                    },
                  "node": "server1",
-                 "ip": "",
-                 "urls": "",
+                 "ips":
+                   {
+                   "private_ipv4":["198.168.0.15","192.168.0.25"]
+                   },
+                 "volumes":
+                   [
+                   {"id":"",
+                   "target":"",
+                   "volume_type":""
+                   }
+                   ],
+                 "urls": {"vnc_console":"http://10.0.0.1:8969/"},
                  "status": {
-                    "phase": "pendin",
+                    "phase": "ready",
                     "message": "",
                     "reason": "",
                     "conditions": [{
@@ -1655,7 +1820,99 @@ schemas:
                         "last_probe_time": "",
                         "condition_type": " "
                          }]
-                       }
+                       },
+                       "spec":{
+                         "id":"811199221985189888",
+                         "name":"ubuntu",
+                         "uri":"/v1/assemblys/assembly_factorys",
+                         "description":"ubuntuinstallation",
+                         "tags":[],
+                         "replicas":5,
+                         "properties":{
+                           "domain":"megambox.com",
+                           "cloudsetting":"/clouds/one",
+                           "region":"chennai",
+                           "storage_type":"ssd"
+                           },
+                           "type_meta":{
+                             "kind":"Assemblyfactory",
+                             "api_version":"v1"
+                             },
+                             "object_meta":{
+                               "name":"811199221985189888",
+                               "origin":"",
+                               "uid":"",
+                               "created_at":"",
+                               "cluster_name":"",
+                               "labels":{
+                                 "group":"development",
+                                 "key2":"value2"
+                                 },
+                                 "annotations":{
+                                   "key1":"value1",
+                                   "key2":"value2"
+                                   },
+                                   "owner_references":[
+                                   {
+                                   "kind":"Assemblyfactory",
+                                   "api_version":"v1",
+                                   "name":"ddd",
+                                   "uid":"",
+                                   "block_owner_deletion":true
+                                   }
+                                   ]
+                                   },
+                                   "plan":"/v3/plan/ubuntu",
+                                   "plan_data":{
+                                       "id":"815547791504842752",
+                                       "name":"1_virtualmachine_ubuntu",
+                                       "description":"Ubuntu is a Debian-based Linux operating system",
+                                       "tags":["linux","ubuntu","xenial","14.04"],
+                                       "url":"/v3/plan/ubuntu",
+                                       "origin":"rioos:2.0",
+                                       "artifacts":[],
+                                       "services":[
+                                             {
+                                               "name":"trusty",
+                                               "description":"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.",
+                                               "href":"https://www.ubuntu.com",
+                                               "characteristics":{
+                                               "image":"ubuntu.png",
+                                               "version":"14.04"
+                                               }
+                                               }
+                                               ],
+                                       "created_at":"2017-09-27T04:37:42.763175+00:00"
+                                       }
+                                     "external_management_resource":[],
+                                     "component_collection":{
+                                       "flavor":"/url",
+                                       "network":"/url"
+                                       },
+                                       "status":{
+                                         "phase":"pending",
+                                         "message":"",
+                                         "reason":"",
+                                         "conditions":[
+                                         {
+                                         "message":"",
+                                         "reason":"",
+                                         "status":" ",
+                                         "last_transition_time":" ",
+                                         "last_probe_time":" ",
+                                         "condition_type":" "
+                                         }
+                                         ]
+                                         },
+                                         "opssettings":{
+                                           "nodeselector":"",
+                                           "priority":" ",
+                                           "nodename":" ",
+                                           "restartpolicy":" "
+                                           },
+                                           "created_at":"2017-09-21T04:37:53.934998+00:00"
+                                           },
+                                           "created_at":"2017-09-21T04:37:53.934998+00:00"
               }
 /horizontalscaling:
   post:
@@ -1665,34 +1922,6 @@ schemas:
       application/json:
         example: |
           {
-          "object_meta":{
-            "name":"xyz",
-            "origin":"",
-            "uid":"",
-            "created_at":"",
-            "cluster_name":"",
-            "labels":{
-                "group":"development",
-                "key2":"value2"
-                },
-                "annotations":{
-                  "key1":"value1",
-                  "key2":"value2"
-                  },
-                "owner_references":[
-                  {
-                    "kind":"HorizontalScaling",
-                    "api_version":"v1",
-                    "name":"ddd",
-                    "uid":"",
-                    "block_owner_deletion":true
-                    }
-                    ]
-                },
-                "type_meta":{
-                      "kind":"HorizontalScaling",
-                      "api_version":"v1"
-                },
                 "name":"example1",
                 "description":"Horizontal auto scale",
                 "tags":["horizontal scale","loadbalancer"],
@@ -1746,7 +1975,7 @@ schemas:
             {
             "id":"815739610230431744",
             "object_meta":{
-              "name":"xyz",
+              "name":"815739610230431744",
               "origin":"",
               "uid":"",
               "created_at":"",
@@ -1835,7 +2064,7 @@ schemas:
               {
               "id":"815739610230431744",
               "object_meta":{
-                "name":"xyz",
+                "name":"815739610230431744",
                 "origin":"",
                 "uid":"",
                 "created_at":"",
@@ -1917,79 +2146,11 @@ schemas:
         application/json:
           example: |
             {
-            "id":"815739610230431744",
-            "object_meta":{
-              "name":"xyz",
-              "origin":"",
-              "uid":"",
-              "created_at":"",
-              "cluster_name":"",
-              "labels":{
-                  "group":"development",
-                  "key2":"value2"
-                  },
-                  "annotations":{
-                    "key1":"value1",
-                    "key2":"value2"
-                    },
-                  "owner_references":[
-                    {
-                      "kind":"HorizontalScaling",
-                      "api_version":"v1",
-                      "name":"ddd",
-                      "uid":"",
-                      "block_owner_deletion":true
-                      }
-                      ]
-                  },
-                  "type_meta":{
-                        "kind":"HorizontalScaling",
-                        "api_version":"v1"
-                  },
-                  "name":"example1",
-                  "description":"Horizontal auto scale",
-                  "tags":["horizontal scale","loadbalancer"],
-                  "scale_type":"AUTOHS",
-                  "representation_skew":"ACTIVE",
-                  "state":"data",
-                  "metadata":[],
-                  "spec":{
-                      "scale_target_ref":"ASM001",
-                      "min_replicas":4,
-                      "max_replicas":5,
-                      "metrics":[
-                            {
-                            "metric_type":"Resource",
-                            "object":{
-                              "target":"hits_as_per_second",
-                              "target_value":1000,
-                              "metric_time_spec":{
-                                "scale_up_by":"5m",
-                                "scale_up_wait_time":"5m",
-                                "scale_down_by":"5m",
-                                "scale_down_wait_time":"5m"
-                              }
-                            },
-                            "resource":{
-                              "name":"memory",
-                              "min_target_value":"2",
-                              "max_target_value":"4",
-                              "metric_time_spec":{
-                                "scale_up_by":"5m",
-                                "scale_up_wait_time":"5m",
-                                "scale_down_by":"5m",
-                                "scale_down_wait_time":"5m"
-                                }
-                                }
-                                }
-                                ]
-                          },
                           "status":{
                                 "last_scale_time":"",
                                 "current_replicas":1,
                                 "desired_replicas":1
                           },
-                          "created_at":"2017-09-27T10:58:50.393036+00:00"
             }
       responses:
         204:
@@ -2190,7 +2351,7 @@ schemas:
                               ]
                     },
                   "object_meta":{
-                        "name":"xyz",
+                        "name":"815639946302857216",
                         "origin":"",
                         "uid":"",
                         "created_at":"",
@@ -2286,7 +2447,7 @@ schemas:
                                           ]
                           },
                           "object_meta":{
-                                  "name":"xyz",
+                                  "name":"815639946302857216",
                                   "origin":"",
                                   "uid":"",
                                   "created_at":"",
@@ -2325,21 +2486,6 @@ schemas:
         application/json:
           example: |
             {
-            "id": "815639946302857216",
-            "spec":{
-                "assembly_cidr":"",
-                "external_id":"",
-                "provider_id":"",
-                "unschedulable":false,
-                "taints":[
-                        {
-                          "key":"",
-                          "value":"",
-                          "effect":"",
-                          "time_added":""
-                          }
-                        ]
-                },
               "status":{
                   "capacity":{
                           "cpu":"4",
@@ -2375,8 +2521,8 @@ schemas:
                             "message":""
                             }
                             ]
-                  },
-                      }
+                  }
+                }
       responses:
         204:
           description: |
@@ -2436,7 +2582,7 @@ schemas:
                             ]
                   },
                 "object_meta":{
-                      "name":"xyz",
+                      "name":"815639946302857216",
                       "origin":"",
                       "uid":"",
                       "created_at":"",
@@ -2473,29 +2619,6 @@ schemas:
       application/json:
         example: |
           {
-          "type_meta":
-            {
-            "kind":"DataCenter",
-            "api_version":"v1"
-            },
-          "object_meta":
-            {
-              "name":"megam",
-              "origin":"rioo",
-              "uid":"814310923685601280",
-              "created_at":"",
-              "cluster_name":"",
-              "labels":
-                {
-                  "group":"development",
-                  "key2":"value2"
-                  },
-              "annotations":
-                {
-                "key1":"value1",
-                "key2":"value2"
-                }
-                },
               "name":"chennai",
               "nodes":["12345678","<node_id>"],
               "storage": "12345678 <storage_id>",
@@ -2542,7 +2665,7 @@ schemas:
               },
             "object_meta":
               {
-                "name":"megam",
+                "name":"816323282880962560",
                 "origin":"rioo",
                 "uid":"814310923685601280",
                 "created_at":"",
@@ -2613,7 +2736,7 @@ schemas:
               },
             "object_meta":
               {
-                "name":"megam",
+                "name":"816323282880962560",
                 "origin":"rioo",
                 "uid":"814310923685601280",
                 "created_at":"",
@@ -2667,40 +2790,63 @@ schemas:
 /storageconnectors:
   post:
     description: |
-      Create a new storage
+      Create a new storage connector
     body:
       application/json:
         example: |
           {
-                "name":"iscsi",
-                "host_ip":"192.168.1.100",
-                "storage_type":"iscsi",
-                "parameters":{
-                      "pool_name":"iscsi-pool",
-                      "user_id":"iscsi-user",
-                      "password":"iscsi-password"
-                      },
-                "status":{
-                        "health_status":"",
-                        "message":"",
-                        "reason":""
-                        }
+            "name":"iscsi",
+            "host_ip":"192.168.1.100",
+            "storage_type": "iscsi",
+            "parameters":
+              {
+              "pool_name": "iscsi-pool",
+              "user_id": "iscsi-user",
+              "password": "iscsi-password"
+              },
+              "storage_info":
+                {
+                "disks":
+                  [
+                  {"disk": "/dev/sdb",
+                  "disk_type": "/dev/sdb1",
+                  "point": "/home",
+                  "size": "50GB"
+                  }
+                  ]
+                  },
+                  "status":
+                    {
+                    "phase":"",
+                    "message": "",
+                    "reason": "",
+                    "conditions":[
+                    {
+                    "message":"",
+                    "reason":"",
+                    "status":" ",
+                    "last_transition_time":" ",
+                    "last_probe_time":" ",
+                    "condition_type":" "
+                    }
+                    ]
+                    }
             }
     responses:
       201:
         description: |
-          Succesfully created a new storage
+          Succesfully created a new storage connector
         body:
           application/json:
             example: |
               {
-                "id": "815548029221216256",
+                "id":"822074091442823168"
                 "type_meta":{
                   "kind":"StorageConnectors",
                   "api_version":"v1"
                   },
                 "object_meta":{
-                    "name":"megam",
+                    "name":"822074091442823168",
                     "origin":"rioo",
                     "uid":" ",
                     "created_at":"",
@@ -2716,41 +2862,65 @@ schemas:
                   },
                   "name":"iscsi",
                   "host_ip":"192.168.1.100",
-                  "storage_type":"iscsi",
-                  "parameters":{
-                    "pool_name":"iscsi-pool",
-                    "user_id":"iscsi-user",
-                    "password":"iscsi-password"
+                  "storage_type": "iscsi",
+                  "parameters":
+                    {
+                    "pool_name": "iscsi-pool",
+                    "user_id": "iscsi-user",
+                    "password": "iscsi-password"
                     },
-                  "status":{
-                      "health_status":"",
-                      "message":"",
-                      "reason":""
-                      }
+                    "storage_info":
+                      {
+                      "disks":
+                        [
+                        {"disk": "/dev/sdb",
+                        "disk_type": "/dev/sdb1",
+                        "point": "/home",
+                        "size": "50GB"
+                        }
+                        ]
+                        },
+                        "status":
+                          {
+                          "phase":"",
+                          "message": "",
+                          "reason": "",
+                          "conditions":[
+                          {
+                          "message":"",
+                          "reason":"",
+                          "status":" ",
+                          "last_transition_time":" ",
+                          "last_probe_time":" ",
+                          "condition_type":" "
+                          }
+                          ]
+                          },
+
                   "created_at": "2017-09-27T04:38:12.156829+00:00"
                 }
   get:
     description: |
-      Retrieve storages
+      Retrieve all storages connectors
     responses:
       200:
         description: |
-          Succesfully retrieved storages
+          Succesfully retrieved  StorageConnector
         body:
           application/json:
             example: |
               {
-                  "kind": "StorageList",
+                  "kind": " StorageConnectorList",
                   "api_version": "v1",
                   "items":[
                     {
                   "id": "815548029221216256",
                   "type_meta":{
-                    "kind":"Storage",
+                    "kind":" StorageConnector",
                     "api_version":"v1"
                     },
                   "object_meta":{
-                      "name":"megam",
+                      "name":"815548029221216256",
                       "origin":"rioo",
                       "uid":" ",
                       "created_at":"",
@@ -2766,17 +2936,40 @@ schemas:
                     },
                     "name":"iscsi",
                     "host_ip":"192.168.1.100",
-                    "storage_type":"iscsi",
-                    "parameters":{
-                      "pool_name":"iscsi-pool",
-                      "user_id":"iscsi-user",
-                      "password":"iscsi-password"
+                    "storage_type": "iscsi",
+                    "parameters":
+                      {
+                      "pool_name": "iscsi-pool",
+                      "user_id": "iscsi-user",
+                      "password": "iscsi-password"
                       },
-                    "status":{
-                        "health_status":"",
-                        "message":"",
-                        "reason":""
-                        }
+                      "storage_info":
+                        {
+                        "disks":
+                          [
+                          {"disk": "/dev/sdb",
+                          "disk_type": "/dev/sdb1",
+                          "point": "/home",
+                          "size": "50GB"
+                          }
+                          ]
+                          },
+                          "status":
+                            {
+                            "phase":"",
+                            "message": "",
+                            "reason": "",
+                            "conditions":[
+                            {
+                            "message":"",
+                            "reason":"",
+                            "status":" ",
+                            "last_transition_time":" ",
+                            "last_probe_time":" ",
+                            "condition_type":" "
+                            }
+                            ]
+                            },
                     "created_at": "2017-09-27T04:38:12.156829+00:00"
                   }
                 ]
@@ -2784,21 +2977,21 @@ schemas:
   '/{id}':
     get:
       description: |
-        Retrieve storage by id
+        Retrieve  StorageConnector by id
       responses:
         200:
           description: |
-            Succesfully retrieved storage by id
+            Succesfully retrieved  StorageConnector by id
           body:
             example: |
               {
               "id": "815548029221216256",
               "type_meta":{
-                "kind":"Storage",
+                "kind":"StorageConnector",
                 "api_version":"v1"
                 },
               "object_meta":{
-                  "name":"megam",
+                  "name":"815548029221216256",
                   "origin":"rioo",
                   "uid":" ",
                   "created_at":"",
@@ -2812,85 +3005,85 @@ schemas:
                     "key2":"value2"
                   }
                   },
-               "name":"iscsi",
-               "host_ip":"192.168.1.100",
-               "storage_type":"iscsi",
-               "parameters":{
-                  "pool_name":"iscsi-pool",
-                  "user_id":"iscsi-user",
-                  "password":"iscsi-password"
-                  },
-               "status":{
-                 "health_status":"",
-                 "message":"",
-                 "reason":""
-                },
+                  "name":"iscsi",
+                  "host_ip":"192.168.1.100",
+                  "storage_type": "iscsi",
+                  "parameters":
+                    {
+                    "pool_name": "iscsi-pool",
+                    "user_id": "iscsi-user",
+                    "password": "iscsi-password"
+                    },
+                    "storage_info":
+                      {
+                      "disks":
+                        [
+                        {"disk": "/dev/sdb",
+                        "disk_type": "/dev/sdb1",
+                        "point": "/home",
+                        "size": "50GB"
+                        }
+                        ]
+                        },
+                        "status":
+                          {
+                          "phase":"",
+                          "message": "",
+                          "reason": "",
+                          "conditions":[
+                          {
+                          "message":"",
+                          "reason":"",
+                          "status":" ",
+                          "last_transition_time":" ",
+                          "last_probe_time":" ",
+                          "condition_type":" "
+                          }
+                          ]
+                          },
                 "created_at": "2017-09-27T04:38:12.156829+00:00"
           }
   '/{id}/status':
     put:
       description: |
-        Update an existing storage status
+        Update an existing  StorageConnector status
       body:
         application/json:
           example:
             {
-              "type_meta":
-                {
-                  "kind":"Origin",
-                  "api_version":"v1"
-                },
-                "object_meta":
-                  {
-                  "name":"megam",
-                  "origin":"rioo",
-                  "uid":"",
-                  "created_at":"",
-                  "cluster_name":"",
-                  "labels":
-                    {
-                    "group":"development",
-                    "key2":"value2"
-                    },
-                  "annotations":
-                    {
-                    "key1":"value1",
-                    "key2":"value2"
-                    }
-                  },
-                  "name":"iscsi",
-                  "host_ip":"192.168.1.100",
-                  "storage_type":"iscsi",
-                  "parameters":
-                  {
-                    "pool_name": "iscsi-pool",
-                    "user_id": "iscsi-user",
-                    "password": "iscsi-password"
-
-                  },
                   "status":
                     {
-                    "health_status": "pending",
+                    "phase":"",
                     "message": "",
-                    "reason": ""
+                    "reason": "",
+                    "conditions":[
+                    {
+                    "message":"",
+                    "reason":"",
+                    "status":" ",
+                    "last_transition_time":" ",
+                    "last_probe_time":" ",
+                    "condition_type":" "
                     }
-                    }
+                    ]
+                    },
+            }
       responses:
         204:
           description: |
-            Succesfully updated the storage status
+            Succesfully updated the  StorageConnector status
           body:
             example: |
               {
               "id":"815766986318422016",
               "type_meta":
                 {
-                  "kind":"Origin",
+                  "kind":"StorageConnector",
                   "api_version":"v1"
                 },
                 "object_meta":
                   {
-                  "name":"megam",
+                  "name":815766986318422016",
                   "origin":"rioo",
                   "uid":"",
                   "created_at":"",
@@ -2908,53 +3101,51 @@ schemas:
                   },
                   "name":"iscsi",
                   "host_ip":"192.168.1.100",
-                  "storage_type":"iscsi",
+                  "storage_type": "iscsi",
                   "parameters":
-                  {
+                    {
                     "pool_name": "iscsi-pool",
                     "user_id": "iscsi-user",
                     "password": "iscsi-password"
-
-                  },
-                  "status":
-                    {
-                    "health_status": "pending",
-                    "message": "",
-                    "reason": ""
                     },
+                    "storage_info":
+                      {
+                      "disks":
+                        [
+                        {"disk": "/dev/sdb",
+                        "disk_type": "/dev/sdb1",
+                        "point": "/home",
+                        "size": "50GB"
+                        }
+                        ]
+                        },
+                        "status":
+                          {
+                          "phase":"",
+                          "message": "",
+                          "reason": "",
+                          "conditions":[
+                          {
+                          "message":"",
+                          "reason":"",
+                          "status":" ",
+                          "last_transition_time":" ",
+                          "last_probe_time":" ",
+                          "condition_type":" "
+                          }
+                          ]
+                          },
+
                   "created_at":"2017-09-27T11:53:13.876230+00:00"
               }
   '/{id}':
     put:
       description: |
-        Update an existing Storage
+        Update an existing StorageConnector
       body:
         application/json:
           example: |
              {
-             "type_meta":
-               {
-                 "kind":"Origin",
-                 "api_version":"v1"
-               },
-               "object_meta":
-                 {
-                 "name":"megam",
-                 "origin":"rioo",
-                 "uid":"",
-                 "created_at":"",
-                 "cluster_name":"",
-                 "labels":
-                   {
-                   "group":"development",
-                   "key2":"value2"
-                   },
-                 "annotations":
-                   {
-                   "key1":"value1",
-                   "key2":"value2"
-                   }
-                 },
                  "name":"nfs",
                  "host_ip":"192.168.1.100",
                  "storage_type":"iscsi",
@@ -2965,29 +3156,23 @@ schemas:
                    "password": "iscsi-password"
 
                  },
-                 "status":
-                   {
-                   "health_status": "pending",
-                   "message": "",
-                   "reason": ""
-                   }
              }
       responses:
         204:
           description: |
-            Succesfully updated the Storage
+            Succesfully updated the  StorageConnector
           body:
             example: |
               {
               "id":"815766986318422016",
               "type_meta":
                 {
-                  "kind":"Origin",
+                  "kind":"StorageConnector",
                   "api_version":"v1"
                 },
                 "object_meta":
                   {
-                  "name":"megam",
+                  "name":"815766986318422016",
                   "origin":"rioo",
                   "uid":"",
                   "created_at":"",
@@ -3015,44 +3200,232 @@ schemas:
                   },
                   "status":
                     {
-                    "health_status": "pending",
+                    "phase":"",
                     "message": "",
-                    "reason": ""
+                    "reason": "",
+                    "conditions":[
+                    {
+                    "message":"",
+                    "reason":"",
+                    "status":" ",
+                    "last_transition_time":" ",
+                    "last_probe_time":" ",
+                    "condition_type":" "
+                    }
+                    ]
                     },
+
                   "created_at":"2017-09-27T11:53:13.876230+00:00"
               }
 /strogespool:
   post:
     description: |
-      Create a new resource
+      Create a new storage pool
     body:
-      application/json: !!null
+      application/json:
+        example: |
+          {
+            "name":"pool2",
+            "connector_id":"821419536673677312",
+            "storage_info":
+              {
+              "disks":
+                [
+                {
+                "disk":"/dev/sdb1",
+                "disk_type":"/dev/sdb0",
+                "point":"/home",
+                "size":"500GB"
+                }
+                ]
+                },
+                "parameters":{},
+                "status":
+                  {
+                  "phase":"pending",
+                  "message":"",
+                  "reason":"",
+                  "conditions":
+                    [
+                    {
+                    "message":"",
+                    "reason":"",
+                    "status":"",
+                    "last_transition_time":"",
+                    "last_probe_time":"",
+                    "condition_type":""
+                    }
+                    ]
+                    }
+                    }
     responses:
       201:
         description: |
-          Succesfully created a new resource
-        headers:
-          Location:
-            description: |
-              Location of the newly created resource
-            type: string
-            required: false
+          Succesfully created a new storage pool
+        body:
+          example: |
+            {
+              "id":"822095655743799296",
+              "type_meta":{
+                "kind":"StoragePool",
+                "api_version":"v1"
+                },
+              "object_meta":{
+                  "name":"822095655743799296",
+                  "origin":"rioo",
+                  "uid":" ",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                      "group":"development",
+                      "key2":"value2"
+                      },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                  }
+                  },
+              "name":"pool2",
+              "connector_id":"821419536673677312",
+              "storage_info":
+                {
+                "disks":
+                  [
+                  {
+                  "disk":"/dev/sdb1",
+                  "disk_type":"/dev/sdb0",
+                  "point":"/home",
+                  "size":"500GB"
+                  }
+                  ]
+                  },
+                  "parameters":{},
+                  "status":
+                    {
+                    "phase":"pending",
+                    "message":"",
+                    "reason":"",
+                    "conditions":
+                      [
+                      {
+                      "message":"",
+                      "reason":"",
+                      "status":"",
+                      "last_transition_time":"",
+                      "last_probe_time":"",
+                      "condition_type":""
+                      }
+                      ]
+                      },
+                  "created_at":"2017-10-06T05:27:10.062921+00:00"
+            }
+  '/{id}':
+    get:
+      description: |
+        Retrieve storage pool by storage connector id
+      responses:
+        200:
+          description: |
+            Succesfully retrieved storage pool by storage connector id
+          body:
+            example: |
+              {
+                "kind": "StoragePoolList",
+                "api_version": "v1",
+                items:[
+                {
+                "id":"822095655743799296",
+                "type_meta":{
+                  "kind":"StoragePool",
+                  "api_version":"v1"
+                  },
+                "object_meta":{
+                    "name":"815548029221216256",
+                    "origin":"rioo",
+                    "uid":" ",
+                    "created_at":"",
+                    "cluster_name":"",
+                    "labels":{
+                        "group":"development",
+                        "key2":"value2"
+                        },
+                    "annotations":{
+                      "key1":"value1",
+                      "key2":"value2"
+                    }
+                    },
+                "name":"pool2",
+                "connector_id":"821419536673677312",
+                "storage_info":
+                  {
+                  "disks":
+                    [
+                    {
+                    "disk":"/dev/sdb1",
+                    "disk_type":"/dev/sdb0",
+                    "point":"/home",
+                    "size":"500GB"
+                    }
+                    ]
+                    },
+                    "parameters":{},
+                    "status":
+                      {
+                      "phase":"pending",
+                      "message":"",
+                      "reason":"",
+                      "conditions":
+                        [
+                        {
+                        "message":"",
+                        "reason":"",
+                        "status":"",
+                        "last_transition_time":"",
+                        "last_probe_time":"",
+                        "condition_type":""
+                        }
+                        ]
+                        },
+                    "created_at":"2017-10-06T05:27:10.062921+00:00"
+                  }
+                ]
+              }
 /networks:
   post:
     description: |
-      Create a new resource
+      Create a new network
     body:
-      application/json: !!null
+      application/json:
+        example: |
+          {
+            "network_type":"ip4",
+            "name":"private",
+            "subnet_ip":"192.168.1.0/24",
+            "netmask": "255.255.255.0",
+            "gateway": "192.168.1.1",
+            "bridge_hosts": {"192.168.1.47":"riopub4", "192.168.1.48":"riopriv4"}},
+            "status":
+              {
+              "phase":"pending",
+              "message":"",
+              "reason":"",
+              "conditions":
+                [
+                {
+                "message":"",
+                "reason":"",
+                "status":" ",
+                "last_transition_time":" ",
+                "last_probe_time":" ",
+                "condition_type":" "
+                }
+                ]
+                },
+          }
     responses:
       201:
         description: |
-          Succesfully created a new resource
-        headers:
-          Location:
-            description: |
-              Location of the newly created resource
-            type: string
-            required: false
+          Succesfully created a network
 /serviceaccounts:
   get:
     description: |
@@ -3080,7 +3453,7 @@ schemas:
                     "api_version":"v1"
                     },
                   "object_meta":{
-                        "name":"xyz",
+                        "name":"815639946302857216",
                         "origin":"default",
                         "uid":"",
                         "created_at":"",
@@ -3094,6 +3467,7 @@ schemas:
                               "key2":"value2"
                               }
                             },
+
                     "created_at": "2017-09-27T07:40:49.527289+00:00"
                             }
               ]
