@@ -182,6 +182,7 @@ pub struct NodeInfo {
     kernel_version: String,
     os_image: String,
     architecture: String,
+    bridges: Vec<Bridge>,
 }
 
 impl NodeInfo {
@@ -202,6 +203,31 @@ impl NodeInfo {
     }
     pub fn set_architecture(&mut self, v: ::std::string::String) {
         self.architecture = v;
+    }
+    pub fn set_bridges(&mut self, v: Vec<Bridge>) {
+        self.bridges = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Bridge {
+    bridge_name: String,
+    physical_device: String,
+    bridge_type: String,
+}
+
+impl Bridge {
+    pub fn new() -> Bridge {
+        ::std::default::Default::default()
+    }
+    pub fn set_bridge_name(&mut self, v: ::std::string::String) {
+        self.bridge_name = v;
+    }
+    pub fn set_physical_device(&mut self, v: ::std::string::String) {
+        self.physical_device = v;
+    }
+    pub fn set_bridge_type(&mut self, v: ::std::string::String) {
+        self.bridge_type = v;
     }
 }
 

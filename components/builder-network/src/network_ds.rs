@@ -63,9 +63,12 @@ fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
     let status: String = row.get("status");
     let bridge_hosts: String = row.get("bridge_hosts");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
-    let obj_meta = servicesrv::ObjectMetaData::new();
-    let mut type_meta = asmsrv::TypeMeta::new();
 
+    let mut obj_meta = servicesrv::ObjectMetaData::new();
+    obj_meta.set_name(id.to_string());
+    let mut type_meta = asmsrv::TypeMeta::new();
+    type_meta.set_kind("Networks".to_string());
+    type_meta.set_api_version("v1".to_string());
 
     network.set_id(id.to_string());
     network.set_status(serde_json::from_str(&status).unwrap());
@@ -77,8 +80,6 @@ fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
     network.set_bridge_hosts(serde_json::from_str(&bridge_hosts).unwrap());
     network.set_created_at(created_at.to_rfc3339());
     network.set_object_meta(obj_meta);
-    type_meta.set_kind("Networks".to_string());
-    type_meta.set_api_version("v1".to_string());
     network.set_type_meta(type_meta);
 
     Ok(network)
