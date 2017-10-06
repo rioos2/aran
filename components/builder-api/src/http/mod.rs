@@ -11,7 +11,6 @@ pub mod service_account_handler;
 pub mod origin_handler;
 pub mod network_handler;
 pub mod storage_handler;
-pub mod watch_handler;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -41,7 +40,6 @@ use self::origin_handler::*;
 use self::service_account_handler::*;
 use self::network_handler::*;
 use self::storage_handler::*;
-use self::watch_handler::*;
 
 use db::data_store::*;
 
@@ -63,7 +61,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //the status for api server, and overall for command center
         status: get "/healthz" => status,
         //TO-DO: MEGAM
-        healthz_all: get "/healthz/overall" => XHandler::new(C(healthz_all)).before(basic.clone()),
+        healthz_all: get "/healthz/overall" => XHandler::new(healthz_all).before(basic.clone()),
 
         //auth API for login (default password auth)
         authenticate: post "/authenticate" => default_authenticate,
@@ -143,13 +141,12 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //StoragePool API
         storages_pool: post "/storagespool" => XHandler::new(storage_pool_create).before(basic.clone()),
         storages_pool_list: get "/storagespool/:id" => XHandler::new(storage_pool_list).before(basic.clone()),
+        storages_pool_list_all: get "/storagespool" => XHandler::new(storage_pool_list_all).before(basic.clone()),
 
         //DataCenter API
         data_center: post "/datacenters" => XHandler::new(data_center_create).before(basic.clone()),
         data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),
 
-        //Internal: Streaming watch
-        watches: get "/:name/watch/list" => watch_show,
 
     );
 

@@ -244,6 +244,19 @@ impl Migratable for StorageProcedures {
 
         ui.para("[✓] get_storages_pool_v1");
 
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION get_storage_pool_all_v1() RETURNS SETOF storages_pool AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM storages_pool;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        ui.para("[✓] get_storage_pool_all_v1");
+
+
         ui.end("StorageProcedures");
 
         Ok(())

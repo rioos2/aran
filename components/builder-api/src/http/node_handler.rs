@@ -270,12 +270,13 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn healthz_all(req: &mut Request) -> AranResult<Response> {
+pub fn healthz_all(req: &mut Request) -> IronResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
 
     match NodeDS::healthz_all(&promcli) {
         Ok(health_all) => Ok(render_json(status::Ok, &health_all)),
-        //TO-DO: MEGAM
-        Err(err) => Err(err),
+        Err(err) => Ok(render_net_error(
+                   &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+               )),
     }
 }
