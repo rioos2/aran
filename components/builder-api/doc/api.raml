@@ -3403,7 +3403,58 @@ schemas:
             "subnet_ip":"192.168.1.0/24",
             "netmask": "255.255.255.0",
             "gateway": "192.168.1.1",
-            "bridge_hosts": {"192.168.1.47":"riopub4", "192.168.1.48":"riopriv4"}},
+            "bridge_hosts": {"192.168.1.47":"riopub4", "192.168.1.48":"riopriv4"},
+            "status":
+              {
+              "phase":"pending",
+              "message":"",
+              "reason":"",
+              "conditions":
+                [
+                {
+                "message":"",
+                "reason":"",
+                "status":" ",
+                "last_transition_time":" ",
+                "last_probe_time":" ",
+                "condition_type":" "
+                }
+                ]
+                }
+              }
+    responses:
+      201:
+        description: |
+          Succesfully created a network
+        body:
+          example: |
+            {
+            "id": "815548029221216256",
+            "type_meta":{
+              "kind":"Network",
+              "api_version":"v1"
+              },
+            "object_meta":{
+                "name":"815548029221216256",
+                "origin":"rioo",
+                "uid":" ",
+                "created_at":"",
+                "cluster_name":"",
+                "labels":{
+                    "group":"development",
+                    "key2":"value2"
+                    },
+                "annotations":{
+                  "key1":"value1",
+                  "key2":"value2"
+                }
+                },
+            "network_type":"ip4",
+            "name":"private",
+            "subnet_ip":"192.168.1.0/24",
+            "netmask": "255.255.255.0",
+            "gateway": "192.168.1.1",
+            "bridge_hosts": {"192.168.1.47":"riopub4", "192.168.1.48":"riopriv4"},
             "status":
               {
               "phase":"pending",
@@ -3421,11 +3472,68 @@ schemas:
                 }
                 ]
                 },
-          }
+                  "created_at":"2017-10-06T05:27:10.062921+00:00"
+             }
+  get:
+    description: |
+      Retrieve all networks
     responses:
-      201:
+      200:
         description: |
-          Succesfully created a network
+          Succesfully retrieved all networks
+        body:
+          example:
+            {
+              kind: "NetworkList",
+              api_version: "v1",
+              items:[
+              {
+              "id": "815548029221216256",
+              "type_meta":{
+                "kind":"Network",
+                "api_version":"v1"
+                },
+              "object_meta":{
+                  "name":"815548029221216256",
+                  "origin":"rioo",
+                  "uid":" ",
+                  "created_at":"",
+                  "cluster_name":"",
+                  "labels":{
+                      "group":"development",
+                      "key2":"value2"
+                      },
+                  "annotations":{
+                    "key1":"value1",
+                    "key2":"value2"
+                  }
+                  },
+              "network_type":"ip4",
+              "name":"private",
+              "subnet_ip":"192.168.1.0/24",
+              "netmask": "255.255.255.0",
+              "gateway": "192.168.1.1",
+              "bridge_hosts": {"192.168.1.47":"riopub4", "192.168.1.48":"riopriv4"}},
+              "status":
+                {
+                "phase":"pending",
+                "message":"",
+                "reason":"",
+                "conditions":
+                  [
+                  {
+                  "message":"",
+                  "reason":"",
+                  "status":" ",
+                  "last_transition_time":" ",
+                  "last_probe_time":" ",
+                  "condition_type":" "
+                  }
+                  ]
+                  },
+                    "created_at":"2017-10-06T05:27:10.062921+00:00"
+                    ]
+               }
 /serviceaccounts:
   get:
     description: |
