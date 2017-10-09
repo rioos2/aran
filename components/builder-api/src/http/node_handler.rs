@@ -1,27 +1,25 @@
-
 use std::collections::BTreeMap;
 use bodyparser;
 use iron::prelude::*;
 use iron::status;
 use persistent;
 use router::Router;
+use ansi_term::Colour;
 
 use protocol::net::{self, ErrCode};
 use rio_net::http::controller::*;
 use rio_net::http::middleware::PrometheusCli;
 use node::node_ds::NodeDS;
 use db::data_store::Broker;
-use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo};
-use protocol::asmsrv::{TypeMeta, ObjectMeta, OwnerReferences, Condition};
+use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
+use protocol::asmsrv::Condition;
 use http::deployment_handler;
-
+use common::ui;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NodeCreateReq {
     spec: SpecReq,
     status: StatusReq,
-    object_meta: deployment_handler::ObjectMetaReq,
-    type_meta: deployment_handler::TypeMetaReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -64,6 +62,7 @@ struct NodeInfoReq {
     kernel_version: String,
     os_image: String,
     architecture: String,
+    bridges: Vec<BridgeReq>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -71,6 +70,12 @@ struct CommonStatusReq {
     status: StatusReq,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct BridgeReq {
+    bridge_name: String,
+    physical_device: String,
+    bridge_type: String,
+}
 
 pub fn node_create(req: &mut Request) -> IronResult<Response> {
     let mut node_create = Node::new();
@@ -132,33 +137,17 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 node_info.set_kernel_version(body.status.node_info.kernel_version);
                 node_info.set_os_image(body.status.node_info.os_image);
                 node_info.set_architecture(body.status.node_info.architecture);
+                let mut bridge_collection = Vec::new();
+                for bridge in body.status.node_info.bridges {
+                    let mut bri = Bridge::new();
+                    bri.set_bridge_name(bridge.bridge_name);
+                    bri.set_physical_device(bridge.physical_device);
+                    bri.set_bridge_type(bridge.bridge_type);
+                    bridge_collection.push(bri);
+                }
+                node_info.set_bridges(bridge_collection);
                 status.set_node_info(node_info);
                 node_create.set_status(status);
-
-                let mut object_meta = ObjectMeta::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                let mut owner_references_collection = Vec::new();
-                for data in body.object_meta.owner_references {
-                    let mut owner_references = OwnerReferences::new();
-                    owner_references.set_kind(data.kind);
-                    owner_references.set_api_version(data.api_version);
-                    owner_references.set_name(data.name);
-                    owner_references.set_uid(data.uid);
-                    owner_references.set_block_owner_deletion(data.block_owner_deletion);
-                    owner_references_collection.push(owner_references);
-                }
-                object_meta.set_owner_references(owner_references_collection);
-                node_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                node_create.set_type_meta(type_meta);
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(
@@ -169,6 +158,12 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", node_create),
+    );
 
     let conn = Broker::connect().unwrap();
 
@@ -242,12 +237,28 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
                 node_info.set_kernel_version(body.status.node_info.kernel_version);
                 node_info.set_os_image(body.status.node_info.os_image);
                 node_info.set_architecture(body.status.node_info.architecture);
+                let mut bridge_collection = Vec::new();
+                for bridge in body.status.node_info.bridges {
+                    let mut bri = Bridge::new();
+                    bri.set_bridge_name(bridge.bridge_name);
+                    bri.set_physical_device(bridge.physical_device);
+                    bri.set_bridge_type(bridge.bridge_type);
+                    bridge_collection.push(bri);
+                }
+                node_info.set_bridges(bridge_collection);
+
                 status.set_node_info(node_info);
                 node_create.set_status(status);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", node_create),
+    );
 
     let conn = Broker::connect().unwrap();
 

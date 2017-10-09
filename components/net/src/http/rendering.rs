@@ -9,7 +9,7 @@ use serde_json;
 use protocol::net::NetError;
 use super::net_err_to_http;
 
-/// Return an Modifier<Result> contaiing the body of a NetError and the appropriate HTTP response status
+/// Return an Modifier<Result> containing the body of a NetError and the appropriate HTTP response status
 /// as json
 /// This is used by BeforeMiddlerware and others where an error needs to be communicated as json.
 pub fn render_json_error<T: Serialize>(err: &NetError, status: status::Status, response: &T) -> IronError {
@@ -18,9 +18,7 @@ pub fn render_json_error<T: Serialize>(err: &NetError, status: status::Status, r
         Mime(TopLevel::Application, SubLevel::Json, vec![]),
     ));
 
-    IronError::new(err.clone(),
-        (status, encoded, headers)
-    )
+    IronError::new(err.clone(), (status, encoded, headers))
 }
 
 pub fn render_json<T: Serialize>(status: status::Status, response: &T) -> Response {

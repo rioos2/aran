@@ -4,23 +4,17 @@
 
 use std::error;
 use std::fmt;
-use std::io;
 use std::result;
 use std::num;
 use hyper;
-use rio_core;
 use postgres;
 use db;
 
 #[derive(Debug)]
 pub enum Error {
-    BadPort(String),
     Db(db::error::Error),
-    EntityNotFound,
-    RioosAranCore(rio_core::Error),
     HTTP(hyper::status::StatusCode),
     HyperError(hyper::error::Error),
-    IO(io::Error),
     AccountIdFromString(num::ParseIntError),
     AccountCreate(postgres::error::Error),
     AccountGet(postgres::error::Error),
@@ -40,13 +34,9 @@ pub type Result<T> = result::Result<T, Error>;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
-            Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
             Error::Db(ref e) => format!("{}", e),
-            Error::EntityNotFound => format!("No value for key found"),
-            Error::RioosAranCore(ref e) => format!("{}", e),
             Error::HTTP(ref e) => format!("{}", e),
             Error::HyperError(ref e) => format!("{}", e),
-            Error::IO(ref e) => format!("{}", e),
             Error::AccountIdFromString(ref e) => format!("Cannot convert from string to Account ID, {}", e),
             Error::AccountCreate(ref e) => format!("Error creating account in database, {}", e),
             Error::AccountGet(ref e) => format!("Error getting account from database, {}", e),
@@ -68,13 +58,9 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
             Error::Db(ref err) => err.description(),
-            Error::EntityNotFound => "Entity not found in database.",
-            Error::RioosAranCore(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::HyperError(ref err) => err.description(),
-            Error::IO(ref err) => err.description(),
             Error::AccountIdFromString(ref err) => err.description(),
             Error::AccountCreate(ref err) => err.description(),
             Error::AccountGet(ref err) => err.description(),
@@ -91,17 +77,6 @@ impl error::Error for Error {
     }
 }
 
-impl From<rio_core::Error> for Error {
-    fn from(err: rio_core::Error) -> Error {
-        Error::RioosAranCore(err)
-    }
-}
-
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Self {
-        Error::IO(err)
-    }
-}
 
 impl From<hyper::error::Error> for Error {
     fn from(err: hyper::error::Error) -> Self {

@@ -9,6 +9,7 @@ use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
 use iron::status::Status;
 use iron::typemap::Key;
+
 use unicase::UniCase;
 use protocol::sessionsrv::*;
 use protocol::net::{self, ErrCode};
@@ -18,15 +19,35 @@ use super::rendering::*;
 use super::super::auth::default::PasswordAuthClient;
 use super::super::auth::shield::ShieldClient;
 use super::super::metrics::prometheus::PrometheusClient;
+use super::super::util::errors::*;
 use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;
 use super::token_target::*;
-
+use std::error::Error;
 use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
 use common::ui;
 
+
+// Can't Copy or Debug the fn.
+#[allow(missing_debug_implementations, missing_copy_implementations)]
+// pub struct C(pub fn(&mut Request) -> AranResult<Response>);
+//
+// impl Handler for C {
+//     fn handle(&self, req: &mut Request) -> Result<Response, IronError> {
+//         let C(f) = *self;
+//         match f(req) {
+//             Ok(resp) => Ok(resp),
+//             Err(e) => {
+//                 match e.response() {
+//                     Some(response) => Ok(response),
+//                     None => Err(std_error(e)),
+//                 }
+//             }
+//         }
+//     }
+// }
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
 pub struct XHandler(Chain);
 

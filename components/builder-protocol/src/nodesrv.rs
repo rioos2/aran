@@ -1,27 +1,8 @@
-#![allow(unknown_lints)]
+// Copyright (c) 2017 RioCorp Inc.
 
-#![cfg_attr(rustfmt, rustfmt_skip)]
-
-#![allow(box_pointers)]
-#![allow(dead_code)]
-#![allow(missing_docs)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-#![allow(non_upper_case_globals)]
-#![allow(trivial_casts)]
-#![allow(unsafe_code)]
-#![allow(unused_imports)]
-#![allow(unused_results)]
-
-use regex::Regex;
-use serde::ser::SerializeStruct;
-use serde::{Serialize, Serializer};
-use std::result;
-use std::str::FromStr;
 use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -201,6 +182,7 @@ pub struct NodeInfo {
     kernel_version: String,
     os_image: String,
     architecture: String,
+    bridges: Vec<Bridge>,
 }
 
 impl NodeInfo {
@@ -221,6 +203,31 @@ impl NodeInfo {
     }
     pub fn set_architecture(&mut self, v: ::std::string::String) {
         self.architecture = v;
+    }
+    pub fn set_bridges(&mut self, v: Vec<Bridge>) {
+        self.bridges = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Bridge {
+    bridge_name: String,
+    physical_device: String,
+    bridge_type: String,
+}
+
+impl Bridge {
+    pub fn new() -> Bridge {
+        ::std::default::Default::default()
+    }
+    pub fn set_bridge_name(&mut self, v: ::std::string::String) {
+        self.bridge_name = v;
+    }
+    pub fn set_physical_device(&mut self, v: ::std::string::String) {
+        self.physical_device = v;
+    }
+    pub fn set_bridge_type(&mut self, v: ::std::string::String) {
+        self.bridge_type = v;
     }
 }
 
@@ -244,7 +251,7 @@ impl NodeGetResponse {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct HealthzAllGetResponse {
+pub struct HealthzAllGet {
     title: String,
     guages: Guages,
     statistics: Statistics,
@@ -253,14 +260,14 @@ pub struct HealthzAllGetResponse {
     to_date: String,
 }
 
-impl HealthzAllGetResponse {
-    pub fn new() -> HealthzAllGetResponse {
+impl HealthzAllGet {
+    pub fn new() -> HealthzAllGet {
         ::std::default::Default::default()
     }
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
-    pub fn set_guages(&mut self, v: Guages) {
+    pub fn set_gauges(&mut self, v: Guages) {
         self.guages = v;
     }
     pub fn set_statistics(&mut self, v: Statistics) {
@@ -329,7 +336,7 @@ impl Statistics {
     pub fn new() -> Statistics {
         ::std::default::Default::default()
     }
-    pub fn set_status(&mut self, v: ::std::string::String) {
+    pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
     pub fn set_nodes(&mut self, v: Vec<NodeStatistic>) {
@@ -339,6 +346,9 @@ impl Statistics {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeStatistic {
+    id: String,
+    kind: String,
+    api_version: String,
     name: String,
     description: String,
     cpu: String,
@@ -350,6 +360,11 @@ impl NodeStatistic {
     pub fn new() -> NodeStatistic {
         ::std::default::Default::default()
     }
+
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
@@ -367,6 +382,12 @@ impl NodeStatistic {
     }
     pub fn set_health(&mut self, v: ::std::string::String) {
         self.health = v;
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
     }
 }
 
@@ -425,7 +446,7 @@ impl Cumulative {
 pub struct Item {
     id: String,
     name: String,
-    value: Vec<Value>,
+    value: Vec<ValueData>,
 }
 
 impl Item {
@@ -438,19 +459,19 @@ impl Item {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
-    pub fn set_value(&mut self, v: Vec<Value>) {
+    pub fn set_value(&mut self, v: Vec<ValueData>) {
         self.value = v;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Value {
+pub struct ValueData {
     date: String,
     value: String,
 }
 
-impl Value {
-    pub fn new() -> Value {
+impl ValueData {
+    pub fn new() -> ValueData {
         ::std::default::Default::default()
     }
     pub fn set_date(&mut self, v: ::std::string::String) {
@@ -458,5 +479,147 @@ impl Value {
     }
     pub fn set_value(&mut self, v: ::std::string::String) {
         self.value = v;
+    }
+}
+
+type Timestamp = f64;
+type Value = String;
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StatusData {
+    Success,
+    Error,
+}
+
+
+#[derive(Debug)]
+pub enum Error {
+    BadRequest(String),
+    InvalidExpression(String),
+    Timeout(String),
+    InvalidResponse(serde_json::Error),
+    Unexpected(u16),
+}
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MatrixItem {
+    pub metric: BTreeMap<String, String>,
+    pub values: Vec<Scalar>,
+}
+pub type Matrix = Vec<MatrixItem>;
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct InstantVecItem {
+    pub metric: BTreeMap<String, String>,
+    pub value: Scalar,
+}
+pub type InstantVec = Vec<InstantVecItem>;
+
+pub type Scalar = (Timestamp, Value);
+
+pub type Str = (Timestamp, String);
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "resultType", content = "result")]
+#[serde(rename_all = "lowercase")]
+pub enum Data {
+    Matrix(Matrix),
+    Vector(InstantVec),
+    Scalar(Scalar),
+    String(Str),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PromResponse {
+    pub status: StatusData,
+    pub data: Data,
+    #[serde(rename = "errorType")]
+    #[serde(default)]
+    pub error_type: Option<String>,
+    #[serde(default)]
+    pub error: Option<String>,
+}
+
+
+
+impl Into<Counters> for PromResponse {
+    fn into(mut self) -> Counters {
+        let mut counters = Counters::new();
+        if let Data::Vector(ref mut instancevec) = self.data {
+            for data in instancevec.into_iter() {
+                counters.set_name(data.metric.get("__name__").unwrap().to_owned());
+                counters.set_counter(data.value.1.to_owned());
+            }
+        }
+        counters
+    }
+}
+
+impl Into<Vec<NodeStatistic>> for PromResponse {
+    fn into(mut self) -> Vec<NodeStatistic> {
+        let mut collections = Vec::new();
+        if let Data::Vector(ref mut instancevec) = self.data {
+            for data in instancevec.into_iter() {
+                let mut node = NodeStatistic::new();
+                node.set_name(data.metric.get("node").unwrap().to_owned());
+                node.set_counter(data.value.1.to_owned());
+                node.set_id(
+                    data.metric
+                        .get("node")
+                        .unwrap()
+                        .replace(".", "_")
+                        .to_string(),
+                );
+                node.set_kind("Node".to_string());
+                node.set_api_version("v1".to_string());
+                collections.push(node);
+            }
+        }
+        collections
+    }
+}
+
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HealthzAllGetResponse {
+    kind: String,
+    api_version: String,
+    id: String,
+    results: HealthzAllGet,
+}
+
+impl HealthzAllGetResponse {
+    pub fn new() -> HealthzAllGetResponse {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
+    }
+    pub fn set_results(&mut self, v: HealthzAllGet) {
+        self.results = v;
+    }
+}
+
+
+impl Into<HealthzAllGetResponse> for HealthzAllGet {
+    fn into(self) -> HealthzAllGetResponse {
+        let mut health = HealthzAllGetResponse::new();
+        health.set_results(self);
+        health.set_kind("ReportsStatistics".to_string());
+        health.set_api_version("v1".to_string());
+        health.set_id("ReportsStatistics".to_string());
+        health
     }
 }

@@ -265,7 +265,6 @@ impl Migratable for AuthProcedures {
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        ///When the record rioos-system origin exists, do nothing.
         migrator.migrate(
             "originsrv",
             r#"INSERT INTO origins (name,object_meta,type_meta) VALUES ('rioos-system','{"name":"","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}','{"kind":"Origin","api_version":"v1"}')

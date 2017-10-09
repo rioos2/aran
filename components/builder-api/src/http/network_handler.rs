@@ -11,14 +11,13 @@ use iron::status;
 use iron::typemap;
 use protocol::net::{self, ErrCode};
 // use router::Router;
-// use protocol::servicesrv::ObjectMetaData;
-// use protocol::asmsrv::TypeMeta;
-use protocol::netsrv::{Network};
+use protocol::netsrv::Network;
 use protocol::asmsrv::{Status, Condition};
+use std::collections::BTreeMap;
+
 
 use db::data_store::Broker;
-use std::collections::BTreeMap;
-use http::{deployment_handler};
+use http::deployment_handler;
 
 
 define_event_log!();
@@ -30,6 +29,7 @@ struct NetworkCreateReq {
     subnet_ip: String,
     netmask: String,
     gateway: String,
+    bridge_hosts: BTreeMap<String, String>,
     status: deployment_handler::StatusReq,
     created_at: String,
 }
@@ -64,6 +64,7 @@ pub fn network_create(req: &mut Request) -> IronResult<Response> {
                     condition_collection.push(condition);
                 }
                 status.set_conditions(condition_collection);
+                net_create.set_bridge_hosts(body.bridge_hosts);
                 net_create.set_status(status);
 
             }

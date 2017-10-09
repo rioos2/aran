@@ -9,16 +9,10 @@ use std::path::{Path, PathBuf};
 use std::result;
 use std::str::FromStr;
 
-use regex::Regex;
-
 use error::{Error, Result};
 use util::perm;
 
 use super::{PUBLIC_KEY_PERMISSIONS, SECRET_KEY_PERMISSIONS};
-
-lazy_static! {
-    static ref ORIGIN_NAME_RE: Regex = Regex::new(r"\A[a-z0-9][a-z0-9_-]*\z").unwrap();
-}
 
 pub mod sig_key_pair;
 
@@ -116,11 +110,6 @@ where
     ))
 }
 
-
-/// Is the string a valid ca name?
-pub fn is_valid_ca_name(name: &str) -> bool {
-    name.chars().count() <= 255 && ORIGIN_NAME_RE.is_match(name)
-}
 
 fn read_key_bytes(keyfile: &Path) -> Result<Vec<u8>> {
     let mut f = try!(File::open(keyfile));

@@ -14,7 +14,6 @@ extern crate crypto;
 extern crate hyper;
 extern crate hyper_openssl;
 extern crate iron;
-extern crate lazy_static;
 #[macro_use]
 extern crate log;
 extern crate num_cpus;
@@ -25,13 +24,14 @@ extern crate serde_json;
 extern crate time;
 extern crate unicase;
 extern crate rand;
-
+extern crate curl;
 
 pub mod config;
 pub mod error;
 pub mod http;
 pub mod auth;
 pub mod metrics;
+pub mod util;
 pub mod server;
 use std::process::Command;
 

@@ -12,6 +12,8 @@ path = "src/main.rs"
 doc = false
 
 [dependencies]
+regex = "*"
+rand = "*"
 ansi_term = "*"
 bodyparser = "0.7.0"
 env_logger = "*"

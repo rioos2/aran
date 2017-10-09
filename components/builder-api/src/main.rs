@@ -6,7 +6,6 @@
 extern crate clap;
 extern crate env_logger;
 #[macro_use]
-
 extern crate lazy_static;
 extern crate rioos_aran_api as api;
 extern crate rioos_core as rio_core;

@@ -32,6 +32,7 @@ impl Migratable for NetworkProcedures {
              subnet_ip text,
              netmask text,
              gateway text,
+             bridge_hosts text,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
@@ -50,11 +51,12 @@ impl Migratable for NetworkProcedures {
                 subnet_ip text,
                 netmask text,
                 gateway text,
+                bridge_hosts text,
                 status text
             ) RETURNS SETOF networks AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO networks(name,network_type,subnet_ip,netmask,gateway,status)
-                                        VALUES (name,network_type,subnet_ip,netmask,gateway,status)
+                                    RETURN QUERY INSERT INTO networks(name,network_type,subnet_ip,netmask,gateway,bridge_hosts,status)
+                                        VALUES (name,network_type,subnet_ip,netmask,gateway,bridge_hosts,status)
                                         RETURNING *;
                                     RETURN;
                                 END
