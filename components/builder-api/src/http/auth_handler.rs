@@ -57,20 +57,20 @@ struct LdapConfigReq {
     enforce_starttls: String,
     lookup_dn: String,
     lookup_password: String,
-    user_search: userSearchReq,
-    group_search: groupSearchReq,
+    user_search: UserSearchReq,
+    group_search: GroupSearchReq,
     ca_certs: String,
     client_cert: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct userSearchReq {
+struct UserSearchReq {
     search_base: String,
     search_filter_template: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct groupSearchReq {
+struct GroupSearchReq {
     search_base: String,
     search_filter_template: String,
     member_attributes: Vec<String>,
@@ -273,4 +273,53 @@ pub fn session_get(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn set_ladap_config(req: &mut Request) -> IronResult<Response> {}
+pub fn set_ladap_config(req: &mut Request) -> IronResult<Response> {
+
+
+    let mut ldap_config = LdapConfig::new();
+    {
+        match req.get::<bodyparser::Struct<LdapConfigReq>>() {
+            Ok(Some(body)) => {
+
+                ldap_config.set_host(body.host);
+                ldap_config.set_port(body.port);
+                ldap_config.set_enforce_starttls(body.enforce_starttls);
+                ldap_config.set_lookup_dn(body.lookup_dn);
+                ldap_config.set_lookup_password(body.lookup_password);
+                ldap_config.set_ca_certs(body.ca_certs);
+                ldap_config.set_client_cert(body.client_cert);
+
+                let mut user_search = UserSearch::new();
+                user_search.set_search_base(body.user_search.search_base);
+                user_search.set_search_filter_template(body.user_search.search_filter_template);
+                ldap_config.set_user_search(user_search);
+
+
+                let mut group_search = GroupSearch::new();
+                group_search.set_search_base(body.group_search.search_base);
+                group_search.set_search_filter_template(body.group_search.search_filter_template);
+                group_search.set_member_attributes(body.group_search.member_attributes);
+                ldap_config.set_group_search(group_search);
+
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+    let conn = Broker::connect().unwrap();
+
+    match SessionDS::ldap_config_create(&conn, &ldap_config) {
+        Ok(ldap) => Ok(render_json(status::Ok, &ldap)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
+
+
+}

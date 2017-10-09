@@ -157,6 +157,53 @@ impl Migratable for AuthProcedures {
         ui.para("[✓] account_session");
 
         migrator.migrate(
+            "sessionsrv",
+            r#"CREATE TABLE  IF NOT EXISTS ldap_config (
+             id bigint PRIMARY KEY DEFAULT next_id_v1('ldap_id_seq'),
+             host text,
+             port text,
+             enforce_starttls text,
+             lookup_dn text,
+             lookup_password text,
+             ca_certs text,
+             client_cert text,
+             user_search text,
+             group_search text,
+             updated_at timestamptz,
+             created_at timestamptz DEFAULT now()
+             )"#,
+        )?;
+
+        ui.para("[✓] ldap_config");
+
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_ldap_config_v1 (
+                host text,
+                port text,
+                enforce_starttls text,
+                lookup_dn text,
+                lookup_password text,
+                ca_certs text,
+                client_cert text,
+                user_search text,
+                group_search text
+            ) RETURNS SETOF ldap_config AS $$
+                                BEGIN
+                                    RETURN QUERY INSERT INTO ldap_config(host,port,enforce_starttls,lookup_dn,lookup_password,ca_certs,client_cert,user_search,group_search)
+                                        VALUES (host,port,enforce_starttls,lookup_dn,lookup_password,ca_certs,client_cert,user_search,group_search)
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#,
+        )?;
+
+
+        ui.para("[✓] insert_ldap_config_v1");
+
+
+        migrator.migrate(
             "authsrv",
             r#"CREATE OR REPLACE FUNCTION insert_account_session_v1 (
                     a_account_id bigint,

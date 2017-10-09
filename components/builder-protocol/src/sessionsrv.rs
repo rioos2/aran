@@ -501,3 +501,164 @@ impl Account {
         self.created_at.clone()
     }
 }
+
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct LdapConfig {
+    host: String,
+    port: String,
+    enforce_starttls: String,
+    lookup_dn: String,
+    lookup_password: String,
+    user_search: UserSearch,
+    group_search: GroupSearch,
+    ca_certs: String,
+    client_cert: String,
+}
+
+impl LdapConfig {
+    pub fn new() -> LdapConfig {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_host(&mut self, v: ::std::string::String) {
+        self.host = v;
+    }
+
+    pub fn get_host(&self) -> ::std::string::String {
+        self.host.clone()
+    }
+
+    pub fn set_port(&mut self, v: ::std::string::String) {
+        self.port = v;
+    }
+
+    pub fn get_port(&self) -> ::std::string::String {
+        self.port.clone()
+    }
+
+    pub fn set_enforce_starttls(&mut self, v: ::std::string::String) {
+        self.enforce_starttls = v;
+    }
+
+    pub fn get_enforce_starttls(&self) -> ::std::string::String {
+        self.enforce_starttls.clone()
+    }
+
+    pub fn set_lookup_dn(&mut self, v: ::std::string::String) {
+        self.lookup_dn = v;
+    }
+
+    pub fn get_lookup_dn(&self) -> ::std::string::String {
+        self.lookup_dn.clone()
+    }
+
+    pub fn set_lookup_password(&mut self, v: ::std::string::String) {
+        self.lookup_password = v;
+    }
+
+    pub fn get_lookup_password(&self) -> ::std::string::String {
+        self.lookup_password.clone()
+    }
+
+    pub fn set_ca_certs(&mut self, v: ::std::string::String) {
+        self.ca_certs = v;
+    }
+
+    pub fn get_ca_certs(&self) -> ::std::string::String {
+        self.ca_certs.clone()
+    }
+
+    pub fn set_client_cert(&mut self, v: ::std::string::String) {
+        self.client_cert = v;
+    }
+
+    pub fn get_client_cert(&self) -> ::std::string::String {
+        self.client_cert.clone()
+    }
+
+    pub fn set_user_search(&mut self, v: UserSearch) {
+        self.user_search = v;
+    }
+
+    pub fn get_user_search(&self) -> &UserSearch {
+        &self.user_search
+    }
+
+    pub fn set_group_search(&mut self, v: GroupSearch) {
+        self.group_search = v;
+    }
+
+    pub fn get_group_search(&self) -> &GroupSearch {
+        &self.group_search
+    }
+
+
+}
+
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct UserSearch {
+    search_base: String,
+    search_filter_template: String,
+}
+
+impl UserSearch {
+    pub fn new() -> UserSearch {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_search_base(&mut self, v: ::std::string::String) {
+        self.search_base = v;
+    }
+
+    pub fn get_search_base(&self) -> ::std::string::String {
+        self.search_base.clone()
+    }
+
+    pub fn set_search_filter_template(&mut self, v: ::std::string::String) {
+        self.search_filter_template = v;
+    }
+
+    pub fn get_search_filter_template(&self) -> ::std::string::String {
+        self.search_filter_template.clone()
+    }
+}
+
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct GroupSearch {
+    search_base: String,
+    search_filter_template: String,
+    member_attributes: Vec<String>,
+}
+
+impl GroupSearch {
+    pub fn new() -> GroupSearch {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_search_base(&mut self, v: ::std::string::String) {
+        self.search_base = v;
+    }
+
+    pub fn get_search_base(&self) -> ::std::string::String {
+        self.search_base.clone()
+    }
+
+    pub fn set_search_filter_template(&mut self, v: ::std::string::String) {
+        self.search_filter_template = v;
+    }
+
+    pub fn get_search_filter_template(&self) -> ::std::string::String {
+        self.search_filter_template.clone()
+    }
+
+    pub fn set_member_attributes(&mut self, v: ::std::vec::Vec<String>) {
+        self.member_attributes = v;
+    }
+
+    pub fn get_member_attributes(&self) -> ::std::vec::Vec<String> {
+        self.member_attributes.clone()
+    }
+}

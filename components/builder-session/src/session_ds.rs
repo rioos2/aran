@@ -231,6 +231,28 @@ impl SessionDS {
         }
         Ok(None)
     }
+
+
+    pub fn ldap_config_create(datastore: &DataStoreConn, ldap_config: &sessionsrv::LdapConfig) -> Result<Option<sessionsrv::LdapConfig>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM insert_ldap_config_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            &[
+                &(ldap_config.get_host() as String),
+                &(ldap_config.get_port() as String),
+                &(ldap_config.get_enforce_starttls() as String),
+                &(ldap_config.get_lookup_dn() as String),
+                &(ldap_config.get_lookup_password() as String),
+                &(ldap_config.get_ca_certs() as String),
+                &(ldap_config.get_client_cert() as String),
+                &(serde_json::to_string(ldap_config.get_user_search()).unwrap()),
+                &(serde_json::to_string(ldap_config.get_group_search()).unwrap()),
+            ],
+        ).map_err(Error::LdapConfigCreate)?;
+        let ldap = row_to_ldap_config(&rows.get(0))?;
+        return Ok(Some(ldap.clone()));
+    }
+
 }
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
@@ -259,4 +281,34 @@ fn row_to_origin(row: &postgres::rows::Row) -> Result<originsrv::Origin> {
     origin_data.set_type_meta(type_meta_obj);
     origin_data.set_created_at(created_at.to_rfc3339());
     Ok(origin_data)
+}
+
+fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfig> {
+    let mut ldap = sessionsrv::LdapConfig::new();
+    let host: String = row.get("host");
+    let port: String = row.get("port");
+    let enforce_starttls: String = row.get("enforce_starttls");
+    let lookup_dn: String = row.get("lookup_dn");
+    let lookup_password: String = row.get("lookup_password");
+    let ca_certs: String = row.get("ca_certs");
+    let client_cert: String = row.get("client_cert");
+    let user_search: String = row.get("user_search");
+    let group_search: String = row.get("group_search");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+
+    // ldap.set_id(id.to_string());
+    ldap.set_host(host);
+    ldap.set_port(port);
+    ldap.set_enforce_starttls(enforce_starttls);
+    ldap.set_lookup_dn(lookup_dn);
+    ldap.set_lookup_password(lookup_password);
+    ldap.set_ca_certs(ca_certs);
+    ldap.set_client_cert(client_cert);
+    let user_search: sessionsrv::UserSearch = serde_json::from_str(&user_search).unwrap();
+    let group_search: sessionsrv::GroupSearch = serde_json::from_str(&group_search).unwrap();
+    ldap.set_user_search(user_search);
+    ldap.set_group_search(group_search);
+    // ldap.set_created_at(created_at.to_rfc3339());
+
+    Ok(ldap)
 }
