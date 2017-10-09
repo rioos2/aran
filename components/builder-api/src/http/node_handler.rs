@@ -1,20 +1,20 @@
-
 use std::collections::BTreeMap;
 use bodyparser;
 use iron::prelude::*;
 use iron::status;
 use persistent;
 use router::Router;
+use ansi_term::Colour;
 
 use protocol::net::{self, ErrCode};
 use rio_net::http::controller::*;
 use rio_net::http::middleware::PrometheusCli;
 use node::node_ds::NodeDS;
 use db::data_store::Broker;
-use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo};
+use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
 use protocol::asmsrv::Condition;
 use http::deployment_handler;
-
+use common::ui;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NodeCreateReq {
@@ -62,6 +62,7 @@ struct NodeInfoReq {
     kernel_version: String,
     os_image: String,
     architecture: String,
+    bridges: Vec<BridgeReq>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -69,6 +70,12 @@ struct CommonStatusReq {
     status: StatusReq,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct BridgeReq {
+    bridge_name: String,
+    physical_device: String,
+    bridge_type: String,
+}
 
 pub fn node_create(req: &mut Request) -> IronResult<Response> {
     let mut node_create = Node::new();
@@ -130,6 +137,15 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 node_info.set_kernel_version(body.status.node_info.kernel_version);
                 node_info.set_os_image(body.status.node_info.os_image);
                 node_info.set_architecture(body.status.node_info.architecture);
+                let mut bridge_collection = Vec::new();
+                for bridge in body.status.node_info.bridges {
+                    let mut bri = Bridge::new();
+                    bri.set_bridge_name(bridge.bridge_name);
+                    bri.set_physical_device(bridge.physical_device);
+                    bri.set_bridge_type(bridge.bridge_type);
+                    bridge_collection.push(bri);
+                }
+                node_info.set_bridges(bridge_collection);
                 status.set_node_info(node_info);
                 node_create.set_status(status);
             }
@@ -142,6 +158,12 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", node_create),
+    );
 
     let conn = Broker::connect().unwrap();
 
@@ -215,12 +237,28 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
                 node_info.set_kernel_version(body.status.node_info.kernel_version);
                 node_info.set_os_image(body.status.node_info.os_image);
                 node_info.set_architecture(body.status.node_info.architecture);
+                let mut bridge_collection = Vec::new();
+                for bridge in body.status.node_info.bridges {
+                    let mut bri = Bridge::new();
+                    bri.set_bridge_name(bridge.bridge_name);
+                    bri.set_physical_device(bridge.physical_device);
+                    bri.set_bridge_type(bridge.bridge_type);
+                    bridge_collection.push(bri);
+                }
+                node_info.set_bridges(bridge_collection);
+
                 status.set_node_info(node_info);
                 node_create.set_status(status);
             }
             _ => return Ok(Response::with(status::UnprocessableEntity)),
         }
     }
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", node_create),
+    );
 
     let conn = Broker::connect().unwrap();
 
@@ -232,7 +270,7 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn healthz_all(req: &mut Request) -> IronResult<Response> {
+pub fn healthz_all(req: &mut Request) -> AranResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
 
     match NodeDS::healthz_all(&promcli) {

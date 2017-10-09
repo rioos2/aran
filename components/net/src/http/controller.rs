@@ -15,4 +15,4 @@
 pub use super::net_err_to_http;
 pub use super::headers::*;
 pub use super::middleware::*;
-pub use super::rendering::{render_json, render_net_error};
+pub use super::rendering::{render_json, render_net_error, render_json_error};

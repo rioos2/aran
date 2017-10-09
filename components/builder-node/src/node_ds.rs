@@ -113,7 +113,7 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {
     let mut owner_collection = Vec::new();
     let owner = asmsrv::OwnerReferences::new();
     owner_collection.push(owner);
-    obj_meta.set_name(id.to_string() as String);
+    obj_meta.set_name(id.to_string());
     obj_meta.set_owner_references(owner_collection);
     node.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();

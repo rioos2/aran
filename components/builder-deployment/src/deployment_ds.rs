@@ -270,7 +270,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let mut owner_collection = Vec::new();
     let owner = asmsrv::OwnerReferences::new();
     owner_collection.push(owner);
-    obj_meta.set_name(id.to_string() as String);
+    obj_meta.set_name(id.to_string());
     obj_meta.set_owner_references(owner_collection);
     assembly.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
@@ -326,7 +326,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let mut owner_collection = Vec::new();
     let owner = asmsrv::OwnerReferences::new();
     owner_collection.push(owner);
-    obj_meta.set_name(id.to_string() as String);
+    obj_meta.set_name(id.to_string());
     obj_meta.set_owner_references(owner_collection);
     assembly_factory.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();

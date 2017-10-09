@@ -138,6 +138,19 @@ impl StorageDS {
         Ok(Some(response))
     }
 
+    pub fn data_center_show(datastore: &DataStoreConn, get_dc: &asmsrv::IdGet) -> Result<Option<storagesrv::DataCenter>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_data_center_v1($1)",
+            &[&(get_dc.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::StorageGet)?;
+        for row in rows {
+            let dc = row_to_dc(&row)?;
+            return Ok(Some(dc));
+        }
+        Ok(None)
+    }
+
     pub fn storage_pool_create(datastore: &DataStoreConn, storage_create: &storagesrv::StoragePool) -> Result<Option<storagesrv::StoragePool>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
@@ -152,6 +165,25 @@ impl StorageDS {
         ).map_err(Error::StoragePoolCreate)?;
         let storage = row_to_storage_pool(&rows.get(0))?;
         return Ok(Some(storage.clone()));
+    }
+
+    pub fn storage_pool_list_all(datastore: &DataStoreConn) -> Result<Option<storagesrv::StoragePoolGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_storage_pool_all_v1()", &[])
+            .map_err(Error::StoragePoolGetResponse)?;
+
+        let mut response = storagesrv::StoragePoolGetResponse::new();
+        let mut storage_collection = Vec::new();
+        for row in rows {
+            storage_collection.push(row_to_storage_pool(&row)?)
+        }
+        response.set_storage_pool_collection(
+            storage_collection,
+            "StoragePoolList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
     }
 
     pub fn storage_pool_list(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::StoragePoolGetResponse>> {
@@ -223,7 +255,7 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     let object_meta = servicesrv::ObjectMetaData::new();
     dc.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Storage".to_string());
+    type_meta.set_kind("DataCenter".to_string());
     type_meta.set_api_version("v1".to_string());
     dc.set_type_meta(type_meta);
     dc.set_status(serde_json::from_str(&status).unwrap());
