@@ -61,7 +61,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //the status for api server, and overall for command center
         status: get "/healthz" => status,
         //TO-DO: MEGAM
-        healthz_all: get "/healthz/overall" => XHandler::new(healthz_all).before(basic.clone()),
+        healthz_all: get "/healthz/overall" => XHandler::new(C(healthz_all)).before(basic.clone()),
 
         //auth API for login (default password auth)
         authenticate: post "/authenticate" => default_authenticate,
