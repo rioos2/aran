@@ -49,6 +49,33 @@ struct AccountGetReq {
     token: String,
 }
 
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct LdapConfigReq {
+    host: String,
+    port: String,
+    enforce_starttls: String,
+    lookup_dn: String,
+    lookup_password: String,
+    user_search: userSearchReq,
+    group_search: groupSearchReq,
+    ca_certs: String,
+    client_cert: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct userSearchReq {
+    search_base: String,
+    search_filter_template: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct groupSearchReq {
+    search_base: String,
+    search_filter_template: String,
+    member_attributes: Vec<String>,
+}
+
 //Default password authentication.
 //The body contains email, password, authenticate and if all is well return a token.
 pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
@@ -245,3 +272,5 @@ pub fn session_get(req: &mut Request) -> IronResult<Response> {
 
     }
 }
+
+pub fn set_ladap_config(req: &mut Request) -> IronResult<Response> {}
