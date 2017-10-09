@@ -32,6 +32,7 @@ struct SessionCreateReq {
     states: String,
     approval: String,
     suspend: String,
+    roles: Vec<String>,
     registration_ip_address: String,
 }
 
@@ -172,6 +173,7 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 account_create.set_states(body.states);
                 account_create.set_approval(body.approval);
                 account_create.set_suspend(body.suspend);
+                account_create.set_roles(body.roles);
                 account_create.set_registration_ip_address(body.registration_ip_address);
             }
             Err(err) => {
@@ -272,5 +274,3 @@ pub fn session_get(req: &mut Request) -> IronResult<Response> {
 
     }
 }
-
-pub fn set_ladap_config(req: &mut Request) -> IronResult<Response> {}
