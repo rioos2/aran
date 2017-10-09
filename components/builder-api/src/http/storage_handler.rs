@@ -341,6 +341,29 @@ pub fn data_center_list(req: &mut Request) -> IronResult<Response> {
 }
 
 
+pub fn data_center_show(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut dc_get = IdGet::new();
+    dc_get.set_id(id.to_string());
+
+    match StorageDS::data_center_show(&conn, &dc_get) {
+        Ok(dc) => Ok(render_json(status::Ok, &dc)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
 pub fn storage_pool_create(req: &mut Request) -> IronResult<Response> {
     let mut storage_create = StoragePool::new();
     {
