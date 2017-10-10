@@ -78,6 +78,13 @@ struct GroupSearchReq {
     member_attributes: Vec<String>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct  SamlProviderReq {
+    description: String,
+    idp_metadata: String,
+    sp_base_url: String,
+}
+
 //Default password authentication.
 //The body contains email, password, authenticate and if all is well return a token.
 pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
@@ -319,6 +326,37 @@ pub fn set_ldap_config(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match SessionDS::ldap_config_create(&conn, &ldap_config) {
         Ok(ldap) => Ok(render_json(status::Ok, &ldap)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
+
+
+}
+
+pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
+    let mut saml_provider = SamlProvider::new();
+    {
+        match req.get::<bodyparser::Struct<SamlProviderReq>>() {
+            Ok(Some(body)) => {
+                saml_provider.set_description(body.description);
+                saml_provider.set_idp_metadata(body.idp_metadata);
+                saml_provider.set_sp_base_url(body.sp_base_url);
+
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+    let conn = Broker::connect().unwrap();
+    match SessionDS::saml_provider_create(&conn, &saml_provider) {
+        Ok(saml) => Ok(render_json(status::Ok, &saml)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
