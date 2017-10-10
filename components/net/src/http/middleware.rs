@@ -14,6 +14,7 @@ use unicase::UniCase;
 use protocol::sessionsrv::*;
 use protocol::net::{self, ErrCode};
 use ansi_term::Colour;
+use protocol::net::err;
 
 use super::rendering::*;
 use super::super::auth::default::PasswordAuthClient;
@@ -30,6 +31,7 @@ use session::session_ds::SessionDS;
 use common::ui;
 
 
+/// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
 #[allow(missing_debug_implementations, missing_copy_implementations)]
 pub struct C(pub fn(&mut Request) -> AranResult<Response>);
@@ -42,7 +44,7 @@ impl Handler for C {
             Err(e) => {
                 match e.response() {
                     Some(response) => Ok(response),
-                    None => Err(std_error(e)),
+                    None => Err(render_json_error(&net::err(ErrCode::BUG, "bug. report to development."),Status::InternalServerError, &"")),
                 }
             }
         }

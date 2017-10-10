@@ -11,6 +11,9 @@ use rio_net::http::controller::*;
 use rio_net::http::middleware::PrometheusCli;
 use node::node_ds::NodeDS;
 use db::data_store::Broker;
+use rio_net::util::errors::AranResult;
+use rio_net::util::errors::{bad_request, internal_error, malformed_body};
+
 use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
 use protocol::asmsrv::Condition;
 use http::deployment_handler;
@@ -275,8 +278,6 @@ pub fn healthz_all(req: &mut Request) -> AranResult<Response> {
 
     match NodeDS::healthz_all(&promcli) {
         Ok(health_all) => Ok(render_json(status::Ok, &health_all)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => Err(internal_error(&"testing", &format!("{}",err))),
     }
 }

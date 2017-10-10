@@ -115,13 +115,13 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
 
         //secret API
-        secrets: post "/secrets" => XHandler::new(secret_create).before(basic.clone()),
+        secrets: post "/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),
         secrets_list: get "/secrets" => XHandler::new(secret_list),
-        secret_show: get "/secrets/:id" => XHandler::new(secret_show).before(basic.clone()),
+        secret_show: get "/secrets/:id" => XHandler::new(C(secret_show)).before(basic.clone()),
         secret_show_by_origin: get "/origins/:origin/secrets" => XHandler::new(secret_show_by_origin),
 
         //serviceAccount API
-        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_create,
+        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(service_account_create),
         service_account_list: get "/serviceaccounts" => service_account_list,
         service_account_get: get "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_show,
 
@@ -133,7 +133,6 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //Network API
         networks: post "/networks" => XHandler::new(network_create).before(basic.clone()),
         network_list: get "/networks" => XHandler::new(network_list).before(basic.clone()),
-
 
         //StorageConnectors API
         storages: post "/storageconnectors" => XHandler::new(storage_create).before(basic.clone()),

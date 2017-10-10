@@ -1,5 +1,5 @@
 [package]
-name = "habitat_http_client"
+name = "rioos_http_client"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 build = "build.rs"

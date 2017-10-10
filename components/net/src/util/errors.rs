@@ -2,40 +2,66 @@ use std::any::Any;
 use std::error::Error;
 use std::fmt;
 use iron::prelude::*;
+use iron::status::Status;
 use super::super::http::controller::*;
 
-// use conduit::Response;
 // use diesel::result::Error as DieselError;
 
-#[derive(Serialize)]
-struct StringError {
-    detail: String,
-}
+pub const SUCCESS: &'static str = "Success";
+pub const FAILURE: &'static str = "Failure";
+
 #[derive(Serialize)]
 struct Bad {
-    errors: Vec<StringError>,
+    // Status of the operation.
+    // One of: "Success" or "Failure".
+    status: String,
+
+    // Suggested HTTP return code for this status, 0 if not set.
+    // +optional
+    code: String,
+    // A human-readable description of the status of this operation.
+    // +optional
+    message: String,
+    // A machine-readable description of why this operation is in the
+    // "Failure" status. If this value is empty there
+    // is no information available. A Reason clarifies an HTTP status
+    reason: String,
 }
 
 // =============================================================================
 // AranError trait
 
 pub trait AranError: Send + fmt::Display + 'static {
+    fn status(&self) -> &str {
+        FAILURE
+    }
+
+    fn code(&self) -> &str;
+
+    fn http_code(&self) -> Status {
+        Status::Ok
+    }
+
     fn description(&self) -> &str;
+
     fn cause(&self) -> Option<&(AranError)> {
         None
     }
 
     fn response(&self) -> Option<Response> {
-        if self.human() {
-            Some(render_json(&Bad {
-                errors: vec![StringError { detail: self.description().to_string() }],
-            }))
-        } else {
-            self.cause().and_then(|cause| cause.response())
-        }
+        Some(render_json(
+            self.http_code(),
+            &Bad {
+                status: self.status().to_string(),
+                code: self.code().to_string(),
+                message: self.description().to_string(),
+                reason: self.cause().unwrap().to_string(),
+            },
+        ))
     }
+
     fn human(&self) -> bool {
-        false
+        true
     }
 }
 
@@ -46,6 +72,19 @@ impl fmt::Debug for Box<AranError> {
 }
 
 impl AranError for Box<AranError> {
+    fn status(&self) -> &str {
+        (**self).status()
+    }
+
+    fn code(&self) -> &str {
+        (**self).code()
+    }
+
+    fn http_code(&self) -> Status {
+        (**self).http_code()
+    }
+
+
     fn description(&self) -> &str {
         (**self).description()
     }
@@ -59,7 +98,20 @@ impl AranError for Box<AranError> {
         (**self).response()
     }
 }
+
 impl<T: AranError> AranError for Box<T> {
+    fn status(&self) -> &str {
+        (**self).status()
+    }
+
+    fn code(&self) -> &str {
+        (**self).code()
+    }
+
+    fn http_code(&self) -> Status {
+        (**self).http_code()
+    }
+
     fn description(&self) -> &str {
         (**self).description()
     }
@@ -77,83 +129,6 @@ impl<T: AranError> AranError for Box<T> {
 pub type AranResult<T> = Result<T, Box<AranError>>;
 
 // =============================================================================
-// Chaining errors
-
-pub trait ChainError<T> {
-    fn chain_error<E, F>(self, callback: F) -> AranResult<T>
-    where
-        E: AranError,
-        F: FnOnce() -> E;
-}
-
-struct ChainedError<E> {
-    error: E,
-    cause: Box<AranError>,
-}
-
-impl<T, F> ChainError<T> for F
-where
-    F: FnOnce() -> AranResult<T>,
-{
-    fn chain_error<E, C>(self, callback: C) -> AranResult<T>
-    where
-        E: AranError,
-        C: FnOnce() -> E,
-    {
-        self().chain_error(callback)
-    }
-}
-
-impl<T, E: AranError> ChainError<T> for Result<T, E> {
-    fn chain_error<E2, C>(self, callback: C) -> AranResult<T>
-    where
-        E2: AranError,
-        C: FnOnce() -> E2,
-    {
-        self.map_err(move |err| {
-            Box::new(ChainedError {
-                error: callback(),
-                cause: Box::new(err),
-            }) as Box<AranError>
-        })
-    }
-}
-
-impl<T> ChainError<T> for Option<T> {
-    fn chain_error<E, C>(self, callback: C) -> AranResult<T>
-    where
-        E: AranError,
-        C: FnOnce() -> E,
-    {
-        match self {
-            Some(t) => Ok(t),
-            None => Err(Box::new(callback())),
-        }
-    }
-}
-
-impl<E: AranError> AranError for ChainedError<E> {
-    fn description(&self) -> &str {
-        self.error.description()
-    }
-    fn cause(&self) -> Option<&AranError> {
-        Some(&*self.cause)
-    }
-    fn response(&self) -> Option<Response> {
-        self.error.response()
-    }
-    fn human(&self) -> bool {
-        self.error.human()
-    }
-}
-
-impl<E: AranError> fmt::Display for ChainedError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} caused by {}", self.error, self.cause)
-    }
-}
-
-// =============================================================================
 // Error impls
 
 impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
@@ -166,6 +141,14 @@ impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
 
         struct Shim<E>(E);
         impl<E: Error + Send + 'static> AranError for Shim<E> {
+            fn http_code(&self) -> Status {
+                Status::InternalServerError
+            }
+
+            fn code(&self) -> &str {
+                "500"
+            }
+
             fn description(&self) -> &str {
                 Error::description(&self.0)
             }
@@ -180,12 +163,20 @@ impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
 }
 
 impl AranError for ::curl::Error {
+    fn code(&self) -> &str {
+        "500"
+    }
+
     fn description(&self) -> &str {
         Error::description(self)
     }
 }
 
 impl AranError for ::serde_json::Error {
+    fn code(&self) -> &str {
+        "500"
+    }
+
     fn description(&self) -> &str {
         Error::description(self)
     }
@@ -212,6 +203,14 @@ impl fmt::Display for ConcreteAranError {
 }
 
 impl AranError for ConcreteAranError {
+    fn http_code(&self) -> Status {
+        Status::InternalServerError
+    }
+
+    fn code(&self) -> &str {
+        "500"
+    }
+
     fn description(&self) -> &str {
         &self.description
     }
@@ -227,16 +226,16 @@ impl AranError for ConcreteAranError {
 pub struct NotFound;
 
 impl AranError for NotFound {
-    fn description(&self) -> &str {
-        "not found"
+    fn http_code(&self) -> Status {
+        Status::NotFound
     }
 
-    fn response(&self) -> Option<Response> {
-        let mut response = render_json(&Bad {
-            errors: vec![StringError { detail: "Not Found".to_string() }],
-        });
-        response.status = (404, "Not Found");
-        Some(response)
+    fn code(&self) -> &str {
+        "404"
+    }
+
+    fn description(&self) -> &str {
+        "not found"
     }
 }
 
@@ -250,18 +249,16 @@ impl fmt::Display for NotFound {
 pub struct Unauthorized;
 
 impl AranError for Unauthorized {
-    fn description(&self) -> &str {
-        "unauthorized"
+    fn http_code(&self) -> Status {
+        Status::Unauthorized
     }
 
-    fn response(&self) -> Option<Response> {
-        let mut response = render_json(&Bad {
-            errors: vec![
-                StringError { detail: "must be logged in to perform that action".to_string() },
-            ],
-        });
-        response.status = (403, "Forbidden");
-        Some(response)
+    fn code(&self) -> &str {
+        "401"
+    }
+
+    fn description(&self) -> &str {
+        "unauthorized"
     }
 }
 
@@ -274,16 +271,16 @@ impl fmt::Display for Unauthorized {
 struct BadRequest(String);
 
 impl AranError for BadRequest {
-    fn description(&self) -> &str {
-        self.0.as_ref()
+    fn http_code(&self) -> Status {
+        Status::BadRequest
     }
 
-    fn response(&self) -> Option<Response> {
-        let mut response = render_json(&Bad {
-            errors: vec![StringError { detail: self.0.clone() }],
-        });
-        response.status = (400, "Bad Request");
-        Some(response)
+    fn code(&self) -> &str {
+        "400"
+    }
+
+    fn description(&self) -> &str {
+        self.0.as_ref()
     }
 }
 
@@ -291,6 +288,38 @@ impl fmt::Display for BadRequest {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.0.fmt(f)
     }
+}
+
+struct MalformedBody(String);
+
+impl AranError for MalformedBody {
+    fn http_code(&self) -> Status {
+        Status::BadRequest
+    }
+
+    fn code(&self) -> &str {
+        "400"
+    }
+
+    fn description(&self) -> &str {
+        self.0.as_ref()
+    }
+
+}
+
+impl fmt::Display for MalformedBody {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+
+pub fn bad_request<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(BadRequest(error.to_string()))
+}
+
+pub fn malformed_body<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(MalformedBody(error.to_string()))
 }
 
 pub fn internal_error(error: &str, detail: &str) -> Box<AranError> {
@@ -302,34 +331,6 @@ pub fn internal_error(error: &str, detail: &str) -> Box<AranError> {
     })
 }
 
-pub fn internal<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
-    Box::new(ConcreteAranError {
-        description: error.to_string(),
-        detail: None,
-        cause: None,
-        human: false,
-    })
-}
-
-pub fn human<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
-    Box::new(ConcreteAranError {
-        description: error.to_string(),
-        detail: None,
-        cause: None,
-        human: true,
-    })
-}
-
-/// This is intended to be used for errors being sent back to the Ember
-/// frontend, not to cargo as cargo does not handle non-200 response codes well
-/// (see https://github.com/rust-lang/cargo/issues/3995), but Ember requires
-/// non-200 response codes for its stores to work properly.
-///
-/// Since this is going back to the UI these errors are treated the same as
-/// `human` errors, other than the HTTP status code.
-pub fn bad_request<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
-    Box::new(BadRequest(error.to_string()))
-}
 
 pub fn std_error(e: Box<AranError>) -> Box<Error + Send> {
     #[derive(Debug)]
