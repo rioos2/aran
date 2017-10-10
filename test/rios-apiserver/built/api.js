@@ -4,5 +4,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("./helpers");
 //import "./deployments";
 //import "./scaling";
-//import "./auth";
-require("./node");
+require("./auth");
+//import "./node";
