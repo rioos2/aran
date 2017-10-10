@@ -1,6 +1,7 @@
 // Sets up the framework
 import "./helpers";
-//import "./deployments";
+import "./deployments";
 //import "./scaling";
 //import "./auth";
-import "./node";
+//import "./node";
+//import "./storage";

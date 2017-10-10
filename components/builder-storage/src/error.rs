@@ -19,6 +19,7 @@ pub enum Error {
     DcGetResponse(postgres::error::Error),
     StoragePoolCreate(postgres::error::Error),
     StoragePoolGetResponse(postgres::error::Error),
+    StoragePoolSetStatus(postgres::error::Error),
 }
 
 
@@ -36,6 +37,7 @@ impl fmt::Display for Error {
             Error::DcGetResponse(ref e) => format!("Database error list data_center, {}", e),
             Error::StoragePoolCreate(ref e) => format!("Database error creating a storage pool, {}", e),
             Error::StoragePoolGetResponse(ref e) => format!("Database error list storages pool, {}", e),
+            Error::StoragePoolSetStatus(ref e) => format!("Database error for storages pool status update, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -53,6 +55,7 @@ impl error::Error for Error {
             Error::DcGetResponse(ref err) => err.description(),
             Error::StoragePoolCreate(ref err) => err.description(),
             Error::StoragePoolGetResponse(ref err) => err.description(),
+            Error::StoragePoolSetStatus(ref err) => err.description(),
         }
     }
 }

@@ -27,6 +27,7 @@ pub enum Error {
     OriginCreate(postgres::error::Error),
     OriginGetResponse(postgres::error::Error),
     OriginGet(postgres::error::Error),
+    LdapConfigCreate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -49,6 +50,7 @@ impl fmt::Display for Error {
             Error::OriginCreate(ref e) => format!("Error creating origin for account in database, {}", e),
             Error::OriginGetResponse(ref e) => format!("Error retrive origin for account in database, {}", e),
             Error::OriginGet(ref e) => format!("Error retrive origin by name, {}", e),
+            Error::LdapConfigCreate(ref e) => format!("Error creating ldap config, {}", e),
 
         };
         write!(f, "{}", msg)
@@ -73,6 +75,7 @@ impl error::Error for Error {
             Error::OriginCreate(ref err) => err.description(),
             Error::OriginGetResponse(ref err) => err.description(),
             Error::OriginGet(ref err) => err.description(),
+            Error::LdapConfigCreate(ref err) => err.description(),
         }
     }
 }
