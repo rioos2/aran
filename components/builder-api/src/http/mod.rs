@@ -11,6 +11,7 @@ pub mod service_account_handler;
 pub mod origin_handler;
 pub mod network_handler;
 pub mod storage_handler;
+pub mod watch_handler;
 
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
@@ -40,8 +41,11 @@ use self::origin_handler::*;
 use self::service_account_handler::*;
 use self::network_handler::*;
 use self::storage_handler::*;
+use self::watch_handler::*;
 
 use db::data_store::*;
+use std::sync::mpsc::channel;
+
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.
 // See: http://172.16.2.131:9633/iron/prelude/struct.Iron.html#method.http
@@ -60,16 +64,12 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //the status for api server, and overall for command center
         status: get "/healthz" => status,
-        //TO-DO: MEGAM
-        // healthz_all: get "/healthz/overall" => XHandler::new(C(healthz_all)).before(basic.clone()),
-        healthz_all: get "/healthz/overall" => XHandler::new(healthz_all).before(basic.clone()),
-
+        healthz_all: get "/healthz/overall" => XHandler::new(C(healthz_all)).before(basic.clone()),
 
         //auth API for login (default password auth)
         authenticate: post "/authenticate" => default_authenticate,
         //auth API for login (ldap, active directory)
         authenticate_ldap: post "/authenticate/ldap/:code" => default_authenticate, //ldap_authenticate
-        config_ladap: post "/ldap/config" => set_ladap_config,
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,
@@ -114,13 +114,13 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
 
         //secret API
-        secrets: post "/secrets" => XHandler::new(secret_create).before(basic.clone()),
+        secrets: post "/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),
         secrets_list: get "/secrets" => XHandler::new(secret_list),
-        secret_show: get "/secrets/:id" => XHandler::new(secret_show).before(basic.clone()),
+        secret_show: get "/secrets/:id" => XHandler::new(C(secret_show)).before(basic.clone()),
         secret_show_by_origin: get "/origins/:origin/secrets" => XHandler::new(secret_show_by_origin),
 
         //serviceAccount API
-        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_create,
+        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(service_account_create),
         service_account_list: get "/serviceaccounts" => service_account_list,
         service_account_get: get "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_show,
 
@@ -132,7 +132,6 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //Network API
         networks: post "/networks" => XHandler::new(network_create).before(basic.clone()),
         network_list: get "/networks" => XHandler::new(network_list).before(basic.clone()),
-
 
         //StorageConnectors API
         storages: post "/storageconnectors" => XHandler::new(storage_create).before(basic.clone()),
@@ -151,6 +150,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),
         data_center_show: get "/datacenters/:id" => XHandler::new(data_center_show).before(basic.clone()),
 
+        //Internal: Streaming watch
+        watches: get "/:name/watch/list" => watch_show,
 
     );
 
