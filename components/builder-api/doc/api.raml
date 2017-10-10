@@ -213,6 +213,69 @@ schemas:
               "api_key":"1234567890",
               "flags":0
             }
+/ldap/config:
+  post:
+    description: |
+      create ldap config
+    body:
+      application/json:
+        example: |
+          {
+            "host": "ldap://ldap.example.com",
+            "port": "ldap port : eg: 636 as integer",
+            "enforce_starttls": true,
+            "use_ldaps":true,
+            "lookup_dn": "cn=admin,dc=megam,dc=org",
+            "lookup_password": "chennai28v",
+            "user_search":
+              {
+                "search_base": "dc=megam,dc=org",
+                "search_filter_template": "cn={username}"
+               },
+            "group_search":
+              {
+                "search_base": "string",
+                "search_filter_template": "string"
+                "member_attributes":
+                  [
+                    "string"
+                    ]
+              },
+            "ca_certs": "if the client needs to access LDAP  using TLS please add it the root chaing Certificate authority(CA) certificate",
+            "client_cert": "if the client needs to access LDAP  using TLS then add the certificate"
+                }
+    responses:
+      201:
+        description: |
+          Succesfully created a new permission
+        body:
+          example: |
+            {
+              "id":"825034605806510080",
+              "host":"ldap://ldap.example.com",
+              "port":"ldap port : eg: 636 as integer",
+              "enforce_starttls":true,
+              "use_ldaps":true,
+              "lookup_dn":"cn=admin,dc=megam,dc=org",
+              "lookup_password":"chennai28v",
+              "user_search":
+                {
+                  "search_base":"dc=megam,dc=org",
+                  "search_filter_template":"cn={username}"
+                },
+              "group_search":
+                {
+                  "search_base":"string",
+                  "search_filter_template":"string",
+                  "member_attributes":
+                    [
+                      "string"
+                      ]
+                },
+              "ca_certs":"if the client needs to access LDAP  using TLS please add it the root chaing Certificate authority(CA) certificate",
+              "client_cert":"if the client needs to access LDAP  using TLS then add the certificate",
+              "created_at":"2017-10-10T06:46:20.095357+00:00"
+                }
 /accounts:
   post:
     description: |

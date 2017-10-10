@@ -15,6 +15,7 @@ use protocol::sessionsrv::*;
 use protocol::authsrv::*;
 use protocol::net::{self, ErrCode};
 use ansi_term::Colour;
+use protocol::net::err;
 
 use super::rendering::*;
 use super::super::auth::default::PasswordAuthClient;
@@ -35,24 +36,26 @@ const SUPER_USER: &'static str = "role/rios:superuser";
 
 
 
+/// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
 #[allow(missing_debug_implementations, missing_copy_implementations)]
-// pub struct C(pub fn(&mut Request) -> AranResult<Response>);
-//
-// impl Handler for C {
-//     fn handle(&self, req: &mut Request) -> Result<Response, IronError> {
-//         let C(f) = *self;
-//         match f(req) {
-//             Ok(resp) => Ok(resp),
-//             Err(e) => {
-//                 match e.response() {
-//                     Some(response) => Ok(response),
-//                     None => Err(std_error(e)),
-//                 }
-//             }
-//         }
-//     }
-// }
+pub struct C(pub fn(&mut Request) -> AranResult<Response>);
+
+impl Handler for C {
+    fn handle(&self, req: &mut Request) -> Result<Response, IronError> {
+        let C(f) = *self;
+        match f(req) {
+            Ok(resp) => Ok(resp),
+            Err(e) => {
+                match e.response() {
+                    Some(response) => Ok(response),
+                    None => Err(render_json_error(&net::err(ErrCode::BUG, "bug. report to development."),Status::InternalServerError, &"")),
+                }
+            }
+        }
+    }
+}
+
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
 pub struct XHandler(Chain);
 

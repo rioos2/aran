@@ -31,6 +31,7 @@ struct AssemblyCreateReq {
     ips: BTreeMap<String, Vec<String>>,
     urls: BTreeMap<String, String>,
     volumes: Vec<VolumeReq>,
+    instance_id: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -159,6 +160,7 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
 
                 assembly_create.set_volumes(volume_collection);
                 assembly_create.set_urls(body.urls);
+                assembly_create.set_instance_id(body.instance_id);
             }
             Err(err) => {
                 return Ok(render_net_error(&net::err(

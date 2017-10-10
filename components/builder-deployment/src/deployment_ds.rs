@@ -15,7 +15,7 @@ impl DeploymentDS {
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
@@ -27,6 +27,7 @@ impl DeploymentDS {
                 &(serde_json::to_string(assembly.get_urls()).unwrap()),
                 &(serde_json::to_string(assembly.get_status()).unwrap()),
                 &(serde_json::to_string(assembly.get_volumes()).unwrap()),
+                &(assembly.get_instance_id() as String),
             ],
         ).map_err(Error::AssemblyCreate)?;
 

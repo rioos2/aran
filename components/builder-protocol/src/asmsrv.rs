@@ -18,6 +18,7 @@ pub struct Assembly {
     urls: BTreeMap<String, String>,
     status: Status,
     volumes: Vec<Volume>,
+    instance_id: String,
     spec: Option<AssemblyFactory>,
     created_at: String,
 }
@@ -64,6 +65,13 @@ impl Assembly {
 
     pub fn get_name(&self) -> ::std::string::String {
         self.name.clone()
+    }
+    pub fn set_instance_id(&mut self, v: ::std::string::String) {
+        self.instance_id = v;
+    }
+
+    pub fn get_instance_id(&self) -> ::std::string::String {
+        self.instance_id.clone()
     }
 
     pub fn set_description(&mut self, v: ::std::string::String) {

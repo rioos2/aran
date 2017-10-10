@@ -86,6 +86,7 @@ impl DataStoreConn {
         NetworkProcedures::new()?.migrate(migrator, ui)?;
         StorageProcedures::new()?.migrate(migrator, ui)?;
         ServiceAccountProcedure::new()?.migrate(migrator, ui)?;
+//        WorkerProcedures::new()?.migrate(migrator)?;
         Ok(())
     }
 }

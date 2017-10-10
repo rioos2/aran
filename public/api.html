@@ -255,7 +255,57 @@
   "token": "vZxWOvEGFt5V8hOjaV",
   "api_key": "1234567890",
   "flags": 0
-}</code></pre></div></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="accounts" class="panel-title">/accounts</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white resource-modal"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_accounts"><span class="parent"></span>/accounts</a> <span class="methods"><a href="#accounts_post"><span class="badge badge_post">post</span></a></span></h4></div><div id="panel_accounts" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#accounts_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><p>Create a new account</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="accounts_post"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_post">post</span> <span class="parent"></span>/accounts</h4></div><div class="modal-body"><div class="alert alert-info"><p>Create a new account</p></div><ul class="nav nav-tabs"><li class="active"><a href="#accounts_post_request" data-toggle="tab">Request</a></li><li><a href="#accounts_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="accounts_post_request"><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
+}</code></pre></div></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="ldap_config" class="panel-title">/ldap/config</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white resource-modal"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_ldap_config"><span class="parent"></span>/ldap/config</a> <span class="methods"><a href="#ldap_config_post"><span class="badge badge_post">post</span></a></span></h4></div><div id="panel_ldap_config" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#ldap_config_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><p>create ldap config</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="ldap_config_post"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_post">post</span> <span class="parent"></span>/ldap/config</h4></div><div class="modal-body"><div class="alert alert-info"><p>create ldap config</p></div><ul class="nav nav-tabs"><li class="active"><a href="#ldap_config_post_request" data-toggle="tab">Request</a></li><li><a href="#ldap_config_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="ldap_config_post_request"><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
+  "host": "ldap://ldap.example.com",
+  "port": "ldap port : eg: 636 as integer",
+  "enforce_starttls": true,
+  "use_ldaps":true,
+  "lookup_dn": "cn=admin,dc=megam,dc=org",
+  "lookup_password": "chennai28v",
+  "user_search":
+    {
+      "search_base": "dc=megam,dc=org",
+      "search_filter_template": "cn={username}"
+     },
+  "group_search":
+    {
+      "search_base": "string",
+      "search_filter_template": "string"
+      "member_attributes":
+        [
+          "string"
+          ]
+    },
+  "ca_certs": "if the client needs to access LDAP  using TLS please add it the root chaing Certificate authority(CA) certificate",
+  "client_cert": "if the client needs to access LDAP  using TLS then add the certificate"
+      }
+</code></pre></div></div><div class="tab-pane" id="ldap_config_post_response"><h2>HTTP status code <a href="http://httpstatus.es/201" target="_blank">201</a></h2><p>Succesfully created a new permission</p><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
+  "id":"825034605806510080",
+  "host":"ldap://ldap.example.com",
+  "port":"ldap port : eg: 636 as integer",
+  "enforce_starttls":true,
+  "use_ldaps":true,
+  "lookup_dn":"cn=admin,dc=megam,dc=org",
+  "lookup_password":"chennai28v",
+  "user_search":
+    {
+      "search_base":"dc=megam,dc=org",
+      "search_filter_template":"cn={username}"
+    },
+  "group_search":
+    {
+      "search_base":"string",
+      "search_filter_template":"string",
+      "member_attributes":
+        [
+          "string"
+          ]
+    },
+  "ca_certs":"if the client needs to access LDAP  using TLS please add it the root chaing Certificate authority(CA) certificate",
+  "client_cert":"if the client needs to access LDAP  using TLS then add the certificate",
+  "created_at":"2017-10-10T06:46:20.095357+00:00"
+    }
+</code></pre></div></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="accounts" class="panel-title">/accounts</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white resource-modal"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_accounts"><span class="parent"></span>/accounts</a> <span class="methods"><a href="#accounts_post"><span class="badge badge_post">post</span></a></span></h4></div><div id="panel_accounts" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#accounts_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><p>Create a new account</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="accounts_post"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_post">post</span> <span class="parent"></span>/accounts</h4></div><div class="modal-body"><div class="alert alert-info"><p>Create a new account</p></div><ul class="nav nav-tabs"><li class="active"><a href="#accounts_post_request" data-toggle="tab">Request</a></li><li><a href="#accounts_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="accounts_post_request"><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>: object</p><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
 "name": "megam",
 "email":"info",
 "first_name":"vino",
@@ -3555,4 +3605,4 @@ items:[
      }
      ]
 }
-</code></pre></div></div></div></div></div></div></div></div></div></div></div></div><div class="col-md-3"><div id="sidebar" class="hidden-print affix" role="complementary"><ul class="nav nav-pills nav-stacked"><li><a href="#healthz">/healthz</a></li><li><a href="#authenticate">/authenticate</a></li><li><a href="#accounts">/accounts</a></li><li><a href="#origins">/origins</a></li><li><a href="#assemblyfactorys">/assemblyfactorys</a></li><li><a href="#assemblys">/assemblys</a></li><li><a href="#horizontalscaling">/horizontalscaling</a></li><li><a href="#nodes">/nodes</a></li><li><a href="#datacenters">/datacenters</a></li><li><a href="#storageconnectors">/storageconnectors</a></li><li><a href="#strogespool">/strogespool</a></li><li><a href="#networks">/networks</a></li><li><a href="#serviceaccounts">/serviceaccounts</a></li><li><a href="#secrets">/secrets</a></li><li><a href="#roles">/roles</a></li><li><a href="#permissions">/permissions</a></li><li><a href="#plans">/plans</a></li></ul></div></div></div></div></body></html>
+</code></pre></div></div></div></div></div></div></div></div></div></div></div></div><div class="col-md-3"><div id="sidebar" class="hidden-print affix" role="complementary"><ul class="nav nav-pills nav-stacked"><li><a href="#healthz">/healthz</a></li><li><a href="#authenticate">/authenticate</a></li><li><a href="#ldap_config">/ldap/config</a></li><li><a href="#accounts">/accounts</a></li><li><a href="#origins">/origins</a></li><li><a href="#assemblyfactorys">/assemblyfactorys</a></li><li><a href="#assemblys">/assemblys</a></li><li><a href="#horizontalscaling">/horizontalscaling</a></li><li><a href="#nodes">/nodes</a></li><li><a href="#datacenters">/datacenters</a></li><li><a href="#storageconnectors">/storageconnectors</a></li><li><a href="#strogespool">/strogespool</a></li><li><a href="#networks">/networks</a></li><li><a href="#serviceaccounts">/serviceaccounts</a></li><li><a href="#secrets">/secrets</a></li><li><a href="#roles">/roles</a></li><li><a href="#permissions">/permissions</a></li><li><a href="#plans">/plans</a></li></ul></div></div></div></div></body></html>

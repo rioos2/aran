@@ -71,6 +71,11 @@ struct StoragePoolCreateReq {
     status: deployment_handler::StatusReq,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct StoragePoolStatusReq {
+    status: deployment_handler::StatusReq,
+}
+
 pub fn storage_create(req: &mut Request) -> IronResult<Response> {
     let mut storage_create = Storage::new();
     {
@@ -433,6 +438,61 @@ pub fn storage_pool_create(req: &mut Request) -> IronResult<Response> {
 
     }
 }
+
+pub fn storage_pool_status_update(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+    let mut storage_pool_update = StoragePool::new();
+    storage_pool_update.set_id(id.to_string());
+    {
+        match req.get::<bodyparser::Struct<StoragePoolStatusReq>>() {
+            Ok(Some(body)) => {
+                let mut status = Status::new();
+                status.set_phase(body.status.phase);
+                status.set_message(body.status.message);
+                status.set_reason(body.status.reason);
+
+                let mut condition_collection = Vec::new();
+
+                for data in body.status.conditions {
+                    let mut condition = Condition::new();
+                    condition.set_message(data.message);
+                    condition.set_reason(data.reason);
+                    condition.set_status(data.status);
+                    condition.set_last_transition_time(data.last_transition_time);
+                    condition.set_last_probe_time(data.last_probe_time);
+                    condition.set_condition_type(data.condition_type);
+                    condition_collection.push(condition);
+                }
+                status.set_conditions(condition_collection);
+                storage_pool_update.set_status(status);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+
+    let conn = Broker::connect().unwrap();
+
+    match StorageDS::storage_pool_status_update(&conn, &storage_pool_update) {
+        Ok(storage_pool_update) => Ok(render_json(status::Ok, &storage_pool_update)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
+}
+
 
 #[allow(unused_variables)]
 pub fn storage_pool_list(req: &mut Request) -> IronResult<Response> {
