@@ -12,6 +12,7 @@ use iron::typemap::Key;
 
 use unicase::UniCase;
 use protocol::sessionsrv::*;
+use protocol::authsrv::*;
 use protocol::net::{self, ErrCode};
 use ansi_term::Colour;
 
@@ -27,7 +28,11 @@ use super::token_target::*;
 use std::error::Error;
 use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
+use authorize::authorize_ds::AuthorizeDS;
 use common::ui;
+
+const SUPER_USER: &'static str = "role/rios:superuser";
+
 
 
 // Can't Copy or Debug the fn.
@@ -194,6 +199,13 @@ impl Authenticated {
 
         }
     }
+
+    fn check_access(&self, session: &Session, datastore: &DataStoreConn) -> bool {
+        match AuthorizeDS::get_role_by_name(&datastore, &session.get_roles()) {
+            Ok(permission) => return true,
+            Err(e) => return false,
+        }
+    }
 }
 
 
@@ -297,7 +309,29 @@ impl BeforeMiddleware for Authenticated {
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
                     match req.extensions.get_mut::<DataStoreBroker>() {
-                        Some(broker) => self.authenticate(broker, email.unwrap(), token)?,
+                        Some(broker) => {
+                            match self.authenticate(broker, email.unwrap(), token) {
+                                Ok(data) => {
+                                    match self.check_access(&data, &broker) {
+                                        true => data,
+                                        false => {
+                                            let err = net::err(
+                                                ErrCode::ACCESS_DENIED,
+                                                format!("You dont have access to the request"),
+                                            );
+                                            return Err(render_json_error(&err, Status::Unauthorized, &err));
+                                        }
+                                    }
+                                }
+                                Err(_) => {
+                                    let err = net::err(
+                                        ErrCode::ACCESS_DENIED,
+                                        format!("Unavailable datastore. Unable to authentication"),
+                                    );
+                                    return Err(render_json_error(&err, Status::Unauthorized, &err));
+                                }
+                            }
+                        }
                         None => {
                             let err = net::err(
                                 ErrCode::ACCESS_DENIED,

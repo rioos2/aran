@@ -462,6 +462,21 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+
+        // Select role from roles table by id
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_permission_by_role_name_v1 (rname text) RETURNS SETOF permissions AS $$
+            DECLARE
+               this_role roles%rowtype;
+            BEGIN
+                SELECT * FROM roles WHERE name = rname LIMIT 1 INTO this_role;
+                RETURN QUERY SELECT * FROM permissions WHERE role_id = this_role.id;
+                RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
         // The core role_id_seq table
         migrator.migrate(
             "authsrv",
