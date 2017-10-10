@@ -273,7 +273,7 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn healthz_all(req: &mut Request) -> AranResult<Response> {
+pub fn healthz_all(req: &mut Request) -> IronResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
 
     match NodeDS::healthz_all(&promcli) {
