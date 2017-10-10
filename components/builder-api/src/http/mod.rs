@@ -69,7 +69,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         authenticate: post "/authenticate" => default_authenticate,
         //auth API for login (ldap, active directory)
         authenticate_ldap: post "/authenticate/ldap/:code" => default_authenticate, //ldap_authenticate
-        config_ladap: post "/ldap/config" => set_ladap_config,
+        config_ldap: post "/ldap/config" => set_ldap_config,
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,
@@ -145,6 +145,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         storages_pool: post "/storagespool" => XHandler::new(storage_pool_create).before(basic.clone()),
         storages_pool_list: get "/storagespool/:id" => XHandler::new(storage_pool_list).before(basic.clone()),
         storages_pool_list_all: get "/storagespool" => XHandler::new(storage_pool_list_all).before(basic.clone()),
+        storages_pool_status_update: put "/storagespool/:id/status" => XHandler::new(storage_pool_status_update).before(basic.clone()),
+
 
         //DataCenter API
         data_center: post "/datacenters" => XHandler::new(data_center_create).before(basic.clone()),

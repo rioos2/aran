@@ -205,6 +205,25 @@ impl StorageDS {
         );
         Ok(Some(response))
     }
+
+    pub fn storage_pool_status_update(datastore: &DataStoreConn, storage_pool_update: &storagesrv::StoragePool) -> Result<Option<storagesrv::StoragePool>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM set_storage_pool_status_v1($1, $2)",
+            &[
+                &(storage_pool_update.get_id().parse::<i64>().unwrap()),
+                &(serde_json::to_string(storage_pool_update.get_status()).unwrap()),
+            ],
+        ).map_err(Error::StoragePoolSetStatus)?;
+        for row in rows {
+            let storagepool = row_to_storage_pool(&row)?;
+            return Ok(Some(storagepool));
+        }
+        Ok(None)
+    }
+
+
 }
 
 fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {

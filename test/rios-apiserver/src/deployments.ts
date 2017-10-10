@@ -54,9 +54,7 @@ describe('Assembly_factory API', function() {
       request.post('/assemblys')
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"name": "ubuntu","uri":"/v1/assemblys","description":"ubuntuinstallation","tags": ["ubuntu"],"parent_id":"780970728630525952",
-"type_meta":{"kind":"Assembly","api_version":"v1"}, "object_meta":{"name":"xyz","origin":"","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"},"owner_references": [{"kind":"Node","api_version":"v1","name":"ddd", "uid":"","block_owner_deletion":true}]},"urls": " ", "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ",
-"last_transition_time":" ","last_probe_time":" ","condition_type":" "}]},"node":"","ip":"" })
+        .send({"name": "ubuntu", "uri": "/v1/assemblys","instance_id": "dawn-cloud-a3d34d.megambox.gom", "description": "ubuntuinstallation", "parent_id": "811199221985189888", "tags": ["ubuntu"],"node": "","ips": {"private_ipv4":["198.168.0.15","192.168.0.25"]},"volumes": [{"id":"","target":"",  "volume_type":"" }], "urls": {"vnc_console":"http://10.0.0.1:8969/"},   "status": {"phase": "pending", "message": "","reason": "","conditions": [{"message": "","reason": "","status": " ","last_transition_time": " ", "last_probe_time": "","condition_type": " "}]}})
         .expect(200)
         .end(function(err, res) {
           expect(res.body.name).to.equal("ubuntu");
