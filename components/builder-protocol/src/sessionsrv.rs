@@ -16,6 +16,7 @@ pub struct SessionCreate {
     password: String,
     states: String,
     approval: String,
+    roles: Vec<String>,
     suspend: String,
     registration_ip_address: String,
     created_at: String,
@@ -131,6 +132,14 @@ impl SessionCreate {
         self.suspend.clone()
     }
 
+    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
+        self.roles = v;
+    }
+
+    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
+        self.roles.clone()
+    }
+
     pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {
         self.registration_ip_address = v;
     }
@@ -165,6 +174,9 @@ pub struct Session {
     id: String,
     email: String,
     name: String,
+    first_name: String,
+    last_name: String,
+    roles: Vec<String>,
     token: String,
     api_key: String,
     flags: u32,
@@ -207,6 +219,29 @@ impl Session {
         self.api_key.clone()
     }
 
+    pub fn set_first_name(&mut self, v: ::std::string::String) {
+        self.first_name = v;
+    }
+
+    pub fn get_first_name(&self) -> ::std::string::String {
+        self.first_name.clone()
+    }
+
+    pub fn set_last_name(&mut self, v: ::std::string::String) {
+        self.last_name = v;
+    }
+
+    pub fn get_last_name(&self) -> ::std::string::String {
+        self.last_name.clone()
+    }
+
+    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
+        self.roles = v;
+    }
+
+    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
+        self.roles.clone()
+    }
 
     pub fn set_token(&mut self, v: ::std::string::String) {
         self.token = v;
@@ -360,6 +395,7 @@ pub struct Account {
     states: String,
     approval: String,
     suspend: String,
+    roles: Vec<String>,
     registration_ip_address: String,
     created_at: String,
 }
@@ -371,6 +407,9 @@ impl Into<Session> for Account {
         session.set_email(self.get_email().to_owned());
         session.set_name(self.get_name().to_owned());
         session.set_apikey(self.get_apikey().to_owned());
+        session.set_first_name(self.get_first_name().to_owned());
+        session.set_last_name(self.get_last_name().to_owned());
+        session.set_roles(self.get_roles().to_owned());
         session
     }
 }
@@ -483,6 +522,14 @@ impl Account {
 
     pub fn get_suspend(&self) -> ::std::string::String {
         self.suspend.clone()
+    }
+
+    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
+        self.roles = v;
+    }
+
+    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
+        self.roles.clone()
     }
 
     pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {

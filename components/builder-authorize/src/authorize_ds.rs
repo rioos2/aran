@@ -41,6 +41,27 @@ impl AuthorizeDS {
         Ok(None)
     }
 
+
+    pub fn get_role_by_name(datastore: &DataStoreConn, roles: &Vec<String>) -> Result<Option<authsrv::PermissionsGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let mut response = authsrv::PermissionsGetResponse::new();
+        let mut perms_collection = Vec::new();
+        for role in roles {
+            let rows = &conn.query("SELECT * FROM get_permission_by_role_name_v1($1)", &[&role])
+                .map_err(Error::RoleGet)?;
+            for row in rows {
+                let per_get = row_to_permissions(&row)?;
+                perms_collection.push(per_get);
+            }
+        }
+        response.set_permissions(
+            perms_collection,
+            "PermissionList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
+
     pub fn roles_list(datastore: &DataStoreConn) -> Result<Option<authsrv::RolesGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 

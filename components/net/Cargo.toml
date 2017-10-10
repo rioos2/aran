@@ -33,5 +33,8 @@ path = "../builder-db"
 [dependencies.rioos_builder_session]
 path = "../builder-session"
 
+[dependencies.rioos_builder_authsrv]
+path = "../builder-authorize"
+
 [features]
 functional = []

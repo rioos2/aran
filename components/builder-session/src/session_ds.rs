@@ -28,7 +28,7 @@ impl SessionDS {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = conn.query(
-            "SELECT * FROM select_or_insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM select_or_insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
             &[
                 &session_create.get_name(),
                 &session_create.get_email(),
@@ -40,6 +40,7 @@ impl SessionDS {
                 &session_create.get_states(),
                 &session_create.get_approval(),
                 &session_create.get_suspend(),
+                &session_create.get_roles(),
                 &session_create.get_registration_ip_address(),
             ],
         ).map_err(Error::AccountCreate)?;
@@ -263,6 +264,9 @@ fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
     account.set_email(row.get("email"));
     account.set_name(row.get("name"));
     account.set_password(row.get("password"));
+    account.set_first_name(row.get("first_name"));
+    account.set_last_name(row.get("last_name"));
+    account.set_roles(row.get("roles"));
     account.set_apikey(row.get("api_key"));
     account
 }
