@@ -287,27 +287,19 @@ fn row_to_origin(row: &postgres::rows::Row) -> Result<originsrv::Origin> {
 fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfig> {
     let mut ldap = sessionsrv::LdapConfig::new();
     let id: i64 = row.get("id");
-    let host: String = row.get("host");
-    let port: String = row.get("port");
-    let enforce_starttls: bool = row.get("enforce_starttls");
-    let use_ldaps: bool = row.get("use_ldaps");
-    let lookup_dn: String = row.get("lookup_dn");
-    let lookup_password: String = row.get("lookup_password");
-    let ca_certs: String = row.get("ca_certs");
-    let client_cert: String = row.get("client_cert");
     let user_search: String = row.get("user_search");
     let group_search: String = row.get("group_search");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     ldap.set_id(id.to_string());
-    ldap.set_host(host);
-    ldap.set_port(port);
-    ldap.set_enforce_starttls(enforce_starttls);
-    ldap.set_use_ldaps(use_ldaps);
-    ldap.set_lookup_dn(lookup_dn);
-    ldap.set_lookup_password(lookup_password);
-    ldap.set_ca_certs(ca_certs);
-    ldap.set_client_cert(client_cert);
+    ldap.set_host(row.get("host"));
+    ldap.set_port(row.get("port"));
+    ldap.set_enforce_starttls(row.get("enforce_starttls"));
+    ldap.set_use_ldaps(row.get("use_ldaps"));
+    ldap.set_lookup_dn(row.get("lookup_dn"));
+    ldap.set_lookup_password(row.get("lookup_password"));
+    ldap.set_ca_certs(row.get("ca_certs"));
+    ldap.set_client_cert(row.get("client_cert"));
     let user_search: sessionsrv::UserSearch = serde_json::from_str(&user_search).unwrap();
     let group_search: sessionsrv::GroupSearch = serde_json::from_str(&group_search).unwrap();
     ldap.set_user_search(user_search);

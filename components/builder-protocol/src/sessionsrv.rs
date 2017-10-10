@@ -636,17 +636,10 @@ impl UserSearch {
         self.search_base = v;
     }
 
-    pub fn get_search_base(&self) -> ::std::string::String {
-        self.search_base.clone()
-    }
-
     pub fn set_search_filter_template(&mut self, v: ::std::string::String) {
         self.search_filter_template = v;
     }
 
-    pub fn get_search_filter_template(&self) -> ::std::string::String {
-        self.search_filter_template.clone()
-    }
 }
 
 
@@ -666,23 +659,11 @@ impl GroupSearch {
         self.search_base = v;
     }
 
-    pub fn get_search_base(&self) -> ::std::string::String {
-        self.search_base.clone()
-    }
-
     pub fn set_search_filter_template(&mut self, v: ::std::string::String) {
         self.search_filter_template = v;
     }
 
-    pub fn get_search_filter_template(&self) -> ::std::string::String {
-        self.search_filter_template.clone()
-    }
-
     pub fn set_member_attributes(&mut self, v: ::std::vec::Vec<String>) {
         self.member_attributes = v;
-    }
-
-    pub fn get_member_attributes(&self) -> ::std::vec::Vec<String> {
-        self.member_attributes.clone()
     }
 }
