@@ -236,11 +236,12 @@ impl SessionDS {
     pub fn ldap_config_create(datastore: &DataStoreConn, ldap_config: &sessionsrv::LdapConfig) -> Result<Option<sessionsrv::LdapConfig>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_ldap_config_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_ldap_config_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
                 &(ldap_config.get_host() as String),
                 &(ldap_config.get_port() as String),
-                &(ldap_config.get_enforce_starttls() as String),
+                &(ldap_config.get_enforce_starttls() as bool),
+                &(ldap_config.get_use_ldaps() as bool),
                 &(ldap_config.get_lookup_dn() as String),
                 &(ldap_config.get_lookup_password() as String),
                 &(ldap_config.get_ca_certs() as String),
@@ -285,9 +286,11 @@ fn row_to_origin(row: &postgres::rows::Row) -> Result<originsrv::Origin> {
 
 fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfig> {
     let mut ldap = sessionsrv::LdapConfig::new();
+    let id: i64 = row.get("id");
     let host: String = row.get("host");
     let port: String = row.get("port");
-    let enforce_starttls: String = row.get("enforce_starttls");
+    let enforce_starttls: bool = row.get("enforce_starttls");
+    let use_ldaps: bool = row.get("use_ldaps");
     let lookup_dn: String = row.get("lookup_dn");
     let lookup_password: String = row.get("lookup_password");
     let ca_certs: String = row.get("ca_certs");
@@ -296,10 +299,11 @@ fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfi
     let group_search: String = row.get("group_search");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
-    // ldap.set_id(id.to_string());
+    ldap.set_id(id.to_string());
     ldap.set_host(host);
     ldap.set_port(port);
     ldap.set_enforce_starttls(enforce_starttls);
+    ldap.set_use_ldaps(use_ldaps);
     ldap.set_lookup_dn(lookup_dn);
     ldap.set_lookup_password(lookup_password);
     ldap.set_ca_certs(ca_certs);
@@ -308,7 +312,7 @@ fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfi
     let group_search: sessionsrv::GroupSearch = serde_json::from_str(&group_search).unwrap();
     ldap.set_user_search(user_search);
     ldap.set_group_search(group_search);
-    // ldap.set_created_at(created_at.to_rfc3339());
+    ldap.set_created_at(created_at.to_rfc3339());
 
     Ok(ldap)
 }

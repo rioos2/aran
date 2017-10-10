@@ -505,20 +505,29 @@ impl Account {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct LdapConfig {
+    id: String,
     host: String,
     port: String,
-    enforce_starttls: String,
+    enforce_starttls: bool,
+    use_ldaps: bool,
     lookup_dn: String,
     lookup_password: String,
     user_search: UserSearch,
     group_search: GroupSearch,
     ca_certs: String,
     client_cert: String,
+    created_at: String,
 }
 
 impl LdapConfig {
     pub fn new() -> LdapConfig {
         ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
     pub fn set_host(&mut self, v: ::std::string::String) {
@@ -537,12 +546,20 @@ impl LdapConfig {
         self.port.clone()
     }
 
-    pub fn set_enforce_starttls(&mut self, v: ::std::string::String) {
+    pub fn set_enforce_starttls(&mut self, v: bool) {
         self.enforce_starttls = v;
     }
 
-    pub fn get_enforce_starttls(&self) -> ::std::string::String {
+    pub fn get_enforce_starttls(&self) -> bool {
         self.enforce_starttls.clone()
+    }
+
+    pub fn set_use_ldaps(&mut self, v: bool) {
+        self.use_ldaps = v;
+    }
+
+    pub fn get_use_ldaps(&self) ->  bool {
+        self.use_ldaps.clone()
     }
 
     pub fn set_lookup_dn(&mut self, v: ::std::string::String) {
@@ -591,6 +608,13 @@ impl LdapConfig {
 
     pub fn get_group_search(&self) -> &GroupSearch {
         &self.group_search
+    }
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
     }
 
 

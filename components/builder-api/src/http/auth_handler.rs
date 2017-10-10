@@ -54,7 +54,8 @@ struct AccountGetReq {
 struct LdapConfigReq {
     host: String,
     port: String,
-    enforce_starttls: String,
+    enforce_starttls: bool,
+    use_ldaps: bool,
     lookup_dn: String,
     lookup_password: String,
     user_search: UserSearchReq,
@@ -284,6 +285,7 @@ pub fn set_ladap_config(req: &mut Request) -> IronResult<Response> {
                 ldap_config.set_host(body.host);
                 ldap_config.set_port(body.port);
                 ldap_config.set_enforce_starttls(body.enforce_starttls);
+                ldap_config.set_use_ldaps(body.use_ldaps);
                 ldap_config.set_lookup_dn(body.lookup_dn);
                 ldap_config.set_lookup_password(body.lookup_password);
                 ldap_config.set_ca_certs(body.ca_certs);
@@ -312,7 +314,6 @@ pub fn set_ladap_config(req: &mut Request) -> IronResult<Response> {
         }
     }
     let conn = Broker::connect().unwrap();
-
     match SessionDS::ldap_config_create(&conn, &ldap_config) {
         Ok(ldap) => Ok(render_json(status::Ok, &ldap)),
         Err(err) => Ok(render_net_error(
