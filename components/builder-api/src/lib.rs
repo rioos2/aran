@@ -18,6 +18,8 @@ extern crate rioos_builder_nodesrv as node;
 extern crate rioos_builder_servicesrv as service;
 extern crate rioos_builder_netsrv as network;
 extern crate rioos_builder_storagesrv as storage;
+extern crate rioos_builder_workersrv as worker;
+
 
 extern crate rioos_builder_db as db;
 extern crate hyper;

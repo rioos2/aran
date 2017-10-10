@@ -76,5 +76,9 @@ path = "../builder-storage"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
+[dependencies.rioos_builder_workersrv]
+path = "../builder-worker"
+
+
 [features]
 functional = []

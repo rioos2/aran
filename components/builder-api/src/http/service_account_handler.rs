@@ -1,6 +1,9 @@
 use ansi_term::Colour;
 use bodyparser;
 use rio_net::http::controller::*;
+use rio_net::util::errors::AranResult;
+use rio_net::util::errors::{bad_request, internal_error, malformed_body};
+
 use service::service_account_ds::ServiceAccountDS;
 use iron::prelude::*;
 use iron::status;
@@ -47,18 +50,16 @@ struct ObjectReferenceReq {
     uid: String,
 }
 
-pub fn secret_create(req: &mut Request) -> IronResult<Response> {
+pub fn secret_create(req: &mut Request) -> AranResult<Response> {
     let mut secret_create = Secret::new();
     {
         match req.get::<bodyparser::Struct<SecretCreateReq>>() {
             Ok(Some(body)) => {
                 if body.object_meta.origin.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `origin`",
-                    )));
+                    return Err(bad_request("Missing value for field: `origin`"));
                 }
                 secret_create.set_data(body.data);
+
                 let mut object_meta = ObjectMetaData::new();
                 object_meta.set_name(body.object_meta.name);
                 object_meta.set_origin(body.object_meta.origin);
@@ -68,19 +69,18 @@ pub fn secret_create(req: &mut Request) -> IronResult<Response> {
                 object_meta.set_labels(body.object_meta.labels);
                 object_meta.set_annotations(body.object_meta.annotations);
                 secret_create.set_object_meta(object_meta);
+
                 let mut type_meta = TypeMeta::new();
                 type_meta.set_kind(body.type_meta.kind);
                 type_meta.set_api_version(body.type_meta.api_version);
                 secret_create.set_type_meta(type_meta);
+
                 secret_create.set_secret_type(body.secret_type);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&err.detail));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => { return Err(malformed_body(&"nothing found in body"))}
         }
     }
 
@@ -94,19 +94,17 @@ pub fn secret_create(req: &mut Request) -> IronResult<Response> {
 
     match ServiceAccountDS::secret_create(&conn, &secret_create) {
         Ok(secret) => Ok(render_json(status::Ok, &secret)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => Err(internal_error(&format!("{}",err), &"errred.")),
 
     }
 }
 
-pub fn secret_show(req: &mut Request) -> IronResult<Response> {
+pub fn secret_show(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&0)),
         }
     };
 
@@ -123,9 +121,7 @@ pub fn secret_show(req: &mut Request) -> IronResult<Response> {
 
     match ServiceAccountDS::secret_show(&conn, &secret_get) {
         Ok(secret) => Ok(render_json(status::Ok, &secret)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => Err(internal_error(&format!("{}", err), &"")),
     }
 }
 
