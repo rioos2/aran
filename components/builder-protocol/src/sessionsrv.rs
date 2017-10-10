@@ -667,3 +667,58 @@ impl GroupSearch {
         self.member_attributes = v;
     }
 }
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct SamlProvider {
+    id: String,
+    description: String,
+    idp_metadata: String,
+    sp_base_url: String,
+    created_at: String,
+}
+
+impl SamlProvider {
+    pub fn new() -> SamlProvider {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+
+    pub fn get_description(&self) -> ::std::string::String {
+        self.description.clone()
+    }
+
+    pub fn set_idp_metadata(&mut self, v: ::std::string::String) {
+        self.idp_metadata = v;
+    }
+
+    pub fn get_idp_metadata(&self) -> ::std::string::String {
+        self.idp_metadata.clone()
+    }
+    pub fn set_sp_base_url(&mut self, v: ::std::string::String) {
+        self.sp_base_url = v;
+    }
+
+    pub fn get_sp_base_url(&self) -> ::std::string::String {
+        self.sp_base_url.clone()
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
+
+
+
+
+}

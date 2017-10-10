@@ -212,6 +212,48 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] insert_ldap_config_v1");
 
+        //sequence saml provider id generation
+                migrator.migrate(
+                    "sessionsrv",
+                    r#"CREATE SEQUENCE IF NOT EXISTS saml_provider_id_seq;"#,
+                )?;
+                //sequence ldap_config table creation
+
+                migrator.migrate(
+                    "sessionsrv",
+                    r#"CREATE TABLE  IF NOT EXISTS saml_provider (
+                     id bigint PRIMARY KEY DEFAULT next_id_v1('saml_provider_id_seq'),
+                     description text,
+                     idp_metadata text,
+                     sp_base_url text,
+                     updated_at timestamptz,
+                     created_at timestamptz DEFAULT now()
+                     )"#,
+                )?;
+
+                ui.para("[✓] saml_provider");
+                //ldap config table value insert
+
+                migrator.migrate(
+                    "sessionsrv",
+                    r#"CREATE OR REPLACE FUNCTION insert_saml_provider_v1 (
+                        description text,
+                        idp_metadata text,
+                        sp_base_url text
+                    ) RETURNS SETOF saml_provider AS $$
+                                        BEGIN
+                                            RETURN QUERY INSERT INTO saml_provider(description,idp_metadata,sp_base_url)
+                                                VALUES (description,idp_metadata,sp_base_url)
+                                                RETURNING *;
+                                            RETURN;
+                                        END
+                                    $$ LANGUAGE plpgsql VOLATILE
+                                    "#,
+                )?;
+
+
+                ui.para("[✓] insert_saml_provider_v1");
+
 
         migrator.migrate(
             "authsrv",

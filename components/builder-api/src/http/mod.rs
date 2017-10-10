@@ -72,7 +72,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         authenticate_ldap: post "/authenticate/ldap/:code" => default_authenticate, //ldap_authenticate
 
         config_ldap: post "/ldap/config" => set_ldap_config,
-
+        config_saml: post "/auth/saml/providers" => config_saml_provider,
         //auth API for creating new account
         signup: post "/accounts" => account_create,
         account_get_by_id: get "/accounts/:id" => account_get_by_id,
