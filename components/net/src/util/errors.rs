@@ -62,7 +62,7 @@ pub trait AranError: Send + fmt::Display + 'static {
                 status: self.status().to_string(),
                 code: self.code().to_string(),
                 message: self.description().to_string(),
-                reason: self.cause().unwrap().to_string(),
+                reason: self.cause().unwrap_or().to_string(),
             },
         ))
     }
@@ -324,6 +324,11 @@ pub fn bad_request<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
 }
 
 pub fn malformed_body<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    println!("*********************************************************8");
+    println!(
+        "---------------------------------------------------{:?}",
+        error
+    );
     Box::new(MalformedBody(error.to_string()))
 }
 

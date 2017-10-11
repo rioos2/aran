@@ -78,6 +78,7 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
                 secret_create.set_secret_type(body.secret_type);
             }
             Err(err) => {
+                println!("88888888888888888888888888888888888888");
                 return Err(malformed_body(&err.detail));
             }
             _ => return Err(malformed_body(&"nothing found in body")),
@@ -93,7 +94,7 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::secret_create(&conn, &secret_create) {
-        Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
+        Ok(secret) => Ok(render_json(status::Ok, &secret)),
         Err(err) => Err(internal_error(&format!("{}", err), &"errred.")),
 
     }
@@ -121,8 +122,15 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
 
     match ServiceAccountDS::secret_show(&conn, &secret_get) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
-        Ok(None) => Err(DBError::NotFound),
-        Err(err) => Err(err),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }
 
@@ -131,6 +139,12 @@ pub fn secret_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::secret_list(&conn) {
         Ok(Some(service_list)) => Ok(render_json(status::Ok, &service_list)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
@@ -156,6 +170,12 @@ pub fn secret_show_by_origin(req: &mut Request) -> IronResult<Response> {
     );
     match ServiceAccountDS::secret_show_by_origin(&conn, &secret_get) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),

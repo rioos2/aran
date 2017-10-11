@@ -14,7 +14,7 @@ use rio_net::util::errors::*;
 pub struct ServiceAccountDS;
 
 impl ServiceAccountDS {
-    pub fn secret_create(datastore: &DataStoreConn, secret_create: &servicesrv::Secret) -> Result<Option<servicesrv::Secret>> {
+    pub fn secret_create(datastore: &DataStoreConn, secret_create: &servicesrv::Secret) -> Result<servicesrv::Secret> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -28,7 +28,7 @@ impl ServiceAccountDS {
             ],
         ).map_err(Error::SecretCreate)?;
         let secret = row_to_secret(&rows.get(0));
-        return Ok(Some(secret.clone()));
+        return Ok(secret.clone());
     }
     pub fn secret_show(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -56,15 +56,18 @@ impl ServiceAccountDS {
         let mut response = servicesrv::SecretGetResponse::new();
 
         let mut secret_collection = Vec::new();
-        for row in rows {
-            secret_collection.push(row_to_secret(&row))
+        if rows.len() > 0 {
+            for row in rows {
+                secret_collection.push(row_to_secret(&row))
+            }
+            response.set_secret_collection(
+                secret_collection,
+                "SecretList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
         }
-        response.set_secret_collection(
-            secret_collection,
-            "SecretList".to_string(),
-            "v1".to_string(),
-        );
-        Ok(Some(response))
+        Ok(None)
     }
 
     pub fn secret_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::SecretGetResponse>> {
@@ -77,15 +80,18 @@ impl ServiceAccountDS {
         let mut response = servicesrv::SecretGetResponse::new();
 
         let mut secret_collection = Vec::new();
-        for row in rows {
-            secret_collection.push(row_to_secret(&row))
+        if rows.len() > 0 {
+            for row in rows {
+                secret_collection.push(row_to_secret(&row))
+            }
+            response.set_secret_collection(
+                secret_collection,
+                "SecretList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
         }
-        response.set_secret_collection(
-            secret_collection,
-            "SecretList".to_string(),
-            "v1".to_string(),
-        );
-        Ok(Some(response))
+        Ok(None)
     }
 
     pub fn service_account_create(datastore: &DataStoreConn, service_create: &servicesrv::ServiceAccount) -> Result<Option<servicesrv::ServiceAccount>> {
