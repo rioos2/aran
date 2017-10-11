@@ -8,6 +8,7 @@ use postgres;
 use privilege;
 use db::data_store::DataStoreConn;
 use serde_json;
+use ldap3::{LdapConn, Scope, SearchEntry};
 
 
 pub struct SessionDS;
@@ -255,6 +256,21 @@ impl SessionDS {
         return Ok(Some(ldap.clone()));
     }
 
+    pub fn get_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_ldap_config_v1($1)",
+            &[&(get_id.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::LdapConfigCreate)?;
+
+        for row in rows {
+            let data = do_search(&row)?;
+            println!("----------------------------------------------{:?}", data);
+            return Ok(());
+        }
+        Ok(())
+    }
 }
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
@@ -311,4 +327,23 @@ fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfi
     ldap.set_created_at(created_at.to_rfc3339());
 
     Ok(ldap)
+}
+
+
+fn do_search(row: &postgres::rows::Row) -> Result<()> {
+    let host: String = row.get("host");
+    let lookup_dn: String = row.get("lookup_dn");
+    let ldap = LdapConn::new(&host)?;
+    let (rs, _res) = ldap.search(
+        &lookup_dn,
+        Scope::Subtree,
+        "(&(objectClass=locality)(l=ma*))",
+        vec!["l"],
+    )?
+        .success()?;
+    println!("*******************************************************************");
+    for entry in rs {
+        println!("{:?}", SearchEntry::construct(entry));
+    }
+    Ok(())
 }

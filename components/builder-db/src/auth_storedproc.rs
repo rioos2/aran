@@ -219,6 +219,15 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] insert_ldap_config_v1");
 
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION get_ldap_config_v1 (aid bigint) RETURNS SETOF ldap_config AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM ldap_config WHERE id = aid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
         migrator.migrate(
             "authsrv",

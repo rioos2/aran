@@ -14,7 +14,7 @@ use router::Router;
 use iron::typemap;
 use protocol::net::{self, ErrCode};
 use protocol::sessionsrv::*;
-
+use protocol::asmsrv::IdGet;
 use db::data_store::Broker;
 
 
@@ -326,4 +326,26 @@ pub fn set_ldap_config(req: &mut Request) -> IronResult<Response> {
     }
 
 
+}
+
+pub fn do_search(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+    let mut serach_id = IdGet::new();
+    serach_id.set_id(id.to_string());
+
+    match SessionDS::get_ldap_config(&conn, &serach_id) {
+        Ok(account) => Ok(render_json(status::Ok, &account)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
 }

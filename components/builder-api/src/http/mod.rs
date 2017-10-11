@@ -73,6 +73,9 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         config_ldap: post "/ldap/config" => set_ldap_config,
 
+        ldap: post "/ldap/:id" => do_search,
+
+
         //auth API for creating new account
         signup: post "/accounts" => account_create,
         account_get_by_id: get "/accounts/:id" => account_get_by_id,

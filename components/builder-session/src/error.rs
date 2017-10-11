@@ -4,6 +4,7 @@
 
 use std::error;
 use std::fmt;
+use std::io;
 use std::result;
 use std::num;
 use hyper;
@@ -28,6 +29,7 @@ pub enum Error {
     OriginGetResponse(postgres::error::Error),
     OriginGet(postgres::error::Error),
     LdapConfigCreate(postgres::error::Error),
+    IO(io::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -51,6 +53,7 @@ impl fmt::Display for Error {
             Error::OriginGetResponse(ref e) => format!("Error retrive origin for account in database, {}", e),
             Error::OriginGet(ref e) => format!("Error retrive origin by name, {}", e),
             Error::LdapConfigCreate(ref e) => format!("Error creating ldap config, {}", e),
+            Error::IO(ref e) => format!("{}", e),
 
         };
         write!(f, "{}", msg)
@@ -76,6 +79,7 @@ impl error::Error for Error {
             Error::OriginGetResponse(ref err) => err.description(),
             Error::OriginGet(ref err) => err.description(),
             Error::LdapConfigCreate(ref err) => err.description(),
+            Error::IO(ref err) => err.description(),
         }
     }
 }
@@ -90,6 +94,12 @@ impl From<hyper::error::Error> for Error {
 impl From<db::error::Error> for Error {
     fn from(err: db::error::Error) -> Self {
         Error::Db(err)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self {
+        Error::IO(err)
     }
 }
 
