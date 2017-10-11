@@ -2,7 +2,7 @@ use ansi_term::Colour;
 use bodyparser;
 use rio_net::http::controller::*;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError};
 
 use service::service_account_ds::ServiceAccountDS;
 use iron::prelude::*;
@@ -80,7 +80,7 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
             Err(err) => {
                 return Err(malformed_body(&err.detail));
             }
-            _ => { return Err(malformed_body(&"nothing found in body"))}
+            _ => return Err(malformed_body(&"nothing found in body")),
         }
     }
 
@@ -93,8 +93,8 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::secret_create(&conn, &secret_create) {
-        Ok(secret) => Ok(render_json(status::Ok, &secret)),
-        Err(err) => Err(internal_error(&format!("{}",err), &"errred.")),
+        Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
+        Err(err) => Err(internal_error(&format!("{}", err), &"errred.")),
 
     }
 }
@@ -120,8 +120,9 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
     );
 
     match ServiceAccountDS::secret_show(&conn, &secret_get) {
-        Ok(secret) => Ok(render_json(status::Ok, &secret)),
-        Err(err) => Err(internal_error(&format!("{}", err), &"")),
+        Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
+        Ok(None) => Err(DBError::NotFound),
+        Err(err) => Err(err),
     }
 }
 
@@ -129,7 +130,7 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
 pub fn secret_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::secret_list(&conn) {
-        Ok(service_list) => Ok(render_json(status::Ok, &service_list)),
+        Ok(Some(service_list)) => Ok(render_json(status::Ok, &service_list)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
@@ -154,7 +155,7 @@ pub fn secret_show_by_origin(req: &mut Request) -> IronResult<Response> {
         format!("======= parsed {:?} ", secret_get),
     );
     match ServiceAccountDS::secret_show_by_origin(&conn, &secret_get) {
-        Ok(secret) => Ok(render_json(status::Ok, &secret)),
+        Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),

@@ -8,6 +8,7 @@ use protocol::{servicesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+use rio_net::util::errors::*;
 
 
 pub struct ServiceAccountDS;
@@ -26,7 +27,7 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(secret_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::SecretCreate)?;
-        let secret = row_to_secret(&rows.get(0))?;
+        let secret = row_to_secret(&rows.get(0));
         return Ok(Some(secret.clone()));
     }
     pub fn secret_show(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::Secret>> {
@@ -35,9 +36,11 @@ impl ServiceAccountDS {
             "SELECT * FROM get_secret_v1($1)",
             &[&(get_secret.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::SecretGet)?;
-        for row in rows {
-            let secret = row_to_secret(&row)?;
-            return Ok(Some(secret));
+        if rows.len() > 0 {
+            for row in rows {
+                let secret = row_to_secret(&row);
+                return Ok(Some(secret));
+            }
         }
         Ok(None)
     }
@@ -54,7 +57,7 @@ impl ServiceAccountDS {
 
         let mut secret_collection = Vec::new();
         for row in rows {
-            secret_collection.push(row_to_secret(&row)?)
+            secret_collection.push(row_to_secret(&row))
         }
         response.set_secret_collection(
             secret_collection,
@@ -75,7 +78,7 @@ impl ServiceAccountDS {
 
         let mut secret_collection = Vec::new();
         for row in rows {
-            secret_collection.push(row_to_secret(&row)?)
+            secret_collection.push(row_to_secret(&row))
         }
         response.set_secret_collection(
             secret_collection,
@@ -137,7 +140,7 @@ impl ServiceAccountDS {
 }
 
 
-fn row_to_secret(row: &postgres::rows::Row) -> Result<servicesrv::Secret> {
+fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {
     let mut secret = servicesrv::Secret::new();
     let id: i64 = row.get("id");
     let secret_type = row.get("secret_type");
@@ -153,7 +156,7 @@ fn row_to_secret(row: &postgres::rows::Row) -> Result<servicesrv::Secret> {
     secret.set_secret_type(secret_type);
     secret.set_created_at(created_at.to_rfc3339());
 
-    Ok(secret)
+    secret
 }
 
 

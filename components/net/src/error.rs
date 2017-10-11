@@ -37,7 +37,7 @@ impl fmt::Display for Error {
             Error::Json(ref e) => format!("{}", e),
             Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
-            Error::NetError(ref e) =>  format!("Net error: {}", e),
+            Error::NetError(ref e) => format!("Net error: {}", e),
             Error::Sys => format!("Internal system error"),
         };
         write!(f, "{}", msg)
@@ -54,7 +54,7 @@ impl error::Error for Error {
             Error::Json(ref err) => err.description(),
             Error::CryptoError(_) => "Crypto error",
             Error::RequiredConfigField(_) => "Missing required field in configuration.",
-            Error::NetError(_) =>  "Network error.",
+            Error::NetError(_) => "Network error.",
             Error::Sys => "Internal system error",
         }
     }
