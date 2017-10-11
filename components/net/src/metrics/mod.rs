@@ -4,3 +4,4 @@
 
 pub mod prometheus;
 pub mod collector;
+pub mod mock;
