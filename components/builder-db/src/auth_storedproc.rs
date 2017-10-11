@@ -163,7 +163,7 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] account_session");
 
-//sequence ldap id generation
+        //sequence ldap id generation
         migrator.migrate(
             "sessionsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS ldap_id_seq;"#,
@@ -520,19 +520,6 @@ impl Migratable for AuthProcedures {
         )?;
 
 
-        // Select role from roles table by id
-        migrator.migrate(
-            "authsrv",
-            r#"CREATE OR REPLACE FUNCTION get_permission_by_role_name_v1 (rname text) RETURNS SETOF permissions AS $$
-            DECLARE
-               this_role roles%rowtype;
-            BEGIN
-                SELECT * FROM roles WHERE name = rname LIMIT 1 INTO this_role;
-                RETURN QUERY SELECT * FROM permissions WHERE role_id = this_role.id;
-                RETURN;
-                    END
-                    $$ LANGUAGE plpgsql STABLE"#,
-        )?;
 
         // The core role_id_seq table
         migrator.migrate(
@@ -609,6 +596,21 @@ impl Migratable for AuthProcedures {
                    END
                    $$ LANGUAGE plpgsql STABLE"#,
         )?;
+
+        // Select role from roles table by id
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_permission_by_role_name_v1 (rname text) RETURNS SETOF permissions AS $$
+            DECLARE
+               this_role roles%rowtype;
+            BEGIN
+                SELECT * FROM roles WHERE name = rname LIMIT 1 INTO this_role;
+                RETURN QUERY SELECT * FROM permissions WHERE role_id = this_role.id;
+                RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
 
         migrator.migrate(
             "authsrv",

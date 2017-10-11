@@ -78,7 +78,6 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
                 secret_create.set_secret_type(body.secret_type);
             }
             Err(err) => {
-                println!("88888888888888888888888888888888888888");
                 return Err(malformed_body(&err.detail));
             }
             _ => return Err(malformed_body(&"nothing found in body")),
