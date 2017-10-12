@@ -163,7 +163,7 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] account_session");
 
-//sequence ldap id generation
+        //sequence ldap id generation
         migrator.migrate(
             "sessionsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS ldap_id_seq;"#,
@@ -219,16 +219,27 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] insert_ldap_config_v1");
 
-        //sequence saml provider id generation
-                migrator.migrate(
-                    "sessionsrv",
-                    r#"CREATE SEQUENCE IF NOT EXISTS saml_provider_id_seq;"#,
-                )?;
-                //sequence ldap_config table creation
 
-                migrator.migrate(
-                    "sessionsrv",
-                    r#"CREATE TABLE  IF NOT EXISTS saml_provider (
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION get_ldap_config_v1 (aid bigint) RETURNS SETOF ldap_config AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM ldap_config WHERE id = aid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        //sequence saml provider id generation
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS saml_provider_id_seq;"#,
+        )?;
+        //sequence ldap_config table creation
+
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE TABLE  IF NOT EXISTS saml_provider (
                      id bigint PRIMARY KEY DEFAULT next_id_v1('saml_provider_id_seq'),
                      description text,
                      idp_metadata text,
@@ -236,14 +247,14 @@ impl Migratable for AuthProcedures {
                      updated_at timestamptz,
                      created_at timestamptz DEFAULT now()
                      )"#,
-                )?;
+        )?;
 
-                ui.para("[✓] saml_provider");
-                //ldap config table value insert
+        ui.para("[✓] saml_provider");
+        //ldap config table value insert
 
-                migrator.migrate(
-                    "sessionsrv",
-                    r#"CREATE OR REPLACE FUNCTION insert_saml_provider_v1 (
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_saml_provider_v1 (
                         description text,
                         idp_metadata text,
                         sp_base_url text
@@ -256,10 +267,10 @@ impl Migratable for AuthProcedures {
                                         END
                                     $$ LANGUAGE plpgsql VOLATILE
                                     "#,
-                )?;
+        )?;
 
 
-                ui.para("[✓] insert_saml_provider_v1");
+        ui.para("[✓] insert_saml_provider_v1");
 
 
         migrator.migrate(
@@ -562,19 +573,6 @@ impl Migratable for AuthProcedures {
         )?;
 
 
-        // Select role from roles table by id
-        migrator.migrate(
-            "authsrv",
-            r#"CREATE OR REPLACE FUNCTION get_permission_by_role_name_v1 (rname text) RETURNS SETOF permissions AS $$
-            DECLARE
-               this_role roles%rowtype;
-            BEGIN
-                SELECT * FROM roles WHERE name = rname LIMIT 1 INTO this_role;
-                RETURN QUERY SELECT * FROM permissions WHERE role_id = this_role.id;
-                RETURN;
-                    END
-                    $$ LANGUAGE plpgsql STABLE"#,
-        )?;
 
         // The core role_id_seq table
         migrator.migrate(
@@ -651,6 +649,21 @@ impl Migratable for AuthProcedures {
                    END
                    $$ LANGUAGE plpgsql STABLE"#,
         )?;
+
+        // Select role from roles table by id
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_permission_by_role_name_v1 (rname text) RETURNS SETOF permissions AS $$
+            DECLARE
+               this_role roles%rowtype;
+            BEGIN
+                SELECT * FROM roles WHERE name = rname LIMIT 1 INTO this_role;
+                RETURN QUERY SELECT * FROM permissions WHERE role_id = this_role.id;
+                RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
 
         migrator.migrate(
             "authsrv",
