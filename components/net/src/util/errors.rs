@@ -62,7 +62,7 @@ pub trait AranError: Send + fmt::Display + 'static {
                 status: self.status().to_string(),
                 code: self.code().to_string(),
                 message: self.description().to_string(),
-                reason: self.cause().unwrap().to_string(),
+                reason: self.cause().unwrap_or(&internal_error("An unknown error", "not known")).to_string(),
             },
         ))
     }

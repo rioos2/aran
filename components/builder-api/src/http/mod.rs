@@ -75,6 +75,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         ldap: post "/ldap/:id" => do_search,
 
+        config_saml: post "/auth/saml/providers" => config_saml_provider,
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,
@@ -95,11 +96,11 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         assembly_status: put "/assemblys/:id/status" => XHandler::new(assembly_status_update).before(basic.clone()),
         assembly_update: put "/assemblys/:id" => XHandler::new(assembly_update).before(basic.clone()),
 
-
         //scaling API: horizontal scaling
         horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),
         horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(hs_list).before(basic.clone()),
         horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(hs_status_update).before(basic.clone()),
+        horizontal_scaling_metrics: get "/horizontalscaling/:id/metrics" => XHandler::new(hs_metrics).before(basic.clone()),
 
         //authorization API: for roles
         roles: post "/roles" => XHandler::new(roles_create).before(basic.clone()),

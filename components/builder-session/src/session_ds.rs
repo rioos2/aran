@@ -256,6 +256,7 @@ impl SessionDS {
         return Ok(Some(ldap.clone()));
     }
 
+
     pub fn get_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
 
@@ -270,6 +271,20 @@ impl SessionDS {
             return Ok(());
         }
         Ok(())
+    }
+
+    pub fn saml_provider_create(datastore: &DataStoreConn, saml_provider: &sessionsrv::SamlProvider) -> Result<Option<sessionsrv::SamlProvider>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM insert_saml_provider_v1($1,$2,$3)",
+            &[
+                &(saml_provider.get_description() as String),
+                &(saml_provider.get_idp_metadata() as String),
+                &(saml_provider.get_sp_base_url() as String),
+            ],
+        ).map_err(Error::SamlProviderCreate)?;
+        let saml = row_to_saml_provider(&rows.get(0))?;
+        return Ok(Some(saml.clone()));
     }
 }
 
@@ -329,7 +344,6 @@ fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfi
     Ok(ldap)
 }
 
-
 fn do_search(row: &postgres::rows::Row) -> Result<()> {
     let host: String = row.get("host");
     let lookup_dn: String = row.get("lookup_dn");
@@ -346,4 +360,19 @@ fn do_search(row: &postgres::rows::Row) -> Result<()> {
         println!("{:?}", SearchEntry::construct(entry));
     }
     Ok(())
+}
+
+fn row_to_saml_provider(row: &postgres::rows::Row) -> Result<sessionsrv::SamlProvider> {
+    let mut saml = sessionsrv::SamlProvider::new();
+    let id: i64 = row.get("id");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+
+    saml.set_id(id.to_string());
+    saml.set_description(row.get("description"));
+    saml.set_idp_metadata(row.get("idp_metadata"));
+    saml.set_sp_base_url(row.get("sp_base_url"));
+    saml.set_created_at(created_at.to_rfc3339());
+
+    Ok(saml)
+
 }
