@@ -37,9 +37,7 @@ impl Migratable for ScaleProcedures {
              spec text,
              status text,
              updated_at timestamptz,
-             created_at timestamptz DEFAULT now(),
-             object_meta text,
-             type_meta text)"#,
+             created_at timestamptz DEFAULT now())"#,
         )?;
 
         ui.para("[✓] horizontal_scaling");
@@ -57,13 +55,11 @@ impl Migratable for ScaleProcedures {
                 state text,
                 metadata text[],
                 spec text,
-                status text,
-                object_meta text,
-                type_meta text
+                status text
                         ) RETURNS SETOF horizontal_scaling AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,scale_type,representation_skew,state,metadata,spec,status,object_meta ,type_meta)
-                                        VALUES (name,description,tags,scale_type,representation_skew,state,metadata,spec,status,object_meta,type_meta)
+                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,scale_type,representation_skew,state,metadata,spec,status)
+                                        VALUES (name,description,tags,scale_type,representation_skew,state,metadata,spec,status)
                                         RETURNING *;
                                     RETURN;
                                 END
