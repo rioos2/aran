@@ -331,8 +331,6 @@ pub fn set_ldap_config(req: &mut Request) -> IronResult<Response> {
         )),
 
     }
-
-
 }
 
 
@@ -349,8 +347,8 @@ pub fn do_search(req: &mut Request) -> IronResult<Response> {
     let mut serach_id = IdGet::new();
     serach_id.set_id(id.to_string());
 
-    match SessionDS::get_ldap_config(&conn, &serach_id) {
-        Ok(account) => Ok(render_json(status::Ok, &account)),
+    match SessionDS::test_ldap_config(&conn, &serach_id) {
+        Ok(result) => Ok(render_json(status::Ok, &result)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),

@@ -257,7 +257,7 @@ impl SessionDS {
     }
 
 
-    pub fn get_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
+    pub fn test_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -348,14 +348,9 @@ fn do_search(row: &postgres::rows::Row) -> Result<()> {
     let host: String = row.get("host");
     let lookup_dn: String = row.get("lookup_dn");
     let ldap = LdapConn::new(&host)?;
-    let (rs, _res) = ldap.search(
-        &lookup_dn,
-        Scope::Subtree,
-        "(&(objectClass=locality)(l=ma*))",
-        vec!["l"],
-    )?
+    let (rs, _res) = ldap.search(&lookup_dn, Scope::Subtree, "(&(objectClass=*))", vec![""])?
         .success()?;
-    println!("*******************************************************************");
+    println!("Result: {:?}", rs);
     for entry in rs {
         println!("{:?}", SearchEntry::construct(entry));
     }
