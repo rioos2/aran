@@ -257,20 +257,19 @@ impl SessionDS {
     }
 
 
-    pub fn test_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
+    pub fn test_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<Option<sessionsrv::Success>> {
         let conn = datastore.pool.get_shard(0)?;
-
         let rows = &conn.query(
             "SELECT * FROM get_ldap_config_v1($1)",
             &[&(get_id.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::LdapConfigCreate)?;
-
-        for row in rows {
-            let data = do_search(&row)?;
-            println!("----------------------------------------------{:?}", data);
-            return Ok(());
+        if rows.len() != 0 {
+            for row in rows {
+                let data = test_config(&row)?;
+                return Ok(Some(data));
+            }
         }
-        Ok(())
+        Ok(None)
     }
 
     pub fn import_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
