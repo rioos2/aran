@@ -2,7 +2,7 @@
 
 //! A module containing the middleware of the HTTP server
 
-use super::super::error::{self, Result};
+use error::{self, Result};
 use std::error::Error as StdError;
 use std::result::Result as StdResult;
 
@@ -12,46 +12,63 @@ use std::time::Duration;
 
 use protocol::net;
 use serde_json;
-
+use ldap3::{LdapConn, Scope, SearchEntry};
+use protocol::sessionsrv;
 
 #[derive(Clone)]
 pub struct LDAPClient {
-    pub url: String,
+    config: sessionsrv::LdapConfig,
+}
+
+pub struct LDAPUser {
+    email: String,
+    name: String,
+    phone: String,
 }
 
 impl LDAPClient {
-    pub fn new(config: &T) -> Self
-    where
-        T: config::LDAPConfiguration,
-    {
+    pub fn new(config: sessionsrv::LdapConfig) -> Self {
         LDAPClient { config: config }
     }
 
-    fn connection() -> Result<(LdapConn)> {
-        let ldap = LdapConn::new(&host)?;
-        let (rs, _res) = ldap.search(&lookup_dn, Scope::Subtree, "(&(objectClass=*))", vec![""])?
+    pub fn connection(&self) -> Result<(LdapConn)> {
+        let ldap = LdapConn::new(&self.config.get_host())?;
+        let (rs, _res) = ldap.search(
+            &self.config.get_lookup_dn(),
+            Scope::Subtree,
+            "(&(objectClass=*))",
+            vec![""],
+        )?
             .success()?;
         Ok(ldap)
     }
 
-    fn search() -> Result<(Vec<LDAPUser>)> {
-        let ldap_connection =  connection();
+    pub fn search(&self) -> Result<(Vec<LDAPUser>)> {
+        let ldap_connection = self.connection();
         match ldap_connection {
-            Ok(ldap) =>  {
-                let (rs, _res) = ldap.search(&lookup_dn, Scope::Subtree, "(&(objectClass=*))", vec![""])?
+            Ok(ldap) => {
+                let (rs, _res) = ldap.search(
+                    &self.config.get_lookup_dn(),
+                    Scope::Subtree,
+                    "(&(objectClass=*))",
+                    vec![""],
+                )?
                     .success()?;
-                    //build entries as LDAPUser struct
-                    //for entry in rs {
-                        println!("{:?}", SearchEntry::construct(entry));
-                    //}
+                //build entries as LDAPUser struct\
+                let mut user_collection = vec![];
+                for entry in rs {
+                    println!("{:?}", SearchEntry::construct(entry));
+                    // user_collection.push(LDAPUser {});
+
+                }
+                Ok(user_collection)
             }
-            Err(err) =>
+            Err(err) => Err(err),
         }
 
     }
 
-    fn close () {
+    fn close() {
         //close ldap connection
     }
-
 }
