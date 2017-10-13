@@ -272,6 +272,22 @@ impl SessionDS {
         Ok(None)
     }
 
+    pub fn import_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
+        //write a get_ldap_config and use that in both the above and this.
+        match get_ldap_config(datastore) {
+            Ok(ldap_config) => {
+                let ldusers = ldap_users(ldap_config)
+                ldusers.for_each(|l| {
+                    //call AccountDS and insert the data.
+                    //how do we trap success/failure.
+                });
+            }
+            Err() => {
+
+            }
+        }
+    }
+
     pub fn saml_provider_create(datastore: &DataStoreConn, saml_provider: &sessionsrv::SamlProvider) -> Result<Option<sessionsrv::SamlProvider>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
@@ -343,16 +359,28 @@ fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfi
     Ok(ldap)
 }
 
-fn test_config(row: &postgres::rows::Row) -> Result<sessionsrv::Success> {
-    let host: String = row.get("host");
-    let lookup_dn: String = row.get("lookup_dn");
-    let lookup_password: String = row.get("lookup_password");
-    let ldap = LdapConn::new(&host)?;
-    ldap.simple_bind(&lookup_dn, &lookup_password)?;
-    let mut success = sessionsrv::Success::new();
-    success.set_result("Successfully authenticated".to_string());
-    Ok(success)
+fn test_ldap(row: &postgres::rows::Row) -> Result<()> {
+    let ldap = LDAPClient::new(LDAPConfig {
+        host: row.get("host"),
+        lookup_dn: row.get("lookup_dn"),
+    });
+
+    ldap.connection()
 }
+
+fn ldap_users(row: &postgres::rows::Row) -> Result<()> {
+    let ldap = LDAPClient::new(LDAPConfig {
+        host: row.get("host"),
+        lookup_dn: row.get("lookup_dn"),
+    });
+
+    let ldap_users = ldap.search();
+    match test_ldap {
+        Ok() => {}
+        Err() => {}
+    }
+}
+
 
 fn row_to_saml_provider(row: &postgres::rows::Row) -> Result<sessionsrv::SamlProvider> {
     let mut saml = sessionsrv::SamlProvider::new();
