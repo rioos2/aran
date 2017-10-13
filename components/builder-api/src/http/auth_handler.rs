@@ -85,6 +85,18 @@ struct SamlProviderReq {
     sp_base_url: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct OidcProviderReq {
+    description: String,
+    issuer: String,
+    base_url: String,
+    client_secret: String,
+    client_id: String,
+    verify_server_certificate: bool,
+    ca_certs: String,
+}
+
+
 //Default password authentication.
 //The body contains email, password, authenticate and if all is well return a token.
 pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
@@ -393,11 +405,15 @@ pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
 pub fn config_oidc_provider(req: &mut Request) -> IronResult<Response> {
     let mut oidc_provider = OidcProvider::new();
     {
-        match req.get::<bodyparser::Struct<SamlProviderReq>>() {
+        match req.get::<bodyparser::Struct<OidcProviderReq>>() {
             Ok(Some(body)) => {
-                saml_provider.set_description(body.description);
-                saml_provider.set_idp_metadata(body.idp_metadata);
-                saml_provider.set_sp_base_url(body.sp_base_url);
+                oidc_provider.set_description(body.description);
+                oidc_provider.set_issuer(body.issuer);
+                oidc_provider.set_base_url(body.base_url);
+                oidc_provider.set_client_secret(body.client_secret);
+                oidc_provider.set_client_id(body.client_id);
+                oidc_provider.set_verify_server_certificate(body.verify_server_certificate);
+                oidc_provider.set_ca_certs(body.ca_certs);
 
             }
             Err(err) => {
@@ -410,8 +426,8 @@ pub fn config_oidc_provider(req: &mut Request) -> IronResult<Response> {
         }
     }
     let conn = Broker::connect().unwrap();
-    match SessionDS::saml_provider_create(&conn, &saml_provider) {
-        Ok(saml) => Ok(render_json(status::Ok, &saml)),
+    match SessionDS::oidc_provider_create(&conn, &oidc_provider) {
+        Ok(oidc) => Ok(render_json(status::Ok, &oidc)),
 
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),

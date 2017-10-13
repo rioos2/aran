@@ -285,6 +285,27 @@ impl SessionDS {
         let saml = row_to_saml_provider(&rows.get(0))?;
         return Ok(Some(saml.clone()));
     }
+
+    pub fn oidc_provider_create(datastore: &DataStoreConn, oidc_provider: &sessionsrv::OidcProvider) -> Result<Option<sessionsrv::OidcProvider>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM insert_oidc_provider_v1($1,$2,$3,$4,$5,$6,$7)",
+            &[
+                &(oidc_provider.get_description() as String),
+                &(oidc_provider.get_issuer() as String),
+                &(oidc_provider.get_base_url() as String),
+                &(oidc_provider.get_client_secret() as String),
+                &(oidc_provider.get_client_id() as String),
+                &(oidc_provider.get_verify_server_certificate() as bool),
+                &(oidc_provider.get_ca_certs() as String),
+
+
+            ],
+        ).map_err(Error::OidcProviderCreate)?;
+        let oidc = row_to_oidc_provider(&rows.get(0))?;
+        return Ok(Some(oidc.clone()));
+    }
+
 }
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
@@ -366,5 +387,23 @@ fn row_to_saml_provider(row: &postgres::rows::Row) -> Result<sessionsrv::SamlPro
     saml.set_created_at(created_at.to_rfc3339());
 
     Ok(saml)
+
+}
+fn row_to_oidc_provider(row: &postgres::rows::Row) -> Result<sessionsrv::OidcProvider> {
+    let mut oidc = sessionsrv::OidcProvider::new();
+    let id: i64 = row.get("id");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+
+    oidc.set_id(id.to_string());
+    oidc.set_description(row.get("description"));
+    oidc.set_issuer(row.get("issuer"));
+    oidc.set_base_url(row.get("base_url"));
+    oidc.set_client_secret(row.get("client_secret"));
+    oidc.set_client_id(row.get("client_id"));
+    oidc.set_verify_server_certificate(row.get("verify_server_certificate"));
+    oidc.set_ca_certs(row.get("ca_certs"));
+    oidc.set_created_at(created_at.to_rfc3339());
+
+    Ok(oidc)
 
 }

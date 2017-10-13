@@ -81,10 +81,12 @@ impl ScalingDS {
                 &(hs.get_representation_skew() as String),
                 &(hs.get_state() as String),
                 &(hs.get_metadata() as Vec<String>),
+                // &(serde_json::to_string(hs.get_spec()).unwrap()),
                 &(spec_str as String),
             ],
         ).map_err(Error::HSUpdate)?;
-        Ok(None)
+        let hscale = row_to_hs(&rows.get(0))?;
+        return Ok(Some(hscale.clone()));
     }
 }
 
