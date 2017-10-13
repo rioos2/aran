@@ -8,6 +8,11 @@ use protocol::{scalesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+use rio_net::metrics::prometheus::PrometheusClient;
+use rio_net::metrics::collector::{Collector, CollectorScope};
+
+const RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id=";
+
 
 pub struct ScalingDS;
 
@@ -65,6 +70,19 @@ impl ScalingDS {
             "SELECT set_hs_status_v1($1, $2)",
             &[&id, &(status_str as String)],
         ).map_err(Error::HSSetStatus)?;
+        Ok(())
+    }
+
+    pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<()> {
+        let label_name = format!("{}{}", RIOOS_ASSEMBLY_ID, id);
+        let METRIC_SCOPE = vec![];
+        let GROUP_SCOPE: Vec<String> = vec![label_name.to_string()];
+        let scope = CollectorScope {
+            metric_names: METRIC_SCOPE,
+            labels: GROUP_SCOPE,
+        };
+        let mut metric_checker = Collector::new(client, scope);
+        let metric_response = metric_checker.metric_by().unwrap();
         Ok(())
     }
 }

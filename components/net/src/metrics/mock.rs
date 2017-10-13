@@ -1,6 +1,5 @@
 use rand::{thread_rng, Rng};
 use std::collections::BTreeMap;
-
 pub struct MockMetrics {}
 
 impl MockMetrics {

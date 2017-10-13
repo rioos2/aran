@@ -3,9 +3,12 @@
 //! A collection of deployment [assembly, assembly_factory, for the HTTP server
 
 use bodyparser;
+use persistent;
 use rio_core::event::*;
 use rio_net::http::controller::*;
 use rio_net::metrics::mock::MockMetrics;
+use rio_net::metrics::collector::CollectorScope;
+use rio_net::http::middleware::PrometheusCli;
 
 use scale::scaling_ds::ScalingDS;
 use iron::prelude::*;
@@ -195,9 +198,17 @@ pub fn hs_list(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn hs_metrics(req: &mut Request) -> IronResult<Response> {
-    match MockMetrics::hs_metrics() {
-        Some(hs_metrics) => Ok(render_json(status::Ok, &hs_metrics)),
-        None => return Ok(Response::with(status::BadRequest)),
+    let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let id = params.find("id").unwrap().to_owned();
+        id
+    };
+    match ScalingDS::hs_metrics(&promcli, &id) {
+        Ok(hs_metrics) => Ok(render_json(status::Ok, &hs_metrics)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
     }
 }
 
