@@ -25,6 +25,8 @@ path = "../builder-protocol"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
+[dependencies.rioos_net]
+path = "../net"
 
 [features]
 functional = []

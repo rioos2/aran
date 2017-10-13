@@ -8,6 +8,11 @@ use protocol::{scalesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+use rio_net::metrics::prometheus::PrometheusClient;
+use rio_net::metrics::collector::{Collector, CollectorScope};
+
+const RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id=";
+
 
 pub struct ScalingDS;
 
@@ -67,6 +72,7 @@ impl ScalingDS {
         ).map_err(Error::HSSetStatus)?;
         Ok(())
     }
+
     pub fn hs_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
         let conn = datastore.pool.get_shard(0)?;
         let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
@@ -81,12 +87,25 @@ impl ScalingDS {
                 &(hs.get_representation_skew() as String),
                 &(hs.get_state() as String),
                 &(hs.get_metadata() as Vec<String>),
-                // &(serde_json::to_string(hs.get_spec()).unwrap()),
                 &(spec_str as String),
             ],
         ).map_err(Error::HSUpdate)?;
         let hscale = row_to_hs(&rows.get(0))?;
         return Ok(Some(hscale.clone()));
+
+
+    pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<()> {
+        let label_name = format!("{}{}", RIOOS_ASSEMBLY_ID, id);
+        let METRIC_SCOPE = vec![];
+        let GROUP_SCOPE: Vec<String> = vec![label_name.to_string()];
+        let scope = CollectorScope {
+            metric_names: METRIC_SCOPE,
+            labels: GROUP_SCOPE,
+        };
+        let mut metric_checker = Collector::new(client, scope);
+        let metric_response = metric_checker.metric_by().unwrap();
+        Ok(())
+>>>>>>> origin/master
     }
 }
 
