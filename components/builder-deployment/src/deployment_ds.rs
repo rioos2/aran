@@ -9,6 +9,7 @@ use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
 
+
 pub struct DeploymentDS;
 
 impl DeploymentDS {
@@ -338,8 +339,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     Ok(assembly_factory)
 }
 
-
-fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
+pub fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     let mut plan = plansrv::Plan::new();
     let id: i64 = row.get("id");
     let name: String = row.get("group_name");
@@ -351,7 +351,7 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     let services: Vec<String> = row.get("services");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     plan.set_id(id.to_string() as String);
-    plan.set_name(name as String);
+    plan.set_group_name(name as String);
     plan.set_url(url as String);
     plan.set_description(description as String);
     plan.set_tags(tags as Vec<String>);

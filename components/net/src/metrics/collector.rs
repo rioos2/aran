@@ -49,9 +49,9 @@ impl<'a> Collector<'a> {
     fn do_collect(&self) -> Vec<nodesrv::PromResponse> {
         let mut content_datas = vec![];
         let s: String = self.scope.labels.clone().into_iter().collect();
-        let l: String = last_x_minutes.unwrap_or("");
+        let l = self.scope.last_x_minutes.clone().unwrap_or("".to_string());
 
-        let label_group = format!("{}{}{}{}", "{", s, "}",l);
+        let label_group = format!("{}{}{}{}", "{", s, "}", l);
         for scope in self.scope.metric_names.iter() {
             let content = self.client.pull_metrics(
                 &format!("{}{}", scope, label_group),

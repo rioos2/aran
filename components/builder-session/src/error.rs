@@ -31,6 +31,7 @@ pub enum Error {
     LdapConfigCreate(postgres::error::Error),
     IO(io::Error),
     SamlProviderCreate(postgres::error::Error),
+    OidcProviderCreate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -56,6 +57,8 @@ impl fmt::Display for Error {
             Error::LdapConfigCreate(ref e) => format!("Error creating ldap config, {}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::SamlProviderCreate(ref e) => format!("Error creating saml provider, {}", e),
+            Error::OidcProviderCreate(ref e) => format!("Error creating open id provider, {}", e),
+
         };
         write!(f, "{}", msg)
     }
@@ -82,6 +85,8 @@ impl error::Error for Error {
             Error::LdapConfigCreate(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::SamlProviderCreate(ref err) => err.description(),
+            Error::OidcProviderCreate(ref err) => err.description(),
+
         }
     }
 }

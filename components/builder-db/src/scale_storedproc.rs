@@ -86,6 +86,28 @@ impl Migratable for ScaleProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION update_hs_v1 (
+                hid bigint,
+                hs_name text,
+                hs_description text,
+                hs_tags text[],
+                hs_scale_type text,
+                hs_representation_skew text,
+                hs_state text,
+                hs_metadata text[],
+                hs_spec text) RETURNS SETOF horizontal_scaling AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE horizontal_scaling SET name=hs_name, description=hs_description,tags=hs_tags, scale_type=hs_scale_type, representation_skew=hs_representation_skew, state=hs_state,metadata=hs_metadata,spec=hs_spec, updated_at=now() WHERE id=hid
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+
+
         ui.end("Scaleprocedure");
 
         Ok(())

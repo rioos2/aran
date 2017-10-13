@@ -403,6 +403,9 @@ impl Osusages {
     pub fn new() -> Osusages {
         ::std::default::Default::default()
     }
+    pub fn get_items(&self) -> Vec<Item> {
+        self.items.clone()
+    }
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
@@ -588,8 +591,8 @@ impl Into<Osusages> for PromResponse {
     fn into(mut self) -> Osusages {
         let mut osusage = Osusages::new();
         let mut item = Item::new();
-    //    item.set_id(self.data.metric.get("rioos_assemblyfactory_id").unwrap_or("none").to_owned()); //make them as constants in prometheus.rs
-    //    item.set_name(self.data.metric.get("__name__").unwrap_or("none").to_owned()); //make them as constants in prometheus.rs
+        //    item.set_id(self.data.metric.get("rioos_assemblyfactory_id").unwrap_or("none").to_owned()); //make them as constants in prometheus.rs
+        //    item.set_name(self.data.metric.get("__name__").unwrap_or("none").to_owned()); //make them as constants in prometheus.rs
 
         if let Data::Vector(ref mut instancevec) = self.data {
             let mut values = Vec::new();

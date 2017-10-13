@@ -73,6 +73,9 @@ path = "../builder-network"
 [dependencies.rioos_builder_storagesrv]
 path = "../builder-storage"
 
+[dependencies.rioos_builder_plan]
+path = "../builder-plan"
+
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 

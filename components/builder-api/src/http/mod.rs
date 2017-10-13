@@ -11,6 +11,7 @@ pub mod service_account_handler;
 pub mod origin_handler;
 pub mod network_handler;
 pub mod storage_handler;
+pub mod plan_handler;
 pub mod watch_handler;
 
 use std::sync::{mpsc, Arc};
@@ -41,6 +42,7 @@ use self::origin_handler::*;
 use self::service_account_handler::*;
 use self::network_handler::*;
 use self::storage_handler::*;
+use self::plan_handler::*;
 use self::watch_handler::*;
 
 use db::data_store::*;
@@ -77,6 +79,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         config_saml: post "/auth/saml/providers" => config_saml_provider,
 
+        config_openid: post "/auth/oidc/providers/:provider_id " => config_oidc_provider,
+
         //auth API for creating new account
         signup: post "/accounts" => account_create,
         account_get_by_id: get "/accounts/:id" => account_get_by_id,
@@ -100,7 +104,9 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),
         horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(hs_list).before(basic.clone()),
         horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(hs_status_update).before(basic.clone()),
+        horizontal_scaling_update: put "/horizontalscaling/:id" => XHandler::new(hs_update).before(basic.clone()),
         horizontal_scaling_metrics: get "/horizontalscaling/:id/metrics" => XHandler::new(hs_metrics).before(basic.clone()),
+
 
         //authorization API: for roles
         roles: post "/roles" => XHandler::new(roles_create).before(basic.clone()),
@@ -157,6 +163,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         data_center: post "/datacenters" => XHandler::new(data_center_create).before(basic.clone()),
         data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),
         data_center_show: get "/datacenters/:id" => XHandler::new(data_center_show).before(basic.clone()),
+
+        plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
 
         //Internal: Streaming watch
         watches: get "/:name/watch/list" => watch_show,

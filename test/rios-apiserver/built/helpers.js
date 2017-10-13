@@ -6,3 +6,4 @@ var globalAny = global;
 globalAny.bobo_bearer = "Bearer ydukl6BhNeJi5V6pT5";
 globalAny.email = "vino";
 globalAny.logan_bearer = "Bearer logan";
+globalAny.provider_id = "1234567890";

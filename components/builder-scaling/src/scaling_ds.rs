@@ -73,36 +73,59 @@ impl ScalingDS {
         Ok(())
     }
 
-    pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<ScaleMetricsResponse> {
-        let label_name = format!("{}={}", RIOOS_ASSEMBLY_ID, id);
-        let METRIC_SCOPE = vec![];
-        let GROUP_SCOPE: Vec<String> = vec![label_name.to_string()];
+    pub fn hs_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM update_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            &[
+                &(hs.get_id().parse::<i64>().unwrap()),
+                &(hs.get_name() as String),
+                &(hs.get_description() as String),
+                &(hs.get_tags() as Vec<String>),
+                &(hs.get_scale_type() as String),
+                &(hs.get_representation_skew() as String),
+                &(hs.get_state() as String),
+                &(hs.get_metadata() as Vec<String>),
+                &(spec_str as String),
+            ],
+        ).map_err(Error::HSUpdate)?;
+        let hscale = row_to_hs(&rows.get(0))?;
+        return Ok(Some(hscale.clone()));
+    }
+
+    pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {
+        let label_name = format!("{}{}", RIOOS_ASSEMBLY_ID, id);
+        let metric_scope = vec![];
+        let group_scope: Vec<String> = vec![label_name.to_string()];
 
         let scope = CollectorScope {
-            metric_names: METRIC_SCOPE,
-            labels: GROUP_SCOPE,
-            last_x_minutes: Some("[5m]") //TO-DO: move all metric constants outside.
+            metric_names: metric_scope,
+            labels: group_scope,
+            last_x_minutes: Some("[5m]".to_string()), //TO-DO: move all metric constants outside.
         };
 
         let mut metric_checker = Collector::new(client, scope);
         let metric_response = metric_checker.metric_by().unwrap();
 
-        let metrics = nodesrv::Osusages::new();
+        let mut metrics = nodesrv::Osusages::new();
 
-        let all_items = metric_response.into_iter().map (|p|
-            let p1: nodesrv::Osusages = p.into();
-            p1.items()
-        ).collect();
+        let all_items = metric_response
+            .into_iter()
+            .map(|p| {
+                let p1: nodesrv::Osusages = p.into();
+                p1.get_items()
+            }).collect::<Vec<_>>();
 
-        metrics.set_items(all_items.collect());
+        metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
 
-        let mut  response = scalesrv::ScalingGet::new();
-        response.set_title("Scale metrics " + id);
+        let mut response = scalesrv::ScalingGet::new();
+        response.set_title("Scale metrics ".to_owned() + id);
         /*res.set_from_date(from_date);
         res.set_to_date(to_date);*/
         response.set_metrics(metrics);
 
-        let response: nodesrv::HealthzAllGetResponse = res.into();
+        let response: scalesrv::ScalingGetResponse = response.into();
 
         Ok(Some(response))
     }

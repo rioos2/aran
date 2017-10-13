@@ -11,10 +11,8 @@ use db;
 #[derive(Debug)]
 pub enum Error {
     Db(db::error::Error),
-    HSCreate(postgres::error::Error),
-    HSGet(postgres::error::Error),
-    HSSetStatus(postgres::error::Error),
-    HSUpdate(postgres::error::Error),
+    PlanCreate(postgres::error::Error),
+
 }
 
 
@@ -24,10 +22,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
-            Error::HSCreate(ref e) => format!("Database error creating a horizontal_scaling, {}", e),
-            Error::HSGet(ref e) => format!("Database error get horizontal_scaling, {}", e),
-            Error::HSSetStatus(ref e) => format!("Database error while update status, {}", e),
-            Error::HSUpdate(ref e) => format!("Database error while update horizontal scaling, {}", e),
+            Error::PlanCreate(ref e) => format!("Database error creating a plan factory, {}", e),
 
         };
         write!(f, "{}", msg)
@@ -38,10 +33,7 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Db(ref err) => err.description(),
-            Error::HSCreate(ref err) => err.description(),
-            Error::HSGet(ref err) => err.description(),
-            Error::HSSetStatus(ref err) => err.description(),
-            Error::HSUpdate(ref err) => err.description(),
+            Error::PlanCreate(ref err) => err.description(),
         }
     }
 }
