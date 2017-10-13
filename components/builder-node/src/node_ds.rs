@@ -8,7 +8,7 @@ use protocol::{nodesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
-use rio_net::metrics::collector::Collector;
+use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
 
 pub struct NodeDS;
@@ -60,12 +60,21 @@ impl NodeDS {
         Ok(())
     }
 
-    //this doesn't have typemeta and objectmeta, maybe we should add it.
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
+        let NODES_METRIC_SCOPE: Vec<String> = vec!["cpu_total".to_string(), "group=nodes".to_string()];
+        let NODES_GROUP_SCOPE: Vec<String> = vec![
+            "cpu_total".to_string(),
+            "ram_total".to_string(),
+            "disk_total".to_string(),
+        ];
         let mut res = nodesrv::HealthzAllGet::new();
-        let mut health_checker = Collector::new(client);
+        let scope = CollectorScope {
+            metric_names: NODES_METRIC_SCOPE,
+            labels: NODES_GROUP_SCOPE,
+        };
+        let mut health_checker = Collector::new(client, scope);
 
-        let metric_response = health_checker.metrics().unwrap();
+        let metric_response = health_checker.overall().unwrap();
 
         let mut coun_collection = Vec::new();
         for data in metric_response.0 {
