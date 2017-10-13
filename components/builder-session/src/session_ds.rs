@@ -257,20 +257,19 @@ impl SessionDS {
     }
 
 
-    pub fn test_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
+    pub fn test_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<Option<sessionsrv::Success>> {
         let conn = datastore.pool.get_shard(0)?;
-
         let rows = &conn.query(
             "SELECT * FROM get_ldap_config_v1($1)",
             &[&(get_id.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::LdapConfigCreate)?;
-
-        for row in rows {
-            let data = do_search(&row)?;
-            println!("----------------------------------------------{:?}", data);
-            return Ok(());
+        if rows.len() != 0 {
+            for row in rows {
+                let data = test_config(&row)?;
+                return Ok(Some(data));
+            }
         }
-        Ok(())
+        Ok(None)
     }
 
     pub fn saml_provider_create(datastore: &DataStoreConn, saml_provider: &sessionsrv::SamlProvider) -> Result<Option<sessionsrv::SamlProvider>> {
@@ -344,17 +343,15 @@ fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfi
     Ok(ldap)
 }
 
-fn do_search(row: &postgres::rows::Row) -> Result<()> {
+fn test_config(row: &postgres::rows::Row) -> Result<sessionsrv::Success> {
     let host: String = row.get("host");
     let lookup_dn: String = row.get("lookup_dn");
+    let lookup_password: String = row.get("lookup_password");
     let ldap = LdapConn::new(&host)?;
-    let (rs, _res) = ldap.search(&lookup_dn, Scope::Subtree, "(&(objectClass=*))", vec![""])?
-        .success()?;
-    println!("Result: {:?}", rs);
-    for entry in rs {
-        println!("{:?}", SearchEntry::construct(entry));
-    }
-    Ok(())
+    ldap.simple_bind(&lookup_dn, &lookup_password)?;
+    let mut success = sessionsrv::Success::new();
+    success.set_result("Successfully authenticated".to_string());
+    Ok(success)
 }
 
 fn row_to_saml_provider(row: &postgres::rows::Row) -> Result<sessionsrv::SamlProvider> {

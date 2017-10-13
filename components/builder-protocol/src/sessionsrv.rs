@@ -605,7 +605,7 @@ impl LdapConfig {
         self.use_ldaps = v;
     }
 
-    pub fn get_use_ldaps(&self) ->  bool {
+    pub fn get_use_ldaps(&self) -> bool {
         self.use_ldaps.clone()
     }
 
@@ -663,8 +663,6 @@ impl LdapConfig {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
-
-
 }
 
 
@@ -686,7 +684,6 @@ impl UserSearch {
     pub fn set_search_filter_template(&mut self, v: ::std::string::String) {
         self.search_filter_template = v;
     }
-
 }
 
 
@@ -764,10 +761,21 @@ impl SamlProvider {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
+}
 
 
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct Success {
+    result: String,
+}
 
-
+impl Success {
+    pub fn new() -> Success {
+        ::std::default::Default::default()
+    }
+    pub fn set_result(&mut self, v: ::std::string::String) {
+        self.result = v;
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]

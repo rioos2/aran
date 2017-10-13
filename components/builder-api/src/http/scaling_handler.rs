@@ -199,7 +199,6 @@ pub fn hs_metrics(req: &mut Request) -> IronResult<Response> {
         Some(hs_metrics) => Ok(render_json(status::Ok, &hs_metrics)),
         None => return Ok(Response::with(status::BadRequest)),
     }
-
 }
 
 pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
