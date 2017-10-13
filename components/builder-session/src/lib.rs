@@ -18,5 +18,6 @@ extern crate serde_json;
 
 pub mod privilege;
 pub mod session_ds;
+pub mod ldap;
 pub mod error;
 pub use self::error::{Error, Result};

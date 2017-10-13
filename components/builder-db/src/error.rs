@@ -15,6 +15,7 @@ pub enum Error {
     AsyncMalformedShardId(String),
     AsyncFunctionCheck(postgres::error::Error),
     AsyncFunctionUpdate(postgres::error::Error),
+    RecordsNotFound(String),
     ConnectionTimeout(r2d2::GetTimeout),
     FunctionCreate(postgres::error::Error),
     FunctionDrop(postgres::error::Error),
@@ -53,6 +54,7 @@ impl fmt::Display for Error {
             }
             Error::AsyncFunctionCheck(ref e) => format!("Async function database check failed, {}", e),
             Error::AsyncFunctionUpdate(ref e) => format!("Async function database update failed, {}", e),
+            Error::RecordsNotFound(ref e) => format!("No Record Found, {}", e),
             Error::ConnectionTimeout(ref e) => format!("Connection timeout, {}", e),
             Error::FunctionCreate(ref e) => format!("Error creating a function: {}", e),
             Error::FunctionDrop(ref e) => format!("Error dropping a function: {}", e),
@@ -87,6 +89,7 @@ impl error::Error for Error {
             Error::AsyncMalformedShardId(_) => "Error parsing a channel strings shard id",
             Error::AsyncFunctionCheck(ref e) => e.description(),
             Error::AsyncFunctionUpdate(ref e) => e.description(),
+            Error::RecordsNotFound(_) => "RecordsNotFound",
             Error::ConnectionTimeout(ref e) => e.description(),
             Error::FunctionCreate(_) => "Error creating database function",
             Error::FunctionDrop(_) => "Error dropping database function",

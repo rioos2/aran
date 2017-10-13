@@ -8,7 +8,8 @@ use postgres;
 use privilege;
 use db::data_store::DataStoreConn;
 use serde_json;
-use ldap3::{LdapConn, Scope, SearchEntry};
+use ldap::{LDAPClient, LDAPUser};
+use db;
 
 
 pub struct SessionDS;
@@ -258,6 +259,18 @@ impl SessionDS {
 
 
     pub fn test_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<Option<sessionsrv::Success>> {
+        match Self::get_ldap_config(datastore, get_id) {
+            Ok(Some(ldap_config)) => return test_ldap(ldap_config),
+            Err(err) => Err(err),
+            _ => {
+                return Err(Error::Db(
+                    db::error::Error::RecordsNotFound("No Record".to_string()),
+                ))
+            }
+        }
+    }
+
+    pub fn get_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<Option<sessionsrv::LdapConfig>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_ldap_config_v1($1)",
@@ -265,26 +278,23 @@ impl SessionDS {
         ).map_err(Error::LdapConfigCreate)?;
         if rows.len() != 0 {
             for row in rows {
-                let data = test_config(&row)?;
+                let data = row_to_ldap_config(&row)?;
                 return Ok(Some(data));
             }
         }
         Ok(None)
     }
-
     pub fn import_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
         //write a get_ldap_config and use that in both the above and this.
-        match get_ldap_config(datastore) {
+        match Self::get_ldap_config(datastore, get_id) {
             Ok(ldap_config) => {
-                let ldusers = ldap_users(ldap_config)
+                let ldusers = ldap_users(ldap_config);
                 ldusers.for_each(|l| {
                     //call AccountDS and insert the data.
                     //how do we trap success/failure.
                 });
             }
-            Err() => {
-
-            }
+            Err(e) => Err(e),
         }
     }
 
@@ -359,26 +369,22 @@ fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<sessionsrv::LdapConfi
     Ok(ldap)
 }
 
-fn test_ldap(row: &postgres::rows::Row) -> Result<()> {
-    let ldap = LDAPClient::new(LDAPConfig {
-        host: row.get("host"),
-        lookup_dn: row.get("lookup_dn"),
-    });
-
-    ldap.connection()
+fn test_ldap(ldap_data: sessionsrv::LdapConfig) -> Result<Option<sessionsrv::Success>> {
+    let ldap = LDAPClient::new(ldap_data);
+    if let Err(err) = ldap.connection() {
+        return Err(err);
+    }
+    let mut success = sessionsrv::Success::new();
+    success.set_result("Success".to_string());
+    Ok(Some(success))
 }
 
-fn ldap_users(row: &postgres::rows::Row) -> Result<()> {
-    let ldap = LDAPClient::new(LDAPConfig {
-        host: row.get("host"),
-        lookup_dn: row.get("lookup_dn"),
-    });
-
-    let ldap_users = ldap.search();
-    match test_ldap {
-        Ok() => {}
-        Err() => {}
+fn ldap_users(ldap_data: sessionsrv::LdapConfig) -> Result<Vec<LDAPUser>> {
+    let ldap = LDAPClient::new(ldap_data);
+    if let Err(err) = ldap.connection() {
+        return Err(err);
     }
+    ldap.search()
 }
 
 
