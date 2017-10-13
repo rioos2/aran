@@ -67,10 +67,10 @@ impl NodeDS {
             "ram_total".to_string(),
             "disk_total".to_string(),
         ];
-        let mut res = nodesrv::HealthzAllGet::new();
         let scope = CollectorScope {
             metric_names: NODES_METRIC_SCOPE,
             labels: NODES_GROUP_SCOPE,
+            last_x_minutes: None,
         };
         let mut health_checker = Collector::new(client, scope);
 
@@ -88,7 +88,6 @@ impl NodeDS {
 
 
         let mut lstatistics = vec![nodesrv::NodeStatistic::new()];
-
         for st_data in metric_response.1 {
             lstatistics = st_data.into();
         }
@@ -96,6 +95,7 @@ impl NodeDS {
         statistic.set_title("Statistics".to_string());
         statistic.set_nodes(lstatistics);
 
+        let mut res = nodesrv::HealthzAllGet::new();
         res.set_title("Command center operations".to_string());
         res.set_gauges(guague);
         res.set_statistics(statistic);

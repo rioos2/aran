@@ -4,14 +4,7 @@
 
 use error::{self, Result};
 use std::error::Error as StdError;
-use std::result::Result as StdResult;
 
-use std::collections::HashMap;
-use std::io::Read;
-use std::time::Duration;
-
-use protocol::net;
-use serde_json;
 use ldap3::{LdapConn, Scope, SearchEntry};
 use protocol::sessionsrv;
 
@@ -20,9 +13,11 @@ pub struct LDAPClient {
     config: sessionsrv::LdapConfig,
 }
 
+#[derive(Debug)]
 pub struct LDAPUser {
     email: String,
-    name: String,
+    first_name: String,
+    last_name: String,
     phone: String,
 }
 
@@ -33,13 +28,15 @@ impl LDAPClient {
 
     pub fn connection(&self) -> Result<(LdapConn)> {
         let ldap = LdapConn::new(&self.config.get_host())?;
-        let (rs, _res) = ldap.search(
+        let (_, _res) = ldap.search(
             &self.config.get_lookup_dn(),
             Scope::Subtree,
             "(&(objectClass=*))",
             vec![""],
         )?
             .success()?;
+        ldap.unbind()?;
+
         Ok(ldap)
     }
 
@@ -54,21 +51,43 @@ impl LDAPClient {
                     vec![""],
                 )?
                     .success()?;
-                //build entries as LDAPUser struct\
-                let mut user_collection = vec![];
+                let mut ldap_users = vec![];
                 for entry in rs {
-                    println!("{:?}", SearchEntry::construct(entry));
-                    // user_collection.push(LDAPUser {});
-
+                    let l = SearchEntry::construct(entry).into();
+                    ldap_users.push(l);
                 }
-                Ok(user_collection)
+                ldap.unbind()?;
+
+                Ok(ldap_users)
             }
             Err(err) => Err(err),
         }
 
     }
+}
 
-    fn close() {
-        //close ldap connection
+impl Into<LDAPUser> for SearchEntry {
+    fn into(self) -> LDAPUser {
+        println!("--- searched user {:?}", self);
+        let mut user = LDAPUser {
+            email: "".to_string(),
+            first_name: "".to_string(),
+            last_name: "".to_string(),
+            phone: "".to_string(),
+        };
+        if let Some(cns) = self.attrs.get("cn") {
+            user.first_name = cns.iter().next().unwrap_or(&"none".to_string()).to_string();
+        }
+        if let Some(sns) = self.attrs.get("sn") {
+            user.last_name = sns.iter().next().unwrap_or(&"none".to_string()).to_string();
+        }
+        if let Some(givennames) = self.attrs.get("givenname") {
+            user.first_name = givennames.iter().next().unwrap_or(&"none".to_string()).to_string();
+        }
+        if let Some(emails) = self.attrs.get("mail") {
+            user.email = emails.iter().next().unwrap_or(&"none".to_string()).to_string();
+        }
+        println!("--- converted user {:?}", user);
+        user
     }
 }

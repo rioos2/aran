@@ -285,16 +285,34 @@ impl SessionDS {
         Ok(None)
     }
     pub fn import_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
-        //write a get_ldap_config and use that in both the above and this.
         match Self::get_ldap_config(datastore, get_id) {
-            Ok(ldap_config) => {
-                let ldusers = ldap_users(ldap_config);
-                ldusers.for_each(|l| {
-                    //call AccountDS and insert the data.
-                    //how do we trap success/failure.
-                });
+            Ok(Some(ldap_config)) => {
+                let importing_users = ldap_users(ldap_config)?;
+                let imported: Vec<Result<()>> = importing_users
+                    .into_iter()
+                    .map(|import_user| {
+                        //let add_account = import_user.into()
+                        //AccountDS::account_create(datastore,a)
+                        Ok(())
+                    })
+                    .collect();
+
+                let import_failure = &imported.iter().filter(|f| (*f).is_err()).count();
+
+                let import_count = format!("{} records imported successfully", imported.len());
+
+                if *import_failure > 0 {
+                    return imported.into_iter().next().unwrap();
+                }
+
+                Ok(())
             }
             Err(e) => Err(e),
+            _ => {
+                return Err(Error::Db(db::error::Error::RecordsNotFound(
+                    "Import not processed.".to_string(),
+                )))
+            }
         }
     }
 
@@ -324,14 +342,11 @@ impl SessionDS {
                 &(oidc_provider.get_client_id() as String),
                 &(oidc_provider.get_verify_server_certificate() as bool),
                 &(oidc_provider.get_ca_certs() as String),
-
-
             ],
         ).map_err(Error::OidcProviderCreate)?;
         let oidc = row_to_oidc_provider(&rows.get(0))?;
         return Ok(Some(oidc.clone()));
     }
-
 }
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {

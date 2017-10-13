@@ -22,6 +22,7 @@ pub struct Collector<'a> {
 pub struct CollectorScope {
     pub metric_names: Vec<String>,
     pub labels: Vec<String>,
+    pub last_x_minutes: Option<String>,
 }
 
 impl<'a> Collector<'a> {
@@ -34,8 +35,8 @@ impl<'a> Collector<'a> {
 
     pub fn metric_by(&mut self) -> Result<Vec<nodesrv::PromResponse>> {
         let content_datas = self.do_collect();
-        let statistics = self.set_statistics(Ok(content_datas.clone())); //make it os_usages
-        Ok(statistics.unwrap())
+        let metrics = self.set_metrics(Ok(content_datas.clone())); //make it os_usages
+        Ok(metrics.unwrap())
     }
 
     pub fn overall(&mut self) -> Result<(Vec<nodesrv::PromResponse>, Vec<nodesrv::PromResponse>)> {
@@ -48,7 +49,9 @@ impl<'a> Collector<'a> {
     fn do_collect(&self) -> Vec<nodesrv::PromResponse> {
         let mut content_datas = vec![];
         let s: String = self.scope.labels.clone().into_iter().collect();
-        let label_group = format!("{}{}{}", "{", s, "}");
+        let l = self.scope.last_x_minutes.clone().unwrap_or("".to_string());
+
+        let label_group = format!("{}{}{}{}", "{", s, "}", l);
         for scope in self.scope.metric_names.iter() {
             let content = self.client.pull_metrics(
                 &format!("{}{}", scope, label_group),
@@ -100,6 +103,13 @@ impl<'a> Collector<'a> {
                         .to_vec(),
                 )
             }
+            _ => return Err(error::Error::CryptoError(String::new())),
+        }
+    }
+
+    fn set_metrics(&self, response: Result<Vec<nodesrv::PromResponse>>) -> Result<Vec<nodesrv::PromResponse>> {
+        match response {
+            Ok(proms) => return Ok(proms),
             _ => return Err(error::Error::CryptoError(String::new())),
         }
     }
