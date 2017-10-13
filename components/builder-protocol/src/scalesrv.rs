@@ -1,5 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 use asmsrv;
+use nodesrv;
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScaling {
@@ -296,5 +298,71 @@ impl HorizontalScalingGetResponse {
         self.items = v;
         self.kind = r;
         self.api_version = s;
+    }
+}
+/////// REFACTOR later using trait ResultResult which has a type kind.
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ScalingGet {
+    title: String,
+    from_date: String,
+    to_date: String,
+    metrics: nodesrv::Osusages,
+}
+
+impl ScalingGet {
+    pub fn new() -> ScalingGet {
+        ::std::default::Default::default()
+    }
+    pub fn set_title(&mut self, v: ::std::string::String) {
+        self.title = v;
+    }
+
+    pub fn set_metrics(&mut self, v: nodesrv::Osusages) {
+        self.metrics = v;
+    }
+    pub fn set_from_date(&mut self, v: ::std::string::String) {
+        self.from_date = v;
+    }
+    pub fn set_to_date(&mut self, v: ::std::string::String) {
+        self.to_date = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ScalingGetResponse {
+    kind: String,
+    api_version: String,
+    id: String,
+    results: ScalingGet,
+}
+
+impl ScalingGetResponse {
+    pub fn new() -> ScalingGetResponse {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
+    }
+    pub fn set_results(&mut self, v: ScalingGet) {
+        self.results = v;
+    }
+}
+
+
+impl Into<ScalingGetResponse> for ScalingGet {
+    fn into(self) -> ScalingGetResponse {
+        let mut scaling_response= ScalingGetResponse::new();
+        scaling_response.set_results(self);
+        scaling_response.set_kind("AssemblyMetricList".to_string());
+        scaling_response.set_api_version("v1".to_string());
+        scaling_response.set_id("AssemblyMetricList".to_string());
+        scaling_response
     }
 }

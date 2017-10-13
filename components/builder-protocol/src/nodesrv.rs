@@ -397,7 +397,7 @@ pub struct Osusages {
     from_date: String,
     to_date: String,
     cumulative: Cumulative,
-    item: Vec<Item>,
+    items: Vec<Item>,
 }
 impl Osusages {
     pub fn new() -> Osusages {
@@ -415,8 +415,8 @@ impl Osusages {
     pub fn set_cumulative(&mut self, v: Cumulative) {
         self.cumulative = v;
     }
-    pub fn set_item(&mut self, v: Vec<Item>) {
-        self.item = v;
+    pub fn set_items(&mut self, v: Vec<Item>) {
+        self.items = v;
     }
 }
 
@@ -446,7 +446,7 @@ impl Cumulative {
 pub struct Item {
     id: String,
     name: String,
-    value: Vec<ValueData>,
+    values: Vec<ValueData>,
 }
 
 impl Item {
@@ -459,8 +459,8 @@ impl Item {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
-    pub fn set_value(&mut self, v: Vec<ValueData>) {
-        self.value = v;
+    pub fn set_values(&mut self, v: Vec<ValueData>) {
+        self.values = v;
     }
 }
 
@@ -583,6 +583,30 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
         collections
     }
 }
+
+impl Into<Osusages> for PromResponse {
+    fn into(mut self) -> Osusages {
+        let mut osusage = Osusages::new();
+        let mut item = Item::new();
+    //    item.set_id(self.data.metric.get("rioos_assemblyfactory_id").unwrap_or("none").to_owned()); //make them as constants in prometheus.rs
+    //    item.set_name(self.data.metric.get("__name__").unwrap_or("none").to_owned()); //make them as constants in prometheus.rs
+
+        if let Data::Vector(ref mut instancevec) = self.data {
+            let mut values = Vec::new();
+            for data in instancevec.into_iter() {
+                let mut value_data = ValueData::new();
+                value_data.set_date(data.value.0.to_string().to_owned());
+                value_data.set_value(data.value.1.to_owned());
+                values.push(value_data);
+            }
+            item.set_values(values)
+        }
+        osusage.set_items(vec![item]);
+        osusage
+    }
+}
+
+
 
 
 

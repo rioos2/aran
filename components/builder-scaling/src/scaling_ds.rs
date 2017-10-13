@@ -4,14 +4,14 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{scalesrv, asmsrv};
+use protocol::{scalesrv, asmsrv, nodesrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 
-const RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id=";
+const RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
 
 
 pub struct ScalingDS;
@@ -73,17 +73,38 @@ impl ScalingDS {
         Ok(())
     }
 
-    pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<()> {
-        let label_name = format!("{}{}", RIOOS_ASSEMBLY_ID, id);
+    pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<ScaleMetricsResponse> {
+        let label_name = format!("{}={}", RIOOS_ASSEMBLY_ID, id);
         let METRIC_SCOPE = vec![];
         let GROUP_SCOPE: Vec<String> = vec![label_name.to_string()];
+
         let scope = CollectorScope {
             metric_names: METRIC_SCOPE,
             labels: GROUP_SCOPE,
+            last_x_minutes: Some("[5m]") //TO-DO: move all metric constants outside.
         };
+
         let mut metric_checker = Collector::new(client, scope);
         let metric_response = metric_checker.metric_by().unwrap();
-        Ok(())
+
+        let metrics = nodesrv::Osusages::new();
+
+        let all_items = metric_response.into_iter().map (|p|
+            let p1: nodesrv::Osusages = p.into();
+            p1.items()
+        ).collect();
+
+        metrics.set_items(all_items.collect());
+
+        let mut  response = scalesrv::ScalingGet::new();
+        response.set_title("Scale metrics " + id);
+        /*res.set_from_date(from_date);
+        res.set_to_date(to_date);*/
+        response.set_metrics(metrics);
+
+        let response: nodesrv::HealthzAllGetResponse = res.into();
+
+        Ok(Some(response))
     }
 }
 
