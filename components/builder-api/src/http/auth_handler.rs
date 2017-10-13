@@ -384,3 +384,33 @@ pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
 
     }
 }
+
+pub fn config_oidc_provider(req: &mut Request) -> IronResult<Response> {
+    let mut oidc_provider = OidcProvider::new();
+    {
+        match req.get::<bodyparser::Struct<SamlProviderReq>>() {
+            Ok(Some(body)) => {
+                saml_provider.set_description(body.description);
+                saml_provider.set_idp_metadata(body.idp_metadata);
+                saml_provider.set_sp_base_url(body.sp_base_url);
+
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+    let conn = Broker::connect().unwrap();
+    match SessionDS::saml_provider_create(&conn, &saml_provider) {
+        Ok(saml) => Ok(render_json(status::Ok, &saml)),
+
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
+}

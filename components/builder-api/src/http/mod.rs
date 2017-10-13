@@ -77,6 +77,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         config_saml: post "/auth/saml/providers" => config_saml_provider,
 
+        config_openid: post "/auth/oidc/providers/:provider_id " => config_oidc_provider,
+
         //auth API for creating new account
         signup: post "/accounts" => account_create,
         account_get_by_id: get "/accounts/:id" => account_get_by_id,

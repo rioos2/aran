@@ -769,3 +769,89 @@ impl SamlProvider {
 
 
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct OidcProvider {
+    id: String,
+    description: String,
+    issuer: String,
+    base_url: String,
+    client_secret: String,
+    client_id: String,
+    verify_server_certificate: bool,
+    ca_certs: String,
+    created_at: String,
+}
+
+impl OidcProvider {
+    pub fn new() -> OidcProvider {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+
+    pub fn get_description(&self) -> ::std::string::String {
+        self.description.clone()
+    }
+
+    pub fn set_issuer(&mut self, v: ::std::string::String) {
+        self.issuer = v;
+    }
+
+    pub fn get_issuer(&self) -> ::std::string::String {
+        self.issuer.clone()
+    }
+    pub fn set_base_url(&mut self, v: ::std::string::String) {
+        self.base_url = v;
+    }
+
+    pub fn get_base_url(&self) -> ::std::string::String {
+        self.base_url.clone()
+    }
+    pub fn set_client_secret(&mut self, v: ::std::string::String) {
+        self.client_secret = v;
+    }
+
+    pub fn get_client_secret(&self) -> ::std::string::String {
+        self.client_secret.clone()
+    }
+    pub fn set_client_id(&mut self, v: ::std::string::String) {
+        self.client_id = v;
+    }
+
+    pub fn get_client_id(&self) -> ::std::string::String {
+        self.client_id.clone()
+    }
+    pub fn set_ca_certs(&mut self, v: ::std::string::String) {
+        self.ca_certs = v;
+    }
+
+    pub fn get_ca_certs(&self) -> ::std::string::String {
+        self.ca_certs.clone()
+    }
+
+    pub fn set_verify_server_certificate(&mut self, v: bool) {
+        self.verify_server_certificate = v;
+    }
+
+    pub fn get_verify_server_certificate(&self) ->  bool {
+        self.verify_server_certificate.clone()
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
+
+}
