@@ -97,7 +97,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),
         horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(hs_list).before(basic.clone()),
         horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(hs_status_update).before(basic.clone()),
-
+        horizontal_scaling_update: put "/horizontalscaling/:id" => XHandler::new(hs_update).before(basic.clone()),
         //authorization API: for roles
         roles: post "/roles" => XHandler::new(roles_create).before(basic.clone()),
         roles_list: get "/roles" => XHandler::new(roles_list).before(basic.clone()),

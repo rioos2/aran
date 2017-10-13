@@ -14,6 +14,7 @@ pub enum Error {
     HSCreate(postgres::error::Error),
     HSGet(postgres::error::Error),
     HSSetStatus(postgres::error::Error),
+    HSUpdate(postgres::error::Error),
 }
 
 
@@ -26,6 +27,8 @@ impl fmt::Display for Error {
             Error::HSCreate(ref e) => format!("Database error creating a horizontal_scaling, {}", e),
             Error::HSGet(ref e) => format!("Database error get horizontal_scaling, {}", e),
             Error::HSSetStatus(ref e) => format!("Database error while update status, {}", e),
+            Error::HSUpdate(ref e) => format!("Database error while update horizontal scaling, {}", e),
+
         };
         write!(f, "{}", msg)
     }
@@ -38,6 +41,7 @@ impl error::Error for Error {
             Error::HSCreate(ref err) => err.description(),
             Error::HSGet(ref err) => err.description(),
             Error::HSSetStatus(ref err) => err.description(),
+            Error::HSUpdate(ref err) => err.description(),
         }
     }
 }

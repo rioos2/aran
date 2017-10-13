@@ -63,6 +63,25 @@ impl ScalingDS {
         ).map_err(Error::HSSetStatus)?;
         Ok(())
     }
+    pub fn hs_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM update_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            &[
+                &(hs.get_id().parse::<i64>().unwrap()),
+                &(hs.get_name() as String),
+                &(hs.get_description() as String),
+                &(hs.get_tags() as Vec<String>),
+                &(hs.get_scale_type() as String),
+                &(hs.get_representation_skew() as String),
+                &(hs.get_state() as String),
+                &(hs.get_metadata() as Vec<String>),
+                &(spec_str as String),
+            ],
+        ).map_err(Error::HSUpdate)?;
+        Ok(None)
+    }
 }
 
 fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
