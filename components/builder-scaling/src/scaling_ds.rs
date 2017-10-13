@@ -17,7 +17,7 @@ impl ScalingDS {
         let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
         let status_str = serde_json::to_string(hs.get_status()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
                 &(hs.get_name() as String),
                 &(hs.get_description() as String),
@@ -49,7 +49,11 @@ impl ScalingDS {
         for row in rows {
             hs_collection.push(row_to_hs(&row)?)
         }
-        response.set_hs_collection(hs_collection, "ScalingList".to_string(), "v1".to_string());
+        response.set_hs_collection(
+            hs_collection,
+            "HorizontalPodAutoscalerList".to_string(),
+            "v1".to_string(),
+        );
         Ok(Some(response))
     }
 
@@ -121,7 +125,7 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     obj_meta.set_owner_references(owner_collection);
     hs.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Scaling".to_string());
+    type_meta.set_kind("HorizontalPodAutoscaler".to_string());
     type_meta.set_api_version("v1".to_string());
     hs.set_type_meta(type_meta);
 

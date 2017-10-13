@@ -5,6 +5,8 @@
 use bodyparser;
 use rio_core::event::*;
 use rio_net::http::controller::*;
+use rio_net::metrics::mock::MockMetrics;
+
 use scale::scaling_ds::ScalingDS;
 use iron::prelude::*;
 use iron::status;
@@ -13,6 +15,7 @@ use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricR
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
+
 
 define_event_log!();
 
@@ -191,6 +194,13 @@ pub fn hs_list(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+pub fn hs_metrics(req: &mut Request) -> IronResult<Response> {
+    match MockMetrics::hs_metrics() {
+        Some(hs_metrics) => Ok(render_json(status::Ok, &hs_metrics)),
+        None => return Ok(Response::with(status::BadRequest)),
+    }
+
+}
 
 pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
     let id = {

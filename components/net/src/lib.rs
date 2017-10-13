@@ -9,7 +9,9 @@ extern crate rioos_builder_protocol as protocol;
 extern crate rioos_core as core;
 extern crate rioos_builder_db as db;
 extern crate rioos_builder_session as session;
+extern crate rioos_builder_authsrv as authorize;
 extern crate crypto;
+
 #[macro_use]
 extern crate hyper;
 extern crate hyper_openssl;

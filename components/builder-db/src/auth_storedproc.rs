@@ -40,6 +40,7 @@ impl Migratable for AuthProcedures {
          states text,
          approval text,
          suspend text,
+         roles text[],
          registration_ip_address text,
          updated_at timestamptz,
          created_at timestamptz DEFAULT now())"#,
@@ -61,11 +62,12 @@ impl Migratable for AuthProcedures {
                         states text,
                         approval text,
                         suspend text,
+                        roles text[],
                         registration_ip_address text
                     ) RETURNS SETOF accounts AS $$
                             BEGIN
-                                RETURN QUERY INSERT INTO accounts(name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, registration_ip_address)
-                                    VALUES (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, registration_ip_address)
+                                RETURN QUERY INSERT INTO accounts(name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, roles,registration_ip_address)
+                                    VALUES (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, roles,registration_ip_address)
                                     RETURNING *;
                                 RETURN;
                             END
@@ -87,18 +89,23 @@ impl Migratable for AuthProcedures {
                   account_states text,
                   account_approval text,
                   account_suspend text,
+                  account_roles text[],
                   account_registration_ip_address text
                 ) RETURNS SETOF accounts AS $$
                     DECLARE
+                        inserted_account accounts;
                        existing_account accounts%rowtype;
                     BEGIN
                        SELECT * INTO existing_account FROM accounts WHERE email = account_email LIMIT 1;
                        IF FOUND THEN
                            RETURN NEXT existing_account;
                        ELSE
-                           RETURN QUERY INSERT INTO accounts (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, registration_ip_address)
+                            INSERT INTO accounts (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, roles,registration_ip_address)
                             VALUES (account_name, account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password, account_states,
-                                account_approval, account_suspend, account_registration_ip_address) ON CONFLICT DO NOTHING RETURNING *;
+                                account_approval, account_suspend, account_roles,account_registration_ip_address) ON CONFLICT DO NOTHING RETURNING * into inserted_account;
+                                PERFORM insert_origin_v1('default',inserted_account.id,inserted_account.name,'{"name":"","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}','{"kind":"Origin","api_version":"v1"}');
+                                RETURN NEXT inserted_account;
+                                RETURN;
                        END IF;
                        RETURN;
                     END
@@ -156,7 +163,7 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] account_session");
 
-//sequence ldap id generation
+        //sequence ldap id generation
         migrator.migrate(
             "sessionsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS ldap_id_seq;"#,
@@ -212,16 +219,27 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] insert_ldap_config_v1");
 
-        //sequence saml provider id generation
-                migrator.migrate(
-                    "sessionsrv",
-                    r#"CREATE SEQUENCE IF NOT EXISTS saml_provider_id_seq;"#,
-                )?;
-                //sequence ldap_config table creation
 
-                migrator.migrate(
-                    "sessionsrv",
-                    r#"CREATE TABLE  IF NOT EXISTS saml_provider (
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION get_ldap_config_v1 (aid bigint) RETURNS SETOF ldap_config AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM ldap_config WHERE id = aid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        //sequence saml provider id generation
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS saml_provider_id_seq;"#,
+        )?;
+        //sequence ldap_config table creation
+
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE TABLE  IF NOT EXISTS saml_provider (
                      id bigint PRIMARY KEY DEFAULT next_id_v1('saml_provider_id_seq'),
                      description text,
                      idp_metadata text,
@@ -229,14 +247,14 @@ impl Migratable for AuthProcedures {
                      updated_at timestamptz,
                      created_at timestamptz DEFAULT now()
                      )"#,
-                )?;
+        )?;
 
-                ui.para("[✓] saml_provider");
-                //ldap config table value insert
+        ui.para("[✓] saml_provider");
+        //ldap config table value insert
 
-                migrator.migrate(
-                    "sessionsrv",
-                    r#"CREATE OR REPLACE FUNCTION insert_saml_provider_v1 (
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_saml_provider_v1 (
                         description text,
                         idp_metadata text,
                         sp_base_url text
@@ -249,10 +267,10 @@ impl Migratable for AuthProcedures {
                                         END
                                     $$ LANGUAGE plpgsql VOLATILE
                                     "#,
-                )?;
+        )?;
 
 
-                ui.para("[✓] insert_saml_provider_v1");
+        ui.para("[✓] insert_saml_provider_v1");
 
 
         migrator.migrate(
@@ -385,7 +403,7 @@ impl Migratable for AuthProcedures {
                        inserted_origin origins;
                      BEGIN
                          INSERT INTO origins (name, owner_id,type_meta,object_meta)
-                                VALUES (origin_name, origin_owner_id,origin_type_meta,origin_object_meta) RETURNING * into inserted_origin;
+                                VALUES (origin_name, origin_owner_id,origin_type_meta,origin_object_meta) ON CONFLICT (name) DO NOTHING RETURNING * into inserted_origin;
                          PERFORM insert_origin_member_v1(inserted_origin.id, origin_name, origin_owner_id, origin_owner_name);
                          RETURN NEXT inserted_origin;
                          RETURN;
@@ -509,7 +527,8 @@ impl Migratable for AuthProcedures {
          name text,
          description text,
          updated_at timestamptz,
-         created_at timestamptz DEFAULT now())"#,
+         created_at timestamptz DEFAULT now(),
+         UNIQUE (name))"#,
         )?;
 
         ui.para("[✓] roles");
@@ -552,6 +571,8 @@ impl Migratable for AuthProcedures {
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
+
+
 
         // The core role_id_seq table
         migrator.migrate(
@@ -629,6 +650,21 @@ impl Migratable for AuthProcedures {
                    $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        // Select role from roles table by id
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_permission_by_role_name_v1 (rname text) RETURNS SETOF permissions AS $$
+            DECLARE
+               this_role roles%rowtype;
+            BEGIN
+                SELECT * FROM roles WHERE name = rname LIMIT 1 INTO this_role;
+                RETURN QUERY SELECT * FROM permissions WHERE role_id = this_role.id;
+                RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
         migrator.migrate(
             "authsrv",
             r#"CREATE OR REPLACE FUNCTION get_specfic_permission_role_v1 (
@@ -644,6 +680,32 @@ impl Migratable for AuthProcedures {
         )?;
 
         ui.end("AuthProcedure");
+
+        migrator.migrate(
+            "originsrv",
+            r#"with first_insert as (
+                insert into roles(name,description)
+                values('role/rios:superuser','Superuser of RIO/OS. God given powers.  instance')
+                ON CONFLICT (name) DO NOTHING
+                RETURNING id
+            )
+            insert into permissions (role_id, name ,description)
+            values
+            ( (select id from first_insert), 'rioos.assembly.get','Read only access to all the users  VMs, Containers'),( (select id from first_insert), 'rioos.assembly.list','Read only access to all the users  VMs, Containers')"#,
+        )?;
+
+        migrator.migrate(
+            "originsrv",
+            r#"with second_insert as (
+                insert into roles(name,description)
+                values('role/rios:TeamAdmin','TeamOwner of RIO/OS team')
+                ON CONFLICT (name) DO NOTHING
+                RETURNING id
+            )
+            insert into permissions (role_id, name ,description)
+            values
+            ( (select id from second_insert), 'rioos.assembly.get','Read only access to all the users  VMs, Containers'),( (select id from second_insert), 'rioos.assembly.get','Read only access to all the users  VMs, Containers')"#,
+        )?;
 
         Ok(())
 

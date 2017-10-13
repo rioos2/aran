@@ -10,6 +10,13 @@ use super::super::http::controller::*;
 pub const SUCCESS: &'static str = "Success";
 pub const FAILURE: &'static str = "Failure";
 
+
+pub enum DBError {
+    NotFound,
+    DataBaseError,
+}
+
+
 #[derive(Serialize)]
 struct Bad {
     // Status of the operation.
@@ -55,7 +62,7 @@ pub trait AranError: Send + fmt::Display + 'static {
                 status: self.status().to_string(),
                 code: self.code().to_string(),
                 message: self.description().to_string(),
-                reason: self.cause().unwrap().to_string(),
+                reason: self.cause().unwrap_or(&internal_error("An unknown error", "not known")).to_string(),
             },
         ))
     }
@@ -130,14 +137,13 @@ pub type AranResult<T> = Result<T, Box<AranError>>;
 
 // =============================================================================
 // Error impls
-
 impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
     fn from(err: E) -> Box<AranError> {
-        // if let Some(err) = Any::downcast_ref::<DieselError>(&err) {
-        //     if let DieselError::NotFound = *err {
-        //         return Box::new(NotFound);
-        //     }
-        // }
+        if let Some(err) = Any::downcast_ref::<DBError>(&err) {
+            if let DBError::NotFound = *err {
+                return Box::new(NotFound);
+            }
+        }
 
         struct Shim<E>(E);
         impl<E: Error + Send + 'static> AranError for Shim<E> {
@@ -304,7 +310,6 @@ impl AranError for MalformedBody {
     fn description(&self) -> &str {
         self.0.as_ref()
     }
-
 }
 
 impl fmt::Display for MalformedBody {

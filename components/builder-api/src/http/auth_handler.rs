@@ -14,7 +14,7 @@ use router::Router;
 use iron::typemap;
 use protocol::net::{self, ErrCode};
 use protocol::sessionsrv::*;
-
+use protocol::asmsrv::IdGet;
 use db::data_store::Broker;
 
 
@@ -32,6 +32,7 @@ struct SessionCreateReq {
     states: String,
     approval: String,
     suspend: String,
+    roles: Vec<String>,
     registration_ip_address: String,
 }
 
@@ -78,7 +79,7 @@ struct GroupSearchReq {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct  SamlProviderReq {
+struct SamlProviderReq {
     description: String,
     idp_metadata: String,
     sp_base_url: String,
@@ -180,6 +181,7 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 account_create.set_states(body.states);
                 account_create.set_approval(body.approval);
                 account_create.set_suspend(body.suspend);
+                account_create.set_roles(body.roles);
                 account_create.set_registration_ip_address(body.registration_ip_address);
             }
             Err(err) => {
@@ -329,8 +331,28 @@ pub fn set_ldap_config(req: &mut Request) -> IronResult<Response> {
         )),
 
     }
+}
 
 
+pub fn do_search(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+    let mut serach_id = IdGet::new();
+    serach_id.set_id(id.to_string());
+
+    match SessionDS::test_ldap_config(&conn, &serach_id) {
+        Ok(result) => Ok(render_json(status::Ok, &result)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
 }
 
 pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
@@ -355,11 +377,10 @@ pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match SessionDS::saml_provider_create(&conn, &saml_provider) {
         Ok(saml) => Ok(render_json(status::Ok, &saml)),
+
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
 
     }
-
-
 }
