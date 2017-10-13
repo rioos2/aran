@@ -334,7 +334,7 @@ pub fn set_ldap_config(req: &mut Request) -> IronResult<Response> {
 }
 
 
-pub fn do_search(req: &mut Request) -> IronResult<Response> {
+pub fn test_ldap_config(req: &mut Request) -> IronResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
@@ -377,7 +377,12 @@ pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match SessionDS::saml_provider_create(&conn, &saml_provider) {
         Ok(saml) => Ok(render_json(status::Ok, &saml)),
-
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
