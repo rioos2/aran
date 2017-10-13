@@ -73,6 +73,27 @@ impl ScalingDS {
         Ok(())
     }
 
+    pub fn hs_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
+        let rows = &conn.query(
+            "SELECT * FROM update_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            &[
+                &(hs.get_id().parse::<i64>().unwrap()),
+                &(hs.get_name() as String),
+                &(hs.get_description() as String),
+                &(hs.get_tags() as Vec<String>),
+                &(hs.get_scale_type() as String),
+                &(hs.get_representation_skew() as String),
+                &(hs.get_state() as String),
+                &(hs.get_metadata() as Vec<String>),
+                &(spec_str as String),
+            ],
+        ).map_err(Error::HSUpdate)?;
+        let hscale = row_to_hs(&rows.get(0))?;
+        return Ok(Some(hscale.clone()));
+
+
     pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<()> {
         let label_name = format!("{}{}", RIOOS_ASSEMBLY_ID, id);
         let METRIC_SCOPE = vec![];
@@ -84,6 +105,7 @@ impl ScalingDS {
         let mut metric_checker = Collector::new(client, scope);
         let metric_response = metric_checker.metric_by().unwrap();
         Ok(())
+>>>>>>> origin/master
     }
 }
 

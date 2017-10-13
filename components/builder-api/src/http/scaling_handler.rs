@@ -251,3 +251,106 @@ pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
 
     }
 }
+
+pub fn hs_update(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+    let mut hs_update = HorizontalScaling::new();
+    {
+        match req.get::<bodyparser::Struct<HsCreateReq>>() {
+            Ok(Some(body)) => {
+                if body.name.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `name`",
+                    )));
+                }
+
+                hs_update.set_id(id.to_string());
+                hs_update.set_name(body.name);
+                hs_update.set_description(body.description);
+                hs_update.set_tags(body.tags);
+                hs_update.set_scale_type(body.scale_type);
+                hs_update.set_representation_skew(body.representation_skew);
+                hs_update.set_metadata(body.metadata);
+                hs_update.set_state(body.state);
+
+                let mut spec = Spec::new();
+
+                spec.set_scale_target_ref(body.spec.scale_target_ref);
+                spec.set_min_replicas(body.spec.min_replicas);
+                spec.set_max_replicas(body.spec.max_replicas);
+
+                let mut metrics_collection = Vec::new();
+
+                for data in body.spec.metrics {
+
+                    let mut metrics = Metrics::new();
+
+                    metrics.set_metric_type(data.metric_type);
+
+                    let mut metrics_obj = MetricObject::new();
+
+                    metrics_obj.set_target(data.object.target);
+                    metrics_obj.set_target_value(data.object.target_value);
+
+                    let mut obj_time_spec = TimeSpec::new();
+
+                    obj_time_spec.set_scale_up_by(data.object.metric_time_spec.scale_up_by);
+                    obj_time_spec.set_scale_up_wait_time(data.object.metric_time_spec.scale_up_wait_time);
+                    obj_time_spec.set_scale_down_by(data.object.metric_time_spec.scale_down_by);
+                    obj_time_spec.set_scale_down_wait_time(data.object.metric_time_spec.scale_down_wait_time);
+
+                    metrics_obj.set_metric_time_spec(obj_time_spec);
+
+                    metrics.set_metric_object(metrics_obj);
+
+                    let mut metrics_res = MetricResource::new();
+
+                    metrics_res.set_name(data.resource.name);
+                    metrics_res.set_min_target_value(data.resource.min_target_value);
+                    metrics_res.set_max_target_value(data.resource.max_target_value);
+
+                    let mut res_time_spec = TimeSpec::new();
+
+                    res_time_spec.set_scale_up_by(data.resource.metric_time_spec.scale_up_by);
+                    res_time_spec.set_scale_up_wait_time(data.resource.metric_time_spec.scale_up_wait_time);
+                    res_time_spec.set_scale_down_by(data.resource.metric_time_spec.scale_down_by);
+                    res_time_spec.set_scale_down_wait_time(data.resource.metric_time_spec.scale_down_wait_time);
+
+                    metrics_res.set_metric_time_spec(res_time_spec);
+
+                    metrics.set_metric_resource(metrics_res);
+
+                    metrics_collection.push(metrics);
+                }
+
+                spec.set_metrics(metrics_collection);
+                hs_update.set_spec(spec);
+
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+
+    let conn = Broker::connect().unwrap();
+
+    match ScalingDS::hs_update(&conn, &hs_update) {
+        Ok(hs) => Ok(render_json(status::Ok, &hs)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
+    }
+}

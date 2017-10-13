@@ -235,7 +235,7 @@ impl Migratable for AuthProcedures {
             "sessionsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS saml_provider_id_seq;"#,
         )?;
-        //sequence ldap_config table creation
+        //sequence saml_provider table creation
 
         migrator.migrate(
             "sessionsrv",
@@ -250,7 +250,7 @@ impl Migratable for AuthProcedures {
         )?;
 
         ui.para("[✓] saml_provider");
-        //ldap config table value insert
+        //saml config table value insert
 
         migrator.migrate(
             "sessionsrv",
@@ -271,6 +271,57 @@ impl Migratable for AuthProcedures {
 
 
         ui.para("[✓] insert_saml_provider_v1");
+
+        //sequence oidc_provider id generation
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS oidc_provider_id_seq;"#,
+        )?;
+        //sequence oidc_provider table creation
+
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE TABLE  IF NOT EXISTS oidc_provider (
+                     id bigint PRIMARY KEY DEFAULT next_id_v1('oidc_provider_id_seq'),
+                     description text,
+                     issuer text,
+                     base_url text,
+                     client_secret text,
+                     client_id text,
+                     verify_server_certificate bool,
+                     ca_certs text,
+                     updated_at timestamptz,
+                     created_at timestamptz DEFAULT now()
+                     )"#,
+        )?;
+
+        // ui.para("[✓] oidc_provider");
+        //open id config table value insert
+
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_oidc_provider_v1 (
+                description text,
+                issuer text,
+                base_url text,
+                client_secret text,
+                client_id text,
+                verify_server_certificate bool,
+                ca_certs text
+                    ) RETURNS SETOF oidc_provider AS $$
+                                        BEGIN
+                                            RETURN QUERY INSERT INTO oidc_provider(description, issuer, base_url, client_secret, client_id , verify_server_certificate,ca_certs)
+                                                VALUES (description, issuer, base_url, client_secret, client_id , verify_server_certificate,ca_certs)
+                                                RETURNING *;
+                                            RETURN;
+                                        END
+                                    $$ LANGUAGE plpgsql VOLATILE
+                                    "#,
+        )?;
+
+
+        ui.para("[✓] insert_oidc_provider_v1");
+
 
 
         migrator.migrate(
