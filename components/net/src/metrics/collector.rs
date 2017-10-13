@@ -12,30 +12,50 @@ use protocol::nodesrv;
 const CPU_TOTAL: &'static str = "cpu_total";
 const GAUGE_SCOPES: &'static [&'static str] = &[CPU_TOTAL, "ram_total", "disk_total"];
 
-/// const STATISTICS_SCOPES: &'static [&'static str] = &["cpu"];
 #[derive(Clone)]
 pub struct Collector<'a> {
     client: &'a PrometheusClient,
+    scope: CollectorScope,
+}
+
+pub struct CollectorScope {
+    scopes: Vec<String>,
+    group: String,
 }
 
 impl<'a> Collector<'a> {
-    pub fn new(prom: &'a PrometheusClient) -> Self {
-        Collector { client: &*prom }
+    pub fn new(prom: &'a PrometheusClient, scope: CollectorScope) -> Self {
+        Collector {
+            client: &*prom,
+            scope: scope,
+        }
     }
 
-    pub fn metrics(&mut self) -> Result<(Vec<nodesrv::PromResponse>, Vec<nodesrv::PromResponse>)> {
-        let mut content_datas = vec![];
+    pub fn metric_by(&mut self) -> Result<(Vec<nodesrv::PromResponse>, Vec<nodesrv::PromResponse>)> {
+        let content_datas = do_collect();
+        let statistics = self.set_statistics(Ok(content_datas.clone())); //make it os_usages
+        Ok((gauges.unwrap(), statistics.unwrap()))
+    }
 
-        for scope in GAUGE_SCOPES.iter() {
-            let content = self.client.pull_metrics(scope);
+    pub fn overall(&mut self) -> Result<(Vec<nodesrv::PromResponse>, Vec<nodesrv::PromResponse>)> {
+        let content_datas = do_collect();
+        let gauges = self.set_gauges(Ok(content_datas.clone()));
+        let statistics = self.set_statistics(Ok(content_datas.clone()));
+        Ok((gauges.unwrap(), statistics.unwrap()))
+    }
+
+    fn do_collect(&self) -> Vec {
+        let mut content_datas = vec![];
+        let label_group = format!("{group={}}", self.group);
+
+        for scope in self.scopes.iter() {
+            let content = self.client.pull_metrics(format!("{}{}", scope, self.group));
             if content.is_ok() {
                 let response: nodesrv::PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
                 content_datas.push(response);
             }
         }
-        let gauges = self.set_gauges(Ok(content_datas.clone()));
-        let statistics = self.set_statistics(Ok(content_datas.clone()));
-        Ok((gauges.unwrap(), statistics.unwrap()))
+        content_datas
     }
 
     fn set_gauges(&self, response: Result<Vec<nodesrv::PromResponse>>) -> Result<Vec<nodesrv::PromResponse>> {
