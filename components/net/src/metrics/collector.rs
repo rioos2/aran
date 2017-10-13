@@ -9,8 +9,8 @@ use serde_json;
 use std::collections::BTreeMap;
 use protocol::nodesrv;
 
-const CPU_TOTAL: &'static str = "cpu_total";
-const GAUGE_SCOPES: &'static [&'static str] = &[CPU_TOTAL, "ram_total", "disk_total"];
+pub const CPU_TOTAL: &'static str = "cpu_total";
+// const GAUGE_SCOPES: &'static [&'static str] = &[CPU_TOTAL, "ram_total", "disk_total"];
 
 #[derive(Clone)]
 pub struct Collector<'a> {
@@ -18,9 +18,10 @@ pub struct Collector<'a> {
     scope: CollectorScope,
 }
 
+#[derive(Clone)]
 pub struct CollectorScope {
-    scopes: Vec<String>,
-    group: String,
+    pub metric_names: Vec<String>,
+    pub labels: Vec<String>,
 }
 
 impl<'a> Collector<'a> {
@@ -31,25 +32,27 @@ impl<'a> Collector<'a> {
         }
     }
 
-    pub fn metric_by(&mut self) -> Result<(Vec<nodesrv::PromResponse>, Vec<nodesrv::PromResponse>)> {
-        let content_datas = do_collect();
+    pub fn metric_by(&mut self) -> Result<Vec<nodesrv::PromResponse>> {
+        let content_datas = self.do_collect();
         let statistics = self.set_statistics(Ok(content_datas.clone())); //make it os_usages
-        Ok((gauges.unwrap(), statistics.unwrap()))
+        Ok(statistics.unwrap())
     }
 
     pub fn overall(&mut self) -> Result<(Vec<nodesrv::PromResponse>, Vec<nodesrv::PromResponse>)> {
-        let content_datas = do_collect();
+        let content_datas = self.do_collect();
         let gauges = self.set_gauges(Ok(content_datas.clone()));
         let statistics = self.set_statistics(Ok(content_datas.clone()));
         Ok((gauges.unwrap(), statistics.unwrap()))
     }
 
-    fn do_collect(&self) -> Vec {
+    fn do_collect(&self) -> Vec<nodesrv::PromResponse> {
         let mut content_datas = vec![];
-        let label_group = format!("{group={}}", self.group);
-
-        for scope in self.scopes.iter() {
-            let content = self.client.pull_metrics(format!("{}{}", scope, self.group));
+        let s: String = self.scope.labels.clone().into_iter().collect();
+        let label_group = format!("{}{}{}", "{", s, "}");
+        for scope in self.scope.metric_names.iter() {
+            let content = self.client.pull_metrics(
+                &format!("{}{}", scope, label_group),
+            );
             if content.is_ok() {
                 let response: nodesrv::PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
                 content_datas.push(response);
