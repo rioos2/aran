@@ -104,7 +104,7 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Err(bad_request(&0)),
+            Err(_) => return Err(bad_request("id must be a number")),
         }
     };
 
