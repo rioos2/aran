@@ -9,7 +9,6 @@ extern crate hyper;
 #[macro_use]
 extern crate lazy_static;
 extern crate libc;
-extern crate libarchive;
 #[macro_use]
 extern crate log;
 extern crate rand;

@@ -1,6 +1,6 @@
 # Rio/OS API Server
 
-Rio/OS is the worlds first cloud operating sytem.
+Rio/OS is the worlds first private cloud operating sytem.
 
 To learn more about Rio/OS, please visit the [Rio/OS website](http://rio.digital).
 

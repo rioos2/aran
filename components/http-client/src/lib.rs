@@ -10,6 +10,8 @@ extern crate hyper;
 extern crate hyper_openssl;
 #[macro_use]
 extern crate log;
+extern crate serde;
+extern crate serde_json;
 extern crate openssl;
 extern crate url;
 
@@ -17,6 +19,7 @@ pub mod api_client;
 pub mod error;
 pub mod net;
 pub mod proxy;
+pub mod util;
 
 pub use api_client::ApiClient;
 pub use error::{Error, Result};

@@ -3,7 +3,7 @@ name = "rioos_aran_api"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS API Gateway"
-build = "../bldr-build.rs"
+build = "../build-builder.rs"
 workspace = "../../"
 
 [[bin]]

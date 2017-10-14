@@ -1,0 +1,57 @@
+[package]
+name = "rioos"
+version = "0.0.0"
+authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
+description = "RIO/OS CLI"
+build = "../build-rioos.rs"
+workspace = "../../"
+
+[[bin]]
+name = "rioos"
+doc = false
+
+[dependencies]
+clippy = {version = "*", optional = true}
+base64 = "*"
+ansi_term = "*"
+env_logger = "*"
+hyper = "*"
+handlebars = { version = "*", default-features = false }
+lazy_static = "*"
+libc = "*"
+log = "*"
+pbr = "*"
+regex = "*"
+retry = "*"
+serde = "*"
+serde_derive = "*"
+toml = { version = "*", features = ["serde"], default-features = false }
+url = "*"
+walkdir = "*"
+
+[dependencies.clap]
+version = "*"
+features = [ "suggestions", "color", "unstable" ]
+
+[dependencies.rioos_core]
+path = "../core"
+
+[dependencies.rioos_common]
+path = "../common"
+
+[dependencies.rioos_api_client]
+path = "../builder-api-client"
+
+[dependencies.rioos_http_client]
+path = "../http-client"
+
+[dependencies.uuid]
+version = "*"
+features = ["v4"]
+
+[dev-dependencies]
+tempdir = "*"
+
+[features]
+default = []
+functional = []
