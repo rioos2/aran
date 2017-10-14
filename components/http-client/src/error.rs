@@ -20,6 +20,7 @@ use std::result;
 use rio_core;
 use hyper;
 use openssl::{self, ssl};
+use serde_json;
 use url;
 
 #[derive(Debug)]
@@ -27,6 +28,7 @@ pub enum Error {
     RioosAranCore(rio_core::Error),
     HyperError(hyper::error::Error),
     /// Occurs when an improper http or https proxy value is given.
+    Json(serde_json::Error),
     InvalidProxyValue(String),
     IO(io::Error),
     SslError(ssl::Error),
@@ -42,6 +44,7 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::HyperError(ref err) => format!("{}", err),
+            Error::Json(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::InvalidProxyValue(ref e) => format!("Invalid proxy value: {:?}", e),
             Error::SslError(ref e) => format!("{}", e),
@@ -57,6 +60,7 @@ impl error::Error for Error {
         match *self {
             Error::RioosAranCore(ref err) => err.description(),
             Error::HyperError(ref err) => err.description(),
+            Error::Json(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::InvalidProxyValue(_) => "Invalid proxy value",
             Error::SslError(ref err) => err.description(),

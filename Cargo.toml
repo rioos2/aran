@@ -1,6 +1,10 @@
+[profile.release]
+debug = true
+
 [workspace]
 members = [
   "components/builder-api",
+  "components/builder-api-client",
   "components/builder-core",
   "components/builder-db",
   "components/builder-deployment",
@@ -14,5 +18,6 @@ members = [
   "components/common",
   "components/core",
   "components/http-client",
-  "components/net"
+  "components/net",
+  "components/rioos"
 ]

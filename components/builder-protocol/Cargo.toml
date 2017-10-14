@@ -3,7 +3,6 @@ name = "rioos_builder_protocol"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS Aran Server Communication Protocol"
-build = "build.rs"
 workspace = "../../"
 
 [dependencies]

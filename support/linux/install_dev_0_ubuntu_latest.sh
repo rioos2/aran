@@ -11,7 +11,6 @@ sudo -E apt-get install -y --no-install-recommends \
   file \
   gdb \
   iproute2 \
-  libarchive-dev \
   libsodium-dev \
   libssl-dev \
   man \

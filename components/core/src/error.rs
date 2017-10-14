@@ -12,7 +12,6 @@ use std::result;
 use std::str;
 use std::string;
 
-use libarchive;
 use regex;
 use toml;
 
@@ -25,8 +24,6 @@ pub type Result<T> = result::Result<T, Error>;
 pub enum Error {
     /// Occurs when an error occurrs in openssl
     X509Error(openssl::error::ErrorStack),
-    /// Occurs when a `habitat_core::package::PackageArchive` is being read.
-    ArchiveError(libarchive::error::ArchiveError),
     /// An invalid path to a keyfile was given.
     BadKeyPath(String),
     /// Error reading raw contents of configuration file.
@@ -118,7 +115,6 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::X509Error(ref err) => format!("{}", err),
-            Error::ArchiveError(ref err) => format!("{}", err),
             Error::BadKeyPath(ref e) => {
                 format!(
                     "Invalid keypath: {}. Specify an absolute path to a file on disk.",
@@ -260,7 +256,6 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::X509Error(ref err) => err.description(),
-            Error::ArchiveError(ref err) => err.description(),
             Error::BadKeyPath(_) => "An absolute path to a file on disk is required",
             Error::ConfigFileIO(_, _) => "Unable to read the raw contents of a configuration file",
             Error::ConfigFileSyntax(_) => "Error parsing contents of configuration file",
@@ -343,12 +338,6 @@ impl From<str::Utf8Error> for Error {
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Self {
         Error::IO(err)
-    }
-}
-
-impl From<libarchive::error::ArchiveError> for Error {
-    fn from(err: libarchive::error::ArchiveError) -> Self {
-        Error::ArchiveError(err)
     }
 }
 

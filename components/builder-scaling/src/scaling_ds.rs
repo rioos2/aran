@@ -11,7 +11,8 @@ use serde_json;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 
-const RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
+const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
+const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 
 
 pub struct ScalingDS;
@@ -95,18 +96,18 @@ impl ScalingDS {
     }
 
     pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {
-        let label_name = format!("{}{}", RIOOS_ASSEMBLY_ID, id);
+        let label_name = format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id);
         let metric_scope = vec![];
         let group_scope: Vec<String> = vec![label_name.to_string()];
 
         let scope = CollectorScope {
             metric_names: metric_scope,
             labels: group_scope,
-            last_x_minutes: Some("[5m]".to_string()), //TO-DO: move all metric constants outside.
+            last_x_minutes: Some(METRIC_DEFAULT_LAST_X_MINUTE.to_string()),
         };
 
-        let mut metric_checker = Collector::new(client, scope);
-        let metric_response = metric_checker.metric_by().unwrap();
+        let mut metric_collector = Collector::new(client, scope);
+        let metric_response = metric_collector.metric_by().unwrap();
 
         let mut metrics = nodesrv::Osusages::new();
 

@@ -31,7 +31,7 @@ impl NetOk {
 }
 
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, PartialEq, Eq, Debug, Hash, Deserialize)]
 pub enum ErrCode {
     BUG = 0,
     TIMEOUT = 1,
@@ -61,7 +61,7 @@ pub fn err<M: Into<String>>(code: ErrCode, msg: M) -> NetError {
     err
 }
 
-#[derive(PartialEq, Clone, Default, Debug)]
+#[derive(PartialEq, Clone, Default, Debug, Deserialize)]
 pub struct NetError {
     code: ::std::option::Option<ErrCode>,
     msg: ::std::option::Option<String>,

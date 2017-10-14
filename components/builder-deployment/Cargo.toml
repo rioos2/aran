@@ -3,7 +3,6 @@ name = "rioos_builder_asmsrv"
 version = "0.0.0"
 authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
 description = "RIO/OS Deployment library"
-build = "../bldr-build.rs"
 workspace = "../../"
 
 [dependencies]

@@ -1,0 +1,28 @@
+[package]
+name = "rioos_api_client"
+version = "0.0.0"
+authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
+description = "Rust SDK Client for Rio/OS"
+workspace = "../../"
+
+
+[dependencies]
+clippy = {version = "*", optional = true}
+broadcast = "*"
+rioos_builder_protocol = { path = "../builder-protocol" }
+hyper = "*"
+hyper-openssl = ""
+log = "*"
+pbr = "*"
+rand = "*"
+serde = "*"
+serde_derive = "*"
+serde_json = "*"
+tee = "*"
+url = "*"
+
+[dependencies.rioos_core]
+path = "../core"
+
+[dependencies.rioos_http_client]
+path = "../http-client"

@@ -13,7 +13,6 @@ base64 = "*"
 errno = "*"
 hex = "*"
 lazy_static = "*"
-libarchive = "*"
 libc = "0.2.22"
 # JW: Temporarily use master branch of git until serde 1.0+ is available in crate release
 libsodium-sys = { git = "https://github.com/dnaq/sodiumoxide" }

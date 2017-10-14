@@ -34,11 +34,13 @@ else
 	bldr_run :=
 	docs_run :=
 endif
+
 ifneq ($(DOCKER_HOST),)
 	docs_host := ${DOCKER_HOST}
 else
 	docs_host := 127.0.0.1
 endif
+
 
 define ERDF_ERROR
 
@@ -49,7 +51,6 @@ FATAL: you need erdf (gem install erdf) to generate ER diagram from the postgres
 endef
 
 define GRAPHVIZ_ERROR
-
 FATAL: you need graphviz to generate a ER picture in ./support/db/schema.png
        Check README.md for details
 endef
@@ -64,16 +65,20 @@ ifneq ($(shell dot -V),)
  $(warning $(GRAPHVIZ_ERROR)))
 endif
 
-LIB = builder-db builder-core builder-protocol common core http-client net builder-deployment builder-scaling
+BIN = rioos
+LIB = builder-db builder-core builder-protocol  builder-deployment builder-scaling common core builder-api-client http-client net
 SRV = builder-api
-ALL = $(LIB) $(SRV)
+ALL = $(BIN) $(LIB) $(SRV)
 VERSION := $(shell cat VERSION)
 
-.DEFAULT_GOAL := build-all
+.DEFAULT_GOAL := build-bin
 
-build: build-lib build-srv ## builds all the components
+build: build-bin build-lib build-srv ## builds all the components
 build-all: build
 .PHONY: build build-all
+
+build-bin: $(addprefix build-,$(BIN)) ## builds the binary components
+.PHONY: build-bin
 
 build-lib: $(addprefix build-,$(LIB)) ## builds the library components
 .PHONY: build-lib
@@ -85,9 +90,13 @@ schema:
 	erdf database postgres://postgres:postgres@localhost/rioosdb?search_path=shard_0,public ./support/db/schema.png
 .PHONY: schema_erdf schema_graphviz
 
-unit: unit-lib unit-srv ## executes all the components' unit test suites
+unit: unit-bin unit-lib unit-srv ## executes all the components' unit test suites
 unit-all: unit
 .PHONY: unit unit-all
+
+unit-bin: $(addprefix unit-,$(BIN)) ## executes the binary components' unit test suites
+.PHONY: unit-bin
+
 
 unit-lib: $(addprefix unit-,$(LIB)) ## executes the library components' unit test suites
 .PHONY: unit-lib
@@ -95,10 +104,26 @@ unit-lib: $(addprefix unit-,$(LIB)) ## executes the library components' unit tes
 unit-srv: $(addprefix unit-,$(SRV)) ## executes the service components' unit test suites
 .PHONY: unit-srv
 
-functional: functional-lib functional-srv ## executes all the components' functional test suites
+lint: lint-bin lint-lib lint-srv ## executs all components' lints
+lint-all: lint
+.PHONY: lint lint-all
+
+lint-bin: $(addprefix lint-,$(BIN))
+.PHONY: lint-bin
+
+lint-lib: $(addprefix lint-,$(LIB))
+.PHONY: lint-lib
+
+lint-srv: $(addprefix lint-,$(SRV))
+.PHONY: lint-srv
+
+functional: functional-bin functional-lib functional-srv ## executes all the components' functional test suites
 functional-all: functional
 test: functional ## executes all components' test suites
 .PHONY: functional functional-all test
+
+functional-bin: $(addprefix unit-,$(BIN)) ## executes the binary components' unit functional suites
+.PHONY: functional-bin
 
 functional-lib: $(addprefix unit-,$(LIB)) ## executes the library components' unit functional suites
 .PHONY: functional-lib
@@ -106,19 +131,25 @@ functional-lib: $(addprefix unit-,$(LIB)) ## executes the library components' un
 functional-srv: $(addprefix unit-,$(SRV)) ## executes the service components' unit functional suites
 .PHONY: functional-srv
 
-clean: clean-lib clean-srv ## cleans all the components' clean test suites
+clean: clean-bin clean-lib clean-srv ## cleans all the components' clean test suites
 clean-all: clean
 .PHONY: clean clean-all
 
-.clean-lib: $(addprefix clean-,$(LIB)) ## cleans the library components' project trees
+clean-bin: $(addprefix clean-,$(BIN)) ## cleans the binary components' project trees
+.PHONY: clean-bin
+
+clean-lib: $(addprefix clean-,$(LIB)) ## cleans the library components' project trees
 .PHONY: clean-lib
 
 clean-srv: $(addprefix clean-,$(SRV)) ## cleans the service components' project trees
 .PHONY: clean-srv
 
-fmt: fmt-lib fmt-srv ## formats all the components' codebases
+fmt: fmt-bin fmt-lib fmt-srv ## formats all the components' codebases
 fmt-all: fmt
 .PHONY: fmt fmt-all
+
+fmt-bin: $(addprefix fmt-,$(BIN)) ## formats the binary components' codebases
+.PHONY: clean-bin
 
 fmt-lib: $(addprefix fmt-,$(LIB)) ## formats the library components' codebases
 .PHONY: clean-lib
