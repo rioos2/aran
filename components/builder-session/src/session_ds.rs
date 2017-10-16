@@ -330,6 +330,41 @@ impl SessionDS {
         return Ok(Some(saml.clone()));
     }
 
+    pub fn saml_provider_listall(datastore: &DataStoreConn) -> Result<Option<sessionsrv::SamlProviderGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_saml_provider_all_v1()", &[])
+            .map_err(Error::SamlProviderGetResponse)?;
+
+        let mut response = sessionsrv::SamlProviderGetResponse::new();
+        let mut saml_provider_collection = Vec::new();
+        for row in rows {
+            saml_provider_collection.push(row_to_saml_provider(&row)?)
+        }
+        response.set_saml_provider_collection(
+            saml_provider_collection,
+            "SamlProviderList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
+
+    pub fn saml_show(datastore: &DataStoreConn, saml_provider_get: &asmsrv::IdGet) -> Result<Option<sessionsrv::SamlProvider>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_saml_v1($1)",
+            &[&(saml_provider_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::SamlProviderGet)?;
+        for row in rows {
+            let saml = row_to_saml_provider(&row)?;
+            return Ok(Some(saml));
+        }
+        Ok(None)
+    }
+
+
+
+
     pub fn oidc_provider_create(datastore: &DataStoreConn, oidc_provider: &sessionsrv::OidcProvider) -> Result<Option<sessionsrv::OidcProvider>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
@@ -347,6 +382,26 @@ impl SessionDS {
         let oidc = row_to_oidc_provider(&rows.get(0))?;
         return Ok(Some(oidc.clone()));
     }
+
+    pub fn openid_provider_listall(datastore: &DataStoreConn) -> Result<Option<sessionsrv::OpenidProviderGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_oidc_provider_all_v1()", &[])
+            .map_err(Error::OpenidProviderGetResponse)?;
+
+        let mut response = sessionsrv::OpenidProviderGetResponse::new();
+        let mut oidc_provider_collection = Vec::new();
+        for row in rows {
+            oidc_provider_collection.push(row_to_oidc_provider(&row)?)
+        }
+        response.set_openid_provider_collection(
+            oidc_provider_collection,
+            "OidcProviderList".to_string(),
+            "v1".to_string(),
+        );
+        Ok(Some(response))
+    }
+
 }
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {

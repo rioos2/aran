@@ -32,6 +32,11 @@ pub enum Error {
     IO(io::Error),
     SamlProviderCreate(postgres::error::Error),
     OidcProviderCreate(postgres::error::Error),
+    SamlProviderGetResponse(postgres::error::Error),
+    SamlProviderGet(postgres::error::Error),
+    OpenidProviderGetResponse(postgres::error::Error),
+
+
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -58,6 +63,9 @@ impl fmt::Display for Error {
             Error::IO(ref e) => format!("{}", e),
             Error::SamlProviderCreate(ref e) => format!("Error creating saml provider, {}", e),
             Error::OidcProviderCreate(ref e) => format!("Error creating open id provider, {}", e),
+            Error::SamlProviderGetResponse(ref e) => format!("Error get all saml provider list, {}", e),
+            Error::SamlProviderGet(ref e) => format!("Error get saml provider data, {}", e),
+            Error::OpenidProviderGetResponse(ref e) => format!("Error get all open id  provider data, {}", e),
 
         };
         write!(f, "{}", msg)
@@ -86,6 +94,9 @@ impl error::Error for Error {
             Error::IO(ref err) => err.description(),
             Error::SamlProviderCreate(ref err) => err.description(),
             Error::OidcProviderCreate(ref err) => err.description(),
+            Error::SamlProviderGetResponse(ref err) => err.description(),
+            Error::SamlProviderGet(ref err) => err.description(),
+            Error::OpenidProviderGetResponse(ref err) => err.description(),
 
         }
     }

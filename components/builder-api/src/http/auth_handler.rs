@@ -402,6 +402,40 @@ pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+#[allow(unused_variables)]
+pub fn saml_provider_list(req: &mut Request) -> IronResult<Response> {
+
+    let conn = Broker::connect().unwrap();
+    match SessionDS::saml_provider_listall(&conn) {
+        Ok(saml_list) => Ok(render_json(status::Ok, &saml_list)),
+        Err(err) => Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            )),
+        }
+}
+
+pub fn saml_provider_show(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("providerid").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut saml_provider_get = IdGet::new();
+    saml_provider_get.set_id(id.to_string());
+
+    match SessionDS::saml_show(&conn, &saml_provider_get) {
+        Ok(saml) => Ok(render_json(status::Ok, &saml)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
 pub fn config_oidc_provider(req: &mut Request) -> IronResult<Response> {
     let mut oidc_provider = OidcProvider::new();
     {
@@ -434,4 +468,17 @@ pub fn config_oidc_provider(req: &mut Request) -> IronResult<Response> {
         )),
 
     }
+}
+
+
+#[allow(unused_variables)]
+pub fn openid_listall(req: &mut Request) -> IronResult<Response> {
+
+    let conn = Broker::connect().unwrap();
+    match SessionDS::openid_provider_listall(&conn) {
+        Ok(oidc_list) => Ok(render_json(status::Ok, &oidc_list)),
+        Err(err) => Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            )),
+        }
 }

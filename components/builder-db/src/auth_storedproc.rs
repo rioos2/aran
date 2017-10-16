@@ -272,6 +272,30 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] insert_saml_provider_v1");
 
+
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION get_saml_provider_all_v1() RETURNS SETOF saml_provider AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM saml_provider;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION get_saml_v1 (sid bigint) RETURNS SETOF saml_provider AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM saml_provider WHERE id = sid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+    ui.para("[✓] get_saml_v1");
+
+
         //sequence oidc_provider id generation
         migrator.migrate(
             "sessionsrv",
@@ -321,6 +345,19 @@ impl Migratable for AuthProcedures {
 
 
         ui.para("[✓] insert_oidc_provider_v1");
+
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION get_oidc_provider_all_v1() RETURNS SETOF oidc_provider AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM oidc_provider;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
+
 
 
 
