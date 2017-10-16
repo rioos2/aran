@@ -308,11 +308,9 @@ impl SessionDS {
                     "{} records imported successfully",
                     imported.len(),
                 );
-                if *import_failure > 0 {
-                    return Err(Error::Db(db::error::Error::RecordsNotFound(
-                        imported.into_iter().next().unwrap().to_string(),
-                    )));
-                }
+                // if *import_failure > 0 {
+                //     return imported.into_iter().next().unwrap();
+                // }
                 let mut success = sessionsrv::ImportResult::new();
                 success.set_result(import_count.to_string());
                 success.set_users(map);
