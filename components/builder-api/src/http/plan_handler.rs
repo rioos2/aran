@@ -54,12 +54,12 @@ pub fn plan_factory_create(req: &mut Request) -> IronResult<Response> {
                 let mut service_collection = Vec::new();
 
                 for service in body.services {
-                    let mut services = Service::new();
-                    services.set_name(service.name);
-                    services.set_description(service.description);
-                    services.set_href(service.href);
-                    services.set_characteristics(service.characteristics);
-                    service_collection.push(services);
+                    let mut serv = Service::new();
+                    serv.set_name(service.name);
+                    serv.set_description(service.description);
+                    serv.set_href(service.href);
+                    serv.set_characteristics(service.characteristics);
+                    service_collection.push(serv);
                 }
                 plan_create.set_services(service_collection);
             }

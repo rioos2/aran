@@ -78,8 +78,12 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         test_ldap_config: post "/ldap/config/:id/test" => test_ldap_config,
 
         config_saml: post "/auth/saml/providers" => config_saml_provider,
+        saml_providers_list: get "/auth/saml/providers" =>saml_provider_list,
+        saml_provider_id: get "/auth/saml/providers/:providerid" =>saml_provider_show,
 
-        config_openid: post "/auth/oidc/providers/:provider_id " => config_oidc_provider,
+        config_openid: post "/auth/oidc/providers/:providerid " => config_oidc_provider,
+        openid_listall: get "/auth/oidc/providers" =>openid_listall,
+        // openid_show : get "auth/oidc/providers/:providerid" =>openid_provider_show,
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,

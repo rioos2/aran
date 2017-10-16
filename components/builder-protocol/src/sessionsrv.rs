@@ -778,6 +778,27 @@ impl Success {
     }
 }
 
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SamlProviderGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<SamlProvider>,
+}
+
+impl SamlProviderGetResponse {
+    pub fn new() -> SamlProviderGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_saml_provider_collection(&mut self, v: Vec<SamlProvider>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
+}
+
+
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct OidcProvider {
     id: String,
@@ -862,4 +883,23 @@ impl OidcProvider {
         self.created_at.clone()
     }
 
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct OpenidProviderGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<OidcProvider>,
+}
+
+impl OpenidProviderGetResponse {
+    pub fn new() -> OpenidProviderGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_openid_provider_collection(&mut self, v: Vec<OidcProvider>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
 }
