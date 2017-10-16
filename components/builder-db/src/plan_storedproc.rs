@@ -41,7 +41,7 @@ impl Migratable for PlanProcedures {
         ui.para("[✓] plan_factory");
 
         migrator.migrate(
-            "scalesrv",
+            "plansrv",
             r#"CREATE OR REPLACE FUNCTION insert_plan_factory_v1 (
                 group_name text,
                 url text ,
@@ -49,11 +49,11 @@ impl Migratable for PlanProcedures {
                 tags text[],
                 origin text,
                 artifacts text[],
-                services text[],
+                services text[]
                         ) RETURNS SETOF plan_factory AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO plan_factory(group_name, url, description,tags ,origin ,artifacts, services)
-                                        VALUES (group_name , url, description ,tags,origin,artifacts, services)
+                                    RETURN QUERY INSERT INTO plan_factory(group_name, url, description,tags, origin, artifacts, services)
+                                        VALUES (group_name, url, description, tags, origin, artifacts, services)
                                         RETURNING *;
                                     RETURN;
                                 END
