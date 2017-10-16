@@ -302,6 +302,74 @@ schemas:
               "sp_base_url":"<callback_url>",
               "created_at":"2017-10-10T06:46:20.095357+00:00"
             }
+  get:
+    description:
+      get all the saml providers
+    responses:
+      201:
+        description:
+          succesfully created a  new permission
+        body:
+          example:|
+            {
+              "kind":"SamlProviderList",
+              "api_version":"v1",
+              "items":
+                [
+                {
+                  "id":"829457156162985984",
+                  "description":"Login with Fantastic SAML IdP",
+                  "idp_metadata":"<xml metadata from providers like onelogin, openam>",
+                  "sp_base_url":"<callback_url>",
+                  "created_at":"2017-10-16T09:13:09.298192+00:00"
+                  }
+                  ]
+                  }
+  '/{id}':
+      get:
+        description: Get the saml provider list for given id
+        responses:
+          '200':
+            body:
+              application/json:
+                example: |
+                  {
+                  "id":"829457156162985984",
+                  "description":"Login with Fantastic SAML IdP",
+                  "idp_metadata":"<xml metadata from providers like onelogin, openam>",
+                  "sp_base_url":"<callback_url>",
+                  "created_at":"2017-10-16T09:13:09.298192+00:00"
+                  }
+
+/auth/oidc/providers':
+  '/{id}':
+    post:
+      description: |
+       create open id provider
+      body:
+        application/json:
+          example: |
+            {
+            "description": "Login with Google",
+            "issuer": "https://accounts.google.com",
+            "base_url": "<callback_url>",
+            "client_secret": "0909090909 (from console.google)",
+            "client_id": "0909090909 (from console.google)",
+            "verify_server_certificate": true,
+            "ca_certs": "string"
+            }
+      responses:
+        '201':
+          description: |
+            successfully creation open id
+          body:
+            example: |
+              {
+
+              }
+
+
+
 
 /accounts:
   post:

@@ -35,6 +35,7 @@ pub enum Error {
     SamlProviderGetResponse(postgres::error::Error),
     SamlProviderGet(postgres::error::Error),
     OpenidProviderGetResponse(postgres::error::Error),
+    OidcProviderGet(postgres::error::Error),
 
 
 }
@@ -66,6 +67,8 @@ impl fmt::Display for Error {
             Error::SamlProviderGetResponse(ref e) => format!("Error get all saml provider list, {}", e),
             Error::SamlProviderGet(ref e) => format!("Error get saml provider data, {}", e),
             Error::OpenidProviderGetResponse(ref e) => format!("Error get all open id  provider data, {}", e),
+            Error::OidcProviderGet(ref e) => format!("Error get openid  provider data, {}", e),
+
 
         };
         write!(f, "{}", msg)
@@ -97,6 +100,8 @@ impl error::Error for Error {
             Error::SamlProviderGetResponse(ref err) => err.description(),
             Error::SamlProviderGet(ref err) => err.description(),
             Error::OpenidProviderGetResponse(ref err) => err.description(),
+            Error::OidcProviderGet(ref err) => err.description(),
+
 
         }
     }

@@ -12,25 +12,25 @@ use serde_json;
 pub struct PlanDS;
 
 impl PlanDS {
-    pub fn plan_create(datastore: &DataStoreConn, plan: &plansrv::Plan) -> Result<Option<plansrv::Plan>> {
-        let conn = datastore.pool.get_shard(0)?;
-
-        let rows = &conn.query(
-            "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$5,$6,$7)",
-            &[
-                &(plan.get_group_name() as String),
-                &(plan.get_description() as String),
-                &(plan.get_tags() as Vec<String>),
-                &(plan.get_url() as String),
-                &(plan.get_origin() as String),
-                &(plan.get_artifacts() as Vec<String>),
-                &(plan.get_services()),
-            ],
-        ).map_err(Error::PlanCreate)?;
-
-        let plan = row_to_plan(&rows.get(0))?;
-        return Ok(Some(plan.clone()));
-    }
+    // pub fn plan_create(datastore: &DataStoreConn, plan: &plansrv::Plan) -> Result<Option<plansrv::Plan>> {
+    //     let conn = datastore.pool.get_shard(0)?;
+    //
+    //     let rows = &conn.query(
+    //         "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$5,$6,$7)",
+    //         &[
+    //             &(plan.get_group_name() as String),
+    //             &(plan.get_description() as String),
+    //             &(plan.get_tags() as Vec<String>),
+    //             &(plan.get_url() as String),
+    //             &(plan.get_origin() as String),
+    //             &(plan.get_artifacts() as Vec<String>),
+    //             &(plan.get_services()),
+    //         ],
+    //     ).map_err(Error::PlanCreate)?;
+    //
+    //     let plan = row_to_plan(&rows.get(0))?;
+    //     return Ok(Some(plan.clone()));
+    // }
 
 }
 

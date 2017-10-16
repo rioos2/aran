@@ -356,6 +356,17 @@ impl Migratable for AuthProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        migrator.migrate(
+            "sessionsrv",
+            r#"CREATE OR REPLACE FUNCTION get_odic_v1 (oid bigint) RETURNS SETOF oidc_provider AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM oidc_provider WHERE id = oid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        ui.para("[✓] get_odic_v1");
 
 
 

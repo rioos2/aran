@@ -38,48 +38,48 @@ struct ServiceReq {
     characteristics: BTreeMap<String, String>,
 }
 
-pub fn plan_factory_create(req: &mut Request) -> IronResult<Response> {
-    let mut plan_create = Plan::new();
-    {
-        match req.get::<bodyparser::Struct<PlanCreateReq>>() {
-            Ok(Some(body)) => {
-
-                plan_create.set_group_name(body.group_name);
-                plan_create.set_url(body.url);
-                plan_create.set_description(body.description);
-                plan_create.set_tags(body.tags);
-                plan_create.set_origin(body.origin);
-                plan_create.set_artifacts(body.artifacts);
-
-                let mut service_collection = Vec::new();
-
-                for service in body.services {
-                    let mut serv = Service::new();
-                    serv.set_name(service.name);
-                    serv.set_description(service.description);
-                    serv.set_href(service.href);
-                    serv.set_characteristics(service.characteristics);
-                    service_collection.push(serv);
-                }
-                plan_create.set_services(service_collection);
-            }
-            Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
-            }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
-        }
-    }
-
-    let conn = Broker::connect().unwrap();
-
-    match PlanDS::plan_create(&conn, &plan_create) {
-        Ok(plan) => Ok(render_json(status::Ok, &plan)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
-
-    }
-}
+// pub fn plan_factory_create(req: &mut Request) -> IronResult<Response> {
+//     let mut plan_create = Plan::new();
+//     {
+//         match req.get::<bodyparser::Struct<PlanCreateReq>>() {
+//             Ok(Some(body)) => {
+//
+//                 plan_create.set_group_name(body.group_name);
+//                 plan_create.set_url(body.url);
+//                 plan_create.set_description(body.description);
+//                 plan_create.set_tags(body.tags);
+//                 plan_create.set_origin(body.origin);
+//                 plan_create.set_artifacts(body.artifacts);
+//
+//                 let mut service_collection = Vec::new();
+//
+//                 for service in body.services {
+//                     let mut serv = Service::new();
+//                     serv.set_name(service.name);
+//                     serv.set_description(service.description);
+//                     serv.set_href(service.href);
+//                     serv.set_characteristics(service.characteristics);
+//                     service_collection.push(serv);
+//                 }
+//                 plan_create.set_services(service_collection);
+//             }
+//             Err(err) => {
+//                 return Ok(render_net_error(&net::err(
+//                     ErrCode::MALFORMED_DATA,
+//                     format!("{}, {:?}\n", err.detail, err.cause),
+//                 )));
+//             }
+//             _ => return Ok(Response::with(status::UnprocessableEntity)),
+//         }
+//     }
+//
+//     let conn = Broker::connect().unwrap();
+//
+//     match PlanDS::plan_create(&conn, &plan_create) {
+//         Ok(plan) => Ok(render_json(status::Ok, &plan)),
+//         Err(err) => Ok(render_net_error(
+//             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+//         )),
+//
+//     }
+// }

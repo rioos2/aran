@@ -83,7 +83,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         config_openid: post "/auth/oidc/providers/:providerid " => config_oidc_provider,
         openid_listall: get "/auth/oidc/providers" =>openid_listall,
-        // openid_show : get "auth/oidc/providers/:providerid" =>openid_provider_show,
+        openid_show : get "auth/oidc/providers/:providerid" =>openid_provider_show,
 
         //auth API for creating new account
         signup: post "/accounts" => account_create,
@@ -168,7 +168,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),
         data_center_show: get "/datacenters/:id" => XHandler::new(data_center_show).before(basic.clone()),
 
-        plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
+        // plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
 
         //Internal: Streaming watch
         watches: get "/:name/watch/list" => watch_show,
