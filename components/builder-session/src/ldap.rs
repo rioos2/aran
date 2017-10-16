@@ -99,7 +99,6 @@ impl Into<sessionsrv::SessionCreate> for LDAPUser {
         let mut session = sessionsrv::SessionCreate::new();
         session.set_email(self.email.to_owned());
         session.set_name(self.first_name.to_owned());
-        // session.set_apikey(self.get_apikey().to_owned());
         session.set_last_name(self.last_name.to_owned());
         session.set_apikey(rand::random::<u64>().to_string());
         session

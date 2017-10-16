@@ -10,7 +10,7 @@ use db::data_store::DataStoreConn;
 use serde_json;
 use ldap::{LDAPClient, LDAPUser};
 use db;
-
+use std::collections::BTreeMap;
 
 pub struct SessionDS;
 
@@ -19,7 +19,6 @@ impl SessionDS {
     //The default role and permission for the user is
     //The default origin is
     pub fn account_create(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate) -> Result<sessionsrv::Session> {
-        println!("****************************************************88");
         //call and do find_or_create_account_via_session
         SessionDS::find_or_create_account_via_session(datastore, session_create, true, false)
         //do find_or_create_default_role_permission
@@ -185,6 +184,7 @@ impl SessionDS {
             Ok(None)
         }
     }
+
     pub fn origin_create(datastore: &DataStoreConn, org_create: &originsrv::Origin) -> Result<Option<originsrv::Origin>> {
         let conn = datastore.pool.get_shard(0)?;
         let id = org_create
@@ -285,38 +285,38 @@ impl SessionDS {
         }
         Ok(None)
     }
-    pub fn import_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<()> {
+
+    pub fn import_ldap_config(datastore: &DataStoreConn, get_id: &asmsrv::IdGet) -> Result<sessionsrv::ImportResult> {
         match Self::get_ldap_config(datastore, get_id) {
             Ok(Some(ldap_config)) => {
                 let importing_users = ldap_users(ldap_config)?;
-
+                let mut map = vec![];
                 let imported: Vec<Result<sessionsrv::Session>> = importing_users
                     .into_iter()
                     .map(|import_user| {
-
                         let add_account: sessionsrv::SessionCreate = import_user.into();
-
                         let session = Self::account_create(datastore, &add_account)?;
+                        map.push(session.get_email());
                         Ok(session)
                     })
                     .collect();
 
                 let import_failure = &imported.iter().filter(|f| (*f).is_err()).count();
 
-                println!("-----------import_failure------------{:?}", import_failure);
-
-                let import_count = format!("{} records imported successfully", imported.len());
-
-                println!(
-                    "-------------import_count--------------------{:?}",
-                    import_count
+                let import_count =
+                    format!(
+                    "{} records imported successfully",
+                    imported.len(),
                 );
-
-                // if *import_failure > 0 {
-                //     return imported.into_iter().next().unwrap();
-                // }
-
-                Ok(())
+                if *import_failure > 0 {
+                    return Err(Error::Db(db::error::Error::RecordsNotFound(
+                        imported.into_iter().next().unwrap().to_string(),
+                    )));
+                }
+                let mut success = sessionsrv::ImportResult::new();
+                success.set_result(import_count.to_string());
+                success.set_users(map);
+                Ok(success)
             }
             Err(e) => Err(e),
             _ => {

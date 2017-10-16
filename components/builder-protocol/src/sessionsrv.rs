@@ -783,6 +783,24 @@ impl Success {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct ImportResult {
+    result: String,
+    imported: Vec<String>,
+}
+
+impl ImportResult {
+    pub fn new() -> ImportResult {
+        ::std::default::Default::default()
+    }
+    pub fn set_result(&mut self, v: ::std::string::String) {
+        self.result = v;
+    }
+    pub fn set_users(&mut self, v: Vec<String>) {
+        self.imported = v;
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct OidcProvider {
     id: String,
     description: String,
