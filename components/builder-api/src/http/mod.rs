@@ -76,6 +76,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         config_ldap: post "/ldap/config" => set_ldap_config,
 
         test_ldap_config: post "/ldap/config/:id/test" => test_ldap_config,
+        import_ldap: post "/ldap/import/:id" =>import_ldap,
 
         config_saml: post "/auth/saml/providers" => config_saml_provider,
 

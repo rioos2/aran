@@ -7,6 +7,7 @@ use std::error::Error as StdError;
 
 use ldap3::{LdapConn, Scope, SearchEntry};
 use protocol::sessionsrv;
+use rand;
 
 #[derive(Clone)]
 pub struct LDAPClient {
@@ -15,10 +16,10 @@ pub struct LDAPClient {
 
 #[derive(Debug)]
 pub struct LDAPUser {
-    email: String,
-    first_name: String,
-    last_name: String,
-    phone: String,
+    pub email: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub phone: String,
 }
 
 impl LDAPClient {
@@ -28,15 +29,10 @@ impl LDAPClient {
 
     pub fn connection(&self) -> Result<(LdapConn)> {
         let ldap = LdapConn::new(&self.config.get_host())?;
-        let (_, _res) = ldap.search(
+        ldap.simple_bind(
             &self.config.get_lookup_dn(),
-            Scope::Subtree,
-            "(&(objectClass=*))",
-            vec![""],
-        )?
-            .success()?;
-        ldap.unbind()?;
-
+            &self.config.get_lookup_password(),
+        )?;
         Ok(ldap)
     }
 
@@ -45,10 +41,10 @@ impl LDAPClient {
         match ldap_connection {
             Ok(ldap) => {
                 let (rs, _res) = ldap.search(
-                    &self.config.get_lookup_dn(),
+                    &self.config.get_user_search().get_search_base(),
                     Scope::Subtree,
                     "(&(objectClass=*))",
-                    vec![""],
+                    vec!["*"],
                 )?
                     .success()?;
                 let mut ldap_users = vec![];
@@ -68,7 +64,6 @@ impl LDAPClient {
 
 impl Into<LDAPUser> for SearchEntry {
     fn into(self) -> LDAPUser {
-        println!("--- searched user {:?}", self);
         let mut user = LDAPUser {
             email: "".to_string(),
             first_name: "".to_string(),
@@ -81,13 +76,32 @@ impl Into<LDAPUser> for SearchEntry {
         if let Some(sns) = self.attrs.get("sn") {
             user.last_name = sns.iter().next().unwrap_or(&"none".to_string()).to_string();
         }
-        if let Some(givennames) = self.attrs.get("givenname") {
-            user.first_name = givennames.iter().next().unwrap_or(&"none".to_string()).to_string();
+        if let Some(givennames) = self.attrs.get("givenName") {
+            user.first_name = givennames
+                .iter()
+                .next()
+                .unwrap_or(&"none".to_string())
+                .to_string();
         }
         if let Some(emails) = self.attrs.get("mail") {
-            user.email = emails.iter().next().unwrap_or(&"none".to_string()).to_string();
+            user.email = emails
+                .iter()
+                .next()
+                .unwrap_or(&"none".to_string())
+                .to_string();
         }
-        println!("--- converted user {:?}", user);
         user
+    }
+}
+
+impl Into<sessionsrv::SessionCreate> for LDAPUser {
+    fn into(self) -> sessionsrv::SessionCreate {
+        let mut session = sessionsrv::SessionCreate::new();
+        session.set_email(self.email.to_owned());
+        session.set_name(self.first_name.to_owned());
+        // session.set_apikey(self.get_apikey().to_owned());
+        session.set_last_name(self.last_name.to_owned());
+        session.set_apikey(rand::random::<u64>().to_string());
+        session
     }
 }

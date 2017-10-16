@@ -681,6 +681,10 @@ impl UserSearch {
         self.search_base = v;
     }
 
+    pub fn get_search_base(&self) -> ::std::string::String {
+        self.search_base.clone()
+    }
+
     pub fn set_search_filter_template(&mut self, v: ::std::string::String) {
         self.search_filter_template = v;
     }
@@ -850,7 +854,7 @@ impl OidcProvider {
         self.verify_server_certificate = v;
     }
 
-    pub fn get_verify_server_certificate(&self) ->  bool {
+    pub fn get_verify_server_certificate(&self) -> bool {
         self.verify_server_certificate.clone()
     }
 
@@ -861,5 +865,4 @@ impl OidcProvider {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
-
 }

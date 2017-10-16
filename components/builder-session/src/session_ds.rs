@@ -19,6 +19,7 @@ impl SessionDS {
     //The default role and permission for the user is
     //The default origin is
     pub fn account_create(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate) -> Result<sessionsrv::Session> {
+        println!("****************************************************88");
         //call and do find_or_create_account_via_session
         SessionDS::find_or_create_account_via_session(datastore, session_create, true, false)
         //do find_or_create_default_role_permission
@@ -288,22 +289,32 @@ impl SessionDS {
         match Self::get_ldap_config(datastore, get_id) {
             Ok(Some(ldap_config)) => {
                 let importing_users = ldap_users(ldap_config)?;
-                let imported: Vec<Result<()>> = importing_users
+
+                let imported: Vec<Result<sessionsrv::Session>> = importing_users
                     .into_iter()
                     .map(|import_user| {
-                        //let add_account = import_user.into()
-                        //AccountDS::account_create(datastore,a)
-                        Ok(())
+
+                        let add_account: sessionsrv::SessionCreate = import_user.into();
+
+                        let session = Self::account_create(datastore, &add_account)?;
+                        Ok(session)
                     })
                     .collect();
 
                 let import_failure = &imported.iter().filter(|f| (*f).is_err()).count();
 
+                println!("-----------import_failure------------{:?}", import_failure);
+
                 let import_count = format!("{} records imported successfully", imported.len());
 
-                if *import_failure > 0 {
-                    return imported.into_iter().next().unwrap();
-                }
+                println!(
+                    "-------------import_count--------------------{:?}",
+                    import_count
+                );
+
+                // if *import_failure > 0 {
+                //     return imported.into_iter().next().unwrap();
+                // }
 
                 Ok(())
             }
