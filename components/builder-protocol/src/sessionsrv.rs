@@ -681,6 +681,10 @@ impl UserSearch {
         self.search_base = v;
     }
 
+    pub fn get_search_base(&self) -> ::std::string::String {
+        self.search_base.clone()
+    }
+
     pub fn set_search_filter_template(&mut self, v: ::std::string::String) {
         self.search_filter_template = v;
     }
@@ -800,6 +804,24 @@ impl SamlProviderGetResponse {
 
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct ImportResult {
+    result: String,
+    imported: Vec<String>,
+}
+
+impl ImportResult {
+    pub fn new() -> ImportResult {
+        ::std::default::Default::default()
+    }
+    pub fn set_result(&mut self, v: ::std::string::String) {
+        self.result = v;
+    }
+    pub fn set_users(&mut self, v: Vec<String>) {
+        self.imported = v;
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct OidcProvider {
     id: String,
     description: String,
@@ -871,7 +893,7 @@ impl OidcProvider {
         self.verify_server_certificate = v;
     }
 
-    pub fn get_verify_server_certificate(&self) ->  bool {
+    pub fn get_verify_server_certificate(&self) -> bool {
         self.verify_server_certificate.clone()
     }
 
@@ -882,7 +904,6 @@ impl OidcProvider {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]

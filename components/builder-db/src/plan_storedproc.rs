@@ -44,16 +44,16 @@ impl Migratable for PlanProcedures {
             "plansrv",
             r#"CREATE OR REPLACE FUNCTION insert_plan_factory_v1 (
                 group_name text,
-                url text ,
-                description text,
-                tags text[],
-                origin text,
-                artifacts text[],
+               url text ,
+               description text,
+               tags text[],
+               origin text,
+               artifacts text[],
                 services text[]
                         ) RETURNS SETOF plan_factory AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO plan_factory(group_name, url, description,tags, origin, artifacts, services)
-                                        VALUES (group_name, url, description, tags, origin, artifacts, services)
+                                    RETURN QUERY INSERT INTO plan_factory(group_name, url, description,tags, origin, artifacts,services)
+                                        VALUES (group_name, url, description,tags, origin, artifacts,services)
                                         RETURNING *;
                                     RETURN;
                                 END

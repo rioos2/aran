@@ -1,0 +1,256 @@
+---
+swagger: "2.0"
+info:
+  description: "API documentation for Rio/OS v2.0"
+  version: "2.0"
+  title: "Rio/OS 2.0 API"
+  termsOfService: "https://github.com/riocorp/rioos/blob/master/TERMS"
+  contact:
+    name: "Rio/OS Team"
+    url: "http://github.com/rioos"
+    email: "humans@riocorp.io"
+  license:
+    name: "Riocorp License"
+    url: "http://github.com/riocorp/rioos/blob/master/LICENSE"
+paths:
+  /healthz:
+    get:
+      description: "Returns the health of the api system. Useful for Rio/OS platform\
+        \ to figure out\nif the api server is ready or not\n"
+      operationId: "GET_healthz"
+      parameters: []
+      responses:
+        200:
+          description: "API service is healthy"
+        500:
+          description: "API service isn't reachable"
+        503:
+          description: "API service temporarily unavailable"
+  /healthz/overall:
+    get:
+      description: "Returns the health of the api system. Useful for Rio/OS platform\
+        \ to figure out\nif the api server is ready or not\n"
+      operationId: "GET_healthz-overall"
+      parameters: []
+      responses:
+        200:
+          description: "Succesfully retrieved metrics"
+  /authenticate:
+    post:
+      description: "login with email and password\n"
+      operationId: "POST_authenticate"
+      parameters: []
+      responses:
+        201:
+          description: "Succesfully login\n"
+  /ldap/config:
+    post:
+      description: "create ldap config\n"
+      operationId: "POST_ldap-config"
+      parameters: []
+      responses:
+        201:
+          description: "Succesfully created a new permission\n"
+  /auth/saml/providers:
+    post:
+      description: "create ldap config\n"
+      operationId: "POST_auth-saml-providers"
+      parameters: []
+      responses:
+        201:
+          description: "Succesfully created a new permission\n"
+  /accounts:
+    post:
+      description: "Create a new account\n"
+      operationId: "POST_accounts"
+      parameters: []
+      responses:
+        201:
+          description: "Succesfully created a new account\n"
+  /accounts/{id}:
+    get:
+      description: "Retrieve account by id\n"
+      operationId: "GET_accounts-id"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "id"
+        required: true
+      responses:
+        200:
+          description: "Succesfully retrieved account\n"
+  /accounts/name/{name}:
+    get:
+      description: "Retrieve account by name\n"
+      operationId: "GET_accounts-name-name"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "name"
+        required: true
+      responses:
+        200:
+          description: "Succesfully retrieved account by name\n"
+  /origins:
+    get:
+      description: "Retrieve origins\n"
+      operationId: "GET_origins"
+      parameters: []
+      responses:
+        200:
+          description: "Succesfully retrieved origins\n"
+    post:
+      description: "Create a new origin\n"
+      operationId: "POST_origins"
+      parameters: []
+      responses:
+        201:
+          description: "Succesfully created a new origin\n"
+  /origins/{origin}:
+    get:
+      description: "Retrieve origin with origin name\n"
+      operationId: "GET_origins-origin"
+      parameters:
+      - name: "origin"
+        in: "path"
+        description: "origin"
+        required: true
+      responses:
+        200:
+          description: "Succesfully retrieved origin with origin name\n"
+  /origins/{origin}/serviceaccounts/{serviceaccount}:
+    get:
+      description: "Retrieve resource\n"
+      operationId: "GET_origins-origin-serviceaccounts-serviceaccount"
+      parameters:
+      - name: "origin"
+        in: "path"
+        description: "origin"
+        required: true
+      - name: "serviceaccount"
+        in: "path"
+        description: "serviceaccount"
+        required: true
+      responses:
+        200:
+          description: "Succesfully retrieved resource\n"
+    post:
+      description: "Create a new serviceaccount under origin\n"
+      operationId: "POST_origins-origin-serviceaccounts-serviceaccount"
+      parameters:
+      - name: "origin"
+        in: "path"
+        description: "origin"
+        required: true
+      - name: "serviceaccount"
+        in: "path"
+        description: "serviceaccount"
+        required: true
+      responses:
+        200:
+          description: "Succesfully retrieved resource\n"
+  /assemblyfactorys:
+    get:
+      description: "Get list of assemblyfactory"
+      operationId: "GET_assemblyfactorys"
+      parameters: []
+      responses:
+        200:
+          description: ""
+        400:
+          description: "Received a jobId that was not a number"
+    post:
+      description: "Create a new assemblyfactory"
+      operationId: "POST_assemblyfactorys"
+      parameters: []
+      responses:
+        201:
+          description: ""
+        400:
+          description: "Received a malformed JSON body"
+        404:
+          description: "Project does not exist with corresponding projectId"
+        422:
+          description: "Invalid or missing projectId in body"
+  /assemblyfactorys/{id}:
+    get:
+      description: "Get the assemblyfactory for the given id"
+      operationId: "GET_assemblyfactorys-id"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "id"
+        required: true
+      responses:
+        200:
+          description: ""
+        400:
+          description: "Received a jobId that was not a number"
+  /assemblyfactorys/{id}/status:
+    put:
+      description: "update the status of the assemblyfactory for the given id"
+      operationId: "PUT_assemblyfactorys-id-status"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "id"
+        required: true
+      responses:
+        201:
+          description: ""
+        400:
+          description: "Received a malformed JSON body"
+        404:
+          description: "Project does not exist with corresponding projectId"
+        422:
+          description: "Invalid or missing projectId in body"
+  /assemblys:
+    get:
+      description: "Get list of assemblys"
+      operationId: "GET_assemblys"
+      parameters: []
+      responses:
+        200:
+          description: ""
+        400:
+          description: "Received a jobId that was not a number"
+    post:
+      description: "Create a new assembly"
+      operationId: "POST_assemblys"
+      parameters: []
+      responses:
+        201:
+          description: ""
+        400:
+          description: "Received a malformed JSON body"
+        404:
+          description: "Project does not exist with corresponding projectId"
+        422:
+          description: "Invalid or missing projectId in body"
+  /assemblys/{id}:
+    get:
+      description: "Get the assembly for the given id"
+      operationId: "GET_assemblys-id"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "id"
+        required: true
+      responses:
+        200:
+          description: ""
+        400:
+          description: "Received a jobId that was not a number"
+  /assemblys/{id}/status:
+    put:
+      description: "Update the status of the assembly for the given id"
+      operationId: "PUT_assemblys-id-status"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "id"
+        required: true
+      responses:
+        201:
+          description: ""
+definitions: {}
