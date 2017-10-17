@@ -11,6 +11,10 @@ There are a couple of different way to install Rio/OS API Server.
 ## Building
 See [BUILDING.md](BUILDING.md) for platform specific info on building Rio/OS API Server from source.
 
+## documentation
+
+Please use the online studio to refer [API documentation](https://app.swaggerhub.com/apis/riocorp/rioos/2.0)
+
 ## Useful reference material
 
 * [The Rust Programming Language](http://doc.rust-lang.org/book/)
