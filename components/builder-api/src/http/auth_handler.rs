@@ -367,6 +367,27 @@ pub fn test_ldap_config(req: &mut Request) -> IronResult<Response> {
     }
 }
 
+pub fn import_ldap(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+    let mut serach_id = IdGet::new();
+    serach_id.set_id(id.to_string());
+
+    match SessionDS::import_ldap_config(&conn, &serach_id) {
+        Ok(result) => Ok(render_json(status::Ok, &result)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
 pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
     let mut saml_provider = SamlProvider::new();
     {
