@@ -503,3 +503,25 @@ pub fn openid_listall(req: &mut Request) -> IronResult<Response> {
             )),
         }
 }
+
+pub fn openid_provider_show(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("providerid").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut oidc_provider_get = IdGet::new();
+    oidc_provider_get.set_id(id.to_string());
+
+    match SessionDS::oidc_show(&conn, &oidc_provider_get) {
+        Ok(saml) => Ok(render_json(status::Ok, &saml)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}

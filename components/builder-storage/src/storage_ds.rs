@@ -239,7 +239,8 @@ fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
 
     storage.set_id(id.to_string());
     storage.set_paramaters(serde_json::from_str(&parameters).unwrap());
-    let object_meta = servicesrv::ObjectMetaData::new();
+    let mut object_meta = servicesrv::ObjectMetaData::new();
+    object_meta.set_name(id.to_string());
     storage.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
     type_meta.set_kind("Storage".to_string());
@@ -301,7 +302,8 @@ fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storagesrv::StorageP
 
     storage.set_id(id.to_string());
     storage.set_paramaters(serde_json::from_str(&parameters).unwrap());
-    let object_meta = servicesrv::ObjectMetaData::new();
+    let mut  object_meta = servicesrv::ObjectMetaData::new();
+    object_meta.set_name(id.to_string());
     storage.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
     type_meta.set_kind("StoragePool".to_string());
