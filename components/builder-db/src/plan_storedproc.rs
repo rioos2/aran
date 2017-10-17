@@ -83,6 +83,15 @@ impl Migratable for PlanProcedures {
 
         migrator.migrate(
             "plansrv",
+            r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_container_tutum/hello-world','/v3/plan/tutum/hello-world','tutum/hello-world is testing simple light weight docker container','{"tutum","hello-world"}','rioos:2.0','{}',
+            '{"{\"name\":\"hello-world\",\"description\":\"tutum is a Debian-based simple container.\",\"href\":\https://www.tutum.com\",\"characteristics\":{\"os\":\"centos\",\"http.host.port\":\"8080\",\"http.container.port\":\"80\"}}"}')"#,
+
+        )?;
+
+        ui.para("[✓] plan_factory_container");
+
+        migrator.migrate(
+            "plansrv",
             r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_application_java','/v3/plan/java','The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.','{"tomcat","java","jdk"}', 'rioos:2.0','{}','{"{\"name\":\"tomcat\",\"description\":\"\",\"href\":\"http://tomcat.apache.org/\",\"characteristics\":{\"os\":\"centos\",\"http.port\":\"3000\",\"username\":\"megam\",\"password\":\"team4megam\",\"version\":\"4.2\",\"image\":\"java.png\"}}"}')"#,
 
         )?;
