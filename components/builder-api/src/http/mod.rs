@@ -104,6 +104,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         assembly_show: get "/assemblys/:id" => XHandler::new(assembly_show).before(basic.clone()),
         assembly_status: put "/assemblys/:id/status" => XHandler::new(assembly_status_update).before(basic.clone()),
         assembly_update: put "/assemblys/:id" => XHandler::new(assembly_update).before(basic.clone()),
+        assemblys_show_by_origin : get "/origins/:origin/assemblys" => XHandler::new(assemblys_show_by_origin).before(basic.clone()),
 
         //scaling API: horizontal scaling
         horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),
@@ -169,7 +170,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),
         data_center_show: get "/datacenters/:id" => XHandler::new(data_center_show).before(basic.clone()),
 
-        // plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
+        plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
 
         //Internal: Streaming watch
         watches: get "/:name/watch/list" => watch_show,

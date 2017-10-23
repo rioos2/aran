@@ -32,6 +32,7 @@ impl Migratable for DeployProcedures {
              uri text,
              description text,
              parent_id text,
+             origin_id bigint REFERENCES origins(id),
              tags text[],
              node text,
              ip text,
@@ -54,6 +55,7 @@ impl Migratable for DeployProcedures {
                 uri text,
                 description text,
                 parent_id text,
+                origin_name text,
                 tags text[],
                 node text,
                 ip text,
@@ -62,9 +64,12 @@ impl Migratable for DeployProcedures {
                 volumes text,
                 instance_id text
                         ) RETURNS SETOF assembly AS $$
+                        DECLARE
+                           this_origin origins%rowtype;
                                 BEGIN
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id, tags,node,ip,urls,status,volumes,instance_id)
-                                        VALUES (name, uri, description,parent_id, tags,node,ip,urls,status,volumes,instance_id)
+                                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id,origin_id, tags,node,ip,urls,status,volumes,instance_id)
+                                        VALUES (name, uri, description,parent_id,this_origin.id, tags,node,ip,urls,status,volumes,instance_id)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -91,6 +96,20 @@ impl Migratable for DeployProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_assemblys_by_origin_v1(org_name text) RETURNS SETOF assembly AS $$
+                DECLARE
+                this_origin origins%rowtype;
+                        BEGIN
+                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
+                         RETURN QUERY SELECT * FROM assembly WHERE origin_id=this_origin.id;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
 
         migrator.migrate(
             "asmsrv",

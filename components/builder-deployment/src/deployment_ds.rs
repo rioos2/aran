@@ -16,12 +16,13 @@ impl DeploymentDS {
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
                 &(assembly.get_description() as String),
                 &(assembly.get_parent_id() as String),
+                &(assembly.get_origin() as String),
                 &(assembly.get_tags() as Vec<String>),
                 &(assembly.get_node() as String),
                 &(serde_json::to_string(assembly.get_ip()).unwrap()),
@@ -100,6 +101,32 @@ impl DeploymentDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+
+    pub fn assemblys_show_by_origin(datastore: &DataStoreConn, assemblys_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_assemblys_by_origin_v1($1)",
+            &[&(assemblys_get.get_id() as String)],
+        ).map_err(Error::AssemblyGet)?;
+
+        let mut response = asmsrv::AssemblysGetResponse::new();
+
+        let mut assemblys_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                assemblys_collection.push(assembly);
+            }
+            response.set_assemblys(
+                assemblys_collection,
+                "AssemblyList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
     }
 
     pub fn assembly_status_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
@@ -256,6 +283,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
     let parent_id: String = row.get("parent_id");
+    let origin: i64 = row.get("origin_id");
     let status: String = row.get("status");
     let node: String = row.get("node");
     let ip: String = row.get("ip");
@@ -282,6 +310,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
 
     assembly.set_description(description as String);
     assembly.set_parent_id(parent_id as String);
+    assembly.set_origin(origin.to_string());
     assembly.set_status(serde_json::from_str(&status).unwrap());
     assembly.set_volumes(serde_json::from_str(&volume).unwrap());
     assembly.set_node(node as String);

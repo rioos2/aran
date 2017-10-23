@@ -25,6 +25,7 @@ struct AssemblyCreateReq {
     uri: String,
     tags: Vec<String>,
     parent_id: String,
+    origin: String,
     description: String,
     node: String,
     status: StatusReq,
@@ -121,11 +122,19 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `parent_id`",
                     )));
                 }
+                if body.origin.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `origin`",
+                    )));
+                }
+
                 assembly_create.set_name(body.name);
                 assembly_create.set_uri(body.uri);
                 assembly_create.set_description(body.description);
                 assembly_create.set_tags(body.tags);
                 assembly_create.set_parent_id(body.parent_id);
+                assembly_create.set_origin(body.origin);
                 assembly_create.set_node(body.node);
                 let mut status = Status::new();
                 status.set_phase(body.status.phase);
@@ -222,6 +231,38 @@ pub fn assembly_list(req: &mut Request) -> IronResult<Response> {
         )),
     }
 }
+
+pub fn assemblys_show_by_origin(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut assemblys_get = IdGet::new();
+    assemblys_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", assemblys_get),
+    );
+    match DeploymentDS::assemblys_show_by_origin(&conn, &assemblys_get) {
+        Ok(Some(assemblys)) => Ok(render_json(status::Ok, &assemblys)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
 
 pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
     let id = {

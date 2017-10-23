@@ -83,7 +83,7 @@ impl Migratable for PlanProcedures {
 
         migrator.migrate(
             "plansrv",
-            r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_container_tutum/hello-world','/v3/plan/tutum/hello-world','tutum/hello-world is testing simple light weight docker container','{"tutum","hello-world"}','rioos:2.0','{}',
+            r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_container_rioos','/v3/plan/rioos','tutum/hello-world is testing simple light weight docker container','{"tutum","hello-world"}','rioos:2.0','{}',
             '{"{\"name\":\"hello-world\",\"description\":\"tutum is a Debian-based simple container.\",\"href\":\https://www.tutum.com\",\"characteristics\":{\"os\":\"centos\",\"http.host.port\":\"8080\",\"http.container.port\":\"80\"}}"}')"#,
 
         )?;

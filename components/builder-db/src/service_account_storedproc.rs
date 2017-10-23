@@ -1,6 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-//stored procedures for plan_factory
+//stored procedures service account
 
 use error::Result;
 use migration::{Migratable, Migrator};
