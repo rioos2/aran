@@ -23,11 +23,12 @@ impl ScalingDS {
         let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
         let status_str = serde_json::to_string(hs.get_status()).unwrap();
         let rows = &conn.query(
-            "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
                 &(hs.get_name() as String),
                 &(hs.get_description() as String),
                 &(hs.get_tags() as Vec<String>),
+                &(hs.get_origin() as String),
                 &(hs.get_scale_type() as String),
                 &(hs.get_representation_skew() as String),
                 &(hs.get_state() as String),
@@ -61,6 +62,30 @@ impl ScalingDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+    pub fn horizontal_scaling_list_by_origin(datastore: &DataStoreConn, hs_get: &asmsrv::IdGet) -> Result<Option<scalesrv::HorizontalScalingGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_hs_by_origin_v1($1)",
+            &[&(hs_get.get_id() as String)],
+        ).map_err(Error::HSGet)?;
+
+        let mut response = scalesrv::HorizontalScalingGetResponse::new();
+
+        let mut hs_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                hs_collection.push(row_to_hs(&row)?)
+            }
+            response.set_hs_collection(
+                hs_collection,
+                "HorizontalPodAutoscalerList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
     }
 
     pub fn hs_status_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<()> {
@@ -139,6 +164,7 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     let name: String = row.get("name");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
+    let origin: i64 = row.get("origin_id");
     let scale_type: String = row.get("scale_type");
     let representation_skew: String = row.get("representation_skew");
     let state: String = row.get("state");
@@ -152,6 +178,7 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     hs.set_name(name as String);
     hs.set_description(description as String);
     hs.set_tags(tags as Vec<String>);
+    hs.set_origin(origin.to_string());
     hs.set_scale_type(scale_type as String);
     hs.set_representation_skew(representation_skew as String);
     hs.set_state(state as String);

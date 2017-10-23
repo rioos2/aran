@@ -9,15 +9,18 @@ use rio_net::http::controller::*;
 use rio_net::metrics::mock::MockMetrics;
 use rio_net::metrics::collector::CollectorScope;
 use rio_net::http::middleware::PrometheusCli;
+use ansi_term::Colour;
 
 use scale::scaling_ds::ScalingDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
+use protocol::asmsrv::{IdGet};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
+use common::ui;
 
 
 define_event_log!();
@@ -27,6 +30,7 @@ struct HsCreateReq {
     name: String,
     description: String,
     tags: Vec<String>,
+    origin: String,
     scale_type: String,
     representation_skew: String,
     state: String,
@@ -98,9 +102,16 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `name`",
                     )));
                 }
+                if body.origin.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `origin`",
+                    )));
+                }
                 hs_create.set_name(body.name);
                 hs_create.set_description(body.description);
                 hs_create.set_tags(body.tags);
+                hs_create.set_origin(body.origin);
                 hs_create.set_scale_type(body.scale_type);
                 hs_create.set_representation_skew(body.representation_skew);
                 hs_create.set_metadata(body.metadata);
@@ -196,6 +207,40 @@ pub fn hs_list(req: &mut Request) -> IronResult<Response> {
         )),
     }
 }
+
+
+pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut hs_get = IdGet::new();
+    hs_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", hs_get),
+    );
+    match ScalingDS::horizontal_scaling_list_by_origin(&conn, &hs_get) {
+        Ok(Some(hs)) => Ok(render_json(status::Ok, &hs)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
 
 pub fn hs_metrics(req: &mut Request) -> IronResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
