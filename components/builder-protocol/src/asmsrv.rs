@@ -299,6 +299,7 @@ pub struct AssemblyFactory {
     uri: String,
     description: String,
     tags: Vec<String>,
+    origin: String,
     replicas: u64,
     properties: Properties,
     type_meta: TypeMeta,
@@ -347,6 +348,14 @@ impl AssemblyFactory {
 
     pub fn get_name(&self) -> ::std::string::String {
         self.name.clone()
+    }
+
+    pub fn set_origin(&mut self, v: ::std::string::String) {
+        self.origin = v;
+    }
+
+    pub fn get_origin(&self) -> ::std::string::String {
+        self.origin.clone()
     }
 
     pub fn set_description(&mut self, v: ::std::string::String) {

@@ -96,6 +96,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         assemblys_factory_show: get "/assemblyfactorys/:id" => XHandler::new(assembly_factory_show).before(basic.clone()),
         assemblys_factorys_list: get "/assemblyfactorys" => XHandler::new(assembly_factory_list).before(basic.clone()),
         assembly_factory_status: put "/assemblyfactorys/:id/status" => XHandler::new(assembly_factory_status_update).before(basic.clone()),
+        assemblyfactorys_list_by_origin : get "/origins/:origin/assemblyfactorys" => XHandler::new(assemblyfactorys_list_by_origin).before(basic.clone()),
         plan_list: get "/plans" => XHandler::new(plan_list).before(basic.clone()),
 
         //deploy API: assembly
