@@ -71,7 +71,6 @@ impl PrometheusClient {
     ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
     pub fn pull_osusage(&self, token: &str, path: &str) -> Result<Contents> {
         let url = Url::parse(&format!("{}/query_range?{}", self.url, path)).unwrap();
-        println!("-----------------url{}", url);
 
         let mut rep = http_get(url, token)?;
         let mut body = String::new();
