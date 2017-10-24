@@ -10,7 +10,6 @@ use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
-use deploy::deployment_ds::DeploymentDS;
 
 const METRIC_NODE: &'static str = "node_cpu";
 

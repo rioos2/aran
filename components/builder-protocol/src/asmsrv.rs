@@ -587,7 +587,7 @@ pub struct AssemblyFactoryGetResponse {
     // message fields
     kind: String,
     api_version: String,
-    pub items: Vec<AssemblyFactory>,
+    items: Vec<AssemblyFactory>,
 }
 
 
