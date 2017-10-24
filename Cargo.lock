@@ -1312,7 +1312,6 @@ dependencies = [
  "clap 2.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "postgres 0.14.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
- "rioos_builder_asmsrv 0.0.0",
  "rioos_builder_db 0.0.0",
  "rioos_builder_protocol 0.0.0",
  "rioos_net 0.0.0",

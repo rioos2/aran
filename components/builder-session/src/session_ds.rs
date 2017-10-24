@@ -11,6 +11,7 @@ use serde_json;
 use ldap::{LDAPClient, LDAPUser};
 use db;
 use std::collections::BTreeMap;
+use std::ops::Add;
 
 pub struct SessionDS;
 
@@ -20,17 +21,34 @@ impl SessionDS {
     //The default origin is
     pub fn account_create(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate) -> Result<sessionsrv::Session> {
         //call and do find_or_create_account_via_session
-        SessionDS::find_or_create_account_via_session(datastore, session_create, true, false)
+        SessionDS::find_or_create_account_via_session(
+            datastore,
+            session_create,
+            true,
+            false,
+            "select_or_insert_account_v1",
+        )
         //do find_or_create_default_role_permission
         //do find_or_create_default_origin
         //return Session
     }
 
-    pub fn find_or_create_account_via_session(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_service_access: bool) -> Result<sessionsrv::Session> {
-        let conn = datastore.pool.get_shard(0)?;
 
+    pub fn find_account(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate) -> Result<sessionsrv::Session> {
+        SessionDS::find_or_create_account_via_session(
+            datastore,
+            session_create,
+            true,
+            false,
+            "select_only_account_v1",
+        )
+    }
+
+    pub fn find_or_create_account_via_session(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_service_access: bool, dbprocedure: &str) -> Result<sessionsrv::Session> {
+        let conn = datastore.pool.get_shard(0)?;
+        let query = "SELECT * FROM ".to_string() + dbprocedure + "($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)";
         let rows = conn.query(
-            "SELECT * FROM select_or_insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+            &query,
             &[
                 &session_create.get_name(),
                 &session_create.get_email(),
@@ -46,32 +64,35 @@ impl SessionDS {
                 &session_create.get_registration_ip_address(),
             ],
         ).map_err(Error::AccountCreate)?;
+        println!("--------------------------{:?}", rows.len());
+        if rows.len() > 0 {
+            let row = rows.get(0);
 
-        let row = rows.get(0);
-        let account = row_to_account(row);
-        let id = account.get_id().parse::<i64>().unwrap();
+            let account = row_to_account(row);
+
+            let id = account.get_id().parse::<i64>().unwrap();
 
 
-        let provider = match session_create.get_provider() {
-            sessionsrv::OAuthProvider::OpenID => "openid",
-            _ => "password",
-        };
+            let provider = match session_create.get_provider() {
+                sessionsrv::OAuthProvider::OpenID => "openid",
+                _ => "password",
+            };
 
-        let rows = conn.query(
-            "SELECT * FROM insert_account_session_v1($1, $2, $3, $4, $5)",
-            &[
-                &id,
-                &session_create.get_token(),
-                &provider,
-                &is_admin,
-                &is_service_access,
-            ],
-        ).map_err(Error::AccountGetById)?;
-        let session_row = rows.get(0);
-        let mut session: sessionsrv::Session = account.into();
-        session.set_token(session_row.get("token"));
+            let rows = conn.query(
+                "SELECT * FROM insert_account_session_v1($1, $2, $3, $4, $5)",
+                &[
+                    &id,
+                    &session_create.get_token(),
+                    &provider,
+                    &is_admin,
+                    &is_service_access,
+                ],
+            ).map_err(Error::AccountGetById)?;
+            let session_row = rows.get(0);
+            let mut session: sessionsrv::Session = account.into();
+            session.set_token(session_row.get("token"));
 
-        /*
+            /*
         This will be moved to role/permission
         let mut flags = privilege::FeatureFlags::empty();
         if session_row.get("is_admin") {
@@ -85,7 +106,12 @@ impl SessionDS {
         }
         session.set_flags(flags.bits());
        */
-        Ok(session)
+            Ok(session)
+        } else {
+            return Err(Error::Db(
+                db::error::Error::RecordsNotFound("No Record".to_string()),
+            ));
+        }
     }
 
     pub fn get_account(datastore: &DataStoreConn, account_get: &sessionsrv::AccountGet) -> Result<Option<sessionsrv::Account>> {
@@ -422,8 +448,6 @@ impl SessionDS {
         }
         Ok(None)
     }
-
-
 }
 
 fn row_to_account(row: postgres::rows::Row) -> sessionsrv::Account {
