@@ -90,7 +90,7 @@ impl DeploymentDS {
         let mut response = asmsrv::AssemblysGetResponse::new();
 
         let mut assemblys_collection = Vec::new();
-
+        if rows.len() > 0 {
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             assemblys_collection.push(assembly);
@@ -100,7 +100,9 @@ impl DeploymentDS {
             "AssemblyList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn assemblys_show_by_origin(datastore: &DataStoreConn, assemblys_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
@@ -260,6 +262,34 @@ impl DeploymentDS {
         }
         Ok(None)
     }
+
+    pub fn assembly_factorys_describe(datastore: &DataStoreConn, assemblydes_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_assemblys_by_parentid_v1($1)",
+            &[&(assemblydes_get.get_id() as String)],
+        ).map_err(Error::AssemblyGet)?;
+
+        let mut response = asmsrv::AssemblysGetResponse::new();
+
+        let mut assemblys_collection = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                assemblys_collection.push(assembly);
+            }
+            response.set_assemblys(
+                assemblys_collection,
+                "AssemblyList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
 
     pub fn collect_spec(row: &postgres::rows::Row, datastore: &DataStoreConn) -> Result<asmsrv::Assembly> {
         let mut assembly = row_to_assembly(&row)?;

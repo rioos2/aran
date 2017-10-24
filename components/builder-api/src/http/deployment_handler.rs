@@ -583,6 +583,39 @@ pub fn assemblyfactorys_list_by_origin(req: &mut Request) -> IronResult<Response
     }
 }
 
+pub fn assembly_factorys_describe(req: &mut Request) -> IronResult<Response> {
+    
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("id").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut assemblydes_get = IdGet::new();
+    assemblydes_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", assemblydes_get),
+    );
+    match DeploymentDS::assembly_factorys_describe(&conn, &assemblydes_get) {
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
 
 
 #[allow(unused_variables)]

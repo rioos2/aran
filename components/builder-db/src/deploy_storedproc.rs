@@ -87,11 +87,23 @@ impl Migratable for DeployProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+
+
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION get_assemblys_v1() RETURNS SETOF assembly AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM assembly;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_assemblys_by_parentid_v1 (pid text) RETURNS SETOF assembly AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM assembly WHERE parent_id = pid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
