@@ -10,7 +10,7 @@ use iron::status;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData};
+use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData, EndPoints,Subsets, Addesses,Ports};
 use protocol::asmsrv::{TypeMeta, IdGet};
 use std::collections::BTreeMap;
 use http::deployment_handler;
@@ -48,6 +48,35 @@ struct ObjectReferenceReq {
     name: String,
     origin: String,
     uid: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct EndPointsReq {
+    subsets: SubsetsReq,
+    object_meta: ObjectMetaReq,
+    type_meta: deployment_handler::TypeMetaReq,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct SubsetsReq {
+    target_ref: String,
+    addresses: Vec<AddessesReq>,
+    not_ready_addresses: Vec<AddessesReq>,
+    ports: Vec<PortsReq>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct AddessesReq {
+    name: String,
+    protocol_version: String,
+    ip: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct PortsReq {
+    name: String,
+    port: String,
+    protocol: String,
 }
 
 pub fn secret_create(req: &mut Request) -> AranResult<Response> {
@@ -276,5 +305,95 @@ pub fn service_account_show(req: &mut Request) -> IronResult<Response> {
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
         )),
+    }
+}
+
+pub fn endpoints_create(req: &mut Request) -> IronResult<Response> {
+    let mut endpoints_create = EndPoints::new();
+    {
+        match req.get::<bodyparser::Struct<EndPointsReq>>() {
+            Ok(Some(body)) => {
+                if body.object_meta.origin.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `origin`",
+                    )));
+
+                }
+
+
+                let mut object_meta = ObjectMetaData::new();
+                object_meta.set_name(body.object_meta.name);
+                object_meta.set_origin(body.object_meta.origin);
+                object_meta.set_uid(body.object_meta.uid);
+                object_meta.set_created_at(body.object_meta.created_at);
+                object_meta.set_cluster_name(body.object_meta.cluster_name);
+                object_meta.set_labels(body.object_meta.labels);
+                object_meta.set_annotations(body.object_meta.annotations);
+                endpoints_create.set_object_meta(object_meta);
+
+                let mut type_meta = TypeMeta::new();
+                type_meta.set_kind(body.type_meta.kind);
+                type_meta.set_api_version(body.type_meta.api_version);
+                endpoints_create.set_type_meta(type_meta);
+
+                let mut subsets = Subsets::new();
+                subsets.set_target_ref(body.subsets.target_ref);
+
+                let mut address_collection = Vec::new();
+                for address in body.subsets.addresses {
+                    let mut addesses = Addesses::new();
+                    addesses.set_name(address.name);
+                    addesses.set_protocol_version(address.protocol_version);
+                    addesses.set_ip(address.ip);
+                    address_collection.push(addesses);
+                }
+                subsets.set_addresses(address_collection);
+
+                let mut not_ready_address_collection = Vec::new();
+                for nr_address in body.subsets.not_ready_addresses {
+                    let mut addesses = Addesses::new();
+                    addesses.set_name(nr_address.name);
+                    addesses.set_protocol_version(nr_address.protocol_version);
+                    addesses.set_ip(nr_address.ip);
+                    not_ready_address_collection.push(addesses);
+                }
+                subsets.set_not_ready_addresses(not_ready_address_collection);
+
+                let mut ports_collection = Vec::new();
+                for port in body.subsets.ports {
+                    let mut ports = Ports::new();
+                    ports.set_name(port.name);
+                    ports.set_port(port.port);
+                    ports.set_protocol(port.protocol);
+                    ports_collection.push(ports);
+                }
+                subsets.set_ports(ports_collection);
+                endpoints_create.set_subsets(subsets);
+            }
+            Err(err) => {
+                return Ok(render_net_error(&net::err(
+                    ErrCode::MALFORMED_DATA,
+                    format!("{}, {:?}\n", err.detail, err.cause),
+                )));
+            }
+            _ => return Ok(Response::with(status::UnprocessableEntity)),
+        }
+    }
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", endpoints_create),
+    );
+
+    let conn = Broker::connect().unwrap();
+
+    match ServiceAccountDS::endpoints_create(&conn, &endpoints_create) {
+        Ok(endpoints) => Ok(render_json(status::Ok, &endpoints)),
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+
     }
 }

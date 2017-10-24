@@ -143,6 +143,23 @@ impl ServiceAccountDS {
         );
         Ok(Some(response))
     }
+
+    pub fn endpoints_create(datastore: &DataStoreConn, endpoints_create: &servicesrv::EndPoints) -> Result<servicesrv::EndPoints> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM insert_endpoints_v1($1,$2,$3,$4)",
+            &[
+                &(endpoints_create.get_object_meta().get_origin() as String),
+                &(serde_json::to_string(endpoints_create.get_subsets()).unwrap()),
+                &(serde_json::to_string(endpoints_create.get_object_meta()).unwrap()),
+                &(serde_json::to_string(endpoints_create.get_type_meta()).unwrap()),
+            ],
+        ).map_err(Error::EndPointsCreate)?;
+        let end = row_to_endpoints(&rows.get(0));
+        return Ok(end.clone());
+    }
+
 }
 
 
@@ -163,6 +180,23 @@ fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {
     secret.set_created_at(created_at.to_rfc3339());
 
     secret
+}
+
+fn row_to_endpoints(row: &postgres::rows::Row) -> servicesrv::EndPoints {
+    let mut endpoints = servicesrv::EndPoints::new();
+    let id: i64 = row.get("id");
+    let subsets: String = row.get("subsets");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+    let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
+
+    endpoints.set_id(id.to_string());
+    endpoints.set_subsets(serde_json::from_str(&subsets).unwrap());
+    endpoints.set_object_meta(serde_json::from_str(&object_meta).unwrap());
+    endpoints.set_type_meta(serde_json::from_str(&type_meta).unwrap());
+    endpoints.set_created_at(created_at.to_rfc3339());
+
+    endpoints
 }
 
 

@@ -17,6 +17,7 @@ pub enum Error {
     ServiceAccountCreate(postgres::error::Error),
     ServiceAccountGetResponse(postgres::error::Error),
     ServiceAccountGet(postgres::error::Error),
+    EndPointsCreate(postgres::error::Error),
 }
 
 
@@ -30,6 +31,8 @@ impl fmt::Display for Error {
             Error::SecretGet(ref e) => format!("Database error get secret, {}", e),
             Error::SecretGetResponse(ref e) => format!("Error retrive secret_list database, {}", e),
             Error::ServiceAccountCreate(ref e) => format!("Database error creating a service_account, {}", e),
+            Error::EndPointsCreate(ref e) => format!("Database error creating a end points, {}", e),
+
             Error::ServiceAccountGetResponse(ref e) => {
                 format!(
                     "Error retrive service_account for account in database, {}",
@@ -53,6 +56,8 @@ impl error::Error for Error {
             Error::ServiceAccountCreate(ref err) => err.description(),
             Error::ServiceAccountGetResponse(ref err) => err.description(),
             Error::ServiceAccountGet(ref err) => err.description(),
+            Error::EndPointsCreate(ref err) => err.description(),
+
 
         }
     }

@@ -165,6 +165,49 @@ impl Migratable for ServiceAccountProcedure {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS end_id_seq;"#,
+        )?;
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE TABLE  IF NOT EXISTS endpoints (
+             id bigint PRIMARY KEY DEFAULT next_id_v1('end_id_seq'),
+             origin_id bigint REFERENCES origins(id),
+             subsets text,
+             object_meta text,
+             type_meta text,
+             updated_at timestamptz,
+             created_at timestamptz DEFAULT now()
+             )"#,
+        )?;
+
+        ui.para("[✓] endpoints");
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_endpoints_v1 (
+                origin_name text,
+                subsets  text,
+                object_meta text,
+                type_meta text
+                        ) RETURNS SETOF endpoints AS $$
+                        DECLARE
+                           this_origin origins%rowtype;
+                                BEGIN
+                                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
+                                    RETURN QUERY INSERT INTO endpoints(origin_id,subsets,object_meta,type_meta)
+                                        VALUES (this_origin.id,subsets,object_meta,type_meta )
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#,
+        )?;
+
+
+
 
         ui.end("ServiceAccountProcedure");
 

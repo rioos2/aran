@@ -14,6 +14,7 @@ pub mod storage_handler;
 pub mod plan_handler;
 pub mod watch_handler;
 
+
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
 
@@ -172,6 +173,10 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         data_center: post "/datacenters" => XHandler::new(data_center_create).before(basic.clone()),
         data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),
         data_center_show: get "/datacenters/:id" => XHandler::new(data_center_show).before(basic.clone()),
+
+        //endpoint API
+
+        endpoints: post "/endpoints" =>  XHandler::new(endpoints_create).before(basic.clone()),
 
         plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
 
