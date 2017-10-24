@@ -25,6 +25,9 @@ path = "../builder-protocol"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
+[dependencies.rioos_builder_asmsrv]
+path = "../builder-deployment"
+
 
 [features]
 functional = []

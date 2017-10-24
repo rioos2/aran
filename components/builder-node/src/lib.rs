@@ -6,6 +6,8 @@ extern crate chrono;
 extern crate rioos_net as rio_net;
 extern crate rioos_builder_protocol as protocol;
 extern crate rioos_builder_db as db;
+extern crate rioos_builder_asmsrv as deploy;
+
 
 #[macro_use]
 extern crate postgres;

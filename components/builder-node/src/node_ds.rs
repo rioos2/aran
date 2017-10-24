@@ -10,6 +10,9 @@ use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
+use deploy::deployment_ds::DeploymentDS;
+
+const METRIC_NODE: &'static str = "node_cpu";
 
 pub struct NodeDS;
 
@@ -61,20 +64,50 @@ impl NodeDS {
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
-        let NODES_METRIC_SCOPE: Vec<String> = vec!["cpu_total".to_string(), "group=nodes".to_string()];
-        let NODES_GROUP_SCOPE: Vec<String> = vec![
+        let NODES_METRIC_SCOPE: Vec<String> = vec![
             "cpu_total".to_string(),
             "ram_total".to_string(),
             "disk_total".to_string(),
         ];
+        let NODES_GROUP_SCOPE: Vec<String> = vec!["cpu_total".to_string(), "group=nodes".to_string()];
+
         let scope = CollectorScope {
             metric_names: NODES_METRIC_SCOPE,
             labels: NODES_GROUP_SCOPE,
             last_x_minutes: None,
         };
+
+
         let mut health_checker = Collector::new(client, scope);
 
         let metric_response = health_checker.overall().unwrap();
+
+        let label_name = format!("{}", METRIC_NODE);
+        let metric_scope = vec![];
+        let group_scope: Vec<String> = vec![label_name.to_string()];
+
+        let scope_data = CollectorScope {
+            metric_names: metric_scope,
+            labels: group_scope,
+            last_x_minutes: None,
+        };
+
+        let mut os_checker = Collector::new(client, scope_data);
+        let os_response = os_checker.metric_by().unwrap();
+
+        let mut metrics = nodesrv::Osusages::new();
+
+        let all_items = os_response
+            .into_iter()
+            .map(|p| {
+                let p1: nodesrv::Osusages = p.into();
+                p1.get_items()
+            })
+            .collect::<Vec<_>>();
+
+        metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
+        metrics.set_title("Scale metrics ".to_owned());
+
 
         let mut coun_collection = Vec::new();
         for data in metric_response.0 {
@@ -99,6 +132,7 @@ impl NodeDS {
         res.set_title("Command center operations".to_string());
         res.set_gauges(guague);
         res.set_statistics(statistic);
+        res.set_osusages(metrics);
 
         let response: nodesrv::HealthzAllGetResponse = res.into();
 
