@@ -160,6 +160,45 @@ impl ServiceAccountDS {
         return Ok(end.clone());
     }
 
+    pub fn endpoints_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::EndpointsGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_endpoints_v1()", &[]).map_err(
+            Error::EndpointsGetResponse,
+        )?;
+
+        let mut response = servicesrv::EndpointsGetResponse::new();
+
+        let mut end_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                end_collection.push(row_to_endpoints(&row))
+            }
+            response.set_end_collection(
+                end_collection,
+                "EndpointsList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+    pub fn endpoints_show(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_endpoint_v1($1)",
+            &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::EndPointsGet)?;
+        if rows.len() > 0 {
+            for row in rows {
+                let end = row_to_endpoints(&row);
+                return Ok(Some(end));
+            }
+        }
+        Ok(None)
+    }
+
 }
 
 

@@ -206,6 +206,24 @@ impl Migratable for ServiceAccountProcedure {
                             "#,
         )?;
 
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_endpoints_v1() RETURNS SETOF endpoints AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM endpoints;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_endpoint_v1 (eid bigint) RETURNS SETOF endpoints AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM endpoints WHERE id = eid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
 
 

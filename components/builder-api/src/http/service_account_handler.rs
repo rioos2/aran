@@ -397,3 +397,53 @@ pub fn endpoints_create(req: &mut Request) -> IronResult<Response> {
 
     }
 }
+
+pub fn endpoints_list(req: &mut Request) -> IronResult<Response> {
+    let conn = Broker::connect().unwrap();
+    match ServiceAccountDS::endpoints_list(&conn) {
+        Ok(Some(endpoints_list)) => Ok(render_json(status::Ok, &endpoints_list)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+pub fn endpoints_show(req: &mut Request) -> IronResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Ok(Response::with(status::BadRequest)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut endpoints_get = IdGet::new();
+    endpoints_get.set_id(id.to_string());
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", endpoints_get),
+    );
+
+    match ServiceAccountDS::endpoints_show(&conn, &endpoints_get) {
+        Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}

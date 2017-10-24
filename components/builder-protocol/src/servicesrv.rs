@@ -380,3 +380,22 @@ impl Ports {
     }
 
 }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct EndpointsGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<EndPoints>,
+}
+
+impl EndpointsGetResponse {
+    pub fn new() -> EndpointsGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_end_collection(&mut self, v: Vec<EndPoints>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
+}
