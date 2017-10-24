@@ -225,6 +225,7 @@ impl ObjectReference {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct EndPoints {
     id: String,
+    target_ref: String,
     subsets: Subsets,
     object_meta: ObjectMetaData,
     type_meta: asmsrv::TypeMeta,
@@ -240,6 +241,13 @@ impl EndPoints {
     }
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
+    }
+
+    pub fn set_target_ref(&mut self, v: ::std::string::String) {
+        self.target_ref = v;
+    }
+    pub fn get_target_ref(&self) -> ::std::string::String {
+        self.target_ref.clone()
     }
     pub fn set_subsets(&mut self, v: Subsets) {
         self.subsets = v;
@@ -276,7 +284,6 @@ impl EndPoints {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Subsets {
-    target_ref: String,
     addresses: Vec<Addesses>,
     not_ready_addresses: Vec<Addesses>,
     ports: Vec<Ports>,
@@ -285,12 +292,6 @@ pub struct Subsets {
 impl Subsets {
     pub fn new() -> Subsets {
         ::std::default::Default::default()
-    }
-    pub fn set_target_ref(&mut self, v: ::std::string::String) {
-        self.target_ref = v;
-    }
-    pub fn get_target_ref(&self) -> ::std::string::String {
-        self.target_ref.clone()
     }
 
     pub fn set_addresses(&mut self, v: Vec<Addesses>) {

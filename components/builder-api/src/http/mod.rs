@@ -179,6 +179,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         endpoints: post "/endpoints" =>  XHandler::new(endpoints_create).before(basic.clone()),
         endpoints_list: get "/endpoints" =>  XHandler::new(endpoints_list).before(basic.clone()),
         endpoints_show: get "/endpoints/:id" => XHandler::new(endpoints_show).before(basic.clone()),
+        endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(endpoints_list_by_origin).before(basic.clone()),
+        endpoints_list_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(endpoints_list_by_assembly).before(basic.clone()),
 
         plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
 

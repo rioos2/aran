@@ -52,6 +52,7 @@ struct ObjectReferenceReq {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct EndPointsReq {
+    target_ref: String,
     subsets: SubsetsReq,
     object_meta: ObjectMetaReq,
     type_meta: deployment_handler::TypeMetaReq,
@@ -59,7 +60,6 @@ struct EndPointsReq {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SubsetsReq {
-    target_ref: String,
     addresses: Vec<AddessesReq>,
     not_ready_addresses: Vec<AddessesReq>,
     ports: Vec<PortsReq>,
@@ -320,6 +320,13 @@ pub fn endpoints_create(req: &mut Request) -> IronResult<Response> {
                     )));
 
                 }
+                if body.target_ref.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `target ref`",
+                    )));
+
+                }
 
 
                 let mut object_meta = ObjectMetaData::new();
@@ -336,9 +343,9 @@ pub fn endpoints_create(req: &mut Request) -> IronResult<Response> {
                 type_meta.set_kind(body.type_meta.kind);
                 type_meta.set_api_version(body.type_meta.api_version);
                 endpoints_create.set_type_meta(type_meta);
+                endpoints_create.set_target_ref(body.target_ref);
 
                 let mut subsets = Subsets::new();
-                subsets.set_target_ref(body.subsets.target_ref);
 
                 let mut address_collection = Vec::new();
                 for address in body.subsets.addresses {
@@ -435,6 +442,66 @@ pub fn endpoints_show(req: &mut Request) -> IronResult<Response> {
     );
 
     match ServiceAccountDS::endpoints_show(&conn, &endpoints_get) {
+        Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+pub fn endpoints_list_by_origin(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut endpoints_get = IdGet::new();
+    endpoints_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", endpoints_get),
+    );
+    match ServiceAccountDS::endpoints_list_by_origin(&conn, &endpoints_get) {
+        Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+pub fn endpoints_list_by_assembly(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("asmid").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut endpoints_get = IdGet::new();
+    endpoints_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", endpoints_get),
+    );
+    match ServiceAccountDS::endpoints_list_by_assembly(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
             let err = "NotFound";

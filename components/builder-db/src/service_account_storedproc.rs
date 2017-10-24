@@ -175,6 +175,7 @@ impl Migratable for ServiceAccountProcedure {
             r#"CREATE TABLE  IF NOT EXISTS endpoints (
              id bigint PRIMARY KEY DEFAULT next_id_v1('end_id_seq'),
              origin_id bigint REFERENCES origins(id),
+             target_ref bigint REFERENCES assembly(id),
              subsets text,
              object_meta text,
              type_meta text,
@@ -188,6 +189,7 @@ impl Migratable for ServiceAccountProcedure {
         migrator.migrate(
             "asmsrv",
             r#"CREATE OR REPLACE FUNCTION insert_endpoints_v1 (
+                target_ref bigint,
                 origin_name text,
                 subsets  text,
                 object_meta text,
@@ -197,8 +199,8 @@ impl Migratable for ServiceAccountProcedure {
                            this_origin origins%rowtype;
                                 BEGIN
                                 SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO endpoints(origin_id,subsets,object_meta,type_meta)
-                                        VALUES (this_origin.id,subsets,object_meta,type_meta )
+                                    RETURN QUERY INSERT INTO endpoints(origin_id,target_ref,subsets,object_meta,type_meta)
+                                        VALUES (this_origin.id,target_ref,subsets,object_meta,type_meta )
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -224,6 +226,31 @@ impl Migratable for ServiceAccountProcedure {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_endpoints_by_origin_v1(org_name text) RETURNS SETOF endpoints AS $$
+                DECLARE
+                this_origin origins%rowtype;
+                        BEGIN
+                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
+                         RETURN QUERY SELECT * FROM endpoints WHERE origin_id=this_origin.id;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_endpoints_by_assebmly_v1(target bigint) RETURNS SETOF endpoints AS $$
+                        BEGIN
+                         RETURN QUERY SELECT * FROM endpoints WHERE target_ref=target;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
 
 
 

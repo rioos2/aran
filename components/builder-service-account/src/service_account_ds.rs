@@ -148,8 +148,9 @@ impl ServiceAccountDS {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM insert_endpoints_v1($1,$2,$3,$4)",
+            "SELECT * FROM insert_endpoints_v1($1,$2,$3,$4,$5)",
             &[
+                &(endpoints_create.get_target_ref().parse::<i64>().unwrap()),
                 &(endpoints_create.get_object_meta().get_origin() as String),
                 &(serde_json::to_string(endpoints_create.get_subsets()).unwrap()),
                 &(serde_json::to_string(endpoints_create.get_object_meta()).unwrap()),
@@ -199,6 +200,57 @@ impl ServiceAccountDS {
         Ok(None)
     }
 
+    pub fn endpoints_list_by_origin(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndpointsGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_endpoints_by_origin_v1($1)",
+            &[&(endpoints_get.get_id() as String)],
+        ).map_err(Error::EndPointsGet)?;
+
+        let mut response = servicesrv::EndpointsGetResponse::new();
+
+        let mut end_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                end_collection.push(row_to_endpoints(&row))
+            }
+            response.set_end_collection(
+                end_collection,
+                "EndpointsList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+    pub fn endpoints_list_by_assembly(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndpointsGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_endpoints_by_assebmly_v1($1)",
+            &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::EndPointsGet)?;
+
+        let mut response = servicesrv::EndpointsGetResponse::new();
+
+        let mut end_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                end_collection.push(row_to_endpoints(&row))
+            }
+            response.set_end_collection(
+                end_collection,
+                "EndpointsList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+
+
 }
 
 
@@ -224,12 +276,14 @@ fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {
 fn row_to_endpoints(row: &postgres::rows::Row) -> servicesrv::EndPoints {
     let mut endpoints = servicesrv::EndPoints::new();
     let id: i64 = row.get("id");
+    let target_ref: i64 =row.get("target_ref");
     let subsets: String = row.get("subsets");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
 
     endpoints.set_id(id.to_string());
+    endpoints.set_target_ref(target_ref.to_string());
     endpoints.set_subsets(serde_json::from_str(&subsets).unwrap());
     endpoints.set_object_meta(serde_json::from_str(&object_meta).unwrap());
     endpoints.set_type_meta(serde_json::from_str(&type_meta).unwrap());
