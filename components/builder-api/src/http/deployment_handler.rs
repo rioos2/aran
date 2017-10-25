@@ -16,6 +16,10 @@ use router::Router;
 use db::data_store::Broker;
 use std::collections::BTreeMap;
 use common::ui;
+use db;
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use rio_net::util::errors::AranResult;
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 define_event_log!();
 
@@ -102,24 +106,17 @@ pub struct OpsSettingsReq {
 }
 
 
-pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
+pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
 
     let mut assembly_create = Assembly::new();
     {
         match req.get::<bodyparser::Struct<AssemblyCreateReq>>() {
             Ok(Some(body)) => {
-
                 if body.name.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `name`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "name")));
                 }
                 if body.parent_id.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `parent_id`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "parent_id")));
                 }
                 assembly_create.set_name(body.name);
                 assembly_create.set_uri(body.uri);
@@ -163,13 +160,13 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
                 assembly_create.set_instance_id(body.instance_id);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
+
     }
 
     ui::rawdumpln(
@@ -181,21 +178,25 @@ pub fn assembly_create(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match DeploymentDS::assembly_create(&conn, &assembly_create) {
-        Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
-
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{}",
+                Error::Db(
+                    db::error::Error::RecordsNotFound("".to_string()),
+                )
+            )))
+        }
     }
 }
 
-pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
-
+pub fn assembly_show(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(IDMUSTNUMBER)),
         }
     };
 
@@ -205,30 +206,46 @@ pub fn assembly_show(req: &mut Request) -> IronResult<Response> {
     asm_get.set_id(id.to_string());
 
     match DeploymentDS::assembly_show(&conn, &asm_get) {
-        Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(
+                    db::error::Error::RecordsNotFound("".to_string()),
+                ),
+                &asm_get.get_id()
+            )))
+        }
     }
 }
 
 #[allow(unused_variables)]
-pub fn assembly_list(req: &mut Request) -> IronResult<Response> {
+pub fn assembly_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_list(&conn) {
-        Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(assembly_list)) => Ok(render_json(status::Ok, &assembly_list)),
+        Err(err) => {
+            println!("{:?}", err);
+            Err(internal_error(&format!("{}", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{}",
+                Error::Db(
+                    db::error::Error::RecordsNotFound("".to_string()),
+                )
+            )))
+        }
     }
 }
 
-pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
+pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(IDMUSTNUMBER)),
         }
     };
     let mut assembly_create = Assembly::new();
@@ -236,16 +253,10 @@ pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
         match req.get::<bodyparser::Struct<AssemblyCreateReq>>() {
             Ok(Some(body)) => {
                 if body.name.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `name`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "name")));
                 }
                 if body.parent_id.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `parent_id`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "parent_id")));
                 }
                 assembly_create.set_id(id.to_string());
                 assembly_create.set_name(body.name);
@@ -269,32 +280,38 @@ pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
                 assembly_create.set_volumes(volume_collection);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
     let conn = Broker::connect().unwrap();
 
     match DeploymentDS::assembly_update(&conn, &assembly_create) {
-        Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(
+                    db::error::Error::RecordsNotFound("".to_string()),
+                ),
+                &assembly_create.get_id()
+            )))
+        }
 
     }
 }
 
-pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
+pub fn assembly_status_update(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(IDMUSTNUMBER)),
         }
     };
     let mut assembly = Assembly::new();
@@ -321,22 +338,28 @@ pub fn assembly_status_update(req: &mut Request) -> IronResult<Response> {
                 assembly.set_status(status);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
     let conn = Broker::connect().unwrap();
 
     match DeploymentDS::assembly_status_update(&conn, &assembly) {
-        Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(
+                    db::error::Error::RecordsNotFound("".to_string()),
+                ),
+                &assembly.get_id()
+            )))
+        }
 
     }
 }

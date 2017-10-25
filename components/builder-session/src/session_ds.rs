@@ -64,7 +64,6 @@ impl SessionDS {
                 &session_create.get_registration_ip_address(),
             ],
         ).map_err(Error::AccountCreate)?;
-        println!("--------------------------{:?}", rows.len());
         if rows.len() > 0 {
             let row = rows.get(0);
 

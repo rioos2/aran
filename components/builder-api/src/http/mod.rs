@@ -99,11 +99,11 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         plan_list: get "/plans" => XHandler::new(plan_list).before(basic.clone()),
 
         //deploy API: assembly
-        assemblys: post "/assemblys" => XHandler::new(assembly_create).before(basic.clone()),
-        assemblys_list: get "/assemblys" => XHandler::new(assembly_list).before(basic.clone()),
-        assembly_show: get "/assemblys/:id" => XHandler::new(assembly_show).before(basic.clone()),
-        assembly_status: put "/assemblys/:id/status" => XHandler::new(assembly_status_update).before(basic.clone()),
-        assembly_update: put "/assemblys/:id" => XHandler::new(assembly_update).before(basic.clone()),
+        assemblys: post "/assemblys" => XHandler::new(C(assembly_create)).before(basic.clone()),
+        assemblys_list: get "/assemblys" => XHandler::new(C(assembly_list)).before(basic.clone()),
+        assembly_show: get "/assemblys/:id" => XHandler::new(C(assembly_show)).before(basic.clone()),
+        assembly_status: put "/assemblys/:id/status" => XHandler::new(C(assembly_status_update)).before(basic.clone()),
+        assembly_update: put "/assemblys/:id" => XHandler::new(C(assembly_update)).before(basic.clone()),
 
         //scaling API: horizontal scaling
         horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),

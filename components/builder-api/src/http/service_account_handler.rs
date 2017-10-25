@@ -94,8 +94,7 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
 
     match ServiceAccountDS::secret_create(&conn, &secret_create) {
         Ok(secret) => Ok(render_json(status::Ok, &secret)),
-        Err(err) => Err(internal_error(&format!("{}", err), &"errred.")),
-
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 
