@@ -424,9 +424,9 @@ pub fn saml_provider_list(req: &mut Request) -> IronResult<Response> {
     match SessionDS::saml_provider_listall(&conn) {
         Ok(saml_list) => Ok(render_json(status::Ok, &saml_list)),
         Err(err) => Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            )),
-        }
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
 }
 
 pub fn saml_provider_show(req: &mut Request) -> IronResult<Response> {
@@ -493,9 +493,9 @@ pub fn openid_listall(req: &mut Request) -> IronResult<Response> {
     match SessionDS::openid_provider_listall(&conn) {
         Ok(oidc_list) => Ok(render_json(status::Ok, &oidc_list)),
         Err(err) => Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            )),
-        }
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
 }
 
 pub fn openid_provider_show(req: &mut Request) -> IronResult<Response> {

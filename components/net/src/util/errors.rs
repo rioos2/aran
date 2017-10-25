@@ -9,7 +9,10 @@ use super::super::http::controller::*;
 
 pub const SUCCESS: &'static str = "Success";
 pub const FAILURE: &'static str = "Failure";
-
+pub const NOTFOUND: &'static str = "Not Found";
+pub const INTERNALERROR: &'static str = "DB Error";
+pub const BADREQUEST: &'static str = "Bad Request";
+pub const MALFORMED: &'static str = "MalformedBody";
 
 pub enum DBError {
     NotFound,
@@ -51,9 +54,8 @@ pub trait AranError: Send + fmt::Display + 'static {
 
     fn description(&self) -> &str;
 
-    fn cause(&self) -> Option<&(AranError)> {
-        None
-    }
+    fn cause(&self) -> &str;
+
 
     fn response(&self) -> Option<Response> {
         Some(render_json(
@@ -62,7 +64,7 @@ pub trait AranError: Send + fmt::Display + 'static {
                 status: self.status().to_string(),
                 code: self.code().to_string(),
                 message: self.description().to_string(),
-                reason: self.cause().unwrap_or(&internal_error("An unknown error", "not known")).to_string(),
+                reason: self.cause().to_string(),
             },
         ))
     }
@@ -95,9 +97,11 @@ impl AranError for Box<AranError> {
     fn description(&self) -> &str {
         (**self).description()
     }
-    fn cause(&self) -> Option<&AranError> {
+
+    fn cause(&self) -> &str {
         (**self).cause()
     }
+
     fn human(&self) -> bool {
         (**self).human()
     }
@@ -122,9 +126,11 @@ impl<T: AranError> AranError for Box<T> {
     fn description(&self) -> &str {
         (**self).description()
     }
-    fn cause(&self) -> Option<&AranError> {
+
+    fn cause(&self) -> &str {
         (**self).cause()
     }
+
     fn human(&self) -> bool {
         (**self).human()
     }
@@ -139,11 +145,11 @@ pub type AranResult<T> = Result<T, Box<AranError>>;
 // Error impls
 impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
     fn from(err: E) -> Box<AranError> {
-        if let Some(err) = Any::downcast_ref::<DBError>(&err) {
-            if let DBError::NotFound = *err {
-                return Box::new(NotFound);
-            }
-        }
+        // if let Some(err) = Any::downcast_ref::<DBError>(&err) {
+        //     if let DBError::NotFound = *err {
+        //         return Box::new(NotFound);
+        //     }
+        // }
 
         struct Shim<E>(E);
         impl<E: Error + Send + 'static> AranError for Shim<E> {
@@ -157,6 +163,10 @@ impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
 
             fn description(&self) -> &str {
                 Error::description(&self.0)
+            }
+
+            fn cause(&self) -> &str {
+                "unknown"
             }
         }
         impl<E: fmt::Display> fmt::Display for Shim<E> {
@@ -176,6 +186,9 @@ impl AranError for ::curl::Error {
     fn description(&self) -> &str {
         Error::description(self)
     }
+    fn cause(&self) -> &str {
+        "unknown"
+    }
 }
 
 impl AranError for ::serde_json::Error {
@@ -186,6 +199,9 @@ impl AranError for ::serde_json::Error {
     fn description(&self) -> &str {
         Error::description(self)
     }
+    fn cause(&self) -> &str {
+        "unknown"
+    }
 }
 
 // =============================================================================
@@ -194,7 +210,7 @@ impl AranError for ::serde_json::Error {
 struct ConcreteAranError {
     description: String,
     detail: Option<String>,
-    cause: Option<Box<AranError>>,
+    cause: String,
     human: bool,
 }
 
@@ -220,16 +236,16 @@ impl AranError for ConcreteAranError {
     fn description(&self) -> &str {
         &self.description
     }
-    fn cause(&self) -> Option<&AranError> {
-        self.cause.as_ref().map(|c| &**c)
+
+    fn cause(&self) -> &str {
+        INTERNALERROR
     }
     fn human(&self) -> bool {
         self.human
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct NotFound;
+pub struct NotFound(String);
 
 impl AranError for NotFound {
     fn http_code(&self) -> Status {
@@ -241,13 +257,17 @@ impl AranError for NotFound {
     }
 
     fn description(&self) -> &str {
-        "not found"
+        self.0.as_ref()
+    }
+
+    fn cause(&self) -> &str {
+        NOTFOUND
     }
 }
 
 impl fmt::Display for NotFound {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        "Not Found".fmt(f)
+        self.0.fmt(f)
     }
 }
 
@@ -265,6 +285,9 @@ impl AranError for Unauthorized {
 
     fn description(&self) -> &str {
         "unauthorized"
+    }
+    fn cause(&self) -> &str {
+        "unknown"
     }
 }
 
@@ -288,6 +311,10 @@ impl AranError for BadRequest {
     fn description(&self) -> &str {
         self.0.as_ref()
     }
+
+    fn cause(&self) -> &str {
+        BADREQUEST
+    }
 }
 
 impl fmt::Display for BadRequest {
@@ -310,6 +337,10 @@ impl AranError for MalformedBody {
     fn description(&self) -> &str {
         self.0.as_ref()
     }
+
+    fn cause(&self) -> &str {
+        MALFORMED
+    }
 }
 
 impl fmt::Display for MalformedBody {
@@ -327,13 +358,17 @@ pub fn malformed_body<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(MalformedBody(error.to_string()))
 }
 
-pub fn internal_error(error: &str, detail: &str) -> Box<AranError> {
+pub fn internal_error(error: &str) -> Box<AranError> {
     Box::new(ConcreteAranError {
         description: error.to_string(),
-        detail: Some(detail.to_string()),
-        cause: None,
+        detail: None,
+        cause: "".to_string(),
         human: false,
     })
+}
+
+pub fn not_found_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(NotFound(error.to_string()))
 }
 
 
@@ -349,11 +384,11 @@ pub fn std_error(e: Box<AranError>) -> Box<Error + Send> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "{}", self.0)?;
 
-            let mut err = &*self.0;
-            while let Some(cause) = err.cause() {
-                err = cause;
-                write!(f, "\nCaused by: {}", err)?;
-            }
+            // let mut err = &*self.0;
+            // while let Some(cause) = err.cause() {
+            //     err = cause;
+            //     write!(f, "\nCaused by: {}", err)?;
+            // }
 
             Ok(())
         }

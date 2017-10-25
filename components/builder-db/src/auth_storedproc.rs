@@ -112,6 +112,30 @@ impl Migratable for AuthProcedures {
                 $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
+
+        migrator.migrate(
+            "accountsrv",
+            r#"CREATE OR REPLACE FUNCTION select_only_account_v1 (
+                  account_name text,
+                  account_email text,
+                  account_first_name text,
+                  account_last_name text,
+                  account_phone text,
+                  account_api_key text,
+                  account_password text,
+                  account_states text,
+                  account_approval text,
+                  account_suspend text,
+                  account_roles text[],
+                  account_registration_ip_address text
+                ) RETURNS SETOF accounts AS $$
+                    BEGIN
+                       RETURN QUERY SELECT * FROM accounts WHERE email = account_email;
+                       RETURN;
+                    END
+                $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
         // Select all account from accounts table
         migrator.migrate(
             "authsrv",
@@ -293,7 +317,7 @@ impl Migratable for AuthProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-    ui.para("[✓] get_saml_v1");
+        ui.para("[✓] get_saml_v1");
 
 
         //sequence oidc_provider id generation
