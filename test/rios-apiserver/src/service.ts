@@ -72,6 +72,7 @@ describe('Service account API', function() {
         .end(function(err, res) {
           expect(res.body);
           globalAny.services_id =res.body.id;
+          globalAny.origin = res.body.object_meta.origin;
           done(err);
         });
     });
@@ -97,7 +98,7 @@ describe('Service account API', function() {
         });
     });
     it('returns  services list by orgin', function(done) {
-      request.get('/origins/rioo/endpoints')
+      request.get('/origins/'+globalAny.origin+'/endpoints')
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
