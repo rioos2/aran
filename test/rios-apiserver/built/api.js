@@ -2,9 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // Sets up the framework
 require("./helpers");
-//import "./deployments";
 //import "./scaling";
 //import "./auth";
+require("./deployments");
 //import "./node";
 //import "./storage";
-require("./session");
+//import "./session";
+//import "./plan";

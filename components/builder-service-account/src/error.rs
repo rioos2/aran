@@ -17,6 +17,13 @@ pub enum Error {
     ServiceAccountCreate(postgres::error::Error),
     ServiceAccountGetResponse(postgres::error::Error),
     ServiceAccountGet(postgres::error::Error),
+    EndPointsCreate(postgres::error::Error),
+    EndpointsGetResponse(postgres::error::Error),
+    EndPointsGet(postgres::error::Error),
+    ServicesCreate(postgres::error::Error),
+    ServicesGet(postgres::error::Error),
+    ServicesGetResponse(postgres::error::Error),
+
 }
 
 
@@ -30,6 +37,14 @@ impl fmt::Display for Error {
             Error::SecretGet(ref e) => format!("Database error get secret, {}", e),
             Error::SecretGetResponse(ref e) => format!("Error retrive secret_list database, {}", e),
             Error::ServiceAccountCreate(ref e) => format!("Database error creating a service_account, {}", e),
+            Error::EndPointsCreate(ref e) => format!("Database error creating a end points, {}", e),
+            Error::EndpointsGetResponse(ref e) => format!("Error retrive endpoints list, {}", e),
+            Error::EndPointsGet(ref e) => format!("Error retrive endpoint, {}", e),
+            Error::ServicesCreate(ref e) => format!("Database error creating services, {}", e),
+            Error::ServicesGet(ref e) => format!("Error retrive service, {}", e),
+            Error::ServicesGetResponse(ref e) => format!("Error retrive services list, {}", e),
+
+
             Error::ServiceAccountGetResponse(ref e) => {
                 format!(
                     "Error retrive service_account for account in database, {}",
@@ -53,6 +68,13 @@ impl error::Error for Error {
             Error::ServiceAccountCreate(ref err) => err.description(),
             Error::ServiceAccountGetResponse(ref err) => err.description(),
             Error::ServiceAccountGet(ref err) => err.description(),
+            Error::EndPointsCreate(ref err) => err.description(),
+            Error::EndpointsGetResponse(ref err) => err.description(),
+            Error::EndPointsGet(ref err) => err.description(),
+            Error::ServicesCreate(ref err) => err.description(),
+            Error::ServicesGet(ref err) => err.description(),
+            Error::ServicesGetResponse(ref err) => err.description(),
+
 
         }
     }

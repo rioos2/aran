@@ -29,6 +29,7 @@ struct AssemblyCreateReq {
     uri: String,
     tags: Vec<String>,
     parent_id: String,
+    origin: String,
     description: String,
     node: String,
     status: StatusReq,
@@ -74,6 +75,7 @@ struct AssemblyFacCreateReq {
     uri: String,
     description: String,
     tags: Vec<String>,
+    origin: String,
     properties: PropReq,
     replicas: u64,
     plan: String,
@@ -118,11 +120,19 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
                 if body.parent_id.len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "parent_id")));
                 }
+                if body.origin.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `origin`",
+                    )));
+                }
+
                 assembly_create.set_name(body.name);
                 assembly_create.set_uri(body.uri);
                 assembly_create.set_description(body.description);
                 assembly_create.set_tags(body.tags);
                 assembly_create.set_parent_id(body.parent_id);
+                assembly_create.set_origin(body.origin);
                 assembly_create.set_node(body.node);
                 let mut status = Status::new();
                 status.set_phase(body.status.phase);
@@ -240,7 +250,39 @@ pub fn assembly_list(req: &mut Request) -> AranResult<Response> {
     }
 }
 
-pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
+pub fn assemblys_show_by_origin(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut assemblys_get = IdGet::new();
+    assemblys_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", assemblys_get),
+    );
+    match DeploymentDS::assemblys_show_by_origin(&conn, &assemblys_get) {
+        Ok(Some(assemblys)) => Ok(render_json(status::Ok, &assemblys)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
+pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
@@ -376,10 +418,17 @@ pub fn assembly_factory_create(req: &mut Request) -> IronResult<Response> {
                         "Missing value for field: `name`",
                     )));
                 }
+                if body.origin.len() <= 0 {
+                    return Ok(Response::with((
+                        status::UnprocessableEntity,
+                        "Missing value for field: `origin`",
+                    )));
+                }
                 assembly_factory_create.set_name(body.name);
                 assembly_factory_create.set_uri(body.uri);
                 assembly_factory_create.set_description(body.description);
                 assembly_factory_create.set_tags(body.tags);
+                assembly_factory_create.set_origin(body.origin);
                 assembly_factory_create.set_external_management_resource(body.external_management_resource);
                 assembly_factory_create.set_plan(body.plan);
                 assembly_factory_create.set_component_collection(body.component_collection);
@@ -525,6 +574,71 @@ pub fn assembly_factory_list(req: &mut Request) -> IronResult<Response> {
         )),
     }
 }
+
+pub fn assemblyfactorys_list_by_origin(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut assemblyfactory_get = IdGet::new();
+    assemblyfactory_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", assemblyfactory_get),
+    );
+    match DeploymentDS::assemblyfactorys_show_by_origin(&conn, &assemblyfactory_get) {
+        Ok(Some(assemblyfac)) => Ok(render_json(status::Ok, &assemblyfac)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+pub fn assembly_factorys_describe(req: &mut Request) -> IronResult<Response> {
+
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("id").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut assemblydes_get = IdGet::new();
+    assemblydes_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", assemblydes_get),
+    );
+    match DeploymentDS::assembly_factorys_describe(&conn, &assemblydes_get) {
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+
+
 
 
 #[allow(unused_variables)]

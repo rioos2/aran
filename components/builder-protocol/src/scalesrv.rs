@@ -11,6 +11,7 @@ pub struct HorizontalScaling {
     name: String,
     description: String,
     tags: Vec<String>,
+    origin: String,
     scale_type: String,
     representation_skew: String,
     state: String,
@@ -36,6 +37,14 @@ impl HorizontalScaling {
 
     pub fn get_name(&self) -> ::std::string::String {
         self.name.clone()
+    }
+
+    pub fn set_origin(&mut self, v: ::std::string::String) {
+        self.origin = v;
+    }
+
+    pub fn get_origin(&self) -> ::std::string::String {
+        self.origin.clone()
     }
 
     pub fn set_description(&mut self, v: ::std::string::String) {
