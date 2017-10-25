@@ -4,11 +4,12 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{asmsrv, plansrv};
+use protocol::{asmsrv, plansrv, servicesrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use db;
 use serde_json;
+use service::service_account_ds::ServiceAccountDS;
 
 
 pub struct DeploymentDS;
@@ -297,7 +298,11 @@ impl DeploymentDS {
         let mut asm_fac_get = asmsrv::IdGet::new();
         asm_fac_get.set_id(assembly.get_parent_id());
         let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
+        let mut endpoint_get = asmsrv::IdGet::new();
+        endpoint_get.set_id(assembly.get_id());
+        let endpoints = ServiceAccountDS::endpoints_show(&datastore, &endpoint_get)?;
         assembly.set_spec(data);
+        assembly.set_endpoints(endpoints);
         Ok(assembly)
     }
 

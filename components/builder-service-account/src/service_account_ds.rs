@@ -144,7 +144,7 @@ impl ServiceAccountDS {
         Ok(Some(response))
     }
 
-    pub fn endpoints_create(datastore: &DataStoreConn, endpoints_create: &servicesrv::EndPoints) -> Result<servicesrv::EndPoints> {
+    pub fn endpoints_create(datastore: &DataStoreConn, endpoints_create: &servicesrv::EndPoints) -> Result<Option<servicesrv::EndPoints>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -157,8 +157,8 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(endpoints_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::EndPointsCreate)?;
-        let end = row_to_endpoints(&rows.get(0));
-        return Ok(end.clone());
+        let end = row_to_endpoints(&rows.get(0))?;
+        return Ok(Some(end));
     }
 
     pub fn endpoints_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::EndpointsGetResponse>> {
@@ -173,7 +173,7 @@ impl ServiceAccountDS {
         let mut end_collection = Vec::new();
         if rows.len() > 0 {
             for row in rows {
-                end_collection.push(row_to_endpoints(&row))
+                end_collection.push(row_to_endpoints(&row)?)
             }
             response.set_end_collection(
                 end_collection,
@@ -193,7 +193,7 @@ impl ServiceAccountDS {
         ).map_err(Error::EndPointsGet)?;
         if rows.len() > 0 {
             for row in rows {
-                let end = row_to_endpoints(&row);
+                let end = row_to_endpoints(&row)?;
                 return Ok(Some(end));
             }
         }
@@ -213,7 +213,7 @@ impl ServiceAccountDS {
         let mut end_collection = Vec::new();
         if rows.len() > 0 {
             for row in rows {
-                end_collection.push(row_to_endpoints(&row))
+                end_collection.push(row_to_endpoints(&row)?)
             }
             response.set_end_collection(
                 end_collection,
@@ -237,7 +237,7 @@ impl ServiceAccountDS {
         let mut end_collection = Vec::new();
         if rows.len() > 0 {
             for row in rows {
-                end_collection.push(row_to_endpoints(&row))
+                end_collection.push(row_to_endpoints(&row)?)
             }
             response.set_end_collection(
                 end_collection,
@@ -373,7 +373,7 @@ fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {
     secret
 }
 
-fn row_to_endpoints(row: &postgres::rows::Row) -> servicesrv::EndPoints {
+fn row_to_endpoints(row: &postgres::rows::Row) -> Result<servicesrv::EndPoints> {
     let mut endpoints = servicesrv::EndPoints::new();
     let id: i64 = row.get("id");
     let target_ref: i64 =row.get("target_ref");
@@ -389,7 +389,7 @@ fn row_to_endpoints(row: &postgres::rows::Row) -> servicesrv::EndPoints {
     endpoints.set_type_meta(serde_json::from_str(&type_meta).unwrap());
     endpoints.set_created_at(created_at.to_rfc3339());
 
-    endpoints
+    Ok(endpoints)
 }
 fn row_to_services(row: &postgres::rows::Row) -> servicesrv::Services {
     let mut services = servicesrv::Services::new();
