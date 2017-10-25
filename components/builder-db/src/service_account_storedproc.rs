@@ -312,6 +312,30 @@ impl Migratable for ServiceAccountProcedure {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_services_by_origin_v1(org_name text) RETURNS SETOF services AS $$
+                DECLARE
+                this_origin origins%rowtype;
+                        BEGIN
+                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
+                         RETURN QUERY SELECT * FROM services WHERE origin_id=this_origin.id;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_services_by_assebmly_v1(asmid bigint) RETURNS SETOF services AS $$
+                        BEGIN
+                         RETURN QUERY SELECT * FROM services WHERE assembly_id=asmid;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
 
 
         ui.end("ServiceAccountProcedure");
