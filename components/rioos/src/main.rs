@@ -25,7 +25,7 @@ use std::thread;
 
 use clap::{ArgMatches, Shell};
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
-use rcore::crypto::{init}; //TO-DO: NOT NEEDED
+use rcore::crypto::init; //TO-DO: NOT NEEDED
 use rcore::env as henv;
 
 use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, ORIGIN_ENVVAR, API_SERVER_ENVVAR};
@@ -66,7 +66,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("cli", Some(matches)) => {
             match matches.subcommand() {
                 ("login", Some(_)) => sub_cli_login(ui)?,
-                ("logout", Some(m)) => sub_cli_logout(ui,m)?,
+                ("logout", Some(m)) => sub_cli_logout(ui, m)?,
                 ("completers", Some(m)) => sub_cli_completers(m)?,
                 _ => unreachable!(),
             }
@@ -80,6 +80,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("login", Some(_)) => sub_cli_login(ui)?,
         ("logout", Some(m)) => sub_cli_logout(ui, m)?,
         _ => unreachable!(),
+        // _ => sub_cli_login(ui)?,
     };
     Ok(())
 }
