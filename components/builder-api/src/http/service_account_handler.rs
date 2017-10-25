@@ -670,3 +670,64 @@ pub fn services_list(req: &mut Request) -> IronResult<Response> {
         )),
     }
 }
+
+pub fn services_list_by_origin(req: &mut Request) -> IronResult<Response> {
+    let org_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let org_name = params.find("origin").unwrap().to_owned();
+        org_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut services_get = IdGet::new();
+    services_get.set_id(org_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", services_get),
+    );
+    match ServiceAccountDS::services_list_by_origin(&conn, &services_get) {
+        Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
+pub fn services_list_by_assembly(req: &mut Request) -> IronResult<Response> {
+    let assm_name = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let assm_name = params.find("id").unwrap().to_owned();
+        assm_name
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut services_get = IdGet::new();
+    services_get.set_id(assm_name);
+
+    ui::rawdumpln(
+        Colour::White,
+        '✓',
+        format!("======= parsed {:?} ", services_get),
+    );
+    match ServiceAccountDS::services_list_by_assembly(&conn, &services_get) {
+        Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
+        Ok(None) => {
+            let err = "NotFound";
+            Ok(render_net_error(
+                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            ))
+        }
+        Err(err) => Ok(render_net_error(
+            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+        )),
+    }
+}
