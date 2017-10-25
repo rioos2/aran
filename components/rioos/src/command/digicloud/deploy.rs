@@ -93,7 +93,7 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
     )?;
 
 
-    let api_client = Client::new(url, PRODUCT, VERSION, None)?;
+    /*let api_client = Client::new(url, PRODUCT, VERSION, None)?;
     let ident = "";
     let abcd = "";
     ui.begin(format!("Applying {} from {}", ident, abcd))?;
@@ -110,8 +110,8 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
         }
     }
 
-    //ui.status(Status::Applied, ident)?;
-
+    ui.status(Status::Applied, ident)?;
+    */
     Ok(())
 }
 

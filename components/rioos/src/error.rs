@@ -21,12 +21,12 @@ pub type Result<T> = result::Result<T, Error>;
 #[allow(dead_code)]
 pub enum Error {
     APIClient(api_client::Error),
-    APIServerDown,
+//    APIServerDown,
     ArgumentError(&'static str),
     CannotRemoveFromChannel((String, String)),
     CommandNotFoundInPkg((String, String)),
     CryptoCLI(String),
-    DigitalCloudNotFound(String),
+//    DigitalCloudNotFound(String),
     EnvJoinPathsError(env::JoinPathsError),
     ExecCommandNotFound(PathBuf),
     FileNotFound(String),

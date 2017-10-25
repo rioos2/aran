@@ -42,3 +42,4 @@ pub const PRODUCT: &'static str = "rioos";
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 pub const AUTH_TOKEN_ENVVAR: &'static str = "RIO_AUTH_TOKEN";
 pub const ORIGIN_ENVVAR: &'static str = "RIO_ORIGIN";
+pub const API_SERVER_ENVVAR: &'static str = "RIO_API_SERVER";

@@ -28,7 +28,7 @@ use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 use rcore::crypto::{init, default_rioconfig_key_path}; //TO-DO: NOT NEEDED
 use rcore::env as henv;
 
-use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, ORIGIN_ENVVAR};
+use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, ORIGIN_ENVVAR, API_SERVER_ENVVAR};
 use rioos::error::{Error, Result};
 
 
@@ -93,7 +93,8 @@ fn sub_cli_login(ui: &mut UI) -> Result<()> {
 fn sub_cli_logout(ui: &mut UI) -> Result<()> {
     init();
 
-    command::cli::logout::start(ui, &default_rioconfig_key_path(Some(&*FS_ROOT)))
+    command::cli::logout::start(ui, api_server_param_or_env(&m)?)
+
 }
 
 
@@ -112,7 +113,7 @@ fn sub_digicloud_deploy(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     command::digicloud::deploy::start(
         ui,
         auth_token_param_or_env(&m)?,
-        api_server_param_or_env(&m)?,
+        //api_server_param_or_env(&m)?,
         config_file,
     )
 }
@@ -196,7 +197,7 @@ fn origin_param_or_env(m: &ArgMatches) -> Result<String> {
                     let config = config::load()?;
                     match config.origin {
                         Some(v) => Ok(v),
-                        None => return Err(Error::ArgumentError("No origin specified".to_string())),
+                        None => return Err(Error::ArgumentError("No origin specified")),
                     }
                 }
             }
@@ -207,7 +208,7 @@ fn origin_param_or_env(m: &ArgMatches) -> Result<String> {
 /// Check to see if the user has passed in an API_SERVER_ENVVAR param.  If not, check the RIOOS_API_SERVER env
 /// var. If not, check the /rioos/etc/cli.toml config if there is an origin. If that's empty too,
 /// then error.
-fn api_param_or_env(m: &ArgMatches) -> Result<String> {
+fn api_server_param_or_env(m: &ArgMatches) -> Result<String> {
     match m.value_of("API_SERVER") {
         Some(o) => Ok(o.to_string()),
         None => {
@@ -217,25 +218,9 @@ fn api_param_or_env(m: &ArgMatches) -> Result<String> {
                     let config = config::load()?;
                     match config.api_server {
                         Some(v) => Ok(v),
-                        None => return Err(Error::ArgumentError("No api_server specified".to_string())),
+                        None => return Err(Error::ArgumentError("No api_server specified")),
                     }
                 }
-            }
-        }
-    }
-}
-
-
-/// Check to see if the user has passed in an ORG param.
-/// If not, check the HABITAT_ORG env var. If that's
-/// empty too, then error.
-fn org_param_or_env(m: &ArgMatches) -> Result<String> {
-    match m.value_of("ORG") {
-        Some(o) => Ok(o.to_string()),
-        None => {
-            match henv::var(HABITAT_ORG_ENVVAR) {
-                Ok(v) => Ok(v),
-                Err(_) => return Err(Error::CryptoCLI("No organization specified".to_string())),
             }
         }
     }
