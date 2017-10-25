@@ -10,11 +10,15 @@ use std::result;
 use common;
 use rio_core;
 use hyper;
-
+use db;
+pub const MISSING_FIELD: &'static str = "Missing value for field:";
+pub const BODYNOTFOUND: &'static str = "nothing found in body";
+pub const IDMUSTNUMBER: &'static str = "id must be a number";
 
 
 #[derive(Debug)]
 pub enum Error {
+    Db(db::error::Error),
     BadPort(String),
     RioosAranCore(rio_core::Error),
     RioosAranCommon(common::Error),
@@ -28,6 +32,7 @@ pub type Result<T> = result::Result<T, Error>;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
+            Error::Db(ref e) => format!("{}", e),
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::RioosAranCommon(ref e) => format!("{}", e),
@@ -42,6 +47,7 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
+            Error::Db(ref err) => err.description(),
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
             Error::RioosAranCore(ref err) => err.description(),
             Error::RioosAranCommon(ref err) => err.description(),

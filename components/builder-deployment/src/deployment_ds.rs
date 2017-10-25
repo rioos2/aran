@@ -7,6 +7,7 @@ use error::{Result, Error};
 use protocol::{asmsrv, plansrv};
 use postgres;
 use db::data_store::DataStoreConn;
+use db;
 use serde_json;
 
 
@@ -68,15 +69,15 @@ impl DeploymentDS {
 
     pub fn assembly_show(datastore: &DataStoreConn, get_assembly: &asmsrv::IdGet) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
-
         let rows = &conn.query(
             "SELECT * FROM get_assembly_v1($1)",
             &[&(get_assembly.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::AssemblyGet)?;
-
-        for row in rows {
-            let assembly = Self::collect_spec(&row, &datastore)?;
-            return Ok(Some(assembly));
+        if rows.len() > 0 {
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                return Ok(Some(assembly));
+            }
         }
         Ok(None)
     }
@@ -91,18 +92,18 @@ impl DeploymentDS {
 
         let mut assemblys_collection = Vec::new();
         if rows.len() > 0 {
-        for row in rows {
-            let assembly = Self::collect_spec(&row, &datastore)?;
-            assemblys_collection.push(assembly);
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                assemblys_collection.push(assembly);
+            }
+            response.set_assemblys(
+                assemblys_collection,
+                "AssemblyList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
         }
-        response.set_assemblys(
-            assemblys_collection,
-            "AssemblyList".to_string(),
-            "v1".to_string(),
-        );
-        return Ok(Some(response));
-    }
-    Ok(None)
+        Ok(None)
     }
 
     pub fn assemblys_show_by_origin(datastore: &DataStoreConn, assemblys_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {

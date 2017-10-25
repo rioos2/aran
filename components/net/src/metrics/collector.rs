@@ -50,7 +50,6 @@ impl<'a> Collector<'a> {
         let mut content_datas = vec![];
         let s: String = self.scope.labels.clone().into_iter().collect();
         let l = self.scope.last_x_minutes.clone().unwrap_or("".to_string());
-
         let label_group = format!("{}{}{}{}", "{", s, "}", l);
         for scope in self.scope.metric_names.iter() {
             let content = self.client.pull_metrics(

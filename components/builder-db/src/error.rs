@@ -54,7 +54,7 @@ impl fmt::Display for Error {
             }
             Error::AsyncFunctionCheck(ref e) => format!("Async function database check failed, {}", e),
             Error::AsyncFunctionUpdate(ref e) => format!("Async function database update failed, {}", e),
-            Error::RecordsNotFound(ref e) => format!("No Record Found, {}", e),
+            Error::RecordsNotFound(ref e) => format!("No Record Found {}", e),
             Error::ConnectionTimeout(ref e) => format!("Connection timeout, {}", e),
             Error::FunctionCreate(ref e) => format!("Error creating a function: {}", e),
             Error::FunctionDrop(ref e) => format!("Error dropping a function: {}", e),
