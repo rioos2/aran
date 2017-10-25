@@ -182,6 +182,12 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(endpoints_list_by_origin).before(basic.clone()),
         endpoints_list_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(endpoints_list_by_assembly).before(basic.clone()),
 
+        //services API
+
+        services: post "/services" => XHandler::new(services_create).before(basic.clone()),
+        services_show: get "/services/:id" =>XHandler::new(services_show).before(basic.clone()),
+        services_list: get "/services" => XHandler::new(services_list).before(basic.clone()),
+        
         plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
 
         //Internal: Streaming watch

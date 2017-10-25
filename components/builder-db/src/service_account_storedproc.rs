@@ -251,6 +251,66 @@ impl Migratable for ServiceAccountProcedure {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS serv_id_seq;"#,
+        )?;
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE TABLE  IF NOT EXISTS services (
+             id bigint PRIMARY KEY DEFAULT next_id_v1('serv_id_seq'),
+             origin_id bigint REFERENCES origins(id),
+             assembly_id bigint REFERENCES assembly(id),
+             spec text,
+             status text,
+             object_meta text,
+             type_meta text,
+             updated_at timestamptz,
+             created_at timestamptz DEFAULT now()
+             )"#,
+        )?;
+        ui.para("[✓] services");
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_services_v1 (
+                origin_name text,
+                assembly_id bigint,
+                spec  text,
+                status  text,
+                object_meta text,
+                type_meta text
+                        ) RETURNS SETOF services AS $$
+                        DECLARE
+                           this_origin origins%rowtype;
+                                BEGIN
+                                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
+                                    RETURN QUERY INSERT INTO services(origin_id,assembly_id,spec,status,object_meta,type_meta)
+                                        VALUES (this_origin.id,assembly_id,spec,status,object_meta,type_meta )
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#,
+        )?;
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_services_v1 (sid bigint) RETURNS SETOF services AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM services WHERE id = sid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_services_list_v1() RETURNS SETOF services AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM services;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
 
 

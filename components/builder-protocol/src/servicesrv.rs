@@ -400,3 +400,120 @@ impl EndpointsGetResponse {
         self.api_version = s;
     }
 }
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Services {
+    id: String,
+    spec: Spec,
+    status: asmsrv::Status,
+    object_meta: ObjectMetaData,
+    type_meta: asmsrv::TypeMeta,
+    created_at: String,
+}
+
+impl Services {
+    pub fn new() -> Services {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
+    pub fn set_spec(&mut self, v: Spec) {
+        self.spec = v;
+    }
+
+    pub fn get_spec(&self) -> &Spec {
+        &self.spec
+    }
+    pub fn set_status(&mut self, v: asmsrv::Status) {
+        self.status = v;
+    }
+
+    pub fn get_status(&self) -> &asmsrv::Status {
+        &self.status
+    }
+
+    pub fn set_type_meta(&mut self, v: asmsrv::TypeMeta) {
+        self.type_meta = v;
+    }
+
+    pub fn get_type_meta(&self) -> &asmsrv::TypeMeta {
+        &self.type_meta
+    }
+
+    pub fn set_object_meta(&mut self, v: ObjectMetaData) {
+        self.object_meta = v;
+    }
+
+    pub fn get_object_meta(&self) -> &ObjectMetaData {
+        &self.object_meta
+    }
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
+}
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Spec {
+    selector: BTreeMap<String, String>,
+    service_type: String,
+    loadbalancer_ip: String,
+    external_name: String,
+}
+
+impl Spec {
+    pub fn new() -> Spec {
+        ::std::default::Default::default()
+    }
+    pub fn set_selector(&mut self, v: BTreeMap<String, String>) {
+        self.selector = v;
+    }
+
+    pub fn get_selector(&self) -> &BTreeMap<String, String> {
+        &self.selector
+    }
+    pub fn set_service_type(&mut self, v: ::std::string::String) {
+        self.service_type = v;
+    }
+    pub fn get_service_type(&self) -> ::std::string::String {
+        self.service_type.clone()
+    }
+
+    pub fn set_loadbalancer_ip(&mut self, v: ::std::string::String) {
+        self.loadbalancer_ip = v;
+    }
+    pub fn get_loadbalancer_ip(&self) -> ::std::string::String {
+        self.loadbalancer_ip.clone()
+    }
+    pub fn set_external_name(&mut self, v: ::std::string::String) {
+        self.external_name = v;
+    }
+    pub fn get_external_name(&self) -> ::std::string::String {
+        self.external_name.clone()
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ServicesGetResponse {
+    kind: String,
+    api_version: String,
+    items: Vec<Services>,
+}
+
+impl ServicesGetResponse {
+    pub fn new() -> ServicesGetResponse {
+        ::std::default::Default::default()
+    }
+    // Param is passed by value, moved
+    pub fn set_services_collection(&mut self, v: Vec<Services>, r: ::std::string::String, s: ::std::string::String) {
+        self.items = v;
+        self.kind = r;
+        self.api_version = s;
+    }
+}
