@@ -6,7 +6,6 @@ use bodyparser;
 use persistent;
 use rio_core::event::*;
 use rio_net::http::controller::*;
-use rio_net::metrics::mock::MockMetrics;
 use rio_net::metrics::collector::CollectorScope;
 use rio_net::http::middleware::PrometheusCli;
 use ansi_term::Colour;
@@ -244,12 +243,17 @@ pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> IronResult<Respon
 
 pub fn hs_metrics(req: &mut Request) -> IronResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
-    let id = {
+    let af_id = {
         let params = req.extensions.get::<Router>().unwrap();
-        let id = params.find("id").unwrap().to_owned();
+        let id = params.find("assembly_factory_id").unwrap().to_owned();
         id
     };
-    match ScalingDS::hs_metrics(&promcli, &id) {
+    let source = {
+        let params = req.extensions.get::<Router>().unwrap();
+        let source = params.find("source").unwrap().to_owned();
+        source
+    };
+    match ScalingDS::hs_metrics(&promcli, &af_id, &source) {
         Ok(hs_metrics) => Ok(render_json(status::Ok, &hs_metrics)),
         Err(err) => Ok(render_net_error(
             &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),

@@ -1,20 +1,8 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
+// Copyright (c) 2017 RioCorp Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 use std::env;
 use std::error;
-use std::ffi;
 use std::fmt;
 use std::io;
 use std::num;
@@ -23,7 +11,7 @@ use std::result;
 
 use api_client;
 use common;
-use hcore;
+use rioos_core;
 use handlebars;
 use toml;
 
@@ -33,21 +21,17 @@ pub type Result<T> = result::Result<T, Error>;
 #[allow(dead_code)]
 pub enum Error {
     APIClient(api_client::Error),
+//    APIServerDown,
     ArgumentError(&'static str),
-    ButterflyError(String),
     CannotRemoveFromChannel((String, String)),
     CommandNotFoundInPkg((String, String)),
     CryptoCLI(String),
-    DockerDaemonDown,
-    DockerFileSharingNotEnabled,
-    DockerImageNotFound(String),
-    DockerNetworkDown(String),
+//    DigitalCloudNotFound(String),
     EnvJoinPathsError(env::JoinPathsError),
     ExecCommandNotFound(PathBuf),
-    FFINulError(ffi::NulError),
     FileNotFound(String),
     HabitatCommon(common::Error),
-    HabitatCore(hcore::Error),
+    HabitatCore(rioos_core::Error),
     HandlebarsRenderError(handlebars::TemplateRenderError),
     IO(io::Error),
     JobGroupPromote(api_client::Error),
@@ -69,10 +53,7 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::APIClient(ref err) => format!("{}", err),
             Error::ArgumentError(ref e) => format!("{}", e),
-            Error::ButterflyError(ref e) => format!("{}", e),
-            Error::CannotRemoveFromChannel((ref p, ref c)) => {
-                format!("{} cannot be removed from the {} channel.", p, c)
-            }
+            Error::CannotRemoveFromChannel((ref p, ref c)) => format!("{} cannot be removed from the {} channel.", p, c),
             Error::CommandNotFoundInPkg((ref p, ref c)) => {
                 format!(
                     "`{}' was not found under any 'PATH' directories in the {} package",
@@ -81,41 +62,6 @@ impl fmt::Display for Error {
                 )
             }
             Error::CryptoCLI(ref e) => format!("{}", e),
-            Error::DockerDaemonDown => {
-                format!("Can not connect to Docker. Is the Docker daemon running?")
-            }
-            #[cfg(not(windows))]
-            Error::DockerFileSharingNotEnabled => {
-                format!(
-                    "File Sharing must be enabled in order to enter a studio.\nPlease enable \
-                         it in the Docker preferences and share (at a minimum) your home \
-                         directory."
-                )
-            }
-            #[cfg(windows)]
-            Error::DockerFileSharingNotEnabled => {
-                format!(
-                    "File Sharing must be enabled in order to enter a studio.\nPlease select \
-                         a drive to share in the Docker preferences."
-                )
-            }
-            Error::DockerImageNotFound(ref e) => {
-                format!(
-                    "The Docker image {} was not found in the docker registry.\nYou can \
-                         specify your own Docker image using the HAB_DOCKER_STUDIO_IMAGE \
-                         environment variable.",
-                    e
-                )
-            }
-            Error::DockerNetworkDown(ref e) => {
-                format!(
-                    "The Docker image {} is unreachable due to a network error.\nThe \
-                         image must be reachable to ensure the versions of hab inside and \
-                         outside the studio match.\nYou can specify your own Docker image using \
-                         the HAB_DOCKER_STUDIO_IMAGE environment variable.",
-                    e
-                )
-            }
             Error::EnvJoinPathsError(ref err) => format!("{}", err),
             Error::ExecCommandNotFound(ref c) => {
                 format!(
@@ -123,15 +69,12 @@ impl fmt::Display for Error {
                     c.display()
                 )
             }
-            Error::FFINulError(ref e) => format!("{}", e),
             Error::FileNotFound(ref e) => format!("File not found at: {}", e),
             Error::HabitatCommon(ref e) => format!("{}", e),
             Error::HabitatCore(ref e) => format!("{}", e),
             Error::HandlebarsRenderError(ref e) => format!("{}", e),
             Error::IO(ref err) => format!("{}", err),
-            Error::JobGroupPromoteUnprocessable => {
-                format!("Failed to promote job group, the build job is still in progress")
-            }
+            Error::JobGroupPromoteUnprocessable => format!("Failed to promote job group, the build job is still in progress"),
             Error::JobGroupPromote(ref e) => format!("Failed to promote job group: {:?}", e),
             Error::PackageArchiveMalformed(ref e) => {
                 format!(
@@ -142,12 +85,8 @@ impl fmt::Display for Error {
             Error::ParseIntError(ref err) => format!("{}", err),
             Error::PathPrefixError(ref err) => format!("{}", err),
             Error::ProvidesError(ref err) => format!("Can't find {}", err),
-            Error::RootRequired => {
-                "Root or administrator permissions required to complete operation".to_string()
-            }
-            Error::SubcommandNotSupported(ref e) => {
-                format!("Subcommand `{}' not supported on this operating system", e)
-            }
+            Error::RootRequired => "Root or administrator permissions required to complete operation".to_string(),
+            Error::SubcommandNotSupported(ref e) => format!("Subcommand `{}' not supported on this operating system", e),
             Error::UnsupportedExportFormat(ref e) => format!("Unsupported export format: {}", e),
             Error::TomlDeserializeError(ref e) => format!("Can't deserialize TOML: {}", e),
             Error::TomlSerializeError(ref e) => format!("Can't serialize TOML: {}", e),
@@ -162,41 +101,23 @@ impl error::Error for Error {
         match *self {
             Error::APIClient(ref err) => err.description(),
             Error::ArgumentError(_) => "There was an error parsing an error or with it's value",
-            Error::ButterflyError(_) => "Butterfly has had an error",
-            Error::CannotRemoveFromChannel(_) => {
-                "Package cannot be removed from the specified channel"
-            }
-            Error::CommandNotFoundInPkg(_) => {
-                "Command was not found under any 'PATH' directories in the package"
-            }
+            Error::CannotRemoveFromChannel(_) => "Package cannot be removed from the specified channel",
+            Error::CommandNotFoundInPkg(_) => "Command was not found under any 'PATH' directories in the package",
             Error::CryptoCLI(_) => "A cryptographic error has occurred",
-            Error::DockerDaemonDown => "The Docker daemon could not be found.",
-            Error::DockerFileSharingNotEnabled => "Docker file sharing is not enabled.",
-            Error::DockerImageNotFound(_) => "The Docker image was not found.",
-            Error::DockerNetworkDown(_) => "The Docker registry is unreachable.",
             Error::EnvJoinPathsError(ref err) => err.description(),
             Error::ExecCommandNotFound(_) => "Exec command was not found on filesystem or in PATH",
-            Error::FFINulError(ref err) => err.description(),
             Error::FileNotFound(_) => "File not found",
             Error::HabitatCommon(ref err) => err.description(),
             Error::HabitatCore(ref err) => err.description(),
             Error::HandlebarsRenderError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
-            Error::JobGroupPromoteUnprocessable => {
-                "Failed to promote job group, the build job is still in progress"
-            }
+            Error::JobGroupPromoteUnprocessable => "Failed to promote job group, the build job is still in progress",
             Error::JobGroupPromote(ref err) => err.description(),
-            Error::PackageArchiveMalformed(_) => {
-                "Package archive was unreadable or had unexpected contents"
-            }
+            Error::PackageArchiveMalformed(_) => "Package archive was unreadable or had unexpected contents",
             Error::ParseIntError(ref err) => err.description(),
             Error::PathPrefixError(ref err) => err.description(),
-            Error::ProvidesError(_) => {
-                "Can't find a package that provides the given search parameter"
-            }
-            Error::RootRequired => {
-                "Root or administrator permissions required to complete operation"
-            }
+            Error::ProvidesError(_) => "Can't find a package that provides the given search parameter",
+            Error::RootRequired => "Root or administrator permissions required to complete operation",
             Error::SubcommandNotSupported(_) => "Subcommand not supported on this operating system",
             Error::UnsupportedExportFormat(_) => "Unsupported export format",
             Error::TomlDeserializeError(_) => "Can't deserialize TOML",
@@ -213,14 +134,8 @@ impl From<common::Error> for Error {
     }
 }
 
-impl From<ffi::NulError> for Error {
-    fn from(err: ffi::NulError) -> Error {
-        Error::FFINulError(err)
-    }
-}
-
-impl From<hcore::Error> for Error {
-    fn from(err: hcore::Error) -> Error {
+impl From<rioos_core::Error> for Error {
+    fn from(err: rioos_core::Error) -> Error {
         Error::HabitatCore(err)
     }
 }

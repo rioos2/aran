@@ -30,7 +30,7 @@ mod ssl {
     use std::io::Write;
     use std::path::Path;
 
-    use rio_core::fs::cache_ssl_path;
+    use rio_core::fs::rioconfig_ssl_path;
     use openssl::ssl::SslContextBuilder;
 
     use error::Result;
@@ -38,9 +38,9 @@ mod ssl {
     const CACERT_PEM: &'static str = include_str!(concat!(env!("OUT_DIR"), "/cacert.pem"));
 
     pub fn set_ca(ctx: &mut SslContextBuilder, fs_root_path: Option<&Path>) -> Result<()> {
-        let cached_certs = cache_ssl_path(fs_root_path).join("cert.pem");
+        let cached_certs = rioconfig_ssl_path(fs_root_path).join("cert.pem");
         if !cached_certs.exists() {
-            try!(fs::create_dir_all(cache_ssl_path(fs_root_path)));
+            try!(fs::create_dir_all(rioconfig_ssl_path(fs_root_path)));
             debug!("Creating cached cacert.pem at: {}", cached_certs.display());
             let mut file = try!(File::create(&cached_certs));
             try!(file.write_all(CACERT_PEM.as_bytes()));

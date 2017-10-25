@@ -26,7 +26,7 @@ openssl = "0.9.17"
 # JW: Temporarily use master branch of git until serde 1.0+ is available in crate release
 sodiumoxide = { git = "https://github.com/dnaq/sodiumoxide" }
 time = "*"
-toml = { version = "0.4.5", features = ["serde"], default-features = false }
+toml = { version = "0.4.5", default-features = false }
 url = "*"
 
 [target.'cfg(not(windows))'.dependencies]

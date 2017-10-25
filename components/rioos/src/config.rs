@@ -1,22 +1,28 @@
 // Copyright (c) 2017 RioCorp Inc.
 //
 
-
 use std::env;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
 
-use hcore::config::ConfigFile;
-use hcore::fs::{am_i_root, FS_ROOT_PATH};
+use rioos_core::config::ConfigFile;
+use rioos_core::fs::rioconfig_etc_path;
+use rioos_core::fs::am_i_root;
 use toml;
-
 use error::{Error, Result};
 
-const CLI_CONFIG_PATH: &'static str = "hab/etc/cli.toml";
+lazy_static! {
+    static  ref CLICFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*rioconfig_etc_path(None).join("cli.toml").to_str().unwrap());
+}
+
+//used if the user is not root. eg: /home/rajthilak/rioos/etc/cli.toml
+const CLI_CONFIG_PATH: &'static str = "rioos/etc/cli.toml";
+
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Config {
+    pub api_server: Option<String>,
     pub auth_token: Option<String>,
     pub origin: Option<String>,
 }
@@ -28,6 +34,7 @@ impl ConfigFile for Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
+            api_server: Some("localhost:9046".to_string()),
             auth_token: None,
             origin: None,
         }
@@ -63,11 +70,12 @@ pub fn save(config: &Config) -> Result<()> {
     Ok(())
 }
 
+
 fn cli_config_path() -> PathBuf {
     if !am_i_root() {
         if let Some(home) = env::home_dir() {
             return home.join(format!(".{}", CLI_CONFIG_PATH));
         }
     }
-    PathBuf::from(&*FS_ROOT_PATH).join(CLI_CONFIG_PATH)
+    PathBuf::from(CLICFG_DEFAULT_FILE.to_str().unwrap())
 }

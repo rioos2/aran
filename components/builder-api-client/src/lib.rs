@@ -28,22 +28,16 @@ extern crate url;
 pub mod error;
 pub use error::{Error, Result};
 
-use std::fs::{self, File};
 use std::io::{self, Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::string::ToString;
 
-use broadcast::BroadcastWriter;
 use rioos_http::ApiClient;
-use rioos_http::util::decoded_response;
-use hyper::client::{Body, IntoUrl, Response, RequestBuilder};
+use hyper::client::{IntoUrl, RequestBuilder};
 use hyper::status::StatusCode;
-use hyper::header::{Authorization, Bearer};
-use hyper::Url;
-use protocol::{originsrv, net};
+use hyper::header::{ContentType, Accept, Authorization, Bearer};
 use protocol::net::NetError;
 use rand::{Rng, thread_rng};
-use tee::TeeReader;
 use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
 
 header! { (XFileName, "X-Filename") => [String] }
@@ -98,91 +92,111 @@ impl Client {
         ))
     }
 
+    pub fn login(&self, token: &str, email: &str, password: &str) -> Result<(String)> {
+        debug!("Logging in for {}", token);
+        let url = format!("auth/authenticate");
 
-    /// Download a public key from a remote Builder to the given filepath.
+        let body = json!({
+            "email": format!("{}", email),
+            "password": format!("{}", password)
+        });
+
+
+        let sbody = serde_json::to_string(&body).unwrap();
+
+        let res = self.0
+            .post(&url)
+            .body(&sbody)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .send()
+            .map_err(Error::HyperError)?;
+
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to promote group, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        /*match decoded_response::<JobGroupPromoteResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value.not_promoted),
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }*/
+
+        Ok("".to_string())
+    }
+
+    pub fn logout(&self, token: &str) -> Result<(String)> {
+        debug!("Logout for {}", token);
+        let url = format!("logout/{}", token);
+        let res = self.add_authz(self.0.get(&url), token).send().map_err(
+            Error::HyperError,
+        )?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to logout, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        Ok("".to_string())
+    }
+
     ///
     /// # Failures
     ///
-    /// * Key cannot be found
-    /// * Remote Builder is not available
-    /// * File cannot be created and written to
-    pub fn fetch_origin_key<D, P: ?Sized>(&self, origin: &str, revision: &str, dst_path: &P, progress: Option<D>) -> Result<PathBuf>
-    where
-        P: AsRef<Path>,
-        D: DisplayProgress + Sized,
-    {
-        self.download(
-            &format!("depot/origins/{}/keys/{}", origin, revision),
-            dst_path.as_ref(),
-            progress,
-        )
-    }
-
-
-    /// Download the latest builder public key from a remote Builder
-    /// to the given filepath.
+    /// * Remote API Server is not available
     ///
-    /// # Failures
+    /// # Panics
     ///
-    /// * Key cannot be found
-    /// * Remote Builder is not available
-    /// * File cannot be created and written to
-    pub fn fetch_builder_latest_key<D, P: ?Sized>(&self, dst_path: &P, progress: Option<D>) -> Result<PathBuf>
-    where
-        P: AsRef<Path>,
-        D: DisplayProgress + Sized,
-    {
-        self.download("builder/keys/latest", dst_path.as_ref(), progress)
-    }
+    /// * Authorization token was not set on client
+    /*TO-DO: KISHORE
+    pub fn deploy_digicloud(&self, ident: &PackageIdent, token: &str) -> Result<(String)> {
+        debug!("Creating a job for {}", ident);
+
+        let body = json!({
+            "project_id": format!("{}", ident)
+        });
+
+        let sbody = serde_json::to_string(&body).unwrap();
+
+        let result = self.add_authz(self.0.post("jobs"), token)
+            .body(&sbody)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .send();
+        match result {
+            Ok(mut response) => {
+                match response.status {
+                    StatusCode::Created => {
+                        let mut encoded = String::new();
+                        response.read_to_string(&mut encoded).map_err(Error::IO)?;
+                        debug!("Body: {:?}", encoded);
+                        let v: serde_json::Value =
+                            serde_json::from_str(&encoded).map_err(Error::Json)?;
+                        let id = v["id"].as_str().unwrap();
+                        Ok(id.to_string())
+                    }
+                    StatusCode::Unauthorized => {
+                        Err(Error::APIError(
+                            response.status,
+                            "Your GitHub token requires both user:email and read:org \
+                                             permissions."
+                                .to_string(),
+                        ))
+                    }
+                    _ => Err(err_from_response(response)),
+                }
+            }
+            Err(e) => Err(Error::HyperError(e)),
+        }
+    }*/
 
 
     fn add_authz<'a>(&'a self, rb: RequestBuilder<'a>, token: &str) -> RequestBuilder {
         rb.header(Authorization(Bearer { token: token.to_string() }))
-    }
-
-    fn download<D>(&self, path: &str, dst_path: &Path, progress: Option<D>) -> Result<PathBuf>
-    where
-        D: DisplayProgress + Sized,
-    {
-        let mut res = self.0.get(path).send()?;
-        debug!("Response: {:?}", res);
-
-        if res.status != hyper::status::StatusCode::Ok {
-            return Err(err_from_response(res));
-        }
-        fs::create_dir_all(&dst_path)?;
-
-        let file_name = match res.headers.get::<XFileName>() {
-            Some(filename) => format!("{}", filename),
-            None => return Err(Error::NoXFilename),
-        };
-        let tmp_file_path = dst_path.join(format!(
-            "{}.tmp-{}",
-            file_name,
-            thread_rng().gen_ascii_chars().take(8).collect::<String>()
-        ));
-        let dst_file_path = dst_path.join(file_name);
-        debug!("Writing to {}", &tmp_file_path.display());
-        let mut f = File::create(&tmp_file_path)?;
-        match progress {
-            Some(mut progress) => {
-                let size: u64 = res.headers.get::<hyper::header::ContentLength>().map_or(
-                    0,
-                    |v| **v,
-                );
-                progress.size(size);
-                let mut writer = BroadcastWriter::new(&mut f, progress);
-                io::copy(&mut res, &mut writer)?
-            }
-            None => io::copy(&mut res, &mut f)?,
-        };
-        debug!(
-            "Moving {} to {}",
-            &tmp_file_path.display(),
-            &dst_file_path.display()
-        );
-        fs::rename(&tmp_file_path, &dst_file_path)?;
-        Ok(dst_file_path)
     }
 }
 

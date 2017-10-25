@@ -11,7 +11,8 @@ use serde_json;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 
-const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
+const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
+const METRIC_LBL_RIOOS_SOURCENAME: &'static str = "rioos_source";
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 
 
@@ -120,9 +121,9 @@ impl ScalingDS {
         return Ok(Some(hscale.clone()));
     }
 
-    pub fn hs_metrics(client: &PrometheusClient, id: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {
-        let label_name = format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id);
-        let metric_scope = vec![];
+    pub fn hs_metrics(client: &PrometheusClient, af_id: &str, metric_source_name: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {
+        let label_name = format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id);
+        let metric_scope = vec![metric_source_name.to_string()];
         let group_scope: Vec<String> = vec![label_name.to_string()];
 
         let scope = CollectorScope {
@@ -141,12 +142,13 @@ impl ScalingDS {
             .map(|p| {
                 let p1: nodesrv::Osusages = p.into();
                 p1.get_items()
-            }).collect::<Vec<_>>();
+            })
+            .collect::<Vec<_>>();
 
         metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
 
         let mut response = scalesrv::ScalingGet::new();
-        response.set_title("Scale metrics ".to_owned() + id);
+        response.set_title("Scaling metrics ".to_owned() + af_id);
         /*res.set_from_date(from_date);
         res.set_to_date(to_date);*/
         response.set_metrics(metrics);

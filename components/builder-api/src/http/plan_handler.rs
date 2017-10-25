@@ -8,15 +8,12 @@ use ansi_term::Colour;
 
 use protocol::net::{self, ErrCode};
 use rio_net::http::controller::*;
-use rio_net::http::middleware::PrometheusCli;
 use plan::plan_ds::PlanDS;
 use db::data_store::Broker;
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body};
 
 use protocol::plansrv::{Plan, Service};
-// use protocol::asmsrv::Condition;
-// use http::deployment_handler;
 use common::ui;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
