@@ -1,12 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 
-use std::path::Path;
-
 use common::ui::UI;
-use rioos_core::env;
-
-use AUTH_TOKEN_ENVVAR;
 use config;
 use error::Result;
 

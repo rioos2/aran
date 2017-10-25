@@ -4,7 +4,7 @@
 
 use std::env;
 use std::fs::create_dir_all;
-use std::fs::{File, canonicalize, OpenOptions};
+use std::fs::{File, canonicalize};
 use std::io::{Write, BufRead, BufReader};
 use std::path::Path;
 use std::collections::HashMap;
@@ -101,7 +101,7 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
     let ident ="";
     let channel ="";
     let token = "";
-    
+
     match api_client.apply_blu(ident, channel, token) {
         Ok(_) => (),
         Err(e) => {
@@ -110,9 +110,9 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
         }
     }
 
-    ui.status(Status::Applied, ident)?;
+    //ui.status(Status::Applied, ident)?;
 
-    Ok(());
+    Ok(())
 }
 
 fn create_with_template(ui: &mut UI, location: &str, template: &str) -> Result<()> {

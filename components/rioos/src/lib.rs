@@ -30,6 +30,8 @@ extern crate walkdir;
 extern crate base64;
 #[cfg(test)]
 extern crate tempdir;
+#[macro_use]
+extern crate lazy_static;
 
 pub mod cli;
 pub mod command;

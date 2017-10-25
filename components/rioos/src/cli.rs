@@ -3,10 +3,8 @@
 
 use std::path::Path;
 use std::result;
-use std::str::FromStr;
 
 use clap::{App, AppSettings, Arg};
-use rioos_core::crypto::keys::PairType;
 use regex::Regex;
 use url::Url;
 

@@ -3,7 +3,6 @@
 
 use std::env;
 use std::error;
-use std::ffi;
 use std::fmt;
 use std::io;
 use std::num;

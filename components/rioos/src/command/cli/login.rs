@@ -27,8 +27,8 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
     let userid = prompt_userid(ui)?;
     let password = prompt_password(ui)?;
 
-    let auth_token = login()?;
-    
+    let auth_token = login(ui, &userid, cache_path)?;
+
     write_cli_config_auth_token(&auth_token)?;
 
     ui.heading("Logged in.")?;

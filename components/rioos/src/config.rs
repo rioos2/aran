@@ -1,8 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 //
 
-#[macro_use]
-extern crate lazy_static;
 use std::env;
 use std::fs::{self, File};
 use std::io::Write;
