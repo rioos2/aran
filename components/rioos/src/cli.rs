@@ -6,7 +6,7 @@ use std::result;
 use std::str::FromStr;
 
 use clap::{App, AppSettings, Arg};
-use hcore::crypto::keys::PairType;
+use rioos_core::crypto::keys::PairType;
 use regex::Regex;
 use url::Url;
 

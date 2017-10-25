@@ -11,10 +11,11 @@ use env as renv;
 /// The default root path of the Rio/OS filesystem
 pub const ROOT_PATH: &'static str = "/var/lib/rioos";
 /// The default path where TLS-related keys are placed
-pub const CACHE_KEY_PATH: &'static str = "config";
+pub const KEY_PATH: &'static str = "config";
 /// The default path where TLS-related artifacts are placed
-pub const CACHE_CONFIG_PATH: &'static str = "config";
-
+pub const CONFIG_PATH: &'static str = "config";
+/// The default path where etc config are placed
+pub const ETC_PATH: &'static str = "etc";
 
 /// The environment variable pointing to the filesystem root. This exists for internal
 /// team usage and is not intended to be used by consumers.
@@ -23,8 +24,6 @@ pub const FS_ROOT_ENVVAR: &'static str = "RIOOS_HOME";
 lazy_static! {
     /// The default filesystem root path.
     ///
-    /// WARNING: On Windows this variable mutates on first call if an environment variable with
-    ///          the key of `FS_ROOT_ENVVAR` is set.
     pub static ref FS_ROOT_PATH: PathBuf = {
             match renv::var(FS_ROOT_ENVVAR) {
                 Ok(path) =>  PathBuf::from(path),
@@ -40,42 +39,54 @@ lazy_static! {
 
     static ref EUID: u32 = users::get_effective_uid();
 
-    static ref MY_CACHE_KEY_PATH: PathBuf = {
-        FS_ROOT_PATH.join(format!("{}", CACHE_KEY_PATH))
+    static ref MY_KEY_PATH: PathBuf = {
+        FS_ROOT_PATH.join(format!("{}", KEY_PATH))
     };
 
-    static ref MY_CACHE_CONFIG_PATH: PathBuf = {
-        FS_ROOT_PATH.join(format!("{}", CACHE_CONFIG_PATH))
+    static ref MY_CONFIG_PATH: PathBuf = {
+        FS_ROOT_PATH.join(format!("{}", CONFIG_PATH))
+    };
+
+    static ref MY_ETC_PATH: PathBuf = {
+        FS_ROOT_PATH.join(format!("{}", ETC_PATH))
     };
 }
 
 
 /// Returns the path to the keys cache, optionally taking a custom filesystem root.
 /// TO-DO: Not used currently, needed for `setup` command.
-pub fn cache_key_path(fs_root_path: Option<&Path>) -> PathBuf {
+pub fn rioconfig_key_path(fs_root_path: Option<&Path>) -> PathBuf {
     match fs_root_path {
-        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_KEY_PATH),
-        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_KEY_PATH),
+        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_KEY_PATH),
+        None => Path::new(&*FS_ROOT_PATH).join(&*MY_KEY_PATH),
     }
 }
 
 /// Returns the path to the config cache ssl, optionally taking a custom filesystem root.
 /// This is the same directory like $RIOOS_HOME/config
-pub fn cache_ssl_path(fs_root_path: Option<&Path>) -> PathBuf {
+pub fn rioconfig_ssl_path(fs_root_path: Option<&Path>) -> PathBuf {
     match fs_root_path {
-        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_CONFIG_PATH),
-        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_CONFIG_PATH),
+        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CONFIG_PATH),
+        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CONFIG_PATH),
     }
 }
 
 /// Returns the path to the config cache, optionally taking a custom filesystem root.
-pub fn cache_config_path(fs_root_path: Option<&Path>) -> PathBuf {
+pub fn rioconfig_config_path(fs_root_path: Option<&Path>) -> PathBuf {
     match fs_root_path {
-        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CACHE_CONFIG_PATH),
-        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CACHE_CONFIG_PATH),
+        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_CONFIG_PATH),
+        None => Path::new(&*FS_ROOT_PATH).join(&*MY_CONFIG_PATH),
     }
 }
 
+
+/// Returns the path to the config cache, optionally taking a custom filesystem root.
+pub fn rioconfig_etc_path(fs_root_path: Option<&Path>) -> PathBuf {
+    match fs_root_path {
+        Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_ETC_PATH),
+        None => Path::new(&*FS_ROOT_PATH).join(&*MY_ETC_PATH),
+    }
+}
 
 /// Returns the absolute path for a given command, if it exists, by searching the `PATH`
 /// environment variable.

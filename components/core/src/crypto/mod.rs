@@ -43,7 +43,7 @@ use std::path::{Path, PathBuf};
 use sodiumoxide::init as nacl_init;
 
 use env as renv;
-use fs::cache_key_path;
+use fs::rioconfig_key_path;
 
 /// The suffix on the end of a public X509 certs file
 pub static PUBLIC_KEY_SUFFIX: &'static str = "cert.pem";
@@ -67,10 +67,10 @@ pub use self::keys::sig_key_pair::SigKeyPair;
 pub mod hash;
 pub mod keys;
 
-pub fn default_cache_key_path(fs_root_path: Option<&Path>) -> PathBuf {
+pub fn default_rioconfig_key_path(fs_root_path: Option<&Path>) -> PathBuf {
     match renv::var(CACHE_KEY_PATH_ENV_VAR) {
         Ok(val) => PathBuf::from(val),
-        Err(_) => cache_key_path(fs_root_path),
+        Err(_) => rioconfig_key_path(fs_root_path),
     }
 }
 

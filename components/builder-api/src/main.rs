@@ -19,8 +19,8 @@ use std::path::PathBuf;
 
 use rio_core::config::ConfigFile;
 use rio_core::env as renv;
-use rio_core::crypto::{init, default_cache_key_path};
-use rio_core::fs::cache_config_path;
+use rio_core::crypto::{init, default_rioconfig_key_path};
+use rio_core::fs::rioconfig_config_path;
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 
 use api::{command, Config, Error, Result};
@@ -28,9 +28,6 @@ use api::{command, Config, Error, Result};
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 lazy_static! {
-    /// The default filesystem root path to base all commands from. This is lazily generated on
-    /// first call and reflects on the presence and value of the environment variable keyed as
-    /// `FS_ROOT_ENVVAR`.
     static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*cache_config_path(None).join("api.toml").to_str().unwrap());
     static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*cache_config_path(None).join("serving-rioos-apiserver.pfx").to_str().unwrap());
 }
@@ -85,7 +82,7 @@ fn exec_subcommand_if_called(ui: &mut UI, app_matches: &clap::ArgMatches) -> Res
 fn sub_cli_setup(ui: &mut UI) -> Result<()> {
     init();
 
-    command::cli::setup::start(ui, &default_cache_key_path(None))
+    command::cli::setup::start(ui, &default_rioconfig_key_path(None))
 }
 
 fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {

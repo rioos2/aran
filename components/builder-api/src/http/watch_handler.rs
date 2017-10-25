@@ -14,7 +14,7 @@ use db::data_store::Broker;
 
 define_event_log!();
 
-pub fn watch_show(req: &mut Request) -> IronResult<Response> {
+pub fn watch_show(_req: &mut Request) -> IronResult<Response> {
     // let conn = Broker::connect().unwrap();
     // // let name = {
     // //     let params = req.extensions.get::<Router>().unwrap();

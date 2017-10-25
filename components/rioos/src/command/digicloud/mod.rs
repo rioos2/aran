@@ -2,4 +2,4 @@
 //
 
 
-pub mod init;
+pub mod deploy;
