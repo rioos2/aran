@@ -14,6 +14,7 @@ pub mod storage_handler;
 pub mod plan_handler;
 pub mod watch_handler;
 
+
 use std::sync::{mpsc, Arc};
 use std::thread::{self, JoinHandle};
 
@@ -96,6 +97,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         assemblys_factory_show: get "/assemblyfactorys/:id" => XHandler::new(assembly_factory_show).before(basic.clone()),
         assemblys_factorys_list: get "/assemblyfactorys" => XHandler::new(assembly_factory_list).before(basic.clone()),
         assembly_factory_status: put "/assemblyfactorys/:id/status" => XHandler::new(assembly_factory_status_update).before(basic.clone()),
+        assemblyfactorys_list_by_origin : get "/origins/:origin/assemblyfactorys" => XHandler::new(assemblyfactorys_list_by_origin).before(basic.clone()),
+        assemblyfactorys_describe: get "/assemblyfactorys/:id/describe" => XHandler::new(assembly_factorys_describe).before(basic.clone()),
         plan_list: get "/plans" => XHandler::new(plan_list).before(basic.clone()),
 
         //deploy API: assembly
@@ -104,6 +107,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         assembly_show: get "/assemblys/:id" => XHandler::new(assembly_show).before(basic.clone()),
         assembly_status: put "/assemblys/:id/status" => XHandler::new(assembly_status_update).before(basic.clone()),
         assembly_update: put "/assemblys/:id" => XHandler::new(assembly_update).before(basic.clone()),
+        assemblys_show_by_origin : get "/origins/:origin/assemblys" => XHandler::new(assemblys_show_by_origin).before(basic.clone()),
 
         //scaling API: horizontal scaling
         horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),
@@ -111,6 +115,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(hs_status_update).before(basic.clone()),
         horizontal_scaling_update: put "/horizontalscaling/:id" => XHandler::new(hs_update).before(basic.clone()),
         horizontal_scaling_metrics: get "/horizontalscaling/:id/metrics" => XHandler::new(hs_metrics).before(basic.clone()),
+        horizontal_scaling_list_by_origin : get "/origins/:origin/horizontalscaling" => XHandler::new(horizontal_scaling_list_by_origin).before(basic.clone()),
 
 
         //authorization API: for roles
@@ -169,7 +174,21 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),
         data_center_show: get "/datacenters/:id" => XHandler::new(data_center_show).before(basic.clone()),
 
-        // plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
+        //endpoint API
+
+        endpoints: post "/endpoints" =>  XHandler::new(endpoints_create).before(basic.clone()),
+        endpoints_list: get "/endpoints" =>  XHandler::new(endpoints_list).before(basic.clone()),
+        endpoints_show: get "/endpoints/:id" => XHandler::new(endpoints_show).before(basic.clone()),
+        endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(endpoints_list_by_origin).before(basic.clone()),
+        endpoints_list_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(endpoints_list_by_assembly).before(basic.clone()),
+
+        //services API
+
+        services: post "/services" => XHandler::new(services_create).before(basic.clone()),
+        services_show: get "/services/:id" =>XHandler::new(services_show).before(basic.clone()),
+        services_list: get "/services" => XHandler::new(services_list).before(basic.clone()),
+        
+        plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
 
         //Internal: Streaming watch
         watches: get "/:name/watch/list" => watch_show,

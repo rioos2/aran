@@ -143,6 +143,167 @@ impl ServiceAccountDS {
         );
         Ok(Some(response))
     }
+
+    pub fn endpoints_create(datastore: &DataStoreConn, endpoints_create: &servicesrv::EndPoints) -> Result<servicesrv::EndPoints> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM insert_endpoints_v1($1,$2,$3,$4,$5)",
+            &[
+                &(endpoints_create.get_target_ref().parse::<i64>().unwrap()),
+                &(endpoints_create.get_object_meta().get_origin() as String),
+                &(serde_json::to_string(endpoints_create.get_subsets()).unwrap()),
+                &(serde_json::to_string(endpoints_create.get_object_meta()).unwrap()),
+                &(serde_json::to_string(endpoints_create.get_type_meta()).unwrap()),
+            ],
+        ).map_err(Error::EndPointsCreate)?;
+        let end = row_to_endpoints(&rows.get(0));
+        return Ok(end.clone());
+    }
+
+    pub fn endpoints_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::EndpointsGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_endpoints_v1()", &[]).map_err(
+            Error::EndpointsGetResponse,
+        )?;
+
+        let mut response = servicesrv::EndpointsGetResponse::new();
+
+        let mut end_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                end_collection.push(row_to_endpoints(&row))
+            }
+            response.set_end_collection(
+                end_collection,
+                "EndpointsList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+    pub fn endpoints_show(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_endpoint_v1($1)",
+            &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::EndPointsGet)?;
+        if rows.len() > 0 {
+            for row in rows {
+                let end = row_to_endpoints(&row);
+                return Ok(Some(end));
+            }
+        }
+        Ok(None)
+    }
+
+    pub fn endpoints_list_by_origin(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndpointsGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_endpoints_by_origin_v1($1)",
+            &[&(endpoints_get.get_id() as String)],
+        ).map_err(Error::EndPointsGet)?;
+
+        let mut response = servicesrv::EndpointsGetResponse::new();
+
+        let mut end_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                end_collection.push(row_to_endpoints(&row))
+            }
+            response.set_end_collection(
+                end_collection,
+                "EndpointsList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+    pub fn endpoints_list_by_assembly(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndpointsGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_endpoints_by_assebmly_v1($1)",
+            &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::EndPointsGet)?;
+
+        let mut response = servicesrv::EndpointsGetResponse::new();
+
+        let mut end_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                end_collection.push(row_to_endpoints(&row))
+            }
+            response.set_end_collection(
+                end_collection,
+                "EndpointsList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+    pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<servicesrv::Services> {
+        let conn = datastore.pool.get_shard(0)?;
+        let asmid = services_create.get_spec().get_selector().get("rioos_assembly_factory_id");
+        let rows = &conn.query(
+            "SELECT * FROM insert_services_v1($1,$2,$3,$4,$5,$6)",
+            &[
+                &(services_create.get_object_meta().get_origin() as String),
+                &(asmid.unwrap().parse::<i64>().unwrap()),
+                &(serde_json::to_string(services_create.get_spec()).unwrap()),
+                &(serde_json::to_string(services_create.get_status()).unwrap()),
+                &(serde_json::to_string(services_create.get_object_meta()).unwrap()),
+                &(serde_json::to_string(services_create.get_type_meta()).unwrap()),
+            ],
+        ).map_err(Error::ServicesCreate)?;
+        let end = row_to_services(&rows.get(0));
+        return Ok(end.clone());
+    }
+    pub fn services_show(datastore: &DataStoreConn, services_get: &asmsrv::IdGet) -> Result<Option<servicesrv::Services>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_services_v1($1)",
+            &[&(services_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::ServicesGet)?;
+        if rows.len() > 0 {
+            for row in rows {
+                let end = row_to_services(&row);
+                return Ok(Some(end));
+            }
+        }
+        Ok(None)
+    }
+    pub fn services_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::ServicesGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_services_list_v1()", &[]).map_err(
+            Error::ServicesGetResponse,
+        )?;
+
+        let mut response = servicesrv::ServicesGetResponse::new();
+
+        let mut services_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                services_collection.push(row_to_services(&row))
+            }
+            response.set_services_collection(
+                services_collection,
+                "ServicesList".to_string(),
+                "v1".to_string(),
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+
 }
 
 
@@ -163,6 +324,43 @@ fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {
     secret.set_created_at(created_at.to_rfc3339());
 
     secret
+}
+
+fn row_to_endpoints(row: &postgres::rows::Row) -> servicesrv::EndPoints {
+    let mut endpoints = servicesrv::EndPoints::new();
+    let id: i64 = row.get("id");
+    let target_ref: i64 =row.get("target_ref");
+    let subsets: String = row.get("subsets");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+    let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
+
+    endpoints.set_id(id.to_string());
+    endpoints.set_target_ref(target_ref.to_string());
+    endpoints.set_subsets(serde_json::from_str(&subsets).unwrap());
+    endpoints.set_object_meta(serde_json::from_str(&object_meta).unwrap());
+    endpoints.set_type_meta(serde_json::from_str(&type_meta).unwrap());
+    endpoints.set_created_at(created_at.to_rfc3339());
+
+    endpoints
+}
+fn row_to_services(row: &postgres::rows::Row) -> servicesrv::Services {
+    let mut services = servicesrv::Services::new();
+    let id: i64 = row.get("id");
+    let spec: String =row.get("spec");
+    let status: String = row.get("status");
+    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+    let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
+
+    services.set_id(id.to_string());
+    services.set_spec(serde_json::from_str(&spec).unwrap());
+    services.set_status(serde_json::from_str(&status).unwrap());
+    services.set_object_meta(serde_json::from_str(&object_meta).unwrap());
+    services.set_type_meta(serde_json::from_str(&type_meta).unwrap());
+    services.set_created_at(created_at.to_rfc3339());
+
+    services
 }
 
 
