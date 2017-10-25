@@ -121,10 +121,7 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "parent_id")));
                 }
                 if body.origin.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `origin`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
 
                 assembly_create.set_name(body.name);
