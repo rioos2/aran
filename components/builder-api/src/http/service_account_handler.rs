@@ -92,7 +92,8 @@ struct SpecReq {
     selector: BTreeMap<String, String>,
     service_type: String,
     loadbalancer_ip: String,
-    external_name: String,
+    names: BTreeMap<String, String>,
+    external_names: BTreeMap<String, String>,
 }
 
 
@@ -571,7 +572,8 @@ pub fn services_create(req: &mut Request) -> IronResult<Response> {
                 spec.set_selector(body.spec.selector.to_owned());
                 spec.set_service_type(body.spec.service_type);
                 spec.set_loadbalancer_ip(body.spec.loadbalancer_ip);
-                spec.set_external_name(body.spec.external_name);
+                spec.set_names(body.spec.names);
+                spec.set_external_names(body.spec.external_names);
                 services_create.set_spec(spec);
 
                 let mut status = Status::new();
