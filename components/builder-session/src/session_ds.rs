@@ -410,6 +410,19 @@ impl SessionDS {
         );
         Ok(Some(response))
     }
+    pub fn oidc_show(datastore: &DataStoreConn, oidc_provider_get: &asmsrv::IdGet) -> Result<Option<sessionsrv::OidcProvider>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_odic_v1($1)",
+            &[&(oidc_provider_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::OidcProviderGet)?;
+        for row in rows {
+            let oidc = row_to_oidc_provider(&row)?;
+            return Ok(Some(oidc));
+        }
+        Ok(None)
+    }
+
 
 }
 
