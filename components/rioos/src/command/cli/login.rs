@@ -1,8 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 
-use std::path::Path;
-
 use common::ui::UI;
 use rioos_core::env;
 
@@ -10,9 +8,7 @@ use AUTH_TOKEN_ENVVAR;
 use config;
 use error::Result;
 
-pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
-    println!("{:?}", cache_path);
-
+pub fn start(ui: &mut UI) -> Result<()> {
     ui.br()?;
     ui.title("Rio/OS CLI")?;
 
@@ -27,7 +23,7 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
     let userid = prompt_userid(ui)?;
     let password = prompt_password(ui)?;
 
-    let auth_token = login(ui, &userid, cache_path)?;
+    let auth_token = login(ui, &userid)?;
 
     write_cli_config_auth_token(&auth_token)?;
 
@@ -44,7 +40,7 @@ fn write_cli_config_auth_token(auth_token: &str) -> Result<()> {
 }
 
 
-fn login(ui: &mut UI, origin: &str, cache_path: &Path) -> Result<String> {
+fn login(ui: &mut UI, userid: &str) -> Result<String> {
     //    let result = command::origin::key::generate::start(ui, &origin, cache_path);
     ui.br()?;
     //    result

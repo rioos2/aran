@@ -28,8 +28,8 @@ use api::{command, Config, Error, Result};
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 lazy_static! {
-    static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*cache_config_path(None).join("api.toml").to_str().unwrap());
-    static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*cache_config_path(None).join("serving-rioos-apiserver.pfx").to_str().unwrap());
+    static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("api.toml").to_str().unwrap());
+    static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("serving-rioos-apiserver.pfx").to_str().unwrap());
 }
 
 fn main() {
