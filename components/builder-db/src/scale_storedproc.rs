@@ -30,6 +30,7 @@ impl Migratable for ScaleProcedures {
              name text,
              description text,
              tags text[],
+             origin_id bigint REFERENCES origins(id),
              scale_type text,
              representation_skew text,
              state text,
@@ -50,6 +51,7 @@ impl Migratable for ScaleProcedures {
                 name text,
                 description text,
                 tags text[],
+                origin_name text,
                 scale_type text,
                 representation_skew text,
                 state text,
@@ -57,15 +59,32 @@ impl Migratable for ScaleProcedures {
                 spec text,
                 status text
                         ) RETURNS SETOF horizontal_scaling AS $$
+                        DECLARE
+                           this_origin origins%rowtype;
                                 BEGIN
-                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,scale_type,representation_skew,state,metadata,spec,status)
-                                        VALUES (name,description,tags,scale_type,representation_skew,state,metadata,spec,status)
+                                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
+                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,origin_id, scale_type,representation_skew,state,metadata,spec,status)
+                                        VALUES (name,description,tags, this_origin.id,scale_type,representation_skew,state,metadata,spec,status)
                                         RETURNING *;
                                     RETURN;
                                 END
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
+
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_hs_by_origin_v1(org_name text) RETURNS SETOF horizontal_scaling AS $$
+                DECLARE
+                this_origin origins%rowtype;
+                        BEGIN
+                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
+                         RETURN QUERY SELECT * FROM horizontal_scaling WHERE origin_id=this_origin.id;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
 
         migrator.migrate(
             "scalesrv",
