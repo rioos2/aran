@@ -28,22 +28,16 @@ extern crate url;
 pub mod error;
 pub use error::{Error, Result};
 
-use std::fs::{self, File};
 use std::io::{self, Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::string::ToString;
 
-use broadcast::BroadcastWriter;
 use rioos_http::ApiClient;
-use rioos_http::util::decoded_response;
-use hyper::client::{Body, IntoUrl, Response, RequestBuilder};
+use hyper::client::{IntoUrl, RequestBuilder};
 use hyper::status::StatusCode;
-use hyper::header::{Authorization, Bearer};
-use hyper::Url;
-use protocol::{originsrv, net};
+use hyper::header::{ContentType, Accept, Authorization, Bearer};
 use protocol::net::NetError;
 use rand::{Rng, thread_rng};
-use tee::TeeReader;
 use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
 
 header! { (XFileName, "X-Filename") => [String] }
@@ -98,7 +92,7 @@ impl Client {
         ))
     }
 
-    pub fn login(&self, token: &str) -> Result<(String)> {
+    pub fn login(&self, token: &str, email: &str, password: &str) -> Result<(String)> {
         debug!("Logging in for {}", token);
         let url = format!("auth/authenticate");
 
@@ -115,13 +109,14 @@ impl Client {
             .body(&sbody)
             .header(Accept::json())
             .header(ContentType::json())
-            .send();
+            .send()
+            .map_err(Error::HyperError)?;
 
 
         if res.status != StatusCode::Ok {
             debug!("Failed to promote group, status: {:?}", res.status);
             return Err(err_from_response(res));
-        }
+        };
 
         /*match decoded_response::<JobGroupPromoteResponse>(res).map_err(Error::HabitatHttpClient) {
             Ok(value) => Ok(value.not_promoted),
@@ -130,11 +125,13 @@ impl Client {
                 return Err(e);
             }
         }*/
+
+        Ok("".to_string())
     }
 
     pub fn logout(&self, token: &str) -> Result<(String)> {
         debug!("Logout for {}", token);
-        let url = format!("logout/{}", group_id, channel);
+        let url = format!("logout/{}", token);
         let res = self.add_authz(self.0.get(&url), token).send().map_err(
             Error::HyperError,
         )?;
@@ -142,8 +139,9 @@ impl Client {
         if res.status != StatusCode::Ok {
             debug!("Failed to logout, status: {:?}", res.status);
             return Err(err_from_response(res));
-        }
+        };
 
+        Ok("".to_string())
     }
 
     ///

@@ -54,7 +54,6 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::APIClient(ref err) => format!("{}", err),
             Error::ArgumentError(ref e) => format!("{}", e),
-            Error::ButterflyError(ref e) => format!("{}", e),
             Error::CannotRemoveFromChannel((ref p, ref c)) => format!("{} cannot be removed from the {} channel.", p, c),
             Error::CommandNotFoundInPkg((ref p, ref c)) => {
                 format!(
@@ -64,39 +63,6 @@ impl fmt::Display for Error {
                 )
             }
             Error::CryptoCLI(ref e) => format!("{}", e),
-            Error::DockerDaemonDown => format!("Can not connect to Docker. Is the Docker daemon running?"),
-            #[cfg(not(windows))]
-            Error::DockerFileSharingNotEnabled => {
-                format!(
-                    "File Sharing must be enabled in order to enter a studio.\nPlease enable \
-                         it in the Docker preferences and share (at a minimum) your home \
-                         directory."
-                )
-            }
-            #[cfg(windows)]
-            Error::DockerFileSharingNotEnabled => {
-                format!(
-                    "File Sharing must be enabled in order to enter a studio.\nPlease select \
-                         a drive to share in the Docker preferences."
-                )
-            }
-            Error::DockerImageNotFound(ref e) => {
-                format!(
-                    "The Docker image {} was not found in the docker registry.\nYou can \
-                         specify your own Docker image using the HAB_DOCKER_STUDIO_IMAGE \
-                         environment variable.",
-                    e
-                )
-            }
-            Error::DockerNetworkDown(ref e) => {
-                format!(
-                    "The Docker image {} is unreachable due to a network error.\nThe \
-                         image must be reachable to ensure the versions of hab inside and \
-                         outside the studio match.\nYou can specify your own Docker image using \
-                         the HAB_DOCKER_STUDIO_IMAGE environment variable.",
-                    e
-                )
-            }
             Error::EnvJoinPathsError(ref err) => format!("{}", err),
             Error::ExecCommandNotFound(ref c) => {
                 format!(
@@ -104,7 +70,6 @@ impl fmt::Display for Error {
                     c.display()
                 )
             }
-            Error::FFINulError(ref e) => format!("{}", e),
             Error::FileNotFound(ref e) => format!("File not found at: {}", e),
             Error::HabitatCommon(ref e) => format!("{}", e),
             Error::HabitatCore(ref e) => format!("{}", e),
@@ -137,17 +102,11 @@ impl error::Error for Error {
         match *self {
             Error::APIClient(ref err) => err.description(),
             Error::ArgumentError(_) => "There was an error parsing an error or with it's value",
-            Error::ButterflyError(_) => "Butterfly has had an error",
             Error::CannotRemoveFromChannel(_) => "Package cannot be removed from the specified channel",
             Error::CommandNotFoundInPkg(_) => "Command was not found under any 'PATH' directories in the package",
             Error::CryptoCLI(_) => "A cryptographic error has occurred",
-            Error::DockerDaemonDown => "The Docker daemon could not be found.",
-            Error::DockerFileSharingNotEnabled => "Docker file sharing is not enabled.",
-            Error::DockerImageNotFound(_) => "The Docker image was not found.",
-            Error::DockerNetworkDown(_) => "The Docker registry is unreachable.",
             Error::EnvJoinPathsError(ref err) => err.description(),
             Error::ExecCommandNotFound(_) => "Exec command was not found on filesystem or in PATH",
-            Error::FFINulError(ref err) => err.description(),
             Error::FileNotFound(_) => "File not found",
             Error::HabitatCommon(ref err) => err.description(),
             Error::HabitatCore(ref err) => err.description(),
@@ -173,12 +132,6 @@ impl error::Error for Error {
 impl From<common::Error> for Error {
     fn from(err: common::Error) -> Error {
         Error::HabitatCommon(err)
-    }
-}
-
-impl From<ffi::NulError> for Error {
-    fn from(err: ffi::NulError) -> Error {
-        Error::FFINulError(err)
     }
 }
 

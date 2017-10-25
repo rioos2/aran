@@ -38,8 +38,9 @@ fn write_cli_config_auth_token(auth_token: &str) -> Result<()> {
 }
 
 
-fn login(ui: &mut UI, api: &str) -> Result<()> {
+fn logout(ui: &mut UI, api: &str) -> Result<()> {
     //let result = command::origin::key::generate::start(ui, &origin, cache_path);
-    ui.br()?;
-    result
+    //ui.br()?;
+    //result
+    Ok(())
 }

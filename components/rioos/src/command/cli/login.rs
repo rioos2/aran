@@ -26,6 +26,9 @@ pub fn start(ui: &mut UI, cache_path: &Path) -> Result<()> {
     ui.para("Enter your credentials.")?;
     let userid = prompt_userid(ui)?;
     let password = prompt_password(ui)?;
+
+    let auth_token = login()?;
+    
     write_cli_config_auth_token(&auth_token)?;
 
     ui.heading("Logged in.")?;
@@ -41,10 +44,11 @@ fn write_cli_config_auth_token(auth_token: &str) -> Result<()> {
 }
 
 
-fn login(ui: &mut UI, origin: &str, cache_path: &Path) -> Result<()> {
-    let result = command::origin::key::generate::start(ui, &origin, cache_path);
+fn login(ui: &mut UI, origin: &str, cache_path: &Path) -> Result<String> {
+    //    let result = command::origin::key::generate::start(ui, &origin, cache_path);
     ui.br()?;
-    result
+    //    result
+    Ok(" test ".to_string())
 }
 
 fn prompt_userid(ui: &mut UI) -> Result<String> {

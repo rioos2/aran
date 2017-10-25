@@ -15,7 +15,7 @@ use handlebars::Handlebars;
 use common::ui::{UI, Status};
 use error::Result;
 
-const DEFAULT_RIOBLU_TEMPLATE: &'static str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rioblu.yaml"));
+const DEFAULT_RIOBLU_TEMPLATE: &'static str = ""; //include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rioblu.yaml"));
 
 pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<()> {
     ui.begin("Constructing a cozy digitalcloud for you...")?;
@@ -44,6 +44,8 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
     // Build out the variables passed.
     let handlebars = Handlebars::new();
     let mut data = HashMap::new();
+    let location = "test".to_string();
+    let origin  = "default".to_string();
     data.insert("location".to_string(), location);
     data.insert("origin".to_string(), origin);
 
@@ -55,9 +57,9 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
         }
     }
 
-    let rendered_blu_yaml = handlebars.template_render(DEFAULT_RIOBLUE_TEMPLATE, &data)?;
-
-    create_with_template(ui, &format!("{}/riobluen.yaml", root), &rendered_plan)?;
+    let rendered_blu_yaml = handlebars.template_render(DEFAULT_RIOBLU_TEMPLATE, &data)?;
+    let rendered_plan = "";
+    create_with_template(ui, &format!("{}/rioblu.yaml", root), &rendered_plan)?;
 
     ui.para(
         "`rioblue.yaml` is the foundation of your new digital cloud. It contains \
@@ -92,9 +94,14 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
 
 
     let api_client = Client::new(url, PRODUCT, VERSION, None)?;
-
+    let ident = "";
+    let abcd = "";
     ui.begin(format!("Applying {} from {}", ident, abcd))?;
 
+    let ident ="";
+    let channel ="";
+    let token = "";
+    
     match api_client.apply_blu(ident, channel, token) {
         Ok(_) => (),
         Err(e) => {

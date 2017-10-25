@@ -1,16 +1,16 @@
 // Copyright (c) 2017 RioCorp Inc.
 //
 
-
+#[macro_use]
+extern crate lazy_static;
 use std::env;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
-#[macro_use]
-extern crate lazy_static;
 
-use rio_core::config::ConfigFile;
-use rio_core::fs::rioconfig_etc_path;
+use rioos_core::config::ConfigFile;
+use rioos_core::fs::rioconfig_etc_path;
+use rioos_core::fs::am_i_root;
 use toml;
 use error::{Error, Result};
 
@@ -36,7 +36,7 @@ impl ConfigFile for Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            api_server: Some("localhost:9046"),
+            api_server: Some("localhost:9046".to_string()),
             auth_token: None,
             origin: None,
         }
