@@ -282,7 +282,7 @@ pub fn assemblys_show_by_origin(req: &mut Request) -> IronResult<Response> {
 }
 
 
-pub fn assembly_update(req: &mut Request) -> IronResult<Response> {
+pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
