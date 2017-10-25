@@ -69,6 +69,7 @@ impl ApiClient {
         T: IntoUrl,
     {
         let endpoint = endpoint.into_url()?;
+
         Ok(ApiClient {
             inner: new_hyper_client(&endpoint, fs_root_path)?,
             proxy: proxy_unless_domain_exempted(Some(&endpoint))?,

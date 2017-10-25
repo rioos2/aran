@@ -16,7 +16,7 @@ lazy_static! {
     static  ref CLICFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*rioconfig_etc_path(None).join("cli.toml").to_str().unwrap());
 }
 
-//used if the user is not root. eg: /home/rajthilak/rioos/etc/cli.toml
+//eg: If the user is not root. eg: /home/rajthilak/.rioos/etc/cli.toml
 const CLI_CONFIG_PATH: &'static str = "rioos/etc/cli.toml";
 
 
@@ -34,7 +34,7 @@ impl ConfigFile for Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            api_server: Some("localhost:9046".to_string()),
+            api_server: Some("http://localhost:9636/".to_string()),
             auth_token: None,
             origin: None,
         }

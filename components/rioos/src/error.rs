@@ -128,6 +128,12 @@ impl error::Error for Error {
     }
 }
 
+impl From<api_client::Error> for Error {
+    fn from(err: api_client::Error) -> Error {
+        Error::APIClient(err)
+    }
+}
+
 impl From<common::Error> for Error {
     fn from(err: common::Error) -> Error {
         Error::HabitatCommon(err)
