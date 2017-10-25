@@ -49,7 +49,11 @@ impl Handler for C {
             Err(e) => {
                 match e.response() {
                     Some(response) => Ok(response),
-                    None => Err(render_json_error(&net::err(ErrCode::BUG, "bug. report to development."),Status::InternalServerError, &"")),
+                    None => Err(render_json_error(
+                        &net::err(ErrCode::BUG, "bug. report to development."),
+                        Status::InternalServerError,
+                        &"",
+                    )),
                 }
             }
         }
@@ -326,12 +330,9 @@ impl BeforeMiddleware for Authenticated {
                                         }
                                     }
                                 }
-                                Err(_) => {
-                                    let err = net::err(
-                                        ErrCode::ACCESS_DENIED,
-                                        format!("Unavailable datastore. Unable to authentication"),
-                                    );
-                                    return Err(render_json_error(&err, Status::Unauthorized, &err));
+                                Err(err) => {
+                                    let err1 = net::err(ErrCode::ACCESS_DENIED, err.to_string());
+                                    return Err(render_json_error(&err1, Status::Unauthorized, &err1));
                                 }
                             }
                         }
@@ -399,7 +400,7 @@ impl AfterMiddleware for Cors {
 
 pub fn session_create(conn: &DataStoreConn, request: &SessionCreate) -> IronResult<Session> {
     //wrong name, use another fascade method session_create
-    match SessionDS::account_create(&conn, &request) {
+    match SessionDS::find_account(&conn, &request) {
         Ok(session) => return Ok(session),
         Err(e) => {
             let err = net::err(

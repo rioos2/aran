@@ -277,6 +277,6 @@ pub fn healthz_all(req: &mut Request) -> AranResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
     match NodeDS::healthz_all(&promcli) {
         Ok(health_all) => Ok(render_json(status::Ok, &health_all)),
-        Err(err) => Err(internal_error(&"testing", &format!("{}", err))),
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
