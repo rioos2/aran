@@ -271,8 +271,7 @@ impl fmt::Display for NotFound {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Unauthorized;
+pub struct Unauthorized(String);
 
 impl AranError for Unauthorized {
     fn http_code(&self) -> Status {
@@ -284,10 +283,10 @@ impl AranError for Unauthorized {
     }
 
     fn description(&self) -> &str {
-        "unauthorized"
+        self.0.as_ref()
     }
     fn cause(&self) -> &str {
-        "unknown"
+        "unauthorized"
     }
 }
 
@@ -369,6 +368,10 @@ pub fn internal_error(error: &str) -> Box<AranError> {
 
 pub fn not_found_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(NotFound(error.to_string()))
+}
+
+pub fn unauthorized_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(Unauthorized(error.to_string()))
 }
 
 

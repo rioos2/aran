@@ -70,9 +70,9 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         healthz_all: get "/healthz/overall" => XHandler::new(C(healthz_all)).before(basic.clone()),
 
         //auth API for login (default password auth)
-        authenticate: post "/authenticate" => default_authenticate,
+        authenticate: post "/authenticate" => XHandler::new(C(default_authenticate)),
         //auth API for login (ldap, active directory)
-        authenticate_ldap: post "/authenticate/ldap/:code" => default_authenticate, //ldap_authenticate
+        authenticate_ldap: post "/authenticate/ldap/:code" => XHandler::new(C(default_authenticate)), //ldap_authenticate
 
         config_ldap: post "/ldap/config" => set_ldap_config,
 
@@ -88,7 +88,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         openid_show : get "auth/oidc/providers/:providerid" =>openid_provider_show,
 
         //auth API for creating new account
-        signup: post "/accounts" => account_create,
+        signup: post "/accounts" => XHandler::new(C(account_create)),
         account_get_by_id: get "/accounts/:id" => account_get_by_id,
         account_get_by_name: get "/accounts/name/:name" => account_get,
 
@@ -102,7 +102,6 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         plan_list: get "/plans" => XHandler::new(plan_list).before(basic.clone()),
 
         //deploy API: assembly
-
         assemblys: post "/assemblys" => XHandler::new(C(assembly_create)).before(basic.clone()),
         assemblys_list: get "/assemblys" => XHandler::new(C(assembly_list)).before(basic.clone()),
         assembly_show: get "/assemblys/:id" => XHandler::new(C(assembly_show)).before(basic.clone()),

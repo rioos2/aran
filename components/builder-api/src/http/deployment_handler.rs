@@ -188,12 +188,9 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
-            Err(not_found_error(&format!(
-                "{}",
-                Error::Db(
-                    db::error::Error::RecordsNotFound("".to_string()),
-                )
-            )))
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
     }
 }
@@ -218,9 +215,7 @@ pub fn assembly_show(req: &mut Request) -> AranResult<Response> {
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
-                Error::Db(
-                    db::error::Error::RecordsNotFound("".to_string()),
-                ),
+                Error::Db(db::error::Error::RecordsNotFound),
                 &asm_get.get_id()
             )))
         }
@@ -237,12 +232,9 @@ pub fn assembly_list(req: &mut Request) -> AranResult<Response> {
             Err(internal_error(&format!("{}", err)))
         }
         Ok(None) => {
-            Err(not_found_error(&format!(
-                "{}",
-                Error::Db(
-                    db::error::Error::RecordsNotFound("".to_string()),
-                )
-            )))
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
     }
 }
@@ -335,9 +327,7 @@ pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
-                Error::Db(
-                    db::error::Error::RecordsNotFound("".to_string()),
-                ),
+                Error::Db(db::error::Error::RecordsNotFound),
                 &assembly_create.get_id()
             )))
         }
@@ -393,9 +383,7 @@ pub fn assembly_status_update(req: &mut Request) -> AranResult<Response> {
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
-                Error::Db(
-                    db::error::Error::RecordsNotFound("".to_string()),
-                ),
+                Error::Db(db::error::Error::RecordsNotFound),
                 &assembly.get_id()
             )))
         }
