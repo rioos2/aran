@@ -67,7 +67,7 @@ describe('Service account API', function() {
       request.post('/services')
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"type_meta": {"kind": "Service","api_version": "v1"  },"object_meta": {"name": "xyz","origin": "rioo","uid": "","created_at": "","cluster_name": "","labels": {  "group": "development",  "key2": "value2"},"annotations": {"key1": "value1","key2": "value2"}},"spec": {"selector": { "rioos_assembly_factory_id" :"835982843296366592" },"service_type": "LoadBalancer/ExternalName","loadbalancer_ip": "","external_name": ""},"status": {"phase": "pending32","message": "","reason": "","conditions": [{ "message": "", "reason": "", "status": " ", "last_transition_time": " ", "last_probe_time": "","condition_type": " "}]}})
+        .send({"type_meta": {"kind": "Service","api_version": "v1"  },"object_meta": {"name": "xyz","origin": "rioo","uid": "","created_at": "","cluster_name": "","labels": {  "group": "development",  "key2": "value2"},"annotations": {"key1": "value1","key2": "value2"}},"spec": {"selector": { "rioos_assembly_factory_id" :"835982843296366592" },"service_type": "LoadBalancer/ExternalName","loadbalancer_ip": "","names": {"private_name":"levis-01.megam.io"},"external_names": {"public_name":"levis-01.megam.io"} },"status": {"phase": "pending32","message": "","reason": "","conditions": [{ "message": "", "reason": "", "status": " ", "last_transition_time": " ", "last_probe_time": "","condition_type": " "}]}})
         .expect(200)
         .end(function(err, res) {
           expect(res.body);
@@ -76,6 +76,7 @@ describe('Service account API', function() {
           done(err);
         });
     });
+
     it('returns all services', function(done) {
       request.get('/services')
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -113,6 +114,18 @@ describe('Service account API', function() {
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
         .end(function(err, res) {
+          done(err);
+        });
+    });
+
+    it('returns the created services', function(done) {
+      request.post('/services')
+        .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .send({"type_meta": {"kind": "Service","api_version": "v1"  },"object_meta": {"name": "xyz","origin": "","uid": "","created_at": "","cluster_name": "","labels": {  "group": "development",  "key2": "value2"},"annotations": {"key1": "value1","key2": "value2"}},"spec": {"selector": { "rioos_assembly_factory_id" :"835982843296366592" },"service_type": "LoadBalancer/ExternalName","loadbalancer_ip": "","names": {"private_name":"levis-01.megam.io"},"external_names": {"public_name":"levis-01.megam.io"} },"status": {"phase": "pending32","message": "","reason": "","conditions": [{ "message": "", "reason": "", "status": " ", "last_transition_time": " ", "last_probe_time": "","condition_type": " "}]}})
+        .expect(200)
+        .end(function(err, res) {
+          expect(res.body);
           done(err);
         });
     });
