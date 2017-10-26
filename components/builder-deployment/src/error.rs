@@ -21,6 +21,7 @@ pub enum Error {
     PlanGetResponse(postgres::error::Error),
     AsmFactorySetStatus(postgres::error::Error),
     AsmSetStatus(postgres::error::Error),
+    EndPointsGet(postgres::error::Error),
 }
 
 
@@ -38,6 +39,7 @@ impl fmt::Display for Error {
             Error::PlanGet(ref e) => format!("Database error getting plan data, {}", e),
             Error::PlanGetResponse(ref e) => format!("Database error listing plan_factory data, {}", e),
             Error::AsmFactorySetStatus(ref e) => format!("Database error setting Assembly Factory status, {}", e),
+            Error::EndPointsGet(ref e) => format!("Error retrive endpoint, {}", e),
             Error::AsmSetStatus(ref e) => format!("Database error setting Assembly status, {}", e),
         };
         write!(f, "{}", msg)
@@ -56,6 +58,7 @@ impl error::Error for Error {
             Error::PlanGet(ref err) => err.description(),
             Error::PlanGetResponse(ref err) => err.description(),
             Error::AsmFactorySetStatus(ref err) => err.description(),
+            Error::EndPointsGet(ref err) => err.description(),
             Error::AsmSetStatus(ref err) => err.description(),
         }
     }

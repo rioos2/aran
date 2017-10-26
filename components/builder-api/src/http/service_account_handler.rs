@@ -15,6 +15,7 @@ use protocol::asmsrv::{TypeMeta, IdGet, Status, Condition};
 use std::collections::BTreeMap;
 use http::deployment_handler;
 use common::ui;
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SecretCreateReq {
