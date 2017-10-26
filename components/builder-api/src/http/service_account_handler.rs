@@ -2,7 +2,7 @@ use ansi_term::Colour;
 use bodyparser;
 use rio_net::http::controller::*;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError,not_found_error};
 
 use service::service_account_ds::ServiceAccountDS;
 use iron::prelude::*;
@@ -15,6 +15,7 @@ use protocol::asmsrv::{TypeMeta, IdGet, Status, Condition};
 use std::collections::BTreeMap;
 use http::deployment_handler;
 use common::ui;
+use db;
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -172,10 +173,11 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::secret_show(&conn, &secret_get) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &secret_get.get_id()
+            )))
         }
         Err(err) => Err(internal_error(&format!("{}", err))),
     }
@@ -187,9 +189,8 @@ pub fn secret_list(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::secret_list(&conn) {
         Ok(Some(service_list)) => Ok(render_json(status::Ok, &service_list)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -218,9 +219,8 @@ pub fn secret_show_by_origin(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::secret_show_by_origin(&conn, &secret_get) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -298,6 +298,11 @@ pub fn service_account_list(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -323,6 +328,13 @@ pub fn service_account_show(req: &mut Request) -> AranResult<Response> {
         Ok(origin) => Ok(render_json(status::Ok, &origin)),
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &serv_get.get_id()
+            )))
         }
     }
 }
@@ -415,9 +427,8 @@ pub fn endpoints_list(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::endpoints_list(&conn) {
         Ok(Some(endpoints_list)) => Ok(render_json(status::Ok, &endpoints_list)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -449,10 +460,11 @@ pub fn endpoints_show(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::endpoints_show(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &endpoints_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
@@ -479,9 +491,8 @@ pub fn endpoints_list_by_origin(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::endpoints_list_by_origin(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -509,9 +520,8 @@ pub fn endpoints_list_by_assembly(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::endpoints_list_by_assembly(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -620,10 +630,11 @@ pub fn services_show(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::services_show(&conn, &services_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &services_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
@@ -636,9 +647,8 @@ pub fn services_list(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::services_list(&conn) {
         Ok(Some(services_list)) => Ok(render_json(status::Ok, &services_list)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -667,9 +677,8 @@ pub fn services_list_by_origin(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::services_list_by_origin(&conn, &services_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -697,9 +706,8 @@ pub fn services_list_by_assembly(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::services_list_by_assembly(&conn, &services_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {

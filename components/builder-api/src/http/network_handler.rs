@@ -14,6 +14,7 @@ use protocol::net::{self, ErrCode};
 use protocol::netsrv::Network;
 use protocol::asmsrv::{Status, Condition};
 use std::collections::BTreeMap;
+use db;
 
 
 use db::data_store::Broker;
@@ -96,6 +97,11 @@ pub fn network_list(req: &mut Request) -> AranResult<Response> {
         Ok(network_list) => Ok(render_json(status::Ok, &network_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
     }
 }

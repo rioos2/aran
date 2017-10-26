@@ -19,6 +19,7 @@ use protocol::asmsrv::{IdGet};
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
+use db;
 use common::ui;
 use rio_net::util::errors::AranResult;
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
@@ -199,6 +200,11 @@ pub fn hs_list(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -223,9 +229,8 @@ pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> AranResult<Respon
     match ScalingDS::horizontal_scaling_list_by_origin(&conn, &hs_get) {
         Ok(Some(hs)) => Ok(render_json(status::Ok, &hs)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -252,6 +257,13 @@ pub fn hs_metrics(req: &mut Request) -> AranResult<Response> {
         Ok(hs_metrics) => Ok(render_json(status::Ok, &hs_metrics)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &af_id
+            )))
         }
     }
 }
@@ -289,6 +301,7 @@ pub fn hs_status_update(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+
 
     }
 }
@@ -385,6 +398,13 @@ pub fn hs_update(req: &mut Request) -> AranResult<Response> {
         Ok(hs) => Ok(render_json(status::Ok, &hs)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &hs_update.get_id()
+            )))
         }
 
     }

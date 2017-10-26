@@ -11,8 +11,9 @@ use rio_net::http::controller::*;
 use rio_net::http::middleware::PrometheusCli;
 use node::node_ds::NodeDS;
 use db::data_store::Broker;
+use db;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body,not_found_error};
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
@@ -185,6 +186,11 @@ pub fn node_list(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -271,6 +277,7 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+
     }
 }
 
@@ -279,5 +286,10 @@ pub fn healthz_all(req: &mut Request) -> AranResult<Response> {
     match NodeDS::healthz_all(&promcli) {
         Ok(health_all) => Ok(render_json(status::Ok, &health_all)),
         Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }

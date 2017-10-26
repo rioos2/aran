@@ -15,6 +15,7 @@ use router::Router;
 use protocol::servicesrv::ObjectMetaData;
 use protocol::asmsrv::{TypeMeta, IdGet};
 use db::data_store::Broker;
+use db;
 use http::{service_account_handler, deployment_handler};
 use rio_net::util::errors::AranResult;
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
@@ -75,6 +76,11 @@ pub fn origin_list(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -93,6 +99,13 @@ pub fn origin_show(req: &mut Request) -> AranResult<Response> {
         Ok(origin) => Ok(render_json(status::Ok, &origin)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &org_get.get_id()
+            )))
         }
     }
 }

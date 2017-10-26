@@ -481,8 +481,13 @@ pub fn assembly_factory_show(req: &mut Request) -> AranResult<Response> {
 
     match DeploymentDS::assembly_factory_show(&conn, &asm_fac_get) {
         Ok(assembly_factory) => Ok(render_json(status::Ok, &assembly_factory)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &asm_fac_get.get_id()
+            )))
         }
     }
 }
@@ -532,6 +537,14 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &assembly_factory.get_id()
+            )))
+        }
+
 
     }
 }
@@ -543,6 +556,11 @@ pub fn assembly_factory_list(req: &mut Request) -> AranResult<Response> {
         Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
     }
 }
@@ -567,9 +585,8 @@ pub fn assemblyfactorys_list_by_origin(req: &mut Request) -> AranResult<Response
     match DeploymentDS::assemblyfactorys_show_by_origin(&conn, &assemblyfactory_get) {
         Ok(Some(assemblyfac)) => Ok(render_json(status::Ok, &assemblyfac)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -599,9 +616,8 @@ pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
     match DeploymentDS::assembly_factorys_describe(&conn, &assemblydes_get) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
         Err(err) => {
@@ -620,6 +636,11 @@ pub fn plan_list(req: &mut Request) -> AranResult<Response> {
         Ok(plan_list) => Ok(render_json(status::Ok, &plan_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
     }
 }

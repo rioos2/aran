@@ -15,6 +15,7 @@ use protocol::asmsrv::{IdGet, Condition, Status};
 use protocol::storagesrv::{Storage, DataCenter, Disks, Disk, StoragePool};
 
 use db::data_store::Broker;
+use db;
 use std::collections::BTreeMap;
 use http::deployment_handler;
 use rio_net::util::errors::AranResult;
@@ -149,6 +150,11 @@ pub fn storage_list(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -171,6 +177,13 @@ pub fn storage_show(req: &mut Request) -> AranResult<Response> {
         Ok(storage) => Ok(render_json(status::Ok, &storage)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &storage_get.get_id()
+            )))
         }
         }
 }
@@ -219,6 +232,13 @@ pub fn storage_update(req: &mut Request) -> AranResult<Response> {
         Ok(storage_create) => Ok(render_json(status::Ok, &storage_create)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &storage_create.get_id()
+            )))
         }
     }
 }
@@ -269,6 +289,13 @@ pub fn storage_status_update(req: &mut Request) -> AranResult<Response> {
         Ok(storage_create) => Ok(render_json(status::Ok, &storage_create)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &storage_create.get_id()
+            )))
         }
     }
 }
@@ -331,6 +358,11 @@ pub fn data_center_list(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -353,6 +385,13 @@ pub fn data_center_show(req: &mut Request) -> AranResult<Response> {
         Ok(dc) => Ok(render_json(status::Ok, &dc)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &dc_get.get_id()
+            )))
         }
     }
 }
@@ -468,6 +507,13 @@ pub fn storage_pool_status_update(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &storage_pool_update.get_id()
+            )))
+        }
 
     }
 }
@@ -493,6 +539,13 @@ pub fn storage_pool_list(req: &mut Request) -> AranResult<Response> {
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &storage_get.get_id()
+            )))
+        }
     }
 }
 
@@ -503,6 +556,11 @@ pub fn storage_pool_list_all(req: &mut Request) -> AranResult<Response> {
         Ok(storage_pool_list) => Ok(render_json(status::Ok, &storage_pool_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
     }
 }

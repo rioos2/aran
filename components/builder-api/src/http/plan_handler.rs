@@ -11,7 +11,7 @@ use rio_net::http::controller::*;
 use plan::plan_ds::PlanDS;
 use db::data_store::Broker;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body,not_found_error};
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::plansrv::{Plan, Service};
