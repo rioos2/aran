@@ -1,14 +1,19 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 
+pub use error::{Error, Result};
+
 use common::ui::UI;
 use rioos_core::env;
 
+use api_client::{self, Client};
 use AUTH_TOKEN_ENVVAR;
+use {PRODUCT, VERSION};
 use config;
-use error::Result;
 
-pub fn start(ui: &mut UI) -> Result<()> {
+
+
+pub fn start(ui: &mut UI, url: &str) -> Result<()> {
     ui.br()?;
     ui.title("Rio/OS CLI")?;
 
@@ -23,7 +28,7 @@ pub fn start(ui: &mut UI) -> Result<()> {
     let userid = prompt_userid(ui)?;
     let password = prompt_password(ui)?;
 
-    let auth_token = login(ui, &userid)?;
+    let auth_token = login(ui, url, &userid, &password)?;
 
     write_cli_config_auth_token(&auth_token)?;
 
@@ -40,11 +45,13 @@ fn write_cli_config_auth_token(auth_token: &str) -> Result<()> {
 }
 
 
-fn login(ui: &mut UI, userid: &str) -> Result<String> {
-    //    let result = command::origin::key::generate::start(ui, &origin, cache_path);
+fn login(ui: &mut UI, url: &str, userid: &str, password: &str) -> Result<String> {
+    let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
+
     ui.br()?;
-    //    result
-    Ok(" test ".to_string())
+
+    let result = rio_client.login(userid, password)?;
+    Ok(result)
 }
 
 fn prompt_userid(ui: &mut UI) -> Result<String> {

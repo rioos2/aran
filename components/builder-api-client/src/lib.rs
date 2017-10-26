@@ -43,7 +43,7 @@ use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
 header! { (XFileName, "X-Filename") => [String] }
 header! { (ETag, "ETag") => [String] }
 
-const DEFAULT_API_PATH: &'static str = "/v1";
+const DEFAULT_API_PATH: &'static str = "/api/v1";
 
 
 /// Custom conversion logic to allow `serde` to successfully
@@ -88,16 +88,17 @@ impl Client {
             endpoint.set_path(DEFAULT_API_PATH);
         }
         Ok(Client(
-            ApiClient::new(endpoint, product, version, fs_root_path)?,
+            ApiClient::new(endpoint, product, version, fs_root_path)
+                .map_err(Error::HabitatHttpClient)?,
         ))
     }
 
-    pub fn login(&self, token: &str, email: &str, password: &str) -> Result<(String)> {
-        debug!("Logging in for {}", token);
-        let url = format!("auth/authenticate");
+    pub fn login(&self, userid: &str, password: &str) -> Result<(String)> {
+        debug!("Logging in for {}", userid);
+        let url = format!("authenticate");
 
         let body = json!({
-            "email": format!("{}", email),
+            "email": format!("{}", userid),
             "password": format!("{}", password)
         });
 
@@ -111,7 +112,6 @@ impl Client {
             .header(ContentType::json())
             .send()
             .map_err(Error::HyperError)?;
-
 
         if res.status != StatusCode::Ok {
             debug!("Failed to promote group, status: {:?}", res.status);
@@ -204,7 +204,7 @@ fn err_from_response(mut response: hyper::client::Response) -> Error {
     if response.status == StatusCode::Unauthorized {
         return Error::APIError(
             response.status,
-            "Your GitHub token requires both user:email and read:org permissions.".to_string(),
+            "Your token mismatch and requires permissions.".to_string(),
         );
     }
 
