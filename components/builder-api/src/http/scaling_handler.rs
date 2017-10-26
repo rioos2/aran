@@ -20,6 +20,10 @@ use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
 use common::ui;
+use rio_net::util::errors::AranResult;
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
+
 
 
 define_event_log!();
@@ -89,23 +93,17 @@ struct HsStatusReq {
     status: StatusReq,
 }
 
-pub fn hs_create(req: &mut Request) -> IronResult<Response> {
+pub fn hs_create(req: &mut Request) -> AranResult<Response> {
     let mut hs_create = HorizontalScaling::new();
 
     {
         match req.get::<bodyparser::Struct<HsCreateReq>>() {
             Ok(Some(body)) => {
                 if body.name.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `name`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "name")));
                 }
                 if body.origin.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `origin`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
                 hs_create.set_name(body.name);
                 hs_create.set_description(body.description);
@@ -177,38 +175,35 @@ pub fn hs_create(req: &mut Request) -> IronResult<Response> {
                 hs_create.set_status(status);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
     let conn = Broker::connect().unwrap();
 
     match ScalingDS::hs_create(&conn, &hs_create) {
         Ok(response) => Ok(render_json(status::Ok, &response)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
 
     }
 }
 
 #[allow(unused_variables)]
-pub fn hs_list(req: &mut Request) -> IronResult<Response> {
+pub fn hs_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ScalingDS::hs_list(&conn) {
         Ok(hs_list) => Ok(render_json(status::Ok, &hs_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
 
 
-pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> IronResult<Response> {
+pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> AranResult<Response> {
     let org_name = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("origin").unwrap().to_owned();
@@ -233,15 +228,15 @@ pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> IronResult<Respon
                 &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
 
 
 
-pub fn hs_metrics(req: &mut Request) -> IronResult<Response> {
+pub fn hs_metrics(req: &mut Request) -> AranResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
     let af_id = {
         let params = req.extensions.get::<Router>().unwrap();
@@ -255,18 +250,18 @@ pub fn hs_metrics(req: &mut Request) -> IronResult<Response> {
     };
     match ScalingDS::hs_metrics(&promcli, &af_id, &source) {
         Ok(hs_metrics) => Ok(render_json(status::Ok, &hs_metrics)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
 
-pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
+pub fn hs_status_update(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
     let mut hs_update = HorizontalScaling::new();
@@ -281,12 +276,9 @@ pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
                 hs_update.set_status(status);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -294,19 +286,19 @@ pub fn hs_status_update(req: &mut Request) -> IronResult<Response> {
 
     match ScalingDS::hs_status_update(&conn, &hs_update) {
         Ok(hs_update) => Ok(render_json(status::Ok, &hs_update)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
 
     }
 }
 
-pub fn hs_update(req: &mut Request) -> IronResult<Response> {
+pub fn hs_update(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
     let mut hs_update = HorizontalScaling::new();
@@ -314,10 +306,7 @@ pub fn hs_update(req: &mut Request) -> IronResult<Response> {
         match req.get::<bodyparser::Struct<HsCreateReq>>() {
             Ok(Some(body)) => {
                 if body.name.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `name`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "name")));
                 }
 
                 hs_update.set_id(id.to_string());
@@ -384,12 +373,9 @@ pub fn hs_update(req: &mut Request) -> IronResult<Response> {
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -397,9 +383,9 @@ pub fn hs_update(req: &mut Request) -> IronResult<Response> {
 
     match ScalingDS::hs_update(&conn, &hs_update) {
         Ok(hs) => Ok(render_json(status::Ok, &hs)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
 
     }
 }

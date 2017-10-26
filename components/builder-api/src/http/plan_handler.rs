@@ -12,6 +12,7 @@ use plan::plan_ds::PlanDS;
 use db::data_store::Broker;
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body};
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::plansrv::{Plan, Service};
 use common::ui;
@@ -35,7 +36,7 @@ struct ServiceReq {
     characteristics: BTreeMap<String, String>,
 }
 
-pub fn plan_factory_create(req: &mut Request) -> IronResult<Response> {
+pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
     let mut plan_create = Plan::new();
     {
         match req.get::<bodyparser::Struct<PlanCreateReq>>() {
@@ -61,12 +62,9 @@ pub fn plan_factory_create(req: &mut Request) -> IronResult<Response> {
                 plan_create.set_services(service_collection);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -74,9 +72,8 @@ pub fn plan_factory_create(req: &mut Request) -> IronResult<Response> {
 
     match PlanDS::plan_create(&conn, &plan_create) {
         Ok(plan) => Ok(render_json(status::Ok, &plan)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
-
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }

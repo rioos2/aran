@@ -13,6 +13,7 @@ use node::node_ds::NodeDS;
 use db::data_store::Broker;
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body};
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
 use protocol::asmsrv::Condition;
@@ -80,7 +81,7 @@ struct BridgeReq {
     bridge_type: String,
 }
 
-pub fn node_create(req: &mut Request) -> IronResult<Response> {
+pub fn node_create(req: &mut Request) -> AranResult<Response> {
     let mut node_create = Node::new();
     {
         match req.get::<bodyparser::Struct<NodeCreateReq>>() {
@@ -153,12 +154,9 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
                 node_create.set_status(status);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -172,32 +170,32 @@ pub fn node_create(req: &mut Request) -> IronResult<Response> {
 
     match NodeDS::node_create(&conn, &node_create) {
         Ok(node) => Ok(render_json(status::Ok, &node)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
 
     }
 }
 
 #[allow(unused_variables)]
-pub fn node_list(req: &mut Request) -> IronResult<Response> {
+pub fn node_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match NodeDS::node_list(&conn) {
         Ok(node_list) => Ok(render_json(status::Ok, &node_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
 
 
-pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
+pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
     let mut node_create = Node::new();
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
     node_create.set_id(id.to_string());
@@ -253,7 +251,10 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
                 status.set_node_info(node_info);
                 node_create.set_status(status);
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            Err(err) => {
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+            }
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -267,9 +268,9 @@ pub fn node_status_update(req: &mut Request) -> IronResult<Response> {
 
     match NodeDS::node_status_update(&conn, &node_create) {
         Ok(node) => Ok(render_json(status::Ok, &node)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
 

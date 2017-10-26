@@ -18,6 +18,9 @@ use std::collections::BTreeMap;
 
 use db::data_store::Broker;
 use http::deployment_handler;
+use rio_net::util::errors::AranResult;
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 
 define_event_log!();
@@ -35,7 +38,7 @@ struct NetworkCreateReq {
 }
 
 
-pub fn network_create(req: &mut Request) -> IronResult<Response> {
+pub fn network_create(req: &mut Request) -> AranResult<Response> {
     let mut net_create = Network::new();
     {
         match req.get::<bodyparser::Struct<NetworkCreateReq>>() {
@@ -69,12 +72,9 @@ pub fn network_create(req: &mut Request) -> IronResult<Response> {
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -82,20 +82,20 @@ pub fn network_create(req: &mut Request) -> IronResult<Response> {
 
     match NetworkDS::network_create(&conn, &net_create) {
         Ok(network) => Ok(render_json(status::Ok, &network)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
 
     }
 }
 
 #[allow(unused_variables)]
-pub fn network_list(req: &mut Request) -> IronResult<Response> {
+pub fn network_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match NetworkDS::network_list(&conn) {
         Ok(network_list) => Ok(render_json(status::Ok, &network_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }

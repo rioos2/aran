@@ -93,13 +93,13 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         account_get_by_name: get "/accounts/name/:name" => account_get,
 
         //deploy API: assembly_factory
-        assembly_factorys: post "/assemblyfactorys" => XHandler::new(assembly_factory_create).before(basic.clone()),
-        assemblys_factory_show: get "/assemblyfactorys/:id" => XHandler::new(assembly_factory_show).before(basic.clone()),
-        assemblys_factorys_list: get "/assemblyfactorys" => XHandler::new(assembly_factory_list).before(basic.clone()),
-        assembly_factory_status: put "/assemblyfactorys/:id/status" => XHandler::new(assembly_factory_status_update).before(basic.clone()),
-        assemblyfactorys_list_by_origin : get "/origins/:origin/assemblyfactorys" => XHandler::new(assemblyfactorys_list_by_origin).before(basic.clone()),
-        assemblyfactorys_describe: get "/assemblyfactorys/:id/describe" => XHandler::new(assembly_factorys_describe).before(basic.clone()),
-        plan_list: get "/plans" => XHandler::new(plan_list).before(basic.clone()),
+        assembly_factorys: post "/assemblyfactorys" => XHandler::new(C(assembly_factory_create)).before(basic.clone()),
+        assemblys_factory_show: get "/assemblyfactorys/:id" => XHandler::new(C(assembly_factory_show)).before(basic.clone()),
+        assemblys_factorys_list: get "/assemblyfactorys" => XHandler::new(C(assembly_factory_list)).before(basic.clone()),
+        assembly_factory_status: put "/assemblyfactorys/:id/status" => XHandler::new(C(assembly_factory_status_update)).before(basic.clone()),
+        assemblyfactorys_list_by_origin : get "/origins/:origin/assemblyfactorys" => XHandler::new(C(assemblyfactorys_list_by_origin)).before(basic.clone()),
+        assemblyfactorys_describe: get "/assemblyfactorys/:id/describe" => XHandler::new(C(assembly_factorys_describe)).before(basic.clone()),
+        plan_list: get "/plans" => XHandler::new(C(plan_list)).before(basic.clone()),
 
         //deploy API: assembly
 
@@ -108,16 +108,16 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         assembly_show: get "/assemblys/:id" => XHandler::new(C(assembly_show)).before(basic.clone()),
         assembly_status: put "/assemblys/:id/status" => XHandler::new(C(assembly_status_update)).before(basic.clone()),
         assembly_update: put "/assemblys/:id" => XHandler::new(C(assembly_update)).before(basic.clone()),
-        assemblys_show_by_origin : get "/origins/:origin/assemblys" => XHandler::new(assemblys_show_by_origin).before(basic.clone()),
+        assemblys_show_by_origin : get "/origins/:origin/assemblys" => XHandler::new(C(assemblys_show_by_origin)).before(basic.clone()),
 
 
         //scaling API: horizontal scaling
-        horizontal_scaling: post "/horizontalscaling" => XHandler::new(hs_create).before(basic.clone()),
-        horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(hs_list).before(basic.clone()),
-        horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(hs_status_update).before(basic.clone()),
-        horizontal_scaling_update: put "/horizontalscaling/:id" => XHandler::new(hs_update).before(basic.clone()),
-        horizontal_scaling_metrics: get "/horizontalscaling/:id/metrics" => XHandler::new(hs_metrics).before(basic.clone()),
-        horizontal_scaling_list_by_origin : get "/origins/:origin/horizontalscaling" => XHandler::new(horizontal_scaling_list_by_origin).before(basic.clone()),
+        horizontal_scaling: post "/horizontalscaling" => XHandler::new(C(hs_create)).before(basic.clone()),
+        horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(C(hs_list)).before(basic.clone()),
+        horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(C(hs_status_update)).before(basic.clone()),
+        horizontal_scaling_update: put "/horizontalscaling/:id" => XHandler::new(C(hs_update)).before(basic.clone()),
+        horizontal_scaling_metrics: get "/horizontalscaling/:id/metrics" => XHandler::new(C(hs_metrics)).before(basic.clone()),
+        horizontal_scaling_list_by_origin : get "/origins/:origin/horizontalscaling" => XHandler::new(C(horizontal_scaling_list_by_origin)).before(basic.clone()),
 
 
         //authorization API: for roles
@@ -133,66 +133,66 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         get_specfic_permission_based_role: get "/permissions/:id/roles/:rid" => XHandler::new(get_specfic_permission_based_role).before(basic.clone()),
 
         //node API
-        nodes: post "/nodes" => XHandler::new(node_create).before(basic.clone()),
-        nodes_list: get "/nodes" => XHandler::new(node_list).before(basic.clone()),
-        node_status: put "/nodes/:id/status" => XHandler::new(node_status_update).before(basic.clone()),
+        nodes: post "/nodes" => XHandler::new(C(node_create)).before(basic.clone()),
+        nodes_list: get "/nodes" => XHandler::new(C(node_list)).before(basic.clone()),
+        node_status: put "/nodes/:id/status" => XHandler::new(C(node_status_update)).before(basic.clone()),
 
         //secret API
         secrets: post "/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),
-        secrets_list: get "/secrets" => XHandler::new(secret_list),
+        secrets_list: get "/secrets" => XHandler::new(C(secret_list)),
         secret_show: get "/secrets/:id" => XHandler::new(C(secret_show)).before(basic.clone()),
-        secret_show_by_origin: get "/origins/:origin/secrets" => XHandler::new(secret_show_by_origin),
+        secret_show_by_origin: get "/origins/:origin/secrets" => XHandler::new(C(secret_show_by_origin)),
 
         //serviceAccount API
-        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(service_account_create),
-        service_account_list: get "/serviceaccounts" => service_account_list,
-        service_account_get: get "/origins/:origin/serviceaccounts/:serviceaccount" => service_account_show,
+        service_accounts: post "/origins/:origin/serviceaccounts/:serviceaccount" => XHandler::new(C(service_account_create)),
+        service_account_list: get "/serviceaccounts" => C(service_account_list),
+        service_account_get: get "/origins/:origin/serviceaccounts/:serviceaccount" => C(service_account_show),
 
         //Origin API
-        origins: post "/origins" => origin_create,
-        origin_list: get "/origins" =>origin_list,
-        origin_show: get "/origins/:origin" => origin_show,
+        origins: post "/origins" => C(origin_create),
+        origin_list: get "/origins" =>C(origin_list),
+        origin_show: get "/origins/:origin" => C(origin_show),
 
         //Network API
-        networks: post "/networks" => XHandler::new(network_create).before(basic.clone()),
-        network_list: get "/networks" => XHandler::new(network_list).before(basic.clone()),
+        networks: post "/networks" => XHandler::new(C(network_create)).before(basic.clone()),
+        network_list: get "/networks" => XHandler::new(C(network_list)).before(basic.clone()),
 
         //StorageConnectors API
-        storages: post "/storageconnectors" => XHandler::new(storage_create).before(basic.clone()),
-        storages_list: get "/storageconnectors" => XHandler::new(storage_list).before(basic.clone()),
-        storages_show: get "/storageconnectors/:id" => XHandler::new(storage_show).before(basic.clone()),
-        storage_status: put "storageconnectors/:id/status" => XHandler::new(storage_status_update).before(basic.clone()),
-        storage_update: put "storageconnectors/:id" => XHandler::new(storage_update).before(basic.clone()),
+        storages: post "/storageconnectors" => XHandler::new(C(storage_create)).before(basic.clone()),
+        storages_list: get "/storageconnectors" => XHandler::new(C(storage_list)).before(basic.clone()),
+        storages_show: get "/storageconnectors/:id" => XHandler::new(C(storage_show)).before(basic.clone()),
+        storage_status: put "storageconnectors/:id/status" => XHandler::new(C(storage_status_update)).before(basic.clone()),
+        storage_update: put "storageconnectors/:id" => XHandler::new(C(storage_update)).before(basic.clone()),
 
         //StoragePool API
-        storages_pool: post "/storagespool" => XHandler::new(storage_pool_create).before(basic.clone()),
-        storages_pool_list: get "/storagespool/:id" => XHandler::new(storage_pool_list).before(basic.clone()),
-        storages_pool_list_all: get "/storagespool" => XHandler::new(storage_pool_list_all).before(basic.clone()),
-        storages_pool_status_update: put "/storagespool/:id/status" => XHandler::new(storage_pool_status_update).before(basic.clone()),
+        storages_pool: post "/storagespool" => XHandler::new(C(storage_pool_create)).before(basic.clone()),
+        storages_pool_list: get "/storagespool/:id" => XHandler::new(C(storage_pool_list)).before(basic.clone()),
+        storages_pool_list_all: get "/storagespool" => XHandler::new(C(storage_pool_list_all)).before(basic.clone()),
+        storages_pool_status_update: put "/storagespool/:id/status" => XHandler::new(C(storage_pool_status_update)).before(basic.clone()),
 
 
         //DataCenter API
-        data_center: post "/datacenters" => XHandler::new(data_center_create).before(basic.clone()),
-        data_center_list: get "/datacenters" => XHandler::new(data_center_list).before(basic.clone()),
-        data_center_show: get "/datacenters/:id" => XHandler::new(data_center_show).before(basic.clone()),
+        data_center: post "/datacenters" => XHandler::new(C(data_center_create)).before(basic.clone()),
+        data_center_list: get "/datacenters" => XHandler::new(C(data_center_list)).before(basic.clone()),
+        data_center_show: get "/datacenters/:id" => XHandler::new(C(data_center_show)).before(basic.clone()),
 
         //endpoint API
 
-        endpoints: post "/endpoints" =>  XHandler::new(endpoints_create).before(basic.clone()),
-        endpoints_list: get "/endpoints" =>  XHandler::new(endpoints_list).before(basic.clone()),
-        endpoints_show: get "/endpoints/:id" => XHandler::new(endpoints_show).before(basic.clone()),
-        endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(endpoints_list_by_origin).before(basic.clone()),
-        endpoints_list_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(endpoints_list_by_assembly).before(basic.clone()),
+        endpoints: post "/endpoints" =>  XHandler::new(C(endpoints_create)).before(basic.clone()),
+        endpoints_list: get "/endpoints" =>  XHandler::new(C(endpoints_list)).before(basic.clone()),
+        endpoints_show: get "/endpoints/:id" => XHandler::new(C(endpoints_show)).before(basic.clone()),
+        endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(C(endpoints_list_by_origin)).before(basic.clone()),
+        endpoints_list_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(C(endpoints_list_by_assembly)).before(basic.clone()),
 
         //services API
 
-        services: post "/services" => XHandler::new(services_create).before(basic.clone()),
-        services_show: get "/services/:id" =>XHandler::new(services_show).before(basic.clone()),
-        services_list: get "/services" => XHandler::new(services_list).before(basic.clone()),
-        services_list_by_assembly: get "/assemblys/:id/services" => XHandler::new(services_list_by_assembly).before(basic.clone()),
-        services_list_by_origin: get "/origins/:origin/services" => XHandler::new(services_list_by_origin).before(basic.clone()),
+        services: post "/services" => XHandler::new(C(services_create)).before(basic.clone()),
+        services_show: get "/services/:id" =>XHandler::new(C(services_show)).before(basic.clone()),
+        services_list: get "/services" => XHandler::new(C(services_list)).before(basic.clone()),
+        services_list_by_assembly: get "/assemblys/:id/services" => XHandler::new(C(services_list_by_assembly)).before(basic.clone()),
+        services_list_by_origin: get "/origins/:origin/services" => XHandler::new(C(services_list_by_origin)).before(basic.clone()),
 
-        plan_factory: post "/planfactory" =>XHandler::new(plan_factory_create).before(basic.clone()),
+        plan_factory: post "/planfactory" =>XHandler::new(C(plan_factory_create)).before(basic.clone()),
 
         //Internal: Streaming watch
         watches: get "/:name/watch/list" => watch_show,

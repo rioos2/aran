@@ -345,7 +345,7 @@ impl DeploymentDS {
         ).map_err(Error::EndPointsGet)?;
         if rows.len() > 0 {
             for row in rows {
-                let mut  end = row_to_endpoints(&row)?;
+                let end = row_to_endpoints(&row)?;
                 return Ok(Some(end));
             }
         }
