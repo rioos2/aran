@@ -30,7 +30,7 @@ pub type Result<T> = result::Result<T, Error>;
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
-            Error::Auth(ref e) => format!("GitHub Authentication error, {}", e),
+            Error::Auth(ref e) => format!("Rioos Authentication error, {}", e),
             Error::PrometheusAPI(ref c, ref m) => format!("[{}] {:?}", c, m),
             Error::HTTP(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),

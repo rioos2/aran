@@ -168,7 +168,7 @@ impl Authenticated {
         self
     }
 
-    fn authenticate(&self, datastore: &DataStoreConn, email: &str, token: &str) -> IronResult<Session> {
+    fn authenticate(&self, datastore: &DataStoreConn, email: &str, token: &str) -> AranResult<Session> {
         let tk_target = TokenTarget::new(email.to_string(), token.to_string());
         let request: SessionGet = tk_target.into();
 
@@ -181,29 +181,20 @@ impl Authenticated {
 
                 let session = try!(session_create(datastore, &session_tk));
                 let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
-                let err = net::err(
-                    ErrCode::ACCESS_DENIED,
-                    "Feature flags in session are not active",
-                );
                 if !flags.contains(self.features) {
-                    return Err(render_json_error(&err, Status::Forbidden, &err));
+                    return Err(unauthorized_error(
+                        &format!("{}", "Feature flags in session are not active"),
+                    ));
                 }
 
                 return Ok(session);
             }
-            Err(err) => {
-                let nerr = net::err(
-                    ErrCode::DATA_STORE,
-                    format!(
-                        "{}: Couldn't find {} {} in session.",
-                        email,
-                        token,
-                        err.to_string()
-                    ),
-                );
-                return Err(render_json_error(&nerr, Status::Unauthorized, &nerr));
-            }
-
+            Err(err) => Err(not_found_error(&format!(
+                "{}: Couldn't find {} {} in session.",
+                email,
+                token,
+                err.to_string()
+            ))),
         }
     }
 
@@ -398,19 +389,14 @@ impl AfterMiddleware for Cors {
     }
 }
 
-pub fn session_create(conn: &DataStoreConn, request: &SessionCreate) -> IronResult<Session> {
+pub fn session_create(conn: &DataStoreConn, request: &SessionCreate) -> AranResult<Session> {
     //wrong name, use another fascade method session_create
     match SessionDS::find_account(&conn, &request) {
         Ok(session) => return Ok(session),
-        Err(e) => {
-            let err = net::err(
-                ErrCode::DATA_STORE,
-                format!(
-                    "{}: Couldn not create session for the account.",
-                    e.to_string()
-                ),
-            );
-            return Err(render_json_error(&err, Status::Unauthorized, &err));
-        }
+        Err(e) => Err(not_found_error(&format!(
+            "{}: Couldn not create session for the account.",
+            e.to_string()
+        ))),
+
     }
 }

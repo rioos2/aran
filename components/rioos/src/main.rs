@@ -12,20 +12,17 @@ extern crate rioos_core as rcore;
 extern crate rioos_common as common;
 extern crate handlebars;
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate log;
 extern crate base64;
 
 use std::env;
 use std::ffi::OsString;
 use std::io;
-use std::path::PathBuf;
 use std::thread;
 
 use clap::{ArgMatches, Shell};
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
-use rcore::crypto::{init}; //TO-DO: NOT NEEDED
+use rcore::crypto::init; //TO-DO: NOT NEEDED
 use rcore::env as henv;
 
 use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, ORIGIN_ENVVAR, API_SERVER_ENVVAR};
@@ -65,8 +62,8 @@ fn start(ui: &mut UI) -> Result<()> {
     match app_matches.subcommand() {
         ("cli", Some(matches)) => {
             match matches.subcommand() {
-                ("login", Some(_)) => sub_cli_login(ui)?,
-                ("logout", Some(m)) => sub_cli_logout(ui,m)?,
+                ("login", Some(m)) => sub_cli_login(ui, m)?,
+                ("logout", Some(m)) => sub_cli_logout(ui, m)?,
                 ("completers", Some(m)) => sub_cli_completers(m)?,
                 _ => unreachable!(),
             }
@@ -77,17 +74,17 @@ fn start(ui: &mut UI) -> Result<()> {
                 _ => unreachable!(),
             }
         }
-        ("login", Some(_)) => sub_cli_login(ui)?,
+        ("login", Some(m)) => sub_cli_login(ui, m)?,
         ("logout", Some(m)) => sub_cli_logout(ui, m)?,
         _ => unreachable!(),
     };
     Ok(())
 }
 
-fn sub_cli_login(ui: &mut UI) -> Result<()> {
+fn sub_cli_login(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     init();
 
-    command::cli::login::start(ui)
+    command::cli::login::start(ui, &api_server_param_or_env(&m)?)
 }
 
 fn sub_cli_logout(ui: &mut UI, m: &ArgMatches) -> Result<()> {

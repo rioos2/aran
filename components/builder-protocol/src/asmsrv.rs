@@ -4,6 +4,11 @@ use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
 
+pub const ASSEMBLY: &'static str = "Assembly";
+pub const ASSEMBLYLIST: &'static str = "AssemblyList";
+pub const ASSEMBLYFACTORY: &'static str = "AssemblyFactory";
+pub const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     id: String,

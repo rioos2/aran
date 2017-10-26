@@ -21,6 +21,11 @@ pub fn get() -> App<'static, 'static> {
         .about("Alias for 'auth login'")
         .aliases(&["log", "logi"])
         .setting(AppSettings::Hidden);
+    let alias_login = sub_cli_login()
+        .about("Alias for 'auth login'")
+        .aliases(&["log", "logi"])
+        .setting(AppSettings::Hidden);
+
 
     clap_app!(hab =>
         (about: "\"Rio/OS is the worlds first secure cloud operating sytems\"")
@@ -32,7 +37,8 @@ pub fn get() -> App<'static, 'static> {
             (about: "Commands relating to Rio/OS identity and access")
             (aliases: &["aut"])
             (@setting ArgRequiredElseHelp)
-            (subcommand: sub_cli_setup().aliases(&["l", "lo", "log", "logi"]))
+            (subcommand: sub_cli_login().aliases(&["l", "lo", "log", "logi"]))
+            (subcommand: sub_cli_logout().aliases(&["logout"]))
             (subcommand: sub_cli_completers().aliases(&["c", "co", "com", "comp"]))
         )
         (@subcommand config =>
@@ -333,6 +339,7 @@ pub fn get() -> App<'static, 'static> {
         (subcommand: alias_install)
         (subcommand: alias_run())
         (subcommand: alias_setup)
+        (subcommand: alias_login)
         (subcommand: alias_start())
         (subcommand: alias_stop())
         (subcommand: alias_term())
@@ -341,6 +348,7 @@ pub fn get() -> App<'static, 'static> {
             \n    install    Alias for: 'pkg install'\
             \n    run        Alias for: 'sup run'\
             \n    setup      Alias for: 'cli setup'\
+            \n    login      Alias for: 'cli login'\
             \n    start      Alias for: 'svc start'\
             \n    stop       Alias for: 'svc stop'\
             \n    term       Alias for: 'sup term'\
@@ -382,6 +390,18 @@ fn alias_term() -> App<'static, 'static> {
 fn sub_cli_setup() -> App<'static, 'static> {
     clap_app!(@subcommand setup =>
         (about: "Sets up the CLI with reasonable defaults.")
+    )
+}
+
+fn sub_cli_login() -> App<'static, 'static> {
+    clap_app!(@subcommand login =>
+        (about: "Login user to rioos.")
+    )
+}
+
+fn sub_cli_logout() -> App<'static, 'static> {
+    clap_app!(@subcommand logout =>
+        (about: "Logout user from rioos.")
     )
 }
 

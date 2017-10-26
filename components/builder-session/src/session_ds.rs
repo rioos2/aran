@@ -107,9 +107,7 @@ impl SessionDS {
        */
             Ok(session)
         } else {
-            return Err(Error::Db(
-                db::error::Error::RecordsNotFound("No Record".to_string()),
-            ));
+            return Err(Error::Db(db::error::Error::RecordsNotFound));
         }
     }
 
@@ -123,7 +121,7 @@ impl SessionDS {
             let row = rows.get(0);
             Ok(Some(row_to_account(row)))
         } else {
-            Ok(None)
+            Err(Error::Db(db::error::Error::RecordsNotFound))
         }
     }
 
@@ -288,11 +286,7 @@ impl SessionDS {
         match Self::get_ldap_config(datastore, get_id) {
             Ok(Some(ldap_config)) => return test_ldap(ldap_config),
             Err(err) => Err(err),
-            _ => {
-                return Err(Error::Db(
-                    db::error::Error::RecordsNotFound("No Record".to_string()),
-                ))
-            }
+            _ => return Err(Error::Db(db::error::Error::RecordsNotFound)),
         }
     }
 
@@ -342,11 +336,7 @@ impl SessionDS {
                 Ok(success)
             }
             Err(e) => Err(e),
-            _ => {
-                return Err(Error::Db(db::error::Error::RecordsNotFound(
-                    "Import not processed.".to_string(),
-                )))
-            }
+            _ => return Err(Error::Db(db::error::Error::RecordsNotFound)),
         }
     }
 
