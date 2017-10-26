@@ -80,7 +80,6 @@ fn start(ui: &mut UI) -> Result<()> {
         ("login", Some(_)) => sub_cli_login(ui)?,
         ("logout", Some(m)) => sub_cli_logout(ui, m)?,
         _ => unreachable!(),
-        // _ => sub_cli_login(ui)?,
     };
     Ok(())
 }

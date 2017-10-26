@@ -16,7 +16,9 @@ use protocol::net::{self, ErrCode};
 use protocol::sessionsrv::*;
 use protocol::asmsrv::IdGet;
 use db::data_store::Broker;
-
+use rio_net::util::errors::AranResult;
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error, unauthorized_error};
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 define_event_log!();
 
@@ -99,7 +101,7 @@ struct OidcProviderReq {
 
 //Default password authentication.
 //The body contains email, password, authenticate and if all is well return a token.
-pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
+pub fn default_authenticate(req: &mut Request) -> AranResult<Response> {
     let mut account_get: AccountGet = AccountGet::new();
 
     let mut session_data = SessionCreate::new();
@@ -108,29 +110,22 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
         match req.get::<bodyparser::Struct<SessionLoginReq>>() {
             Ok(Some(body)) => {
                 if body.email.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `email`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "email")));
                 }
 
                 if body.password.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `password`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "password")));
                 }
                 account_get.set_email(body.email);
                 account_get.set_password(body.password);
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -151,25 +146,18 @@ pub fn default_authenticate(req: &mut Request) -> IronResult<Response> {
 
             Ok(render_json(status::Ok, &session))
         }
-        Err(e) => {
-            error!("unhandled password authentication, err={:?}", e);
-            let err = net::err(ErrCode::BUG, "rg:auth:0");
-            Ok(render_net_error(&err))
-        }
+        Err(e) => Err(unauthorized_error(&format!("{}", e))),
     }
 }
 
-pub fn account_create(req: &mut Request) -> IronResult<Response> {
+pub fn account_create(req: &mut Request) -> AranResult<Response> {
     let mut account_create = SessionCreate::new();
     {
 
         match req.get::<bodyparser::Struct<SessionCreateReq>>() {
             Ok(Some(body)) => {
                 if body.email.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `email`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "email")));
                 }
 
                 if body.api_key.len() <= 0 {
@@ -197,12 +185,11 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
                 account_create.set_registration_ip_address(body.registration_ip_address);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -210,9 +197,7 @@ pub fn account_create(req: &mut Request) -> IronResult<Response> {
 
     match SessionDS::account_create(&conn, &account_create) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => Err(internal_error(&format!("{}", err))),
 
     }
 }
