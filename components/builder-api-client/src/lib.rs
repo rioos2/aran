@@ -151,7 +151,7 @@ impl Client {
     }
 
 
-    pub fn list_deploy(&self, token: &str, email: &str) -> Result<Vec<String>> {
+    pub fn list_deploy(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
         debug!("Token {}", token);
         debug!("Email {}", email);
         let url = format!("assemblyfactorys");
@@ -170,13 +170,16 @@ impl Client {
 
         match decoded_response::<asmsrv::AssemblyFactoryGetResponse>(res).map_err(Error::HabitatHttpClient) {
             Ok(value) => {
-                let mut data = Vec::new();
-                for val in value.get_items() {
-                    data.push(val.get_id());
-                    data.push(val.get_name());
-                    data.push(val.get_created_at());
-                }
-                Ok(data)
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(), i.get_name(), i.get_replicas().to_string(),
+                             i.get_properties().clone().get_region(), i.get_origin(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
             }
             Err(e) => {
                 debug!("Failed to decode response, err: {:?}", e);

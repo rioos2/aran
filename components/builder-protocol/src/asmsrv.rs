@@ -567,6 +567,10 @@ impl Properties {
     pub fn set_storage_type(&mut self, v: ::std::string::String) {
         self.storage_type = v;
     }
+
+    pub fn get_region(&mut self) -> String {
+        self.region.clone().to_string()
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]

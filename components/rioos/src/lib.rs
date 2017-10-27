@@ -31,6 +31,7 @@ extern crate walkdir;
 extern crate base64;
 #[macro_use]
 extern crate prettytable;
+
 #[cfg(test)]
 extern crate tempdir;
 #[macro_use]
