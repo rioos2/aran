@@ -51,6 +51,7 @@ fn login(ui: &mut UI, url: &str, userid: &str, password: &str) -> Result<String>
     ui.br()?;
 
     let result = rio_client.login(userid, password)?;
+
     Ok(result)
 }
 

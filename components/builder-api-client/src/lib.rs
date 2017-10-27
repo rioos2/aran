@@ -114,7 +114,7 @@ impl Client {
             .map_err(Error::HyperError)?;
 
         if res.status != StatusCode::Ok {
-            debug!("Failed to promote group, status: {:?}", res.status);
+            debug!("Failed to login, status: {:?}", res.status);
             return Err(err_from_response(res));
         };
 
