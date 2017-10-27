@@ -27,8 +27,8 @@ serde = "*"
 serde_derive = "*"
 toml = { version = "*", default-features = false }
 url = "*"
+prettytable-rs = "*"
 walkdir = "*"
-prettytable-rs = "^0.6"
 
 [dependencies.clap]
 version = "*"
