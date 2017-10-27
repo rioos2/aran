@@ -2,7 +2,7 @@ use ansi_term::Colour;
 use bodyparser;
 use rio_net::http::controller::*;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError,not_found_error};
 
 use service::service_account_ds::ServiceAccountDS;
 use iron::prelude::*;
@@ -15,6 +15,8 @@ use protocol::asmsrv::{TypeMeta, IdGet, Status, Condition};
 use std::collections::BTreeMap;
 use http::deployment_handler;
 use common::ui;
+use db;
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SecretCreateReq {
@@ -92,7 +94,8 @@ struct SpecReq {
     selector: BTreeMap<String, String>,
     service_type: String,
     loadbalancer_ip: String,
-    external_name: String,
+    names: BTreeMap<String, String>,
+    external_names: BTreeMap<String, String>,
 }
 
 
@@ -102,8 +105,9 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
         match req.get::<bodyparser::Struct<SecretCreateReq>>() {
             Ok(Some(body)) => {
                 if body.object_meta.origin.len() <= 0 {
-                    return Err(bad_request("Missing value for field: `origin`"));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
+
                 secret_create.set_data(body.data);
 
                 let mut object_meta = ObjectMetaData::new();
@@ -124,9 +128,11 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
                 secret_create.set_secret_type(body.secret_type);
             }
             Err(err) => {
-                return Err(malformed_body(&err.detail));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
-            _ => return Err(malformed_body(&"nothing found in body")),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -149,7 +155,7 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Err(bad_request("id must be a number")),
+            Err(_) => return Err(bad_request(IDMUSTNUMBER)),
         }
     };
 
@@ -167,35 +173,33 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::secret_show(&conn, &secret_get) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &secret_get.get_id()
+            )))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 
 #[allow(unused_variables)]
-pub fn secret_list(req: &mut Request) -> IronResult<Response> {
+pub fn secret_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::secret_list(&conn) {
         Ok(Some(service_list)) => Ok(render_json(status::Ok, &service_list)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
     }
 }
 
-pub fn secret_show_by_origin(req: &mut Request) -> IronResult<Response> {
+pub fn secret_show_by_origin(req: &mut Request) -> AranResult<Response> {
     let org_name = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("origin").unwrap().to_owned();
@@ -215,19 +219,18 @@ pub fn secret_show_by_origin(req: &mut Request) -> IronResult<Response> {
     match ServiceAccountDS::secret_show_by_origin(&conn, &secret_get) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
     }
 }
 
 
-pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
+pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
     let (org_name, ser_name) = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("origin").unwrap().to_owned();
@@ -260,13 +263,13 @@ pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
                 type_meta.set_api_version(body.type_meta.api_version);
                 service_create.set_type_meta(type_meta);
             }
+
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -280,26 +283,31 @@ pub fn service_account_create(req: &mut Request) -> IronResult<Response> {
 
     match ServiceAccountDS::service_account_create(&conn, &service_create) {
         Ok(service) => Ok(render_json(status::Ok, &service)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
 
     }
 }
 
 #[allow(unused_variables)]
-pub fn service_account_list(req: &mut Request) -> IronResult<Response> {
+pub fn service_account_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_list(&conn) {
         Ok(service_list) => Ok(render_json(status::Ok, &service_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
 
-pub fn service_account_show(req: &mut Request) -> IronResult<Response> {
+pub fn service_account_show(req: &mut Request) -> AranResult<Response> {
     let (org_name, ser_name) = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("origin").unwrap().to_owned();
@@ -318,30 +326,29 @@ pub fn service_account_show(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_show(&conn, &serv_get) {
         Ok(origin) => Ok(render_json(status::Ok, &origin)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &serv_get.get_id()
+            )))
+        }
     }
 }
 
-pub fn endpoints_create(req: &mut Request) -> IronResult<Response> {
+pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
     let mut endpoints_create = EndPoints::new();
     {
         match req.get::<bodyparser::Struct<EndPointsReq>>() {
             Ok(Some(body)) => {
                 if body.object_meta.origin.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `origin`",
-                    )));
-
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
                 if body.target_ref.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `target ref`",
-                    )));
-
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "target_ref")));
                 }
 
 
@@ -395,12 +402,9 @@ pub fn endpoints_create(req: &mut Request) -> IronResult<Response> {
                 endpoints_create.set_subsets(subsets);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -414,35 +418,31 @@ pub fn endpoints_create(req: &mut Request) -> IronResult<Response> {
 
     match ServiceAccountDS::endpoints_create(&conn, &endpoints_create) {
         Ok(endpoints) => Ok(render_json(status::Ok, &endpoints)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
-
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
-pub fn endpoints_list(req: &mut Request) -> IronResult<Response> {
+pub fn endpoints_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::endpoints_list(&conn) {
         Ok(Some(endpoints_list)) => Ok(render_json(status::Ok, &endpoints_list)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
     }
 }
 
-pub fn endpoints_show(req: &mut Request) -> IronResult<Response> {
+pub fn endpoints_show(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
 
@@ -460,17 +460,18 @@ pub fn endpoints_show(req: &mut Request) -> IronResult<Response> {
     match ServiceAccountDS::endpoints_show(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &endpoints_get.get_id()
+            )))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
     }
 }
-pub fn endpoints_list_by_origin(req: &mut Request) -> IronResult<Response> {
+pub fn endpoints_list_by_origin(req: &mut Request) -> AranResult<Response> {
     let org_name = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("origin").unwrap().to_owned();
@@ -490,17 +491,16 @@ pub fn endpoints_list_by_origin(req: &mut Request) -> IronResult<Response> {
     match ServiceAccountDS::endpoints_list_by_origin(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
     }
 }
-pub fn endpoints_list_by_assembly(req: &mut Request) -> IronResult<Response> {
+pub fn endpoints_list_by_assembly(req: &mut Request) -> AranResult<Response> {
     let org_name = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("asmid").unwrap().to_owned();
@@ -520,35 +520,26 @@ pub fn endpoints_list_by_assembly(req: &mut Request) -> IronResult<Response> {
     match ServiceAccountDS::endpoints_list_by_assembly(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}", err)))
+        }
     }
 }
-pub fn services_create(req: &mut Request) -> IronResult<Response> {
+pub fn services_create(req: &mut Request) -> AranResult<Response> {
     let mut services_create = Services::new();
     {
         match req.get::<bodyparser::Struct<ServicesReq>>() {
             Ok(Some(body)) => {
                 if body.object_meta.origin.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `origin`",
-                    )));
-
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
                 let asmid = body.spec.selector.get("rioos_assembly_factory_id").to_owned();
                 if asmid.unwrap().len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `assembly id`",
-                    )));
-
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "assembly id")));
                 }
 
                 let mut object_meta = ObjectMetaData::new();
@@ -571,7 +562,8 @@ pub fn services_create(req: &mut Request) -> IronResult<Response> {
                 spec.set_selector(body.spec.selector.to_owned());
                 spec.set_service_type(body.spec.service_type);
                 spec.set_loadbalancer_ip(body.spec.loadbalancer_ip);
-                spec.set_external_name(body.spec.external_name);
+                spec.set_names(body.spec.names);
+                spec.set_external_names(body.spec.external_names);
                 services_create.set_spec(spec);
 
                 let mut status = Status::new();
@@ -596,12 +588,9 @@ pub fn services_create(req: &mut Request) -> IronResult<Response> {
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -615,18 +604,15 @@ pub fn services_create(req: &mut Request) -> IronResult<Response> {
 
     match ServiceAccountDS::services_create(&conn, &services_create) {
         Ok(services) => Ok(render_json(status::Ok, &services)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
-
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
-pub fn services_show(req: &mut Request) -> IronResult<Response> {
+pub fn services_show(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(IDMUSTNUMBER)),
         }
     };
 
@@ -644,34 +630,34 @@ pub fn services_show(req: &mut Request) -> IronResult<Response> {
     match ServiceAccountDS::services_show(&conn, &services_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &services_get.get_id()
+            )))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
 
-pub fn services_list(req: &mut Request) -> IronResult<Response> {
+pub fn services_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::services_list(&conn) {
         Ok(Some(services_list)) => Ok(render_json(status::Ok, &services_list)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
 
-pub fn services_list_by_origin(req: &mut Request) -> IronResult<Response> {
+pub fn services_list_by_origin(req: &mut Request) -> AranResult<Response> {
     let org_name = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("origin").unwrap().to_owned();
@@ -691,17 +677,16 @@ pub fn services_list_by_origin(req: &mut Request) -> IronResult<Response> {
     match ServiceAccountDS::services_list_by_origin(&conn, &services_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
-pub fn services_list_by_assembly(req: &mut Request) -> IronResult<Response> {
+pub fn services_list_by_assembly(req: &mut Request) -> AranResult<Response> {
     let assm_name = {
         let params = req.extensions.get::<Router>().unwrap();
         let assm_name = params.find("id").unwrap().to_owned();
@@ -721,13 +706,12 @@ pub fn services_list_by_assembly(req: &mut Request) -> IronResult<Response> {
     match ServiceAccountDS::services_list_by_assembly(&conn, &services_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
