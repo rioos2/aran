@@ -624,4 +624,8 @@ impl AssemblyFactoryGetResponse {
         self.kind = r;
         self.api_version = s;
     }
+
+    pub fn get_items(&self) -> Vec<AssemblyFactory> {
+        self.items.clone()
+    }
 }

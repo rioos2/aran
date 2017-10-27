@@ -73,7 +73,7 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SEARCH_TERM: +required +takes_value "Search term (ex: riouser.*)")
             )
         )
-        (@subcommand digitialcloud =>
+        (@subcommand digitalcloud =>
             (about: "Commands relating to Rio/OS digital cloud os")
             (aliases: &["d", "di", "digitalcloud"])
             (@setting ArgRequiredElseHelp)
@@ -96,6 +96,11 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["conf", "cfg"])
                 (@arg PKG_IDENT: +required +takes_value
                     "A package identifier (ex: core/redis, core/busybox-static/1.42.2)")
+            )
+            (@subcommand list =>
+                (about: "Displays the default configuration options for a service")
+                (aliases: &["l", "li","lis","list"])
+                (subcommand: sub_digitalcloud_list().aliases(&["l", "li", "lis", "list"]))
             )
             (@subcommand edit =>
                 (about: "Executes a command using the 'PATH' context of an installed package")
@@ -490,6 +495,12 @@ fn sub_cli_init() -> App<'static, 'static> {
 fn sub_auth_login() -> App<'static, 'static> {
     clap_app!(@subcommand login =>
         (about: "Login user to rioos.")
+    )
+}
+
+fn sub_digitalcloud_list() -> App<'static, 'static> {
+    clap_app!(@subcommand list =>
+        (about: "List deployments.")
     )
 }
 

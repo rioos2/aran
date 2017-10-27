@@ -26,3 +26,6 @@ path = "../core"
 
 [dependencies.rioos_http_client]
 path = "../http-client"
+
+[dependencies.rioos_net]
+path = "../net"

@@ -25,7 +25,7 @@ use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 use rcore::crypto::init; //TO-DO: NOT NEEDED
 use rcore::env as henv;
 
-use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, ORIGIN_ENVVAR, API_SERVER_ENVVAR};
+use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, ORIGIN_ENVVAR, API_SERVER_ENVVAR};
 use rioos::error::{Error, Result};
 
 
@@ -58,7 +58,6 @@ fn start(ui: &mut UI) -> Result<()> {
         })
         .unwrap();
     let app_matches = child.join().unwrap();
-
     match app_matches.subcommand() {
         ("auth", Some(matches)) => {
             match matches.subcommand() {
@@ -71,6 +70,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("digitalcloud", Some(matches)) => {
             match matches.subcommand() {
                 ("deploy", Some(m)) => sub_digicloud_deploy(ui, m)?,
+                ("list", Some(m)) => sub_digicloud_list(ui, m)?,
                 _ => unreachable!(),
             }
         }
@@ -112,6 +112,17 @@ fn sub_digicloud_deploy(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         auth_token_param_or_env(&m)?,
         //api_server_param_or_env(&m)?,
         config_file,
+    )
+}
+
+
+fn sub_digicloud_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
+    command::digicloud::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
     )
 }
 
@@ -174,6 +185,26 @@ fn auth_token_param_or_env(m: &ArgMatches) -> Result<String> {
                     match config.auth_token {
                         Some(v) => Ok(v),
                         None => return Err(Error::ArgumentError("No auth token specified")),
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+fn auth_email_param_or_env(m: &ArgMatches) -> Result<String> {
+    match m.value_of("EMAIL_TOKEN") {
+        Some(o) => Ok(o.to_string()),
+        None => {
+            match henv::var(AUTH_EMAIL_ENVVAR) {
+                Ok(v) => Ok(v),
+                Err(_) => {
+                    let config = config::load()?;
+                    match config.email {
+                        Some(v) => Ok(v),
+                        None => return Err(Error::ArgumentError("No auth email specified")),
                     }
                 }
             }
