@@ -348,7 +348,6 @@ pub fn get() -> App<'static, 'static> {
             (about: "Commands relating to Rio/OS image management")
             (aliases: &["i", "im", "ima", "imag", "image"])
             (@setting ArgRequiredElseHelp)
-
         )
         (@subcommand nodes =>
             (about: "Commands relating to Rio/OS infrastructure")
@@ -388,20 +387,10 @@ pub fn get() -> App<'static, 'static> {
         )
         (@subcommand storages =>
             (about: "Commands relating to Rio/OS Storage")
-            (aliases: &["i", "im", "ima", "imag", "image"])
+            (aliases: &["s", "st", "sto", "stor", "storages"])
             (@setting ArgRequiredElseHelp)
-            (@subcommand list =>
-                (about: "Display all the nodes registered in Rio/OS.")
-                (aliases: &["i", "in", "ini"])
-                (@arg APP_NAME: +takes_value "Name for the new app")
-                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
-                (@arg WITH_ALL: --("with-all")
-                    "Generate app blu with all available app options")
-                (@arg SCAFFOLDING: --scaffolding -s +takes_value
-                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
-            )
             (@subcommand create =>
-                (about: "Display all the nodes registered in Rio/OS.")
+                (about: "Create new Storage in Rio/OS.")
                 (aliases: &["i", "in", "ini"])
                 (@arg APP_NAME: +takes_value "Name for the new app")
                 (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
@@ -410,24 +399,23 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SCAFFOLDING: --scaffolding -s +takes_value
                     "Specify explicit Scaffolding for your app (ex: node, ruby)")
             )
-
+            (@subcommand list =>
+                (about: "Display all the storages registered in Rio/OS.")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
         )
         (@subcommand datacenters =>
             (about: "Commands relating to Rio/OS Datacenters")
             (aliases: &["i", "im", "ima", "imag", "image"])
             (@setting ArgRequiredElseHelp)
-            (@subcommand list =>
-                (about: "Display all the nodes registered in Rio/OS.")
-                (aliases: &["i", "in", "ini"])
-                (@arg APP_NAME: +takes_value "Name for the new app")
-                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
-                (@arg WITH_ALL: --("with-all")
-                    "Generate app blu with all available app options")
-                (@arg SCAFFOLDING: --scaffolding -s +takes_value
-                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
-            )
             (@subcommand create =>
-                (about: "Display all the nodes registered in Rio/OS.")
+                (about: "Create new Datacenter in Rio/OS.")
                 (aliases: &["i", "in", "ini"])
                 (@arg APP_NAME: +takes_value "Name for the new app")
                 (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
@@ -436,12 +424,22 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SCAFFOLDING: --scaffolding -s +takes_value
                     "Specify explicit Scaffolding for your app (ex: node, ruby)")
             )
-
+            (@subcommand list =>
+                (about: "Display all the Datacenters registered in Rio/OS.")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
         )
         (subcommand: alias_login)
         (subcommand: alias_logout)
         (subcommand: alias_init)
         (subcommand: alias_deploy)
+        (subcommand: alias_deployapp)
         (after_help: "\nALIASES:\
             \n    login      Alias for: 'auth login'\
             \n    logout     Alias for: 'auth logout'\
@@ -502,20 +500,20 @@ fn sub_auth_logout() -> App<'static, 'static> {
 }
 
 fn sub_auth_listproviders() -> App<'static, 'static> {
-    clap_app!(@subcommand logout =>
+    clap_app!(@subcommand list =>
         (about: "Logout user from rioos.")
     )
 }
 
 fn sub_digicloud_deploy() -> App<'static, 'static> {
-    clap_app!(@subcommand logout =>
+    clap_app!(@subcommand deploy =>
         (about: "Logout user from rioos.")
     )
 }
 
 
 fn sub_app_deploy() -> App<'static, 'static> {
-    clap_app!(@subcommand logout =>
+    clap_app!(@subcommand deploy =>
         (about: "Logout user from rioos.")
     )
 }
