@@ -16,8 +16,7 @@ pub fn start(ui: &mut UI, api: &str) -> Result<()> {
     )?;
 
     ui.br()?;
-    //api call
-    //logout(ui, api)
+    //just blank out the auth token
     write_cli_config_auth_token("")?;
 
     ui.heading("Logged out.")?;
@@ -30,12 +29,4 @@ fn write_cli_config_auth_token(auth_token: &str) -> Result<()> {
     let mut config = config::load()?;
     config.auth_token = Some(auth_token.to_string());
     config::save(&config)
-}
-
-
-fn logout(ui: &mut UI, api: &str) -> Result<()> {
-    //let result = command::origin::key::generate::start(ui, &origin, cache_path);
-    //ui.br()?;
-    //result
-    Ok(())
 }
