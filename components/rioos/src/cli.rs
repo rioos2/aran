@@ -387,7 +387,7 @@ pub fn get() -> App<'static, 'static> {
             )
         )
         (@subcommand storages =>
-            (about: "Commands relating to Rio/OS image management")
+            (about: "Commands relating to Rio/OS Storage")
             (aliases: &["i", "im", "ima", "imag", "image"])
             (@setting ArgRequiredElseHelp)
             (@subcommand list =>
@@ -413,7 +413,7 @@ pub fn get() -> App<'static, 'static> {
 
         )
         (@subcommand datacenters =>
-            (about: "Commands relating to Rio/OS image management")
+            (about: "Commands relating to Rio/OS Datacenters")
             (aliases: &["i", "im", "ima", "imag", "image"])
             (@setting ArgRequiredElseHelp)
             (@subcommand list =>

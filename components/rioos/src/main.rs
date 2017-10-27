@@ -60,7 +60,7 @@ fn start(ui: &mut UI) -> Result<()> {
     let app_matches = child.join().unwrap();
 
     match app_matches.subcommand() {
-        ("cli", Some(matches)) => {
+        ("auth", Some(matches)) => {
             match matches.subcommand() {
                 ("login", Some(m)) => sub_cli_login(ui, m)?,
                 ("logout", Some(m)) => sub_cli_logout(ui, m)?,
