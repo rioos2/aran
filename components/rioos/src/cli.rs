@@ -91,13 +91,13 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SCAFFOLDING: --scaffolding -s +takes_value
                     "Specify explicit Scaffolding for your digitalcloud os (ex: ubuntu_16.04, centos_7.2)")
             )
-            (@subcommand config =>
+            (@subcommand deploy =>
                 (about: "Displays the default configuration options for a service")
                 (aliases: &["conf", "cfg"])
                 (@arg PKG_IDENT: +required +takes_value
                     "A package identifier (ex: core/redis, core/busybox-static/1.42.2)")
             )
-            (@subcommand exec =>
+            (@subcommand edit =>
                 (about: "Executes a command using the 'PATH' context of an installed package")
                 (aliases: &["exe"])
                 (@arg PKG_IDENT: +required +takes_value
@@ -107,7 +107,7 @@ pub fn get() -> App<'static, 'static> {
                 (@arg ARGS: +takes_value +multiple
                     "Arguments to the command (ex: -l /tmp)")
             )
-            (@subcommand export =>
+            (@subcommand set =>
                 (about: "Exports the package to the specified format")
                 (aliases: &["exp"])
                 (@arg FORMAT: +required +takes_value
@@ -121,20 +121,20 @@ pub fn get() -> App<'static, 'static> {
                     "Retrieve the container's package from the specified release channel \
                     (default: stable)")
             )
-            (@subcommand hash =>
+            (@subcommand describe =>
                 (about: "Generates a blake2b hashsum from a target at any given filepath")
                 (aliases: &["ha", "has"])
                 (@arg SOURCE: +takes_value {file_exists} "A filepath of the target")
             )
             (subcommand: sub_pkg_install().aliases(
                 &["i", "in", "ins", "inst", "insta", "instal"]))
-            (@subcommand path =>
+            (@subcommand backup =>
                 (about: "Prints the path to a specific installed release of a package")
                 (aliases: &["p", "pa", "pat"])
                 (@arg PKG_IDENT: +required +takes_value
                     "A package identifier (ex: core/redis, core/busybox-static/1.42.2)")
             )
-            (@subcommand provides =>
+            (@subcommand snapshot =>
                 (about: "Search installed Habitat packages for a given file")
                 (@arg FILE: +required +takes_value
                     "File name to find")
@@ -143,13 +143,13 @@ pub fn get() -> App<'static, 'static> {
                     (ex: core/busybox-static/1.24.2/20160708162350)")
                 (@arg FULL_PATHS: -p "Show full path to file")
             )
-            (@subcommand search =>
+            (@subcommand volumes =>
                 (about: "Search for a package in Builder")
                 (@arg SEARCH_TERM: +required +takes_value "Search term")
                 (@arg BLDR_URL: -u --url +takes_value {valid_url}
                     "Specify an alternate Builder endpoint (default: https://bldr.habitat.sh)")
             )
-            (@subcommand upload =>
+            (@subcommand start =>
                 (about: "Uploads a local Habitat Artifact to Builder")
                 (aliases: &["u", "up", "upl", "uplo", "uploa"])
                 (@arg BLDR_URL: -u --url +takes_value {valid_url}
@@ -163,7 +163,7 @@ pub fn get() -> App<'static, 'static> {
                     "One or more filepaths to a Habitat Artifact \
                     (ex: /home/acme-redis-3.0.7-21120102031201-x86_64-linux.hart)")
             )
-            (@subcommand promote =>
+            (@subcommand stop =>
                 (about: "Promote a package to a specified channel")
                 (aliases: &["pr", "pro"])
                 (@arg BLDR_URL: -u --url +takes_value {valid_url}
@@ -174,7 +174,7 @@ pub fn get() -> App<'static, 'static> {
                     "Promote to the specified release channel")
                 (@arg AUTH_TOKEN: -z --auth +takes_value "Authentication token for Builder")
             )
-            (@subcommand demote =>
+            (@subcommand reboot =>
                 (about: "Demote a package from a specified channel")
                 (aliases: &["de", "dem", "demo", "demot"])
                 (@arg BLDR_URL: -u --url +takes_value {valid_url}
@@ -185,7 +185,7 @@ pub fn get() -> App<'static, 'static> {
                     "Demote from the specified release channel")
                 (@arg AUTH_TOKEN: -z --auth +takes_value "Authentication token for Builder")
             )
-            (@subcommand channels =>
+            (@subcommand ssh =>
                 (about: "Find out what channels a package belongs to")
                 (aliases: &["ch", "cha", "chan", "chann", "channe", "channel"])
                 (@arg BLDR_URL: -u --url +takes_value {valid_url}
@@ -193,17 +193,9 @@ pub fn get() -> App<'static, 'static> {
                 (@arg PKG_IDENT: +required +takes_value
                     "A fully qualified package identifier (ex: core/redis/3.2.1/20160729052715)")
             )
-            (@subcommand verify =>
+            (@subcommand watch =>
                 (about: "Verifies a Habitat Artifact with an origin key")
                 (aliases: &["v", "ve", "ver", "veri", "verif"])
-                (@arg SOURCE: +required {file_exists}
-                    "A path to a Habitat Artifact \
-                    (ex: /home/acme-redis-3.0.7-21120102031201-x86_64-linux.hart)")
-            )
-            (@subcommand header =>
-                (about: "Returns the Habitat Artifact header")
-                (aliases: &["hea", "head", "heade", "header"])
-                (@setting Hidden)
                 (@arg SOURCE: +required {file_exists}
                     "A path to a Habitat Artifact \
                     (ex: /home/acme-redis-3.0.7-21120102031201-x86_64-linux.hart)")
@@ -227,7 +219,47 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SCAFFOLDING: --scaffolding -s +takes_value
                     "Specify explicit Scaffolding for your app (ex: node, ruby)")
             )
-            (@subcommand init =>
+            (@subcommand deploy =>
+                (about: "Create an app --config file (with datacenter/secret/horizontalscaler) in the users namespace")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand edit =>
+                (about: "Pull the digital cloud and allow editing the app.yaml ? ")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand set =>
+                (about: "Configuration change ? What do we allow to change ?")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand describe =>
+                (about: "Full detail description")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand start =>
                 (about: "Generates common app specific configuration files. Executing without \
                     argument will create a `rioos` directory in your current folder for the \
                     app. If `APP_NAME` is specified it will create a folder with that name. \
@@ -241,12 +273,81 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SCAFFOLDING: --scaffolding -s +takes_value
                     "Specify explicit Scaffolding for your app (ex: node, ruby)")
             )
-        )
+            (@subcommand stop =>
+                (about: "Generates common app specific configuration files. Executing without \
+                    argument will create a `rioos` directory in your current folder for the \
+                    app. If `APP_NAME` is specified it will create a folder with that name. \
+                    Environment variables (those starting with 'app_') that are set will be used \
+                    in the generated app")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand reboot =>
+                (about: "Generates common app specific configuration files. Executing without \
+                    argument will create a `rioos` directory in your current folder for the \
+                    app. If `APP_NAME` is specified it will create a folder with that name. \
+                    Environment variables (those starting with 'app_') that are set will be used \
+                    in the generated app")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand ssh =>
+                (about: "Generates common app specific configuration files. Executing without \
+                    argument will create a `rioos` directory in your current folder for the \
+                    app. If `APP_NAME` is specified it will create a folder with that name. \
+                    Environment variables (those starting with 'app_') that are set will be used \
+                    in the generated app")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand watch =>
+                (about: "Generates common app specific configuration files. Executing without \
+                    argument will create a `rioos` directory in your current folder for the \
+                    app. If `APP_NAME` is specified it will create a folder with that name. \
+                    Environment variables (those starting with 'app_') that are set will be used \
+                    in the generated app")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand rollback =>
+                (about: "Generates common app specific configuration files. Executing without \
+                    argument will create a `rioos` directory in your current folder for the \
+                    app. If `APP_NAME` is specified it will create a folder with that name. \
+                    Environment variables (those starting with 'app_') that are set will be used \
+                    in the generated app")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            )
         (@subcommand images =>
             (about: "Commands relating to Rio/OS image management")
             (aliases: &["i", "im", "ima", "imag", "image"])
             (@setting ArgRequiredElseHelp)
-
         )
         (@subcommand nodes =>
             (about: "Commands relating to Rio/OS infrastructure")
@@ -284,10 +385,61 @@ pub fn get() -> App<'static, 'static> {
                     "Specify explicit Scaffolding for your app (ex: node, ruby)")
             )
         )
+        (@subcommand storages =>
+            (about: "Commands relating to Rio/OS Storage")
+            (aliases: &["s", "st", "sto", "stor", "storages"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand create =>
+                (about: "Create new Storage in Rio/OS.")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand list =>
+                (about: "Display all the storages registered in Rio/OS.")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+        )
+        (@subcommand datacenters =>
+            (about: "Commands relating to Rio/OS Datacenters")
+            (aliases: &["i", "im", "ima", "imag", "image"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand create =>
+                (about: "Create new Datacenter in Rio/OS.")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand list =>
+                (about: "Display all the Datacenters registered in Rio/OS.")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+        )
         (subcommand: alias_login)
         (subcommand: alias_logout)
         (subcommand: alias_init)
         (subcommand: alias_deploy)
+        (subcommand: alias_deployapp)
         (after_help: "\nALIASES:\
             \n    login      Alias for: 'auth login'\
             \n    logout     Alias for: 'auth logout'\
@@ -329,20 +481,39 @@ fn alias_term() -> App<'static, 'static> {
     )
 }
 
-fn sub_cli_setup() -> App<'static, 'static> {
+fn sub_cli_init() -> App<'static, 'static> {
     clap_app!(@subcommand setup =>
         (about: "Sets up the CLI with reasonable defaults.")
     )
 }
 
-fn sub_cli_login() -> App<'static, 'static> {
+fn sub_auth_login() -> App<'static, 'static> {
     clap_app!(@subcommand login =>
         (about: "Login user to rioos.")
     )
 }
 
-fn sub_cli_logout() -> App<'static, 'static> {
+fn sub_auth_logout() -> App<'static, 'static> {
     clap_app!(@subcommand logout =>
+        (about: "Logout user from rioos.")
+    )
+}
+
+fn sub_auth_listproviders() -> App<'static, 'static> {
+    clap_app!(@subcommand list =>
+        (about: "Logout user from rioos.")
+    )
+}
+
+fn sub_digicloud_deploy() -> App<'static, 'static> {
+    clap_app!(@subcommand deploy =>
+        (about: "Logout user from rioos.")
+    )
+}
+
+
+fn sub_app_deploy() -> App<'static, 'static> {
+    clap_app!(@subcommand deploy =>
         (about: "Logout user from rioos.")
     )
 }
