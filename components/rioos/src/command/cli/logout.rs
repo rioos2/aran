@@ -18,6 +18,7 @@ pub fn start(ui: &mut UI, api: &str) -> Result<()> {
     ui.br()?;
     //just blank out the auth token
     write_cli_config_auth_token("")?;
+    write_cli_config_email("")?;
 
     ui.heading("Logged out.")?;
     ui.para("That's all for now. Thanks for using Rio/OS!")?;
@@ -28,5 +29,11 @@ pub fn start(ui: &mut UI, api: &str) -> Result<()> {
 fn write_cli_config_auth_token(auth_token: &str) -> Result<()> {
     let mut config = config::load()?;
     config.auth_token = Some(auth_token.to_string());
+    config::save(&config)
+}
+
+fn write_cli_config_email(email: &str) -> Result<()> {
+    let mut config = config::load()?;
+    config.email = Some(email.to_string());
     config::save(&config)
 }

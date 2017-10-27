@@ -30,7 +30,7 @@ pub fn start(ui: &mut UI, url: &str) -> Result<()> {
 
     let auth_token = login(ui, url, &userid, &password)?;
 
-    write_cli_config_auth_token(&auth_token)?;
+    write_cli_config_auth_token(&auth_token, &userid)?;
 
     ui.heading("Logged in.")?;
     ui.para("That's all for now. Thanks for using Rio/OS!")?;
@@ -38,9 +38,10 @@ pub fn start(ui: &mut UI, url: &str) -> Result<()> {
 }
 
 
-fn write_cli_config_auth_token(auth_token: &str) -> Result<()> {
+fn write_cli_config_auth_token(auth_token: &str, email: &str) -> Result<()> {
     let mut config = config::load()?;
     config.auth_token = Some(auth_token.to_string());
+    config.email = Some(email.to_string());
     config::save(&config)
 }
 
@@ -57,7 +58,7 @@ fn login(ui: &mut UI, url: &str, userid: &str, password: &str) -> Result<String>
 
 fn prompt_userid(ui: &mut UI) -> Result<String> {
     let config = config::load()?;
-    let default = match config.auth_token {
+    let default = match config.email {
         Some(o) => {
             ui.para(
                 "You already have a default auth token set up, but feel free to change it \

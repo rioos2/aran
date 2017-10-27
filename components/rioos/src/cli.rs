@@ -78,9 +78,9 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
             )
         )
-        (@subcommand digitialcloud =>
-            (about: "Commands relating to Rio/OS digitalcloud os")
-            (aliases: &["digi", "digicloud"])
+        (@subcommand digitalcloud =>
+            (about: "Commands relating to Rio/OS digital cloud os")
+            (aliases: &["d", "di", "digitalcloud"])
             (@setting ArgRequiredElseHelp)
             (@subcommand init =>
                 (about: "Generates a blueprint for digitalcloud os with configuration files. Executing without \
@@ -100,6 +100,11 @@ pub fn get() -> App<'static, 'static> {
                 (about: "Deploys the Rioblu.yaml blueprint in Rio/OS")
                 (aliases: &["digideplo"])
                 (@arg SOURCE: +takes_value {file_exists} "A filepath of the rioblu.yaml")
+            )
+            (@subcommand list =>
+                (about: "Displays the default configuration options for a service")
+                (aliases: &["l", "li","lis","list"])
+                (subcommand: sub_digitalcloud_list().aliases(&["l", "li", "lis", "list"]))
             )
             (@subcommand edit =>
                 (about: "Edit and update the definition of resources on the server by using default editor")
@@ -342,6 +347,12 @@ fn sub_cli_list() -> App<'static, 'static> {
 fn sub_auth_login() -> App<'static, 'static> {
     clap_app!(@subcommand login =>
         (about: "Login user to rioos.")
+    )
+}
+
+fn sub_digitalcloud_list() -> App<'static, 'static> {
+    clap_app!(@subcommand list =>
+        (about: "List deployments.")
     )
 }
 
