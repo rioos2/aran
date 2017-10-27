@@ -464,7 +464,8 @@ pub struct Spec {
     selector: BTreeMap<String, String>,
     service_type: String,
     loadbalancer_ip: String,
-    external_name: String,
+    names: BTreeMap<String, String>,
+    external_names: BTreeMap<String, String>,
 }
 
 impl Spec {
@@ -491,12 +492,21 @@ impl Spec {
     pub fn get_loadbalancer_ip(&self) -> ::std::string::String {
         self.loadbalancer_ip.clone()
     }
-    pub fn set_external_name(&mut self, v: ::std::string::String) {
-        self.external_name = v;
+    pub fn set_names(&mut self, v: BTreeMap<String, String>) {
+        self.names = v;
     }
-    pub fn get_external_name(&self) -> ::std::string::String {
-        self.external_name.clone()
+
+    pub fn get_names(&self) -> &BTreeMap<String, String> {
+        &self.names
     }
+    pub fn set_external_names(&mut self, v: BTreeMap<String, String>) {
+        self.external_names = v;
+    }
+
+    pub fn get_external_names(&self) -> &BTreeMap<String, String> {
+        &self.external_names
+    }
+
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]

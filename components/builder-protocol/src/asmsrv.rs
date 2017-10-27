@@ -1,6 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 use plansrv;
+use servicesrv;
 use std::collections::BTreeMap;
 
 pub const ASSEMBLY: &'static str = "Assembly";
@@ -26,6 +27,7 @@ pub struct Assembly {
     volumes: Vec<Volume>,
     instance_id: String,
     spec: Option<AssemblyFactory>,
+    endpoints: Option<servicesrv::EndPoints>,
     created_at: String,
 }
 
@@ -164,6 +166,13 @@ impl Assembly {
 
     pub fn get_spec(&self) -> Option<AssemblyFactory> {
         self.spec.clone()
+    }
+    pub fn set_endpoints(&mut self, v: Option<servicesrv::EndPoints>) {
+        self.endpoints = v;
+    }
+
+    pub fn get_endpoints(&self) -> Option<servicesrv::EndPoints> {
+        self.endpoints.clone()
     }
 }
 

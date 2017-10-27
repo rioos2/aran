@@ -111,5 +111,13 @@ describe('Assembly_factory API', function() {
           done(err);
         });
     });
+    it('returns the assemblys by assemblyfactory id', function(done) {
+      request.get('assemblyfactorys/'+globalAny.asm_fac_id+'/describe')
+        .set('Authorization', globalAny.bobo_bearer)
+        .expect(200)
+        .end(function(err, res) {
+          done(err);
+        });
+    });
   });
 });

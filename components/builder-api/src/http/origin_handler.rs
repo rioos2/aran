@@ -15,7 +15,11 @@ use router::Router;
 use protocol::servicesrv::ObjectMetaData;
 use protocol::asmsrv::{TypeMeta, IdGet};
 use db::data_store::Broker;
+use db;
 use http::{service_account_handler, deployment_handler};
+use rio_net::util::errors::AranResult;
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 define_event_log!();
 
@@ -25,16 +29,13 @@ struct OriginCreateReq {
     object_meta: service_account_handler::ObjectMetaReq,
 }
 
-pub fn origin_create(req: &mut Request) -> IronResult<Response> {
+pub fn origin_create(req: &mut Request) -> AranResult<Response> {
     let mut org_create = Origin::new();
     {
         match req.get::<bodyparser::Struct<OriginCreateReq>>() {
             Ok(Some(body)) => {
                 if body.object_meta.uid.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `uid`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "uid")));
                 }
                 let mut object_meta = ObjectMetaData::new();
                 object_meta.set_name(body.object_meta.name);
@@ -51,12 +52,9 @@ pub fn origin_create(req: &mut Request) -> IronResult<Response> {
                 org_create.set_type_meta(type_meta);
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
@@ -64,26 +62,30 @@ pub fn origin_create(req: &mut Request) -> IronResult<Response> {
 
     match SessionDS::origin_create(&conn, &org_create) {
         Ok(origin) => Ok(render_json(status::Ok, &origin)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
-
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
     }
 }
 
 #[allow(unused_variables)]
-pub fn origin_list(req: &mut Request) -> IronResult<Response> {
+pub fn origin_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match SessionDS::origin_list(&conn) {
         Ok(org_list) => Ok(render_json(status::Ok, &org_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
 
-pub fn origin_show(req: &mut Request) -> IronResult<Response> {
+pub fn origin_show(req: &mut Request) -> AranResult<Response> {
     let org_name = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("origin").unwrap().to_owned();
@@ -95,8 +97,15 @@ pub fn origin_show(req: &mut Request) -> IronResult<Response> {
     org_get.set_id(org_name);
     match SessionDS::origin_show(&conn, &org_get) {
         Ok(origin) => Ok(render_json(status::Ok, &origin)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &org_get.get_id()
+            )))
+        }
     }
 }
