@@ -9,23 +9,26 @@ use regex::Regex;
 use url::Url;
 
 pub fn get() -> App<'static, 'static> {
-    let alias_apply = sub_config_apply()
-        .about("Alias for 'config apply'")
-        .aliases(&["ap", "app", "appl"])
-        .setting(AppSettings::Hidden);
-    let alias_install = sub_pkg_install()
-        .about("Alias for 'app install'")
-        .aliases(&["i", "in", "ins", "inst", "insta", "instal"])
-        .setting(AppSettings::Hidden);
-    let alias_setup = sub_cli_setup()
+    let alias_login = sub_auth_login()
         .about("Alias for 'auth login'")
         .aliases(&["log", "logi"])
         .setting(AppSettings::Hidden);
-    let alias_login = sub_cli_login()
-        .about("Alias for 'auth login'")
-        .aliases(&["log", "logi"])
+    let alias_logout = sub_auth_logout()
+        .about("Alias for 'auth logout'")
+        .aliases(&["log", "logo", "logou"])
         .setting(AppSettings::Hidden);
-
+    let alias_init = sub_cli_init()
+        .about("Alias for 'cli init'")
+        .aliases(&["in", "ini"])
+        .setting(AppSettings::Hidden);
+    let alias_deploy = sub_digicloud_deploy()
+        .about("Alias for 'digitalcloud deploy'")
+        .aliases(&["d", "de", "dep", "deplo"])
+        .setting(AppSettings::Hidden);
+    let alias_deployapp = sub_app_deploy()
+        .about("Alias for 'app deploy'")
+        .aliases(&["d", "de", "dep", "deplo"])
+        .setting(AppSettings::Hidden);
 
     clap_app!(hab =>
         (about: "\"Rio/OS is the worlds first secure cloud operating sytems\"")
@@ -34,64 +37,63 @@ pub fn get() -> App<'static, 'static> {
         (@setting VersionlessSubcommands)
         (@setting ArgRequiredElseHelp)
         (@subcommand cli =>
+            (about: "Commands relating to Rio/OS init/setup")
+            (aliases: &["cl"])
+            (@setting ArgRequiredElseHelp)
+            (subcommand: sub_cli_init().aliases(&["i", "in", "ini"]))
+            (subcommand: sub_cli_completers().aliases(&["c", "co", "com", "comp"]))
+        )
+        (@subcommand auth =>
             (about: "Commands relating to Rio/OS identity and access")
             (aliases: &["aut"])
             (@setting ArgRequiredElseHelp)
-            (subcommand: sub_cli_login().aliases(&["l", "lo", "log", "logi"]))
-            (subcommand: sub_cli_logout().aliases(&["logout"]))
-            (subcommand: sub_cli_completers().aliases(&["c", "co", "com", "comp"]))
-        )
-        (@subcommand config =>
-            (about: "Commands relating to Rio/OS runtime config")
-            (aliases: &["co", "con", "conf", "confi"])
-            (@setting ArgRequiredElseHelp)
-            (subcommand: sub_config_apply().aliases(&["a", "ap", "app", "appl"]))
+            (subcommand: sub_auth_login().aliases(&["l", "lo", "log", "logi"]))
+            (subcommand: sub_auth_logout().aliases(&["logout"]))
+            (subcommand: sub_auth_listproviders().aliases(&["l", "li", "lis", "list","listp"]))
         )
         (@subcommand origin =>
             (about: "Commands relating to Rio/OS origins")
             (aliases: &["o", "or", "ori", "orig", "origi"])
             (@setting ArgRequiredElseHelp)
-            (@subcommand key =>
-                (about: "Commands relating to Rio/OS origin maintenance")
-                (aliases: &["k", "ke"])
-                (@setting ArgRequiredElseHelp)
-                (@subcommand export =>
-                    (about: "Outputs the latest origin contents to stdout")
-                    (aliases: &["e", "ex", "exp", "expo", "expor"])
-                    (@arg ORIGIN: +required +takes_value)
-                )
-                (@subcommand generate =>
-                    (about: "Generates a Rio/OS origin")
-                    (aliases: &["g", "ge", "gen", "gene", "gener", "genera", "generat"])
-                    (@arg ORIGIN: "The origin name")
-                )
-
+            (@subcommand create =>
+                (about: "Creates an origin for the user")
+                (aliases: &["bi", "bin", "binl", "binli", "binlin"])
+                (@arg ORG_IDENT: +required +takes_value
+                    "An origin identifier (ex: riouser/myorigin1, riouser/itdevbox)")
+            )
+            (@subcommand get =>
+                (about: "Displays the origin details for an user")
+                (aliases: &["conf", "cfg"])
+                (@arg ORG_IDENT: +required +takes_value
+                    "An origin identifier (ex: riouser/myorigin1, riouser/itdevbox)")
+            )
+            (@subcommand list =>
+                (about: "Displays all the origins for an user")
+                (aliases: &["aaaaconf", "aaacfg"])
+                (@arg SEARCH_TERM: +required +takes_value "Search term (ex: riouser.*)")
             )
         )
-        (@subcommand pkg =>
-            (about: "Commands relating to Habitat packages")
-            (aliases: &["p", "pk", "package"])
+        (@subcommand digitialcloud =>
+            (about: "Commands relating to Rio/OS digital cloud os")
+            (aliases: &["d", "di", "digitalcloud"])
             (@setting ArgRequiredElseHelp)
-            (@subcommand binlink =>
-                (about: "Creates a binlink for a package binary in a common 'PATH' location")
-                (aliases: &["bi", "bin", "binl", "binli", "binlin"])
-                (@arg PKG_IDENT: +required +takes_value
-                    "A package identifier (ex: core/redis, core/busybox-static/1.42.2)")
-                (@arg BINARY: +takes_value
-                    "The command to binlink (ex: bash)")
-                (@arg DEST_DIR: -d --dest +takes_value
-                    "Sets the destination directory (default: /bin)")
-                (@arg FORCE: -f --force "Overwrite existing binlinks")
+            (@subcommand init =>
+                (about: "Generates common digitalcloud os specific configuration files. Executing without \
+                    argument will create a `rioos` directory in your current folder for the \
+                    app. If `DIGICLOUD_NAME` is specified it will create a folder with that name. \
+                    Environment variables (those starting with 'digicloud_') that are set will be used \
+                    in the generated app")
+                (aliases: &["i", "in", "ini"])
+                (@arg DIGICLOUD_NAME: +takes_value "Name for the new digitalcloud os")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new digitalcloud os")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate digitalcloud blu with all available digitalcloud options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your digitalcloud os (ex: ubuntu_16.04, centos_7.2)")
             )
             (@subcommand config =>
                 (about: "Displays the default configuration options for a service")
                 (aliases: &["conf", "cfg"])
-                (@arg PKG_IDENT: +required +takes_value
-                    "A package identifier (ex: core/redis, core/busybox-static/1.42.2)")
-            )
-            (subcommand: sub_pkg_build())
-            (@subcommand env =>
-                (about: "Prints the runtime environment of a specific installed package")
                 (@arg PKG_IDENT: +required +takes_value
                     "A package identifier (ex: core/redis, core/busybox-static/1.42.2)")
             )
@@ -146,17 +148,6 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SEARCH_TERM: +required +takes_value "Search term")
                 (@arg BLDR_URL: -u --url +takes_value {valid_url}
                     "Specify an alternate Builder endpoint (default: https://bldr.habitat.sh)")
-            )
-            (@subcommand sign =>
-                (about: "Signs an archive with an origin key, generating a Habitat Artifact")
-                (aliases: &["s", "si", "sig"])
-                (@arg ORIGIN: --origin +takes_value "Origin key used to create signature")
-                (@arg SOURCE: +required {file_exists}
-                    "A path to a source archive file \
-                    (ex: /home/acme-redis-3.0.7-21120102031201.tar.xz)")
-                (@arg DEST: +required
-                    "The destination path to the signed Habitat Artifact \
-                    (ex: /home/acme-redis-3.0.7-21120102031201-x86_64-linux.hart)")
             )
             (@subcommand upload =>
                 (about: "Uploads a local Habitat Artifact to Builder")
@@ -218,140 +209,91 @@ pub fn get() -> App<'static, 'static> {
                     (ex: /home/acme-redis-3.0.7-21120102031201-x86_64-linux.hart)")
             )
         )
-        (@subcommand plan =>
-            (about: "Commands relating to plans and other app-specific configuration.")
-            (aliases: &["pl", "pla"])
+        (@subcommand app =>
+            (about: "Commands relating to Rio/OS apps and other app-specific configuration.")
+            (aliases: &["ap"])
             (@setting ArgRequiredElseHelp)
             (@subcommand init =>
-                (about: "Generates common package specific configuration files. Executing without \
-                    argument will create a `habitat` directory in your current folder for the \
-                    plan. If `PKG_NAME` is specified it will create a folder with that name. \
-                    Environment variables (those starting with 'pkg_') that are set will be used \
-                    in the generated plan")
+                (about: "Generates common app specific configuration files. Executing without \
+                    argument will create a `rioos` directory in your current folder for the \
+                    app. If `APP_NAME` is specified it will create a folder with that name. \
+                    Environment variables (those starting with 'app_') that are set will be used \
+                    in the generated app")
                 (aliases: &["i", "in", "ini"])
-                (@arg PKG_NAME: +takes_value "Name for the new app")
+                (@arg APP_NAME: +takes_value "Name for the new app")
                 (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
-                (@arg WITH_DOCS: --("with-docs") "Include plan options documentation")
-                (@arg WITH_CALLBACKS: --("with-callbacks")
-                    "Include callback functions in template")
                 (@arg WITH_ALL: --("with-all")
-                    "Generate omnibus plan with all available plan options")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand init =>
+                (about: "Generates common app specific configuration files. Executing without \
+                    argument will create a `rioos` directory in your current folder for the \
+                    app. If `APP_NAME` is specified it will create a folder with that name. \
+                    Environment variables (those starting with 'app_') that are set will be used \
+                    in the generated app")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
                 (@arg SCAFFOLDING: --scaffolding -s +takes_value
                     "Specify explicit Scaffolding for your app (ex: node, ruby)")
             )
         )
-        (@subcommand ring =>
-            (about: "Commands relating to Habitat rings")
-            (aliases: &["r", "ri", "rin"])
+        (@subcommand images =>
+            (about: "Commands relating to Rio/OS image management")
+            (aliases: &["i", "im", "ima", "imag", "image"])
             (@setting ArgRequiredElseHelp)
-            (@subcommand key =>
-                (about: "Commands relating to Habitat ring keys")
+
+        )
+        (@subcommand nodes =>
+            (about: "Commands relating to Rio/OS infrastructure")
+            (aliases: &["n", "no", "nod","node", "nodes"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand healthz =>
+                (about: "Commands relating to node health")
                 (aliases: &["k", "ke"])
                 (@setting ArgRequiredElseHelp)
-                (@subcommand export =>
-                    (about: "Outputs the latest ring key contents to stdout")
-                    (aliases: &["e", "ex", "exp", "expo", "expor"])
-                    (@arg RING: +required +takes_value "Ring key name")
-                )
-                (@subcommand import =>
-                    (about: "Reads a stdin stream containing ring key contents and writes \
-                    the key to disk")
-                    (aliases: &["i", "im", "imp", "impo", "impor"])
-                )
-                (@subcommand generate =>
-                    (about: "Generates a Habitat ring key")
-                    (aliases: &["g", "ge", "gen", "gene", "gener", "genera", "generat"])
-                    (@arg RING: +required +takes_value "Ring key name")
-                )
-            )
-        )
-        (@subcommand svc =>
-            (about: "Commands relating to Habitat services")
-            (aliases: &["sv", "ser", "serv", "service"])
-            (@setting ArgRequiredElseHelp)
-            (@subcommand key =>
-                (about: "Commands relating to Habitat service keys")
-                (aliases: &["k", "ke"])
-                (@setting ArgRequiredElseHelp)
-                (@subcommand generate =>
-                    (about: "Generates a Habitat service key")
-                    (aliases: &["g", "ge", "gen", "gene", "gener", "genera", "generat"])
-                    (@arg SERVICE_GROUP: +required +takes_value {valid_service_group}
-                        "Target service group (ex: redis.default)")
-                    (@arg ORG: "The service organization")
-                )
-            )
-            (@subcommand load =>
-                (about: "Load a service to be started and supervised by Habitat from a package or \
-                    artifact. Services started in this manner will persist through Supervisor \
-                    restarts.")
-                (@setting Hidden)
-            )
-            (@subcommand unload =>
-                (about: "Unload a persistent or transient service started by the Habitat \
-                    Supervisor. If the Supervisor is running when the service is unloaded the \
-                    service will be stopped.")
-                (@setting Hidden)
-            )
-            (@subcommand start =>
-                (about: "Start a loaded, but stopped, Habitat service or a transient service from \
-                    a package or artifact. If the Habitat Supervisor is not already running this \
-                    will additionally start one for you.")
-                (@setting Hidden)
-            )
-            (@subcommand stop =>
-                (about: "Stop a running Habitat service.")
-                (@setting Hidden)
-            )
-            (after_help: "\nALIASES:\
-                \n    load       Alias for: 'sup load'\
-                \n    unload     Alias for: 'sup unload'\
-                \n    start      Alias for: 'sup start'\
-                \n    stop       Alias for: 'sup stop'\
-                \n    status     Alias for: 'sup status'\
-                \n"
-            )
-        )
-        (@subcommand studio =>
-            (about: "Commands relating to Habitat Studios")
-            (aliases: &["stu", "stud", "studi"])
-        )
-        (@subcommand sup =>
-            (about: "Commands relating to the Habitat Supervisor")
-            (aliases: &["su"])
-        )
-        (@subcommand user =>
-            (about: "Commands relating to Habitat users")
-            (aliases: &["u", "us", "use"])
-            (@setting ArgRequiredElseHelp)
-            (@subcommand key =>
-                (about: "Commands relating to Habitat user keys")
-                (aliases: &["k", "ke"])
-                (@setting ArgRequiredElseHelp)
-                (@subcommand generate =>
-                    (about: "Generates a Habitat user key")
+                (@subcommand ping =>
+                    (about: "Pings a nodes")
                     (aliases: &["g", "ge", "gen", "gene", "gener", "genera", "generat"])
                     (@arg USER: +required +takes_value "Name of the user key")
                 )
             )
+            (@subcommand register =>
+                (about: "Manually register a node. Nodes are autodiscovered by nodelet.\
+                    this is used for development testing only.")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
+            (@subcommand list =>
+                (about: "Display all the nodes registered in Rio/OS.")
+                (aliases: &["i", "in", "ini"])
+                (@arg APP_NAME: +takes_value "Name for the new app")
+                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
+                (@arg WITH_ALL: --("with-all")
+                    "Generate app blu with all available app options")
+                (@arg SCAFFOLDING: --scaffolding -s +takes_value
+                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
+            )
         )
-        (subcommand: alias_apply)
-        (subcommand: alias_install)
-        (subcommand: alias_run())
-        (subcommand: alias_setup)
         (subcommand: alias_login)
-        (subcommand: alias_start())
-        (subcommand: alias_stop())
-        (subcommand: alias_term())
+        (subcommand: alias_logout)
+        (subcommand: alias_init)
+        (subcommand: alias_deploy)
         (after_help: "\nALIASES:\
-            \n    apply      Alias for: 'config apply'\
-            \n    install    Alias for: 'pkg install'\
-            \n    run        Alias for: 'sup run'\
-            \n    setup      Alias for: 'cli setup'\
-            \n    login      Alias for: 'cli login'\
-            \n    start      Alias for: 'svc start'\
-            \n    stop       Alias for: 'svc stop'\
-            \n    term       Alias for: 'sup term'\
+            \n    login      Alias for: 'auth login'\
+            \n    logout     Alias for: 'auth logout'\
+            \n    init       Alias for: 'cli init'\
+            \n    deploy     Alias for: 'digitialcloud deploy'\
+            \n    deployapp  Alias for: 'app deploy'\
             \n"
         )
     )
