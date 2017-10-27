@@ -118,15 +118,14 @@ impl Client {
             return Err(err_from_response(res));
         };
 
-        /*match decoded_response::<JobGroupPromoteResponse>(res).map_err(Error::HabitatHttpClient) {
-            Ok(value) => Ok(value.not_promoted),
+        match decoded_response::<JobGroupPromoteResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value.token),
             Err(e) => {
                 debug!("Failed to decode response, err: {:?}", e);
                 return Err(e);
             }
-        }*/
+        }
 
-        Ok("".to_string())
     }
 
     pub fn logout(&self, token: &str) -> Result<(String)> {
