@@ -8,6 +8,7 @@
 extern crate rioos_builder_protocol as protocol;
 extern crate rioos_core as rioos_core;
 extern crate rioos_http_client as rioos_http;
+
 extern crate broadcast;
 #[macro_use]
 extern crate hyper;
@@ -39,6 +40,9 @@ use hyper::header::{ContentType, Accept, Authorization, Bearer};
 use protocol::net::NetError;
 use rand::{Rng, thread_rng};
 use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
+use protocol::sessionsrv;
+use rioos_http::util::decoded_response;
+
 
 header! { (XFileName, "X-Filename") => [String] }
 header! { (ETag, "ETag") => [String] }
@@ -118,8 +122,8 @@ impl Client {
             return Err(err_from_response(res));
         };
 
-        match decoded_response::<JobGroupPromoteResponse>(res).map_err(Error::HabitatHttpClient) {
-            Ok(value) => Ok(value.token),
+        match decoded_response::<sessionsrv::Session>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value.get_token()),
             Err(e) => {
                 debug!("Failed to decode response, err: {:?}", e);
                 return Err(e);
