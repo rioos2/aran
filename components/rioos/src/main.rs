@@ -60,11 +60,18 @@ fn start(ui: &mut UI) -> Result<()> {
     let app_matches = child.join().unwrap();
 
     match app_matches.subcommand() {
+        ("cli", Some(matches)) => {
+            match matches.subcommand() {
+                ("init", Some(m)) => sub_cli_login(ui, m)?,
+                ("list", Some(m)) => sub_cli_login(ui, m)?,
+                ("completers", Some(m)) => sub_cli_completers(m)?,
+                _ => unreachable!(),
+            }
+        }
         ("auth", Some(matches)) => {
             match matches.subcommand() {
                 ("login", Some(m)) => sub_cli_login(ui, m)?,
                 ("logout", Some(m)) => sub_cli_logout(ui, m)?,
-                ("completers", Some(m)) => sub_cli_completers(m)?,
                 _ => unreachable!(),
             }
         }
@@ -76,6 +83,8 @@ fn start(ui: &mut UI) -> Result<()> {
         }
         ("login", Some(m)) => sub_cli_login(ui, m)?,
         ("logout", Some(m)) => sub_cli_logout(ui, m)?,
+        ("init", Some(m)) => sub_cli_login(ui, m)?,
+        ("list", Some(m)) => sub_cli_login(ui, m)?,
         _ => unreachable!(),
     };
     Ok(())
