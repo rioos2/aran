@@ -102,7 +102,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         plan_list: get "/plans" => XHandler::new(C(plan_list)).before(basic.clone()),
 
         //deploy API: assembly
-        assemblys: post "/assemblys" => XHandler::new(C(assembly_create)).before(basic.clone()),
+        assemblys: post "/origins/:origin/assemblys" => XHandler::new(C(assembly_create)).before(basic.clone()),
         assemblys_list: get "/assemblys" => XHandler::new(C(assembly_list)).before(basic.clone()),
         assembly_show: get "/assemblys/:id" => XHandler::new(C(assembly_show)).before(basic.clone()),
         assembly_status: put "/assemblys/:id/status" => XHandler::new(C(assembly_status_update)).before(basic.clone()),
@@ -111,7 +111,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
 
         //scaling API: horizontal scaling
-        horizontal_scaling: post "/horizontalscaling" => XHandler::new(C(hs_create)).before(basic.clone()),
+        horizontal_scaling: post "/origins/:origin/horizontalscaling" => XHandler::new(C(hs_create)).before(basic.clone()),
         horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(C(hs_list)).before(basic.clone()),
         horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(C(hs_status_update)).before(basic.clone()),
         horizontal_scaling_update: put "/horizontalscaling/:id" => XHandler::new(C(hs_update)).before(basic.clone()),
@@ -137,7 +137,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         node_status: put "/nodes/:id/status" => XHandler::new(C(node_status_update)).before(basic.clone()),
 
         //secret API
-        secrets: post "/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),
+        secrets: post "/origins/:origin/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),
         secrets_list: get "/secrets" => XHandler::new(C(secret_list)),
         secret_show: get "/secrets/:id" => XHandler::new(C(secret_show)).before(basic.clone()),
         secret_show_by_origin: get "/origins/:origin/secrets" => XHandler::new(C(secret_show_by_origin)),
@@ -177,7 +177,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //endpoint API
 
-        endpoints: post "/endpoints" =>  XHandler::new(C(endpoints_create)).before(basic.clone()),
+        endpoints: post "/origins/:origin/endpoints" =>  XHandler::new(C(endpoints_create)).before(basic.clone()),
         endpoints_list: get "/endpoints" =>  XHandler::new(C(endpoints_list)).before(basic.clone()),
         endpoints_show: get "/endpoints/:id" => XHandler::new(C(endpoints_show)).before(basic.clone()),
         endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(C(endpoints_list_by_origin)).before(basic.clone()),
@@ -185,7 +185,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //services API
 
-        services: post "/services" => XHandler::new(C(services_create)).before(basic.clone()),
+        services: post "/origins/:origin/services" => XHandler::new(C(services_create)).before(basic.clone()),
         services_show: get "/services/:id" =>XHandler::new(C(services_show)).before(basic.clone()),
         services_list: get "/services" => XHandler::new(C(services_list)).before(basic.clone()),
         services_list_by_assembly: get "/assemblys/:id/services" => XHandler::new(C(services_list_by_assembly)).before(basic.clone()),
