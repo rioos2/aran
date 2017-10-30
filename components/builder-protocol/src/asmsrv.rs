@@ -14,6 +14,7 @@ pub struct Assembly {
     id: String,
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
+    selector: Vec<String>,
     name: String,
     uri: String,
     description: String,
@@ -103,6 +104,14 @@ impl Assembly {
 
     pub fn get_tags(&self) -> ::std::vec::Vec<String> {
         self.tags.clone()
+    }
+
+    pub fn set_selector(&mut self, v: ::std::vec::Vec<String>) {
+        self.selector = v;
+    }
+
+    pub fn get_selector(&self) -> ::std::vec::Vec<String> {
+        self.selector.clone()
     }
     pub fn set_type_meta(&mut self, v: TypeMeta) {
         self.type_meta = v;
@@ -485,6 +494,7 @@ impl ObjectMeta {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
+    
     pub fn set_origin(&mut self, v: ::std::string::String) {
         self.origin = v;
     }

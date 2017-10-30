@@ -145,8 +145,13 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::secret_create(&conn, &secret_create) {
-        Ok(secret) => Ok(render_json(status::Ok, &secret)),
+        Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -282,7 +287,12 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::service_account_create(&conn, &service_create) {
-        Ok(service) => Ok(render_json(status::Ok, &service)),
+        Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
         }
@@ -294,7 +304,7 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
 pub fn service_account_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_list(&conn) {
-        Ok(service_list) => Ok(render_json(status::Ok, &service_list)),
+        Ok(Some(service_list)) => Ok(render_json(status::Ok, &service_list)),
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
         }
@@ -325,7 +335,7 @@ pub fn service_account_show(req: &mut Request) -> AranResult<Response> {
     );
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_show(&conn, &serv_get) {
-        Ok(origin) => Ok(render_json(status::Ok, &origin)),
+        Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
         }
@@ -417,8 +427,13 @@ pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::endpoints_create(&conn, &endpoints_create) {
-        Ok(endpoints) => Ok(render_json(status::Ok, &endpoints)),
+        Ok(Some(endpoints)) => Ok(render_json(status::Ok, &endpoints)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 

@@ -53,10 +53,8 @@ pub fn roles_create(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match AuthorizeDS::roles_create(&conn, &roles) {
-        Ok(roles_create) => Ok(render_json(status::Ok, &roles_create)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(roles_create)) => Ok(render_json(status::Ok, &roles_create)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
 
     }
 }
@@ -76,10 +74,13 @@ pub fn roles_show(req: &mut Request) -> IronResult<Response> {
     roles_get.set_id(id.to_string());
 
     match AuthorizeDS::roles_show(&conn, &roles_get) {
-        Ok(roles) => Ok(render_json(status::Ok, &roles)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(roles)) => Ok(render_json(status::Ok, &roles)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -88,10 +89,13 @@ pub fn roles_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match AuthorizeDS::roles_list(&conn) {
-        Ok(roles_list) => Ok(render_json(status::Ok, &roles_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(roles_list)) => Ok(render_json(status::Ok, &roles_list)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -130,10 +134,9 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match AuthorizeDS::permissions_create(&conn, &permissions) {
-        Ok(permissions_create) => Ok(render_json(status::Ok, &permissions_create)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(permissions_create)) => Ok(render_json(status::Ok, &permissions_create)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+
 
     }
 }
@@ -142,10 +145,13 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
 pub fn permissions_list(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
     match AuthorizeDS::permissions_list(&conn) {
-        Ok(permissions_list) => Ok(render_json(status::Ok, &permissions_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(permissions_list)) => Ok(render_json(status::Ok, &permissions_list)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -164,10 +170,13 @@ pub fn get_rolebased_permissions(req: &mut Request) -> IronResult<Response> {
     perm_get.set_id(id.to_string());
 
     match AuthorizeDS::get_rolebased_permissions(&conn, &perm_get) {
-        Ok(permission) => Ok(render_json(status::Ok, &permission)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(permission)) => Ok(render_json(status::Ok, &permission)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -185,10 +194,13 @@ pub fn permissions_show(req: &mut Request) -> IronResult<Response> {
     let mut perms_get = IdGet::new();
     perms_get.set_id(id.to_string());
     match AuthorizeDS::permissions_show(&conn, &perms_get) {
-        Ok(perms) => Ok(render_json(status::Ok, &perms)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -207,9 +219,12 @@ pub fn get_specfic_permission_based_role(req: &mut Request) -> IronResult<Respon
     perms_get.set_id(perm_id);
     perms_get.set_name(role_id);
     match AuthorizeDS::get_specfic_permission_based_role(&conn, &perms_get) {
-        Ok(perms) => Ok(render_json(status::Ok, &perms)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }

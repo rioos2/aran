@@ -26,8 +26,11 @@ impl StorageDS {
                 &(serde_json::to_string(storage_create.get_status()).unwrap()),
             ],
         ).map_err(Error::StorageCreate)?;
+            if rows.len() > 0 {
         let storage = row_to_storage(&rows.get(0))?;
-        return Ok(Some(storage.clone()));
+        return Ok(Some(storage);
+    }
+    Ok(None)
     }
 
     pub fn storage_list(datastore: &DataStoreConn) -> Result<Option<storagesrv::StorageGetResponse>> {
@@ -40,6 +43,7 @@ impl StorageDS {
         let mut response = storagesrv::StorageGetResponse::new();
 
         let mut storage_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             storage_collection.push(row_to_storage(&row)?)
         }
@@ -49,6 +53,8 @@ impl StorageDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+    Ok(None)
     }
 
     pub fn storage_show(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::Storage>> {
@@ -94,8 +100,10 @@ impl StorageDS {
                 &(serde_json::to_string(storage_create.get_storage_info()).unwrap()),
             ],
         ).map_err(Error::StorageCreate)?;
-        let storage = row_to_storage(&rows.get(0))?;
-        return Ok(Some(storage.clone()));
+            if rows.len() > 0 {
+        return Ok(Some(storage));
+    }
+    Ok(None)
     }
 
     pub fn data_center_create(datastore: &DataStoreConn, dc_create: &storagesrv::DataCenter) -> Result<Option<storagesrv::DataCenter>> {
@@ -114,8 +122,11 @@ impl StorageDS {
                 &(serde_json::to_string(dc_create.get_status()).unwrap()),
             ],
         ).map_err(Error::DcCreate)?;
+            if rows.len() > 0 {
         let dc = row_to_dc(&rows.get(0))?;
-        return Ok(Some(dc.clone()));
+        return Ok(Some(dc));
+    }
+    Ok(None)
     }
 
     pub fn data_center_list(datastore: &DataStoreConn) -> Result<Option<storagesrv::DcGetResponse>> {
@@ -127,6 +138,7 @@ impl StorageDS {
         let mut response = storagesrv::DcGetResponse::new();
 
         let mut dc_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             dc_collection.push(row_to_dc(&row)?)
         }
@@ -136,6 +148,8 @@ impl StorageDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+    Ok(None)
     }
 
     pub fn data_center_show(datastore: &DataStoreConn, get_dc: &asmsrv::IdGet) -> Result<Option<storagesrv::DataCenter>> {
@@ -163,8 +177,11 @@ impl StorageDS {
                 &(serde_json::to_string(storage_create.get_status()).unwrap()),
             ],
         ).map_err(Error::StoragePoolCreate)?;
+            if rows.len() > 0 {
         let storage = row_to_storage_pool(&rows.get(0))?;
-        return Ok(Some(storage.clone()));
+        return Ok(Some(storage));
+    }
+    Ok(None)
     }
 
     pub fn storage_pool_list_all(datastore: &DataStoreConn) -> Result<Option<storagesrv::StoragePoolGetResponse>> {
@@ -175,6 +192,7 @@ impl StorageDS {
 
         let mut response = storagesrv::StoragePoolGetResponse::new();
         let mut storage_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             storage_collection.push(row_to_storage_pool(&row)?)
         }
@@ -184,6 +202,8 @@ impl StorageDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+    Ok(None)
     }
 
     pub fn storage_pool_list(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::StoragePoolGetResponse>> {
@@ -195,6 +215,7 @@ impl StorageDS {
         let mut response = storagesrv::StoragePoolGetResponse::new();
 
         let mut storage_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             storage_collection.push(row_to_storage_pool(&row)?)
         }
@@ -204,6 +225,8 @@ impl StorageDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+    Ok(None)
     }
 
     pub fn storage_pool_status_update(datastore: &DataStoreConn, storage_pool_update: &storagesrv::StoragePool) -> Result<Option<storagesrv::StoragePool>> {

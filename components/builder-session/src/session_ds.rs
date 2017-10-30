@@ -227,8 +227,10 @@ impl SessionDS {
                 &(object_meta as String),
             ],
         ).map_err(Error::OriginCreate)?;
+            if rows.len() > 0 {
         let origin = row_to_origin(&rows.get(0))?;
-        return Ok(Some(origin.clone()));
+        return Ok(Some(origin));}
+        Ok(None)
     }
 
     pub fn origin_list(datastore: &DataStoreConn) -> Result<Option<originsrv::OriginGetResponse>> {
@@ -241,11 +243,14 @@ impl SessionDS {
         let mut response = originsrv::OriginGetResponse::new();
 
         let mut org_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             org_collection.push(row_to_origin(&row)?)
         }
         response.set_org_collection(org_collection, "OriginList".to_string(), "v1".to_string());
         Ok(Some(response))
+    }
+    Ok(None)
     }
 
     pub fn origin_show(datastore: &DataStoreConn, get_origin: &asmsrv::IdGet) -> Result<Option<originsrv::Origin>> {
@@ -277,8 +282,11 @@ impl SessionDS {
                 &(serde_json::to_string(ldap_config.get_group_search()).unwrap()),
             ],
         ).map_err(Error::LdapConfigCreate)?;
+            if rows.len() > 0 {
         let ldap = row_to_ldap_config(&rows.get(0))?;
-        return Ok(Some(ldap.clone()));
+        return Ok(Some(ldap));
+    }
+    Ok(None)
     }
 
 
@@ -350,8 +358,11 @@ impl SessionDS {
                 &(saml_provider.get_sp_base_url() as String),
             ],
         ).map_err(Error::SamlProviderCreate)?;
+            if rows.len() > 0 {
         let saml = row_to_saml_provider(&rows.get(0))?;
-        return Ok(Some(saml.clone()));
+        return Ok(Some(saml));
+    }
+    Ok(None)
     }
 
     pub fn saml_provider_listall(datastore: &DataStoreConn) -> Result<Option<sessionsrv::SamlProviderGetResponse>> {
@@ -362,6 +373,7 @@ impl SessionDS {
 
         let mut response = sessionsrv::SamlProviderGetResponse::new();
         let mut saml_provider_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             saml_provider_collection.push(row_to_saml_provider(&row)?)
         }
@@ -371,6 +383,8 @@ impl SessionDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+    Ok(None)
     }
 
     pub fn saml_show(datastore: &DataStoreConn, saml_provider_get: &asmsrv::IdGet) -> Result<Option<sessionsrv::SamlProvider>> {
@@ -403,8 +417,11 @@ impl SessionDS {
                 &(oidc_provider.get_ca_certs() as String),
             ],
         ).map_err(Error::OidcProviderCreate)?;
+            if rows.len() > 0 {
         let oidc = row_to_oidc_provider(&rows.get(0))?;
-        return Ok(Some(oidc.clone()));
+        return Ok(Some(oidc));
+    }
+    Ok(None)
     }
 
     pub fn openid_provider_listall(datastore: &DataStoreConn) -> Result<Option<sessionsrv::OpenidProviderGetResponse>> {
@@ -415,6 +432,7 @@ impl SessionDS {
 
         let mut response = sessionsrv::OpenidProviderGetResponse::new();
         let mut oidc_provider_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             oidc_provider_collection.push(row_to_oidc_provider(&row)?)
         }
@@ -425,16 +443,20 @@ impl SessionDS {
         );
         Ok(Some(response))
     }
+    Ok(None)
+    }
     pub fn oidc_show(datastore: &DataStoreConn, oidc_provider_get: &asmsrv::IdGet) -> Result<Option<sessionsrv::OidcProvider>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_odic_v1($1)",
             &[&(oidc_provider_get.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::OidcProviderGet)?;
+            if rows.len() > 0 {
         for row in rows {
             let oidc = row_to_oidc_provider(&row)?;
             return Ok(Some(oidc));
         }
+    }
         Ok(None)
     }
 }

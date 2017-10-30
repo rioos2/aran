@@ -146,7 +146,7 @@ pub fn storage_create(req: &mut Request) -> AranResult<Response> {
 pub fn storage_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match StorageDS::storage_list(&conn) {
-        Ok(storage_list) => Ok(render_json(status::Ok, &storage_list)),
+        Ok(Some(storage_list)) => Ok(render_json(status::Ok, &storage_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -174,7 +174,7 @@ pub fn storage_show(req: &mut Request) -> AranResult<Response> {
     storage_get.set_id(id.to_string());
 
     match StorageDS::storage_show(&conn, &storage_get) {
-        Ok(storage) => Ok(render_json(status::Ok, &storage)),
+        Ok(Some(storage)) => Ok(render_json(status::Ok, &storage)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -229,7 +229,7 @@ pub fn storage_update(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match StorageDS::storage_update(&conn, &storage_create) {
-        Ok(storage_create) => Ok(render_json(status::Ok, &storage_create)),
+        Ok(Some(storage_create)) => Ok(render_json(status::Ok, &storage_create)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -286,7 +286,7 @@ pub fn storage_status_update(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match StorageDS::storage_status_update(&conn, &storage_create) {
-        Ok(storage_create) => Ok(render_json(status::Ok, &storage_create)),
+        Ok(Some(storage_create)) => Ok(render_json(status::Ok, &storage_create)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -354,7 +354,7 @@ pub fn data_center_create(req: &mut Request) -> AranResult<Response> {
 pub fn data_center_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match StorageDS::data_center_list(&conn) {
-        Ok(data_center_list) => Ok(render_json(status::Ok, &data_center_list)),
+        Ok(Some(data_center_list)) => Ok(render_json(status::Ok, &data_center_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -382,7 +382,7 @@ pub fn data_center_show(req: &mut Request) -> AranResult<Response> {
     dc_get.set_id(id.to_string());
 
     match StorageDS::data_center_show(&conn, &dc_get) {
-        Ok(dc) => Ok(render_json(status::Ok, &dc)),
+        Ok(Some(dc)) => Ok(render_json(status::Ok, &dc)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -453,7 +453,7 @@ pub fn storage_pool_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match StorageDS::storage_pool_create(&conn, &storage_create) {
-        Ok(storage) => Ok(render_json(status::Ok, &storage)),
+        Ok(Some(storage)) => Ok(render_json(status::Ok, &storage)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -503,7 +503,7 @@ pub fn storage_pool_status_update(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match StorageDS::storage_pool_status_update(&conn, &storage_pool_update) {
-        Ok(storage_pool_update) => Ok(render_json(status::Ok, &storage_pool_update)),
+        Ok(Some(storage_pool_update)) => Ok(render_json(status::Ok, &storage_pool_update)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -535,7 +535,7 @@ pub fn storage_pool_list(req: &mut Request) -> AranResult<Response> {
     storage_get.set_id(id.to_string());
 
     match StorageDS::storage_pool_list(&conn, &storage_get) {
-        Ok(storage) => Ok(render_json(status::Ok, &storage)),
+        Ok(Some(storage)) => Ok(render_json(status::Ok, &storage)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -553,7 +553,7 @@ pub fn storage_pool_list(req: &mut Request) -> AranResult<Response> {
 pub fn storage_pool_list_all(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match StorageDS::storage_pool_list_all(&conn) {
-        Ok(storage_pool_list) => Ok(render_json(status::Ok, &storage_pool_list)),
+        Ok(Some(storage_pool_list)) => Ok(render_json(status::Ok, &storage_pool_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }

@@ -40,6 +40,7 @@ impl NetworkDS {
         let mut response = netsrv::NetworkGetResponse::new();
 
         let mut network_collection = Vec::new();
+        if rows.len() > 0 {
         for row in rows {
             network_collection.push(row_to_network(&row)?)
         }
@@ -50,6 +51,7 @@ impl NetworkDS {
         );
         Ok(Some(response))
     }
+    Ok(None)
 }
 
 fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {

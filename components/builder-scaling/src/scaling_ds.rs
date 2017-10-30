@@ -38,9 +38,11 @@ impl ScalingDS {
                 &(status_str as String),
             ],
         ).map_err(Error::HSCreate)?;
-
+    if rows.len() > 0 {
         let hs = row_to_hs(&rows.get(0))?;
-        return Ok(Some(hs.clone()));
+        return Ok(Some(hs));
+    }
+    Ok(None)
     }
 
     pub fn hs_list(datastore: &DataStoreConn) -> Result<Option<scalesrv::HorizontalScalingGetResponse>> {
@@ -53,7 +55,7 @@ impl ScalingDS {
         let mut response = scalesrv::HorizontalScalingGetResponse::new();
 
         let mut hs_collection = Vec::new();
-
+    if rows.len() > 0 {
         for row in rows {
             hs_collection.push(row_to_hs(&row)?)
         }
@@ -63,6 +65,8 @@ impl ScalingDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+    Ok(None)
     }
     pub fn horizontal_scaling_list_by_origin(datastore: &DataStoreConn, hs_get: &asmsrv::IdGet) -> Result<Option<scalesrv::HorizontalScalingGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -97,7 +101,10 @@ impl ScalingDS {
             "SELECT set_hs_status_v1($1, $2)",
             &[&id, &(status_str as String)],
         ).map_err(Error::HSSetStatus)?;
-        Ok(())
+        for row in rows {
+            return Ok(Some(hs));
+        }
+        Ok(None)
     }
 
     pub fn hs_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
@@ -117,8 +124,11 @@ impl ScalingDS {
                 &(spec_str as String),
             ],
         ).map_err(Error::HSUpdate)?;
+            if rows.len() > 0 {
         let hscale = row_to_hs(&rows.get(0))?;
-        return Ok(Some(hscale.clone()));
+        return Ok(Some(hscale));
+    }
+    Ok(None)
     }
 
     pub fn hs_metrics(client: &PrometheusClient, af_id: &str, metric_source_name: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {

@@ -59,7 +59,10 @@ impl NodeDS {
                 &(serde_json::to_string(node.get_status()).unwrap()),
             ],
         ).map_err(Error::NodeSetStatus)?;
-        Ok(())
+        for row in rows {
+            return Ok(Some(node));
+        }
+        Ok(None)
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {

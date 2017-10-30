@@ -170,9 +170,14 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match NodeDS::node_create(&conn, &node_create) {
-        Ok(node) => Ok(render_json(status::Ok, &node)),
+        Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
 
     }
@@ -182,7 +187,7 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
 pub fn node_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match NodeDS::node_list(&conn) {
-        Ok(node_list) => Ok(render_json(status::Ok, &node_list)),
+        Ok(Some(node_list)) => Ok(render_json(status::Ok, &node_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -273,9 +278,14 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match NodeDS::node_status_update(&conn, &node_create) {
-        Ok(node) => Ok(render_json(status::Ok, &node)),
+        Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
 
     }
@@ -284,7 +294,7 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
 pub fn healthz_all(req: &mut Request) -> AranResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
     match NodeDS::healthz_all(&promcli) {
-        Ok(health_all) => Ok(render_json(status::Ok, &health_all)),
+        Ok(Some(health_all)) => Ok(render_json(status::Ok, &health_all)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(

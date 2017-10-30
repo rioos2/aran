@@ -34,12 +34,15 @@ impl Migratable for DeployProcedures {
              parent_id text,
              origin_id bigint REFERENCES origins(id),
              tags text[],
+             selector text[],
              node text,
              ip text,
              urls text,
              status text,
              volumes text,
              instance_id text,
+             object_meta text,
+             type_meta text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
         )?;
@@ -57,19 +60,22 @@ impl Migratable for DeployProcedures {
                 parent_id text,
                 origin_name text,
                 tags text[],
+                selector text[],
                 node text,
                 ip text,
                 urls text,
                 status text,
                 volumes text,
-                instance_id text
+                instance_id text,
+                type_meta text,
+                object_meta text
                         ) RETURNS SETOF assembly AS $$
                         DECLARE
                            this_origin origins%rowtype;
                                 BEGIN
                                 SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id,origin_id, tags,node,ip,urls,status,volumes,instance_id)
-                                        VALUES (name, uri, description,parent_id,this_origin.id, tags,node,ip,urls,status,volumes,instance_id)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id,origin_id, tags, selector,node,ip,urls,status,volumes,instance_id, type_meta, object_meta)
+                                        VALUES (name, uri, description,parent_id,this_origin.id, tags,selector,node,ip,urls,status,volumes,instance_id, type_meta, object_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -121,7 +127,16 @@ impl Migratable for DeployProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
+        migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION get_assemblys_by_services_v1(serv_name text) RETURNS SETOF assembly AS $$
 
+                        BEGIN
+                         RETURN QUERY SELECT * FROM assembly WHERE serv_name = ANY(selector); 
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
         migrator.migrate(
             "asmsrv",

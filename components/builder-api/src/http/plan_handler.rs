@@ -71,9 +71,15 @@ pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match PlanDS::plan_create(&conn, &plan_create) {
-        Ok(plan) => Ok(render_json(status::Ok, &plan)),
+        Ok(Some(plan)) => Ok(render_json(status::Ok, &plan)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &org_get.get_id()
+            )))
     }
 }

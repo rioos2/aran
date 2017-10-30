@@ -27,8 +27,11 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(secret_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::SecretCreate)?;
+        for row in rows {
         let secret = row_to_secret(&rows.get(0));
-        return Ok(secret.clone());
+        return Ok(Some(secret));
+    }
+    Ok(None)
     }
     pub fn secret_show(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -106,8 +109,9 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(service_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
+
         let service_account = row_to_service_account(&rows.get(0))?;
-        return Ok(Some(service_account.clone()));
+        return Ok(Some(service_account));
     }
 
     pub fn service_account_show(datastore: &DataStoreConn, get_service: &asmsrv::IdGet) -> Result<Option<servicesrv::ServiceAccount>> {
@@ -116,11 +120,12 @@ impl ServiceAccountDS {
             "SELECT * FROM get_service_account_by_origin_v1($1,$2)",
             &[&get_service.get_id(), &get_service.get_name()],
         ).map_err(Error::ServiceAccountGet)?;
-
+        if rows.len() > 0 {
         for row in rows {
             let serv = row_to_service_account(&row)?;
             return Ok(Some(serv));
         }
+    }
         Ok(None)
     }
 
@@ -133,6 +138,7 @@ impl ServiceAccountDS {
         let mut response = servicesrv::ServiceAccountGetResponse::new();
 
         let mut service_collection = Vec::new();
+        if rows.len() > 0 {
         for row in rows {
             service_collection.push(row_to_service_account(&row)?)
         }
@@ -142,6 +148,8 @@ impl ServiceAccountDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+        Ok(None)
     }
 
     pub fn endpoints_create(datastore: &DataStoreConn, endpoints_create: &servicesrv::EndPoints) -> Result<Option<servicesrv::EndPoints>> {
@@ -263,7 +271,7 @@ impl ServiceAccountDS {
             ],
         ).map_err(Error::ServicesCreate)?;
         let end = row_to_services(&rows.get(0));
-        return Ok(end.clone());
+        return Ok(Some(end));
     }
     pub fn services_show(datastore: &DataStoreConn, services_get: &asmsrv::IdGet) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -295,7 +303,7 @@ impl ServiceAccountDS {
             }
             response.set_services_collection(
                 services_collection,
-                "ServicesList".to_string(),
+                "ServiceList".to_string(),
                 "v1".to_string(),
             );
             return Ok(Some(response));
@@ -319,7 +327,7 @@ impl ServiceAccountDS {
             }
             response.set_services_collection(
                 services_collection,
-                "ServicesList".to_string(),
+                "ServiceList".to_string(),
                 "v1".to_string(),
             );
             return Ok(Some(response));
@@ -343,7 +351,7 @@ impl ServiceAccountDS {
             }
             response.set_services_collection(
                 services_collection,
-                "ServicesList".to_string(),
+                "ServiceList".to_string(),
                 "v1".to_string(),
             );
             return Ok(Some(response));

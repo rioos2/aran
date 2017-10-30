@@ -20,11 +20,12 @@ impl AuthorizeDS {
                 &(roles.get_description() as String),
             ],
         ).map_err(Error::RolesCreate)?;
-
+        if rows.len() > 0 {
         for row in rows {
             let roles_create = row_to_roles(&row)?;
             return Ok(Some(roles_create));
         }
+    }
         Ok(None)
     }
 
@@ -33,11 +34,12 @@ impl AuthorizeDS {
         let role_id = get_roles.get_id().parse::<i64>().unwrap();
         let rows = &conn.query("SELECT * FROM get_role_v1($1)", &[&role_id])
             .map_err(Error::RoleGet)?;
-
+            if rows.len() > 0 {
         for row in rows {
             let roles_get = row_to_roles(&row)?;
             return Ok(Some(roles_get));
         }
+    }
         Ok(None)
     }
 
@@ -49,6 +51,7 @@ impl AuthorizeDS {
         for role in roles {
             let rows = &conn.query("SELECT * FROM get_permission_by_role_name_v1($1)", &[&role])
                 .map_err(Error::RoleGet)?;
+                if rows.len() > 0 {
             for row in rows {
                 let per_get = row_to_permissions(&row)?;
                 perms_collection.push(per_get);
@@ -60,6 +63,8 @@ impl AuthorizeDS {
             "v1".to_string(),
         );
         Ok(Some(response))
+    }
+    Ok(None)
     }
 
     pub fn roles_list(datastore: &DataStoreConn) -> Result<Option<authsrv::RolesGetResponse>> {
