@@ -4,7 +4,7 @@ use prettytable::Table;
 use prettytable::row::Row;
 use prettytable::cell::Cell;
 use prettytable::format;
-pub fn create_table(results: Vec<Vec<String>>, title: Row) {
+pub fn pretty_table(results: Vec<Vec<String>>, title: Row) {
     let rows = results
         .iter()
         .map(|result| {
