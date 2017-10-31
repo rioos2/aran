@@ -115,8 +115,7 @@ pub fn get() -> App<'static, 'static> {
             (@subcommand describe =>
                 (about: "Display the detailed state of digital cloud os")
                 (aliases: &["digidescribe"])
-                (@arg DIGICLOUD_IDENT: +required +takes_value
-                    "A digital cloud identifier (ex: 1, 2)")
+                (@arg DIGICLOUD_NAME: +required +takes_value "Name for the new digitalcloud os")
             )
             (@subcommand backup =>
                 (about: "Displays all the backups of digitalcloud os")
@@ -344,43 +343,6 @@ fn sub_cli_list() -> App<'static, 'static> {
     )
 }
 
-fn sub_auth_login() -> App<'static, 'static> {
-    clap_app!(@subcommand login =>
-        (about: "Login user to rioos.")
-    )
-}
-
-fn sub_digitalcloud_list() -> App<'static, 'static> {
-    clap_app!(@subcommand list =>
-        (about: "List deployments.")
-    )
-}
-
-fn sub_auth_logout() -> App<'static, 'static> {
-    clap_app!(@subcommand logout =>
-        (about: "Logout user from rioos.")
-    )
-}
-
-fn sub_auth_listproviders() -> App<'static, 'static> {
-    clap_app!(@subcommand list =>
-        (about: "List configured authentication providers for your rioos.")
-    )
-}
-
-fn sub_digicloud_deploy() -> App<'static, 'static> {
-    clap_app!(@subcommand deploy =>
-        (about: "Deploys the Rioblu.yaml digitalcloud os blueprint in Rio/OS")
-    )
-}
-
-
-fn sub_app_deploy() -> App<'static, 'static> {
-    clap_app!(@subcommand deploy =>
-        (about: "Deploys the Rioblu.yaml app blueprint in Rio/OS")
-    )
-}
-
 fn sub_cli_completers() -> App<'static, 'static> {
     let sub = clap_app!(@subcommand completers =>
         (about: "Creates command-line completers for your shell."));
@@ -404,6 +366,45 @@ fn sub_cli_completers() -> App<'static, 'static> {
             .possible_values(&supported_shells),
     )
 }
+
+fn sub_auth_login() -> App<'static, 'static> {
+    clap_app!(@subcommand login =>
+        (about: "Login user to rioos.")
+    )
+}
+
+fn sub_auth_logout() -> App<'static, 'static> {
+    clap_app!(@subcommand logout =>
+        (about: "Logout user from rioos.")
+    )
+}
+
+fn sub_auth_listproviders() -> App<'static, 'static> {
+    clap_app!(@subcommand list =>
+        (about: "List configured authentication providers for your rioos.")
+    )
+}
+
+fn sub_digitalcloud_list() -> App<'static, 'static> {
+    clap_app!(@subcommand list =>
+        (about: "List deployments.")
+    )
+}
+
+fn sub_digicloud_deploy() -> App<'static, 'static> {
+    clap_app!(@subcommand deploy =>
+        (about: "Deploys the Rioblu.yaml digitalcloud os blueprint in Rio/OS")
+    )
+}
+
+
+fn sub_app_deploy() -> App<'static, 'static> {
+    clap_app!(@subcommand deploy =>
+        (about: "Deploys the Rioblu.yaml app blueprint in Rio/OS")
+    )
+}
+
+
 
 fn file_exists(val: String) -> result::Result<(), String> {
     if Path::new(&val).is_file() {

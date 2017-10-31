@@ -191,6 +191,9 @@ impl Status {
     pub fn set_phase(&mut self, v: ::std::string::String) {
         self.phase = v;
     }
+    pub fn get_phase(&self) -> ::std::string::String {
+        self.phase.clone()
+    }
     pub fn set_message(&mut self, v: ::std::string::String) {
         self.message = v;
     }
@@ -275,6 +278,10 @@ impl AssemblysGetResponse {
         self.items = v;
         self.kind = r;
         self.api_version = s;
+    }
+
+    pub fn get_items(&self) -> Vec<Assembly> {
+        self.items.clone()
     }
 }
 

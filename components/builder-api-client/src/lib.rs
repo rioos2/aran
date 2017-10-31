@@ -189,6 +189,73 @@ impl Client {
 
     }
 
+
+    pub fn describe_deploy(&self, token: &str, email: &str, id: &str) -> Result<asmsrv::AssemblyFactory> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("assemblyfactorys/{}",id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get AssemblyFactory, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<asmsrv::AssemblyFactory>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value),
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
+
+    pub fn get_assembly_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("/assemblyfactorys/{}/describe",id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get Assembly, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<asmsrv::AssemblysGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(), i.get_name(), i.get_status().get_phase(),
+                             i.get_origin(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
     ///
     /// # Failures
     ///
