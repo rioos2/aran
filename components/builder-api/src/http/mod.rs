@@ -74,23 +74,23 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //auth API for login (ldap, active directory)
         authenticate_ldap: post "/authenticate/ldap/:code" => XHandler::new(C(default_authenticate)), //ldap_authenticate
 
-        config_ldap: post "/ldap/config" => set_ldap_config,
+        config_ldap: post "/ldap/config" => C(set_ldap_config),
 
-        test_ldap_config: post "/ldap/config/:id/test" => test_ldap_config,
-        import_ldap: post "/ldap/import/:id" =>import_ldap,
+        test_ldap_config: post "/ldap/config/:id/test" => C(test_ldap_config),
+        import_ldap: post "/ldap/import/:id" =>C(import_ldap),
 
-        config_saml: post "/auth/saml/providers" => config_saml_provider,
-        saml_providers_list: get "/auth/saml/providers" =>saml_provider_list,
-        saml_provider_id: get "/auth/saml/providers/:providerid" =>saml_provider_show,
+        config_saml: post "/auth/saml/providers" => C(config_saml_provider),
+        saml_providers_list: get "/auth/saml/providers" =>C(saml_provider_list),
+        saml_provider_id: get "/auth/saml/providers/:providerid" =>C(saml_provider_show),
 
-        config_openid: post "/auth/oidc/providers/:providerid " => config_oidc_provider,
-        openid_listall: get "/auth/oidc/providers" =>openid_listall,
-        openid_show : get "auth/oidc/providers/:providerid" =>openid_provider_show,
+        config_openid: post "/auth/oidc/providers/:providerid " => C(config_oidc_provider),
+        openid_listall: get "/auth/oidc/providers" =>C(openid_listall),
+        openid_show : get "auth/oidc/providers/:providerid" =>C(openid_provider_show),
 
         //auth API for creating new account
         signup: post "/accounts" => XHandler::new(C(account_create)),
-        account_get_by_id: get "/accounts/:id" => account_get_by_id,
-        account_get_by_name: get "/accounts/name/:name" => account_get,
+        account_get_by_id: get "/accounts/:id" => C(account_get_by_id),
+        account_get_by_name: get "/accounts/name/:name" => C(account_get),
 
         //deploy API: assembly_factory
         assembly_factorys: post "/assemblyfactorys" => XHandler::new(C(assembly_factory_create)).before(basic.clone()),

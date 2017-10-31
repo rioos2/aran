@@ -313,10 +313,11 @@ pub fn assemblys_show_by_origin(req: &mut Request) -> AranResult<Response> {
     match DeploymentDS::assemblys_show_by_origin(&conn, &assemblys_get) {
         Ok(Some(assemblys)) => Ok(render_json(status::Ok, &assemblys)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &assemblys_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
@@ -344,10 +345,11 @@ pub fn assemblys_show_by_services(req: &mut Request) -> AranResult<Response> {
     match DeploymentDS::assemblys_show_by_services(&conn, &assemblys_get) {
         Ok(Some(assemblys)) => Ok(render_json(status::Ok, &assemblys)),
         Ok(None) => {
-            let err = "NotFound";
-            Ok(render_net_error(
-                &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &assemblys_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
@@ -542,9 +544,14 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_create(&conn, &assembly_factory_create) {
-        Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
 
     }
@@ -566,7 +573,7 @@ pub fn assembly_factory_show(req: &mut Request) -> AranResult<Response> {
     asm_fac_get.set_id(id.to_string());
 
     match DeploymentDS::assembly_factory_show(&conn, &asm_fac_get) {
-        Ok(assembly_factory) => Ok(render_json(status::Ok, &assembly_factory)),
+        Ok(Some(assembly_factory)) => Ok(render_json(status::Ok, &assembly_factory)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
@@ -619,7 +626,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
     let conn = Broker::connect().unwrap();
 
     match DeploymentDS::assembly_factory_status_update(&conn, &assembly_factory) {
-        Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -639,7 +646,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
 pub fn assembly_factory_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_list(&conn) {
-        Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
+        Ok(Some(assembly_list)) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -671,9 +678,11 @@ pub fn assemblyfactorys_list_by_origin(req: &mut Request) -> AranResult<Response
     match DeploymentDS::assemblyfactorys_show_by_origin(&conn, &assemblyfactory_get) {
         Ok(Some(assemblyfac)) => Ok(render_json(status::Ok, &assemblyfac)),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &assemblyfactory_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
@@ -683,16 +692,18 @@ pub fn assemblyfactorys_list_by_origin(req: &mut Request) -> AranResult<Response
 
 pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
 
-    let org_name = {
+    let id = {
         let params = req.extensions.get::<Router>().unwrap();
-        let org_name = params.find("id").unwrap().to_owned();
-        org_name
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
+        }
     };
 
     let conn = Broker::connect().unwrap();
 
     let mut assemblydes_get = IdGet::new();
-    assemblydes_get.set_id(org_name);
+    assemblydes_get.set_id(id.to_string());
 
     ui::rawdumpln(
         Colour::White,
@@ -702,9 +713,11 @@ pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
     match DeploymentDS::assembly_factorys_describe(&conn, &assemblydes_get) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &assemblydes_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))

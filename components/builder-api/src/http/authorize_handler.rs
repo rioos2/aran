@@ -36,22 +36,17 @@ pub fn roles_create(req: &mut Request) -> AranResult<Response> {
         match req.get::<bodyparser::Struct<RolesCreateReq>>() {
             Ok(Some(body)) => {
                 if body.name.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `name`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "name")));
+
                 }
                 roles.set_name(body.name);
                 roles.set_description(body.description);
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
     let conn = Broker::connect().unwrap();
@@ -75,7 +70,7 @@ pub fn roles_show(req: &mut Request) -> AranResult<Response> {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
     let conn = Broker::connect().unwrap();
@@ -87,9 +82,11 @@ pub fn roles_show(req: &mut Request) -> AranResult<Response> {
         Ok(Some(roles)) => Ok(render_json(status::Ok, &roles)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &roles_get.get_id()
+            )))
         }
     }
 }
@@ -115,17 +112,13 @@ pub fn permissions_create(req: &mut Request) -> AranResult<Response> {
         match req.get::<bodyparser::Struct<PermissionsCreateReq>>() {
             Ok(Some(body)) => {
                 if body.name.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `name`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "name")));
+
                 }
 
                 if body.role_id.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `role_id`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "role id")));
+
                 }
                 permissions.set_role_id(body.role_id);
                 permissions.set_name(body.name);
@@ -133,12 +126,9 @@ pub fn permissions_create(req: &mut Request) -> AranResult<Response> {
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
     let conn = Broker::connect().unwrap();
@@ -174,7 +164,7 @@ pub fn get_rolebased_permissions(req: &mut Request) -> AranResult<Response> {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
 
@@ -187,9 +177,11 @@ pub fn get_rolebased_permissions(req: &mut Request) -> AranResult<Response> {
         Ok(Some(permission)) => Ok(render_json(status::Ok, &permission)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &perm_get.get_id()
+            )))
         }
     }
 }
@@ -199,7 +191,7 @@ pub fn permissions_show(req: &mut Request) -> AranResult<Response> {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
 
@@ -211,9 +203,11 @@ pub fn permissions_show(req: &mut Request) -> AranResult<Response> {
         Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &perms_get.get_id()
+            )))
         }
     }
 }
@@ -236,9 +230,11 @@ pub fn get_specfic_permission_based_role(req: &mut Request) -> AranResult<Respon
         Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &perms_get.get_id()
+            )))
         }
     }
 }

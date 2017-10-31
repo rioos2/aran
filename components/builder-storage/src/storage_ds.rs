@@ -63,10 +63,12 @@ impl StorageDS {
             "SELECT * FROM get_storage_v1($1)",
             &[&(get_storage.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::StorageGet)?;
+        if rows.len() > 0 {
         for row in rows {
             let storage = row_to_storage(&row)?;
             return Ok(Some(storage));
         }
+    }
         Ok(None)
     }
 
@@ -80,10 +82,12 @@ impl StorageDS {
                 &(serde_json::to_string(storage_create.get_status()).unwrap()),
             ],
         ).map_err(Error::StorageSetStatus)?;
+        if rows.len() > 0 {
         for row in rows {
             let storage = row_to_storage(&row)?;
             return Ok(Some(storage));
         }
+    }
         Ok(None)
     }
 
@@ -161,10 +165,12 @@ impl StorageDS {
             "SELECT * FROM get_data_center_v1($1)",
             &[&(get_dc.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::StorageGet)?;
+        if rows.len() > 0 {
         for row in rows {
             let dc = row_to_dc(&row)?;
             return Ok(Some(dc));
         }
+    }
         Ok(None)
     }
 
@@ -242,10 +248,12 @@ impl StorageDS {
                 &(serde_json::to_string(storage_pool_update.get_status()).unwrap()),
             ],
         ).map_err(Error::StoragePoolSetStatus)?;
+        if rows.len() > 0 {
         for row in rows {
             let storagepool = row_to_storage_pool(&row)?;
             return Ok(Some(storagepool));
         }
+    }
         Ok(None)
     }
 

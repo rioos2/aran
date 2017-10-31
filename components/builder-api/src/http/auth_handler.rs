@@ -19,6 +19,7 @@ use db::data_store::Broker;
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error, unauthorized_error};
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use db;
 
 define_event_log!();
 
@@ -198,17 +199,16 @@ pub fn account_create(req: &mut Request) -> AranResult<Response> {
     match SessionDS::account_create(&conn, &account_create) {
         Ok(account) => Ok(render_json(status::Ok, &account)),
         Err(err) => Err(internal_error(&format!("{}", err))),
-
     }
 }
 
 
-pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
+pub fn account_get_by_id(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
 
@@ -216,16 +216,20 @@ pub fn account_get_by_id(req: &mut Request) -> IronResult<Response> {
     let mut account_get_by_id = AccountGetId::new();
     account_get_by_id.set_id(id.to_string());
     match SessionDS::get_account_by_id(&conn, &account_get_by_id) {
-        Ok(account) => Ok(render_json(status::Ok, &account)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
-
+        Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &account_get_by_id.get_id()
+            )))
+        }
     }
 }
 
 
-pub fn account_get(req: &mut Request) -> IronResult<Response> {
+pub fn account_get(req: &mut Request) -> AranResult<Response> {
     let name = {
         let params = req.extensions.get::<Router>().unwrap();
         let name = params.find("name").unwrap().to_owned();
@@ -236,52 +240,57 @@ pub fn account_get(req: &mut Request) -> IronResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match SessionDS::get_account(&conn, &account_get) {
-        Ok(account) => Ok(render_json(status::Ok, &account)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &account_get.get_email()
+            )))
+        }
 
     }
 }
 
-pub fn session_get(req: &mut Request) -> IronResult<Response> {
+pub fn session_get(req: &mut Request) -> AranResult<Response> {
     let mut session_get = SessionGet::new();
     {
 
         match req.get::<bodyparser::Struct<AccountGetReq>>() {
             Ok(Some(body)) => {
                 if body.email.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `email`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "email")));
+
                 }
                 if body.token.len() <= 0 {
-                    return Ok(Response::with((
-                        status::UnprocessableEntity,
-                        "Missing value for field: `token`",
-                    )));
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "token")));
+
                 }
                 session_get.set_email(body.email.to_string());
                 session_get.set_token(body.token.to_string());
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
 
     let conn = Broker::connect().unwrap();
 
     match SessionDS::get_session(&conn, &session_get) {
-        Ok(session) => Ok(render_json(status::Ok, &session)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(session)) => Ok(render_json(status::Ok, &session)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
+
 
     }
 }
 
 
-pub fn set_ldap_config(req: &mut Request) -> IronResult<Response> {
+pub fn set_ldap_config(req: &mut Request) -> AranResult<Response> {
 
 
     let mut ldap_config = LdapConfig::new();
@@ -312,31 +321,34 @@ pub fn set_ldap_config(req: &mut Request) -> IronResult<Response> {
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
     let conn = Broker::connect().unwrap();
     match SessionDS::ldap_config_create(&conn, &ldap_config) {
-        Ok(ldap) => Ok(render_json(status::Ok, &ldap)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(ldap)) => Ok(render_json(status::Ok, &ldap)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
+
 
     }
 }
 
 
-pub fn test_ldap_config(req: &mut Request) -> IronResult<Response> {
+pub fn test_ldap_config(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
 
@@ -345,19 +357,22 @@ pub fn test_ldap_config(req: &mut Request) -> IronResult<Response> {
     serach_id.set_id(id.to_string());
 
     match SessionDS::test_ldap_config(&conn, &serach_id) {
-        Ok(result) => Ok(render_json(status::Ok, &result)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(result)) => Ok(render_json(status::Ok, &result)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
-pub fn import_ldap(req: &mut Request) -> IronResult<Response> {
+pub fn import_ldap(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
 
@@ -367,13 +382,12 @@ pub fn import_ldap(req: &mut Request) -> IronResult<Response> {
 
     match SessionDS::import_ldap_config(&conn, &serach_id) {
         Ok(result) => Ok(render_json(status::Ok, &result)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+
     }
 }
 
-pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
+pub fn config_saml_provider(req: &mut Request) -> AranResult<Response> {
     let mut saml_provider = SamlProvider::new();
     {
         match req.get::<bodyparser::Struct<SamlProviderReq>>() {
@@ -384,42 +398,45 @@ pub fn config_saml_provider(req: &mut Request) -> IronResult<Response> {
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
     let conn = Broker::connect().unwrap();
     match SessionDS::saml_provider_create(&conn, &saml_provider) {
-        Ok(saml) => Ok(render_json(status::Ok, &saml)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
 
     }
 }
 
 #[allow(unused_variables)]
-pub fn saml_provider_list(req: &mut Request) -> IronResult<Response> {
+pub fn saml_provider_list(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
     match SessionDS::saml_provider_listall(&conn) {
-        Ok(saml_list) => Ok(render_json(status::Ok, &saml_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(saml_list)) => Ok(render_json(status::Ok, &saml_list)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
-pub fn saml_provider_show(req: &mut Request) -> IronResult<Response> {
+pub fn saml_provider_show(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("providerid").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
 
@@ -429,14 +446,19 @@ pub fn saml_provider_show(req: &mut Request) -> IronResult<Response> {
     saml_provider_get.set_id(id.to_string());
 
     match SessionDS::saml_show(&conn, &saml_provider_get) {
-        Ok(saml) => Ok(render_json(status::Ok, &saml)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
-    }
+        Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &saml_provider_get.get_id()
+            )))
+        }
+        }
 }
 
-pub fn config_oidc_provider(req: &mut Request) -> IronResult<Response> {
+pub fn config_oidc_provider(req: &mut Request) -> AranResult<Response> {
     let mut oidc_provider = OidcProvider::new();
     {
         match req.get::<bodyparser::Struct<OidcProviderReq>>() {
@@ -451,44 +473,46 @@ pub fn config_oidc_provider(req: &mut Request) -> IronResult<Response> {
 
             }
             Err(err) => {
-                return Ok(render_net_error(&net::err(
-                    ErrCode::MALFORMED_DATA,
-                    format!("{}, {:?}\n", err.detail, err.cause),
-                )));
+                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
             }
-            _ => return Ok(Response::with(status::UnprocessableEntity)),
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
     }
     let conn = Broker::connect().unwrap();
     match SessionDS::oidc_provider_create(&conn, &oidc_provider) {
-        Ok(oidc) => Ok(render_json(status::Ok, &oidc)),
-
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(oidc)) => Ok(render_json(status::Ok, &oidc)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
 
     }
 }
 
 
 #[allow(unused_variables)]
-pub fn openid_listall(req: &mut Request) -> IronResult<Response> {
+pub fn openid_listall(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
     match SessionDS::openid_provider_listall(&conn) {
-        Ok(oidc_list) => Ok(render_json(status::Ok, &oidc_list)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(oidc_list)) => Ok(render_json(status::Ok, &oidc_list)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
-pub fn openid_provider_show(req: &mut Request) -> IronResult<Response> {
+pub fn openid_provider_show(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("providerid").unwrap().parse::<u64>() {
             Ok(id) => id,
-            Err(_) => return Ok(Response::with(status::BadRequest)),
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
         }
     };
 
@@ -498,9 +522,14 @@ pub fn openid_provider_show(req: &mut Request) -> IronResult<Response> {
     oidc_provider_get.set_id(id.to_string());
 
     match SessionDS::oidc_show(&conn, &oidc_provider_get) {
-        Ok(saml) => Ok(render_json(status::Ok, &saml)),
-        Err(err) => Ok(render_net_error(
-            &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
-        )),
+        Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &oidc_provider_get.get_id()
+            )))
+        }
     }
 }

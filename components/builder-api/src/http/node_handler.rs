@@ -283,9 +283,11 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
             Err(internal_error(&format!("{}\n", err)))
         }
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &node_create.get_id()
+            )))
         }
 
     }

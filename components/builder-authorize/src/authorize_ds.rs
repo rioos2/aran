@@ -100,11 +100,12 @@ impl AuthorizeDS {
                 &(permissions.get_description() as String),
             ],
         ).map_err(Error::PermissionsCreate)?;
-
+if rows.len() > 0 {
         for row in rows {
             let permissions_create = row_to_permissions(&row)?;
             return Ok(Some(permissions_create));
         }
+    }
         Ok(None)
     }
 
@@ -139,11 +140,12 @@ impl AuthorizeDS {
         let role_id = get_permission.get_id().parse::<i64>().unwrap();
         let rows = &conn.query("SELECT * FROM get_permission_for_role_v1($1)", &[&role_id])
             .map_err(Error::RolePermissionsGet)?;
-
+if rows.len() > 0 {
         for row in rows {
             let permissions_get = row_to_permissions(&row)?;
             return Ok(Some(permissions_get));
         }
+    }
         Ok(None)
     }
 
@@ -152,11 +154,12 @@ impl AuthorizeDS {
         let perm_id = get_perms.get_id().parse::<i64>().unwrap();
         let rows = &conn.query("SELECT * FROM get_permission_v1($1)", &[&perm_id])
             .map_err(Error::PermissionGet)?;
-
+if rows.len() > 0 {
         for row in rows {
             let perm_get = row_to_permissions(&row)?;
             return Ok(Some(perm_get));
         }
+    }
         Ok(None)
     }
 
@@ -168,11 +171,12 @@ impl AuthorizeDS {
             "SELECT * FROM get_specfic_permission_role_v1($1,$2)",
             &[&perm_id, &role_id],
         ).map_err(Error::PermissionGet)?;
-
+if rows.len() > 0 {
         for row in rows {
             let perm_get = row_to_permissions(&row)?;
             return Ok(Some(perm_get));
         }
+    }
         Ok(None)
     }
 }

@@ -38,11 +38,12 @@ impl DeploymentDS {
 
             ],
         ).map_err(Error::AssemblyCreate)?;
-
+if rows.len() > 0 {
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
         }
+    }
         Ok(None)
     }
 
@@ -64,11 +65,12 @@ impl DeploymentDS {
             ],
         ).map_err(Error::AssemblyUpdate)?;
 
-
+if rows.len() > 0 {
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
         }
+    }
         Ok(None)
     }
 
@@ -173,10 +175,12 @@ impl DeploymentDS {
                 &(serde_json::to_string(assembly.get_status()).unwrap()),
             ],
         ).map_err(Error::AsmSetStatus)?;
+        if rows.len() > 0 {
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
         }
+    }
         Ok(None)
     }
 
@@ -201,12 +205,13 @@ impl DeploymentDS {
                 &(serde_json::to_string(assembly_fac.get_status()).unwrap()),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
-
+if rows.len() > 0 {
         for row in rows {
         let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
 
         return Ok(Some(assembly_factory.clone()));
     }
+}
     Ok(None)
     }
 
@@ -217,14 +222,14 @@ impl DeploymentDS {
             "SELECT * FROM get_assembly_factory_v1($1)",
             &[&(get_assembly_factory.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::AssemblyFactoryGet)?;
-
+if rows.len() > 0 {
         for row in rows {
             let mut assembly_factory = row_to_assembly_factory(&row)?;
             let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
             assembly_factory.set_plan_data(data);
             return Ok(Some(assembly_factory));
         }
-
+}
         Ok(None)
     }
 
@@ -238,12 +243,14 @@ impl DeploymentDS {
                 &(serde_json::to_string(assembly_fac.get_status()).unwrap()),
             ],
         ).map_err(Error::AsmFactorySetStatus)?;
+        if rows.len() > 0 {
         for row in rows {
             let mut assembly_factory = row_to_assembly_factory(&row)?;
             let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
             assembly_factory.set_plan_data(data);
             return Ok(Some(assembly_factory));
         }
+    }
         Ok(None)
     }
 
@@ -343,12 +350,12 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query("SELECT * FROM get_plan_v1($1)", &[&url])
             .map_err(Error::PlanGet)?;
-
+if rows.len() > 0 {
         for row in rows {
             let plan = row_to_plan(&row)?;
             return Ok(Some(plan));
         }
-
+}
         Ok(None)
     }
 
@@ -362,11 +369,14 @@ impl DeploymentDS {
         let mut response = plansrv::PlanGetResponse::new();
 
         let mut plan_collection = Vec::new();
+        if rows.len() > 0 {
         for row in rows {
             plan_collection.push(row_to_plan(&row)?)
         }
         response.set_plan_collection(plan_collection, "PlanList".to_string(), "v1".to_string());
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn endpoints_show(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {

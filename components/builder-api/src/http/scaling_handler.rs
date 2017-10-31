@@ -187,13 +187,10 @@ pub fn hs_create(req: &mut Request) -> AranResult<Response> {
         Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
-            Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(db::error::Error::RecordsNotFound),
-                &hs_create.get_id()
-            )))
-
-    }
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
 }
 }
 #[allow(unused_variables)]
@@ -233,9 +230,11 @@ pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> AranResult<Respon
     match ScalingDS::horizontal_scaling_list_by_origin(&conn, &hs_get) {
         Ok(Some(hs)) => Ok(render_json(status::Ok, &hs)),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &hs_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))

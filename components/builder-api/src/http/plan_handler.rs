@@ -77,11 +77,9 @@ pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
             Err(internal_error(&format!("{}\n", err)))
         }
         Ok(None) => {
-            Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(db::error::Error::RecordsNotFound),
-                &plan_create.get_id()
-            )))
-    }
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
 }
 }

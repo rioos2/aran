@@ -27,10 +27,12 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(secret_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::SecretCreate)?;
+        if rows.len() > 0 {
         for row in rows {
         let secret = row_to_secret(&rows.get(0));
         return Ok(Some(secret));
     }
+}
     Ok(None)
 
     }
@@ -276,10 +278,12 @@ if rows.len() > 0 {
                 &(serde_json::to_string(services_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServicesCreate)?;
+        if rows.len() > 0 {
         for row in rows {
         let end = row_to_services(&rows.get(0));
         return Ok(Some(end));
     }
+}
     Ok(None)
 
     }

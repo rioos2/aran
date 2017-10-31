@@ -119,7 +119,7 @@ impl SessionDS {
         ).map_err(Error::AccountGet)?;
         if rows.len() != 0 {
             let row = rows.get(0);
-            Ok(Some(row_to_account(row)))
+            return Ok(Some(row_to_account(row)));
         } else {
             Err(Error::Db(db::error::Error::RecordsNotFound))
         }
@@ -132,7 +132,7 @@ impl SessionDS {
             .map_err(Error::AccountGetById)?;
         if rows.len() != 0 {
             let row = rows.get(0);
-            Ok(Some(row_to_account(row)))
+            return Ok(Some(row_to_account(row)));
         } else {
             Ok(None)
         }
@@ -202,7 +202,7 @@ impl SessionDS {
                 flags.insert(privilege::SERVICE_ACCESS);
             }
             session.set_flags(flags.bits());
-            Ok(Some(session))
+            return Ok(Some(session));
         } else {
             Ok(None)
         }
@@ -229,7 +229,8 @@ impl SessionDS {
         ).map_err(Error::OriginCreate)?;
             if rows.len() > 0 {
         let origin = row_to_origin(&rows.get(0))?;
-        return Ok(Some(origin));}
+        return Ok(Some(origin));
+    }
         Ok(None)
     }
 
@@ -257,10 +258,12 @@ impl SessionDS {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query("SELECT * FROM get_origin_v1($1)", &[&get_origin.get_id()])
             .map_err(Error::OriginGet)?;
+            if rows.len() > 0 {
         for row in rows {
             let origin = row_to_origin(&row)?;
             return Ok(Some(origin));
         }
+    }
         Ok(None)
     }
 
@@ -393,10 +396,13 @@ impl SessionDS {
             "SELECT * FROM get_saml_v1($1)",
             &[&(saml_provider_get.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::SamlProviderGet)?;
+        if rows.len() > 0 {
+
         for row in rows {
             let saml = row_to_saml_provider(&row)?;
             return Ok(Some(saml));
         }
+    }
         Ok(None)
     }
 
