@@ -18,6 +18,7 @@ dependencies = [
  "rioos_builder_session 0.0.0",
  "rioos_common 0.0.0",
  "rioos_core 0.0.0",
+ "router 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
