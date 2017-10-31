@@ -38,7 +38,7 @@ impl ScalingDS {
                 &(status_str as String),
             ],
         ).map_err(Error::HSCreate)?;
-    if rows.len() > 0 {
+if rows.len() > 0 {
         let hs = row_to_hs(&rows.get(0))?;
         return Ok(Some(hs));
     }
@@ -64,7 +64,7 @@ impl ScalingDS {
             "HorizontalPodAutoscalerList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
     Ok(None)
     }
@@ -93,18 +93,20 @@ impl ScalingDS {
         Ok(None)
     }
 
-    pub fn hs_status_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<()> {
+    pub fn hs_status_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
         let conn = datastore.pool.get_shard(0)?;
         let id = hs.get_id().parse::<i64>().unwrap();
         let status_str = serde_json::to_string(hs.get_status()).unwrap();
-        conn.execute(
+        let rows = &conn.query(
             "SELECT set_hs_status_v1($1, $2)",
             &[&id, &(status_str as String)],
         ).map_err(Error::HSSetStatus)?;
-        for row in rows {
+        if rows.len() > 0 {
+            let hs = row_to_hs(&rows.get(0))?;
             return Ok(Some(hs));
         }
         Ok(None)
+
     }
 
     pub fn hs_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {

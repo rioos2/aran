@@ -12,6 +12,10 @@ use router::Router;
 use db::data_store::Broker;
 use protocol::authsrv::{Roles, Permissions};
 use protocol::asmsrv::IdGet;
+use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use rio_net::util::errors::AranResult;
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
+use db;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct RolesCreateReq {
@@ -26,7 +30,7 @@ pub struct PermissionsCreateReq {
     description: String,
 }
 
-pub fn roles_create(req: &mut Request) -> IronResult<Response> {
+pub fn roles_create(req: &mut Request) -> AranResult<Response> {
     let mut roles = Roles::new();
     {
         match req.get::<bodyparser::Struct<RolesCreateReq>>() {
@@ -55,12 +59,18 @@ pub fn roles_create(req: &mut Request) -> IronResult<Response> {
     match AuthorizeDS::roles_create(&conn, &roles) {
         Ok(Some(roles_create)) => Ok(render_json(status::Ok, &roles_create)),
         Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
+
 
     }
 }
 
 
-pub fn roles_show(req: &mut Request) -> IronResult<Response> {
+pub fn roles_show(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
@@ -85,7 +95,7 @@ pub fn roles_show(req: &mut Request) -> IronResult<Response> {
 }
 
 #[allow(unused_variables)]
-pub fn roles_list(req: &mut Request) -> IronResult<Response> {
+pub fn roles_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match AuthorizeDS::roles_list(&conn) {
@@ -99,7 +109,7 @@ pub fn roles_list(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
+pub fn permissions_create(req: &mut Request) -> AranResult<Response> {
     let mut permissions = Permissions::new();
     {
         match req.get::<bodyparser::Struct<PermissionsCreateReq>>() {
@@ -136,13 +146,17 @@ pub fn permissions_create(req: &mut Request) -> IronResult<Response> {
     match AuthorizeDS::permissions_create(&conn, &permissions) {
         Ok(Some(permissions_create)) => Ok(render_json(status::Ok, &permissions_create)),
         Err(err) => Err(internal_error(&format!("{}", err))),
-
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
 
     }
 }
 
 #[allow(unused_variables)]
-pub fn permissions_list(req: &mut Request) -> IronResult<Response> {
+pub fn permissions_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match AuthorizeDS::permissions_list(&conn) {
         Ok(Some(permissions_list)) => Ok(render_json(status::Ok, &permissions_list)),
@@ -155,7 +169,7 @@ pub fn permissions_list(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn get_rolebased_permissions(req: &mut Request) -> IronResult<Response> {
+pub fn get_rolebased_permissions(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
@@ -180,7 +194,7 @@ pub fn get_rolebased_permissions(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn permissions_show(req: &mut Request) -> IronResult<Response> {
+pub fn permissions_show(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
         match params.find("id").unwrap().parse::<u64>() {
@@ -204,7 +218,7 @@ pub fn permissions_show(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn get_specfic_permission_based_role(req: &mut Request) -> IronResult<Response> {
+pub fn get_specfic_permission_based_role(req: &mut Request) -> AranResult<Response> {
 
     let (perm_id, role_id) = {
         let params = req.extensions.get::<Router>().unwrap();

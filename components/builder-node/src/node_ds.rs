@@ -26,10 +26,12 @@ impl NodeDS {
             ],
         ).map_err(Error::NodeCreate)?;
 
-
+        if rows.len() > 0 {
         let node = row_to_node(&rows.get(0))?;
 
-        return Ok(Some(node.clone()));
+        return Ok(Some(node));
+    }
+    Ok(None)
     }
 
     pub fn node_list(datastore: &DataStoreConn) -> Result<Option<nodesrv::NodeGetResponse>> {
@@ -42,24 +44,27 @@ impl NodeDS {
         let mut response = nodesrv::NodeGetResponse::new();
 
         let mut node_collection = Vec::new();
-
+if rows.len() > 0 {
         for row in rows {
             node_collection.push(row_to_node(&row)?)
         }
         response.set_node_collection(node_collection, "NodeList".to_string(), "v1".to_string());
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
-    pub fn node_status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<()> {
+    pub fn node_status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
         let conn = datastore.pool.get_shard(0)?;
-        conn.execute(
+        let rows = conn.query(
             "SELECT set_node_status_v1($1, $2)",
             &[
                 &(node.get_id().parse::<i64>().unwrap()),
                 &(serde_json::to_string(node.get_status()).unwrap()),
             ],
         ).map_err(Error::NodeSetStatus)?;
-        for row in rows {
+        if rows.len() > 0 {
+            let node = row_to_node(&rows.get(0))?;
             return Ok(Some(node));
         }
         Ok(None)

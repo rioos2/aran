@@ -14,7 +14,7 @@ use rio_net::util::errors::*;
 pub struct ServiceAccountDS;
 
 impl ServiceAccountDS {
-    pub fn secret_create(datastore: &DataStoreConn, secret_create: &servicesrv::Secret) -> Result<servicesrv::Secret> {
+    pub fn secret_create(datastore: &DataStoreConn, secret_create: &servicesrv::Secret) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -32,6 +32,7 @@ impl ServiceAccountDS {
         return Ok(Some(secret));
     }
     Ok(None)
+
     }
     pub fn secret_show(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -109,9 +110,11 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(service_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
-
+if rows.len() > 0 {
         let service_account = row_to_service_account(&rows.get(0))?;
         return Ok(Some(service_account));
+    }
+    Ok(None)
     }
 
     pub fn service_account_show(datastore: &DataStoreConn, get_service: &asmsrv::IdGet) -> Result<Option<servicesrv::ServiceAccount>> {
@@ -147,7 +150,7 @@ impl ServiceAccountDS {
             "ServiceAccountList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
         Ok(None)
     }
@@ -165,8 +168,11 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(endpoints_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::EndPointsCreate)?;
+        if rows.len() > 0 {
         let end = row_to_endpoints(&rows.get(0))?;
         return Ok(Some(end));
+    }
+    Ok(None)
     }
 
     pub fn endpoints_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::EndpointsGetResponse>> {
@@ -256,7 +262,7 @@ impl ServiceAccountDS {
         }
         Ok(None)
     }
-    pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<servicesrv::Services> {
+    pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;
         let asmid = services_create.get_spec().get_selector().get("rioos_assembly_factory_id");
         let rows = &conn.query(
@@ -270,8 +276,12 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(services_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServicesCreate)?;
+        for row in rows {
         let end = row_to_services(&rows.get(0));
         return Ok(Some(end));
+    }
+    Ok(None)
+
     }
     pub fn services_show(datastore: &DataStoreConn, services_get: &asmsrv::IdGet) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;

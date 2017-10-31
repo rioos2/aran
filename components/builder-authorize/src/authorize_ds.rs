@@ -62,7 +62,7 @@ impl AuthorizeDS {
             "PermissionList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
     Ok(None)
     }
@@ -77,13 +77,16 @@ impl AuthorizeDS {
         let mut response = authsrv::RolesGetResponse::new();
 
         let mut roles_collection = Vec::new();
+        if rows.len() > 0 {
 
         for row in rows {
             let roles = row_to_roles(&row)?;
             roles_collection.push(roles);
         }
         response.set_roles(roles_collection, "RolesList".to_string(), "v1".to_string());
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn permissions_create(datastore: &DataStoreConn, permissions: &authsrv::Permissions) -> Result<Option<authsrv::Permissions>> {
@@ -114,6 +117,7 @@ impl AuthorizeDS {
         let mut response = authsrv::PermissionsGetResponse::new();
 
         let mut perm_collection = Vec::new();
+        if rows.len() > 0 {
 
         for row in rows {
             let perm = row_to_permissions(&row)?;
@@ -124,7 +128,9 @@ impl AuthorizeDS {
             "PermissionList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn get_rolebased_permissions(datastore: &DataStoreConn, get_permission: &asmsrv::IdGet) -> Result<Option<authsrv::Permissions>> {

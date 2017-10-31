@@ -202,10 +202,12 @@ impl DeploymentDS {
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
 
-
+        for row in rows {
         let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
 
         return Ok(Some(assembly_factory.clone()));
+    }
+    Ok(None)
     }
 
     pub fn assembly_factory_show(datastore: &DataStoreConn, get_assembly_factory: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblyFactory>> {
@@ -256,7 +258,7 @@ impl DeploymentDS {
 
         let mut assembly_factorys_collection = Vec::new();
 
-
+        if rows.len() > 0 {
         for row in rows {
             assembly_factorys_collection.push(row_to_assembly_factory(&row)?)
         }
@@ -265,7 +267,9 @@ impl DeploymentDS {
             "AssemblyFactoryList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
     pub fn assemblyfactorys_show_by_origin(datastore: &DataStoreConn, assemblyfactory_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblyFactoryGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;

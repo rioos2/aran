@@ -121,16 +121,16 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
 
         //authorization API: for roles
-        roles: post "/roles" => XHandler::new(roles_create).before(basic.clone()),
-        roles_list: get "/roles" => XHandler::new(roles_list).before(basic.clone()),
-        roles_show: get "/roles/:id" => XHandler::new(roles_show).before(basic.clone()),
+        roles: post "/roles" => XHandler::new(C(roles_create)).before(basic.clone()),
+        roles_list: get "/roles" => XHandler::new(C(roles_list)).before(basic.clone()),
+        roles_show: get "/roles/:id" => XHandler::new(C(roles_show)).before(basic.clone()),
 
         //authorization API: for permissions
-        permissions: post "/permissions" => XHandler::new(permissions_create).before(basic.clone()),
-        permissions_list: get "/permissions" => XHandler::new(permissions_list).before(basic.clone()),
-        role_based_permission: get "/permissions/roles/:id" => XHandler::new(get_rolebased_permissions).before(basic.clone()),
-        permissions_show: get "/permissions/:id" => XHandler::new(permissions_show).before(basic.clone()),
-        get_specfic_permission_based_role: get "/permissions/:id/roles/:rid" => XHandler::new(get_specfic_permission_based_role).before(basic.clone()),
+        permissions: post "/permissions" => XHandler::new(C(permissions_create)).before(basic.clone()),
+        permissions_list: get "/permissions" => XHandler::new(C(permissions_list)).before(basic.clone()),
+        role_based_permission: get "/permissions/roles/:id" => XHandler::new(C(get_rolebased_permissions)).before(basic.clone()),
+        permissions_show: get "/permissions/:id" => XHandler::new(C(permissions_show)).before(basic.clone()),
+        get_specfic_permission_based_role: get "/permissions/:id/roles/:rid" => XHandler::new(C(get_specfic_permission_based_role)).before(basic.clone()),
 
         //node API
         nodes: post "/nodes" => XHandler::new(C(node_create)).before(basic.clone()),

@@ -37,9 +37,9 @@ impl PlanDS {
         let plan = row_to_plan(&rows.get(0))?;
         return Ok(Some(plan));
     }
-}
 Ok(None)
 
+}
 }
 
 fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {

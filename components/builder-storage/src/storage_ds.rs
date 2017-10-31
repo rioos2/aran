@@ -28,7 +28,7 @@ impl StorageDS {
         ).map_err(Error::StorageCreate)?;
             if rows.len() > 0 {
         let storage = row_to_storage(&rows.get(0))?;
-        return Ok(Some(storage);
+        return Ok(Some(storage));
     }
     Ok(None)
     }
@@ -52,7 +52,7 @@ impl StorageDS {
             "StorageList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
     Ok(None)
     }
@@ -101,7 +101,10 @@ impl StorageDS {
             ],
         ).map_err(Error::StorageCreate)?;
             if rows.len() > 0 {
+                for row in rows {
+                let storage = row_to_storage(&row)?;
         return Ok(Some(storage));
+    }
     }
     Ok(None)
     }
@@ -147,7 +150,7 @@ impl StorageDS {
             "DataCenterList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
     Ok(None)
     }
@@ -201,7 +204,7 @@ impl StorageDS {
             "StoragePoolList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
     Ok(None)
     }
@@ -224,7 +227,7 @@ impl StorageDS {
             "StoragePoolList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
     Ok(None)
     }

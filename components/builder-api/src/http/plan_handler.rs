@@ -16,6 +16,7 @@ use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::plansrv::{Plan, Service};
 use common::ui;
+use db;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct PlanCreateReq {
@@ -79,7 +80,8 @@ pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
             Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(db::error::Error::RecordsNotFound),
-                &org_get.get_id()
+                &plan_create.get_id()
             )))
     }
+}
 }

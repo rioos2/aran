@@ -26,8 +26,11 @@ impl NetworkDS {
                 &(serde_json::to_string(net_create.get_status()).unwrap()),
             ],
         ).map_err(Error::NetworkCreate)?;
+        if rows.len() > 0 {
         let network = row_to_network(&rows.get(0))?;
         return Ok(Some(network.clone()));
+    }
+    Ok(None)
     }
 
     pub fn network_list(datastore: &DataStoreConn) -> Result<Option<netsrv::NetworkGetResponse>> {
@@ -49,9 +52,10 @@ impl NetworkDS {
             "NetworkList".to_string(),
             "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
     Ok(None)
+}
 }
 
 fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {

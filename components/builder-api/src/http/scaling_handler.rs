@@ -185,19 +185,17 @@ pub fn hs_create(req: &mut Request) -> AranResult<Response> {
 
     match ScalingDS::hs_create(&conn, &hs_create) {
         Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(db::error::Error::RecordsNotFound),
-                &org_get.get_id()
+                &hs_create.get_id()
             )))
 
     }
 }
-
+}
 #[allow(unused_variables)]
 pub fn hs_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
@@ -304,16 +302,15 @@ pub fn hs_status_update(req: &mut Request) -> AranResult<Response> {
 
     match ScalingDS::hs_status_update(&conn, &hs_update) {
         Ok(Some(hs_update)) => Ok(render_json(status::Ok, &hs_update)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(db::error::Error::RecordsNotFound),
-                &org_get.get_id()
+                &hs_update.get_id()
             )))
     }
+}
 }
 
 pub fn hs_update(req: &mut Request) -> AranResult<Response> {
