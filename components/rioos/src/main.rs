@@ -78,6 +78,7 @@ fn start(ui: &mut UI) -> Result<()> {
             match matches.subcommand() {
                 ("deploy", Some(m)) => sub_digicloud_deploy(ui, m)?,
                 ("list", Some(m)) => sub_digicloud_list(ui, m)?,
+                ("describe", Some(m)) => sub_digicloud_decribe(ui, m)?,
                 _ => unreachable!(),
             }
         }
@@ -114,6 +115,7 @@ fn sub_cli_completers(m: &ArgMatches) -> Result<()> {
 
 
 fn sub_digicloud_deploy(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
     let config_file = m.value_of("CONFIG").map(|v| v.into());
 
     command::digicloud::deploy::start(
@@ -132,6 +134,19 @@ fn sub_digicloud_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         &api_server_param_or_env(&m)?,
         auth_token_param_or_env(&m)?,
         auth_email_param_or_env(&m)?,
+    )
+}
+
+
+fn sub_digicloud_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    let config_file = m.value_of("DIGICLOUD_NAME").map(|v| v.into());
+
+    command::digicloud::describe::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        config_file.unwrap(),
     )
 }
 

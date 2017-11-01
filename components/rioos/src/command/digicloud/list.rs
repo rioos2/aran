@@ -19,9 +19,11 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let results = rio_client.list_deploy(&token, &email)?;
 
-    let title = row!["Id", "Name", "Replicas", "Located", "Origin", "Hrs ago"];
+    let title = row!["Id", "Name", "Replicas", "Located", "Origin", "Hrs"];
 
     pretty_table(results.to_owned(), title);
+
+    ui.br()?;
 
     ui.para(
         "For more information on digitalclouds deployments: \
