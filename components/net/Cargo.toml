@@ -24,6 +24,8 @@ serde_json = "1.0.2"
 time = "*"
 router = "*"
 unicase = "1.4.2"
+itertools = "*"
+
 
 [dependencies.rioos_common]
 path = "../common"
