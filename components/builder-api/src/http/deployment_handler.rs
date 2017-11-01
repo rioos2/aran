@@ -33,7 +33,6 @@ struct AssemblyCreateReq {
     description: String,
     node: String,
     status: StatusReq,
-    ips: BTreeMap<String, Vec<String>>,
     urls: BTreeMap<String, String>,
     volumes: Vec<VolumeReq>,
     instance_id: String,
@@ -201,7 +200,6 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
                 object_meta.set_owner_references(owner_collection);
                 assembly_create.set_object_meta(object_meta);
                 assembly_create.set_status(status);
-                assembly_create.set_ip(body.ips);
 
                 let mut volume_collection = Vec::new();
 
@@ -383,7 +381,6 @@ pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
                 assembly_create.set_tags(body.tags);
                 assembly_create.set_parent_id(body.parent_id);
                 assembly_create.set_node(body.node);
-                assembly_create.set_ip(body.ips);
                 assembly_create.set_urls(body.urls);
                 let mut volume_collection = Vec::new();
 

@@ -18,7 +18,7 @@ impl DeploymentDS {
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
@@ -28,7 +28,6 @@ impl DeploymentDS {
                 &(assembly.get_tags() as Vec<String>),
                 &(assembly.get_selector() as Vec<String>),
                 &(assembly.get_node() as String),
-                &(serde_json::to_string(assembly.get_ip()).unwrap()),
                 &(serde_json::to_string(assembly.get_urls()).unwrap()),
                 &(serde_json::to_string(assembly.get_status()).unwrap()),
                 &(serde_json::to_string(assembly.get_volumes()).unwrap()),
@@ -50,7 +49,7 @@ if rows.len() > 0 {
     pub fn assembly_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
                 &(assembly.get_id().parse::<i64>().unwrap()),
                 &(assembly.get_name() as String),
@@ -59,7 +58,6 @@ if rows.len() > 0 {
                 &(assembly.get_parent_id() as String),
                 &(assembly.get_tags() as Vec<String>),
                 &(assembly.get_node() as String),
-                &(serde_json::to_string(assembly.get_ip()).unwrap()),
                 &(serde_json::to_string(assembly.get_urls()).unwrap()),
                 &(serde_json::to_string(assembly.get_volumes()).unwrap()),
             ],
@@ -402,7 +400,6 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let origin: i64 = row.get("origin_id");
     let status: String = row.get("status");
     let node: String = row.get("node");
-    let ip: String = row.get("ip");
     let volume: String = row.get("volumes");
     let object_meta: String = row.get("object_meta");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
@@ -429,7 +426,6 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_status(serde_json::from_str(&status).unwrap());
     assembly.set_volumes(serde_json::from_str(&volume).unwrap());
     assembly.set_node(node as String);
-    assembly.set_ip(serde_json::from_str(&ip).unwrap());
     assembly.set_created_at(created_at.to_rfc3339());
 
     Ok(assembly)

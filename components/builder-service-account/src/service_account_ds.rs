@@ -9,6 +9,8 @@ use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
 use rio_net::util::errors::*;
+pub const RIO_ASM_FAC_ID: &'static str = "rioos_assembly_factory_id";
+
 
 
 pub struct ServiceAccountDS;
@@ -256,7 +258,7 @@ if rows.len() > 0 {
     }
     pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;
-        let asmid = services_create.get_spec().get_selector().get("rioos_assembly_factory_id");
+        let asmid = services_create.get_spec().get_selector().get(&RIO_ASM_FAC_ID.to_string());
         let rows = &conn.query(
             "SELECT * FROM insert_services_v1($1,$2,$3,$4,$5,$6)",
             &[

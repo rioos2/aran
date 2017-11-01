@@ -20,7 +20,6 @@ pub struct Assembly {
     origin: String,
     tags: Vec<String>,
     node: String,
-    ips: BTreeMap<String, Vec<String>>,
     urls: BTreeMap<String, String>,
     status: Status,
     volumes: Vec<Volume>,
@@ -133,14 +132,6 @@ impl Assembly {
 
     pub fn get_node(&self) -> ::std::string::String {
         self.node.clone()
-    }
-
-    pub fn set_ip(&mut self, v: BTreeMap<String, Vec<String>>) {
-        self.ips = v;
-    }
-
-    pub fn get_ip(&self) -> &BTreeMap<String, Vec<String>> {
-        &self.ips
     }
 
     pub fn set_volumes(&mut self, v: Vec<Volume>) {

@@ -17,6 +17,9 @@ use http::deployment_handler;
 use common::ui;
 use db;
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+pub const RIOOS_ASSM_FAC_ID: &'static str = "rioos_assembly_factory_id";
+
+
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SecretCreateReq {
@@ -556,7 +559,7 @@ pub fn services_create(req: &mut Request) -> AranResult<Response> {
                 if body.object_meta.origin.len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
-                let asmid = body.spec.selector.get("rioos_assembly_factory_id").to_owned();
+                let asmid = body.spec.selector.get(&RIOOS_ASSM_FAC_ID.to_string()).to_owned();
                 if asmid.unwrap().len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "assembly id")));
                 }

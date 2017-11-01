@@ -36,7 +36,6 @@ impl Migratable for DeployProcedures {
              tags text[],
              selector text[],
              node text,
-             ip text,
              urls text,
              status text,
              volumes text,
@@ -62,7 +61,6 @@ impl Migratable for DeployProcedures {
                 tags text[],
                 selector text[],
                 node text,
-                ip text,
                 urls text,
                 status text,
                 volumes text,
@@ -74,8 +72,8 @@ impl Migratable for DeployProcedures {
                            this_origin origins%rowtype;
                                 BEGIN
                                 SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id,origin_id, tags, selector,node,ip,urls,status,volumes,instance_id, type_meta, object_meta)
-                                        VALUES (name, uri, description,parent_id,this_origin.id, tags,selector,node,ip,urls,status,volumes,instance_id, type_meta, object_meta)
+                                    RETURN QUERY INSERT INTO assembly(name, uri, description,parent_id,origin_id, tags, selector,node,urls,status,volumes,instance_id, type_meta, object_meta)
+                                        VALUES (name, uri, description,parent_id,this_origin.id, tags,selector,node,urls,status,volumes,instance_id, type_meta, object_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -132,7 +130,7 @@ impl Migratable for DeployProcedures {
             r#"CREATE OR REPLACE FUNCTION get_assemblys_by_services_v1(serv_name text) RETURNS SETOF assembly AS $$
 
                         BEGIN
-                         RETURN QUERY SELECT * FROM assembly WHERE serv_name = ANY(selector); 
+                         RETURN QUERY SELECT * FROM assembly WHERE serv_name = ANY(selector);
                          RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -140,9 +138,9 @@ impl Migratable for DeployProcedures {
 
         migrator.migrate(
             "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_name text, asm_uri text, asm_description text,asm_parent_id text, asm_tags text[],asm_node text,asm_ip text,asm_urls text,asm_volumes text) RETURNS SETOF assembly AS $$
+            r#"CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_name text, asm_uri text, asm_description text,asm_parent_id text, asm_tags text[],asm_node text,asm_urls text,asm_volumes text) RETURNS SETOF assembly AS $$
                             BEGIN
-                                RETURN QUERY UPDATE assembly SET name=asm_name,uri=asm_uri,description=asm_description,parent_id=asm_parent_id,tags=asm_tags,node=asm_node,ip=asm_ip,urls=asm_urls, volumes= asm_volumes,updated_at=now() WHERE id=aid
+                                RETURN QUERY UPDATE assembly SET name=asm_name,uri=asm_uri,description=asm_description,parent_id=asm_parent_id,tags=asm_tags,node=asm_node,urls=asm_urls, volumes= asm_volumes,updated_at=now() WHERE id=aid
                                 RETURNING *;
                                 RETURN;
                             END
