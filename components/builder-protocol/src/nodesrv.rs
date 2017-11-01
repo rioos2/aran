@@ -253,6 +253,7 @@ impl NodeGetResponse {
     }
 }
 
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HealthzAllGet {
     title: String,

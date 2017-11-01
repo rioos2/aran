@@ -13,6 +13,7 @@ pub mod network_handler;
 pub mod storage_handler;
 pub mod plan_handler;
 pub mod watch_handler;
+pub mod job_handler;
 
 
 use std::sync::{mpsc, Arc};
@@ -45,6 +46,7 @@ use self::network_handler::*;
 use self::storage_handler::*;
 use self::plan_handler::*;
 use self::watch_handler::*;
+use self::job_handler::*;
 
 use db::data_store::*;
 use std::sync::mpsc::channel;
@@ -193,6 +195,13 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         services_list_by_origin: get "/origins/:origin/services" => XHandler::new(C(services_list_by_origin)).before(basic.clone()),
 
         plan_factory: post "/planfactory" =>XHandler::new(C(plan_factory_create)).before(basic.clone()),
+
+        //Jobs API
+
+        jobs: post "/jobs" => XHandler::new(C(jobs_create)).before(basic.clone()),
+        jobs_get: get "/jobs" => XHandler::new(C(jobs_get)).before(basic.clone()),
+        jobs_status_update: put "/jobs/:jobid/status" => XHandler::new(C(jobs_status_update)).before(basic.clone()),
+
 
         //Internal: Streaming watch
         watches: get "/:name/watch/list" => watch_show,
