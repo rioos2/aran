@@ -35,6 +35,7 @@ pub mod plansrv;
 pub mod servicesrv;
 pub mod netsrv;
 pub mod storagesrv;
+pub mod jobsrv;
 
 pub use self::error::{Error, Result};
 pub use self::sharding::{ShardId, SHARD_COUNT, InstaId};

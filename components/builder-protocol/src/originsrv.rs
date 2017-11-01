@@ -1,6 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc.
-use {asmsrv, servicesrv};
-use DEFAULT_API_VERSION;
+use {asmsrv, servicesrv, DEFAULT_API_VERSION};
 pub const ORIGINSLIST: &'static str = "OriginsList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]

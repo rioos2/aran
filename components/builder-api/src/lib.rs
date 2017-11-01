@@ -20,6 +20,7 @@ extern crate rioos_builder_netsrv as network;
 extern crate rioos_builder_storagesrv as storage;
 extern crate rioos_builder_workersrv as worker;
 extern crate rioos_builder_plan as plan;
+extern crate rioos_builder_jobsrv as job;
 
 
 
