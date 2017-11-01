@@ -3,12 +3,10 @@
 use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
+use DEFAULT_API_VERSION;
 
-pub const ASSEMBLY: &'static str = "Assembly";
 pub const ASSEMBLYLIST: &'static str = "AssemblyList";
-pub const ASSEMBLYFACTORY: &'static str = "AssemblyFactory";
 pub const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     id: String,
@@ -280,10 +278,10 @@ impl AssemblysGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_assemblys(&mut self, v: Vec<Assembly>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_assemblys(&mut self, v: Vec<Assembly>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = ASSEMBLYLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 
@@ -494,7 +492,7 @@ impl ObjectMeta {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
-    
+
     pub fn set_origin(&mut self, v: ::std::string::String) {
         self.origin = v;
     }
@@ -638,9 +636,9 @@ impl AssemblyFactoryGetResponse {
     }
 
     // Param is passed by value, moved
-    pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = ASSEMBLYFACTORYLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }

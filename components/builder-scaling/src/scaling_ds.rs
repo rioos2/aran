@@ -4,16 +4,17 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{scalesrv, asmsrv, nodesrv};
+use protocol::{scalesrv, asmsrv, nodesrv,DEFAULT_API_VERSION};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
-
 const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
 const METRIC_LBL_RIOOS_SOURCENAME: &'static str = "rioos_source";
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
+const HORIZONTALPODAUTOSCALAR: &'static str = "HorizontalPodAutoscaler";
+
 
 
 pub struct ScalingDS;
@@ -61,8 +62,6 @@ if rows.len() > 0 {
         }
         response.set_hs_collection(
             hs_collection,
-            "HorizontalPodAutoscalerList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }
@@ -85,8 +84,6 @@ if rows.len() > 0 {
             }
             response.set_hs_collection(
                 hs_collection,
-                "HorizontalPodAutoscalerList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
@@ -210,8 +207,8 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     obj_meta.set_owner_references(owner_collection);
     hs.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("HorizontalPodAutoscaler".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(HORIZONTALPODAUTOSCALAR.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     hs.set_type_meta(type_meta);
 
     hs.set_created_at(created_at.to_rfc3339());

@@ -4,12 +4,13 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{nodesrv, asmsrv};
+use protocol::{nodesrv, asmsrv,DEFAULT_API_VERSION};
 use postgres;
 use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
+pub const NODE: &'static str = "Node";
 
 const METRIC_NODE: &'static str = "node_cpu";
 
@@ -48,7 +49,7 @@ if rows.len() > 0 {
         for row in rows {
             node_collection.push(row_to_node(&row)?)
         }
-        response.set_node_collection(node_collection, "NodeList".to_string(), "v1".to_string());
+        response.set_node_collection(node_collection);
         return Ok(Some(response));
     }
     Ok(None)
@@ -167,8 +168,8 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {
     obj_meta.set_owner_references(owner_collection);
     node.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Node".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(NODE.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     node.set_type_meta(type_meta);
     node.set_created_at(created_at.to_rfc3339());
     Ok(node)

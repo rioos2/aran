@@ -1,6 +1,9 @@
 // Copyright (c) 2017 RioCorp Inc.
 use std::collections::BTreeMap;
 use {asmsrv, servicesrv};
+use DEFAULT_API_VERSION;
+
+pub const NETWORKLIST: &'static str = "NetworkList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Network {
     id: String,
@@ -113,9 +116,9 @@ impl NetworkGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_network_collection(&mut self, v: Vec<Network>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_network_collection(&mut self, v: Vec<Network>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = NETWORKLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }

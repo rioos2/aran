@@ -63,7 +63,7 @@ struct EndPointsReq {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SubsetsReq {
     addresses: Vec<AddessesReq>,
-    not_ready_addresses: Vec<AddessesReq>,
+    unready_addresses: Vec<AddessesReq>,
     ports: Vec<PortsReq>,
 }
 
@@ -393,14 +393,14 @@ pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
                 subsets.set_addresses(address_collection);
 
                 let mut not_ready_address_collection = Vec::new();
-                for nr_address in body.subsets.not_ready_addresses {
+                for nr_address in body.subsets.unready_addresses {
                     let mut addesses = Addesses::new();
                     addesses.set_name(nr_address.name);
                     addesses.set_protocol_version(nr_address.protocol_version);
                     addesses.set_ip(nr_address.ip);
                     not_ready_address_collection.push(addesses);
                 }
-                subsets.set_not_ready_addresses(not_ready_address_collection);
+                subsets.set_unready_addresses(not_ready_address_collection);
 
                 let mut ports_collection = Vec::new();
                 for port in body.subsets.ports {

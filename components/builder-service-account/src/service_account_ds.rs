@@ -68,8 +68,7 @@ impl ServiceAccountDS {
             }
             response.set_secret_collection(
                 secret_collection,
-                "SecretList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -92,8 +91,7 @@ impl ServiceAccountDS {
             }
             response.set_secret_collection(
                 secret_collection,
-                "SecretList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -149,8 +147,6 @@ if rows.len() > 0 {
         }
         response.set_service_collection(
             service_collection,
-            "ServiceAccountList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }
@@ -193,8 +189,6 @@ if rows.len() > 0 {
             }
             response.set_end_collection(
                 end_collection,
-                "EndpointsList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
@@ -233,8 +227,6 @@ if rows.len() > 0 {
             }
             response.set_end_collection(
                 end_collection,
-                "EndpointsList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
@@ -257,8 +249,6 @@ if rows.len() > 0 {
             }
             response.set_end_collection(
                 end_collection,
-                "EndpointsList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
@@ -317,8 +307,7 @@ if rows.len() > 0 {
             }
             response.set_services_collection(
                 services_collection,
-                "ServiceList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -341,8 +330,7 @@ if rows.len() > 0 {
             }
             response.set_services_collection(
                 services_collection,
-                "ServiceList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -365,8 +353,6 @@ if rows.len() > 0 {
             }
             response.set_services_collection(
                 services_collection,
-                "ServiceList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }

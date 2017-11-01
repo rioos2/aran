@@ -248,7 +248,7 @@ impl SessionDS {
         for row in rows {
             org_collection.push(row_to_origin(&row)?)
         }
-        response.set_org_collection(org_collection, "OriginList".to_string(), "v1".to_string());
+        response.set_org_collection(org_collection);
         return Ok(Some(response));
     }
     Ok(None)
@@ -382,8 +382,6 @@ impl SessionDS {
         }
         response.set_saml_provider_collection(
             saml_provider_collection,
-            "SamlProviderList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }
@@ -444,8 +442,6 @@ impl SessionDS {
         }
         response.set_openid_provider_collection(
             oidc_provider_collection,
-            "OidcProviderList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }

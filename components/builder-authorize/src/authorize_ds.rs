@@ -59,8 +59,7 @@ impl AuthorizeDS {
         }
         response.set_permissions(
             perms_collection,
-            "PermissionList".to_string(),
-            "v1".to_string(),
+            
         );
         return Ok(Some(response));
     }
@@ -83,7 +82,7 @@ impl AuthorizeDS {
             let roles = row_to_roles(&row)?;
             roles_collection.push(roles);
         }
-        response.set_roles(roles_collection, "RolesList".to_string(), "v1".to_string());
+        response.set_roles(roles_collection);
         return Ok(Some(response));
     }
     Ok(None)
@@ -126,8 +125,6 @@ if rows.len() > 0 {
         }
         response.set_permissions(
             perm_collection,
-            "PermissionList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }

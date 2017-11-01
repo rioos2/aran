@@ -732,7 +732,7 @@ pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
 pub fn plan_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::plan_list(&conn) {
-        Ok(plan_list) => Ok(render_json(status::Ok, &plan_list)),
+        Ok(Some(plan_list)) => Ok(render_json(status::Ok, &plan_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }

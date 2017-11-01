@@ -4,10 +4,15 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{servicesrv, asmsrv, storagesrv};
+use protocol::{servicesrv, asmsrv, storagesrv,DEFAULT_API_VERSION};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+pub const STORAGE: &'static str = "Storage";
+pub const DATACENTER: &'static str = "DataCenter";
+pub const STORAGEPOOL: &'static str = "StoragePool";
+
+
 
 pub struct StorageDS;
 
@@ -49,8 +54,6 @@ impl StorageDS {
         }
         response.set_storage_collection(
             storage_collection,
-            "StorageList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }
@@ -151,8 +154,6 @@ impl StorageDS {
         }
         response.set_dc_collection(
             dc_collection,
-            "DataCenterList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }
@@ -207,8 +208,6 @@ impl StorageDS {
         }
         response.set_storage_pool_collection(
             storage_collection,
-            "StoragePoolList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }
@@ -230,8 +229,6 @@ impl StorageDS {
         }
         response.set_storage_pool_collection(
             storage_collection,
-            "StoragePoolList".to_string(),
-            "v1".to_string(),
         );
         return Ok(Some(response));
     }
@@ -277,8 +274,8 @@ fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
     object_meta.set_name(id.to_string());
     storage.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Storage".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(STORAGE.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     storage.set_type_meta(type_meta);
     storage.set_status(serde_json::from_str(&status).unwrap());
     storage.set_name(name);
@@ -309,8 +306,8 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     let object_meta = servicesrv::ObjectMetaData::new();
     dc.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("DataCenter".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(DATACENTER.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     dc.set_type_meta(type_meta);
     dc.set_status(serde_json::from_str(&status).unwrap());
     dc.set_name(name);
@@ -340,8 +337,8 @@ fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storagesrv::StorageP
     object_meta.set_name(id.to_string());
     storage.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("StoragePool".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(STORAGEPOOL.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     storage.set_type_meta(type_meta);
     storage.set_status(serde_json::from_str(&status).unwrap());
     storage.set_name(name);

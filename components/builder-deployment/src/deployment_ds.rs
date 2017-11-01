@@ -4,13 +4,13 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{asmsrv, plansrv, servicesrv};
+use protocol::{asmsrv, plansrv, servicesrv, DEFAULT_API_VERSION};
 use postgres;
 use db::data_store::DataStoreConn;
 use db;
 use serde_json;
-
-
+pub const ASSEMBLY: &'static str = "Assembly";
+pub const ASSEMBLYFACTORY: &'static str = "AssemblyFactory";
 
 pub struct DeploymentDS;
 
@@ -105,8 +105,7 @@ if rows.len() > 0 {
             }
             response.set_assemblys(
                 assemblys_collection,
-                "AssemblyList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -131,8 +130,7 @@ if rows.len() > 0 {
             }
             response.set_assemblys(
                 assemblys_collection,
-                "AssemblyList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -156,8 +154,7 @@ if rows.len() > 0 {
             }
             response.set_assemblys(
                 assemblys_collection,
-                "AssemblyList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -271,8 +268,7 @@ if rows.len() > 0 {
         }
         response.set_assemblys_factory(
             assembly_factorys_collection,
-            "AssemblyFactoryList".to_string(),
-            "v1".to_string(),
+
         );
         return Ok(Some(response));
     }
@@ -296,8 +292,7 @@ if rows.len() > 0 {
 
             response.set_assemblys_factory(
                 assemblyfac_collection,
-                "AssemblyFactoryList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -323,8 +318,6 @@ if rows.len() > 0 {
             }
             response.set_assemblys(
                 assemblys_collection,
-                "AssemblyList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
@@ -373,7 +366,7 @@ if rows.len() > 0 {
         for row in rows {
             plan_collection.push(row_to_plan(&row)?)
         }
-        response.set_plan_collection(plan_collection, "PlanList".to_string(), "v1".to_string());
+        response.set_plan_collection(plan_collection);
         return Ok(Some(response));
     }
     Ok(None)
@@ -426,8 +419,8 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
 
 
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Assembly".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(ASSEMBLY.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     assembly.set_type_meta(type_meta);
 
     assembly.set_description(description as String);
@@ -503,8 +496,8 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     obj_meta.set_owner_references(owner_collection);
     assembly_factory.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("AssemblyFactory".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(ASSEMBLYFACTORY.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     assembly_factory.set_type_meta(type_meta);
 
     Ok(assembly_factory)
