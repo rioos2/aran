@@ -1,5 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
-
+pub const ROLESLIST: &'static str = "RolesList";
+pub const PERMISSIONSLIST: &'static str = "PermissionsList";
+use DEFAULT_API_VERSION;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Roles {
     id: String,
@@ -58,10 +60,10 @@ impl RolesGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_roles(&mut self, v: Vec<Roles>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_roles(&mut self, v: Vec<Roles>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = ROLESLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 
@@ -134,9 +136,9 @@ impl PermissionsGetResponse {
         ::std::default::Default::default()
     }
 
-    pub fn set_permissions(&mut self, v: Vec<Permissions>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_permissions(&mut self, v: Vec<Permissions>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = PERMISSIONSLIST.to_string();
+        self.api_version =  DEFAULT_API_VERSION.to_string();
     }
 }

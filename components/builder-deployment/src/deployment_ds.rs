@@ -4,13 +4,13 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{asmsrv, plansrv, servicesrv};
+use protocol::{asmsrv, plansrv, servicesrv, DEFAULT_API_VERSION};
 use postgres;
 use db::data_store::DataStoreConn;
 use db;
 use serde_json;
-
-
+pub const ASSEMBLY: &'static str = "Assembly";
+pub const ASSEMBLYFACTORY: &'static str = "AssemblyFactory";
 
 pub struct DeploymentDS;
 
@@ -18,7 +18,7 @@ impl DeploymentDS {
     pub fn assembly_create(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)",
             &[
                 &(assembly.get_name() as String),
                 &(assembly.get_uri() as String),
@@ -26,26 +26,30 @@ impl DeploymentDS {
                 &(assembly.get_parent_id() as String),
                 &(assembly.get_origin() as String),
                 &(assembly.get_tags() as Vec<String>),
+                &(assembly.get_selector() as Vec<String>),
                 &(assembly.get_node() as String),
-                &(serde_json::to_string(assembly.get_ip()).unwrap()),
                 &(serde_json::to_string(assembly.get_urls()).unwrap()),
                 &(serde_json::to_string(assembly.get_status()).unwrap()),
                 &(serde_json::to_string(assembly.get_volumes()).unwrap()),
                 &(assembly.get_instance_id() as String),
+                &(serde_json::to_string(assembly.get_type_meta()).unwrap()),
+                &(serde_json::to_string(assembly.get_object_meta()).unwrap()),
+
             ],
         ).map_err(Error::AssemblyCreate)?;
-
+if rows.len() > 0 {
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
         }
+    }
         Ok(None)
     }
 
     pub fn assembly_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
                 &(assembly.get_id().parse::<i64>().unwrap()),
                 &(assembly.get_name() as String),
@@ -54,17 +58,17 @@ impl DeploymentDS {
                 &(assembly.get_parent_id() as String),
                 &(assembly.get_tags() as Vec<String>),
                 &(assembly.get_node() as String),
-                &(serde_json::to_string(assembly.get_ip()).unwrap()),
                 &(serde_json::to_string(assembly.get_urls()).unwrap()),
                 &(serde_json::to_string(assembly.get_volumes()).unwrap()),
             ],
         ).map_err(Error::AssemblyUpdate)?;
 
-
+if rows.len() > 0 {
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
         }
+    }
         Ok(None)
     }
 
@@ -99,8 +103,7 @@ impl DeploymentDS {
             }
             response.set_assemblys(
                 assemblys_collection,
-                "AssemblyList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -125,14 +128,36 @@ impl DeploymentDS {
             }
             response.set_assemblys(
                 assemblys_collection,
-                "AssemblyList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
         Ok(None)
     }
+    pub fn assemblys_show_by_services(datastore: &DataStoreConn, assemblys_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
 
+        let rows = &conn.query(
+            "SELECT * FROM get_assemblys_by_services_v1($1)",
+            &[&(assemblys_get.get_id() as String)],
+        ).map_err(Error::AssemblyGet)?;
+
+        let mut response = asmsrv::AssemblysGetResponse::new();
+
+        let mut assemblys_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                assemblys_collection.push(assembly);
+            }
+            response.set_assemblys(
+                assemblys_collection,
+
+            );
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
 
 
 
@@ -145,10 +170,12 @@ impl DeploymentDS {
                 &(serde_json::to_string(assembly.get_status()).unwrap()),
             ],
         ).map_err(Error::AsmSetStatus)?;
+        if rows.len() > 0 {
         for row in rows {
             let assembly = Self::collect_spec(&row, &datastore)?;
             return Ok(Some(assembly));
         }
+    }
         Ok(None)
     }
 
@@ -173,11 +200,14 @@ impl DeploymentDS {
                 &(serde_json::to_string(assembly_fac.get_status()).unwrap()),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
-
-
+if rows.len() > 0 {
+        for row in rows {
         let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
 
         return Ok(Some(assembly_factory.clone()));
+    }
+}
+    Ok(None)
     }
 
     pub fn assembly_factory_show(datastore: &DataStoreConn, get_assembly_factory: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblyFactory>> {
@@ -187,14 +217,14 @@ impl DeploymentDS {
             "SELECT * FROM get_assembly_factory_v1($1)",
             &[&(get_assembly_factory.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::AssemblyFactoryGet)?;
-
+if rows.len() > 0 {
         for row in rows {
             let mut assembly_factory = row_to_assembly_factory(&row)?;
             let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
             assembly_factory.set_plan_data(data);
             return Ok(Some(assembly_factory));
         }
-
+}
         Ok(None)
     }
 
@@ -208,12 +238,14 @@ impl DeploymentDS {
                 &(serde_json::to_string(assembly_fac.get_status()).unwrap()),
             ],
         ).map_err(Error::AsmFactorySetStatus)?;
+        if rows.len() > 0 {
         for row in rows {
             let mut assembly_factory = row_to_assembly_factory(&row)?;
             let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
             assembly_factory.set_plan_data(data);
             return Ok(Some(assembly_factory));
         }
+    }
         Ok(None)
     }
 
@@ -228,16 +260,17 @@ impl DeploymentDS {
 
         let mut assembly_factorys_collection = Vec::new();
 
-
+        if rows.len() > 0 {
         for row in rows {
             assembly_factorys_collection.push(row_to_assembly_factory(&row)?)
         }
         response.set_assemblys_factory(
             assembly_factorys_collection,
-            "AssemblyFactoryList".to_string(),
-            "v1".to_string(),
+
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
     pub fn assemblyfactorys_show_by_origin(datastore: &DataStoreConn, assemblyfactory_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblyFactoryGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -257,8 +290,7 @@ impl DeploymentDS {
 
             response.set_assemblys_factory(
                 assemblyfac_collection,
-                "AssemblyFactoryList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -284,8 +316,6 @@ impl DeploymentDS {
             }
             response.set_assemblys(
                 assemblys_collection,
-                "AssemblyList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
@@ -311,12 +341,12 @@ impl DeploymentDS {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query("SELECT * FROM get_plan_v1($1)", &[&url])
             .map_err(Error::PlanGet)?;
-
+if rows.len() > 0 {
         for row in rows {
             let plan = row_to_plan(&row)?;
             return Ok(Some(plan));
         }
-
+}
         Ok(None)
     }
 
@@ -330,11 +360,14 @@ impl DeploymentDS {
         let mut response = plansrv::PlanGetResponse::new();
 
         let mut plan_collection = Vec::new();
+        if rows.len() > 0 {
         for row in rows {
             plan_collection.push(row_to_plan(&row)?)
         }
-        response.set_plan_collection(plan_collection, "PlanList".to_string(), "v1".to_string());
-        Ok(Some(response))
+        response.set_plan_collection(plan_collection);
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn endpoints_show(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
@@ -362,12 +395,13 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let uri: String = row.get("uri");
     let description: String = row.get("description");
     let tags: Vec<String> = row.get("tags");
+    let selector: Vec<String> = row.get("selector");
     let parent_id: String = row.get("parent_id");
     let origin: i64 = row.get("origin_id");
     let status: String = row.get("status");
     let node: String = row.get("node");
-    let ip: String = row.get("ip");
     let volume: String = row.get("volumes");
+    let object_meta: String = row.get("object_meta");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     assembly.set_id(id.to_string());
@@ -375,17 +409,15 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_urls(serde_json::from_str(&urls).unwrap());
     assembly.set_uri(uri as String);
     assembly.set_tags(tags as Vec<String>);
+    assembly.set_selector(selector as Vec<String>);
+    let mut obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    obj.set_name(id.to_string());
+    assembly.set_object_meta(obj);
 
-    let mut obj_meta = asmsrv::ObjectMeta::new();
-    let mut owner_collection = Vec::new();
-    let owner = asmsrv::OwnerReferences::new();
-    owner_collection.push(owner);
-    obj_meta.set_name(id.to_string());
-    obj_meta.set_owner_references(owner_collection);
-    assembly.set_object_meta(obj_meta);
+
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Assembly".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(ASSEMBLY.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     assembly.set_type_meta(type_meta);
 
     assembly.set_description(description as String);
@@ -394,7 +426,6 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     assembly.set_status(serde_json::from_str(&status).unwrap());
     assembly.set_volumes(serde_json::from_str(&volume).unwrap());
     assembly.set_node(node as String);
-    assembly.set_ip(serde_json::from_str(&ip).unwrap());
     assembly.set_created_at(created_at.to_rfc3339());
 
     Ok(assembly)
@@ -461,8 +492,8 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     obj_meta.set_owner_references(owner_collection);
     assembly_factory.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("AssemblyFactory".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(ASSEMBLYFACTORY.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     assembly_factory.set_type_meta(type_meta);
 
     Ok(assembly_factory)

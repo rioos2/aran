@@ -1,6 +1,9 @@
 // Copyright (c) 2017 RioCorp Inc.
 use asmsrv;
 use nodesrv;
+use DEFAULT_API_VERSION;
+pub const HORIZONTALSCALINGLIST: &'static str = "HorizontalPodAutoscalerList";
+pub const ASSEMBLYMETRICLIST: &'static str = "AssemblyMetricList";
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -303,10 +306,10 @@ impl HorizontalScalingGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_hs_collection(&mut self, v: Vec<HorizontalScaling>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_hs_collection(&mut self, v: Vec<HorizontalScaling>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = HORIZONTALSCALINGLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 /////// REFACTOR later using trait ResultResult which has a type kind.
@@ -369,9 +372,9 @@ impl Into<ScalingGetResponse> for ScalingGet {
     fn into(self) -> ScalingGetResponse {
         let mut scaling_response= ScalingGetResponse::new();
         scaling_response.set_results(self);
-        scaling_response.set_kind("AssemblyMetricList".to_string());
-        scaling_response.set_api_version("v1".to_string());
-        scaling_response.set_id("AssemblyMetricList".to_string());
+        scaling_response.set_kind(ASSEMBLYMETRICLIST.to_string());
+        scaling_response.set_api_version(DEFAULT_API_VERSION.to_string());
+        scaling_response.set_id(ASSEMBLYMETRICLIST.to_string());
         scaling_response
     }
 }

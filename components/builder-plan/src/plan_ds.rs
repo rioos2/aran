@@ -33,11 +33,13 @@ impl PlanDS {
                 &(data as Vec<String>),
             ],
         ).map_err(Error::PlanCreate)?;
-
+    if rows.len() > 0 {
         let plan = row_to_plan(&rows.get(0))?;
-        return Ok(Some(plan.clone()));
+        return Ok(Some(plan));
     }
+Ok(None)
 
+}
 }
 
 fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {

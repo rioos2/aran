@@ -4,10 +4,15 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{servicesrv, asmsrv, storagesrv};
+use protocol::{servicesrv, asmsrv, storagesrv,DEFAULT_API_VERSION};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+pub const STORAGE: &'static str = "Storage";
+pub const DATACENTER: &'static str = "DataCenter";
+pub const STORAGEPOOL: &'static str = "StoragePool";
+
+
 
 pub struct StorageDS;
 
@@ -26,8 +31,11 @@ impl StorageDS {
                 &(serde_json::to_string(storage_create.get_status()).unwrap()),
             ],
         ).map_err(Error::StorageCreate)?;
+            if rows.len() > 0 {
         let storage = row_to_storage(&rows.get(0))?;
-        return Ok(Some(storage.clone()));
+        return Ok(Some(storage));
+    }
+    Ok(None)
     }
 
     pub fn storage_list(datastore: &DataStoreConn) -> Result<Option<storagesrv::StorageGetResponse>> {
@@ -40,15 +48,16 @@ impl StorageDS {
         let mut response = storagesrv::StorageGetResponse::new();
 
         let mut storage_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             storage_collection.push(row_to_storage(&row)?)
         }
         response.set_storage_collection(
             storage_collection,
-            "StorageList".to_string(),
-            "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn storage_show(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::Storage>> {
@@ -57,10 +66,12 @@ impl StorageDS {
             "SELECT * FROM get_storage_v1($1)",
             &[&(get_storage.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::StorageGet)?;
+        if rows.len() > 0 {
         for row in rows {
             let storage = row_to_storage(&row)?;
             return Ok(Some(storage));
         }
+    }
         Ok(None)
     }
 
@@ -74,10 +85,12 @@ impl StorageDS {
                 &(serde_json::to_string(storage_create.get_status()).unwrap()),
             ],
         ).map_err(Error::StorageSetStatus)?;
+        if rows.len() > 0 {
         for row in rows {
             let storage = row_to_storage(&row)?;
             return Ok(Some(storage));
         }
+    }
         Ok(None)
     }
 
@@ -94,8 +107,13 @@ impl StorageDS {
                 &(serde_json::to_string(storage_create.get_storage_info()).unwrap()),
             ],
         ).map_err(Error::StorageCreate)?;
-        let storage = row_to_storage(&rows.get(0))?;
-        return Ok(Some(storage.clone()));
+            if rows.len() > 0 {
+                for row in rows {
+                let storage = row_to_storage(&row)?;
+        return Ok(Some(storage));
+    }
+    }
+    Ok(None)
     }
 
     pub fn data_center_create(datastore: &DataStoreConn, dc_create: &storagesrv::DataCenter) -> Result<Option<storagesrv::DataCenter>> {
@@ -114,8 +132,11 @@ impl StorageDS {
                 &(serde_json::to_string(dc_create.get_status()).unwrap()),
             ],
         ).map_err(Error::DcCreate)?;
+            if rows.len() > 0 {
         let dc = row_to_dc(&rows.get(0))?;
-        return Ok(Some(dc.clone()));
+        return Ok(Some(dc));
+    }
+    Ok(None)
     }
 
     pub fn data_center_list(datastore: &DataStoreConn) -> Result<Option<storagesrv::DcGetResponse>> {
@@ -127,15 +148,16 @@ impl StorageDS {
         let mut response = storagesrv::DcGetResponse::new();
 
         let mut dc_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             dc_collection.push(row_to_dc(&row)?)
         }
         response.set_dc_collection(
             dc_collection,
-            "DataCenterList".to_string(),
-            "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn data_center_show(datastore: &DataStoreConn, get_dc: &asmsrv::IdGet) -> Result<Option<storagesrv::DataCenter>> {
@@ -144,10 +166,12 @@ impl StorageDS {
             "SELECT * FROM get_data_center_v1($1)",
             &[&(get_dc.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::StorageGet)?;
+        if rows.len() > 0 {
         for row in rows {
             let dc = row_to_dc(&row)?;
             return Ok(Some(dc));
         }
+    }
         Ok(None)
     }
 
@@ -163,8 +187,11 @@ impl StorageDS {
                 &(serde_json::to_string(storage_create.get_status()).unwrap()),
             ],
         ).map_err(Error::StoragePoolCreate)?;
+            if rows.len() > 0 {
         let storage = row_to_storage_pool(&rows.get(0))?;
-        return Ok(Some(storage.clone()));
+        return Ok(Some(storage));
+    }
+    Ok(None)
     }
 
     pub fn storage_pool_list_all(datastore: &DataStoreConn) -> Result<Option<storagesrv::StoragePoolGetResponse>> {
@@ -175,15 +202,16 @@ impl StorageDS {
 
         let mut response = storagesrv::StoragePoolGetResponse::new();
         let mut storage_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             storage_collection.push(row_to_storage_pool(&row)?)
         }
         response.set_storage_pool_collection(
             storage_collection,
-            "StoragePoolList".to_string(),
-            "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn storage_pool_list(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::StoragePoolGetResponse>> {
@@ -195,15 +223,16 @@ impl StorageDS {
         let mut response = storagesrv::StoragePoolGetResponse::new();
 
         let mut storage_collection = Vec::new();
+            if rows.len() > 0 {
         for row in rows {
             storage_collection.push(row_to_storage_pool(&row)?)
         }
         response.set_storage_pool_collection(
             storage_collection,
-            "StoragePoolList".to_string(),
-            "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
     pub fn storage_pool_status_update(datastore: &DataStoreConn, storage_pool_update: &storagesrv::StoragePool) -> Result<Option<storagesrv::StoragePool>> {
@@ -216,10 +245,12 @@ impl StorageDS {
                 &(serde_json::to_string(storage_pool_update.get_status()).unwrap()),
             ],
         ).map_err(Error::StoragePoolSetStatus)?;
+        if rows.len() > 0 {
         for row in rows {
             let storagepool = row_to_storage_pool(&row)?;
             return Ok(Some(storagepool));
         }
+    }
         Ok(None)
     }
 
@@ -243,8 +274,8 @@ fn row_to_storage(row: &postgres::rows::Row) -> Result<storagesrv::Storage> {
     object_meta.set_name(id.to_string());
     storage.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Storage".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(STORAGE.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     storage.set_type_meta(type_meta);
     storage.set_status(serde_json::from_str(&status).unwrap());
     storage.set_name(name);
@@ -275,8 +306,8 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storagesrv::DataCenter> {
     let object_meta = servicesrv::ObjectMetaData::new();
     dc.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("DataCenter".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(DATACENTER.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     dc.set_type_meta(type_meta);
     dc.set_status(serde_json::from_str(&status).unwrap());
     dc.set_name(name);
@@ -306,8 +337,8 @@ fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storagesrv::StorageP
     object_meta.set_name(id.to_string());
     storage.set_object_meta(object_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("StoragePool".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(STORAGEPOOL.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     storage.set_type_meta(type_meta);
     storage.set_status(serde_json::from_str(&status).unwrap());
     storage.set_name(name);

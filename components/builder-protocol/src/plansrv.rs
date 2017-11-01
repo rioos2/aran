@@ -1,7 +1,8 @@
 // Copyright (c) 2017 RioCorp Inc.
 use std::collections::BTreeMap;
+use DEFAULT_API_VERSION;
 
-
+pub const PLANLIST: &'static str = "PlanList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Plan {
     id: String,
@@ -146,9 +147,9 @@ impl PlanGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_plan_collection(&mut self, v: Vec<Plan>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_plan_collection(&mut self, v: Vec<Plan>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = PLANLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }

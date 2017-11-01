@@ -17,6 +17,9 @@ use http::deployment_handler;
 use common::ui;
 use db;
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+pub const RIOOS_ASSM_FAC_ID: &'static str = "rioos_assembly_factory_id";
+
+
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SecretCreateReq {
@@ -63,7 +66,7 @@ struct EndPointsReq {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SubsetsReq {
     addresses: Vec<AddessesReq>,
-    not_ready_addresses: Vec<AddessesReq>,
+    unready_addresses: Vec<AddessesReq>,
     ports: Vec<PortsReq>,
 }
 
@@ -145,8 +148,13 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::secret_create(&conn, &secret_create) {
-        Ok(secret) => Ok(render_json(status::Ok, &secret)),
+        Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -219,9 +227,11 @@ pub fn secret_show_by_origin(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::secret_show_by_origin(&conn, &secret_get) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &secret_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
@@ -282,7 +292,12 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::service_account_create(&conn, &service_create) {
-        Ok(service) => Ok(render_json(status::Ok, &service)),
+        Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
         }
@@ -294,7 +309,7 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
 pub fn service_account_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_list(&conn) {
-        Ok(service_list) => Ok(render_json(status::Ok, &service_list)),
+        Ok(Some(service_list)) => Ok(render_json(status::Ok, &service_list)),
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
         }
@@ -325,7 +340,7 @@ pub fn service_account_show(req: &mut Request) -> AranResult<Response> {
     );
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_show(&conn, &serv_get) {
-        Ok(origin) => Ok(render_json(status::Ok, &origin)),
+        Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
         }
@@ -381,14 +396,14 @@ pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
                 subsets.set_addresses(address_collection);
 
                 let mut not_ready_address_collection = Vec::new();
-                for nr_address in body.subsets.not_ready_addresses {
+                for nr_address in body.subsets.unready_addresses {
                     let mut addesses = Addesses::new();
                     addesses.set_name(nr_address.name);
                     addesses.set_protocol_version(nr_address.protocol_version);
                     addesses.set_ip(nr_address.ip);
                     not_ready_address_collection.push(addesses);
                 }
-                subsets.set_not_ready_addresses(not_ready_address_collection);
+                subsets.set_unready_addresses(not_ready_address_collection);
 
                 let mut ports_collection = Vec::new();
                 for port in body.subsets.ports {
@@ -417,8 +432,13 @@ pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match ServiceAccountDS::endpoints_create(&conn, &endpoints_create) {
-        Ok(endpoints) => Ok(render_json(status::Ok, &endpoints)),
+        Ok(Some(endpoints)) => Ok(render_json(status::Ok, &endpoints)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
@@ -491,9 +511,11 @@ pub fn endpoints_list_by_origin(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::endpoints_list_by_origin(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &endpoints_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}", err)))
@@ -537,7 +559,7 @@ pub fn services_create(req: &mut Request) -> AranResult<Response> {
                 if body.object_meta.origin.len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
-                let asmid = body.spec.selector.get("rioos_assembly_factory_id").to_owned();
+                let asmid = body.spec.selector.get(&RIOOS_ASSM_FAC_ID.to_string()).to_owned();
                 if asmid.unwrap().len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "assembly id")));
                 }
@@ -677,9 +699,11 @@ pub fn services_list_by_origin(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::services_list_by_origin(&conn, &services_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &services_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
@@ -706,9 +730,11 @@ pub fn services_list_by_assembly(req: &mut Request) -> AranResult<Response> {
     match ServiceAccountDS::services_list_by_assembly(&conn, &services_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &services_get.get_id()
+            )))
         }
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))

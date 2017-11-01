@@ -4,12 +4,13 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{nodesrv, asmsrv};
+use protocol::{nodesrv, asmsrv,DEFAULT_API_VERSION};
 use postgres;
 use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
+pub const NODE: &'static str = "Node";
 
 const METRIC_NODE: &'static str = "node_cpu";
 
@@ -26,10 +27,12 @@ impl NodeDS {
             ],
         ).map_err(Error::NodeCreate)?;
 
-
+        if rows.len() > 0 {
         let node = row_to_node(&rows.get(0))?;
 
-        return Ok(Some(node.clone()));
+        return Ok(Some(node));
+    }
+    Ok(None)
     }
 
     pub fn node_list(datastore: &DataStoreConn) -> Result<Option<nodesrv::NodeGetResponse>> {
@@ -42,24 +45,30 @@ impl NodeDS {
         let mut response = nodesrv::NodeGetResponse::new();
 
         let mut node_collection = Vec::new();
-
+if rows.len() > 0 {
         for row in rows {
             node_collection.push(row_to_node(&row)?)
         }
-        response.set_node_collection(node_collection, "NodeList".to_string(), "v1".to_string());
-        Ok(Some(response))
+        response.set_node_collection(node_collection);
+        return Ok(Some(response));
+    }
+    Ok(None)
     }
 
-    pub fn node_status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<()> {
+    pub fn node_status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
         let conn = datastore.pool.get_shard(0)?;
-        conn.execute(
+        let rows = conn.query(
             "SELECT set_node_status_v1($1, $2)",
             &[
                 &(node.get_id().parse::<i64>().unwrap()),
                 &(serde_json::to_string(node.get_status()).unwrap()),
             ],
         ).map_err(Error::NodeSetStatus)?;
-        Ok(())
+        if rows.len() > 0 {
+            let node = row_to_node(&rows.get(0))?;
+            return Ok(Some(node));
+        }
+        Ok(None)
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
@@ -159,8 +168,8 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {
     obj_meta.set_owner_references(owner_collection);
     node.set_object_meta(obj_meta);
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Node".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(NODE.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     node.set_type_meta(type_meta);
     node.set_created_at(created_at.to_rfc3339());
     Ok(node)

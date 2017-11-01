@@ -1,7 +1,9 @@
 // Copyright (c) 2017 RioCorp Inc.
 use serde::{Serialize, Serializer};
 use std::result;
-
+use DEFAULT_API_VERSION;
+pub const SAMLLIST: &'static str = "SamlProviderList";
+pub const OPENIDLIST: &'static str = "OidcProviderList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize)]
 pub struct SessionCreate {
     id: String,
@@ -795,10 +797,10 @@ impl SamlProviderGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_saml_provider_collection(&mut self, v: Vec<SamlProvider>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_saml_provider_collection(&mut self, v: Vec<SamlProvider>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = SAMLLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 
@@ -918,9 +920,9 @@ impl OpenidProviderGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_openid_provider_collection(&mut self, v: Vec<OidcProvider>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_openid_provider_collection(&mut self, v: Vec<OidcProvider>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = OPENIDLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }

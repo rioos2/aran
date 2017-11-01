@@ -82,9 +82,14 @@ pub fn network_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match NetworkDS::network_create(&conn, &net_create) {
-        Ok(network) => Ok(render_json(status::Ok, &network)),
+        Ok(Some(network)) => Ok(render_json(status::Ok, &network)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
 
     }
@@ -94,7 +99,7 @@ pub fn network_create(req: &mut Request) -> AranResult<Response> {
 pub fn network_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match NetworkDS::network_list(&conn) {
-        Ok(network_list) => Ok(render_json(status::Ok, &network_list)),
+        Ok(Some(network_list)) => Ok(render_json(status::Ok, &network_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }

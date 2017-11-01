@@ -9,12 +9,14 @@ use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
 use rio_net::util::errors::*;
+pub const RIO_ASM_FAC_ID: &'static str = "rioos_assembly_factory_id";
+
 
 
 pub struct ServiceAccountDS;
 
 impl ServiceAccountDS {
-    pub fn secret_create(datastore: &DataStoreConn, secret_create: &servicesrv::Secret) -> Result<servicesrv::Secret> {
+    pub fn secret_create(datastore: &DataStoreConn, secret_create: &servicesrv::Secret) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -27,8 +29,14 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(secret_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::SecretCreate)?;
+        if rows.len() > 0 {
+        for row in rows {
         let secret = row_to_secret(&rows.get(0));
-        return Ok(secret.clone());
+        return Ok(Some(secret));
+    }
+}
+    Ok(None)
+
     }
     pub fn secret_show(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::Secret>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -62,8 +70,7 @@ impl ServiceAccountDS {
             }
             response.set_secret_collection(
                 secret_collection,
-                "SecretList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -86,8 +93,7 @@ impl ServiceAccountDS {
             }
             response.set_secret_collection(
                 secret_collection,
-                "SecretList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -106,8 +112,11 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(service_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
+if rows.len() > 0 {
         let service_account = row_to_service_account(&rows.get(0))?;
-        return Ok(Some(service_account.clone()));
+        return Ok(Some(service_account));
+    }
+    Ok(None)
     }
 
     pub fn service_account_show(datastore: &DataStoreConn, get_service: &asmsrv::IdGet) -> Result<Option<servicesrv::ServiceAccount>> {
@@ -116,11 +125,12 @@ impl ServiceAccountDS {
             "SELECT * FROM get_service_account_by_origin_v1($1,$2)",
             &[&get_service.get_id(), &get_service.get_name()],
         ).map_err(Error::ServiceAccountGet)?;
-
+        if rows.len() > 0 {
         for row in rows {
             let serv = row_to_service_account(&row)?;
             return Ok(Some(serv));
         }
+    }
         Ok(None)
     }
 
@@ -133,15 +143,16 @@ impl ServiceAccountDS {
         let mut response = servicesrv::ServiceAccountGetResponse::new();
 
         let mut service_collection = Vec::new();
+        if rows.len() > 0 {
         for row in rows {
             service_collection.push(row_to_service_account(&row)?)
         }
         response.set_service_collection(
             service_collection,
-            "ServiceAccountList".to_string(),
-            "v1".to_string(),
         );
-        Ok(Some(response))
+        return Ok(Some(response));
+    }
+        Ok(None)
     }
 
     pub fn endpoints_create(datastore: &DataStoreConn, endpoints_create: &servicesrv::EndPoints) -> Result<Option<servicesrv::EndPoints>> {
@@ -157,8 +168,11 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(endpoints_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::EndPointsCreate)?;
+        if rows.len() > 0 {
         let end = row_to_endpoints(&rows.get(0))?;
         return Ok(Some(end));
+    }
+    Ok(None)
     }
 
     pub fn endpoints_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::EndpointsGetResponse>> {
@@ -177,8 +191,6 @@ impl ServiceAccountDS {
             }
             response.set_end_collection(
                 end_collection,
-                "EndpointsList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
@@ -217,8 +229,6 @@ impl ServiceAccountDS {
             }
             response.set_end_collection(
                 end_collection,
-                "EndpointsList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
@@ -241,16 +251,14 @@ impl ServiceAccountDS {
             }
             response.set_end_collection(
                 end_collection,
-                "EndpointsList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
         Ok(None)
     }
-    pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<servicesrv::Services> {
+    pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;
-        let asmid = services_create.get_spec().get_selector().get("rioos_assembly_factory_id");
+        let asmid = services_create.get_spec().get_selector().get(&RIO_ASM_FAC_ID.to_string());
         let rows = &conn.query(
             "SELECT * FROM insert_services_v1($1,$2,$3,$4,$5,$6)",
             &[
@@ -262,8 +270,14 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(services_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServicesCreate)?;
+        if rows.len() > 0 {
+        for row in rows {
         let end = row_to_services(&rows.get(0));
-        return Ok(end.clone());
+        return Ok(Some(end));
+    }
+}
+    Ok(None)
+
     }
     pub fn services_show(datastore: &DataStoreConn, services_get: &asmsrv::IdGet) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -295,8 +309,7 @@ impl ServiceAccountDS {
             }
             response.set_services_collection(
                 services_collection,
-                "ServicesList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -319,8 +332,7 @@ impl ServiceAccountDS {
             }
             response.set_services_collection(
                 services_collection,
-                "ServicesList".to_string(),
-                "v1".to_string(),
+
             );
             return Ok(Some(response));
         }
@@ -343,8 +355,6 @@ impl ServiceAccountDS {
             }
             response.set_services_collection(
                 services_collection,
-                "ServicesList".to_string(),
-                "v1".to_string(),
             );
             return Ok(Some(response));
         }
