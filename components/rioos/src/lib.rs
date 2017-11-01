@@ -11,6 +11,7 @@ extern crate rioos_api_client as api_client;
 extern crate rioos_http_client as http_client;
 extern crate handlebars;
 
+
 extern crate ansi_term;
 #[macro_use]
 extern crate clap;
@@ -28,6 +29,9 @@ extern crate url;
 extern crate uuid;
 extern crate walkdir;
 extern crate base64;
+#[macro_use]
+extern crate prettytable;
+
 #[cfg(test)]
 extern crate tempdir;
 #[macro_use]
@@ -41,5 +45,6 @@ pub mod error;
 pub const PRODUCT: &'static str = "rioos";
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 pub const AUTH_TOKEN_ENVVAR: &'static str = "RIO_AUTH_TOKEN";
+pub const AUTH_EMAIL_ENVVAR: &'static str = "RIO_AUTH_EMAIL";
 pub const ORIGIN_ENVVAR: &'static str = "RIO_ORIGIN";
 pub const API_SERVER_ENVVAR: &'static str = "RIO_API_SERVER";

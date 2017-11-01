@@ -189,6 +189,9 @@ impl Status {
     pub fn set_phase(&mut self, v: ::std::string::String) {
         self.phase = v;
     }
+    pub fn get_phase(&self) -> ::std::string::String {
+        self.phase.clone()
+    }
     pub fn set_message(&mut self, v: ::std::string::String) {
         self.message = v;
     }
@@ -273,6 +276,10 @@ impl AssemblysGetResponse {
         self.items = v;
         self.kind = ASSEMBLYLIST.to_string();
         self.api_version = DEFAULT_API_VERSION.to_string();
+    }
+
+    pub fn get_items(&self) -> Vec<Assembly> {
+        self.items.clone()
     }
 }
 
@@ -566,6 +573,10 @@ impl Properties {
     pub fn set_storage_type(&mut self, v: ::std::string::String) {
         self.storage_type = v;
     }
+
+    pub fn get_region(&mut self) -> String {
+        self.region.clone().to_string()
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -631,5 +642,9 @@ impl AssemblyFactoryGetResponse {
         self.items = v;
         self.kind = ASSEMBLYFACTORYLIST.to_string();
         self.api_version = DEFAULT_API_VERSION.to_string();
+    }
+
+    pub fn get_items(&self) -> Vec<AssemblyFactory> {
+        self.items.clone()
     }
 }

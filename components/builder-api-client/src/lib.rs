@@ -8,6 +8,9 @@
 extern crate rioos_builder_protocol as protocol;
 extern crate rioos_core as rioos_core;
 extern crate rioos_http_client as rioos_http;
+extern crate rioos_net as rio_net;
+
+
 extern crate broadcast;
 #[macro_use]
 extern crate hyper;
@@ -35,10 +38,14 @@ use std::string::ToString;
 use rioos_http::ApiClient;
 use hyper::client::{IntoUrl, RequestBuilder};
 use hyper::status::StatusCode;
-use hyper::header::{ContentType, Accept, Authorization, Bearer};
+use hyper::header::{ContentType, Accept, Authorization, Bearer, Headers};
 use protocol::net::NetError;
 use rand::{Rng, thread_rng};
 use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
+use protocol::{sessionsrv, asmsrv};
+use rioos_http::util::decoded_response;
+use rio_net::http::headers::*;
+
 
 header! { (XFileName, "X-Filename") => [String] }
 header! { (ETag, "ETag") => [String] }
@@ -114,19 +121,18 @@ impl Client {
             .map_err(Error::HyperError)?;
 
         if res.status != StatusCode::Ok {
-            debug!("Failed to promote group, status: {:?}", res.status);
+            debug!("Failed to login, status: {:?}", res.status);
             return Err(err_from_response(res));
         };
 
-        /*match decoded_response::<JobGroupPromoteResponse>(res).map_err(Error::HabitatHttpClient) {
-            Ok(value) => Ok(value.not_promoted),
+        match decoded_response::<sessionsrv::Session>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value.get_token()),
             Err(e) => {
                 debug!("Failed to decode response, err: {:?}", e);
                 return Err(e);
             }
-        }*/
+        }
 
-        Ok("".to_string())
     }
 
     pub fn logout(&self, token: &str) -> Result<(String)> {
@@ -142,6 +148,112 @@ impl Client {
         };
 
         Ok("".to_string())
+    }
+
+
+    pub fn list_deploy(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("assemblyfactorys");
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get AssemblyFactory, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<asmsrv::AssemblyFactoryGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(), i.get_name(), i.get_replicas().to_string(),
+                             i.get_properties().clone().get_region(), i.get_origin(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
+
+    pub fn describe_deploy(&self, token: &str, email: &str, id: &str) -> Result<asmsrv::AssemblyFactory> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("assemblyfactorys/{}",id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get AssemblyFactory, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<asmsrv::AssemblyFactory>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value),
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
+
+    pub fn get_assembly_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("/assemblyfactorys/{}/describe",id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get Assembly, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<asmsrv::AssemblysGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(), i.get_name(), i.get_status().get_phase(),
+                             i.get_origin(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
     }
 
     ///
@@ -197,6 +309,7 @@ impl Client {
 
     fn add_authz<'a>(&'a self, rb: RequestBuilder<'a>, token: &str) -> RequestBuilder {
         rb.header(Authorization(Bearer { token: token.to_string() }))
+        // rb.header(Authorization(Bearer { token: token.to_string() }))
     }
 }
 

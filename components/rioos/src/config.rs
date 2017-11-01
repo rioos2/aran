@@ -24,6 +24,7 @@ const CLI_CONFIG_PATH: &'static str = "rioos/etc/cli.toml";
 pub struct Config {
     pub api_server: Option<String>,
     pub auth_token: Option<String>,
+    pub email: Option<String>,
     pub origin: Option<String>,
 }
 
@@ -36,6 +37,7 @@ impl Default for Config {
         Config {
             api_server: Some("http://localhost:9636/".to_string()),
             auth_token: None,
+            email: None,
             origin: None,
         }
     }
