@@ -6,8 +6,10 @@ use super::super::error::{self, Result};
 use chrono::prelude::*;
 use metrics::prometheus::PrometheusClient;
 use serde_json;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use protocol::nodesrv;
+use itertools::Itertools;
+
 
 pub const CPU_TOTAL: &'static str = "cpu_total";
 // const GAUGE_SCOPES: &'static [&'static str] = &[CPU_TOTAL, "ram_total", "disk_total"];
@@ -108,7 +110,14 @@ impl<'a> Collector<'a> {
 
     fn set_metrics(&self, response: Result<Vec<nodesrv::PromResponse>>) -> Result<Vec<nodesrv::PromResponse>> {
         match response {
-            Ok(proms) => return Ok(proms),
+            Ok(proms) => {
+                return Ok(
+                    proms
+                        .into_iter()
+                        .map(|mut x| (x.os_usage().clone()))
+                        .collect::<Vec<_>>(),
+                );
+            }
             _ => return Err(error::Error::CryptoError(String::new())),
         }
     }
@@ -116,11 +125,11 @@ impl<'a> Collector<'a> {
 
 pub trait SumGroup {
     fn sum_group(&mut self) -> nodesrv::PromResponse;
+    fn os_usage(&mut self) -> nodesrv::PromResponse;
 }
 
 impl SumGroup for nodesrv::PromResponse {
     fn sum_group(&mut self) -> Self {
-
         use self::nodesrv::Data;
         let mut sum = Data::Vector(vec![]);
         if let nodesrv::Data::Vector(ref mut instancevec) = (*self).data {
@@ -149,6 +158,52 @@ impl SumGroup for nodesrv::PromResponse {
             sum = nodesrv::Data::Vector(instance_changed.to_vec());
         }
         self.data = sum;
+        (*self).clone()
+    }
+
+    fn os_usage(&mut self) -> Self {
+        use self::nodesrv::*;
+        let mut usage = Data::Matrix(vec![]);
+        let mut metgroups_map = HashMap::<String, String>::new();
+        if let nodesrv::Data::Matrix(ref mut instancevec) = (*self).data {
+            let local: DateTime<UTC> = UTC::now();
+            let initvec = vec![
+                nodesrv::MatrixItem {
+                    metric: BTreeMap::new(),
+                    values: vec![(local.timestamp() as f64, "0".to_string())],
+                },
+            ];
+            let mut fms = instancevec
+                .iter()
+                .flat_map(|s| s.values.clone())
+                .collect::<Vec<_>>();
+
+            let instance_changed = instancevec.iter_mut().fold(initvec, |mut acc, ref mut x| {
+                acc.iter_mut()
+                    .map(|ref mut i| {
+                        for (k, v) in &x.metric {
+                            i.metric.insert(k.to_string(), v.to_string());
+                        }
+                        for (metkey, metvalues_group) in &fms.iter().group_by(|fm| &fm.0) {
+                            let aggregate: f64 = metvalues_group
+                                .map(|x| x.1.trim().parse::<f64>().unwrap_or(1.0))
+                                .sum();
+                            metgroups_map.entry(metkey.to_string()).or_insert_with(|| {
+                                aggregate.to_string()
+                            });
+                        }
+                        let mut data = Vec::<(f64, String)>::new();
+                        for (k, v) in metgroups_map.iter() {
+                            data.push((k.trim().parse::<f64>().unwrap(), v.to_string()));
+                        }
+                        i.values = data;
+                    })
+                    .collect::<Vec<_>>();
+                acc
+            });
+            usage = nodesrv::Data::Matrix(instance_changed.to_vec());
+        }
+        self.data = usage;
         (*self).clone()
     }
 }
