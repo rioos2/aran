@@ -152,4 +152,7 @@ impl PlanGetResponse {
         self.kind = PLANLIST.to_string();
         self.api_version = DEFAULT_API_VERSION.to_string();
     }
+    pub fn get_items(&self) -> Vec<Plan> {
+        self.items.clone()
+    }
 }

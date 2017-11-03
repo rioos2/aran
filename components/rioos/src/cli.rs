@@ -314,6 +314,38 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: nw01)")
             )
         )
+        (@subcommand jobs =>
+            (about: "Commands relating to Rio/OS job management")
+            (aliases: &["j", "jo", "job", "jobs"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand get =>
+                (about: "Displays the jobs details for an user")
+                (aliases: &["getjob"])
+                (@arg IMAGE_IDENT: +required +takes_value
+                    "An job identifier (ex: 1, 2)")
+            )
+            (@subcommand list =>
+                (about: "Displays all the jobs for an user")
+                (aliases: &["listjob"])
+                (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
+            )
+        )
+        (@subcommand networks =>
+            (about: "Commands relating to Rio/OS job management")
+            (aliases: &["net", "netw", "network", "networks"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand get =>
+                (about: "Displays the network details for an user")
+                (aliases: &["getnetwork"])
+                (@arg IMAGE_IDENT: +required +takes_value
+                    "An network identifier (ex: 1, 2)")
+            )
+            (@subcommand list =>
+                (about: "Displays all the network for an user")
+                (aliases: &["listnetwork"])
+                (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
+            )
+        )
         (subcommand: alias_login)
         (subcommand: alias_logout)
         (subcommand: alias_init)

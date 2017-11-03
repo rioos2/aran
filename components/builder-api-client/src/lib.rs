@@ -42,7 +42,7 @@ use hyper::header::{ContentType, Accept, Authorization, Bearer, Headers};
 use protocol::net::NetError;
 use rand::{Rng, thread_rng};
 use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
-use protocol::{sessionsrv, asmsrv, nodesrv};
+use protocol::{sessionsrv, asmsrv, nodesrv, plansrv, storagesrv, originsrv, jobsrv,netsrv};
 use rioos_http::util::decoded_response;
 use rio_net::http::headers::*;
 
@@ -294,7 +294,188 @@ impl Client {
 
     }
 
+    pub fn list_image(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("plans");
 
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get images, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<plansrv::PlanGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(),i.get_group_name(),i.get_url(),i.get_origin(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+    pub fn list_datacenters(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("datacenters");
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get datacenter, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<storagesrv::DcGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(),i.get_name(),i.get_nodes().iter().cloned().collect(),i.get_networks().iter().cloned().collect(),i.get_storage(),i.get_enabled().to_string(),i.get_status().get_phase(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
+
+    pub fn list_origins(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("origins");
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get images, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<originsrv::OriginGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(),i.get_object_meta().get_origin(),i.get_object_meta().get_uid(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+    pub fn list_job(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("jobs");
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get jobs, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<jobsrv::JobGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(),i.get_spec().get_node_id(),i.get_spec().get_target_ref(),i.get_status().get_phase(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+    pub fn list_network(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("networks");
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get network, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<netsrv::NetworkGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(),i.get_name(),i.get_network_type(),i.get_subnet_ip(),i.get_netmask(),i.get_gateway(),i.get_status().get_phase(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
     ///
     /// # Failures
     ///
