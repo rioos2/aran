@@ -90,7 +90,8 @@ impl Migratable for AuthProcedures {
                   account_approval text,
                   account_suspend text,
                   account_roles text[],
-                  account_registration_ip_address text
+                  account_registration_ip_address text,
+                  default_origin text
                 ) RETURNS SETOF accounts AS $$
                     DECLARE
                         inserted_account accounts;
@@ -103,7 +104,7 @@ impl Migratable for AuthProcedures {
                             INSERT INTO accounts (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, roles,registration_ip_address)
                             VALUES (account_name, account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password, account_states,
                                 account_approval, account_suspend, account_roles,account_registration_ip_address) ON CONFLICT DO NOTHING RETURNING * into inserted_account;
-                                PERFORM insert_origin_v1('default',inserted_account.id,inserted_account.name,'{"kind":"Origin","api_version":"v1"}','{"name":"megam","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}');
+                                PERFORM insert_origin_v1(default_origin,inserted_account.id,inserted_account.name,'{"kind":"Origin","api_version":"v1"}','{"name":"megam","origin":"default","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}');
                                 RETURN NEXT inserted_account;
                                 RETURN;
                        END IF;
@@ -128,6 +129,7 @@ impl Migratable for AuthProcedures {
                   account_suspend text,
                   account_roles text[],
                   account_registration_ip_address text
+
                 ) RETURNS SETOF accounts AS $$
                     BEGIN
                        RETURN QUERY SELECT * FROM accounts WHERE email = account_email;
@@ -505,13 +507,13 @@ impl Migratable for AuthProcedures {
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        migrator.migrate(
-            "originsrv",
-            r#"INSERT INTO origins (name,object_meta,type_meta) VALUES ('rioos-system','{"name":"megam","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}','{"kind":"Origin","api_version":"v1"}')
-            ON CONFLICT (name) DO NOTHING"#,
-        )?;
-
-        ui.para("[✓] origins: rioos-system");
+        // migrator.migrate(
+        //     "originsrv",
+        //     r#"INSERT INTO origins (name,object_meta,type_meta) VALUES ('rioos-system','{"name":"megam","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}','{"kind":"Origin","api_version":"v1"}')
+        //     ON CONFLICT (name) DO NOTHING"#,
+        // )?;
+        //
+        // ui.para("[✓] origins: rioos-system");
 
         migrator.migrate(
             "originsrv",

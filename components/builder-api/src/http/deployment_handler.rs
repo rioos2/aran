@@ -6,7 +6,7 @@ use bodyparser;
 use ansi_term::Colour;
 use rio_core::event::*;
 use rio_net::http::controller::*;
-use deploy::deployment_ds::{Replicas, DeploymentDS};
+use deploy::deployment_ds::DeploymentDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
@@ -567,15 +567,25 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
     );
 
     let conn = Broker::connect().unwrap();
-    match Replicas::new(&conn, &assembly_factory_create).new_desired() {
-        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Err(internal_error(&format!("{}\n", err))),
+    match DeploymentDS::assembly_factory_create(&conn, &assembly_factory_create) {
+        Ok(Some(assemblyfac)) => Ok(render_json(status::Ok, &assemblyfac)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
     }
+
+    // match Replicas::new(&conn, &assembly_factory_create).new_desired() {
+    //     Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
+    //     Err(err) => Err(internal_error(&format!("{}\n", err))),
+    //     Ok(None) => {
+    //         Err(not_found_error(
+    //             &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+    //         ))
+    //     }
+    // }
 }
 
 

@@ -19,7 +19,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let results = rio_client.list_origins(&token, &email)?;
 
-    let title = row!["Id", "Name", "Creator Id", "Hrs"];
+    let title = row!["Id", "Name", "Creator Id", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 

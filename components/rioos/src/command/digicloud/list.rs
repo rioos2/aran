@@ -19,7 +19,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let results = rio_client.list_deploy(&token, &email)?;
 
-    let title = row!["Id", "Name", "Replicas", "Located", "Origin", "Hrs"];
+    let title = row!["Id", "Name", "Replicas", "Located", "Origin", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 

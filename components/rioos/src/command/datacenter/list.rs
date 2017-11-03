@@ -19,7 +19,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let results = rio_client.list_datacenters(&token, &email)?;
 
-    let title = row!["Id", "Name", "Nodes","Networks","Storages","Enabled", "Hrs"];
+    let title = row!["Id", "Name","Enabled", "Status", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 

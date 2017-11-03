@@ -19,7 +19,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let results = rio_client.list_network(&token, &email)?;
 
-    let title = row!["Id", "Name", "Type","Subnet IP","Netmask","Gateway","Status", "Hrs"];
+    let title = row!["Id", "Name", "Type","Subnet IP","Netmask","Gateway","Status", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 

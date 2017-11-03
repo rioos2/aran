@@ -389,7 +389,7 @@ impl Client {
                         .get_items()
                         .iter_mut()
                         .map(|i| {
-                            vec![i.get_id(),i.get_name(),i.get_nodes().iter().cloned().collect(),i.get_networks().iter().cloned().collect(),i.get_storage(),i.get_enabled().to_string(),i.get_status().get_phase(),i.get_created_at()]
+                            vec![i.get_id(),i.get_name(),i.get_enabled().to_string(),i.get_status().get_phase(),i.get_created_at()]
                         })
                         .collect(),
                 )

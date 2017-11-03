@@ -46,7 +46,8 @@ impl SessionDS {
 
     pub fn find_or_create_account_via_session(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_service_access: bool, dbprocedure: &str) -> Result<sessionsrv::Session> {
         let conn = datastore.pool.get_shard(0)?;
-        let query = "SELECT * FROM ".to_string() + dbprocedure + "($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)";
+        let def_origin=format!("{}{}",&session_create.get_email(),"_env");
+        let query = "SELECT * FROM ".to_string() + dbprocedure + "($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)";
         let rows = conn.query(
             &query,
             &[
@@ -62,6 +63,8 @@ impl SessionDS {
                 &session_create.get_suspend(),
                 &session_create.get_roles(),
                 &session_create.get_registration_ip_address(),
+                &def_origin,
+
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {
@@ -477,9 +480,13 @@ fn row_to_origin(row: &postgres::rows::Row) -> Result<originsrv::Origin> {
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
+    let owner_id: i64 = row.get("owner_id");
+    let name: String = row.get("name");
 
     origin_data.set_id(id.to_string() as String);
-    let object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
+    let mut object_meta_obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
+    object_meta_obj.set_uid(owner_id.to_string() as String);
+    object_meta_obj.set_origin(name);
     origin_data.set_object_meta(object_meta_obj);
     let type_meta_obj: asmsrv::TypeMeta = serde_json::from_str(&type_meta).unwrap();
     origin_data.set_type_meta(type_meta_obj);

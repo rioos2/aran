@@ -17,9 +17,9 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
 
-    let results = rio_client.list_datacenters(&token, &email)?;
+    let results = rio_client.list_image(&token, &email)?;
 
-    let title = row!["Id", "Group Name", "url","Origin", "Hrs"];
+    let title = row!["Id", "Group Name", "url","Origin", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 
