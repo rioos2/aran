@@ -19,7 +19,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let results = rio_client.list_node(&token, &email)?;
 
-    let title = row!["Id", "Phase", "Unschedulable", "Hrs Ago"];
+    let title = row!["Id", "Status", "Unschedulable", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 

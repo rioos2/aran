@@ -48,6 +48,7 @@ pub fn get() -> App<'static, 'static> {
             (subcommand: sub_cli_list().aliases(&["l", "li", "lis"]))
             (subcommand: sub_cli_completers().aliases(&["c", "co", "com", "comp"]))
             (subcommand: sub_cli_new().aliases(&["n", "ne", "new"]))
+            (subcommand: sub_cli_whoami().aliases(&["who", "whoam", "whoami"]))
 
         )
         (@subcommand auth =>
@@ -386,6 +387,11 @@ fn sub_cli_list() -> App<'static, 'static> {
 fn sub_cli_new() -> App<'static, 'static> {
     clap_app!(@subcommand new =>
         (about: "Create new User.")
+    )
+}
+fn sub_cli_whoami() -> App<'static, 'static> {
+    clap_app!(@subcommand whoami =>
+        (about: "Dispaly the current User.")
     )
 }
 

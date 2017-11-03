@@ -64,7 +64,6 @@ impl SessionDS {
                 &session_create.get_roles(),
                 &session_create.get_registration_ip_address(),
                 &def_origin,
-
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {

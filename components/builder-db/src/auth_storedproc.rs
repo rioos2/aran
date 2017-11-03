@@ -128,7 +128,8 @@ impl Migratable for AuthProcedures {
                   account_approval text,
                   account_suspend text,
                   account_roles text[],
-                  account_registration_ip_address text
+                  account_registration_ip_address text,
+                  origin_name text
 
                 ) RETURNS SETOF accounts AS $$
                     BEGIN

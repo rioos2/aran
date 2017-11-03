@@ -65,6 +65,7 @@ fn start(ui: &mut UI) -> Result<()> {
                 ("list", Some(m)) => sub_cli_login(ui, m)?,
                 ("completers", Some(m)) => sub_cli_completers(m)?,
                 ("new", Some(m)) => sub_cli_new(ui, m)?,
+                ("whoami",Some(m)) => sub_cli_whoami(ui,m)?,
                 _ => unreachable!(),
             }
         }
@@ -147,6 +148,12 @@ fn sub_cli_new(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     init();
 
     command::cli::new::start(ui, &api_server_param_or_env(&m)?)
+
+}
+fn sub_cli_whoami(ui: &mut UI,m: &ArgMatches) -> Result<()> {
+    init();
+
+    command::cli::whoami::start(ui,&api_server_param_or_env(&m)?)
 
 }
 
