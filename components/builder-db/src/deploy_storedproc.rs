@@ -168,6 +168,8 @@ impl Migratable for DeployProcedures {
             "asmsrv",
             r#"CREATE TABLE IF NOT EXISTS assembly_factory (
              id bigint PRIMARY KEY DEFAULT next_id_v1('asm_fact_id_seq'),
+             object_meta text,
+             type_meta text,
              name text,
              uri text,
              description text,
@@ -201,14 +203,16 @@ impl Migratable for DeployProcedures {
                 component_collection text,
                 opssettings text,
                 replicas bigint,
-                status text
+                status text,
+                object_meta text,
+                type_meta text
                         ) RETURNS SETOF assembly_factory AS $$
                         DECLARE
                            this_origin origins%rowtype;
                                 BEGIN
                                 SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, origin_id, plan,properties,external_management_resource,component_collection,opssettings,replicas,status)
-                                        VALUES (name, uri, description, tags,this_origin.id, plan,properties,external_management_resource,component_collection,opssettings,replicas,status)
+                                    RETURN QUERY INSERT INTO assembly_factory(name, uri, description, tags, origin_id, plan,properties,external_management_resource,component_collection,opssettings,replicas,status,object_meta,type_meta)
+                                        VALUES (name, uri, description, tags,this_origin.id, plan,properties,external_management_resource,component_collection,opssettings,replicas,status,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
