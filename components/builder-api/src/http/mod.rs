@@ -91,6 +91,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //auth API for creating new account
         signup: post "/accounts" => XHandler::new(C(account_create)),
+        cli_signup: post "/force/accounts" => XHandler::new(C(account_create_from_cli)),
         account_get_by_id: get "/accounts/:id" => C(account_get_by_id),
         account_get_by_name: get "/accounts/name/:name" => C(account_get),
 

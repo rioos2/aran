@@ -47,6 +47,8 @@ pub fn get() -> App<'static, 'static> {
             (subcommand: sub_cli_init().aliases(&["i", "in", "ini"]))
             (subcommand: sub_cli_list().aliases(&["l", "li", "lis"]))
             (subcommand: sub_cli_completers().aliases(&["c", "co", "com", "comp"]))
+            (subcommand: sub_cli_new().aliases(&["n", "ne", "new"]))
+
         )
         (@subcommand auth =>
             (about: "Commands relating to Rio/OS identity and access")
@@ -151,6 +153,12 @@ pub fn get() -> App<'static, 'static> {
             (@subcommand ssh =>
                 (about: "Securely shell connect to digitalcloud os")
                 (aliases: &["digissh"])
+                (@arg DIGICLOUD_IDENT: +required +takes_value
+                    "A digital cloud identifier (ex: 1, 2)")
+            )
+            (@subcommand get =>
+                (about: "Displays the default configuration options for a service")
+                (aliases: &["g","ge","get"])
                 (@arg DIGICLOUD_IDENT: +required +takes_value
                     "A digital cloud identifier (ex: 1, 2)")
             )
@@ -342,6 +350,13 @@ fn sub_cli_list() -> App<'static, 'static> {
         (about: "List the blueprints deployed.")
     )
 }
+
+fn sub_cli_new() -> App<'static, 'static> {
+    clap_app!(@subcommand new =>
+        (about: "Create new User.")
+    )
+}
+
 
 fn sub_cli_completers() -> App<'static, 'static> {
     let sub = clap_app!(@subcommand completers =>
