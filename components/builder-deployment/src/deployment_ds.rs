@@ -195,19 +195,6 @@ impl DeploymentDS {
         if rows.len() > 0 {
             for row in rows {
                 let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
-                // let mut assembly_create = asmsrv::Assembly::new();
-                // assembly_create.set_name(assembly_factory.get_name());
-                // assembly_create.set_uri("v1/assembly".to_string());
-                // assembly_create.set_description(assembly_factory.get_description());
-                // assembly_create.set_tags(assembly_factory.get_tags());
-                // assembly_create.set_parent_id(assembly_factory.get_id());
-                // assembly_create.set_origin(assembly_factory.get_object_meta().get_origin());
-                // let mut type_meta = asmsrv::TypeMeta::new();
-                // type_meta.set_kind(ASSEMBLY.to_string());
-                // type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
-                // assembly_create.set_type_meta(type_meta);
-                // let assembly = Self::assembly_create(&datastore, &assembly_create)?;
-
                 return Ok(Some(assembly_factory));
             }
         }
