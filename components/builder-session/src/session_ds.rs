@@ -402,9 +402,6 @@ impl SessionDS {
         Ok(None)
     }
 
-
-
-
     pub fn oidc_provider_create(datastore: &DataStoreConn, oidc_provider: &sessionsrv::OidcProvider) -> Result<Option<sessionsrv::OidcProvider>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
