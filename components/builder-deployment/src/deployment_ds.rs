@@ -379,7 +379,8 @@ impl DeploymentDS {
                 return Ok(Some(end));
             }
         }
-        Ok(None)
+        let endpoints = servicesrv::EndPoints::new();
+        Ok(Some(endpoints))
     }
 }
 

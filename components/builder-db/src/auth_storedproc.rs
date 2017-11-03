@@ -523,14 +523,21 @@ impl Migratable for AuthProcedures {
                      origin_object_meta text
                  ) RETURNS SETOF origins AS $$
                      DECLARE
+                       existing_origin origins%rowtype;
                        inserted_origin origins;
                      BEGIN
+                     SELECT * INTO existing_origin FROM origins WHERE name = origin_name LIMIT 1;
+                     IF FOUND THEN
+                         RETURN NEXT existing_origin;
+                     ELSE
                          INSERT INTO origins (name, owner_id,type_meta,object_meta)
                                 VALUES (origin_name, origin_owner_id,origin_type_meta,origin_object_meta) ON CONFLICT (name) DO NOTHING RETURNING * into inserted_origin;
                          PERFORM insert_origin_member_v1(inserted_origin.id, origin_name, origin_owner_id, origin_owner_name);
                          RETURN NEXT inserted_origin;
                          RETURN;
-                     END
+                END IF;
+                RETURN;
+             END
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
