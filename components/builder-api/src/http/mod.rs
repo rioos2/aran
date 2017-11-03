@@ -91,6 +91,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //auth API for creating new account
         signup: post "/accounts" => XHandler::new(C(account_create)),
+        cli_signup: post "/force/accounts" => XHandler::new(C(account_create_from_cli)),
         account_get_by_id: get "/accounts/:id" => C(account_get_by_id),
         account_get_by_name: get "/accounts/name/:name" => C(account_get),
 
@@ -184,7 +185,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         endpoints_list: get "/endpoints" =>  XHandler::new(C(endpoints_list)).before(basic.clone()),
         endpoints_show: get "/endpoints/:id" => XHandler::new(C(endpoints_show)).before(basic.clone()),
         endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(C(endpoints_list_by_origin)).before(basic.clone()),
-        endpoints_list_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(C(endpoints_list_by_assembly)).before(basic.clone()),
+        endpoints_get_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(C(endpoints_get_by_assembly)).before(basic.clone()),
 
         //services API
 

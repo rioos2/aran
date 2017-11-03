@@ -100,6 +100,41 @@ impl Client {
         ))
     }
 
+    pub fn signup(&self, userid: &str, password: &str) -> Result<(String)> {
+        debug!("Logging in for {}", userid);
+        let url = format!("force/accounts");
+
+        let body = json!({
+            "email": format!("{}", userid),
+            "password": format!("{}", password)
+        });
+
+
+        let sbody = serde_json::to_string(&body).unwrap();
+
+        let res = self.0
+            .post(&url)
+            .body(&sbody)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to signup, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<sessionsrv::Session>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value.get_token()),
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
     pub fn login(&self, userid: &str, password: &str) -> Result<(String)> {
         debug!("Logging in for {}", userid);
         let url = format!("authenticate");

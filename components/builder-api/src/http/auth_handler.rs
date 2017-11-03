@@ -203,6 +203,47 @@ pub fn account_create(req: &mut Request) -> AranResult<Response> {
 }
 
 
+
+pub fn account_create_from_cli(req: &mut Request) -> AranResult<Response> {
+    let mut account_create = SessionCreate::new();
+    {
+
+        match req.get::<bodyparser::Struct<SessionLoginReq>>() {
+            Ok(Some(body)) => {
+                if body.email.len() <= 0 {
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "email")));
+                }
+
+                //Don't know if this a good way to do so as why should PasswordAuthCli
+                //act as token generator
+                let authcli = req.get::<persistent::Read<PasswordAuthCli>>().unwrap();
+                let email = body.email.to_string();
+
+                let api_key = rand::random::<u64>().to_string();
+                account_create.set_apikey(api_key);
+                account_create.set_email(email);
+                account_create.set_token(authcli.token().unwrap());
+                account_create.set_password(authcli.encrypt(body.password.clone()).unwrap());
+            }
+            Err(err) => {
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
+            }
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
+        }
+    }
+
+    let conn = Broker::connect().unwrap();
+
+    match SessionDS::account_create(&conn, &account_create) {
+        Ok(account) => Ok(render_json(status::Ok, &account)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+    }
+}
+
+
+
 pub fn account_get_by_id(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();
@@ -285,7 +326,6 @@ pub fn session_get(req: &mut Request) -> AranResult<Response> {
             ))
         }
 
-
     }
 }
 
@@ -337,7 +377,6 @@ pub fn set_ldap_config(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-
 
     }
 }
@@ -398,7 +437,9 @@ pub fn config_saml_provider(req: &mut Request) -> AranResult<Response> {
 
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -455,7 +496,7 @@ pub fn saml_provider_show(req: &mut Request) -> AranResult<Response> {
                 &saml_provider_get.get_id()
             )))
         }
-        }
+    }
 }
 
 pub fn config_oidc_provider(req: &mut Request) -> AranResult<Response> {
@@ -473,7 +514,9 @@ pub fn config_oidc_provider(req: &mut Request) -> AranResult<Response> {
 
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
