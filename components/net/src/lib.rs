@@ -11,6 +11,7 @@ extern crate rioos_builder_db as db;
 extern crate rioos_builder_session as session;
 extern crate rioos_builder_authsrv as authorize;
 extern crate crypto;
+extern crate itertools;
 
 #[macro_use]
 extern crate hyper;
@@ -27,6 +28,9 @@ extern crate time;
 extern crate unicase;
 extern crate rand;
 extern crate curl;
+
+#[macro_use]
+extern crate router;
 
 pub mod config;
 pub mod error;

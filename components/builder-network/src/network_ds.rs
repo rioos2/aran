@@ -4,10 +4,12 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{servicesrv, asmsrv, netsrv};
+use protocol::{servicesrv, asmsrv, netsrv,DEFAULT_API_VERSION};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+pub const NETWORKS: &'static str = "Networks";
+
 
 pub struct NetworkDS;
 
@@ -26,8 +28,11 @@ impl NetworkDS {
                 &(serde_json::to_string(net_create.get_status()).unwrap()),
             ],
         ).map_err(Error::NetworkCreate)?;
+        if rows.len() > 0 {
         let network = row_to_network(&rows.get(0))?;
         return Ok(Some(network.clone()));
+    }
+    Ok(None)
     }
 
     pub fn network_list(datastore: &DataStoreConn) -> Result<Option<netsrv::NetworkGetResponse>> {
@@ -40,16 +45,18 @@ impl NetworkDS {
         let mut response = netsrv::NetworkGetResponse::new();
 
         let mut network_collection = Vec::new();
+        if rows.len() > 0 {
         for row in rows {
             network_collection.push(row_to_network(&row)?)
         }
         response.set_network_collection(
             network_collection,
-            "NetworkList".to_string(),
-            "v1".to_string(),
+
         );
-        Ok(Some(response))
+        return Ok(Some(response));
     }
+    Ok(None)
+}
 }
 
 fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
@@ -67,8 +74,8 @@ fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
     let mut obj_meta = servicesrv::ObjectMetaData::new();
     obj_meta.set_name(id.to_string());
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind("Networks".to_string());
-    type_meta.set_api_version("v1".to_string());
+    type_meta.set_kind(NETWORKS.to_string());
+    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
 
     network.set_id(id.to_string());
     network.set_status(serde_json::from_str(&status).unwrap());

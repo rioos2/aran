@@ -15,6 +15,7 @@ use node_storedproc::*;
 use service_account_storedproc::*;
 use network_storedproc::*;
 use storage_storedproc::*;
+use job_storedproc::*;
 
 
 /// A messaging Broker for proxying messages from clients to one or more `RouteSrv` and vice versa.
@@ -86,6 +87,7 @@ impl DataStoreConn {
         NetworkProcedures::new()?.migrate(migrator, ui)?;
         StorageProcedures::new()?.migrate(migrator, ui)?;
         ServiceAccountProcedure::new()?.migrate(migrator, ui)?;
+        JobProcedures::new()?.migrate(migrator,ui)?;
 //        WorkerProcedures::new()?.migrate(migrator)?;
         Ok(())
     }

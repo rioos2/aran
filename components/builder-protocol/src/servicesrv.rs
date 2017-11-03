@@ -1,6 +1,11 @@
 // Copyright (c) 2017 RioCorp Inc.
 use asmsrv;
 use std::collections::BTreeMap;
+use DEFAULT_API_VERSION;
+pub const SECRETLIST: &'static str = "SecretList";
+pub const SERVICELIST: &'static str = "ServiceList";
+pub const ENDPOINTSLIST: &'static str = "EndpointsList";
+pub const SERVICEACCOUNTLIST: &'static str = "ServiceAccountsList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {
@@ -121,10 +126,10 @@ impl SecretGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_secret_collection(&mut self, v: Vec<Secret>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_secret_collection(&mut self, v: Vec<Secret>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = SECRETLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 
@@ -189,10 +194,10 @@ impl ServiceAccountGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_service_collection(&mut self, v: Vec<ServiceAccount>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_service_collection(&mut self, v: Vec<ServiceAccount>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = SERVICEACCOUNTLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 
@@ -285,7 +290,7 @@ impl EndPoints {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Subsets {
     addresses: Vec<Addesses>,
-    not_ready_addresses: Vec<Addesses>,
+    unready_addresses: Vec<Addesses>,
     ports: Vec<Ports>,
 }
 
@@ -302,12 +307,12 @@ impl Subsets {
         &self.addresses
     }
 
-    pub fn get_not_ready_addresses(&self) -> &Vec<Addesses> {
-        &self.not_ready_addresses
+    pub fn get_unready_addresses(&self) -> &Vec<Addesses> {
+        &self.unready_addresses
     }
 
-    pub fn set_not_ready_addresses(&mut self, v: Vec<Addesses>) {
-        self.not_ready_addresses = v;
+    pub fn set_unready_addresses(&mut self, v: Vec<Addesses>) {
+        self.unready_addresses = v;
     }
 
     pub fn get_ports(&self) -> &Vec<Ports> {
@@ -394,10 +399,10 @@ impl EndpointsGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_end_collection(&mut self, v: Vec<EndPoints>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_end_collection(&mut self, v: Vec<EndPoints>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = ENDPOINTSLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -521,9 +526,9 @@ impl ServicesGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_services_collection(&mut self, v: Vec<Services>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_services_collection(&mut self, v: Vec<Services>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = SERVICELIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }

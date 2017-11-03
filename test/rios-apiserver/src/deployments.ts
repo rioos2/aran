@@ -23,6 +23,7 @@ describe('Assembly_factory API', function() {
   it('returns the assembly_factory by id', function(done) {
     request.get('/assembly_factorys/' + globalAny.asm_fac_id)
       .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .expect(200)
       .end(function(err, res) {
        expect(res.body.id).to.equal(globalAny.asm_fac_id);
@@ -32,6 +33,7 @@ describe('Assembly_factory API', function() {
   it('returns the assembly_factorys_status_update by id', function(done) {
     request.put('/assembly_factorys/status/'+ globalAny.asm_fac_id)
       .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":"","condition_type":" "}]}})
       .expect(200)
       .end(function(err, res) {
@@ -42,6 +44,7 @@ describe('Assembly_factory API', function() {
   it('returns the all assemblys_factory', function(done) {
     request.get('/assembly_factorys')
       .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .expect(200)
       .end(function(err, res) {
         expect(res.body.results.length).to.equal(1);
@@ -51,6 +54,7 @@ describe('Assembly_factory API', function() {
   it('returns the assembly_factory by origin', function(done) {
     request.get('origin/'+globalAny.origin_id+'/assembly_factorys')
       .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .expect(200)
       .end(function(err, res) {
         done(err);
@@ -63,7 +67,7 @@ describe('Assembly_factory API', function() {
       request.post('/assemblys')
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"name": "ubuntu", "origin": "rioo1","uri": "/v1/assemblys","instance_id": "dawn-cloud-a3d34d.megambox.gom", "description": "ubuntuinstallation", "parent_id": "811199221985189888", "tags": ["ubuntu"],"node": "","ips": {"private_ipv4":["198.168.0.15","192.168.0.25"]},"volumes": [{"id":"","target":"",  "volume_type":"" }], "urls": {"vnc_console":"http://10.0.0.1:8969/"},   "status": {"phase": "pending", "message": "","reason": "","conditions": [{"message": "","reason": "","status": " ","last_transition_time": " ", "last_probe_time": "","condition_type": " "}]}})
+        //.send({"name": "ubuntu","uri": "/v1/assemblys","description": "ubuntuinstallation", "parent_id": globalAny.asm_fac_id ,origin" :globalAny.origin_id,"tags": ["ubuntu"],"instance_id":"","selector" :["876543212345678909"],"node": "","ips": {"private_ipv4":["198.168.0.15","192.168.0.25"]},"volumes":[{"id":"","target":"","volume_type":""}],"urls": {"vnc_console":"http://10.0.0.1:8969/"},"status": {"phase": "pending32","message": "","reason": "","conditions": [{"message": "","reason": "","status": " ","last_transition_time": " ","last_probe_time": "","condition_type": " "}]},"type_meta": {"kind": "Assembly","api_version": "v1"},"object_meta": {"name": "811197535086452736","origin": "","uid": "","created_at": "","cluster_name": "","labels": {"group": "development", "key2": "value2"},"annotations": {"key1": "value1","key2": "value2"},"owner_references": [{"kind": "Assembly", "api_version": "v1","name": "ddd","uid": "","block_owner_deletion": true}]}})
         .expect(200)
         .end(function(err, res) {
           expect(res.body.name).to.equal("ubuntu");
@@ -76,6 +80,7 @@ describe('Assembly_factory API', function() {
     it('returns the assembly by id', function(done) {
       request.get('/assemblys/'+ globalAny.asm.id)
         .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
          expect(res.body.id).to.equal(globalAny.asm.id);
@@ -86,6 +91,7 @@ describe('Assembly_factory API', function() {
     it('returns the assemblys_status_update by id', function(done) {
       request.put('/assemblys/status/'+ globalAny.asm.id)
         .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":"","condition_type":" "}]}})
         .expect(200)
         .end(function(err, res) {
@@ -96,6 +102,7 @@ describe('Assembly_factory API', function() {
     it('returns all assemblys', function(done) {
       request.get('/assemblys')
         .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
            expect(res.body.results.length).to.equal(1);
@@ -106,6 +113,17 @@ describe('Assembly_factory API', function() {
     it('returns the assemblys by origin', function(done) {
       request.get('origin/'+globalAny.origin_id+'/assemblys')
         .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .expect(200)
+        .end(function(err, res) {
+          done(err);
+        });
+    });
+
+    it('returns the assemblys by serviceid', function(done) {
+      request.get('assemblys/services/876543212345678909')
+        .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
           done(err);
@@ -114,6 +132,7 @@ describe('Assembly_factory API', function() {
     it('returns the assemblys by assemblyfactory id', function(done) {
       request.get('assemblyfactorys/'+globalAny.asm_fac_id+'/describe')
         .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
           done(err);

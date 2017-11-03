@@ -88,3 +88,5 @@ pub mod network_storedproc;
 #[allow(unused_must_use)]
 pub mod storage_storedproc;
 pub mod migration;
+#[allow(unused_must_use)]
+pub mod job_storedproc;

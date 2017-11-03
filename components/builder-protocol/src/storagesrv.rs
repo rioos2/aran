@@ -1,8 +1,10 @@
 // Copyright (c) 2017 RioCorp Inc.
 use {asmsrv, servicesrv};
 use std::collections::BTreeMap;
-
-
+use DEFAULT_API_VERSION;
+pub const STORAGELIST: &'static str = "StorageList";
+pub const STOARGEPOOLLIST: &'static str = "StoragePoolList";
+pub const DATACENTERLIST: &'static str = "DatacenterList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Storage {
     id: String,
@@ -153,10 +155,10 @@ impl StorageGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_storage_collection(&mut self, v: Vec<Storage>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_storage_collection(&mut self, v: Vec<Storage>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = STORAGELIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 
@@ -289,10 +291,10 @@ impl DcGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_dc_collection(&mut self, v: Vec<DataCenter>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_dc_collection(&mut self, v: Vec<DataCenter>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = DATACENTERLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
 
@@ -395,9 +397,9 @@ impl StoragePoolGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_storage_pool_collection(&mut self, v: Vec<StoragePool>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_storage_pool_collection(&mut self, v: Vec<StoragePool>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = STOARGEPOOLLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }

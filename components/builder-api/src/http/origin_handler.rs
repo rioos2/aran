@@ -61,9 +61,14 @@ pub fn origin_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
 
     match SessionDS::origin_create(&conn, &org_create) {
-        Ok(origin) => Ok(render_json(status::Ok, &origin)),
+        Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
         }
     }
 }
@@ -72,7 +77,7 @@ pub fn origin_create(req: &mut Request) -> AranResult<Response> {
 pub fn origin_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match SessionDS::origin_list(&conn) {
-        Ok(org_list) => Ok(render_json(status::Ok, &org_list)),
+        Ok(Some(org_list)) => Ok(render_json(status::Ok, &org_list)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }
@@ -96,7 +101,7 @@ pub fn origin_show(req: &mut Request) -> AranResult<Response> {
     let mut org_get = IdGet::new();
     org_get.set_id(org_name);
     match SessionDS::origin_show(&conn, &org_get) {
-        Ok(origin) => Ok(render_json(status::Ok, &origin)),
+        Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
         Err(err) => {
             Err(internal_error(&format!("{}\n", err)))
         }

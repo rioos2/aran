@@ -13,6 +13,7 @@ pub mod network_handler;
 pub mod storage_handler;
 pub mod plan_handler;
 pub mod watch_handler;
+pub mod job_handler;
 
 
 use std::sync::{mpsc, Arc};
@@ -45,6 +46,7 @@ use self::network_handler::*;
 use self::storage_handler::*;
 use self::plan_handler::*;
 use self::watch_handler::*;
+use self::job_handler::*;
 
 use db::data_store::*;
 use std::sync::mpsc::channel;
@@ -74,26 +76,26 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //auth API for login (ldap, active directory)
         authenticate_ldap: post "/authenticate/ldap/:code" => XHandler::new(C(default_authenticate)), //ldap_authenticate
 
-        config_ldap: post "/ldap/config" => set_ldap_config,
+        config_ldap: post "/ldap/config" => C(set_ldap_config),
 
-        test_ldap_config: post "/ldap/config/:id/test" => test_ldap_config,
-        import_ldap: post "/ldap/import/:id" =>import_ldap,
+        test_ldap_config: post "/ldap/config/:id/test" => C(test_ldap_config),
+        import_ldap: post "/ldap/import/:id" =>C(import_ldap),
 
-        config_saml: post "/auth/saml/providers" => config_saml_provider,
-        saml_providers_list: get "/auth/saml/providers" =>saml_provider_list,
-        saml_provider_id: get "/auth/saml/providers/:providerid" =>saml_provider_show,
+        config_saml: post "/auth/saml/providers" => C(config_saml_provider),
+        saml_providers_list: get "/auth/saml/providers" =>C(saml_provider_list),
+        saml_provider_id: get "/auth/saml/providers/:providerid" =>C(saml_provider_show),
 
-        config_openid: post "/auth/oidc/providers/:providerid " => config_oidc_provider,
-        openid_listall: get "/auth/oidc/providers" =>openid_listall,
-        openid_show : get "auth/oidc/providers/:providerid" =>openid_provider_show,
+        config_openid: post "/auth/oidc/providers/:providerid " => C(config_oidc_provider),
+        openid_listall: get "/auth/oidc/providers" =>C(openid_listall),
+        openid_show : get "auth/oidc/providers/:providerid" =>C(openid_provider_show),
 
         //auth API for creating new account
         signup: post "/accounts" => XHandler::new(C(account_create)),
-        account_get_by_id: get "/accounts/:id" => account_get_by_id,
-        account_get_by_name: get "/accounts/name/:name" => account_get,
+        account_get_by_id: get "/accounts/:id" => C(account_get_by_id),
+        account_get_by_name: get "/accounts/name/:name" => C(account_get),
 
         //deploy API: assembly_factory
-        assembly_factorys: post "/assemblyfactorys" => XHandler::new(C(assembly_factory_create)).before(basic.clone()),
+        assembly_factorys: post "/origins/:origin/assemblyfactorys" => XHandler::new(C(assembly_factory_create)).before(basic.clone()),
         assemblys_factory_show: get "/assemblyfactorys/:id" => XHandler::new(C(assembly_factory_show)).before(basic.clone()),
         assemblys_factorys_list: get "/assemblyfactorys" => XHandler::new(C(assembly_factory_list)).before(basic.clone()),
         assembly_factory_status: put "/assemblyfactorys/:id/status" => XHandler::new(C(assembly_factory_status_update)).before(basic.clone()),
@@ -102,16 +104,17 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         plan_list: get "/plans" => XHandler::new(C(plan_list)).before(basic.clone()),
 
         //deploy API: assembly
-        assemblys: post "/assemblys" => XHandler::new(C(assembly_create)).before(basic.clone()),
+        assemblys: post "/origins/:origin/assemblys" => XHandler::new(C(assembly_create)).before(basic.clone()),
         assemblys_list: get "/assemblys" => XHandler::new(C(assembly_list)).before(basic.clone()),
         assembly_show: get "/assemblys/:id" => XHandler::new(C(assembly_show)).before(basic.clone()),
         assembly_status: put "/assemblys/:id/status" => XHandler::new(C(assembly_status_update)).before(basic.clone()),
         assembly_update: put "/assemblys/:id" => XHandler::new(C(assembly_update)).before(basic.clone()),
         assemblys_show_by_origin : get "/origins/:origin/assemblys" => XHandler::new(C(assemblys_show_by_origin)).before(basic.clone()),
+        assemblys_show_by_services : get "/assemblys/services/:servicesid" => XHandler::new(C(assemblys_show_by_services)).before(basic.clone()),
 
 
         //scaling API: horizontal scaling
-        horizontal_scaling: post "/horizontalscaling" => XHandler::new(C(hs_create)).before(basic.clone()),
+        horizontal_scaling: post "/origins/:origin/horizontalscaling" => XHandler::new(C(hs_create)).before(basic.clone()),
         horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(C(hs_list)).before(basic.clone()),
         horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(C(hs_status_update)).before(basic.clone()),
         horizontal_scaling_update: put "/horizontalscaling/:id" => XHandler::new(C(hs_update)).before(basic.clone()),
@@ -120,16 +123,16 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
 
         //authorization API: for roles
-        roles: post "/roles" => XHandler::new(roles_create).before(basic.clone()),
-        roles_list: get "/roles" => XHandler::new(roles_list).before(basic.clone()),
-        roles_show: get "/roles/:id" => XHandler::new(roles_show).before(basic.clone()),
+        roles: post "/roles" => XHandler::new(C(roles_create)).before(basic.clone()),
+        roles_list: get "/roles" => XHandler::new(C(roles_list)).before(basic.clone()),
+        roles_show: get "/roles/:id" => XHandler::new(C(roles_show)).before(basic.clone()),
 
         //authorization API: for permissions
-        permissions: post "/permissions" => XHandler::new(permissions_create).before(basic.clone()),
-        permissions_list: get "/permissions" => XHandler::new(permissions_list).before(basic.clone()),
-        role_based_permission: get "/permissions/roles/:id" => XHandler::new(get_rolebased_permissions).before(basic.clone()),
-        permissions_show: get "/permissions/:id" => XHandler::new(permissions_show).before(basic.clone()),
-        get_specfic_permission_based_role: get "/permissions/:id/roles/:rid" => XHandler::new(get_specfic_permission_based_role).before(basic.clone()),
+        permissions: post "/permissions" => XHandler::new(C(permissions_create)).before(basic.clone()),
+        permissions_list: get "/permissions" => XHandler::new(C(permissions_list)).before(basic.clone()),
+        role_based_permission: get "/permissions/roles/:id" => XHandler::new(C(get_rolebased_permissions)).before(basic.clone()),
+        permissions_show: get "/permissions/:id" => XHandler::new(C(permissions_show)).before(basic.clone()),
+        get_specfic_permission_based_role: get "/permissions/:id/roles/:rid" => XHandler::new(C(get_specfic_permission_based_role)).before(basic.clone()),
 
         //node API
         nodes: post "/nodes" => XHandler::new(C(node_create)).before(basic.clone()),
@@ -137,7 +140,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         node_status: put "/nodes/:id/status" => XHandler::new(C(node_status_update)).before(basic.clone()),
 
         //secret API
-        secrets: post "/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),
+        secrets: post "/origins/:origin/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),
         secrets_list: get "/secrets" => XHandler::new(C(secret_list)),
         secret_show: get "/secrets/:id" => XHandler::new(C(secret_show)).before(basic.clone()),
         secret_show_by_origin: get "/origins/:origin/secrets" => XHandler::new(C(secret_show_by_origin)),
@@ -177,7 +180,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //endpoint API
 
-        endpoints: post "/endpoints" =>  XHandler::new(C(endpoints_create)).before(basic.clone()),
+        endpoints: post "/origins/:origin/endpoints" =>  XHandler::new(C(endpoints_create)).before(basic.clone()),
         endpoints_list: get "/endpoints" =>  XHandler::new(C(endpoints_list)).before(basic.clone()),
         endpoints_show: get "/endpoints/:id" => XHandler::new(C(endpoints_show)).before(basic.clone()),
         endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(C(endpoints_list_by_origin)).before(basic.clone()),
@@ -185,13 +188,20 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //services API
 
-        services: post "/services" => XHandler::new(C(services_create)).before(basic.clone()),
+        services: post "/origins/:origin/services" => XHandler::new(C(services_create)).before(basic.clone()),
         services_show: get "/services/:id" =>XHandler::new(C(services_show)).before(basic.clone()),
         services_list: get "/services" => XHandler::new(C(services_list)).before(basic.clone()),
         services_list_by_assembly: get "/assemblys/:id/services" => XHandler::new(C(services_list_by_assembly)).before(basic.clone()),
         services_list_by_origin: get "/origins/:origin/services" => XHandler::new(C(services_list_by_origin)).before(basic.clone()),
 
         plan_factory: post "/planfactory" =>XHandler::new(C(plan_factory_create)).before(basic.clone()),
+
+        //Jobs API
+
+        jobs: post "/jobs" => XHandler::new(C(jobs_create)).before(basic.clone()),
+        jobs_get: get "/jobs" => XHandler::new(C(jobs_get)).before(basic.clone()),
+        jobs_status_update: put "/jobs/:jobid/status" => XHandler::new(C(jobs_status_update)).before(basic.clone()),
+
 
         //Internal: Streaming watch
         watches: get "/:name/watch/list" => watch_show,

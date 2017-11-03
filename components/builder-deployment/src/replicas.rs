@@ -1,49 +1,145 @@
-//A trait responsible for calculating the replicas to be deployed or nuked
-trait ReplicaCalculator {
-    fn calculate() ReplicaContext
+// Copyright (c) 2017 RioCorp Inc.
+
+//// This is responsible for managing the replicas upto the desired count.
+//// The count can be upward or downward. 
+///  eg: desired can be 5, and the current replicas can be 4, which mean we need to deploy 1 more.
+///  eg: desired can be 5, and the current replicas can be 6, which mean we need to nuke 1.
+impl Replicas  {
+
+    //create a new replica with a database connection and assembly_factory_request object
+    pub fn new(&conn, &assembly_factory_req) {
+        Replicas {
+            conn: conn,
+            assembly_factory_req: assembly_factory_req
+        }
+
+    }
+
+    //returns the desired replicas as asked by the user.
+    fn desired(&self) u32 {
+        self.assembly_factory_req.replicas
+    }
+
+
+    //This is reponsible for managing the replicas in an assembly factory upto the desired.
+    pub fn new_desired() Result<String> {
+        
+        //This should be done after assembly_factory is create (match )
+        match DeploymentDS::assembly_factory_create(conn, self.assembly_factory_req) {
+            Ok((response)) => { 
+                let replicated = upto_desired()? 
+                Ok(response)
+            },
+            Err(err) => Err(err)
+        }        
+    }
+
+
+      //This is reponsible for managing the replicas in an assembly factory upto the desired.
+    pub fn upto_desired() Result<AssemblyCreateReq> {
+        
+        //This should be done after assembly_factory is create (match )
+
+        let context = ReplicaContext ::new(&self.assembly_factory_req, &self.desired())
+
+        //deploy the assemblys
+        let deployed = context.to_deploy.map(|k, assembly_create_req| DeploymentDS::assembly_create(conn, &assembly_create_req))
+
+        //remove the assemblys 
+        let nuked = context.to_nuke.map(|k, assembly_create_req| DeploymentDS::assembly_create(conn, &assembly_create_req))
+
+        //fold all the errors in deployed and nuked.
+        //Send the assemblyfactry_response in case of success 
+
+    }
 }
+
 
 //The replica context to deploy or nuke(remove)
 struct ReplicaContext {
-    to_deploy BTreeMap<String, AssemblyCreateReq>
-    to_nuke   BTreeMap<String, AssemblyCreateReq>
+    to_deploy BTreeMap<&str, &AssemblyCreateReq>
+    to_nuke   BTreeMap<&str, &AssemblyCreateReq>
 }
 
-impl Replicas implements ReplicaCalculator {
+impl ReplicaContext implements ReplicaCalculator {
 
-    fn new(&assembly_factory, with_desired u32) {
-        let base_name = af.name;
-
+    fn new(&assembly_factory_req, with_desired u32) {
+        let base_name = assembly_factory_req.name;
 
         Replicas {
-            desire_replicas: with_desired,
-            af: assembly_factory,
-            namer: ReplicaNamer::new(&base_name)
+            af_req: assembly_factory_req,
+            namer: ReplicaNamer::new(&base_name, assembly_factory_req.replicas)
         }
 
     }
 
     fn calculate() {
-        if self.desired_replicas < self.af.replicas {
-            name.next()
+        //create the assembly_create_reqs 
+        for x in self.desired_replicas..self.af_req.replicas {        
+         let assembly_create_req = AssemblyCreateReq::new();
+         let replica_name = name.next();
+         self.add_for_deployment(assembly_create_req)        
         }
 
+        //create the assembly_create_reqs 
+        for x in self.af_req.replicas..self.af.req.replicas {        
+         let assembly_create_req = AssemblyCreateReq::new();
+         let replica_name = name.next();
+         self.add_for_removal(assembly_create_req)        
+        }
     }
 
-    fn add_for_deployment(&self, ) {
-        to_deploys.add(self)
+    fn add_for_deployment(&self, key: &str, assembly_req: &AssemblyCreateReq) {
+        to_deploys.add(key,assembly_req)
     }
 
-    fn add_for_removal(&self)  {
+    fn add_for_removal(&self,key: &str, assembly_req: &AssemblyCreateReq)  {
+        to_nuke.add(key, assembly_create_req)
+    }
+  
+}
 
+/// Replica namer is used to name the assembly object 
+/// Based on the count of replicas requested the namer will decide on the name.
+/// The generate naming convention for 2 replicas with base_name: levi.megam.io
+/// levi01.megam.io, levi02.megam.io
+///
+/// The generate naming convention for 1 replicas with base_name: levi.megam.io
+/// levi.megam.io
+
+struct ReplicaNamer {
+    name &str
+}
+
+
+impl ReplicaNamer {
+    
+    fn new(name: &str, requested: u32) {
+        &ReplicaNamer {
+            name: name,
+            requested: u32,
+        }
     }
 
-    pub fn deploy(&self) {
+    fn fqdn_as_tuples() (&str, &str) {
+        if &self.name.contains(".")  {
+            let subdot_fqdn = &self.name.split(".");
 
+            return (subdot_fqdn[0], subdot_fqdn[1])
+        }
+        (&self.name,"")
+        
     }
 
-    pub fn remove(&self) {
+    ///  If the requested replica count is just one then we need to return 
+    ///  levi.megam.io (base_name)
+    fn next(&self, count: u32) {
+        if self.requested > 1  { 
+            let fqdns = self.fqdn_as_tuples();
+            return format!("{}{}.{}", fqdns.0, count, fqdns.1);
+        }
 
+        self.name
     }
 
 }

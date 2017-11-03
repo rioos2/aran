@@ -1,5 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
-use {asmsrv, servicesrv};
+use {asmsrv, servicesrv, DEFAULT_API_VERSION};
+pub const ORIGINSLIST: &'static str = "OriginsList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Origin {
@@ -55,9 +56,9 @@ impl OriginGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_org_collection(&mut self, v: Vec<Origin>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_org_collection(&mut self, v: Vec<Origin>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = ORIGINSLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }

@@ -3,6 +3,9 @@
 use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
+use DEFAULT_API_VERSION;
+
+pub const NODELIST: &'static str = "NodeList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -243,12 +246,13 @@ impl NodeGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_node_collection(&mut self, v: Vec<Node>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_node_collection(&mut self, v: Vec<Node>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = NODELIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HealthzAllGet {
@@ -579,7 +583,7 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
                         .to_string(),
                 );
                 node.set_kind("Node".to_string());
-                node.set_api_version("v1".to_string());
+                node.set_api_version(DEFAULT_API_VERSION.to_string());
                 collections.push(node);
             }
         }
@@ -645,7 +649,7 @@ impl Into<HealthzAllGetResponse> for HealthzAllGet {
         let mut health = HealthzAllGetResponse::new();
         health.set_results(self);
         health.set_kind("ReportsStatistics".to_string());
-        health.set_api_version("v1".to_string());
+        health.set_api_version(DEFAULT_API_VERSION.to_string());
         health.set_id("ReportsStatistics".to_string());
         health
     }

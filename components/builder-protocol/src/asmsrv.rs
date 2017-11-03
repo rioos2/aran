@@ -3,17 +3,16 @@
 use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
+use DEFAULT_API_VERSION;
 
-pub const ASSEMBLY: &'static str = "Assembly";
 pub const ASSEMBLYLIST: &'static str = "AssemblyList";
-pub const ASSEMBLYFACTORY: &'static str = "AssemblyFactory";
 pub const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     id: String,
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
+    selector: Vec<String>,
     name: String,
     uri: String,
     description: String,
@@ -21,7 +20,6 @@ pub struct Assembly {
     origin: String,
     tags: Vec<String>,
     node: String,
-    ips: BTreeMap<String, Vec<String>>,
     urls: BTreeMap<String, String>,
     status: Status,
     volumes: Vec<Volume>,
@@ -104,6 +102,14 @@ impl Assembly {
     pub fn get_tags(&self) -> ::std::vec::Vec<String> {
         self.tags.clone()
     }
+
+    pub fn set_selector(&mut self, v: ::std::vec::Vec<String>) {
+        self.selector = v;
+    }
+
+    pub fn get_selector(&self) -> ::std::vec::Vec<String> {
+        self.selector.clone()
+    }
     pub fn set_type_meta(&mut self, v: TypeMeta) {
         self.type_meta = v;
     }
@@ -126,14 +132,6 @@ impl Assembly {
 
     pub fn get_node(&self) -> ::std::string::String {
         self.node.clone()
-    }
-
-    pub fn set_ip(&mut self, v: BTreeMap<String, Vec<String>>) {
-        self.ips = v;
-    }
-
-    pub fn get_ip(&self) -> &BTreeMap<String, Vec<String>> {
-        &self.ips
     }
 
     pub fn set_volumes(&mut self, v: Vec<Volume>) {
@@ -190,6 +188,9 @@ impl Status {
     }
     pub fn set_phase(&mut self, v: ::std::string::String) {
         self.phase = v;
+    }
+    pub fn get_phase(&self) -> ::std::string::String {
+        self.phase.clone()
     }
     pub fn set_message(&mut self, v: ::std::string::String) {
         self.message = v;
@@ -271,10 +272,14 @@ impl AssemblysGetResponse {
         ::std::default::Default::default()
     }
     // Param is passed by value, moved
-    pub fn set_assemblys(&mut self, v: Vec<Assembly>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_assemblys(&mut self, v: Vec<Assembly>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = ASSEMBLYLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
+    }
+
+    pub fn get_items(&self) -> Vec<Assembly> {
+        self.items.clone()
     }
 }
 
@@ -485,6 +490,7 @@ impl ObjectMeta {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
+
     pub fn set_origin(&mut self, v: ::std::string::String) {
         self.origin = v;
     }
@@ -632,10 +638,10 @@ impl AssemblyFactoryGetResponse {
     }
 
     // Param is passed by value, moved
-    pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>, r: ::std::string::String, s: ::std::string::String) {
+    pub fn set_assemblys_factory(&mut self, v: Vec<AssemblyFactory>) {
         self.items = v;
-        self.kind = r;
-        self.api_version = s;
+        self.kind = ASSEMBLYFACTORYLIST.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 
     pub fn get_items(&self) -> Vec<AssemblyFactory> {

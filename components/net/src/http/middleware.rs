@@ -9,10 +9,14 @@ use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
 use iron::status::Status;
 use iron::typemap::Key;
+use router::Router;
+
 
 use unicase::UniCase;
 use protocol::sessionsrv::*;
-use protocol::authsrv::*;
+use protocol::originsrv::*;
+
+use protocol::asmsrv::IdGet;
 use protocol::net::{self, ErrCode};
 use ansi_term::Colour;
 use protocol::net::err;
@@ -29,7 +33,6 @@ use super::token_target::*;
 use std::error::Error;
 use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
-use authorize::authorize_ds::AuthorizeDS;
 use common::ui;
 
 const SUPER_USER: &'static str = "role/rios:superuser";
@@ -198,10 +201,17 @@ impl Authenticated {
         }
     }
 
-    fn check_access(&self, session: &Session, datastore: &DataStoreConn) -> bool {
-        match AuthorizeDS::get_role_by_name(&datastore, &session.get_roles()) {
-            Ok(permission) => return true,
-            Err(e) => return false,
+    fn check_origin(&self, datastore: &DataStoreConn, org_name: String) -> AranResult<Origin> {
+        let mut org_get = IdGet::new();
+        org_get.set_id(org_name);
+        match SessionDS::origin_show(datastore, &org_get) {
+            Ok(Some(origin)) => Ok(origin),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => {
+                Err(not_found_error(&format!(
+                    "Couldn't find in session.",
+                )))
+            }
         }
     }
 }
@@ -306,20 +316,30 @@ impl BeforeMiddleware for Authenticated {
 
             match req.headers.get::<Authorization<Bearer>>() {
                 Some(&Authorization(Bearer { ref token })) => {
-                    match req.extensions.get_mut::<DataStoreBroker>() {
+                    match req.extensions.get::<DataStoreBroker>() {
                         Some(broker) => {
                             match self.authenticate(broker, email.unwrap(), token) {
                                 Ok(data) => {
-                                    match self.check_access(&data, &broker) {
-                                        true => data,
-                                        false => {
-                                            let err = net::err(
-                                                ErrCode::ACCESS_DENIED,
-                                                format!("You dont have access to the request"),
-                                            );
-                                            return Err(render_json_error(&err, Status::Unauthorized, &err));
+                                    if format!("{}", req.url).contains("origins") {
+                                        let org_name = {
+                                            let params = req.extensions.get::<Router>().unwrap();
+                                            let org_name = params.find("origin").unwrap_or("").to_owned();
+                                            org_name
+                                        };
+                                        if org_name.len() > 0 {
+                                            match self.check_origin(&broker, org_name.to_owned()) {
+                                                Ok(origin) => data.to_owned(),
+                                                Err(_) => {
+                                                    let err = net::err(
+                                                        ErrCode::ACCESS_DENIED,
+                                                        format!("No origin for {}", org_name.to_owned()),
+                                                    );
+                                                    return Err(render_json_error(&err, Status::Unauthorized, &err));
+                                                }
+                                            };
                                         }
                                     }
+                                    data.to_owned()
                                 }
                                 Err(err) => {
                                     let err1 = net::err(ErrCode::ACCESS_DENIED, err.to_string());
@@ -352,7 +372,6 @@ impl BeforeMiddleware for Authenticated {
                 }
             }
         };
-
         req.extensions.insert::<Self>(session);
         Ok(())
     }
