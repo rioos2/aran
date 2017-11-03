@@ -227,9 +227,7 @@ pub fn assembly_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_list(&conn) {
         Ok(Some(assembly_list)) => Ok(render_json(status::Ok, &assembly_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -263,9 +261,7 @@ pub fn assemblys_show_by_origin(req: &mut Request) -> AranResult<Response> {
                 &net::err(ErrCode::DATA_STORE, format!("{}\n", err)),
             ))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 
@@ -442,7 +438,9 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
                 assembly_factory_create.set_properties(properties);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -457,9 +455,7 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_create(&conn, &assembly_factory_create) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
 
     }
 }
@@ -524,7 +520,9 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
                 assembly_factory.set_status(status);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -534,9 +532,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
 
     match DeploymentDS::assembly_factory_status_update(&conn, &assembly_factory) {
         Ok(assembly) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
@@ -544,7 +540,6 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
                 &assembly_factory.get_id()
             )))
         }
-
 
     }
 }
@@ -554,9 +549,7 @@ pub fn assembly_factory_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_list(&conn) {
         Ok(assembly_list) => Ok(render_json(status::Ok, &assembly_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -589,9 +582,7 @@ pub fn assemblyfactorys_list_by_origin(req: &mut Request) -> AranResult<Response
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
@@ -620,9 +611,7 @@ pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
@@ -634,9 +623,7 @@ pub fn plan_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::plan_list(&conn) {
         Ok(plan_list) => Ok(render_json(status::Ok, &plan_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
