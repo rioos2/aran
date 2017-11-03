@@ -58,7 +58,6 @@ pub struct ObjectMetaDataReq {
     pub labels: BTreeMap<String, String>,
     pub annotations: BTreeMap<String, String>,
     pub owner_references: Vec<OwnerReferencesReq>,
-
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -107,6 +106,8 @@ struct AssemblyFacCreateReq {
     component_collection: BTreeMap<String, String>,
     status: StatusReq,
     opssettings: OpsSettingsReq,
+    type_meta: TypeMetaReq,
+    object_meta: ObjectMetaDataReq,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -280,9 +281,7 @@ pub fn assembly_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_list(&conn) {
         Ok(Some(assembly_list)) => Ok(render_json(status::Ok, &assembly_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -317,9 +316,7 @@ pub fn assemblys_show_by_origin(req: &mut Request) -> AranResult<Response> {
                 &assemblys_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 
@@ -349,9 +346,7 @@ pub fn assemblys_show_by_services(req: &mut Request) -> AranResult<Response> {
                 &assemblys_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 
@@ -525,9 +520,41 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
                 properties.set_region(body.properties.region);
                 properties.set_storage_type(body.properties.storage_type);
                 assembly_factory_create.set_properties(properties);
+
+                let mut object_meta = ObjectMeta::new();
+                object_meta.set_name(body.object_meta.name);
+                object_meta.set_origin(body.object_meta.origin);
+                object_meta.set_uid(body.object_meta.uid);
+                object_meta.set_created_at(body.object_meta.created_at);
+                object_meta.set_cluster_name(body.object_meta.cluster_name);
+                object_meta.set_labels(body.object_meta.labels);
+                object_meta.set_annotations(body.object_meta.annotations);
+
+                let mut owner_collection = Vec::new();
+
+                for data in body.object_meta.owner_references {
+
+                    let mut owner = OwnerReferences::new();
+                    owner.set_kind(data.kind);
+                    owner.set_api_version(data.api_version);
+                    owner.set_name(data.name);
+                    owner.set_uid(data.uid);
+                    owner.set_block_owner_deletion(data.block_owner_deletion);
+
+                    owner_collection.push(owner);
+                }
+                object_meta.set_owner_references(owner_collection);
+                assembly_factory_create.set_object_meta(object_meta);
+
+                let mut type_meta = TypeMeta::new();
+                type_meta.set_kind(body.type_meta.kind);
+                type_meta.set_api_version(body.type_meta.api_version);
+                assembly_factory_create.set_type_meta(type_meta);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -542,9 +569,7 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_create(&conn, &assembly_factory_create) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -614,7 +639,9 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
                 assembly_factory.set_status(status);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -624,9 +651,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
 
     match DeploymentDS::assembly_factory_status_update(&conn, &assembly_factory) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
@@ -634,7 +659,6 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
                 &assembly_factory.get_id()
             )))
         }
-
 
     }
 }
@@ -644,9 +668,7 @@ pub fn assembly_factory_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::assembly_factory_list(&conn) {
         Ok(Some(assembly_list)) => Ok(render_json(status::Ok, &assembly_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -681,9 +703,7 @@ pub fn assemblyfactorys_list_by_origin(req: &mut Request) -> AranResult<Response
                 &assemblyfactory_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
@@ -716,9 +736,7 @@ pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
                 &assemblydes_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
@@ -730,9 +748,7 @@ pub fn plan_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match DeploymentDS::plan_list(&conn) {
         Ok(Some(plan_list)) => Ok(render_json(status::Ok, &plan_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),

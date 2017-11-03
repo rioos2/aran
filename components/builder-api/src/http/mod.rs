@@ -184,7 +184,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         endpoints_list: get "/endpoints" =>  XHandler::new(C(endpoints_list)).before(basic.clone()),
         endpoints_show: get "/endpoints/:id" => XHandler::new(C(endpoints_show)).before(basic.clone()),
         endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(C(endpoints_list_by_origin)).before(basic.clone()),
-        endpoints_list_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(C(endpoints_list_by_assembly)).before(basic.clone()),
+        endpoints_get_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(C(endpoints_get_by_assembly)).before(basic.clone()),
 
         //services API
 

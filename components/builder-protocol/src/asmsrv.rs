@@ -314,6 +314,8 @@ impl IdGet {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactory {
     id: String,
+    type_meta: TypeMeta,
+    object_meta: ObjectMeta,
     name: String,
     uri: String,
     description: String,
@@ -321,8 +323,6 @@ pub struct AssemblyFactory {
     origin: String,
     replicas: u64,
     properties: Properties,
-    type_meta: TypeMeta,
-    object_meta: ObjectMeta,
     plan: String,
     plan_data: Option<plansrv::Plan>,
     external_management_resource: Vec<String>,
@@ -493,6 +493,9 @@ impl ObjectMeta {
 
     pub fn set_origin(&mut self, v: ::std::string::String) {
         self.origin = v;
+    }
+    pub fn get_origin(&self) -> ::std::string::String {
+        self.origin.clone()
     }
     pub fn set_uid(&mut self, v: ::std::string::String) {
         self.uid = v;
