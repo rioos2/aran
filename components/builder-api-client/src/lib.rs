@@ -42,7 +42,7 @@ use hyper::header::{ContentType, Accept, Authorization, Bearer, Headers};
 use protocol::net::NetError;
 use rand::{Rng, thread_rng};
 use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
-use protocol::{sessionsrv, asmsrv};
+use protocol::{sessionsrv, asmsrv, nodesrv};
 use rioos_http::util::decoded_response;
 use rio_net::http::headers::*;
 
@@ -255,6 +255,45 @@ impl Client {
         }
 
     }
+
+    pub fn list_node(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("nodes");
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get nodes, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<nodesrv::NodeGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(), i.get_status().get_phase(),i.get_spec().get_unschedulable().to_string(),
+                             i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
 
     ///
     /// # Failures

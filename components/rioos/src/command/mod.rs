@@ -3,3 +3,4 @@
 pub mod cli;
 pub mod digicloud;
 pub mod common;
+pub mod node;

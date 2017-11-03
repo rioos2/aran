@@ -82,6 +82,12 @@ fn start(ui: &mut UI) -> Result<()> {
                 _ => unreachable!(),
             }
         }
+        ("nodes", Some(matches)) => {
+            match matches.subcommand() {
+                ("list", Some(m)) => sub_node_list(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
         ("login", Some(m)) => sub_cli_login(ui, m)?,
         ("logout", Some(m)) => sub_cli_logout(ui, m)?,
         ("init", Some(m)) => sub_cli_login(ui, m)?,
@@ -136,6 +142,16 @@ fn sub_digicloud_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         auth_email_param_or_env(&m)?,
     )
 }
+fn sub_node_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
+    command::node::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+
 
 
 fn sub_digicloud_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
