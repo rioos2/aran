@@ -35,9 +35,6 @@ use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
 use common::ui;
 
-const SUPER_USER: &'static str = "role/rios:superuser";
-
-
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.

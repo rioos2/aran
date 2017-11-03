@@ -30,12 +30,12 @@ impl ServiceAccountDS {
             ],
         ).map_err(Error::SecretCreate)?;
         if rows.len() > 0 {
-        for row in rows {
-        let secret = row_to_secret(&rows.get(0));
-        return Ok(Some(secret));
-    }
-}
-    Ok(None)
+            for row in rows {
+                let secret = row_to_secret(&rows.get(0));
+                return Ok(Some(secret));
+            }
+        }
+        Ok(None)
 
     }
     pub fn secret_show(datastore: &DataStoreConn, get_secret: &asmsrv::IdGet) -> Result<Option<servicesrv::Secret>> {
@@ -68,10 +68,7 @@ impl ServiceAccountDS {
             for row in rows {
                 secret_collection.push(row_to_secret(&row))
             }
-            response.set_secret_collection(
-                secret_collection,
-
-            );
+            response.set_secret_collection(secret_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -91,10 +88,7 @@ impl ServiceAccountDS {
             for row in rows {
                 secret_collection.push(row_to_secret(&row))
             }
-            response.set_secret_collection(
-                secret_collection,
-
-            );
+            response.set_secret_collection(secret_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -112,11 +106,11 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(service_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
-if rows.len() > 0 {
-        let service_account = row_to_service_account(&rows.get(0))?;
-        return Ok(Some(service_account));
-    }
-    Ok(None)
+        if rows.len() > 0 {
+            let service_account = row_to_service_account(&rows.get(0))?;
+            return Ok(Some(service_account));
+        }
+        Ok(None)
     }
 
     pub fn service_account_show(datastore: &DataStoreConn, get_service: &asmsrv::IdGet) -> Result<Option<servicesrv::ServiceAccount>> {
@@ -126,11 +120,11 @@ if rows.len() > 0 {
             &[&get_service.get_id(), &get_service.get_name()],
         ).map_err(Error::ServiceAccountGet)?;
         if rows.len() > 0 {
-        for row in rows {
-            let serv = row_to_service_account(&row)?;
-            return Ok(Some(serv));
+            for row in rows {
+                let serv = row_to_service_account(&row)?;
+                return Ok(Some(serv));
+            }
         }
-    }
         Ok(None)
     }
 
@@ -144,14 +138,12 @@ if rows.len() > 0 {
 
         let mut service_collection = Vec::new();
         if rows.len() > 0 {
-        for row in rows {
-            service_collection.push(row_to_service_account(&row)?)
+            for row in rows {
+                service_collection.push(row_to_service_account(&row)?)
+            }
+            response.set_service_collection(service_collection);
+            return Ok(Some(response));
         }
-        response.set_service_collection(
-            service_collection,
-        );
-        return Ok(Some(response));
-    }
         Ok(None)
     }
 
@@ -169,18 +161,17 @@ if rows.len() > 0 {
             ],
         ).map_err(Error::EndPointsCreate)?;
         if rows.len() > 0 {
-        let end = row_to_endpoints(&rows.get(0))?;
-        return Ok(Some(end));
-    }
-    Ok(None)
+            let end = row_to_endpoints(&rows.get(0))?;
+            return Ok(Some(end));
+        }
+        Ok(None)
     }
 
     pub fn endpoints_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::EndpointsGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_endpoints_v1()", &[]).map_err(
-            Error::EndpointsGetResponse,
-        )?;
+        let rows = &conn.query("SELECT * FROM get_endpoints_v1()", &[])
+            .map_err(Error::EndpointsGetResponse)?;
 
         let mut response = servicesrv::EndpointsGetResponse::new();
 
@@ -189,9 +180,7 @@ if rows.len() > 0 {
             for row in rows {
                 end_collection.push(row_to_endpoints(&row)?)
             }
-            response.set_end_collection(
-                end_collection,
-            );
+            response.set_end_collection(end_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -205,7 +194,7 @@ if rows.len() > 0 {
         ).map_err(Error::EndPointsGet)?;
         if rows.len() > 0 {
             for row in rows {
-                let  end = row_to_endpoints(&row)?;
+                let end = row_to_endpoints(&row)?;
                 return Ok(Some(end));
             }
         }
@@ -227,14 +216,12 @@ if rows.len() > 0 {
             for row in rows {
                 end_collection.push(row_to_endpoints(&row)?)
             }
-            response.set_end_collection(
-                end_collection,
-            );
+            response.set_end_collection(end_collection);
             return Ok(Some(response));
         }
         Ok(None)
     }
-    pub fn endpoints_list_by_assembly(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndpointsGetResponse>> {
+    pub fn endpoints_get_by_assembly(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -244,21 +231,21 @@ if rows.len() > 0 {
 
         let mut response = servicesrv::EndpointsGetResponse::new();
 
-        let mut end_collection = Vec::new();
         if rows.len() > 0 {
             for row in rows {
-                end_collection.push(row_to_endpoints(&row)?)
+                let response = row_to_endpoints(&row)?;
+                return Ok(Some(response));
             }
-            response.set_end_collection(
-                end_collection,
-            );
-            return Ok(Some(response));
+
         }
         Ok(None)
     }
     pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;
-        let asmid = services_create.get_spec().get_selector().get(&RIO_ASM_FAC_ID.to_string());
+        let asmid = services_create.get_spec().get_selector().get(
+            &RIO_ASM_FAC_ID
+                .to_string(),
+        );
         let rows = &conn.query(
             "SELECT * FROM insert_services_v1($1,$2,$3,$4,$5,$6)",
             &[
@@ -271,12 +258,12 @@ if rows.len() > 0 {
             ],
         ).map_err(Error::ServicesCreate)?;
         if rows.len() > 0 {
-        for row in rows {
-        let end = row_to_services(&rows.get(0));
-        return Ok(Some(end));
-    }
-}
-    Ok(None)
+            for row in rows {
+                let end = row_to_services(&rows.get(0));
+                return Ok(Some(end));
+            }
+        }
+        Ok(None)
 
     }
     pub fn services_show(datastore: &DataStoreConn, services_get: &asmsrv::IdGet) -> Result<Option<servicesrv::Services>> {
@@ -296,9 +283,8 @@ if rows.len() > 0 {
     pub fn services_list(datastore: &DataStoreConn) -> Result<Option<servicesrv::ServicesGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_services_list_v1()", &[]).map_err(
-            Error::ServicesGetResponse,
-        )?;
+        let rows = &conn.query("SELECT * FROM get_services_list_v1()", &[])
+            .map_err(Error::ServicesGetResponse)?;
 
         let mut response = servicesrv::ServicesGetResponse::new();
 
@@ -307,10 +293,7 @@ if rows.len() > 0 {
             for row in rows {
                 services_collection.push(row_to_services(&row))
             }
-            response.set_services_collection(
-                services_collection,
-
-            );
+            response.set_services_collection(services_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -330,10 +313,7 @@ if rows.len() > 0 {
             for row in rows {
                 services_collection.push(row_to_services(&row))
             }
-            response.set_services_collection(
-                services_collection,
-
-            );
+            response.set_services_collection(services_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -353,14 +333,11 @@ if rows.len() > 0 {
             for row in rows {
                 services_collection.push(row_to_services(&row))
             }
-            response.set_services_collection(
-                services_collection,
-            );
+            response.set_services_collection(services_collection);
             return Ok(Some(response));
         }
         Ok(None)
     }
-
 }
 
 
@@ -386,7 +363,7 @@ fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {
 fn row_to_endpoints(row: &postgres::rows::Row) -> Result<servicesrv::EndPoints> {
     let mut endpoints = servicesrv::EndPoints::new();
     let id: i64 = row.get("id");
-    let target_ref: i64 =row.get("target_ref");
+    let target_ref: i64 = row.get("target_ref");
     let subsets: String = row.get("subsets");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
@@ -404,7 +381,7 @@ fn row_to_endpoints(row: &postgres::rows::Row) -> Result<servicesrv::EndPoints> 
 fn row_to_services(row: &postgres::rows::Row) -> servicesrv::Services {
     let mut services = servicesrv::Services::new();
     let id: i64 = row.get("id");
-    let spec: String =row.get("spec");
+    let spec: String = row.get("spec");
     let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");

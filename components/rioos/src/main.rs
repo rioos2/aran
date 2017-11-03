@@ -64,6 +64,7 @@ fn start(ui: &mut UI) -> Result<()> {
                 ("init", Some(m)) => sub_cli_login(ui, m)?,
                 ("list", Some(m)) => sub_cli_login(ui, m)?,
                 ("completers", Some(m)) => sub_cli_completers(m)?,
+                ("new", Some(m)) => sub_cli_new(ui, m)?,
                 _ => unreachable!(),
             }
         }
@@ -101,6 +102,14 @@ fn sub_cli_logout(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     init();
 
     command::cli::logout::start(ui, &api_server_param_or_env(&m)?)
+
+}
+
+
+fn sub_cli_new(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    init();
+
+    command::cli::new::start(ui, &api_server_param_or_env(&m)?)
 
 }
 

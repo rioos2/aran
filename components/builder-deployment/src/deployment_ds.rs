@@ -34,15 +34,14 @@ impl DeploymentDS {
                 &(assembly.get_instance_id() as String),
                 &(serde_json::to_string(assembly.get_type_meta()).unwrap()),
                 &(serde_json::to_string(assembly.get_object_meta()).unwrap()),
-
             ],
         ).map_err(Error::AssemblyCreate)?;
-if rows.len() > 0 {
-        for row in rows {
-            let assembly = Self::collect_spec(&row, &datastore)?;
-            return Ok(Some(assembly));
+        if rows.len() > 0 {
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                return Ok(Some(assembly));
+            }
         }
-    }
         Ok(None)
     }
 
@@ -63,12 +62,12 @@ if rows.len() > 0 {
             ],
         ).map_err(Error::AssemblyUpdate)?;
 
-if rows.len() > 0 {
-        for row in rows {
-            let assembly = Self::collect_spec(&row, &datastore)?;
-            return Ok(Some(assembly));
+        if rows.len() > 0 {
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                return Ok(Some(assembly));
+            }
         }
-    }
         Ok(None)
     }
 
@@ -101,10 +100,7 @@ if rows.len() > 0 {
                 let assembly = Self::collect_spec(&row, &datastore)?;
                 assemblys_collection.push(assembly);
             }
-            response.set_assemblys(
-                assemblys_collection,
-
-            );
+            response.set_assemblys(assemblys_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -126,10 +122,7 @@ if rows.len() > 0 {
                 let assembly = Self::collect_spec(&row, &datastore)?;
                 assemblys_collection.push(assembly);
             }
-            response.set_assemblys(
-                assemblys_collection,
-
-            );
+            response.set_assemblys(assemblys_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -150,10 +143,7 @@ if rows.len() > 0 {
                 let assembly = Self::collect_spec(&row, &datastore)?;
                 assemblys_collection.push(assembly);
             }
-            response.set_assemblys(
-                assemblys_collection,
-
-            );
+            response.set_assemblys(assemblys_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -171,11 +161,11 @@ if rows.len() > 0 {
             ],
         ).map_err(Error::AsmSetStatus)?;
         if rows.len() > 0 {
-        for row in rows {
-            let assembly = Self::collect_spec(&row, &datastore)?;
-            return Ok(Some(assembly));
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                return Ok(Some(assembly));
+            }
         }
-    }
         Ok(None)
     }
 
@@ -184,7 +174,7 @@ if rows.len() > 0 {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+            "SELECT * FROM insert_assembly_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)",
             &[
                 &(assembly_fac.get_name() as String),
                 &(assembly_fac.get_uri() as String),
@@ -198,17 +188,32 @@ if rows.len() > 0 {
                 &(serde_json::to_string(assembly_fac.get_opssettings()).unwrap()),
                 &(assembly_fac.get_replicas() as i64),
                 &(serde_json::to_string(assembly_fac.get_status()).unwrap()),
+                &(serde_json::to_string(assembly_fac.get_object_meta()).unwrap()),
+                &(serde_json::to_string(assembly_fac.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
-if rows.len() > 0 {
-        for row in rows {
-        let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
+        if rows.len() > 0 {
+            for row in rows {
+                let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
+                // let mut assembly_create = asmsrv::Assembly::new();
+                // assembly_create.set_name(assembly_factory.get_name());
+                // assembly_create.set_uri("v1/assembly".to_string());
+                // assembly_create.set_description(assembly_factory.get_description());
+                // assembly_create.set_tags(assembly_factory.get_tags());
+                // assembly_create.set_parent_id(assembly_factory.get_id());
+                // assembly_create.set_origin(assembly_factory.get_object_meta().get_origin());
+                // let mut type_meta = asmsrv::TypeMeta::new();
+                // type_meta.set_kind(ASSEMBLY.to_string());
+                // type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
+                // assembly_create.set_type_meta(type_meta);
+                // let assembly = Self::assembly_create(&datastore, &assembly_create)?;
 
-        return Ok(Some(assembly_factory.clone()));
+                return Ok(Some(assembly_factory));
+            }
+        }
+        Ok(None)
     }
-}
-    Ok(None)
-    }
+
 
     pub fn assembly_factory_show(datastore: &DataStoreConn, get_assembly_factory: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblyFactory>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -217,14 +222,14 @@ if rows.len() > 0 {
             "SELECT * FROM get_assembly_factory_v1($1)",
             &[&(get_assembly_factory.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::AssemblyFactoryGet)?;
-if rows.len() > 0 {
-        for row in rows {
-            let mut assembly_factory = row_to_assembly_factory(&row)?;
-            let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
-            assembly_factory.set_plan_data(data);
-            return Ok(Some(assembly_factory));
+        if rows.len() > 0 {
+            for row in rows {
+                let mut assembly_factory = row_to_assembly_factory(&row)?;
+                let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
+                assembly_factory.set_plan_data(data);
+                return Ok(Some(assembly_factory));
+            }
         }
-}
         Ok(None)
     }
 
@@ -239,13 +244,13 @@ if rows.len() > 0 {
             ],
         ).map_err(Error::AsmFactorySetStatus)?;
         if rows.len() > 0 {
-        for row in rows {
-            let mut assembly_factory = row_to_assembly_factory(&row)?;
-            let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
-            assembly_factory.set_plan_data(data);
-            return Ok(Some(assembly_factory));
+            for row in rows {
+                let mut assembly_factory = row_to_assembly_factory(&row)?;
+                let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
+                assembly_factory.set_plan_data(data);
+                return Ok(Some(assembly_factory));
+            }
         }
-    }
         Ok(None)
     }
 
@@ -261,16 +266,13 @@ if rows.len() > 0 {
         let mut assembly_factorys_collection = Vec::new();
 
         if rows.len() > 0 {
-        for row in rows {
-            assembly_factorys_collection.push(row_to_assembly_factory(&row)?)
+            for row in rows {
+                assembly_factorys_collection.push(row_to_assembly_factory(&row)?)
+            }
+            response.set_assemblys_factory(assembly_factorys_collection);
+            return Ok(Some(response));
         }
-        response.set_assemblys_factory(
-            assembly_factorys_collection,
-
-        );
-        return Ok(Some(response));
-    }
-    Ok(None)
+        Ok(None)
     }
     pub fn assemblyfactorys_show_by_origin(datastore: &DataStoreConn, assemblyfactory_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblyFactoryGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -288,10 +290,7 @@ if rows.len() > 0 {
                 assemblyfac_collection.push(row_to_assembly_factory(&row)?)
             }
 
-            response.set_assemblys_factory(
-                assemblyfac_collection,
-
-            );
+            response.set_assemblys_factory(assemblyfac_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -314,9 +313,7 @@ if rows.len() > 0 {
                 let assembly = Self::collect_spec(&row, &datastore)?;
                 assemblys_collection.push(assembly);
             }
-            response.set_assemblys(
-                assemblys_collection,
-            );
+            response.set_assemblys(assemblys_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -330,7 +327,7 @@ if rows.len() > 0 {
         let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
         let mut endpoint_get = asmsrv::IdGet::new();
         endpoint_get.set_id(assembly.get_id());
-        let endpoints = Self::endpoints_show(&datastore, &endpoint_get)?;
+        let mut endpoints = Self::endpoints_show(&datastore, &endpoint_get)?;
         assembly.set_spec(data);
         assembly.set_endpoints(endpoints);
         Ok(assembly)
@@ -341,12 +338,12 @@ if rows.len() > 0 {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query("SELECT * FROM get_plan_v1($1)", &[&url])
             .map_err(Error::PlanGet)?;
-if rows.len() > 0 {
-        for row in rows {
-            let plan = row_to_plan(&row)?;
-            return Ok(Some(plan));
+        if rows.len() > 0 {
+            for row in rows {
+                let plan = row_to_plan(&row)?;
+                return Ok(Some(plan));
+            }
         }
-}
         Ok(None)
     }
 
@@ -361,19 +358,19 @@ if rows.len() > 0 {
 
         let mut plan_collection = Vec::new();
         if rows.len() > 0 {
-        for row in rows {
-            plan_collection.push(row_to_plan(&row)?)
+            for row in rows {
+                plan_collection.push(row_to_plan(&row)?)
+            }
+            response.set_plan_collection(plan_collection);
+            return Ok(Some(response));
         }
-        response.set_plan_collection(plan_collection);
-        return Ok(Some(response));
-    }
-    Ok(None)
+        Ok(None)
     }
 
     pub fn endpoints_show(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_endpoint_v1($1)",
+            "SELECT * FROM get_endpoints_by_assebmly_v1($1)",
             &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::EndPointsGet)?;
         if rows.len() > 0 {
@@ -382,7 +379,8 @@ if rows.len() > 0 {
                 return Ok(Some(end));
             }
         }
-        Ok(None)
+        let endpoints = servicesrv::EndPoints::new();
+        Ok(Some(endpoints))
     }
 }
 
@@ -433,7 +431,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
 fn row_to_endpoints(row: &postgres::rows::Row) -> Result<servicesrv::EndPoints> {
     let mut endpoints = servicesrv::EndPoints::new();
     let id: i64 = row.get("id");
-    let target_ref: i64 =row.get("target_ref");
+    let target_ref: i64 = row.get("target_ref");
     let subsets: String = row.get("subsets");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
@@ -468,6 +466,11 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let status: String = row.get("status");
     let replicas: i64 = row.get("replicas");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
+    let object_meta: String = row.get("object_meta");
+    println!(
+        "--------------------------------------------------{:?}",
+        object_meta
+    );
 
     assembly_factory.set_id(id.to_string());
     assembly_factory.set_name(name as String);
@@ -484,15 +487,13 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     assembly_factory.set_replicas(replicas as u64);
     assembly_factory.set_properties(serde_json::from_str(&properties).unwrap());
 
-    let mut obj_meta = asmsrv::ObjectMeta::new();
-    let mut owner_collection = Vec::new();
-    let owner = asmsrv::OwnerReferences::new();
-    owner_collection.push(owner);
-    obj_meta.set_name(id.to_string());
-    obj_meta.set_owner_references(owner_collection);
-    assembly_factory.set_object_meta(obj_meta);
+    let mut obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
+    obj.set_name(id.to_string());
+    assembly_factory.set_object_meta(obj);
+
+
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind(ASSEMBLYFACTORY.to_string());
+    type_meta.set_kind(ASSEMBLY.to_string());
     type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     assembly_factory.set_type_meta(type_meta);
 

@@ -7,6 +7,7 @@ use std::error;
 use std::fmt;
 use std::result;
 use db;
+use service::Error::*;
 
 
 #[derive(Debug)]

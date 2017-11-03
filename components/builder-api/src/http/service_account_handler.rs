@@ -522,7 +522,7 @@ pub fn endpoints_list_by_origin(req: &mut Request) -> AranResult<Response> {
         }
     }
 }
-pub fn endpoints_list_by_assembly(req: &mut Request) -> AranResult<Response> {
+pub fn endpoints_get_by_assembly(req: &mut Request) -> AranResult<Response> {
     let org_name = {
         let params = req.extensions.get::<Router>().unwrap();
         let org_name = params.find("asmid").unwrap().to_owned();
@@ -539,7 +539,7 @@ pub fn endpoints_list_by_assembly(req: &mut Request) -> AranResult<Response> {
         '✓',
         format!("======= parsed {:?} ", endpoints_get),
     );
-    match ServiceAccountDS::endpoints_list_by_assembly(&conn, &endpoints_get) {
+    match ServiceAccountDS::endpoints_get_by_assembly(&conn, &endpoints_get) {
         Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
         Ok(None) => {
             Err(not_found_error(

@@ -353,7 +353,6 @@ impl Addesses {
     pub fn get_ip(&self) -> ::std::string::String {
         self.ip.clone()
     }
-
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Ports {
@@ -384,7 +383,6 @@ impl Ports {
     pub fn get_port(&self) -> ::std::string::String {
         self.port.clone()
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -511,7 +509,6 @@ impl Spec {
     pub fn get_external_names(&self) -> &BTreeMap<String, String> {
         &self.external_names
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
