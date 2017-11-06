@@ -17,7 +17,7 @@ pub fn start(ui: &mut UI, url: &str) -> Result<()> {
     ui.br()?;
     ui.title("Rio/OS CLI")?;
 
-    ui.heading("Login")?;
+    ui.heading("Signup")?;
     ui.para(
         "For more information on authenticating using commandline, please read the \
           documentation at https://docs.rioos.sh/docs/identity-overview/",
