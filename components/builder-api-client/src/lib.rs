@@ -572,43 +572,97 @@ impl Client {
         }
 
     }
-    // pub fn (&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
-    //     debug!("Token {}", token);
-    //     debug!("Email {}", email);
-    //     let url = format!("/datacenters/{}",id);
-    //
-    //     let res = self.add_authz(self.0.get(&url), token)
-    //         .header(Accept::json())
-    //         .header(ContentType::json())
-    //         .header(XAuthRioOSEmail(email.to_string()))
-    //         .send()
-    //         .map_err(Error::HyperError)?;
-    //
-    //     if res.status != StatusCode::Ok {
-    //         debug!("Failed to get origin, status: {:?}", res.status);
-    //         return Err(err_from_response(res));
-    //     };
-    //
-    //     match decoded_response::<asmsrv::AssemblysGetResponse>(res).map_err(Error::HabitatHttpClient) {
-    //         Ok(value) => {
-    //             Ok(
-    //                 value
-    //                     .get_items()
-    //                     .iter_mut()
-    //                     .map(|i| {
-    //                         vec![i.get_id(), i.get_name(), i.get_status().get_phase(),
-    //                          i.get_origin(),i.get_created_at()]
-    //                     })
-    //                     .collect(),
-    //             )
-    //         }
-    //         Err(e) => {
-    //             debug!("Failed to decode response, err: {:?}", e);
-    //             return Err(e);
-    //         }
-    //     }
-    //
-    // }
+
+    pub fn describe_datacenter(&self, token: &str, email: &str, id: &str) -> Result<storagesrv::DataCenter> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("/datacenters/{}",id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get Datacenter, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<storagesrv::DataCenter>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value),
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
+    pub fn get_storageconnector_by_id(&self, token: &str, email: &str, id: &str) -> Result<storagesrv::Storage> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("/storageconnectors/{}",id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get Datacenter, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<storagesrv::Storage>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value),
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
+    pub fn get_storagepool_by_scid(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("/storagespool/{}", id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get stoargepool , status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<storagesrv::StoragePoolGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => {
+                Ok(
+                    value
+                        .get_items()
+                        .iter_mut()
+                        .map(|i| {
+                            vec![i.get_id(),i.get_name(),i.get_status().get_phase(),i.get_created_at()]
+                        })
+                        .collect(),
+                )
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
 
     ///
     /// # Failures

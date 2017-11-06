@@ -335,6 +335,11 @@ pub fn get() -> App<'static, 'static> {
                 (@arg DATACENTER_ID: +required +takes_value
                     "A datacenter identifier (ex: 1, 2)")
             )
+            (@subcommand describe =>
+                (about: "Display the detailed state of datacenter")
+                (aliases: &["datacendescribe"])
+                (@arg DATACENTER_ID: +required +takes_value "Id for the Datacenter")
+            )
         )
         (@subcommand jobs =>
             (about: "Commands relating to Rio/OS job management")

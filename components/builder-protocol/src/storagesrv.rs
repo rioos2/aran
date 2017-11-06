@@ -405,4 +405,7 @@ impl StoragePoolGetResponse {
         self.kind = STOARGEPOOLLIST.to_string();
         self.api_version = DEFAULT_API_VERSION.to_string();
     }
+    pub fn get_items(&self) -> Vec<StoragePool> {
+        self.items.clone()
+    }
 }
