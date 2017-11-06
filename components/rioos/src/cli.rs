@@ -48,6 +48,7 @@ pub fn get() -> App<'static, 'static> {
             (subcommand: sub_cli_list().aliases(&["l", "li", "lis"]))
             (subcommand: sub_cli_completers().aliases(&["c", "co", "com", "comp"]))
             (subcommand: sub_cli_new().aliases(&["n", "ne", "new"]))
+            (subcommand: sub_cli_whoami().aliases(&["who", "whoam", "whoami"]))
 
         )
         (@subcommand auth =>
@@ -268,6 +269,12 @@ pub fn get() -> App<'static, 'static> {
             (about: "Commands relating to Rio/OS infrastructure")
             (aliases: &["n", "no", "nod","node", "nodes"])
             (@setting ArgRequiredElseHelp)
+            (@subcommand init =>
+                (about: "Create node for the stoarge")
+                (aliases: &["i", "in", "ini"])
+                (@arg NODE_NAME: +takes_value "Name for the new node")
+
+            )
             (@subcommand healthz =>
                 (about: "Commands relating to node health")
                 (aliases: &["nodeheal", "nodehealth"])
@@ -278,6 +285,7 @@ pub fn get() -> App<'static, 'static> {
                     (@arg NODE_IDENT: +required +takes_value
                         "A node identifier (ex: 1, 2)")
                 )
+
             )
             (@subcommand register =>
                 (about: "Manually register a node. Nodes are autodiscovered by nodelet.\
@@ -321,6 +329,45 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["listdcs", "listlocations"])
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: nw01)")
             )
+            (@subcommand get =>
+                (about: "Displays the Single datacenter detail")
+                (aliases: &["g","ge","get"])
+                (@arg DATACENTER_ID: +required +takes_value
+                    "A datacenter identifier (ex: 1, 2)")
+            )
+        )
+        (@subcommand jobs =>
+            (about: "Commands relating to Rio/OS job management")
+            (aliases: &["j", "jo", "job", "jobs"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand get =>
+                (about: "Displays the jobs details for an user")
+                (aliases: &["getjob"])
+                (@arg IMAGE_IDENT: +required +takes_value
+                    "An job identifier (ex: 1, 2)")
+            )
+            (@subcommand list =>
+                (about: "Displays all the jobs for an user")
+                (aliases: &["listjob"])
+                (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
+            )
+
+        )
+        (@subcommand networks =>
+            (about: "Commands relating to Rio/OS job management")
+            (aliases: &["net", "netw", "network", "networks"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand get =>
+                (about: "Displays the network details for an user")
+                (aliases: &["getnetwork"])
+                (@arg IMAGE_IDENT: +required +takes_value
+                    "An network identifier (ex: 1, 2)")
+            )
+            (@subcommand list =>
+                (about: "Displays all the network for an user")
+                (aliases: &["listnetwork"])
+                (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
+            )
         )
         (subcommand: alias_login)
         (subcommand: alias_logout)
@@ -334,6 +381,7 @@ pub fn get() -> App<'static, 'static> {
             \n    list       Alias for: 'cli list'\
             \n    deploy     Alias for: 'digitialcloud deploy'\
             \n    deployapp  Alias for: 'app deploy'\
+            \n    get        Alias for: 'node get'\
             \n"
         )
     )
@@ -354,6 +402,11 @@ fn sub_cli_list() -> App<'static, 'static> {
 fn sub_cli_new() -> App<'static, 'static> {
     clap_app!(@subcommand new =>
         (about: "Create new User.")
+    )
+}
+fn sub_cli_whoami() -> App<'static, 'static> {
+    clap_app!(@subcommand whoami =>
+        (about: "Dispaly the current User.")
     )
 }
 

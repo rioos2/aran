@@ -90,6 +90,9 @@ impl Spec {
     pub fn set_unschedulable(&mut self, v: bool) {
         self.unschedulable = v;
     }
+    pub fn get_unschedulable(&self) ->  bool {
+        self.unschedulable.clone()
+    }
 
     pub fn set_taints(&mut self, v: Vec<Taints>) {
         self.taints = v;
@@ -149,8 +152,14 @@ impl Status {
     pub fn set_phase(&mut self, v: ::std::string::String) {
         self.phase = v;
     }
+    pub fn get_phase(&self) ->  ::std::string::String {
+        self.phase.clone()
+    }
     pub fn set_conditions(&mut self, v: Vec<asmsrv::Condition>) {
         self.conditions = v;
+    }
+    pub fn get_conditions(&self) -> &Vec<asmsrv::Condition> {
+        &self.conditions
     }
     pub fn set_addresses(&mut self, v: Vec<Addresses>) {
         self.addresses = v;
@@ -250,6 +259,9 @@ impl NodeGetResponse {
         self.items = v;
         self.kind = NODELIST.to_string();
         self.api_version = DEFAULT_API_VERSION.to_string();
+    }
+    pub fn get_items(&self) -> Vec<Node> {
+        self.items.clone()
     }
 }
 

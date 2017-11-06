@@ -65,6 +65,7 @@ fn start(ui: &mut UI) -> Result<()> {
                 ("list", Some(m)) => sub_cli_login(ui, m)?,
                 ("completers", Some(m)) => sub_cli_completers(m)?,
                 ("new", Some(m)) => sub_cli_new(ui, m)?,
+                ("whoami",Some(m)) => sub_cli_whoami(ui,m)?,
                 _ => unreachable!(),
             }
         }
@@ -83,6 +84,45 @@ fn start(ui: &mut UI) -> Result<()> {
                 _ => unreachable!(),
             }
         }
+        ("nodes", Some(matches)) => {
+            match matches.subcommand() {
+                ("list", Some(m)) => sub_node_list(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
+        ("images", Some(matches)) => {
+            match matches.subcommand() {
+                ("list", Some(m)) => sub_images_list(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
+        ("datacenters", Some(matches)) => {
+            match matches.subcommand() {
+                ("list", Some(m)) => sub_datacenters_list(ui, m)?,
+                ("get", Some(m)) => sub_datacenetrs_get(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
+        ("origin", Some(matches)) => {
+            match matches.subcommand() {
+                ("list", Some(m)) => sub_origin_list(ui, m)?,
+                ("get", Some(m)) => sub_origin_get(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
+        ("jobs", Some(matches)) => {
+            match matches.subcommand() {
+                ("list", Some(m)) => sub_job_list(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
+        ("networks", Some(matches)) => {
+            match matches.subcommand() {
+                ("list", Some(m)) => sub_network_list(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
+
         ("login", Some(m)) => sub_cli_login(ui, m)?,
         ("logout", Some(m)) => sub_cli_logout(ui, m)?,
         ("init", Some(m)) => sub_cli_login(ui, m)?,
@@ -110,6 +150,12 @@ fn sub_cli_new(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     init();
 
     command::cli::new::start(ui, &api_server_param_or_env(&m)?)
+
+}
+fn sub_cli_whoami(ui: &mut UI,m: &ArgMatches) -> Result<()> {
+    init();
+
+    command::cli::whoami::start(ui,&api_server_param_or_env(&m)?)
 
 }
 
@@ -145,7 +191,59 @@ fn sub_digicloud_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         auth_email_param_or_env(&m)?,
     )
 }
+fn sub_node_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 
+    command::node::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+fn sub_images_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
+    command::image::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+
+fn sub_datacenters_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
+    command::datacenter::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+fn sub_origin_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
+    command::origin::list::start(ui,&api_server_param_or_env(&m)?,
+    auth_token_param_or_env(&m)?,
+    auth_email_param_or_env(&m)?,
+)
+}
+fn sub_job_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
+    command::job::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+fn sub_network_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
+    command::network::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
 
 fn sub_digicloud_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     let config_file = m.value_of("DIGICLOUD_NAME").map(|v| v.into());
@@ -159,6 +257,29 @@ fn sub_digicloud_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     )
 }
 
+fn sub_datacenetrs_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    let config_file = m.value_of("DATACENTER_ID").map(|v| v.into());
+
+    command::datacenter::get::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        config_file.unwrap(),
+    )
+}
+
+fn sub_origin_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    let config_file = m.value_of("ORG_IDENT").map(|v| v.into());
+
+    command::origin::get::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        config_file.unwrap(),
+    )
+}
 
 fn ui() -> UI {
     let isatty = if henv::var(NONINTERACTIVE_ENVVAR)

@@ -568,6 +568,7 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
     );
 
     let conn = Broker::connect().unwrap();
+
     match Replicas::new(&conn, &assembly_factory_create).new_desired() {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
