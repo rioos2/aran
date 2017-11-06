@@ -1,7 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 use deployment_ds::{DeploymentDS, ASSEMBLY};
 use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, ObjectMeta, OwnerReferences, TypeMeta};
-use protocol::asmsrv::DEFAULT_API_VERSION;
+use protocol::DEFAULT_API_VERSION;
 use db::data_store::DataStoreConn;
 use error::{Result, Error};
 use std::collections::BTreeMap;
@@ -109,7 +109,7 @@ impl<'a> ReplicaContext<'a> {
         //create the assembly_create_reqs
         for x in 0..self.desired_replicas {
             let mut assembly_create_req = Assembly::new();
-            let replica_name = self.namer.next(x);
+            let replica_name = self.namer.next(x + 1);
             assembly_create_req.set_name(replica_name.to_string());
             assembly_create_req.set_uri("/v1/assemblys".to_string());
             assembly_create_req.set_description(self.af_req.get_description());
@@ -158,7 +158,7 @@ impl<'a> ReplicaContext<'a> {
         //create the assembly_create_reqs
         for x in 0..self.desired_replicas {
             let assembly_create_req = Assembly::new();
-            let replica_name = self.namer.next(x);
+            let replica_name = self.namer.next(x + 1);
             self.add_for_removal(assembly_create_req);
         }
     }
