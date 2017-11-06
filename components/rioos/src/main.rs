@@ -99,12 +99,14 @@ fn start(ui: &mut UI) -> Result<()> {
         ("datacenters", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_datacenters_list(ui, m)?,
+                ("get", Some(m)) => sub_datacenetrs_get(ui, m)?,
                 _ => unreachable!(),
             }
         }
         ("origin", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_origin_list(ui, m)?,
+                ("get", Some(m)) => sub_origin_get(ui, m)?,
                 _ => unreachable!(),
             }
         }
@@ -255,6 +257,29 @@ fn sub_digicloud_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     )
 }
 
+fn sub_datacenetrs_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    let config_file = m.value_of("DATACENTER_ID").map(|v| v.into());
+
+    command::datacenter::get::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        config_file.unwrap(),
+    )
+}
+
+fn sub_origin_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    let config_file = m.value_of("ORG_IDENT").map(|v| v.into());
+
+    command::origin::get::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        config_file.unwrap(),
+    )
+}
 
 fn ui() -> UI {
     let isatty = if henv::var(NONINTERACTIVE_ENVVAR)

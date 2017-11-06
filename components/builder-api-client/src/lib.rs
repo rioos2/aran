@@ -511,6 +511,105 @@ impl Client {
         }
 
     }
+
+
+    pub fn origin_get(&self, token: &str, email: &str, name: &str) -> Result<Vec<Vec<String>>>  {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("/origins/{}",name);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get origin, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<originsrv::Origin>(res).map_err(Error::HabitatHttpClient) {
+                Ok(result) => {
+                let data = vec![vec![result.get_id(),result.get_object_meta().get_origin(),result.get_object_meta().get_uid(),result.get_created_at()]];
+                Ok(data)
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+    pub fn datacenter_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>>  {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+            let url = format!("/datacenters/{}",id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get datacenter, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<storagesrv::DataCenter>(res).map_err(Error::HabitatHttpClient) {
+
+                Ok(dc) => {
+                let data = vec![vec![dc.get_id(),dc.get_name(),dc.get_enabled().to_string(),dc.get_status().get_phase(),dc.get_created_at()]];
+                Ok(data)
+            }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+    // pub fn (&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
+    //     debug!("Token {}", token);
+    //     debug!("Email {}", email);
+    //     let url = format!("/datacenters/{}",id);
+    //
+    //     let res = self.add_authz(self.0.get(&url), token)
+    //         .header(Accept::json())
+    //         .header(ContentType::json())
+    //         .header(XAuthRioOSEmail(email.to_string()))
+    //         .send()
+    //         .map_err(Error::HyperError)?;
+    //
+    //     if res.status != StatusCode::Ok {
+    //         debug!("Failed to get origin, status: {:?}", res.status);
+    //         return Err(err_from_response(res));
+    //     };
+    //
+    //     match decoded_response::<asmsrv::AssemblysGetResponse>(res).map_err(Error::HabitatHttpClient) {
+    //         Ok(value) => {
+    //             Ok(
+    //                 value
+    //                     .get_items()
+    //                     .iter_mut()
+    //                     .map(|i| {
+    //                         vec![i.get_id(), i.get_name(), i.get_status().get_phase(),
+    //                          i.get_origin(),i.get_created_at()]
+    //                     })
+    //                     .collect(),
+    //             )
+    //         }
+    //         Err(e) => {
+    //             debug!("Failed to decode response, err: {:?}", e);
+    //             return Err(e);
+    //         }
+    //     }
+    //
+    // }
+
     ///
     /// # Failures
     ///
