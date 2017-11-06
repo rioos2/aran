@@ -454,10 +454,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let replicas: i64 = row.get("replicas");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
-    println!(
-        "--------------------------------------------------{:?}",
-        object_meta
-    );
+
 
     assembly_factory.set_id(id.to_string());
     assembly_factory.set_name(name as String);
@@ -480,7 +477,7 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
 
 
     let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind(ASSEMBLY.to_string());
+    type_meta.set_kind(ASSEMBLYFACTORY.to_string());
     type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
     assembly_factory.set_type_meta(type_meta);
 

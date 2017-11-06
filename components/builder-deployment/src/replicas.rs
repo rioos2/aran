@@ -1,25 +1,28 @@
 // Copyright (c) 2017 RioCorp Inc.
-use deployment_ds::DeploymentDS;
+use deployment_ds::{DeploymentDS, ASSEMBLY};
 use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, ObjectMeta, OwnerReferences, TypeMeta};
+use protocol::asmsrv::DEFAULT_API_VERSION;
 use db::data_store::DataStoreConn;
 use error::{Result, Error};
+use std::collections::BTreeMap;
 
+const CONDITION_TYPE: &'static [&'static str] = &["AssemblyStorageReady", "AssemblyNetworkReady"];
 
-pub struct Replicas {
-    conn: DataStoreConn,
-    af_req: AssemblyFactory,
+pub struct Replicas<'a> {
+    conn: &'a DataStoreConn,
+    af_req: &'a AssemblyFactory,
 }
 
 //// This is responsible for managing the replicas upto the desired count.
 //// The count can be upward or downward.
 ///  eg: desired can be 5, and the current replicas can be 4, which mean we need to deploy 1 more.
 ///  eg: desired can be 5, and the current replicas can be 6, which mean we need to nuke 1.
-impl Replicas {
+impl<'a> Replicas<'a> {
     //create a new replica with a database connection and assembly_factory_request object
-    pub fn new(conn: DataStoreConn, request: AssemblyFactory) -> Replicas {
+    pub fn new(conn: &'a DataStoreConn, request: &'a AssemblyFactory) -> Replicas<'a> {
         Replicas {
-            conn: conn,
-            af_req: request,
+            conn: &*conn,
+            af_req: &*request,
         }
     }
 
@@ -35,7 +38,7 @@ impl Replicas {
         //This should be done after assembly_factory is create (match )
         match DeploymentDS::assembly_factory_create(&self.conn, &self.af_req) {
             Ok(Some(response)) => {
-                let replicated = self.upto_desired()?;
+                let replicated = self.upto_desired(&response.get_id())?;
                 Ok(Some(response))
             }
             Ok(None) => Ok(None),
@@ -45,25 +48,36 @@ impl Replicas {
 
 
     //This is reponsible for managing the replicas in an assembly factory upto the desired.
-    pub fn upto_desired(&self) -> Result<()> {
+    pub fn upto_desired(&self, id: &str) -> Result<Option<Vec<Assembly>>> {
 
         //This should be done after assembly_factory is create (match )
 
-        let mut context = ReplicaContext::new(&self.af_req, self.desired());
-        context.calculate()?;
+        let mut context = ReplicaContext::new(
+            &self.af_req,
+            self.desired(),
+            vec![Assembly::new()],
+            vec![Assembly::new()],
+        );
+        context.calculate(id);
         //deploy the assemblys
-        let deployed = context.to_deploy.iter().map(|k| {
-            DeploymentDS::assembly_create(&self.conn, &k)
-        });
+        let deployed = context
+            .to_deploy
+            .iter()
+            .map(|k| if k.get_name().len() > 0 {
+                DeploymentDS::assembly_create(&self.conn, &k)
+            } else {
+                Ok(None)
+            })
+            .collect::<Vec<_>>();
 
         //remove the assemblys
-        let nuked = context.to_nuke.iter().map(|k| {
-            DeploymentDS::assembly_create(&self.conn, &k)
-        });
+        // let nuked = context.to_nuke.iter().map(|k| {
+        //     DeploymentDS::assembly_create(&self.conn, &k)
+        // });
 
         //fold all the errors in deployed and nuked - refer metrics code.
         //send the assemblyfactry_response in case of success
-        Ok(())
+        Ok(None)
     }
 }
 
@@ -78,43 +92,83 @@ struct ReplicaContext<'a> {
 }
 
 impl<'a> ReplicaContext<'a> {
-    fn new(request: &'a AssemblyFactory, desired_replicas: u64) -> ReplicaContext<'a> {
+    fn new(request: &'a AssemblyFactory, desired_replicas: u64, assembly_req: Vec<Assembly>, asse: Vec<Assembly>) -> ReplicaContext<'a> {
         let base_name = request.get_name();
 
         ReplicaContext {
             desired_replicas: desired_replicas,
             af_req: &*request,
-            namer: ReplicaNamer::new(base_name, request.get_replicas()),
-            to_deploy: vec![Assembly::new()],
-            to_nuke: vec![Assembly::new()],
+            namer: ReplicaNamer::new(&base_name, request.get_replicas()),
+            to_deploy: assembly_req,
+            to_nuke: asse,
         }
 
     }
 
-    fn calculate(&mut self) -> Result<()> {
+    fn calculate(&mut self, id: &str) {
         //create the assembly_create_reqs
-        for x in self.desired_replicas..self.af_req.get_replicas() {
-            let assembly_create_req = Assembly::new();
-            let replica_name = self.namer.next(self.af_req.get_replicas());
-            self.add_for_deployment(assembly_create_req)
+        for x in 0..self.desired_replicas {
+            let mut assembly_create_req = Assembly::new();
+            let replica_name = self.namer.next(x);
+            assembly_create_req.set_name(replica_name.to_string());
+            assembly_create_req.set_uri("/v1/assemblys".to_string());
+            assembly_create_req.set_description(self.af_req.get_description());
+            assembly_create_req.set_tags(self.af_req.get_tags());
+            assembly_create_req.set_selector(vec![]);
+            assembly_create_req.set_parent_id(id.to_string());
+            assembly_create_req.set_origin(self.af_req.get_origin());
+            assembly_create_req.set_node("".to_string());
+            let mut status = Status::new();
+            status.set_phase("intializing".to_string());
+            status.set_message("new instance initiating".to_string());
+            let mut condition_collection = Vec::new();
+            for conn in CONDITION_TYPE {
+                let mut condition = Condition::new();
+                condition.set_condition_type(conn.to_string());
+                condition.set_status("False".to_string());
+                condition_collection.push(condition);
+            }
+            status.set_conditions(condition_collection);
+
+            assembly_create_req.set_status(status);
+
+            let mut object_meta = ObjectMeta::new();
+
+            let mut owner_collection = Vec::new();
+            let owner = OwnerReferences::new();
+            owner_collection.push(owner);
+
+            object_meta.set_owner_references(owner_collection);
+            assembly_create_req.set_object_meta(object_meta);
+
+            let mut volume_collection = Vec::new();
+            let vol = Volume::new();
+            volume_collection.push(vol);
+
+            assembly_create_req.set_volumes(volume_collection);
+            assembly_create_req.set_urls(BTreeMap::new());
+            assembly_create_req.set_instance_id("".to_string());
+            let mut type_meta = TypeMeta::new();
+            type_meta.set_kind(ASSEMBLY.to_string());
+            type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
+            assembly_create_req.set_type_meta(type_meta);
+            self.add_for_deployment(assembly_create_req);
         }
 
         //create the assembly_create_reqs
-        for x in self.desired_replicas..self.af_req.get_replicas() {
+        for x in 0..self.desired_replicas {
             let assembly_create_req = Assembly::new();
-            let replica_name = self.namer.next(self.af_req.get_replicas());
-            self.add_for_removal(assembly_create_req)
+            let replica_name = self.namer.next(x);
+            self.add_for_removal(assembly_create_req);
         }
-
-        Ok(())
     }
 
     fn add_for_deployment(&mut self, assembly_req: Assembly) {
-        self.to_deploy.push(assembly_req)
+        self.to_deploy.push(assembly_req);
     }
 
     fn add_for_removal(&mut self, assembly_req: Assembly) {
-        self.to_nuke.push(assembly_req)
+        self.to_nuke.push(assembly_req);
     }
 }
 
@@ -133,20 +187,20 @@ struct ReplicaNamer {
 
 
 impl ReplicaNamer {
-    fn new(name: String, upto: u64) -> ReplicaNamer {
+    fn new(name: &str, upto: u64) -> ReplicaNamer {
         ReplicaNamer {
-            name: name,
+            name: name.to_string(),
             upto: upto,
         }
     }
 
-    fn fqdn_as_tuples(&self) -> (String, String) {
+    fn fqdn_as_tuples(&self) -> (&str, &str) {
         if self.name.contains(".") {
             let subdot_fqdn = &self.name.split(".").collect::<Vec<_>>();
 
-            return (subdot_fqdn[0].to_string(), subdot_fqdn[1].to_string());
+            return (subdot_fqdn[0], subdot_fqdn[1]);
         }
-        (self.name, "".to_string())
+        (&self.name, "")
 
     }
 
@@ -158,6 +212,6 @@ impl ReplicaNamer {
             return format!("{}{}.{}", fqdns.0, count, fqdns.1);
         }
 
-        self.name
+        self.name.clone()
     }
 }
