@@ -4,13 +4,11 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{asmsrv, plansrv, servicesrv, DEFAULT_API_VERSION};
+use protocol::{asmsrv, plansrv, servicesrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use db;
 use serde_json;
-pub const ASSEMBLY: &'static str = "Assembly";
-pub const ASSEMBLYFACTORY: &'static str = "AssemblyFactory";
 
 pub struct DeploymentDS;
 
@@ -375,38 +373,27 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
     let mut assembly = asmsrv::Assembly::new();
 
     let id: i64 = row.get("id");
-    let name: String = row.get("name");
-    let urls: String = row.get("urls");
-    let uri: String = row.get("uri");
-    let description: String = row.get("description");
-    let tags: Vec<String> = row.get("tags");
-    let selector: Vec<String> = row.get("selector");
-    let parent_id: String = row.get("parent_id");
     let origin: i64 = row.get("origin_id");
+    let urls: String = row.get("urls");
     let status: String = row.get("status");
     let node: String = row.get("node");
     let volume: String = row.get("volumes");
     let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     assembly.set_id(id.to_string());
-    assembly.set_name(name as String);
+    assembly.set_name(row.get("name"));
     assembly.set_urls(serde_json::from_str(&urls).unwrap());
-    assembly.set_uri(uri as String);
-    assembly.set_tags(tags as Vec<String>);
-    assembly.set_selector(selector as Vec<String>);
+    assembly.set_uri(row.get("uri"));
+    assembly.set_tags(row.get("tags"));
+    assembly.set_selector(row.get("selector"));
     let mut obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
     obj.set_name(id.to_string());
     assembly.set_object_meta(obj);
-
-
-    let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind(ASSEMBLY.to_string());
-    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
-    assembly.set_type_meta(type_meta);
-
-    assembly.set_description(description as String);
-    assembly.set_parent_id(parent_id as String);
+    assembly.set_type_meta(serde_json::from_str(&type_meta).unwrap());
+    assembly.set_description(row.get("description"));
+    assembly.set_parent_id(row.get("parent_id"));
     assembly.set_origin(origin.to_string());
     assembly.set_status(serde_json::from_str(&status).unwrap());
     assembly.set_volumes(serde_json::from_str(&volume).unwrap());
@@ -440,68 +427,51 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let mut assembly_factory = asmsrv::AssemblyFactory::new();
 
     let id: i64 = row.get("id");
-    let name: String = row.get("name");
-    let uri: String = row.get("uri");
-    let description: String = row.get("description");
-    let tags: Vec<String> = row.get("tags");
     let origin: i64 = row.get("origin_id");
-    let plan: String = row.get("plan");
     let properties: String = row.get("properties");
-    let external_management_resource: Vec<String> = row.get("external_management_resource");
     let component_collection: String = row.get("component_collection");
     let opssettings: String = row.get("opssettings");
     let status: String = row.get("status");
     let replicas: i64 = row.get("replicas");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
+    let type_meta: String = row.get("type_meta");
 
 
     assembly_factory.set_id(id.to_string());
-    assembly_factory.set_name(name as String);
-    assembly_factory.set_uri(uri as String);
-    assembly_factory.set_description(description as String);
-    assembly_factory.set_tags(tags as Vec<String>);
+    assembly_factory.set_name(row.get("name"));
+    assembly_factory.set_uri(row.get("uri"));
+    assembly_factory.set_description(row.get("description"));
+    assembly_factory.set_tags(row.get("tags"));
     assembly_factory.set_origin(origin.to_string());
-    assembly_factory.set_external_management_resource(external_management_resource as Vec<String>);
+    assembly_factory.set_external_management_resource(row.get("external_management_resource"));
     assembly_factory.set_created_at(created_at.to_rfc3339());
     assembly_factory.set_component_collection(serde_json::from_str(&component_collection).unwrap());
     assembly_factory.set_opssettings(serde_json::from_str(&opssettings).unwrap());
     assembly_factory.set_status(serde_json::from_str(&status).unwrap());
-    assembly_factory.set_plan(plan as String);
-    assembly_factory.set_replicas(replicas as u64);
+    assembly_factory.set_plan(row.get("plan"));
+    assembly_factory.set_replicas(replicas as u32);
     assembly_factory.set_properties(serde_json::from_str(&properties).unwrap());
 
     let mut obj: asmsrv::ObjectMeta = serde_json::from_str(&object_meta).unwrap();
     obj.set_name(id.to_string());
     assembly_factory.set_object_meta(obj);
-
-
-    let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind(ASSEMBLYFACTORY.to_string());
-    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
-    assembly_factory.set_type_meta(type_meta);
-
+    assembly_factory.set_type_meta(serde_json::from_str(&type_meta).unwrap());
     Ok(assembly_factory)
 }
 
 fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     let mut plan = plansrv::Plan::new();
     let id: i64 = row.get("id");
-    let name: String = row.get("group_name");
-    let url: String = row.get("url");
-    let description: String = row.get("description");
-    let tags: Vec<String> = row.get("tags");
-    let origin: String = row.get("origin");
-    let artifacts: Vec<String> = row.get("artifacts");
     let services: Vec<String> = row.get("services");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     plan.set_id(id.to_string() as String);
-    plan.set_group_name(name as String);
-    plan.set_url(url as String);
-    plan.set_description(description as String);
-    plan.set_tags(tags as Vec<String>);
-    plan.set_origin(origin as String);
-    plan.set_artifacts(artifacts as Vec<String>);
+    plan.set_group_name(row.get("group_name"));
+    plan.set_url(row.get("url"));
+    plan.set_description(row.get("description"));
+    plan.set_tags(row.get("tags"));
+    plan.set_origin(row.get("origin"));
+    plan.set_artifacts(row.get("artifacts"));
     let mut service_collection = Vec::new();
     for data in services {
         let object_service: plansrv::Service = serde_json::from_str(&data).unwrap();

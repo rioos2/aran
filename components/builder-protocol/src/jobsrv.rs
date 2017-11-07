@@ -1,7 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
-use {asmsrv, servicesrv,DEFAULT_API_VERSION};
+use {asmsrv, servicesrv};
+use constants::*;
 use std::collections::BTreeMap;
-pub const JOBSLIST: &'static str = "JobsList";
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -64,9 +64,9 @@ impl Jobs {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SpecData {
-node_id: String,
-target_ref: String,
-selector: BTreeMap<String, String>,
+    node_id: String,
+    target_ref: String,
+    selector: BTreeMap<String, String>,
 }
 
 impl SpecData {

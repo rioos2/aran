@@ -13,7 +13,7 @@ use node::node_ds::NodeDS;
 use db::data_store::Broker;
 use db;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body,not_found_error};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
@@ -159,7 +159,9 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
                 node_create.set_status(status);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -175,9 +177,7 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
 
     match NodeDS::node_create(&conn, &node_create) {
         Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -192,9 +192,7 @@ pub fn node_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match NodeDS::node_list(&conn) {
         Ok(Some(node_list)) => Ok(render_json(status::Ok, &node_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -267,7 +265,9 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
                 node_create.set_status(status);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -283,9 +283,7 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
 
     match NodeDS::node_status_update(&conn, &node_create) {
         Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",

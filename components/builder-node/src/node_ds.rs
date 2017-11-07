@@ -4,15 +4,13 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{nodesrv, asmsrv, DEFAULT_API_VERSION};
+use protocol::{nodesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
-pub const NODE: &'static str = "Node";
-const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
-const METRIC_NODE: &'static str = "linux";
+use protocol::constants::*;
 
 pub struct NodeDS;
 
@@ -109,7 +107,7 @@ impl NodeDS {
         statistic.set_title("Statistics".to_string());
         statistic.set_nodes(lstatistics);
 
-        let group_scope = vec![];
+        let group_scope = vec!["node_cpu".to_string()];
         let label_name = format!("{}", METRIC_NODE);
         let metric_scope: Vec<String> = vec![label_name.to_string()];
 
@@ -137,8 +135,8 @@ impl NodeDS {
 
         let mut res = nodesrv::HealthzAllGet::new();
         res.set_title("Command center operations".to_string());
-        res.set_gauges(guague);
-        res.set_statistics(statistic);
+        // res.set_gauges(guague);
+        // res.set_statistics(statistic);
         res.set_osusages(metrics);
 
         let response: nodesrv::HealthzAllGetResponse = res.into();
@@ -166,10 +164,8 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {
     obj_meta.set_name(id.to_string());
     obj_meta.set_owner_references(owner_collection);
     node.set_object_meta(obj_meta);
-    let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind(NODE.to_string());
-    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
-    node.set_type_meta(type_meta);
+    node.set_type_meta(asmsrv::TypeMeta::new(NODE));
+
     node.set_created_at(created_at.to_rfc3339());
     Ok(node)
 }

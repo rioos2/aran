@@ -13,6 +13,7 @@ use iron::status;
 use iron::typemap;
 use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, ObjectMeta, OwnerReferences, TypeMeta};
 use protocol::net::{self, ErrCode};
+use protocol::constants::*;
 use router::Router;
 use db::data_store::Broker;
 use std::collections::BTreeMap;
@@ -101,7 +102,7 @@ struct AssemblyFacCreateReq {
     tags: Vec<String>,
     origin: String,
     properties: PropReq,
-    replicas: u64,
+    replicas: u32,
     plan: String,
     external_management_resource: Vec<String>,
     component_collection: BTreeMap<String, String>,
@@ -158,24 +159,15 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
                 assembly_create.set_parent_id(body.parent_id);
                 assembly_create.set_origin(body.origin);
                 assembly_create.set_node(body.node);
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-
-                let mut condition_collection = Vec::new();
-
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
+                assembly_create.set_status(Status::with_conditions(
+                    INITIALIZING,
+                    NEW_REPLICA_INITALIZING,
+                    "",
+                    INITIAL_CONDITIONS
+                        .iter()
+                        .map(|x| Condition::with_type("", "", "False", "", "", x))
+                        .collect::<Vec<_>>(),
+                ));
 
                 let mut object_meta = ObjectMeta::new();
                 object_meta.set_name(body.object_meta.name);
@@ -201,25 +193,8 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
                 }
                 object_meta.set_owner_references(owner_collection);
                 assembly_create.set_object_meta(object_meta);
-                assembly_create.set_status(status);
-
-                let mut volume_collection = Vec::new();
-
-                for volume in body.volumes {
-                    let mut vol = Volume::new();
-                    vol.set_id(volume.id);
-                    vol.set_target(volume.target);
-                    vol.set_volume_type(volume.volume_type);
-                    volume_collection.push(vol);
-                }
-
-                assembly_create.set_volumes(volume_collection);
                 assembly_create.set_urls(body.urls);
-                assembly_create.set_instance_id(body.instance_id);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                assembly_create.set_type_meta(type_meta);
+                assembly_create.set_type_meta(TypeMeta::new(ASSEMBLY));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -428,23 +403,25 @@ pub fn assembly_status_update(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-                let mut condition_collection = Vec::new();
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                assembly.set_status(status);
+                assembly.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -491,23 +468,25 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
                 assembly_factory_create.set_external_management_resource(body.external_management_resource);
                 assembly_factory_create.set_plan(body.plan);
                 assembly_factory_create.set_component_collection(body.component_collection);
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-                let mut condition_collection = Vec::new();
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                assembly_factory_create.set_status(status);
+                assembly_factory_create.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
                 let mut opssettings = OpsSettings::new();
                 opssettings.set_nodeselector(body.opssettings.nodeselector);
                 opssettings.set_priority(body.opssettings.priority);
@@ -546,11 +525,7 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
                 }
                 object_meta.set_owner_references(owner_collection);
                 assembly_factory_create.set_object_meta(object_meta);
-
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                assembly_factory_create.set_type_meta(type_meta);
+                assembly_factory_create.set_type_meta(TypeMeta::new(ASSEMBLYFACTORY));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -569,7 +544,12 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match Replicas::new(&conn, &assembly_factory_create).new_desired() {
+    match Replicas::new(
+        &conn,
+        0,
+        assembly_factory_create.get_replicas(),
+        &assembly_factory_create,
+    ).new_desired() {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -621,23 +601,25 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
     {
         match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-                let mut condition_collection = Vec::new();
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                assembly_factory.set_status(status);
+                assembly_factory.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(

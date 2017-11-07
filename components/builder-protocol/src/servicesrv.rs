@@ -1,11 +1,8 @@
 // Copyright (c) 2017 RioCorp Inc.
 use asmsrv;
 use std::collections::BTreeMap;
-use DEFAULT_API_VERSION;
-pub const SECRETLIST: &'static str = "SecretList";
-pub const SERVICELIST: &'static str = "ServiceList";
-pub const ENDPOINTSLIST: &'static str = "EndpointsList";
-pub const SERVICEACCOUNTLIST: &'static str = "ServiceAccountsList";
+use constants::*;
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {

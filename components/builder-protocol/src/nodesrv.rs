@@ -3,9 +3,8 @@
 use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
-use DEFAULT_API_VERSION;
+use constants::*;
 
-pub const NODELIST: &'static str = "NodeList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -90,7 +89,7 @@ impl Spec {
     pub fn set_unschedulable(&mut self, v: bool) {
         self.unschedulable = v;
     }
-    pub fn get_unschedulable(&self) ->  bool {
+    pub fn get_unschedulable(&self) -> bool {
         self.unschedulable.clone()
     }
 
@@ -152,7 +151,7 @@ impl Status {
     pub fn set_phase(&mut self, v: ::std::string::String) {
         self.phase = v;
     }
-    pub fn get_phase(&self) ->  ::std::string::String {
+    pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
     pub fn set_conditions(&mut self, v: Vec<asmsrv::Condition>) {

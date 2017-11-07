@@ -49,31 +49,32 @@ pub fn network_create(req: &mut Request) -> AranResult<Response> {
                 net_create.set_subnet_ip(body.subnet_ip);
                 net_create.set_netmask(body.netmask);
                 net_create.set_gateway(body.gateway);
-
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-
-                let mut condition_collection = Vec::new();
-
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
+                net_create.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
                 net_create.set_bridge_hosts(body.bridge_hosts);
-                net_create.set_status(status);
 
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -83,9 +84,7 @@ pub fn network_create(req: &mut Request) -> AranResult<Response> {
 
     match NetworkDS::network_create(&conn, &net_create) {
         Ok(Some(network)) => Ok(render_json(status::Ok, &network)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -100,9 +99,7 @@ pub fn network_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match NetworkDS::network_list(&conn) {
         Ok(Some(network_list)) => Ok(render_json(status::Ok, &network_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),

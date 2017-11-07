@@ -4,12 +4,11 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{servicesrv, asmsrv, netsrv,DEFAULT_API_VERSION};
+use protocol::{servicesrv, asmsrv, netsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-pub const NETWORKS: &'static str = "Networks";
-
+use protocol::constants::*;
 
 pub struct NetworkDS;
 
@@ -29,10 +28,10 @@ impl NetworkDS {
             ],
         ).map_err(Error::NetworkCreate)?;
         if rows.len() > 0 {
-        let network = row_to_network(&rows.get(0))?;
-        return Ok(Some(network.clone()));
-    }
-    Ok(None)
+            let network = row_to_network(&rows.get(0))?;
+            return Ok(Some(network.clone()));
+        }
+        Ok(None)
     }
 
     pub fn network_list(datastore: &DataStoreConn) -> Result<Option<netsrv::NetworkGetResponse>> {
@@ -46,48 +45,36 @@ impl NetworkDS {
 
         let mut network_collection = Vec::new();
         if rows.len() > 0 {
-        for row in rows {
-            network_collection.push(row_to_network(&row)?)
+            for row in rows {
+                network_collection.push(row_to_network(&row)?)
+            }
+            response.set_network_collection(network_collection);
+            return Ok(Some(response));
         }
-        response.set_network_collection(
-            network_collection,
-
-        );
-        return Ok(Some(response));
+        Ok(None)
     }
-    Ok(None)
-}
 }
 
 fn row_to_network(row: &postgres::rows::Row) -> Result<netsrv::Network> {
     let mut network = netsrv::Network::new();
     let id: i64 = row.get("id");
-    let name: String = row.get("name");
-    let network_type: String = row.get("network_type");
-    let subnet_ip: String = row.get("subnet_ip");
-    let netmask: String = row.get("netmask");
-    let gateway: String = row.get("gateway");
     let status: String = row.get("status");
     let bridge_hosts: String = row.get("bridge_hosts");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     let mut obj_meta = servicesrv::ObjectMetaData::new();
     obj_meta.set_name(id.to_string());
-    let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind(NETWORKS.to_string());
-    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
 
     network.set_id(id.to_string());
     network.set_status(serde_json::from_str(&status).unwrap());
-    network.set_name(name);
-    network.set_network_type(network_type);
-    network.set_subnet_ip(subnet_ip);
-    network.set_netmask(netmask);
-    network.set_gateway(gateway);
+    network.set_name(row.get("name"));
+    network.set_network_type(row.get("network_type"));
+    network.set_subnet_ip(row.get("subnet_ip"));
+    network.set_netmask(row.get("netmask"));
+    network.set_gateway(row.get("gateway"));
     network.set_bridge_hosts(serde_json::from_str(&bridge_hosts).unwrap());
     network.set_created_at(created_at.to_rfc3339());
     network.set_object_meta(obj_meta);
-    network.set_type_meta(type_meta);
-
+    network.set_type_meta(asmsrv::TypeMeta::new(NETWORKS));
     Ok(network)
 }

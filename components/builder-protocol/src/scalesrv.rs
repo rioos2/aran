@@ -1,11 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
-use asmsrv;
-use nodesrv;
-use DEFAULT_API_VERSION;
-pub const HORIZONTALSCALINGLIST: &'static str = "HorizontalPodAutoscalerList";
-pub const ASSEMBLYMETRICLIST: &'static str = "AssemblyMetricList";
-
-
+use {asmsrv, nodesrv};
+use constants::*;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScaling {
     id: String,
@@ -370,7 +365,7 @@ impl ScalingGetResponse {
 
 impl Into<ScalingGetResponse> for ScalingGet {
     fn into(self) -> ScalingGetResponse {
-        let mut scaling_response= ScalingGetResponse::new();
+        let mut scaling_response = ScalingGetResponse::new();
         scaling_response.set_results(self);
         scaling_response.set_kind(ASSEMBLYMETRICLIST.to_string());
         scaling_response.set_api_version(DEFAULT_API_VERSION.to_string());
