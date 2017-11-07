@@ -589,12 +589,17 @@ pub struct TypeMeta {
 }
 
 impl TypeMeta {
-    pub fn new() -> TypeMeta {
-        ::std::default::Default::default()
+    pub fn new(kind: &str) -> TypeMeta {
+        TypeMeta {
+            kind: kind,
+            api_version: DEFAULT_API_VERSION.to_string(),
+        }
     }
+
     pub fn set_kind(&mut self, v: ::std::string::String) {
         self.kind = v;
     }
+
     pub fn set_api_version(&mut self, v: ::std::string::String) {
         self.api_version = v;
     }
