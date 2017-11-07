@@ -73,7 +73,9 @@ pub fn network_create(req: &mut Request) -> AranResult<Response> {
 
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -83,9 +85,7 @@ pub fn network_create(req: &mut Request) -> AranResult<Response> {
 
     match NetworkDS::network_create(&conn, &net_create) {
         Ok(Some(network)) => Ok(render_json(status::Ok, &network)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -100,9 +100,7 @@ pub fn network_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match NetworkDS::network_list(&conn) {
         Ok(Some(network_list)) => Ok(render_json(status::Ok, &network_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),

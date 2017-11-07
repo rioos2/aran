@@ -19,7 +19,6 @@ use protocol::originsrv::*;
 use protocol::asmsrv::IdGet;
 use protocol::net::{self, ErrCode};
 use ansi_term::Colour;
-use protocol::net::err;
 
 use super::rendering::*;
 use super::super::auth::default::PasswordAuthClient;
@@ -30,7 +29,6 @@ use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;
 use super::token_target::*;
-use std::error::Error;
 use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
 use common::ui;
@@ -325,7 +323,7 @@ impl BeforeMiddleware for Authenticated {
                                         };
                                         if org_name.len() > 0 {
                                             match self.check_origin(&broker, org_name.to_owned()) {
-                                                Ok(origin) => data.to_owned(),
+                                                Ok(_) => data.to_owned(),
                                                 Err(_) => {
                                                     let err = net::err(
                                                         ErrCode::ACCESS_DENIED,

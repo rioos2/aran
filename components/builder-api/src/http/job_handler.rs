@@ -12,7 +12,7 @@ use protocol::net::{self, ErrCode};
 use router::Router;
 use job::job_ds::JobDS;
 use protocol::jobsrv::{SpecData, Jobs};
-use protocol::servicesrv::{ObjectMetaData};
+use protocol::servicesrv::ObjectMetaData;
 use protocol::asmsrv::{TypeMeta, IdGet, Status, Condition};
 use db::data_store::Broker;
 use common::ui;
@@ -94,7 +94,9 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
                 jobs_create.set_type_meta(type_meta);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -110,9 +112,7 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
 
     match JobDS::jobs_create(&conn, &jobs_create) {
         Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -126,9 +126,7 @@ pub fn jobs_get(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match JobDS::jobs_get(&conn) {
         Ok(Some(jobs_get)) => Ok(render_json(status::Ok, &jobs_get)),
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),

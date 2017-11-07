@@ -5,7 +5,6 @@ use std::path::Path;
 use std::result;
 
 use clap::{App, AppSettings, Arg};
-use regex::Regex;
 use url::Url;
 
 pub fn get() -> App<'static, 'static> {
@@ -20,6 +19,10 @@ pub fn get() -> App<'static, 'static> {
     let alias_init = sub_cli_init()
         .about("Alias for 'cli init'")
         .aliases(&["in", "ini"])
+        .setting(AppSettings::Hidden);
+    let alias_new = sub_cli_new()
+        .about("Alias for 'cli new'")
+        .aliases(&["n", "ne", "new"])
         .setting(AppSettings::Hidden);
     let alias_list = sub_cli_list()
         .about("Alias for 'cli list'")
@@ -371,12 +374,14 @@ pub fn get() -> App<'static, 'static> {
         )
         (subcommand: alias_login)
         (subcommand: alias_logout)
+        (subcommand: alias_new)
         (subcommand: alias_init)
         (subcommand: alias_deploy)
         (subcommand: alias_deployapp)
         (after_help: "\nALIASES:\
             \n    login      Alias for: 'auth login'\
             \n    logout     Alias for: 'auth logout'\
+            \n    new        Alias for: 'cli new'\
             \n    init       Alias for: 'cli init'\
             \n    list       Alias for: 'cli list'\
             \n    deploy     Alias for: 'digitialcloud deploy'\
@@ -401,7 +406,7 @@ fn sub_cli_list() -> App<'static, 'static> {
 
 fn sub_cli_new() -> App<'static, 'static> {
     clap_app!(@subcommand new =>
-        (about: "Create new User.")
+        (about: "Signup new User.")
     )
 }
 fn sub_cli_whoami() -> App<'static, 'static> {
