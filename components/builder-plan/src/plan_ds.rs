@@ -33,33 +33,27 @@ impl PlanDS {
                 &(data as Vec<String>),
             ],
         ).map_err(Error::PlanCreate)?;
-    if rows.len() > 0 {
-        let plan = row_to_plan(&rows.get(0))?;
-        return Ok(Some(plan));
-    }
-Ok(None)
+        if rows.len() > 0 {
+            let plan = row_to_plan(&rows.get(0))?;
+            return Ok(Some(plan));
+        }
+        Ok(None)
 
-}
+    }
 }
 
 fn row_to_plan(row: &postgres::rows::Row) -> Result<plansrv::Plan> {
     let mut plan = plansrv::Plan::new();
     let id: i64 = row.get("id");
-    let name: String = row.get("group_name");
-    let url: String = row.get("url");
-    let description: String = row.get("description");
-    let tags: Vec<String> = row.get("tags");
-    let origin: String = row.get("origin");
-    let artifacts: Vec<String> = row.get("artifacts");
     let services: Vec<String> = row.get("services");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     plan.set_id(id.to_string() as String);
-    plan.set_group_name(name as String);
-    plan.set_url(url as String);
-    plan.set_description(description as String);
-    plan.set_tags(tags as Vec<String>);
-    plan.set_origin(origin as String);
-    plan.set_artifacts(artifacts as Vec<String>);
+    plan.set_group_name(row.get("group_name"));
+    plan.set_url(row.get("url"));
+    plan.set_description(row.get("description"));
+    plan.set_tags(row.get("tags"));
+    plan.set_origin(row.get("origin"));
+    plan.set_artifacts(row.get("artifacts"));
     let mut service_collection = Vec::new();
     for data in services {
         let object_service: plansrv::Service = serde_json::from_str(&data).unwrap();

@@ -36,8 +36,7 @@ pub mod servicesrv;
 pub mod netsrv;
 pub mod storagesrv;
 pub mod jobsrv;
+pub mod constants;
 
 pub use self::error::{Error, Result};
 pub use self::sharding::{ShardId, SHARD_COUNT, InstaId};
-
-pub const DEFAULT_API_VERSION: &'static str = "v1";

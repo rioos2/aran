@@ -1,9 +1,9 @@
 // Copyright (c) 2017 RioCorp Inc.
 use std::collections::BTreeMap;
 use {asmsrv, servicesrv};
-use DEFAULT_API_VERSION;
+use constants::*;
 
-pub const NETWORKLIST: &'static str = "NetworkList";
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Network {
     id: String,

@@ -1,8 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 use std::collections::BTreeMap;
-use DEFAULT_API_VERSION;
+use constants::*;
 
-pub const PLANLIST: &'static str = "PlanList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Plan {
     id: String,
@@ -87,7 +86,6 @@ impl Plan {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -131,7 +129,6 @@ impl Service {
     pub fn get_characteristics(&self) -> &BTreeMap<String, String> {
         &self.characteristics
     }
-
 }
 
 

@@ -23,6 +23,7 @@ use http::{service_account_handler, deployment_handler};
 use rio_net::util::errors::AranResult;
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
+use protocol::constants::*;
 
 define_event_log!();
 
@@ -60,25 +61,25 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
                 spec.set_selector(body.spec.selector);
                 jobs_create.set_spec(spec);
 
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-
-                let mut condition_collection = Vec::new();
-
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                jobs_create.set_status(status);
+                jobs_create.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
                 let mut object_meta = ObjectMetaData::new();
                 object_meta.set_name(body.object_meta.name);
                 object_meta.set_origin(body.object_meta.origin);
@@ -88,10 +89,8 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
                 object_meta.set_labels(body.object_meta.labels);
                 object_meta.set_annotations(body.object_meta.annotations);
                 jobs_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                jobs_create.set_type_meta(type_meta);
+                jobs_create.set_type_meta(TypeMeta::new(JOB));
+
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -148,23 +147,25 @@ pub fn jobs_status_update(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<JobStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-                let mut condition_collection = Vec::new();
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                jobs.set_status(status);
+                jobs.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(

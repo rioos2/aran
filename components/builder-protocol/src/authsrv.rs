@@ -1,7 +1,6 @@
+use constants::*;
+
 // Copyright (c) 2017 RioCorp Inc.
-pub const ROLESLIST: &'static str = "RolesList";
-pub const PERMISSIONSLIST: &'static str = "PermissionsList";
-use DEFAULT_API_VERSION;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Roles {
     id: String,
@@ -139,6 +138,6 @@ impl PermissionsGetResponse {
     pub fn set_permissions(&mut self, v: Vec<Permissions>) {
         self.items = v;
         self.kind = PERMISSIONSLIST.to_string();
-        self.api_version =  DEFAULT_API_VERSION.to_string();
+        self.api_version = DEFAULT_API_VERSION.to_string();
     }
 }

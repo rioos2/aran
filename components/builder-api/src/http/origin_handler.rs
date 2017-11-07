@@ -11,6 +11,7 @@ use iron::status;
 use iron::typemap;
 use protocol::originsrv::Origin;
 use protocol::net::{self, ErrCode};
+use protocol::constants::*;
 use router::Router;
 use protocol::servicesrv::ObjectMetaData;
 use protocol::asmsrv::{TypeMeta, IdGet};
@@ -46,10 +47,7 @@ pub fn origin_create(req: &mut Request) -> AranResult<Response> {
                 object_meta.set_labels(body.object_meta.labels);
                 object_meta.set_annotations(body.object_meta.annotations);
                 org_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                org_create.set_type_meta(type_meta);
+                org_create.set_type_meta(TypeMeta::new(ORIGIN));
             }
             Err(err) => {
                 return Err(malformed_body(

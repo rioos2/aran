@@ -22,8 +22,6 @@ use rio_net::util::errors::AranResult;
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
-
-
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -90,26 +88,25 @@ pub fn storage_create(req: &mut Request) -> AranResult<Response> {
                 storage_create.set_host_ip(body.host_ip);
                 storage_create.set_storage_type(body.storage_type);
                 storage_create.set_paramaters(body.parameters);
-
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-
-                let mut condition_collection = Vec::new();
-
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                storage_create.set_status(status);
+                storage_create.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
 
                 let mut disk_collection = Vec::new();
 
@@ -252,25 +249,25 @@ pub fn storage_status_update(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<StorageStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-
-                let mut condition_collection = Vec::new();
-
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                storage_create.set_status(status);
+                storage_create.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -308,23 +305,25 @@ pub fn data_center_create(req: &mut Request) -> AranResult<Response> {
                 dc_create.set_storage(body.storage);
                 dc_create.set_advanced_settings(body.advanced_settings);
                 dc_create.set_nodes(body.nodes);
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-                let mut condition_collection = Vec::new();
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                dc_create.set_status(status);
+                dc_create.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
                 dc_create.set_enabled(body.enabled);
             }
             Err(err) => {
@@ -403,25 +402,25 @@ pub fn storage_pool_create(req: &mut Request) -> AranResult<Response> {
                 storage_create.set_connector_id(body.connector_id);
                 storage_create.set_paramaters(body.parameters);
 
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-
-                let mut condition_collection = Vec::new();
-
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                storage_create.set_status(status);
+                storage_create.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
 
                 let mut disk_collection = Vec::new();
 
@@ -472,25 +471,25 @@ pub fn storage_pool_status_update(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<StoragePoolStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-
-                let mut condition_collection = Vec::new();
-
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                storage_pool_update.set_status(status);
+                storage_pool_update.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(

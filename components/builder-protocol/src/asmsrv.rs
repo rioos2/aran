@@ -3,10 +3,8 @@
 use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
-use DEFAULT_API_VERSION;
+use constants::*;
 
-pub const ASSEMBLYLIST: &'static str = "AssemblyList";
-pub const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     id: String,
@@ -201,6 +199,15 @@ impl Status {
     pub fn set_conditions(&mut self, v: Vec<Condition>) {
         self.conditions = v;
     }
+
+    pub fn with_conditions(phase: &str, message: &str, reason: &str, conditions: Vec<Condition>) -> Status {
+        Status {
+            phase: phase.to_string(),
+            message: message.to_string(),
+            conditions: conditions,
+            reason: reason.to_string(),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -256,6 +263,16 @@ impl Condition {
     }
     pub fn set_condition_type(&mut self, v: ::std::string::String) {
         self.condition_type = v;
+    }
+    pub fn with_type(message: &str, reason: &str, status: &str, last_transition_time: &str, last_probe_time: &str, condition_type: &str) -> Condition {
+        Condition {
+            condition_type: condition_type.to_string(),
+            status: status.to_string(),
+            reason: reason.to_string(),
+            last_transition_time: last_transition_time.to_string(),
+            message: message.to_string(),
+            last_probe_time: last_probe_time.to_string(),
+        }
     }
 }
 
@@ -321,7 +338,7 @@ pub struct AssemblyFactory {
     description: String,
     tags: Vec<String>,
     origin: String,
-    replicas: u64,
+    replicas: u32,
     properties: Properties,
     plan: String,
     plan_data: Option<plansrv::Plan>,
@@ -345,11 +362,11 @@ impl AssemblyFactory {
         self.id.clone()
     }
 
-    pub fn set_replicas(&mut self, v: u64) {
+    pub fn set_replicas(&mut self, v: u32) {
         self.replicas = v;
     }
 
-    pub fn get_replicas(&self) -> u64 {
+    pub fn get_replicas(&self) -> u32 {
         self.replicas
     }
 

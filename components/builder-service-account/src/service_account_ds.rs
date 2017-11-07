@@ -9,8 +9,7 @@ use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
 use rio_net::util::errors::*;
-pub const RIO_ASM_FAC_ID: &'static str = "rioos_assembly_factory_id";
-
+use protocol::constants::*;
 
 
 pub struct ServiceAccountDS;

@@ -1,16 +1,13 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-use deployment_ds::{DeploymentDS, ASSEMBLY};
+use deployment_ds::DeploymentDS;
 use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, ObjectMeta, OwnerReferences, TypeMeta};
-use protocol::DEFAULT_API_VERSION;
 use db::data_store::DataStoreConn;
 use error::{Result, Error};
 use std::collections::BTreeMap;
-
-const InitalConditions: &'static [&'static str] = &["AssemblyStorageReady", "AssemblyNetworkReady"];
-const NewReplicaInitalizing: &'static str = "Initializing replica ";
-
+use protocol::constants::*;
 pub struct Replicas<'a> {
+    current: u32,
     desired: u32,
     conn: &'a DataStoreConn,
     response: &'a AssemblyFactory,
@@ -23,7 +20,7 @@ pub struct Replicas<'a> {
 impl<'a> Replicas<'a> {
     pub fn new(conn: &'a DataStoreConn, current: u32, desired: u32, request: &'a AssemblyFactory) -> Replicas<'a> {
         Replicas {
-        	current: current,
+            current: current,
             desired: desired,
             conn: &*conn,
             response: &*request,
@@ -43,7 +40,7 @@ impl<'a> Replicas<'a> {
 
     //This is reponsible for managing the replicas in an assembly factory upto the desired.
     pub fn new_desired(&self) -> Result<Option<AssemblyFactory>> {
-        match DeploymentDS::assembly_factory_create(&self.conn, &self.af_req) {
+        match DeploymentDS::assembly_factory_create(&self.conn, &self.response) {
             Ok(Some(response)) => {
                 let replicated = self.upto_desired(&response.get_id())?;
                 Ok(Some(response))
@@ -56,7 +53,7 @@ impl<'a> Replicas<'a> {
 
     //This is reponsible for managing the replicas in an assembly factory upto the desired.
     pub fn upto_desired(&self, id: &str) -> Result<Option<Vec<Assembly>>> {
-        let mut context = ReplicaContext::new(&self.response, self.current(), self.desired();
+        let mut context = ReplicaContext::new(&self.response, self.current(), self.desired());
         context.calculate(id);
 
         //deploy the assemblys
@@ -83,18 +80,16 @@ impl<'a> Replicas<'a> {
             })
             .collect::<Vec<_>>();
 
-        
+
         //fold all the errors in deployed and nuked - refer metrics code.
         let deploy_failure = &deployed.iter().filter(|f| (*f).is_err()).count();
         let  nuke_failure = &nuked.iter().filter(|f| (*f).is_err()).count();
-	    */  
-       
+	    */
+
         Ok(None)
     }
 }
 
-
-#[derive(Debug, PartialEq, Clone, Default)]
 struct ReplicaContext<'a> {
     current: u32,
     desired: u32,
@@ -106,13 +101,15 @@ struct ReplicaContext<'a> {
 
 impl<'a> ReplicaContext<'a> {
     fn new(response: &'a AssemblyFactory, current_replicas: u32, desired_replicas: u32) -> ReplicaContext<'a> {
-        let base_name = request.get_name();
+        let base_name = response.get_name();
 
         ReplicaContext {
             current: current_replicas,
             desired: desired_replicas,
-            response: &*request,
+            response: &*response,
             namer: ReplicaNamer::new(&base_name, response.get_replicas()),
+            deploys: vec![Assembly::new()],
+            nukes: vec![Assembly::new()],
         }
 
     }
@@ -121,25 +118,26 @@ impl<'a> ReplicaContext<'a> {
     /// current = 0 desired = 4, then create 1, 2,3,4.
     //  current = 5, desired = 6, then nuke 1
     fn calculate(&mut self, id: &str) {
-        for x in current..self.desired {
+        for x in self.current..self.desired {
             let mut assembly_create_req = Assembly::new();
             assembly_create_req.set_name(self.namer.next(x + 1));
             assembly_create_req.set_uri(ASSEMBLYS_URI.to_string());
-            assembly_create_req.set_description(self.af_req.get_description());
-            assembly_create_req.set_tags(self.af_req.get_tags());
+            assembly_create_req.set_description(self.response.get_description());
+            assembly_create_req.set_tags(self.response.get_tags());
             assembly_create_req.set_parent_id(id.to_string());
-            assembly_create_req.set_origin(self.af_req.get_origin());
+            assembly_create_req.set_origin(self.response.get_origin());
 
             assembly_create_req.set_status(Status::with_conditions(
                 INITIALIZING,
-                format!(
+                &format!(
                     "{} {}",
-                    NewReplicaInitalizing,
-                    assembly_create_req.get_name()
+                    NEW_REPLICA_INITALIZING,
+                    self.namer.next(x + 1)
                 ),
-                InitialConditions
-                    .iter_mut()
-                    .map(|x| Condition::with_type(x))
+                "",
+                INITIAL_CONDITIONS
+                    .iter()
+                    .map(|x| Condition::with_type("", "", "False", "", "", x))
                     .collect::<Vec<_>>(),
             ));
 
@@ -171,15 +169,15 @@ impl<'a> ReplicaContext<'a> {
 ///
 /// The generate naming convention for 1 replicas with base_name: levi.megam.io
 /// levi.megam.io
-
+#[derive(Debug, PartialEq, Clone, Default)]
 struct ReplicaNamer {
     name: String,
-    upto: u64,
+    upto: u32,
 }
 
 
 impl ReplicaNamer {
-    fn new(name: &str, upto: u64) -> ReplicaNamer {
+    fn new(name: &str, upto: u32) -> ReplicaNamer {
         ReplicaNamer {
             name: name.to_string(),
             upto: upto,
@@ -198,7 +196,7 @@ impl ReplicaNamer {
 
     ///  If the requested replica count is just one then we need to return
     ///  levi.megam.io (base_name)
-    fn next(&self, count: u64) -> String {
+    fn next(&self, count: u32) -> String {
         if self.upto > 1 {
             let fqdns = self.fqdn_as_tuples();
             return format!("{}{}.{}", fqdns.0, count, fqdns.1);

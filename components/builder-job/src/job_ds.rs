@@ -4,19 +4,17 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{jobsrv,DEFAULT_API_VERSION};
+use protocol::jobsrv;
 use postgres;
 use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
-pub const JOB: &'static str = "JOB";
 
 
 pub struct JobDS;
 
 impl JobDS {
-
     pub fn jobs_create(datastore: &DataStoreConn, jobs_create: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
@@ -26,54 +24,52 @@ impl JobDS {
                 &(serde_json::to_string(jobs_create.get_status()).unwrap()),
                 &(serde_json::to_string(jobs_create.get_object_meta()).unwrap()),
                 &(serde_json::to_string(jobs_create.get_type_meta()).unwrap()),
-
             ],
         ).map_err(Error::JobsCreate)?;
 
         if rows.len() > 0 {
-        let jobs = row_to_jobs(&rows.get(0))?;
-        return Ok(Some(jobs));
-    }
-    Ok(None)
-    }
-
-pub fn jobs_get(datastore: &DataStoreConn) -> Result<Option<jobsrv::JobGetResponse>> {
-    let conn = datastore.pool.get_shard(0)?;
-
-    let rows = &conn.query("SELECT * FROM get_jobs_v1()", &[])
-        .map_err(Error::JobsGet)?;
-
-    let mut response = jobsrv::JobGetResponse::new();
-
-    let mut jobs_collection = Vec::new();
-
-    if rows.len() > 0 {
-        for row in rows {
-
-            jobs_collection.push(row_to_jobs(&row)?)
+            let jobs = row_to_jobs(&rows.get(0))?;
+            return Ok(Some(jobs));
         }
-        response.set_jobs_collection(jobs_collection);
-        return Ok(Some(response));
+        Ok(None)
     }
-    Ok(None)
-}
-pub fn jobs_status_update(datastore: &DataStoreConn, job: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
-    let conn = datastore.pool.get_shard(0)?;
-    let rows = &conn.query(
-        "SELECT * FROM set_job_status_v1($1, $2)",
-        &[
-            &(job.get_id().parse::<i64>().unwrap()),
-            &(serde_json::to_string(job.get_status()).unwrap()),
-        ],
-    ).map_err(Error:: JobSetStatus)?;
-    if rows.len() > 0 {
-        let jobs = row_to_jobs(&rows.get(0))?;
-        return Ok(Some(jobs));
-}
-    Ok(None)
-}
 
+    pub fn jobs_get(datastore: &DataStoreConn) -> Result<Option<jobsrv::JobGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
 
+        let rows = &conn.query("SELECT * FROM get_jobs_v1()", &[]).map_err(
+            Error::JobsGet,
+        )?;
+
+        let mut response = jobsrv::JobGetResponse::new();
+
+        let mut jobs_collection = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+
+                jobs_collection.push(row_to_jobs(&row)?)
+            }
+            response.set_jobs_collection(jobs_collection);
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+    pub fn jobs_status_update(datastore: &DataStoreConn, job: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM set_job_status_v1($1, $2)",
+            &[
+                &(job.get_id().parse::<i64>().unwrap()),
+                &(serde_json::to_string(job.get_status()).unwrap()),
+            ],
+        ).map_err(Error::JobSetStatus)?;
+        if rows.len() > 0 {
+            let jobs = row_to_jobs(&rows.get(0))?;
+            return Ok(Some(jobs));
+        }
+        Ok(None)
+    }
 }
 
 fn row_to_jobs(row: &postgres::rows::Row) -> Result<jobsrv::Jobs> {

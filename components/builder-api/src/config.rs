@@ -23,7 +23,7 @@ pub struct Config {
     //  Where to pull and record metrics
     pub prometheus: PrometheusCfg,
     //  Where to store the hidden treasures
-    pub vaults: VaultsCfg,
+    // pub vaults: VaultsCfg,
     //  Whether to log events for metrics
     pub events_enabled: bool,
     /// Where to record log events for metrics
@@ -37,7 +37,7 @@ impl Default for Config {
             ui: UiCfg::default(),
             shield: ShieldCfg::default(),
             prometheus: PrometheusCfg::default(),
-            vaults: VaultsCfg::default(),
+            // vaults: VaultsCfg::default(),
             events_enabled: false,
             log_dir: env::temp_dir().to_string_lossy().into_owned(),
         }
