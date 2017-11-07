@@ -17,6 +17,7 @@ extern crate serde_json;
 
 pub mod deployment_ds;
 pub mod error;
+pub mod replicas;
 
 
 pub use self::error::{Error, Result};
