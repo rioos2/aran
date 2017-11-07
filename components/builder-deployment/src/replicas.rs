@@ -114,10 +114,8 @@ impl<'a> ReplicaContext<'a> {
             assembly_create_req.set_uri("/v1/assemblys".to_string());
             assembly_create_req.set_description(self.af_req.get_description());
             assembly_create_req.set_tags(self.af_req.get_tags());
-            assembly_create_req.set_selector(vec![]);
             assembly_create_req.set_parent_id(id.to_string());
             assembly_create_req.set_origin(self.af_req.get_origin());
-            assembly_create_req.set_node("".to_string());
             let mut status = Status::new();
             status.set_phase("intializing".to_string());
             status.set_message("new instance initiating".to_string());
@@ -131,27 +129,6 @@ impl<'a> ReplicaContext<'a> {
             status.set_conditions(condition_collection);
 
             assembly_create_req.set_status(status);
-
-            let mut object_meta = ObjectMeta::new();
-
-            let mut owner_collection = Vec::new();
-            let owner = OwnerReferences::new();
-            owner_collection.push(owner);
-
-            object_meta.set_owner_references(owner_collection);
-            assembly_create_req.set_object_meta(object_meta);
-
-            let mut volume_collection = Vec::new();
-            let vol = Volume::new();
-            volume_collection.push(vol);
-
-            assembly_create_req.set_volumes(volume_collection);
-            assembly_create_req.set_urls(BTreeMap::new());
-            assembly_create_req.set_instance_id("".to_string());
-            let mut type_meta = TypeMeta::new();
-            type_meta.set_kind(ASSEMBLY.to_string());
-            type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
-            assembly_create_req.set_type_meta(type_meta);
             self.add_for_deployment(assembly_create_req);
         }
 
