@@ -104,6 +104,14 @@ fn start(ui: &mut UI) -> Result<()> {
                 _ => unreachable!(),
             }
         }
+        ("storages", Some(matches)) => {
+            match matches.subcommand() {
+                ("list", Some(m)) => sub_storage_list(ui, m)?,
+                ("describe", Some(m)) => sub_storage_decribe(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
+
         ("origin", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_origin_list(ui, m)?,
@@ -292,6 +300,28 @@ fn sub_datacenters_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         config_file.unwrap(),
     )
 }
+
+fn sub_storage_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+
+    command::storage::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+fn sub_storage_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    let config_file = m.value_of("STORAGE_ID").map(|v| v.into());
+
+    command::storage::describe::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        config_file.unwrap(),
+    )
+}
+
 
 
 fn ui() -> UI {

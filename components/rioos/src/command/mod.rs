@@ -9,3 +9,4 @@ pub mod datacenter;
 pub mod origin;
 pub mod job;
 pub mod network;
+pub mod storage;

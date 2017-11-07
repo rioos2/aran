@@ -12,26 +12,16 @@ use super::super::common::pretty_table;
 
 pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -> Result<()> {
     ui.begin(&format!(
-        "Constructing a {} datacenter for you...",
+        "Constructing a {} storage for you...",
         id
     ))?;
     ui.br()?;
 
     let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
 
-    let result = rio_client.describe_datacenter(&token, &email, &id)?;
+    let storageconn = rio_client.get_storageconnector_by_id(&token,&email,&id)?;
 
-    ui.heading("OverView")?;
-    ui.para(&format!("Id: {}", result.get_id()))?;
-    ui.para(&format!("Name: {}", result.get_name()))?;
-    ui.para(&format!("Status: {}", result.get_status().get_phase()))?;
-    ui.para(&format!("Enabled : {}",result.get_enabled()))?;
-    ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
-    let net = result.get_networks();
-    let node = result.get_nodes();
-
-    let storageconn = rio_client.get_storageconnector_by_id(&token,&email,&result.get_storage())?;
-    let storagepool = rio_client.get_storagepool_by_scid(&token, &email, &storageconn.get_id())?;
+    let storagepool = rio_client.get_storagepool_by_scid(&token, &email, &id)?;
 
     ui.br()?;
     ui.heading("StoragesConnector:")?;

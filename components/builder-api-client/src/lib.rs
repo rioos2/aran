@@ -626,6 +626,35 @@ impl Client {
         }
 
     }
+    pub fn get_storageconnector(&self, token: &str, email: &str) -> Result<storagesrv::StorageGetResponse> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("storageconnectors");
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get storageconnectors, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<storagesrv::StorageGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value),
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+
+
+
 
     pub fn get_storagepool_by_scid(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
         debug!("Token {}", token);
@@ -656,6 +685,32 @@ impl Client {
                         .collect(),
                 )
             }
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
+    pub fn get_storagepool_by_id(&self, token: &str, email: &str, id: &str) -> Result<storagesrv::StoragePoolGetResponse> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("/storagespool/{}", id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get stoargepool , status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<storagesrv::StoragePoolGetResponse>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value),
             Err(e) => {
                 debug!("Failed to decode response, err: {:?}", e);
                 return Err(e);
