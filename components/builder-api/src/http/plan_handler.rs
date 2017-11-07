@@ -11,7 +11,7 @@ use rio_net::http::controller::*;
 use plan::plan_ds::PlanDS;
 use db::data_store::Broker;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body,not_found_error};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::plansrv::{Plan, Service};
@@ -63,7 +63,9 @@ pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
                 plan_create.set_services(service_collection);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -73,13 +75,11 @@ pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
 
     match PlanDS::plan_create(&conn, &plan_create) {
         Ok(Some(plan)) => Ok(render_json(status::Ok, &plan)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-}
+    }
 }

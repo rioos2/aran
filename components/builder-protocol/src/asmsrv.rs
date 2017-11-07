@@ -591,7 +591,7 @@ pub struct TypeMeta {
 impl TypeMeta {
     pub fn new(kind: &str) -> TypeMeta {
         TypeMeta {
-            kind: kind,
+            kind: kind.to_string(),
             api_version: DEFAULT_API_VERSION.to_string(),
         }
     }
