@@ -2,7 +2,7 @@ use ansi_term::Colour;
 use bodyparser;
 use rio_net::http::controller::*;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError,not_found_error};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError, not_found_error};
 
 use service::service_account_ds::ServiceAccountDS;
 use iron::prelude::*;
@@ -10,7 +10,7 @@ use iron::status;
 use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
-use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData, EndPoints,Subsets, Addesses,Ports,Services,Spec};
+use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData, EndPoints, Subsets, Addesses, Ports, Services, Spec};
 use protocol::asmsrv::{TypeMeta, IdGet, Status, Condition};
 use std::collections::BTreeMap;
 use http::deployment_handler;
@@ -167,8 +167,6 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
         }
     };
 
-    let conn = Broker::connect().unwrap();
-
     let mut secret_get = IdGet::new();
     secret_get.set_id(id.to_string());
 
@@ -177,6 +175,9 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
         '✓',
         format!("======= parsed {:?} ", secret_get),
     );
+
+    let conn = Broker::connect().unwrap();
+
 
     match ServiceAccountDS::secret_show(&conn, &secret_get) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
@@ -201,9 +202,7 @@ pub fn secret_list(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 
@@ -233,9 +232,7 @@ pub fn secret_show_by_origin(req: &mut Request) -> AranResult<Response> {
                 &secret_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 
@@ -298,9 +295,7 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
 
     }
 }
@@ -310,9 +305,7 @@ pub fn service_account_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_list(&conn) {
         Ok(Some(service_list)) => Ok(render_json(status::Ok, &service_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -341,9 +334,7 @@ pub fn service_account_show(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::service_account_show(&conn, &serv_get) {
         Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
@@ -417,7 +408,9 @@ pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
                 endpoints_create.set_subsets(subsets);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -451,9 +444,7 @@ pub fn endpoints_list(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 
@@ -486,9 +477,7 @@ pub fn endpoints_show(req: &mut Request) -> AranResult<Response> {
                 &endpoints_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 pub fn endpoints_list_by_origin(req: &mut Request) -> AranResult<Response> {
@@ -517,9 +506,7 @@ pub fn endpoints_list_by_origin(req: &mut Request) -> AranResult<Response> {
                 &endpoints_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 pub fn endpoints_get_by_assembly(req: &mut Request) -> AranResult<Response> {
@@ -546,9 +533,7 @@ pub fn endpoints_get_by_assembly(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
 pub fn services_create(req: &mut Request) -> AranResult<Response> {
@@ -559,7 +544,10 @@ pub fn services_create(req: &mut Request) -> AranResult<Response> {
                 if body.object_meta.origin.len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
-                let asmid = body.spec.selector.get(&RIOOS_ASSM_FAC_ID.to_string()).to_owned();
+                let asmid = body.spec
+                    .selector
+                    .get(&RIOOS_ASSM_FAC_ID.to_string())
+                    .to_owned();
                 if asmid.unwrap().len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "assembly id")));
                 }
@@ -610,7 +598,9 @@ pub fn services_create(req: &mut Request) -> AranResult<Response> {
 
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -658,9 +648,7 @@ pub fn services_show(req: &mut Request) -> AranResult<Response> {
                 &services_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
@@ -673,9 +661,7 @@ pub fn services_list(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
@@ -705,9 +691,7 @@ pub fn services_list_by_origin(req: &mut Request) -> AranResult<Response> {
                 &services_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 pub fn services_list_by_assembly(req: &mut Request) -> AranResult<Response> {
@@ -736,8 +720,6 @@ pub fn services_list_by_assembly(req: &mut Request) -> AranResult<Response> {
                 &services_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
