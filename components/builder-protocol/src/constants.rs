@@ -1,3 +1,5 @@
+// Copyright (c) 2017 RioCorp Inc.
+
 pub const DEFAULT_API_VERSION: &'static str = "v1";
 pub const RIO_ASM_FAC_ID: &'static str = "rioos_assembly_factory_id";
 

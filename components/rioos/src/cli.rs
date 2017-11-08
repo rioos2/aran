@@ -390,8 +390,8 @@ pub fn get() -> App<'static, 'static> {
         (subcommand: alias_logout)
         (subcommand: alias_new)
         (subcommand: alias_init)
-        (subcommand: alias_deploy)
         (subcommand: alias_list)
+        (subcommand: alias_deploy)
         (subcommand: alias_deployapp)
         (after_help: "\nALIASES:\
             \n    login      Alias for: 'auth login'\
@@ -501,11 +501,3 @@ fn file_exists(val: String) -> result::Result<(), String> {
         Err(format!("File: '{}' cannot be found", &val))
     }
 }
-
-
-// fn valid_url(val: String) -> result::Result<(), String> {
-//     match Url::parse(&val) {
-//         Ok(_) => Ok(()),
-//         Err(_) => Err(format!("URL: '{}' is not valid", &val)),
-//     }
-// }

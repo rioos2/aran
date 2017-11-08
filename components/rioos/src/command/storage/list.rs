@@ -10,31 +10,51 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
     ui.br()?;
 
     let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
+    let results = rio_client.get_storageconnector(&token, &email)?;
+    let value = results
+        .get_items()
+        .iter_mut()
+        .map(|c| {
+            rio_client
+                .get_storagepool_by_id(&token, &email, &(c.get_id()))
+                .map(|p| {
+                    p.get_items()
+                        .into_iter()
+                        .map(|x| {
+                            vec![
+                                c.get_id(),
+                                c.get_storage_type(),
+                                c.get_host_ip(),
+                                c.get_disks_str(),
+                                x.get_id(),
+                                x.get_disks_str(),
+                            ]
+                        })
+                        .collect::<Vec<_>>()
+                })
+                .unwrap()
+            // println!("--- {:?}", pool);
+        })
+        .flat_map(|s| s)
+        .collect::<Vec<_>>();
 
-    let  results = rio_client.get_storageconnector(&token, &email)?;
-    let value = results.get_items()
-            .iter_mut()
-            .map(|i| {
 
-                vec![
-                i.get_id(),
-                i.get_storage_type(),
-                i.get_host_ip(),
-                i.get_storage_info().get_disks().iter().map(|d|{ format!("{}  ",d.get_size())}).collect(),
-                rio_client.get_storagepool_by_id(&token,&email,&(i.get_id())).unwrap().get_items().iter_mut().map(|f|{format!("{}  ",f.get_id())}).collect()
-                 ]
-
-            }).collect::<Vec<_>>();
-
-    let title = row!["Id", "Type", "Stored At Server","Available Disk","Pool Id"];
+    let title = row![
+        "Id",
+        "Type",
+        "Stored At",
+        "Available Disks",
+        "Pool Id",
+        "Pool Usage"
+    ];
 
     pretty_table(value.to_owned(), title);
 
     ui.br()?;
 
     ui.para(
-        "For more information on Digitalcloud storages: \
-        https://www.rioos.sh/docs/reference/deployment/",
+        "For more information on storages: \
+        https://www.rioos.sh/docs/reference/storages/",
     )?;
 
     ui.end(

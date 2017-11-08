@@ -37,9 +37,7 @@ impl NodeDS {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT * from get_node_v1($1)",
-            &[
-                &(node_get.get_id().parse::<i64>().unwrap()),
-            ],
+            &[&(node_get.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::NodeGet)?;
         if rows.len() > 0 {
             let node = row_to_node(&rows.get(0))?;

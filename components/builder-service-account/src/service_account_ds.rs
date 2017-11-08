@@ -219,6 +219,7 @@ impl ServiceAccountDS {
         }
         Ok(None)
     }
+
     pub fn endpoints_get_by_assembly(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
         let conn = datastore.pool.get_shard(0)?;
 
@@ -253,6 +254,7 @@ impl ServiceAccountDS {
                 &(serde_json::to_string(services_create.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::ServicesCreate)?;
+
         if rows.len() > 0 {
             for row in rows {
                 let end = row_to_services(&row);

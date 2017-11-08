@@ -20,8 +20,6 @@ extern crate log;
 extern crate pbr;
 extern crate rand;
 extern crate serde;
-#[allow(unused_imports)]
-#[macro_use]
 extern crate serde_derive;
 #[allow(unused_imports)]
 #[macro_use]

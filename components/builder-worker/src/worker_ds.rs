@@ -8,7 +8,7 @@ use error::Result;
 // use db::error::{Error as DbError, Result as DbResult};
 use db::data_store::DataStoreConn;
 // use db::async::{AsyncServer, EventOutcome};
-// use db::pool::Pool;
+//use db::pool::Pool;
 //use serde_json;
 // use std::io;
 // use std::io::Write;

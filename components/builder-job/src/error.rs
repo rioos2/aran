@@ -14,7 +14,6 @@ pub enum Error {
     JobsCreate(postgres::error::Error),
     JobSetStatus(postgres::error::Error),
     JobsGet(postgres::error::Error),
-
 }
 
 
