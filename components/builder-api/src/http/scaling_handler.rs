@@ -23,8 +23,6 @@ use rio_net::util::errors::AranResult;
 use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
-
-
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -166,12 +164,11 @@ pub fn hs_create(req: &mut Request) -> AranResult<Response> {
                 spec.set_metrics(metrics_collection);
                 hs_create.set_spec(spec);
 
-                let mut status = Status::new();
-
-                status.set_last_scale_time(body.status.last_scale_time);
-                status.set_current_replicas(body.status.current_replicas);
-                status.set_desired_replicas(body.status.desired_replicas);
-                hs_create.set_status(status);
+                hs_create.set_status(Status::new(
+                    &body.status.last_scale_time,
+                    body.status.current_replicas,
+                    body.status.desired_replicas,
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -278,11 +275,11 @@ pub fn hs_status_update(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<HsStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-                status.set_last_scale_time(body.status.last_scale_time);
-                status.set_current_replicas(body.status.current_replicas);
-                status.set_desired_replicas(body.status.desired_replicas);
-                hs_update.set_status(status);
+                hs_update.set_status(Status::new(
+                    &body.status.last_scale_time,
+                    body.status.current_replicas,
+                    body.status.desired_replicas,
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
