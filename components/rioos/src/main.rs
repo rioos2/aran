@@ -22,10 +22,10 @@ use std::thread;
 
 use clap::{ArgMatches, Shell};
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
-use rcore::crypto::init; //TO-DO: NOT NEEDED
+use rcore::crypto::init;
 use rcore::env as henv;
 
-use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, ORIGIN_ENVVAR, API_SERVER_ENVVAR};
+use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, /*ORIGIN_ENVVAR*,*/ API_SERVER_ENVVAR};
 use rioos::error::{Error, Result};
 
 
@@ -72,7 +72,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("auth", Some(matches)) => {
             match matches.subcommand() {
                 ("login", Some(m)) => sub_cli_login(ui, m)?,
-                ("logout", Some(m)) => sub_cli_logout(ui, m)?,
+                ("logout", Some(_)) => sub_cli_logout(ui)?,
                 _ => unreachable!(),
             }
         }
@@ -133,7 +133,8 @@ fn start(ui: &mut UI) -> Result<()> {
         }
 
         ("login", Some(m)) => sub_cli_login(ui, m)?,
-        ("logout", Some(m)) => sub_cli_logout(ui, m)?,
+        ("logout", Some(_)) => sub_cli_logout(ui)?,
+        ("new", Some(m)) => sub_cli_new(ui, m)?,
         ("init", Some(m)) => sub_cli_login(ui, m)?,
         ("list", Some(m)) => sub_cli_login(ui, m)?,
         _ => unreachable!(),
@@ -147,7 +148,7 @@ fn sub_cli_login(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     command::cli::login::start(ui, &api_server_param_or_env(&m)?)
 }
 
-fn sub_cli_logout(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+fn sub_cli_logout(ui: &mut UI) -> Result<()> {
     init();
 
     command::cli::logout::start(ui)
@@ -415,7 +416,7 @@ fn auth_email_param_or_env(m: &ArgMatches) -> Result<String> {
 /// Check to see if the user has passed in an ORIGIN param.  If not, check the RIOOS_ORIGIN env
 /// var. If not, check the /rioos/etc/cli.toml config if there is an origin. If that's empty too,
 /// then error.
-fn origin_param_or_env(m: &ArgMatches) -> Result<String> {
+/*fn origin_param_or_env(m: &ArgMatches) -> Result<String> {
     match m.value_of("ORIGIN") {
         Some(o) => Ok(o.to_string()),
         None => {
@@ -431,8 +432,7 @@ fn origin_param_or_env(m: &ArgMatches) -> Result<String> {
             }
         }
     }
-}
-
+}*/
 /// Check to see if the user has passed in an API_SERVER_ENVVAR param.  If not, check the RIOOS_API_SERVER env
 /// var. If not, check the /rioos/etc/cli.toml config if there is an origin. If that's empty too,
 /// then error.

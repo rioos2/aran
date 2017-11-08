@@ -11,7 +11,7 @@ use std::fmt;
 use protocol::sessionsrv;
 
 use config;
-use error::{Result};
+use error::Result;
 
 //const USER_AGENT: &'static str = "Aran-Shield";
 //const HTTP_TIMEOUT: u64 = 3_000;
@@ -83,7 +83,7 @@ impl ShieldClient {
         } else {
             Err(Error::HTTP(rep.status))
         }*/
-         println!("{}", code);
+        println!("{}", code);
         let hello = String::from("Hello, world!");
         Ok(hello)
     }

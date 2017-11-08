@@ -1,5 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc
-//
+
 
 use std::result;
 

@@ -72,6 +72,16 @@ impl Storage {
         &self.storage_info
     }
 
+    //Convert it using Into or From<String>
+    pub fn get_disks_str(&self) -> String {
+        self.get_storage_info().disks.iter().fold(
+            "0".to_string(),
+            |acc, ref d| {
+                format!("{}+{}", acc, d.size)
+            },
+        )
+    }
+
     pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {
         self.parameters = v;
     }
@@ -369,6 +379,15 @@ impl StoragePool {
 
     pub fn get_storage_info(&self) -> &Disks {
         &self.storage_info
+    }
+    //Convert it using Into or From<String>
+    pub fn get_disks_str(&self) -> String {
+        self.get_storage_info().disks.iter().fold(
+            "0".to_string(),
+            |acc, ref d| {
+                format!("{}+{}", acc, d.size)
+            },
+        )
     }
 
     pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {

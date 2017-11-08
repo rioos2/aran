@@ -2,7 +2,7 @@
 
 //! A module containing the middleware of the HTTP server
 
-use error::{self, Result};
+use error::Result;
 
 use ldap3::{LdapConn, Scope, SearchEntry};
 use protocol::sessionsrv;

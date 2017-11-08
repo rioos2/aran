@@ -8,7 +8,6 @@ extern crate rioos_builder_protocol as protocol;
 extern crate rioos_builder_db as db;
 
 
-#[macro_use]
 extern crate postgres;
 extern crate rand;
 extern crate serde;

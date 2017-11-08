@@ -1,6 +1,7 @@
+// Copyright (c) 2017 RioCorp Inc.
+
 use constants::*;
 
-// Copyright (c) 2017 RioCorp Inc.
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Roles {
     id: String,

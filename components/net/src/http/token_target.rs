@@ -3,8 +3,8 @@
 
 use std::fmt;
 
-use error::{Result};
-use protocol::sessionsrv::{SessionGet};
+use error::Result;
+use protocol::sessionsrv::SessionGet;
 
 pub trait TargetValidator: fmt::Display + Into<TokenTarget> {
     fn validate(&self) -> Result<()>;

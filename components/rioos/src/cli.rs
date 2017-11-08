@@ -5,7 +5,6 @@ use std::path::Path;
 use std::result;
 
 use clap::{App, AppSettings, Arg};
-use url::Url;
 
 pub fn get() -> App<'static, 'static> {
     let alias_login = sub_auth_login()
@@ -386,6 +385,7 @@ pub fn get() -> App<'static, 'static> {
         (subcommand: alias_logout)
         (subcommand: alias_new)
         (subcommand: alias_init)
+        (subcommand: alias_list)
         (subcommand: alias_deploy)
         (subcommand: alias_deployapp)
         (after_help: "\nALIASES:\
@@ -494,13 +494,5 @@ fn file_exists(val: String) -> result::Result<(), String> {
         Ok(())
     } else {
         Err(format!("File: '{}' cannot be found", &val))
-    }
-}
-
-
-fn valid_url(val: String) -> result::Result<(), String> {
-    match Url::parse(&val) {
-        Ok(_) => Ok(()),
-        Err(_) => Err(format!("URL: '{}' is not valid", &val)),
     }
 }

@@ -29,7 +29,6 @@ extern crate unicase;
 extern crate rand;
 extern crate curl;
 
-#[macro_use]
 extern crate router;
 
 pub mod config;
