@@ -7,12 +7,11 @@ use rio_net::http::controller::*;
 use authorize::authorize_ds::AuthorizeDS;
 use iron::prelude::*;
 use iron::status;
-use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
 use protocol::authsrv::{Roles, Permissions};
 use protocol::asmsrv::IdGet;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 use db;
@@ -44,7 +43,9 @@ pub fn roles_create(req: &mut Request) -> AranResult<Response> {
 
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -59,7 +60,6 @@ pub fn roles_create(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-
 
     }
 }
@@ -126,7 +126,9 @@ pub fn permissions_create(req: &mut Request) -> AranResult<Response> {
 
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }

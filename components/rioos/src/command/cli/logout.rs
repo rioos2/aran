@@ -5,7 +5,7 @@ use common::ui::UI;
 use config;
 use error::Result;
 
-pub fn start(ui: &mut UI, api: &str) -> Result<()> {
+pub fn start(ui: &mut UI) -> Result<()> {
     ui.br()?;
     ui.title("Rio/OS CLI")?;
 
@@ -16,6 +16,7 @@ pub fn start(ui: &mut UI, api: &str) -> Result<()> {
     )?;
 
     ui.br()?;
+
     //just blank out the auth token
     write_cli_config_auth_token("")?;
     write_cli_config_email("")?;

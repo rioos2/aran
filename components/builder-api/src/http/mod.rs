@@ -11,7 +11,6 @@ pub mod service_account_handler;
 pub mod origin_handler;
 pub mod network_handler;
 pub mod storage_handler;
-pub mod plan_handler;
 pub mod watch_handler;
 pub mod job_handler;
 
@@ -44,12 +43,11 @@ use self::origin_handler::*;
 use self::service_account_handler::*;
 use self::network_handler::*;
 use self::storage_handler::*;
-use self::plan_handler::*;
 use self::watch_handler::*;
 use self::job_handler::*;
 
 use db::data_store::*;
-use std::sync::mpsc::channel;
+// use std::sync::mpsc::channel;
 
 
 // Iron defaults to a threadpool of size `8 * num_cpus`.
@@ -229,6 +227,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
     ));
 
     chain.link_before(DataStoreBroker);
+    chain.link_after(Custom404);
 
     chain.link_after(Cors);
 

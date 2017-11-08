@@ -20,6 +20,10 @@ pub fn get() -> App<'static, 'static> {
         .about("Alias for 'cli init'")
         .aliases(&["in", "ini"])
         .setting(AppSettings::Hidden);
+    let alias_new = sub_cli_new()
+        .about("Alias for 'cli new'")
+        .aliases(&["n", "ne", "new"])
+        .setting(AppSettings::Hidden);
     let alias_list = sub_cli_list()
         .about("Alias for 'cli list'")
         .aliases(&["l", "li", "lis"])
@@ -385,12 +389,14 @@ pub fn get() -> App<'static, 'static> {
         )
         (subcommand: alias_login)
         (subcommand: alias_logout)
+        (subcommand: alias_new)
         (subcommand: alias_init)
         (subcommand: alias_deploy)
         (subcommand: alias_deployapp)
         (after_help: "\nALIASES:\
             \n    login      Alias for: 'auth login'\
             \n    logout     Alias for: 'auth logout'\
+            \n    new        Alias for: 'cli new'\
             \n    init       Alias for: 'cli init'\
             \n    list       Alias for: 'cli list'\
             \n    deploy     Alias for: 'digitialcloud deploy'\
@@ -415,7 +421,7 @@ fn sub_cli_list() -> App<'static, 'static> {
 
 fn sub_cli_new() -> App<'static, 'static> {
     clap_app!(@subcommand new =>
-        (about: "Create new User.")
+        (about: "Signup new User.")
     )
 }
 fn sub_cli_whoami() -> App<'static, 'static> {
@@ -497,9 +503,9 @@ fn file_exists(val: String) -> result::Result<(), String> {
 }
 
 
-fn valid_url(val: String) -> result::Result<(), String> {
-    match Url::parse(&val) {
-        Ok(_) => Ok(()),
-        Err(_) => Err(format!("URL: '{}' is not valid", &val)),
-    }
-}
+// fn valid_url(val: String) -> result::Result<(), String> {
+//     match Url::parse(&val) {
+//         Ok(_) => Ok(()),
+//         Err(_) => Err(format!("URL: '{}' is not valid", &val)),
+//     }
+// }

@@ -65,7 +65,7 @@ fn start(ui: &mut UI) -> Result<()> {
                 ("list", Some(m)) => sub_cli_login(ui, m)?,
                 ("completers", Some(m)) => sub_cli_completers(m)?,
                 ("new", Some(m)) => sub_cli_new(ui, m)?,
-                ("whoami",Some(m)) => sub_cli_whoami(ui,m)?,
+                ("whoami", Some(_)) => sub_cli_whoami(ui)?,
                 _ => unreachable!(),
             }
         }
@@ -151,7 +151,7 @@ fn sub_cli_login(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 fn sub_cli_logout(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     init();
 
-    command::cli::logout::start(ui, &api_server_param_or_env(&m)?)
+    command::cli::logout::start(ui)
 
 }
 
@@ -162,10 +162,10 @@ fn sub_cli_new(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     command::cli::new::start(ui, &api_server_param_or_env(&m)?)
 
 }
-fn sub_cli_whoami(ui: &mut UI,m: &ArgMatches) -> Result<()> {
+fn sub_cli_whoami(ui: &mut UI) -> Result<()> {
     init();
 
-    command::cli::whoami::start(ui,&api_server_param_or_env(&m)?)
+    command::cli::whoami::start(ui)
 
 }
 
@@ -242,10 +242,12 @@ fn sub_datacenters_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 }
 fn sub_origin_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 
-    command::origin::list::start(ui,&api_server_param_or_env(&m)?,
-    auth_token_param_or_env(&m)?,
-    auth_email_param_or_env(&m)?,
-)
+    command::origin::list::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
 }
 fn sub_job_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 
@@ -421,26 +423,27 @@ fn auth_email_param_or_env(m: &ArgMatches) -> Result<String> {
     }
 }
 
+
 /// Check to see if the user has passed in an ORIGIN param.  If not, check the RIOOS_ORIGIN env
 /// var. If not, check the /rioos/etc/cli.toml config if there is an origin. If that's empty too,
 /// then error.
-fn origin_param_or_env(m: &ArgMatches) -> Result<String> {
-    match m.value_of("ORIGIN") {
-        Some(o) => Ok(o.to_string()),
-        None => {
-            match henv::var(ORIGIN_ENVVAR) {
-                Ok(v) => Ok(v),
-                Err(_) => {
-                    let config = config::load()?;
-                    match config.origin {
-                        Some(v) => Ok(v),
-                        None => return Err(Error::ArgumentError("No origin specified")),
-                    }
-                }
-            }
-        }
-    }
-}
+// fn origin_param_or_env(m: &ArgMatches) -> Result<String> {
+//     match m.value_of("ORIGIN") {
+//         Some(o) => Ok(o.to_string()),
+//         None => {
+//             match henv::var(ORIGIN_ENVVAR) {
+//                 Ok(v) => Ok(v),
+//                 Err(_) => {
+//                     let config = config::load()?;
+//                     match config.origin {
+//                         Some(v) => Ok(v),
+//                         None => return Err(Error::ArgumentError("No origin specified")),
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
 
 /// Check to see if the user has passed in an API_SERVER_ENVVAR param.  If not, check the RIOOS_API_SERVER env
 /// var. If not, check the /rioos/etc/cli.toml config if there is an origin. If that's empty too,

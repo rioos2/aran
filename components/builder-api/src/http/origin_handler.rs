@@ -10,7 +10,7 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use protocol::originsrv::Origin;
-use protocol::net::{self, ErrCode};
+use protocol::constants::*;
 use router::Router;
 use protocol::servicesrv::ObjectMetaData;
 use protocol::asmsrv::{TypeMeta, IdGet};
@@ -18,7 +18,7 @@ use db::data_store::Broker;
 use db;
 use http::{service_account_handler, deployment_handler};
 use rio_net::util::errors::AranResult;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 define_event_log!();
@@ -46,13 +46,12 @@ pub fn origin_create(req: &mut Request) -> AranResult<Response> {
                 object_meta.set_labels(body.object_meta.labels);
                 object_meta.set_annotations(body.object_meta.annotations);
                 org_create.set_object_meta(object_meta);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                org_create.set_type_meta(type_meta);
+                org_create.set_type_meta(TypeMeta::new(ORIGIN));
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -62,9 +61,7 @@ pub fn origin_create(req: &mut Request) -> AranResult<Response> {
 
     match SessionDS::origin_create(&conn, &org_create) {
         Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -78,9 +75,7 @@ pub fn origin_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match SessionDS::origin_list(&conn) {
         Ok(Some(org_list)) => Ok(render_json(status::Ok, &org_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -102,9 +97,7 @@ pub fn origin_show(req: &mut Request) -> AranResult<Response> {
     org_get.set_id(org_name);
     match SessionDS::origin_show(&conn, &org_get) {
         Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",

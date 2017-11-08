@@ -7,7 +7,6 @@ use std::error;
 use std::fmt;
 use std::result;
 use db;
-use service::Error::*;
 
 
 #[derive(Debug)]
@@ -18,6 +17,7 @@ pub enum Error {
     AssemblyGet(postgres::error::Error),
     AssemblyFactoryCreate(postgres::error::Error),
     AssemblyFactoryGet(postgres::error::Error),
+    PlanCreate(postgres::error::Error),
     PlanGet(postgres::error::Error),
     PlanGetResponse(postgres::error::Error),
     AsmFactorySetStatus(postgres::error::Error),
@@ -37,6 +37,7 @@ impl fmt::Display for Error {
             Error::AssemblyGet(ref e) => format!("Database error getting assembly data, {}", e),
             Error::AssemblyFactoryCreate(ref e) => format!("Database error creating a new assembly factory, {}", e),
             Error::AssemblyFactoryGet(ref e) => format!("Database error getting assembly factory data, {}", e),
+            Error::PlanCreate(ref e) => format!("Database error creating a plan factory, {}", e),
             Error::PlanGet(ref e) => format!("Database error getting plan data, {}", e),
             Error::PlanGetResponse(ref e) => format!("Database error listing plan_factory data, {}", e),
             Error::AsmFactorySetStatus(ref e) => format!("Database error setting Assembly Factory status, {}", e),
@@ -57,6 +58,7 @@ impl error::Error for Error {
             Error::AssemblyFactoryCreate(ref err) => err.description(),
             Error::AssemblyFactoryGet(ref err) => err.description(),
             Error::PlanGet(ref err) => err.description(),
+            Error::PlanCreate(ref err) => err.description(),
             Error::PlanGetResponse(ref err) => err.description(),
             Error::AsmFactorySetStatus(ref err) => err.description(),
             Error::EndPointsGet(ref err) => err.description(),

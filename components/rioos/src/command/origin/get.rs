@@ -1,20 +1,14 @@
 pub use error::{Error, Result};
 
 use common::ui::UI;
-use rioos_core::env;
-
-use api_client::{self, Client};
-
+use api_client::Client;
 use {PRODUCT, VERSION};
-use config;
-
 use super::super::common::pretty_table;
 
 pub fn start(ui: &mut UI, url: &str, token: String, email: String, name: String) -> Result<()> {
-    ui.begin(&format!(
-        "Constructing a {} origin for you...",
-        name
-    ))?;
+    ui.begin(
+        &format!("Constructing a {} origin for you...", name),
+    )?;
     ui.br()?;
 
     let rio_client = Client::new(url, PRODUCT, VERSION, None)?;

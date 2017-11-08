@@ -2,15 +2,15 @@
 
 //! A collection of deployment [assembly, assembly_factory, for the HTTP server
 
-use bodyparser;
+// use bodyparser;
 use rio_core::event::*;
-use rio_net::http::controller::*;
+// use rio_net::http::controller::*;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::net::{self, ErrCode};
-use router::Router;
-use db::data_store::Broker;
+// use protocol::net::{self, ErrCode};
+// use router::Router;
+// use db::data_store::Broker;
 
 define_event_log!();
 

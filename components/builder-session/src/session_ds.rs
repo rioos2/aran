@@ -10,8 +10,6 @@ use db::data_store::DataStoreConn;
 use serde_json;
 use ldap::{LDAPClient, LDAPUser};
 use db;
-use std::collections::BTreeMap;
-use std::ops::Add;
 
 pub struct SessionDS;
 
@@ -46,7 +44,7 @@ impl SessionDS {
 
     pub fn find_or_create_account_via_session(datastore: &DataStoreConn, session_create: &sessionsrv::SessionCreate, is_admin: bool, is_service_access: bool, dbprocedure: &str) -> Result<sessionsrv::Session> {
         let conn = datastore.pool.get_shard(0)?;
-        let def_origin=format!("{}{}",&session_create.get_email(),"_env");
+        let def_origin = format!("{}{}", &session_create.get_email(), "_env");
         let query = "SELECT * FROM ".to_string() + dbprocedure + "($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)";
         let rows = conn.query(
             &query,
@@ -333,7 +331,7 @@ impl SessionDS {
                     })
                     .collect();
 
-                let import_failure = &imported.iter().filter(|f| (*f).is_err()).count();
+                let _import_failure = &imported.iter().filter(|f| (*f).is_err()).count();
 
                 let import_count =
                     format!(

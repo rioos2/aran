@@ -173,7 +173,7 @@ impl SumGroup for nodesrv::PromResponse {
                     values: vec![(local.timestamp() as f64, "0".to_string())],
                 },
             ];
-            let mut fms = instancevec
+            let fms = instancevec
                 .iter()
                 .flat_map(|s| s.values.clone())
                 .collect::<Vec<_>>();

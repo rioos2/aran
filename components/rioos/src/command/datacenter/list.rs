@@ -1,9 +1,8 @@
 pub use error::{Error, Result};
 
 use common::ui::UI;
-use api_client::{Client};
+use api_client::Client;
 use {PRODUCT, VERSION};
-
 use super::super::common::pretty_table;
 
 pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()> {
@@ -14,7 +13,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let results = rio_client.list_datacenters(&token, &email)?;
 
-    let title = row!["Id", "Name","Enabled", "Status", "Hrs Ago"];
+    let title = row!["Id", "Name", "Enabled", "Status", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 

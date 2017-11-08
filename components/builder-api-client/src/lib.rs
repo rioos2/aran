@@ -31,18 +31,17 @@ extern crate url;
 pub mod error;
 pub use error::{Error, Result};
 
-use std::io::{self, Read, Write};
+use std::io::{Read, Write};
 use std::path::Path;
 use std::string::ToString;
 
 use rioos_http::ApiClient;
 use hyper::client::{IntoUrl, RequestBuilder};
 use hyper::status::StatusCode;
-use hyper::header::{ContentType, Accept, Authorization, Bearer, Headers};
+use hyper::header::{ContentType, Accept, Authorization, Bearer};
 use protocol::net::NetError;
-use rand::{Rng, thread_rng};
-use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
-use protocol::{sessionsrv, asmsrv, nodesrv, plansrv, storagesrv, originsrv, jobsrv,netsrv};
+// use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
+use protocol::{sessionsrv, asmsrv, nodesrv, plansrv, storagesrv, originsrv, jobsrv, netsrv};
 use rioos_http::util::decoded_response;
 use rio_net::http::headers::*;
 
@@ -52,31 +51,6 @@ header! { (ETag, "ETag") => [String] }
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
 
-
-/// Custom conversion logic to allow `serde` to successfully
-/// round-trip `u64` datatypes through JSON serialization.
-///
-/// To use it, add `#[serde(with = "json_u64")]` to any `u64`-typed struct
-/// fields.
-mod json_u64 {
-    use serde::{self, Deserialize, Serializer, Deserializer};
-
-    pub fn serialize<S>(num: &u64, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = format!("{}", num);
-        serializer.serialize_str(&s)
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<u64, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        s.parse::<u64>().map_err(serde::de::Error::custom)
-    }
-}
 
 pub trait DisplayProgress: Write {
     fn size(&mut self, size: u64);
@@ -378,9 +352,9 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
                     value
                         .get_items()
                         .iter_mut()
-                        .map(|i| {
-                            vec![i.get_id(),i.get_group_name(),i.get_url(),i.get_origin(),i.get_created_at()]
-                        })
+                        .map(
+                            |i| vec![i.get_id(),i.get_group_name(),i.get_url(),i.get_origin(),i.get_created_at()],
+                        )
                         .collect(),
                 )
             }
@@ -414,9 +388,9 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
                     value
                         .get_items()
                         .iter_mut()
-                        .map(|i| {
-                            vec![i.get_id(),i.get_name(),i.get_enabled().to_string(),i.get_status().get_phase(),i.get_created_at()]
-                        })
+                        .map(
+                            |i| vec![i.get_id(),i.get_name(),i.get_enabled().to_string(),i.get_status().get_phase(),i.get_created_at()],
+                        )
                         .collect(),
                 )
             }
@@ -452,9 +426,9 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
                     value
                         .get_items()
                         .iter_mut()
-                        .map(|i| {
-                            vec![i.get_id(),i.get_object_meta().get_origin(),i.get_object_meta().get_uid(),i.get_created_at()]
-                        })
+                        .map(
+                            |i| vec![i.get_id(),i.get_object_meta().get_origin(),i.get_object_meta().get_uid(),i.get_created_at()],
+                        )
                         .collect(),
                 )
             }
@@ -488,9 +462,9 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
                     value
                         .get_items()
                         .iter_mut()
-                        .map(|i| {
-                            vec![i.get_id(),i.get_spec().get_node_id(),i.get_spec().get_target_ref(),i.get_status().get_phase(),i.get_created_at()]
-                        })
+                        .map(
+                            |i| vec![i.get_id(),i.get_spec().get_node_id(),i.get_spec().get_target_ref(),i.get_status().get_phase(),i.get_created_at()],
+                        )
                         .collect(),
                 )
             }
@@ -524,9 +498,9 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
                     value
                         .get_items()
                         .iter_mut()
-                        .map(|i| {
-                            vec![i.get_id(),i.get_name(),i.get_network_type(),i.get_subnet_ip(),i.get_netmask(),i.get_gateway(),i.get_status().get_phase(),i.get_created_at()]
-                        })
+                        .map(
+                            |i| vec![i.get_id(),i.get_name(),i.get_network_type(),i.get_subnet_ip(),i.get_netmask(),i.get_gateway(),i.get_status().get_phase(),i.get_created_at()],
+                        )
                         .collect(),
                 )
             }
@@ -539,7 +513,7 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
     }
 
 
-    pub fn origin_get(&self, token: &str, email: &str, name: &str) -> Result<Vec<Vec<String>>>  {
+    pub fn origin_get(&self, token: &str, email: &str, name: &str) -> Result<Vec<Vec<String>>> {
         debug!("Token {}", token);
         debug!("Email {}", email);
         let url = format!("/origins/{}",name);
@@ -557,7 +531,7 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
         };
 
         match decoded_response::<originsrv::Origin>(res).map_err(Error::HabitatHttpClient) {
-                Ok(result) => {
+            Ok(result) => {
                 let data = vec![vec![result.get_id(),result.get_object_meta().get_origin(),result.get_object_meta().get_uid(),result.get_created_at()]];
                 Ok(data)
             }
@@ -568,10 +542,10 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
         }
 
     }
-    pub fn datacenter_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>>  {
+    pub fn datacenter_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
         debug!("Token {}", token);
         debug!("Email {}", email);
-            let url = format!("/datacenters/{}",id);
+        let url = format!("/datacenters/{}",id);
 
         let res = self.add_authz(self.0.get(&url), token)
             .header(Accept::json())
@@ -587,7 +561,7 @@ pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesr
 
         match decoded_response::<storagesrv::DataCenter>(res).map_err(Error::HabitatHttpClient) {
 
-                Ok(dc) => {
+            Ok(dc) => {
                 let data = vec![vec![dc.get_id(),dc.get_name(),dc.get_enabled().to_string(),dc.get_status().get_phase(),dc.get_created_at()]];
                 Ok(data)
             }
@@ -825,19 +799,6 @@ fn err_from_response(mut response: hyper::client::Response) -> Error {
     }
 }
 
-fn origin_keys_path(origin: &str) -> String {
-    format!("depot/origins/{}/keys", origin)
-}
-
-fn origin_secret_keys_latest(origin: &str) -> String {
-    format!("depot/origins/{}/secret_keys/latest", origin)
-}
-
-
-fn package_search(term: &str) -> String {
-    let encoded_term = percent_encode(term.as_bytes(), PATH_SEGMENT_ENCODE_SET);
-    format!("depot/pkgs/search/{}", encoded_term)
-}
 
 
 #[cfg(test)]

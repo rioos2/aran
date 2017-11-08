@@ -1,14 +1,8 @@
 pub use error::{Error, Result};
 
 use common::ui::UI;
-use rioos_core::env;
-
-use api_client::{self, Client};
-
-use AUTH_TOKEN_ENVVAR;
+use api_client::Client;
 use {PRODUCT, VERSION};
-use config;
-
 use super::super::common::pretty_table;
 
 pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()> {

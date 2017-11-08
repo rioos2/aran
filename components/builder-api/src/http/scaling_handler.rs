@@ -6,7 +6,6 @@ use bodyparser;
 use persistent;
 use rio_core::event::*;
 use rio_net::http::controller::*;
-use rio_net::metrics::collector::CollectorScope;
 use rio_net::http::middleware::PrometheusCli;
 use ansi_term::Colour;
 
@@ -15,14 +14,13 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
-use protocol::asmsrv::{IdGet};
-use protocol::net::{self, ErrCode};
+use protocol::asmsrv::IdGet;
 use router::Router;
 use db::data_store::Broker;
 use db;
 use common::ui;
 use rio_net::util::errors::AranResult;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 
@@ -176,7 +174,9 @@ pub fn hs_create(req: &mut Request) -> AranResult<Response> {
                 hs_create.set_status(status);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -191,16 +191,14 @@ pub fn hs_create(req: &mut Request) -> AranResult<Response> {
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
-}
+    }
 }
 #[allow(unused_variables)]
 pub fn hs_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ScalingDS::hs_list(&conn) {
         Ok(Some(hs_list)) => Ok(render_json(status::Ok, &hs_list)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
@@ -236,9 +234,7 @@ pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> AranResult<Respon
                 &hs_get.get_id()
             )))
         }
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
@@ -258,9 +254,7 @@ pub fn hs_metrics(req: &mut Request) -> AranResult<Response> {
     };
     match ScalingDS::hs_metrics(&promcli, &af_id, &source) {
         Ok(Some(hs_metrics)) => Ok(render_json(status::Ok, &hs_metrics)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
@@ -291,7 +285,9 @@ pub fn hs_status_update(req: &mut Request) -> AranResult<Response> {
                 hs_update.set_status(status);
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -308,8 +304,8 @@ pub fn hs_status_update(req: &mut Request) -> AranResult<Response> {
                 Error::Db(db::error::Error::RecordsNotFound),
                 &hs_update.get_id()
             )))
+        }
     }
-}
 }
 
 pub fn hs_update(req: &mut Request) -> AranResult<Response> {
@@ -392,7 +388,9 @@ pub fn hs_update(req: &mut Request) -> AranResult<Response> {
 
             }
             Err(err) => {
-                return Err(malformed_body(&format!("{}, {:?}\n", err.detail, err.cause),));
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
             }
             _ => return Err(malformed_body(&BODYNOTFOUND)),
         }
@@ -402,9 +400,7 @@ pub fn hs_update(req: &mut Request) -> AranResult<Response> {
 
     match ScalingDS::hs_update(&conn, &hs_update) {
         Ok(Some(hs)) => Ok(render_json(status::Ok, &hs)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",

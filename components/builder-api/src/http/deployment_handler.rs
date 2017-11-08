@@ -7,17 +7,19 @@ use ansi_term::Colour;
 use rio_core::event::*;
 use rio_net::http::controller::*;
 use deploy::deployment_ds::DeploymentDS;
+use deploy::replicas::Replicas;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, ObjectMeta, OwnerReferences, TypeMeta};
-use protocol::net::{self, ErrCode};
+use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, TypeMeta};
+use protocol::plansrv::{Plan, Service};
+use protocol::constants::*;
 use router::Router;
 use db::data_store::Broker;
 use std::collections::BTreeMap;
 use common::ui;
 use db;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
@@ -100,7 +102,7 @@ struct AssemblyFacCreateReq {
     tags: Vec<String>,
     origin: String,
     properties: PropReq,
-    replicas: u64,
+    replicas: u32,
     plan: String,
     external_management_resource: Vec<String>,
     component_collection: BTreeMap<String, String>,
@@ -132,6 +134,25 @@ pub struct OpsSettingsReq {
     restartpolicy: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct PlanCreateReq {
+    group_name: String,
+    url: String,
+    description: String,
+    tags: Vec<String>,
+    origin: String,
+    artifacts: Vec<String>,
+    services: Vec<ServiceReq>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct ServiceReq {
+    name: String,
+    description: String,
+    href: String,
+    characteristics: BTreeMap<String, String>,
+}
+
 
 pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
 
@@ -156,69 +177,17 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
                 assembly_create.set_selector(body.selector);
                 assembly_create.set_parent_id(body.parent_id);
                 assembly_create.set_origin(body.origin);
-                assembly_create.set_node(body.node);
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-
-                let mut condition_collection = Vec::new();
-
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-
-                let mut object_meta = ObjectMeta::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-
-                let mut owner_collection = Vec::new();
-
-                for data in body.object_meta.owner_references {
-
-                    let mut owner = OwnerReferences::new();
-                    owner.set_kind(data.kind);
-                    owner.set_api_version(data.api_version);
-                    owner.set_name(data.name);
-                    owner.set_uid(data.uid);
-                    owner.set_block_owner_deletion(data.block_owner_deletion);
-
-                    owner_collection.push(owner);
-                }
-                object_meta.set_owner_references(owner_collection);
-                assembly_create.set_object_meta(object_meta);
-                assembly_create.set_status(status);
-
-                let mut volume_collection = Vec::new();
-
-                for volume in body.volumes {
-                    let mut vol = Volume::new();
-                    vol.set_id(volume.id);
-                    vol.set_target(volume.target);
-                    vol.set_volume_type(volume.volume_type);
-                    volume_collection.push(vol);
-                }
-
-                assembly_create.set_volumes(volume_collection);
+                assembly_create.set_status(Status::with_conditions(
+                    INITIALIZING,
+                    NEW_REPLICA_INITALIZING,
+                    "",
+                    INITIAL_CONDITIONS
+                        .iter()
+                        .map(|x| Condition::with_type("", "", "False", "", "", x))
+                        .collect::<Vec<_>>(),
+                ));
                 assembly_create.set_urls(body.urls);
-                assembly_create.set_instance_id(body.instance_id);
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                assembly_create.set_type_meta(type_meta);
+                assembly_create.set_type_meta(TypeMeta::new(ASSEMBLY));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -377,17 +346,13 @@ pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
                 assembly_create.set_parent_id(body.parent_id);
                 assembly_create.set_node(body.node);
                 assembly_create.set_urls(body.urls);
-                let mut volume_collection = Vec::new();
-
-                for volume in body.volumes {
-                    let mut vol = Volume::new();
-                    vol.set_id(volume.id);
-                    vol.set_target(volume.target);
-                    vol.set_volume_type(volume.volume_type);
-                    volume_collection.push(vol);
-                }
-
-                assembly_create.set_volumes(volume_collection);
+                assembly_create.set_volumes(
+                    body.volumes
+                        .iter()
+                        .map(|x| Volume::with_volumes(&x.id, &x.target, &x.volume_type))
+                        .collect::<Vec<_>>(),
+                );
+                assembly_create.set_type_meta(TypeMeta::new(ASSEMBLY));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -427,23 +392,25 @@ pub fn assembly_status_update(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-                let mut condition_collection = Vec::new();
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                assembly.set_status(status);
+                assembly.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -490,66 +457,39 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
                 assembly_factory_create.set_external_management_resource(body.external_management_resource);
                 assembly_factory_create.set_plan(body.plan);
                 assembly_factory_create.set_component_collection(body.component_collection);
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-                let mut condition_collection = Vec::new();
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                assembly_factory_create.set_status(status);
-                let mut opssettings = OpsSettings::new();
-                opssettings.set_nodeselector(body.opssettings.nodeselector);
-                opssettings.set_priority(body.opssettings.priority);
-                opssettings.set_nodename(body.opssettings.nodename);
-                opssettings.set_restartpolicy(body.opssettings.restartpolicy);
-                assembly_factory_create.set_opssettings(opssettings);
+                assembly_factory_create.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
                 assembly_factory_create.set_replicas(body.replicas);
-                let mut properties = Properties::new();
-                properties.set_cloudsetting(body.properties.cloudsetting);
-                properties.set_domain(body.properties.domain);
-                properties.set_region(body.properties.region);
-                properties.set_storage_type(body.properties.storage_type);
-                assembly_factory_create.set_properties(properties);
-
-                let mut object_meta = ObjectMeta::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-
-                let mut owner_collection = Vec::new();
-
-                for data in body.object_meta.owner_references {
-
-                    let mut owner = OwnerReferences::new();
-                    owner.set_kind(data.kind);
-                    owner.set_api_version(data.api_version);
-                    owner.set_name(data.name);
-                    owner.set_uid(data.uid);
-                    owner.set_block_owner_deletion(data.block_owner_deletion);
-
-                    owner_collection.push(owner);
-                }
-                object_meta.set_owner_references(owner_collection);
-                assembly_factory_create.set_object_meta(object_meta);
-
-                let mut type_meta = TypeMeta::new();
-                type_meta.set_kind(body.type_meta.kind);
-                type_meta.set_api_version(body.type_meta.api_version);
-                assembly_factory_create.set_type_meta(type_meta);
+                assembly_factory_create.set_opssettings(OpsSettings::new(
+                    &body.opssettings.nodeselector,
+                    &body.opssettings.priority,
+                    &body.opssettings.nodename,
+                    &body.opssettings.restartpolicy,
+                ));
+                assembly_factory_create.set_properties(Properties::new(
+                    &body.properties.cloudsetting,
+                    &body.properties.domain,
+                    &body.properties.region,
+                    &body.properties.storage_type,
+                ));
+                assembly_factory_create.set_type_meta(TypeMeta::new(ASSEMBLYFACTORY));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -567,25 +507,21 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
     );
 
     let conn = Broker::connect().unwrap();
-    match DeploymentDS::assembly_factory_create(&conn, &assembly_factory_create) {
-        Ok(Some(assemblyfac)) => Ok(render_json(status::Ok, &assemblyfac)),
-        Err(err) => Err(internal_error(&format!("{}", err))),
+
+    match Replicas::new(
+        &conn,
+        0,
+        assembly_factory_create.get_replicas(),
+        &assembly_factory_create,
+    ).new_desired() {
+        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(
                 &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
             ))
         }
     }
-
-    // match Replicas::new(&conn, &assembly_factory_create).new_desired() {
-    //     Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
-    //     Err(err) => Err(internal_error(&format!("{}\n", err))),
-    //     Ok(None) => {
-    //         Err(not_found_error(
-    //             &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-    //         ))
-    //     }
-    // }
 }
 
 
@@ -629,23 +565,25 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
     {
         match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-                status.set_phase(body.status.phase);
-                status.set_message(body.status.message);
-                status.set_reason(body.status.reason);
-                let mut condition_collection = Vec::new();
-                for data in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_message(data.message);
-                    condition.set_reason(data.reason);
-                    condition.set_status(data.status);
-                    condition.set_last_transition_time(data.last_transition_time);
-                    condition.set_last_probe_time(data.last_probe_time);
-                    condition.set_condition_type(data.condition_type);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-                assembly_factory.set_status(status);
+                assembly_factory.set_status(Status::with_conditions(
+                    &body.status.phase,
+                    &body.status.message,
+                    &body.status.reason,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -750,7 +688,50 @@ pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
 }
 
 
+pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
+    let mut plan_create = Plan::new();
+    {
+        match req.get::<bodyparser::Struct<PlanCreateReq>>() {
+            Ok(Some(body)) => {
+                if body.group_name.len() <= 0 {
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "group_name")));
+                }
+                plan_create.set_group_name(body.group_name);
+                plan_create.set_url(body.url);
+                plan_create.set_description(body.description);
+                plan_create.set_tags(body.tags);
+                plan_create.set_origin(body.origin);
+                plan_create.set_artifacts(body.artifacts);
+                plan_create.set_services(
+                    body.services
+                        .iter()
+                        .map(|x| {
+                            Service::new(&x.name, &x.description, &x.href, x.characteristics.clone())
+                        })
+                        .collect::<Vec<_>>(),
+                );
+            }
+            Err(err) => {
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
+            }
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
+        }
+    }
 
+    let conn = Broker::connect().unwrap();
+
+    match DeploymentDS::plan_create(&conn, &plan_create) {
+        Ok(Some(plan)) => Ok(render_json(status::Ok, &plan)),
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
+    }
+}
 
 #[allow(unused_variables)]
 pub fn plan_list(req: &mut Request) -> AranResult<Response> {

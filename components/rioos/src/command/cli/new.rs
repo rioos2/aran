@@ -5,7 +5,8 @@ pub use error::{Error, Result};
 
 use common::ui::UI;
 
-use api_client::{Client};
+
+use api_client::Client;
 use {PRODUCT, VERSION};
 use config;
 

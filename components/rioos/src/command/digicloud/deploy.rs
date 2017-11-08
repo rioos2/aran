@@ -5,7 +5,8 @@
 use std::env;
 use std::fs::create_dir_all;
 use std::fs::{File, canonicalize};
-use std::io::{Write};
+
+use std::io::Write;
 use std::path::Path;
 use std::collections::HashMap;
 
@@ -16,7 +17,7 @@ use error::Result;
 
 const DEFAULT_RIOBLU_TEMPLATE: &'static str = ""; //include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rioblu.yaml"));
 
-pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<()> {
+pub fn start(ui: &mut UI, _token: String, maybe_name: Option<String>) -> Result<()> {
     ui.begin("Constructing a cozy digitalcloud for you...")?;
     ui.br()?;
 
@@ -44,7 +45,7 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
     let handlebars = Handlebars::new();
     let mut data = HashMap::new();
     let location = "test".to_string();
-    let origin  = "default".to_string();
+    let origin = "default".to_string();
     data.insert("location".to_string(), location);
     data.insert("origin".to_string(), origin);
 
@@ -56,7 +57,7 @@ pub fn start(ui: &mut UI, token: String, maybe_name: Option<String>) -> Result<(
         }
     }
 
-    let rendered_blu_yaml = handlebars.template_render(DEFAULT_RIOBLU_TEMPLATE, &data)?;
+    let _rendered_blu_yaml = handlebars.template_render(DEFAULT_RIOBLU_TEMPLATE, &data)?;
     let rendered_plan = "";
     create_with_template(ui, &format!("{}/rioblu.yaml", root), &rendered_plan)?;
 

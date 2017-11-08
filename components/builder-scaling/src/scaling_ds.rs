@@ -4,14 +4,13 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{scalesrv, asmsrv, nodesrv,DEFAULT_API_VERSION};
+use protocol::{scalesrv, asmsrv, nodesrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
-const METRIC_LBL_RIOOS_SOURCENAME: &'static str = "rioos_source";
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 const HORIZONTALPODAUTOSCALAR: &'static str = "HorizontalPodAutoscaler";
 
@@ -39,11 +38,11 @@ impl ScalingDS {
                 &(status_str as String),
             ],
         ).map_err(Error::HSCreate)?;
-if rows.len() > 0 {
-        let hs = row_to_hs(&rows.get(0))?;
-        return Ok(Some(hs));
-    }
-    Ok(None)
+        if rows.len() > 0 {
+            let hs = row_to_hs(&rows.get(0))?;
+            return Ok(Some(hs));
+        }
+        Ok(None)
     }
 
     pub fn hs_list(datastore: &DataStoreConn) -> Result<Option<scalesrv::HorizontalScalingGetResponse>> {
@@ -56,16 +55,14 @@ if rows.len() > 0 {
         let mut response = scalesrv::HorizontalScalingGetResponse::new();
 
         let mut hs_collection = Vec::new();
-    if rows.len() > 0 {
-        for row in rows {
-            hs_collection.push(row_to_hs(&row)?)
+        if rows.len() > 0 {
+            for row in rows {
+                hs_collection.push(row_to_hs(&row)?)
+            }
+            response.set_hs_collection(hs_collection);
+            return Ok(Some(response));
         }
-        response.set_hs_collection(
-            hs_collection,
-        );
-        return Ok(Some(response));
-    }
-    Ok(None)
+        Ok(None)
     }
     pub fn horizontal_scaling_list_by_origin(datastore: &DataStoreConn, hs_get: &asmsrv::IdGet) -> Result<Option<scalesrv::HorizontalScalingGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
@@ -82,9 +79,7 @@ if rows.len() > 0 {
             for row in rows {
                 hs_collection.push(row_to_hs(&row)?)
             }
-            response.set_hs_collection(
-                hs_collection,
-            );
+            response.set_hs_collection(hs_collection);
             return Ok(Some(response));
         }
         Ok(None)
@@ -123,11 +118,11 @@ if rows.len() > 0 {
                 &(spec_str as String),
             ],
         ).map_err(Error::HSUpdate)?;
-            if rows.len() > 0 {
-        let hscale = row_to_hs(&rows.get(0))?;
-        return Ok(Some(hscale));
-    }
-    Ok(None)
+        if rows.len() > 0 {
+            let hscale = row_to_hs(&rows.get(0))?;
+            return Ok(Some(hscale));
+        }
+        Ok(None)
     }
 
     pub fn hs_metrics(client: &PrometheusClient, af_id: &str, metric_source_name: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {
@@ -172,45 +167,27 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     let mut hs = scalesrv::HorizontalScaling::new();
 
     let id: i64 = row.get("id");
-    let name: String = row.get("name");
-    let description: String = row.get("description");
-    let tags: Vec<String> = row.get("tags");
     let origin: i64 = row.get("origin_id");
-    let scale_type: String = row.get("scale_type");
-    let representation_skew: String = row.get("representation_skew");
-    let state: String = row.get("state");
-    let metadata: Vec<String> = row.get("metadata");
     let status: String = row.get("status");
     let spec: String = row.get("spec");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
-
     hs.set_id(id.to_string() as String);
-    hs.set_name(name as String);
-    hs.set_description(description as String);
-    hs.set_tags(tags as Vec<String>);
+    hs.set_name(row.get("name"));
+    hs.set_description(row.get("description"));
+    hs.set_tags(row.get("tags"));
     hs.set_origin(origin.to_string());
-    hs.set_scale_type(scale_type as String);
-    hs.set_representation_skew(representation_skew as String);
-    hs.set_state(state as String);
-    hs.set_metadata(metadata as Vec<String>);
-    let spec_obj: scalesrv::Spec = serde_json::from_str(&spec).unwrap();
-    let status_obj: scalesrv::Status = serde_json::from_str(&status).unwrap();
-    hs.set_spec(spec_obj);
-    hs.set_status(status_obj);
+    hs.set_scale_type(row.get("scale_type"));
+    hs.set_representation_skew(row.get("representation_skew"));
+    hs.set_state(row.get("state"));
+    hs.set_metadata(row.get("metadata"));
+    hs.set_spec(serde_json::from_str(&spec).unwrap());
+    hs.set_status(serde_json::from_str(&status).unwrap());
 
     let mut obj_meta = asmsrv::ObjectMeta::new();
-    let mut owner_collection = Vec::new();
-    let owner = asmsrv::OwnerReferences::new();
-    owner_collection.push(owner);
     obj_meta.set_name(id.to_string());
-    obj_meta.set_owner_references(owner_collection);
     hs.set_object_meta(obj_meta);
-    let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind(HORIZONTALPODAUTOSCALAR.to_string());
-    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
-    hs.set_type_meta(type_meta);
-
+    hs.set_type_meta(asmsrv::TypeMeta::new(HORIZONTALPODAUTOSCALAR));
     hs.set_created_at(created_at.to_rfc3339());
     Ok(hs)
 }

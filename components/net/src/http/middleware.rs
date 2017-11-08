@@ -8,8 +8,9 @@ use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
 use iron::status::Status;
+use iron::status;
 use iron::typemap::Key;
-use router::Router;
+use router::{Router, NoRoute};
 
 
 use unicase::UniCase;
@@ -19,7 +20,6 @@ use protocol::originsrv::*;
 use protocol::asmsrv::IdGet;
 use protocol::net::{self, ErrCode};
 use ansi_term::Colour;
-use protocol::net::err;
 
 use super::rendering::*;
 use super::super::auth::default::PasswordAuthClient;
@@ -30,7 +30,6 @@ use config;
 use session::privilege::FeatureFlags;
 use super::headers::*;
 use super::token_target::*;
-use std::error::Error;
 use db::data_store::{Broker, DataStoreConn};
 use session::session_ds::SessionDS;
 use common::ui;
@@ -325,7 +324,7 @@ impl BeforeMiddleware for Authenticated {
                                         };
                                         if org_name.len() > 0 {
                                             match self.check_origin(&broker, org_name.to_owned()) {
-                                                Ok(origin) => data.to_owned(),
+                                                Ok(_) => data.to_owned(),
                                                 Err(_) => {
                                                     let err = net::err(
                                                         ErrCode::ACCESS_DENIED,
@@ -375,6 +374,21 @@ impl BeforeMiddleware for Authenticated {
 }
 
 
+pub struct Custom404;
+
+impl AfterMiddleware for Custom404 {
+    fn catch(&self, _: &mut Request, err: IronError) -> IronResult<Response> {
+        println!("Hitting custom 404 middleware");
+
+        if err.error.is::<NoRoute>() {
+            Ok(Response::with((status::NotFound, "Custom 404 response")))
+        } else {
+            Err(err)
+        }
+    }
+}
+
+
 pub struct Cors;
 
 impl AfterMiddleware for Cors {
@@ -404,6 +418,7 @@ impl AfterMiddleware for Cors {
         Ok(res)
     }
 }
+
 
 pub fn session_create(conn: &DataStoreConn, request: &SessionCreate) -> AranResult<Session> {
     //wrong name, use another fascade method session_create

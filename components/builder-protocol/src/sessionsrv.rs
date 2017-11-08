@@ -1,9 +1,8 @@
 // Copyright (c) 2017 RioCorp Inc.
 use serde::{Serialize, Serializer};
 use std::result;
-use DEFAULT_API_VERSION;
-pub const SAMLLIST: &'static str = "SamlProviderList";
-pub const OPENIDLIST: &'static str = "OidcProviderList";
+use constants::*;
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize)]
 pub struct SessionCreate {
     id: String,

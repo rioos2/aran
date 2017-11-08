@@ -4,15 +4,13 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{nodesrv, asmsrv,DEFAULT_API_VERSION};
+use protocol::{nodesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
-pub const NODE: &'static str = "Node";
-
-const METRIC_NODE: &'static str = "node_cpu";
+use protocol::constants::*;
 
 pub struct NodeDS;
 
@@ -28,11 +26,11 @@ impl NodeDS {
         ).map_err(Error::NodeCreate)?;
 
         if rows.len() > 0 {
-        let node = row_to_node(&rows.get(0))?;
+            let node = row_to_node(&rows.get(0))?;
 
-        return Ok(Some(node));
-    }
-    Ok(None)
+            return Ok(Some(node));
+        }
+        Ok(None)
     }
 
     pub fn node_get(datastore: &DataStoreConn, node_get: &asmsrv::IdGet) -> Result<Option<nodesrv::Node>> {
@@ -62,14 +60,14 @@ impl NodeDS {
         let mut response = nodesrv::NodeGetResponse::new();
 
         let mut node_collection = Vec::new();
-if rows.len() > 0 {
-        for row in rows {
-            node_collection.push(row_to_node(&row)?)
+        if rows.len() > 0 {
+            for row in rows {
+                node_collection.push(row_to_node(&row)?)
+            }
+            response.set_node_collection(node_collection);
+            return Ok(Some(response));
         }
-        response.set_node_collection(node_collection);
-        return Ok(Some(response));
-    }
-    Ok(None)
+        Ok(None)
     }
 
     pub fn node_status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
@@ -89,16 +87,16 @@ if rows.len() > 0 {
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
-        let NODES_METRIC_SCOPE: Vec<String> = vec![
+        let nodes_metric_scope: Vec<String> = vec![
             "cpu_total".to_string(),
             "ram_total".to_string(),
             "disk_total".to_string(),
         ];
-        let NODES_GROUP_SCOPE: Vec<String> = vec!["cpu_total".to_string(), "group=nodes".to_string()];
+        let nodes_group_scope: Vec<String> = vec!["group=nodes".to_string()];
 
         let scope = CollectorScope {
-            metric_names: NODES_METRIC_SCOPE,
-            labels: NODES_GROUP_SCOPE,
+            metric_names: nodes_metric_scope,
+            labels: nodes_group_scope,
             last_x_minutes: None,
         };
 
@@ -106,33 +104,6 @@ if rows.len() > 0 {
         let mut health_checker = Collector::new(client, scope);
 
         let metric_response = health_checker.overall().unwrap();
-
-        let label_name = format!("{}", METRIC_NODE);
-        let metric_scope = vec![];
-        let group_scope: Vec<String> = vec![label_name.to_string()];
-
-        let scope_data = CollectorScope {
-            metric_names: metric_scope,
-            labels: group_scope,
-            last_x_minutes: None,
-        };
-
-        let mut os_checker = Collector::new(client, scope_data);
-        let os_response = os_checker.metric_by().unwrap();
-
-        let mut metrics = nodesrv::Osusages::new();
-
-        let all_items = os_response
-            .into_iter()
-            .map(|p| {
-                let p1: nodesrv::Osusages = p.into();
-                p1.get_items()
-            })
-            .collect::<Vec<_>>();
-
-        metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
-        metrics.set_title("Scale metrics ".to_owned());
-
 
         let mut coun_collection = Vec::new();
         for data in metric_response.0 {
@@ -153,10 +124,36 @@ if rows.len() > 0 {
         statistic.set_title("Statistics".to_string());
         statistic.set_nodes(lstatistics);
 
+        let group_scope = vec!["node_cpu".to_string()];
+        let label_name = format!("{}", METRIC_NODE);
+        let metric_scope: Vec<String> = vec![label_name.to_string()];
+
+        let scope_data = CollectorScope {
+            metric_names: metric_scope,
+            labels: group_scope,
+            last_x_minutes: Some(METRIC_DEFAULT_LAST_X_MINUTE.to_string()),
+        };
+
+        let mut os_checker = Collector::new(client, scope_data);
+        let os_response = os_checker.metric_by().unwrap();
+
+        let mut metrics = nodesrv::Osusages::new();
+
+        let all_items = os_response
+            .into_iter()
+            .map(|p| {
+                let p1: nodesrv::Osusages = p.into();
+                p1.get_items()
+            })
+            .collect::<Vec<_>>();
+
+        metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
+        metrics.set_title("Scale metrics ".to_owned());
+
         let mut res = nodesrv::HealthzAllGet::new();
         res.set_title("Command center operations".to_string());
-        res.set_gauges(guague);
-        res.set_statistics(statistic);
+        // res.set_gauges(guague);
+        // res.set_statistics(statistic);
         res.set_osusages(metrics);
 
         let response: nodesrv::HealthzAllGetResponse = res.into();
@@ -184,10 +181,8 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<nodesrv::Node> {
     obj_meta.set_name(id.to_string());
     obj_meta.set_owner_references(owner_collection);
     node.set_object_meta(obj_meta);
-    let mut type_meta = asmsrv::TypeMeta::new();
-    type_meta.set_kind(NODE.to_string());
-    type_meta.set_api_version(DEFAULT_API_VERSION.to_string());
-    node.set_type_meta(type_meta);
+    node.set_type_meta(asmsrv::TypeMeta::new(NODE));
+
     node.set_created_at(created_at.to_rfc3339());
     Ok(node)
 }

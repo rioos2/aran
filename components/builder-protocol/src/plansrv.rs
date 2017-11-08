@@ -1,8 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 use std::collections::BTreeMap;
-use DEFAULT_API_VERSION;
+use constants::*;
 
-pub const PLANLIST: &'static str = "PlanList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Plan {
     id: String,
@@ -87,7 +86,6 @@ impl Plan {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -99,39 +97,14 @@ pub struct Service {
 }
 
 impl Service {
-    pub fn new() -> Service {
-        ::std::default::Default::default()
+    pub fn new(name: &str, description: &str, href: &str, characteristics: BTreeMap<String, String>) -> Service {
+        Service {
+            name: name.to_string(),
+            description: description.to_string(),
+            href: href.to_string(),
+            characteristics: characteristics,
+        }
     }
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-    pub fn get_name(&self) -> ::std::string::String {
-        self.name.clone()
-    }
-
-    pub fn set_description(&mut self, v: ::std::string::String) {
-        self.description = v;
-    }
-    pub fn get_description(&self) -> ::std::string::String {
-        self.description.clone()
-    }
-
-    pub fn set_href(&mut self, v: ::std::string::String) {
-        self.href = v;
-    }
-    pub fn get_href(&self) -> ::std::string::String {
-        self.href.clone()
-    }
-
-
-    pub fn set_characteristics(&mut self, v: BTreeMap<String, String>) {
-        self.characteristics = v;
-    }
-
-    pub fn get_characteristics(&self) -> &BTreeMap<String, String> {
-        &self.characteristics
-    }
-
 }
 
 

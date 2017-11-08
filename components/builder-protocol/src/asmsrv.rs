@@ -3,10 +3,8 @@
 use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
-use DEFAULT_API_VERSION;
+use constants::*;
 
-pub const ASSEMBLYLIST: &'static str = "AssemblyList";
-pub const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     id: String,
@@ -183,23 +181,16 @@ pub struct Status {
 }
 
 impl Status {
-    pub fn new() -> Status {
-        ::std::default::Default::default()
-    }
-    pub fn set_phase(&mut self, v: ::std::string::String) {
-        self.phase = v;
-    }
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
-    pub fn set_message(&mut self, v: ::std::string::String) {
-        self.message = v;
-    }
-    pub fn set_reason(&mut self, v: ::std::string::String) {
-        self.reason = v;
-    }
-    pub fn set_conditions(&mut self, v: Vec<Condition>) {
-        self.conditions = v;
+    pub fn with_conditions(phase: &str, message: &str, reason: &str, conditions: Vec<Condition>) -> Status {
+        Status {
+            phase: phase.to_string(),
+            message: message.to_string(),
+            conditions: conditions,
+            reason: reason.to_string(),
+        }
     }
 }
 
@@ -211,17 +202,12 @@ pub struct Volume {
 }
 
 impl Volume {
-    pub fn new() -> Volume {
-        ::std::default::Default::default()
-    }
-    pub fn set_target(&mut self, v: ::std::string::String) {
-        self.target = v;
-    }
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-    pub fn set_volume_type(&mut self, v: ::std::string::String) {
-        self.volume_type = v;
+    pub fn with_volumes(id: &str, target: &str, volume_type: &str) -> Volume {
+        Volume {
+            id: id.to_string(),
+            target: target.to_string(),
+            volume_type: volume_type.to_string(),
+        }
     }
 }
 
@@ -236,26 +222,15 @@ pub struct Condition {
 }
 
 impl Condition {
-    pub fn new() -> Condition {
-        ::std::default::Default::default()
-    }
-    pub fn set_message(&mut self, v: ::std::string::String) {
-        self.message = v;
-    }
-    pub fn set_reason(&mut self, v: ::std::string::String) {
-        self.reason = v;
-    }
-    pub fn set_status(&mut self, v: ::std::string::String) {
-        self.status = v;
-    }
-    pub fn set_last_transition_time(&mut self, v: ::std::string::String) {
-        self.last_transition_time = v;
-    }
-    pub fn set_last_probe_time(&mut self, v: ::std::string::String) {
-        self.last_probe_time = v;
-    }
-    pub fn set_condition_type(&mut self, v: ::std::string::String) {
-        self.condition_type = v;
+    pub fn with_type(message: &str, reason: &str, status: &str, last_transition_time: &str, last_probe_time: &str, condition_type: &str) -> Condition {
+        Condition {
+            condition_type: condition_type.to_string(),
+            status: status.to_string(),
+            reason: reason.to_string(),
+            last_transition_time: last_transition_time.to_string(),
+            message: message.to_string(),
+            last_probe_time: last_probe_time.to_string(),
+        }
     }
 }
 
@@ -321,7 +296,7 @@ pub struct AssemblyFactory {
     description: String,
     tags: Vec<String>,
     origin: String,
-    replicas: u64,
+    replicas: u32,
     properties: Properties,
     plan: String,
     plan_data: Option<plansrv::Plan>,
@@ -345,11 +320,11 @@ impl AssemblyFactory {
         self.id.clone()
     }
 
-    pub fn set_replicas(&mut self, v: u64) {
+    pub fn set_replicas(&mut self, v: u32) {
         self.replicas = v;
     }
 
-    pub fn get_replicas(&self) -> u64 {
+    pub fn get_replicas(&self) -> u32 {
         self.replicas
     }
 
@@ -561,24 +536,17 @@ pub struct Properties {
 }
 
 impl Properties {
-    pub fn new() -> Properties {
-        ::std::default::Default::default()
-    }
-    pub fn set_domain(&mut self, v: ::std::string::String) {
-        self.domain = v;
-    }
-    pub fn set_cloudsetting(&mut self, v: ::std::string::String) {
-        self.cloudsetting = v;
-    }
-    pub fn set_region(&mut self, v: ::std::string::String) {
-        self.region = v;
-    }
-    pub fn set_storage_type(&mut self, v: ::std::string::String) {
-        self.storage_type = v;
+    pub fn get_region(&self) -> ::std::string::String {
+        self.region.clone()
     }
 
-    pub fn get_region(&mut self) -> String {
-        self.region.clone().to_string()
+    pub fn new(domain: &str, cloudsetting: &str, region: &str, storage_type: &str) -> Properties {
+        Properties {
+            domain: domain.to_string(),
+            cloudsetting: cloudsetting.to_string(),
+            region: region.to_string(),
+            storage_type: storage_type.to_string(),
+        }
     }
 }
 
@@ -589,14 +557,11 @@ pub struct TypeMeta {
 }
 
 impl TypeMeta {
-    pub fn new() -> TypeMeta {
-        ::std::default::Default::default()
-    }
-    pub fn set_kind(&mut self, v: ::std::string::String) {
-        self.kind = v;
-    }
-    pub fn set_api_version(&mut self, v: ::std::string::String) {
-        self.api_version = v;
+    pub fn new(kind: &str) -> TypeMeta {
+        TypeMeta {
+            kind: kind.to_string(),
+            api_version: DEFAULT_API_VERSION.to_string(),
+        }
     }
 }
 
@@ -609,20 +574,13 @@ pub struct OpsSettings {
 }
 
 impl OpsSettings {
-    pub fn new() -> OpsSettings {
-        ::std::default::Default::default()
-    }
-    pub fn set_nodeselector(&mut self, v: ::std::string::String) {
-        self.nodeselector = v;
-    }
-    pub fn set_priority(&mut self, v: ::std::string::String) {
-        self.priority = v;
-    }
-    pub fn set_nodename(&mut self, v: ::std::string::String) {
-        self.nodename = v;
-    }
-    pub fn set_restartpolicy(&mut self, v: ::std::string::String) {
-        self.restartpolicy = v;
+    pub fn new(nodeselector: &str, priority: &str, nodename: &str, restartpolicy: &str) -> OpsSettings {
+        OpsSettings {
+            nodeselector: nodeselector.to_string(),
+            priority: priority.to_string(),
+            nodename: nodename.to_string(),
+            restartpolicy: restartpolicy.to_string(),
+        }
     }
 }
 

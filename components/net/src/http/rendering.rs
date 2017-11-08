@@ -44,23 +44,3 @@ pub fn render_json<T: Serialize>(status: status::Status, response: &T) -> Respon
 pub fn render_net_error(err: &NetError) -> Response {
     render_json(net_err_to_http(err.get_code()), err)
 }
-
-/*
-// Status is a return value for calls that don't return other objects.
-type Status struct {
-	TypeMeta `json:",inline"`
-	// Standard list metadata.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
-	// +optional
-	ListMeta `json:"metadata,omitempty"`
-
-
-	// Extended data associated with the reason.  Each reason may define its
-	// own extended details. This field is optional and the data returned
-	// is not guaranteed to conform to any schema except that defined by
-	// the reason type.
-	// +optional
-	Details *StatusDetails `json:"details,omitempty"`
-
-}
-*/
