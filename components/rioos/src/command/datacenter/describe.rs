@@ -2,10 +2,7 @@ pub use error::{Error, Result};
 
 use common::ui::UI;
 use api_client::Client;
-
 use {PRODUCT, VERSION};
-
-
 use super::super::common::pretty_table;
 
 pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -> Result<()> {
@@ -26,8 +23,6 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
     )?;
     ui.para(&format!("Enabled : {}", result.get_enabled()))?;
     ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
-    let net = result.get_networks();
-    let node = result.get_nodes();
 
     let storageconn = rio_client.get_storageconnector_by_id(
         &token,
@@ -68,8 +63,8 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
     ))?;
 
     ui.para(
-        "For more information on digitalclouds datacenter: \
-        https://www.rioos.sh/docs/reference/deployment/",
+        "For more information on datacenter: \
+        https://www.rioos.sh/docs/reference/datacenters/",
     )?;
 
     Ok(())

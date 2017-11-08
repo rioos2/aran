@@ -207,20 +207,13 @@ pub struct ObjectReference {
 }
 
 impl ObjectReference {
-    pub fn new() -> ObjectReference {
-        ::std::default::Default::default()
-    }
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-    pub fn set_origin(&mut self, v: ::std::string::String) {
-        self.origin = v;
-    }
-    pub fn set_uid(&mut self, v: ::std::string::String) {
-        self.uid = v;
-    }
-    pub fn set_kind(&mut self, v: ::std::string::String) {
-        self.kind = v;
+    pub fn new(kind: &str, name: &str, origin: &str, uid: &str) -> ObjectReference {
+        ObjectReference {
+            kind: kind.to_string(),
+            name: name.to_string(),
+            origin: origin.to_string(),
+            uid: uid.to_string(),
+        }
     }
 }
 
@@ -292,32 +285,12 @@ pub struct Subsets {
 }
 
 impl Subsets {
-    pub fn new() -> Subsets {
-        ::std::default::Default::default()
-    }
-
-    pub fn set_addresses(&mut self, v: Vec<Addesses>) {
-        self.addresses = v;
-    }
-
-    pub fn get_addresses(&self) -> &Vec<Addesses> {
-        &self.addresses
-    }
-
-    pub fn get_unready_addresses(&self) -> &Vec<Addesses> {
-        &self.unready_addresses
-    }
-
-    pub fn set_unready_addresses(&mut self, v: Vec<Addesses>) {
-        self.unready_addresses = v;
-    }
-
-    pub fn get_ports(&self) -> &Vec<Ports> {
-        &self.ports
-    }
-
-    pub fn set_ports(&mut self, v: Vec<Ports>) {
-        self.ports = v;
+    pub fn new(addresses: Vec<Addesses>, unready_addresses: Vec<Addesses>, ports: Vec<Ports>) -> Subsets {
+        Subsets {
+            addresses: addresses,
+            unready_addresses: unready_addresses,
+            ports: ports,
+        }
     }
 }
 
@@ -329,26 +302,12 @@ pub struct Addesses {
 }
 
 impl Addesses {
-    pub fn new() -> Addesses {
-        ::std::default::Default::default()
-    }
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-    pub fn get_name(&self) -> ::std::string::String {
-        self.name.clone()
-    }
-    pub fn set_protocol_version(&mut self, v: ::std::string::String) {
-        self.protocol_version = v;
-    }
-    pub fn get_protocol_version(&self) -> ::std::string::String {
-        self.protocol_version.clone()
-    }
-    pub fn set_ip(&mut self, v: ::std::string::String) {
-        self.ip = v;
-    }
-    pub fn get_ip(&self) -> ::std::string::String {
-        self.ip.clone()
+    pub fn new(name: &str, protocol_version: &str, ip: &str) -> Addesses {
+        Addesses {
+            name: name.to_string(),
+            protocol_version: protocol_version.to_string(),
+            ip: ip.to_string(),
+        }
     }
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -359,26 +318,12 @@ pub struct Ports {
 }
 
 impl Ports {
-    pub fn new() -> Ports {
-        ::std::default::Default::default()
-    }
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-    pub fn get_name(&self) -> ::std::string::String {
-        self.name.clone()
-    }
-    pub fn set_protocol(&mut self, v: ::std::string::String) {
-        self.protocol = v;
-    }
-    pub fn get_protocol(&self) -> ::std::string::String {
-        self.protocol.clone()
-    }
-    pub fn set_port(&mut self, v: ::std::string::String) {
-        self.port = v;
-    }
-    pub fn get_port(&self) -> ::std::string::String {
-        self.port.clone()
+    pub fn new(name: &str, port: &str, protocol: &str) -> Ports {
+        Ports {
+            name: name.to_string(),
+            port: port.to_string(),
+            protocol: protocol.to_string(),
+        }
     }
 }
 
@@ -469,42 +414,18 @@ pub struct Spec {
 }
 
 impl Spec {
-    pub fn new() -> Spec {
-        ::std::default::Default::default()
-    }
-    pub fn set_selector(&mut self, v: BTreeMap<String, String>) {
-        self.selector = v;
-    }
+    pub fn new(selector: BTreeMap<String, String>, service_type: &str, loadbalancer_ip: &str, names: BTreeMap<String, String>, external_names: BTreeMap<String, String>) -> Spec {
+        Spec {
+            selector: selector,
+            service_type: service_type.to_string(),
+            loadbalancer_ip: loadbalancer_ip.to_string(),
+            names: names,
+            external_names: external_names,
+        }
 
+    }
     pub fn get_selector(&self) -> &BTreeMap<String, String> {
         &self.selector
-    }
-    pub fn set_service_type(&mut self, v: ::std::string::String) {
-        self.service_type = v;
-    }
-    pub fn get_service_type(&self) -> ::std::string::String {
-        self.service_type.clone()
-    }
-
-    pub fn set_loadbalancer_ip(&mut self, v: ::std::string::String) {
-        self.loadbalancer_ip = v;
-    }
-    pub fn get_loadbalancer_ip(&self) -> ::std::string::String {
-        self.loadbalancer_ip.clone()
-    }
-    pub fn set_names(&mut self, v: BTreeMap<String, String>) {
-        self.names = v;
-    }
-
-    pub fn get_names(&self) -> &BTreeMap<String, String> {
-        &self.names
-    }
-    pub fn set_external_names(&mut self, v: BTreeMap<String, String>) {
-        self.external_names = v;
-    }
-
-    pub fn get_external_names(&self) -> &BTreeMap<String, String> {
-        &self.external_names
     }
 }
 

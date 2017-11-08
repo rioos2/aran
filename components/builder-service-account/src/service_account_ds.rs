@@ -228,7 +228,6 @@ impl ServiceAccountDS {
             &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::EndPointsGet)?;
 
-
         if rows.len() > 0 {
             for row in rows {
                 let response = row_to_endpoints(&row)?;

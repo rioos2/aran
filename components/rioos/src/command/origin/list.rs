@@ -1,8 +1,10 @@
 pub use error::{Error, Result};
 
 use common::ui::UI;
+
 use api_client::Client;
 use {PRODUCT, VERSION};
+
 use super::super::common::pretty_table;
 
 pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()> {

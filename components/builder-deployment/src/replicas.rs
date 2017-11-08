@@ -1,10 +1,9 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 use deployment_ds::DeploymentDS;
-use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, ObjectMeta, OwnerReferences, TypeMeta};
+use protocol::asmsrv::{Assembly, AssemblyFactory, Status, Condition, TypeMeta};
 use db::data_store::DataStoreConn;
-use error::{Result, Error};
-use std::collections::BTreeMap;
+use error::Result;
 use protocol::constants::*;
 pub struct Replicas<'a> {
     current: u32,
@@ -42,7 +41,7 @@ impl<'a> Replicas<'a> {
     pub fn new_desired(&self) -> Result<Option<AssemblyFactory>> {
         match DeploymentDS::assembly_factory_create(&self.conn, &self.response) {
             Ok(Some(response)) => {
-                let replicated = self.upto_desired(&response.get_id())?;
+                let _replicated = self.upto_desired(&response.get_id())?;
                 Ok(Some(response))
             }
             Ok(None) => Ok(None),
@@ -57,7 +56,7 @@ impl<'a> Replicas<'a> {
         context.calculate(id);
 
         //deploy the assemblys
-        let deployed = context
+        let _deployed = context
             .deploys
             .iter()
             .map(|k| if k.get_name().len() > 0 {
@@ -148,7 +147,7 @@ impl<'a> ReplicaContext<'a> {
         //create the assembly_create_reqs
         for x in self.desired..self.current {
             let assembly_create_req = Assembly::new();
-            let replica_name = self.namer.next(x + 1);
+            let _replica_name = self.namer.next(x + 1);
             self.add_for_removal(assembly_create_req);
         }
     }

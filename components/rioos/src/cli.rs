@@ -300,6 +300,11 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["listnode"])
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
             )
+            (@subcommand describe =>
+                (about: "Display the detailed state of datacenter")
+                (aliases: &["nodescribe"])
+                (@arg NODE_ID: +required +takes_value "Id for the node")
+            )
         )
         (@subcommand storages =>
             (about: "Commands relating to Rio/OS Storage")

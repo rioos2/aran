@@ -9,7 +9,6 @@ extern crate rioos_builder_db as db;
 extern crate rioos_builder_servicesrv as service;
 
 
-#[macro_use]
 extern crate postgres;
 extern crate rand;
 extern crate serde;

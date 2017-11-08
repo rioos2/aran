@@ -73,28 +73,18 @@ pub struct Spec {
 }
 
 impl Spec {
-    pub fn new() -> Spec {
-        ::std::default::Default::default()
-    }
-    pub fn set_assembly_cidr(&mut self, v: ::std::string::String) {
-        self.assembly_cidr = v;
-    }
-    pub fn set_external_id(&mut self, v: ::std::string::String) {
-        self.external_id = v;
-    }
-    pub fn set_provider_id(&mut self, v: ::std::string::String) {
-        self.provider_id = v;
+    pub fn new(assembly_cidr: &str, external_id: &str, provider_id: &str, unschedulable: bool, taints: Vec<Taints>) -> Spec {
+        Spec {
+            assembly_cidr: assembly_cidr.to_string(),
+            external_id: external_id.to_string(),
+            provider_id: provider_id.to_string(),
+            unschedulable: unschedulable,
+            taints: taints,
+        }
     }
 
-    pub fn set_unschedulable(&mut self, v: bool) {
-        self.unschedulable = v;
-    }
     pub fn get_unschedulable(&self) -> bool {
         self.unschedulable.clone()
-    }
-
-    pub fn set_taints(&mut self, v: Vec<Taints>) {
-        self.taints = v;
     }
 }
 
@@ -107,20 +97,14 @@ pub struct Taints {
 }
 
 impl Taints {
-    pub fn new() -> Taints {
-        ::std::default::Default::default()
-    }
-    pub fn set_key(&mut self, v: ::std::string::String) {
-        self.key = v;
-    }
-    pub fn set_value(&mut self, v: ::std::string::String) {
-        self.value = v;
-    }
-    pub fn set_effect(&mut self, v: ::std::string::String) {
-        self.effect = v;
-    }
-    pub fn set_time_added(&mut self, v: ::std::string::String) {
-        self.time_added = v;
+    pub fn new(key: &str, value: &str, effect: &str, time_added: &str) -> Taints {
+        Taints {
+            key: key.to_string(),
+            value: value.to_string(),
+            effect: effect.to_string(),
+            time_added: time_added.to_string(),
+        }
+
     }
 }
 
@@ -135,34 +119,35 @@ pub struct Status {
 }
 
 impl Status {
-    pub fn new() -> Status {
-        ::std::default::Default::default()
-    }
 
-    pub fn set_capacity(&mut self, v: BTreeMap<String, String>) {
-        self.capacity = v;
-    }
-    pub fn set_allocatable(&mut self, v: BTreeMap<String, String>) {
-        self.allocatable = v;
-    }
-    pub fn set_node_info(&mut self, v: NodeInfo) {
-        self.node_info = v;
-    }
-    pub fn set_phase(&mut self, v: ::std::string::String) {
-        self.phase = v;
+    pub fn new(capacity: BTreeMap<String, String>, allocatable: BTreeMap<String, String>, phase: &str, conditions: Vec<asmsrv::Condition>, addresses: Vec<Addresses>, node_info: NodeInfo) -> Status {
+        Status {
+            capacity: capacity,
+            allocatable: allocatable,
+            phase: phase.to_string(),
+            conditions: conditions,
+            addresses: addresses,
+            node_info: node_info,
+        }
     }
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
-    pub fn set_conditions(&mut self, v: Vec<asmsrv::Condition>) {
-        self.conditions = v;
-    }
+
     pub fn get_conditions(&self) -> &Vec<asmsrv::Condition> {
         &self.conditions
     }
-    pub fn set_addresses(&mut self, v: Vec<Addresses>) {
-        self.addresses = v;
+
+    pub fn get_addresses(&self) -> &Vec<Addresses> {
+        &self.addresses
     }
+    pub fn get_node_info(&self) -> &NodeInfo {
+        &self.node_info
+    }
+    pub fn get_capacity(&self) -> &BTreeMap<String, String> {
+        &self.capacity
+    }
+
 }
 
 
@@ -173,15 +158,18 @@ pub struct Addresses {
 }
 
 impl Addresses {
-    pub fn new() -> Addresses {
-        ::std::default::Default::default()
-    }
 
-    pub fn set_node_type(&mut self, v: ::std::string::String) {
-        self.node_type = v;
+    pub fn new(node_type: &str, address: &str) -> Addresses {
+        Addresses {
+            node_type: node_type.to_string(),
+            address: address.to_string(),
+        }
     }
-    pub fn set_address(&mut self, v: ::std::string::String) {
-        self.address = v;
+    pub fn get_node_type(&self) ->  ::std::string::String {
+        self.node_type.clone()
+    }
+    pub fn get_address(&self) ->  ::std::string::String {
+        self.address.clone()
     }
 }
 
@@ -197,26 +185,22 @@ pub struct NodeInfo {
 }
 
 impl NodeInfo {
-    pub fn new() -> NodeInfo {
-        ::std::default::Default::default()
+
+    pub fn new(machine_id: &str, system_uuid: &str, kernel_version: &str, os_image: &str, architecture: &str, bridges: Vec<Bridge>) -> NodeInfo {
+        NodeInfo {
+            machine_id: machine_id.to_string(),
+            system_uuid: system_uuid.to_string(),
+            kernel_version: kernel_version.to_string(),
+            os_image: os_image.to_string(),
+            architecture: architecture.to_string(),
+            bridges: bridges,
+        }
     }
-    pub fn set_machine_id(&mut self, v: ::std::string::String) {
-        self.machine_id = v;
+    pub fn get_architecture(&self) -> ::std::string::String {
+        self.architecture.clone()
     }
-    pub fn set_system_uuid(&mut self, v: ::std::string::String) {
-        self.system_uuid = v;
-    }
-    pub fn set_kernel_version(&mut self, v: ::std::string::String) {
-        self.kernel_version = v;
-    }
-    pub fn set_os_image(&mut self, v: ::std::string::String) {
-        self.os_image = v;
-    }
-    pub fn set_architecture(&mut self, v: ::std::string::String) {
-        self.architecture = v;
-    }
-    pub fn set_bridges(&mut self, v: Vec<Bridge>) {
-        self.bridges = v;
+    pub fn get_os_image(&self) -> ::std::string::String {
+        self.os_image.clone()
     }
 }
 
@@ -228,17 +212,12 @@ pub struct Bridge {
 }
 
 impl Bridge {
-    pub fn new() -> Bridge {
-        ::std::default::Default::default()
-    }
-    pub fn set_bridge_name(&mut self, v: ::std::string::String) {
-        self.bridge_name = v;
-    }
-    pub fn set_physical_device(&mut self, v: ::std::string::String) {
-        self.physical_device = v;
-    }
-    pub fn set_bridge_type(&mut self, v: ::std::string::String) {
-        self.bridge_type = v;
+    pub fn new(bridge_name: &str, physical_device: &str, bridge_type: &str) -> Bridge {
+        Bridge {
+            bridge_name: bridge_name.to_string(),
+            physical_device: physical_device.to_string(),
+            bridge_type: bridge_type.to_string(),
+        }
     }
 }
 

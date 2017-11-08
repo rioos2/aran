@@ -2,12 +2,11 @@ use ansi_term::Colour;
 use bodyparser;
 use rio_net::http::controller::*;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError, not_found_error};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 use service::service_account_ds::ServiceAccountDS;
 use iron::prelude::*;
 use iron::status;
-use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
 use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData, EndPoints, Subsets, Addesses, Ports, Services, Spec};
@@ -16,7 +15,7 @@ use std::collections::BTreeMap;
 use http::deployment_handler;
 use common::ui;
 use db;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use protocol::constants::*;
 
 
@@ -247,12 +246,12 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<ServiceAccountCreateReq>>() {
             Ok(Some(body)) => {
-                let mut obj_ref = ObjectReference::new();
-                obj_ref.set_name(body.secrets.name);
-                obj_ref.set_kind(body.secrets.kind);
-                obj_ref.set_origin(body.secrets.origin);
-                obj_ref.set_uid(body.secrets.uid);
-                service_create.set_secrets(obj_ref);
+                service_create.set_secrets(ObjectReference::new(
+                    &body.secrets.name,
+                    &body.secrets.kind,
+                    &body.secrets.origin,
+                    &body.secrets.uid,
+                ));
                 let mut object_meta = ObjectMetaData::new();
                 object_meta.set_name(ser_name);
                 object_meta.set_origin(org_name);
@@ -352,53 +351,27 @@ pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "target_ref")));
                 }
 
-
-                let mut object_meta = ObjectMetaData::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                endpoints_create.set_object_meta(object_meta);
-
                 endpoints_create.set_type_meta(TypeMeta::new(ENDPOINT));
 
                 endpoints_create.set_target_ref(body.target_ref);
 
-                let mut subsets = Subsets::new();
-
-                let mut address_collection = Vec::new();
-                for address in body.subsets.addresses {
-                    let mut addesses = Addesses::new();
-                    addesses.set_name(address.name);
-                    addesses.set_protocol_version(address.protocol_version);
-                    addesses.set_ip(address.ip);
-                    address_collection.push(addesses);
-                }
-                subsets.set_addresses(address_collection);
-
-                let mut not_ready_address_collection = Vec::new();
-                for nr_address in body.subsets.unready_addresses {
-                    let mut addesses = Addesses::new();
-                    addesses.set_name(nr_address.name);
-                    addesses.set_protocol_version(nr_address.protocol_version);
-                    addesses.set_ip(nr_address.ip);
-                    not_ready_address_collection.push(addesses);
-                }
-                subsets.set_unready_addresses(not_ready_address_collection);
-
-                let mut ports_collection = Vec::new();
-                for port in body.subsets.ports {
-                    let mut ports = Ports::new();
-                    ports.set_name(port.name);
-                    ports.set_port(port.port);
-                    ports.set_protocol(port.protocol);
-                    ports_collection.push(ports);
-                }
-                subsets.set_ports(ports_collection);
-                endpoints_create.set_subsets(subsets);
+                endpoints_create.set_subsets(Subsets::new(
+                    body.subsets
+                        .addresses
+                        .iter()
+                        .map(|x| Addesses::new(&x.name, &x.protocol_version, &x.ip))
+                        .collect::<Vec<_>>(),
+                    body.subsets
+                        .unready_addresses
+                        .iter()
+                        .map(|x| Addesses::new(&x.name, &x.protocol_version, &x.ip))
+                        .collect::<Vec<_>>(),
+                    body.subsets
+                        .ports
+                        .iter()
+                        .map(|x| Ports::new(&x.name, &x.port, &x.protocol))
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -427,7 +400,7 @@ pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
         }
     }
 }
-
+#[allow(unused_variables)]
 pub fn endpoints_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::endpoints_list(&conn) {
@@ -545,24 +518,14 @@ pub fn services_create(req: &mut Request) -> AranResult<Response> {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "assembly id")));
                 }
 
-                let mut object_meta = ObjectMetaData::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-                services_create.set_object_meta(object_meta);
                 services_create.set_type_meta(TypeMeta::new(SERVICE));
-                let mut spec = Spec::new();
-                spec.set_selector(body.spec.selector.to_owned());
-                spec.set_service_type(body.spec.service_type);
-                spec.set_loadbalancer_ip(body.spec.loadbalancer_ip);
-                spec.set_names(body.spec.names);
-                spec.set_external_names(body.spec.external_names);
-                services_create.set_spec(spec);
-
+                services_create.set_spec(Spec::new(
+                    body.spec.selector.to_owned(),
+                    &body.spec.service_type,
+                    &body.spec.loadbalancer_ip,
+                    body.spec.names,
+                    body.spec.external_names,
+                ));
                 services_create.set_status(Status::with_conditions(
                     &body.status.phase,
                     &body.status.message,
@@ -637,7 +600,7 @@ pub fn services_show(req: &mut Request) -> AranResult<Response> {
         Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
-
+#[allow(unused_variables)]
 pub fn services_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::services_list(&conn) {

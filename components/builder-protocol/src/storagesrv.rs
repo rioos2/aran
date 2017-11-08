@@ -113,11 +113,8 @@ pub struct Disks {
 }
 
 impl Disks {
-    pub fn new() -> Disks {
-        ::std::default::Default::default()
-    }
-    pub fn set_disks(&mut self, v: Vec<Disk>) {
-        self.disks = v;
+    pub fn new(disks: Vec<Disk>) -> Disks {
+        Disks { disks: disks }
     }
     pub fn get_disks(&self) -> Vec<Disk> {
         self.disks.clone()
@@ -134,25 +131,14 @@ pub struct Disk {
 }
 
 impl Disk {
-    pub fn new() -> Disk {
-        ::std::default::Default::default()
+    pub fn new(disk: &str, disk_type: &str, point: &str, size: &str) -> Disk {
+        Disk {
+            disk: disk.to_string(),
+            disk_type: disk_type.to_string(),
+            point: point.to_string(),
+            size: size.to_string(),
+        }
     }
-
-    pub fn set_disk(&mut self, v: ::std::string::String) {
-        self.disk = v;
-    }
-
-    pub fn set_disk_type(&mut self, v: ::std::string::String) {
-        self.disk_type = v;
-    }
-
-    pub fn set_point(&mut self, v: ::std::string::String) {
-        self.point = v;
-    }
-    pub fn set_size(&mut self, v: ::std::string::String) {
-        self.size = v;
-    }
-
     pub fn get_size(&self) -> ::std::string::String {
         self.size.clone()
     }

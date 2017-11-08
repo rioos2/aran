@@ -20,7 +20,6 @@ extern crate log;
 extern crate pbr;
 extern crate rand;
 extern crate serde;
-#[macro_use]
 extern crate serde_derive;
 #[allow(unused_imports)]
 #[macro_use]
@@ -40,7 +39,7 @@ use hyper::client::{IntoUrl, RequestBuilder};
 use hyper::status::StatusCode;
 use hyper::header::{ContentType, Accept, Authorization, Bearer};
 use protocol::net::NetError;
-use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
+// use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
 use protocol::{sessionsrv, asmsrv, nodesrv, plansrv, storagesrv, originsrv, jobsrv, netsrv};
 use rioos_http::util::decoded_response;
 use rio_net::http::headers::*;
@@ -303,6 +302,32 @@ impl Client {
 
     }
 
+    pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesrv::Node> {
+        debug!("Token {}", token);
+        debug!("Email {}", email);
+        let url = format!("/nodes/{}",id);
+
+        let res = self.add_authz(self.0.get(&url), token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .header(XAuthRioOSEmail(email.to_string()))
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to get node, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        };
+
+        match decoded_response::<nodesrv::Node>(res).map_err(Error::HabitatHttpClient) {
+            Ok(value) => Ok(value),
+            Err(e) => {
+                debug!("Failed to decode response, err: {:?}", e);
+                return Err(e);
+            }
+        }
+
+    }
     pub fn list_image(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
         debug!("Token {}", token);
         debug!("Email {}", email);
@@ -653,9 +678,9 @@ impl Client {
                     value
                         .get_items()
                         .iter_mut()
-                        .map(|i| {
-                            vec![i.get_id(),i.get_name(),i.get_status().get_phase(),i.get_created_at()]
-                        })
+                        .map(
+                            |i| vec![i.get_id(),i.get_name(),i.get_status().get_phase(),i.get_created_at()],
+                        )
                         .collect(),
                 )
             }

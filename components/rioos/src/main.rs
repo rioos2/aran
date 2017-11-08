@@ -25,7 +25,7 @@ use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 use rcore::crypto::init;
 use rcore::env as henv;
 
-use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, /*ORIGIN_ENVVAR*,*/ API_SERVER_ENVVAR};
+use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, API_SERVER_ENVVAR};
 use rioos::error::{Error, Result};
 
 
@@ -87,6 +87,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("nodes", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_node_list(ui, m)?,
+                ("describe", Some(m)) => sub_node_describe(ui, m)?,
                 _ => unreachable!(),
             }
         }
@@ -210,6 +211,17 @@ fn sub_node_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         auth_email_param_or_env(&m)?,
     )
 }
+fn sub_node_describe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    let config_file = m.value_of("NODE_ID").map(|v| v.into());
+    command::node::describe::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        config_file.unwrap(),
+    )
+}
+
 fn sub_images_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 
     command::image::list::start(
@@ -413,26 +425,6 @@ fn auth_email_param_or_env(m: &ArgMatches) -> Result<String> {
 }
 
 
-/// Check to see if the user has passed in an ORIGIN param.  If not, check the RIOOS_ORIGIN env
-/// var. If not, check the /rioos/etc/cli.toml config if there is an origin. If that's empty too,
-/// then error.
-/*fn origin_param_or_env(m: &ArgMatches) -> Result<String> {
-    match m.value_of("ORIGIN") {
-        Some(o) => Ok(o.to_string()),
-        None => {
-            match henv::var(ORIGIN_ENVVAR) {
-                Ok(v) => Ok(v),
-                Err(_) => {
-                    let config = config::load()?;
-                    match config.origin {
-                        Some(v) => Ok(v),
-                        None => return Err(Error::ArgumentError("No origin specified")),
-                    }
-                }
-            }
-        }
-    }
-}*/
 /// Check to see if the user has passed in an API_SERVER_ENVVAR param.  If not, check the RIOOS_API_SERVER env
 /// var. If not, check the /rioos/etc/cli.toml config if there is an origin. If that's empty too,
 /// then error.
