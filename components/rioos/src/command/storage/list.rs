@@ -11,8 +11,8 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
 
-    let mut  results = rio_client.get_storageconnector(&token, &email)?;
-    let mut value = results.get_items()
+    let  results = rio_client.get_storageconnector(&token, &email)?;
+    let value = results.get_items()
             .iter_mut()
             .map(|i| {
 

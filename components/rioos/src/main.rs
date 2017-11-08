@@ -25,7 +25,7 @@ use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 use rcore::crypto::init; //TO-DO: NOT NEEDED
 use rcore::env as henv;
 
-use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, ORIGIN_ENVVAR, API_SERVER_ENVVAR};
+use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, API_SERVER_ENVVAR};
 use rioos::error::{Error, Result};
 
 

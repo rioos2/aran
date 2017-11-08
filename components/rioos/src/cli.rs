@@ -5,7 +5,6 @@ use std::path::Path;
 use std::result;
 
 use clap::{App, AppSettings, Arg};
-use url::Url;
 
 pub fn get() -> App<'static, 'static> {
     let alias_login = sub_auth_login()
@@ -392,6 +391,7 @@ pub fn get() -> App<'static, 'static> {
         (subcommand: alias_new)
         (subcommand: alias_init)
         (subcommand: alias_deploy)
+        (subcommand: alias_list)
         (subcommand: alias_deployapp)
         (after_help: "\nALIASES:\
             \n    login      Alias for: 'auth login'\
