@@ -11,15 +11,15 @@ use deploy::replicas::Replicas;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, ObjectMeta, OwnerReferences, TypeMeta};
-use protocol::net::{self, ErrCode};
+use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, TypeMeta};
+use protocol::plansrv::{Plan, Service};
 use protocol::constants::*;
 use router::Router;
 use db::data_store::Broker;
 use std::collections::BTreeMap;
 use common::ui;
 use db;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
@@ -134,6 +134,25 @@ pub struct OpsSettingsReq {
     restartpolicy: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct PlanCreateReq {
+    group_name: String,
+    url: String,
+    description: String,
+    tags: Vec<String>,
+    origin: String,
+    artifacts: Vec<String>,
+    services: Vec<ServiceReq>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct ServiceReq {
+    name: String,
+    description: String,
+    href: String,
+    characteristics: BTreeMap<String, String>,
+}
+
 
 pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
 
@@ -158,7 +177,6 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
                 assembly_create.set_selector(body.selector);
                 assembly_create.set_parent_id(body.parent_id);
                 assembly_create.set_origin(body.origin);
-                assembly_create.set_node(body.node);
                 assembly_create.set_status(Status::with_conditions(
                     INITIALIZING,
                     NEW_REPLICA_INITALIZING,
@@ -168,31 +186,6 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
                         .map(|x| Condition::with_type("", "", "False", "", "", x))
                         .collect::<Vec<_>>(),
                 ));
-
-                let mut object_meta = ObjectMeta::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-
-                let mut owner_collection = Vec::new();
-
-                for data in body.object_meta.owner_references {
-
-                    let mut owner = OwnerReferences::new();
-                    owner.set_kind(data.kind);
-                    owner.set_api_version(data.api_version);
-                    owner.set_name(data.name);
-                    owner.set_uid(data.uid);
-                    owner.set_block_owner_deletion(data.block_owner_deletion);
-
-                    owner_collection.push(owner);
-                }
-                object_meta.set_owner_references(owner_collection);
-                assembly_create.set_object_meta(object_meta);
                 assembly_create.set_urls(body.urls);
                 assembly_create.set_type_meta(TypeMeta::new(ASSEMBLY));
             }
@@ -353,17 +346,13 @@ pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
                 assembly_create.set_parent_id(body.parent_id);
                 assembly_create.set_node(body.node);
                 assembly_create.set_urls(body.urls);
-                let mut volume_collection = Vec::new();
-
-                for volume in body.volumes {
-                    let mut vol = Volume::new();
-                    vol.set_id(volume.id);
-                    vol.set_target(volume.target);
-                    vol.set_volume_type(volume.volume_type);
-                    volume_collection.push(vol);
-                }
-
-                assembly_create.set_volumes(volume_collection);
+                assembly_create.set_volumes(
+                    body.volumes
+                        .iter()
+                        .map(|x| Volume::with_volumes(&x.id, &x.target, &x.volume_type))
+                        .collect::<Vec<_>>(),
+                );
+                assembly_create.set_type_meta(TypeMeta::new(ASSEMBLY));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -487,44 +476,19 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
                         })
                         .collect::<Vec<_>>(),
                 ));
-                let mut opssettings = OpsSettings::new();
-                opssettings.set_nodeselector(body.opssettings.nodeselector);
-                opssettings.set_priority(body.opssettings.priority);
-                opssettings.set_nodename(body.opssettings.nodename);
-                opssettings.set_restartpolicy(body.opssettings.restartpolicy);
-                assembly_factory_create.set_opssettings(opssettings);
                 assembly_factory_create.set_replicas(body.replicas);
-                let mut properties = Properties::new();
-                properties.set_cloudsetting(body.properties.cloudsetting);
-                properties.set_domain(body.properties.domain);
-                properties.set_region(body.properties.region);
-                properties.set_storage_type(body.properties.storage_type);
-                assembly_factory_create.set_properties(properties);
-
-                let mut object_meta = ObjectMeta::new();
-                object_meta.set_name(body.object_meta.name);
-                object_meta.set_origin(body.object_meta.origin);
-                object_meta.set_uid(body.object_meta.uid);
-                object_meta.set_created_at(body.object_meta.created_at);
-                object_meta.set_cluster_name(body.object_meta.cluster_name);
-                object_meta.set_labels(body.object_meta.labels);
-                object_meta.set_annotations(body.object_meta.annotations);
-
-                let mut owner_collection = Vec::new();
-
-                for data in body.object_meta.owner_references {
-
-                    let mut owner = OwnerReferences::new();
-                    owner.set_kind(data.kind);
-                    owner.set_api_version(data.api_version);
-                    owner.set_name(data.name);
-                    owner.set_uid(data.uid);
-                    owner.set_block_owner_deletion(data.block_owner_deletion);
-
-                    owner_collection.push(owner);
-                }
-                object_meta.set_owner_references(owner_collection);
-                assembly_factory_create.set_object_meta(object_meta);
+                assembly_factory_create.set_opssettings(OpsSettings::new(
+                    &body.opssettings.nodeselector,
+                    &body.opssettings.priority,
+                    &body.opssettings.nodename,
+                    &body.opssettings.restartpolicy,
+                ));
+                assembly_factory_create.set_properties(Properties::new(
+                    &body.properties.cloudsetting,
+                    &body.properties.domain,
+                    &body.properties.region,
+                    &body.properties.storage_type,
+                ));
                 assembly_factory_create.set_type_meta(TypeMeta::new(ASSEMBLYFACTORY));
             }
             Err(err) => {
@@ -724,7 +688,50 @@ pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
 }
 
 
+pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
+    let mut plan_create = Plan::new();
+    {
+        match req.get::<bodyparser::Struct<PlanCreateReq>>() {
+            Ok(Some(body)) => {
+                if body.group_name.len() <= 0 {
+                    return Err(bad_request(&format!("{} {}", MISSING_FIELD, "group_name")));
+                }
+                plan_create.set_group_name(body.group_name);
+                plan_create.set_url(body.url);
+                plan_create.set_description(body.description);
+                plan_create.set_tags(body.tags);
+                plan_create.set_origin(body.origin);
+                plan_create.set_artifacts(body.artifacts);
+                plan_create.set_services(
+                    body.services
+                        .iter()
+                        .map(|x| {
+                            Service::new(&x.name, &x.description, &x.href, x.characteristics.clone())
+                        })
+                        .collect::<Vec<_>>(),
+                );
+            }
+            Err(err) => {
+                return Err(malformed_body(
+                    &format!("{}, {:?}\n", err.detail, err.cause),
+                ));
+            }
+            _ => return Err(malformed_body(&BODYNOTFOUND)),
+        }
+    }
 
+    let conn = Broker::connect().unwrap();
+
+    match DeploymentDS::plan_create(&conn, &plan_create) {
+        Ok(Some(plan)) => Ok(render_json(status::Ok, &plan)),
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
+    }
+}
 
 #[allow(unused_variables)]
 pub fn plan_list(req: &mut Request) -> AranResult<Response> {

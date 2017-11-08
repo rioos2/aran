@@ -9,7 +9,6 @@ use network::network_ds::NetworkDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::net::{self, ErrCode};
 // use router::Router;
 use protocol::netsrv::Network;
 use protocol::asmsrv::{Status, Condition};
@@ -20,8 +19,8 @@ use db;
 use db::data_store::Broker;
 use http::deployment_handler;
 use rio_net::util::errors::AranResult;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
-use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
+use error::{Error, BODYNOTFOUND};
+use rio_net::util::errors::{internal_error, malformed_body, not_found_error};
 
 
 define_event_log!();

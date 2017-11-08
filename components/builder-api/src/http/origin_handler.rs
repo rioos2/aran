@@ -10,7 +10,6 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use protocol::originsrv::Origin;
-use protocol::net::{self, ErrCode};
 use protocol::constants::*;
 use router::Router;
 use protocol::servicesrv::ObjectMetaData;
@@ -19,7 +18,7 @@ use db::data_store::Broker;
 use db;
 use http::{service_account_handler, deployment_handler};
 use rio_net::util::errors::AranResult;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 define_event_log!();

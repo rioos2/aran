@@ -8,7 +8,6 @@ use protocol::{servicesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-use rio_net::util::errors::*;
 use protocol::constants::*;
 
 
@@ -30,7 +29,7 @@ impl ServiceAccountDS {
         ).map_err(Error::SecretCreate)?;
         if rows.len() > 0 {
             for row in rows {
-                let secret = row_to_secret(&rows.get(0));
+                let secret = row_to_secret(&row);
                 return Ok(Some(secret));
             }
         }
@@ -228,8 +227,6 @@ impl ServiceAccountDS {
             &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::EndPointsGet)?;
 
-        let mut response = servicesrv::EndpointsGetResponse::new();
-
         if rows.len() > 0 {
             for row in rows {
                 let response = row_to_endpoints(&row)?;
@@ -258,7 +255,7 @@ impl ServiceAccountDS {
         ).map_err(Error::ServicesCreate)?;
         if rows.len() > 0 {
             for row in rows {
-                let end = row_to_services(&rows.get(0));
+                let end = row_to_services(&row);
                 return Ok(Some(end));
             }
         }

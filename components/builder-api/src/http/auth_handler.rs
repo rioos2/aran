@@ -12,13 +12,12 @@ use iron::status;
 use persistent;
 use router::Router;
 use iron::typemap;
-use protocol::net::{self, ErrCode};
 use protocol::sessionsrv::*;
 use protocol::asmsrv::IdGet;
 use db::data_store::Broker;
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error, unauthorized_error};
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use db;
 
 define_event_log!();

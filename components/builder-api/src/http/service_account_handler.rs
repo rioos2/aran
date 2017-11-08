@@ -2,12 +2,11 @@ use ansi_term::Colour;
 use bodyparser;
 use rio_net::http::controller::*;
 use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{bad_request, internal_error, malformed_body, DBError, not_found_error};
+use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 use service::service_account_ds::ServiceAccountDS;
 use iron::prelude::*;
 use iron::status;
-use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
 use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData, EndPoints, Subsets, Addesses, Ports, Services, Spec};
@@ -16,7 +15,7 @@ use std::collections::BTreeMap;
 use http::deployment_handler;
 use common::ui;
 use db;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use protocol::constants::*;
 
 
@@ -427,7 +426,7 @@ pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
         }
     }
 }
-
+#[allow(unused_variables)]
 pub fn endpoints_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::endpoints_list(&conn) {
@@ -637,7 +636,7 @@ pub fn services_show(req: &mut Request) -> AranResult<Response> {
         Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
-
+#[allow(unused_variables)]
 pub fn services_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
     match ServiceAccountDS::services_list(&conn) {
