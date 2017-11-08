@@ -1,7 +1,5 @@
 // Copyright (c) 2017 RioCorp Inc.
 //
 
-
-pub mod list;
-pub mod get;
 pub mod describe;
+pub mod list;
