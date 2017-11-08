@@ -329,6 +329,32 @@ impl Client {
 
     }
 
+pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<nodesrv::Node> {
+    debug!("Token {}", token);
+    debug!("Email {}", email);
+    let url = format!("/nodes/{}",id);
+
+    let res = self.add_authz(self.0.get(&url), token)
+        .header(Accept::json())
+        .header(ContentType::json())
+        .header(XAuthRioOSEmail(email.to_string()))
+        .send()
+        .map_err(Error::HyperError)?;
+
+    if res.status != StatusCode::Ok {
+        debug!("Failed to get node, status: {:?}", res.status);
+        return Err(err_from_response(res));
+    };
+
+    match decoded_response::<nodesrv::Node>(res).map_err(Error::HabitatHttpClient) {
+        Ok(value) => Ok(value),
+        Err(e) => {
+            debug!("Failed to decode response, err: {:?}", e);
+            return Err(e);
+        }
+    }
+
+}
     pub fn list_image(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
         debug!("Token {}", token);
         debug!("Email {}", email);

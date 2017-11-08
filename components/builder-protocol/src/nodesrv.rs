@@ -143,11 +143,17 @@ impl Status {
     pub fn set_capacity(&mut self, v: BTreeMap<String, String>) {
         self.capacity = v;
     }
+    pub fn get_capacity(&self) ->  BTreeMap<String, String> {
+        self.capacity.clone()
+    }
     pub fn set_allocatable(&mut self, v: BTreeMap<String, String>) {
         self.allocatable = v;
     }
     pub fn set_node_info(&mut self, v: NodeInfo) {
         self.node_info = v;
+    }
+    pub fn get_node_info(&self) -> &NodeInfo {
+        &self.node_info
     }
     pub fn set_phase(&mut self, v: ::std::string::String) {
         self.phase = v;
@@ -163,6 +169,9 @@ impl Status {
     }
     pub fn set_addresses(&mut self, v: Vec<Addresses>) {
         self.addresses = v;
+    }
+    pub fn get_addresses(&self) -> &Vec<Addresses> {
+        &self.addresses
     }
 }
 
@@ -181,8 +190,14 @@ impl Addresses {
     pub fn set_node_type(&mut self, v: ::std::string::String) {
         self.node_type = v;
     }
+    pub fn get_node_type(&self) ->  ::std::string::String {
+        self.node_type.clone()
+    }
     pub fn set_address(&mut self, v: ::std::string::String) {
         self.address = v;
+    }
+    pub fn get_address(&self) ->  ::std::string::String {
+        self.address.clone()
     }
 }
 
@@ -213,8 +228,14 @@ impl NodeInfo {
     pub fn set_os_image(&mut self, v: ::std::string::String) {
         self.os_image = v;
     }
+    pub fn get_os_image(&self) -> ::std::string::String {
+        self.os_image.clone()
+    }
     pub fn set_architecture(&mut self, v: ::std::string::String) {
         self.architecture = v;
+    }
+    pub fn get_architecture(&self) -> ::std::string::String {
+        self.architecture.clone()
     }
     pub fn set_bridges(&mut self, v: Vec<Bridge>) {
         self.bridges = v;

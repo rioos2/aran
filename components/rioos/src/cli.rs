@@ -5,7 +5,6 @@ use std::path::Path;
 use std::result;
 
 use clap::{App, AppSettings, Arg};
-use regex::Regex;
 use url::Url;
 
 pub fn get() -> App<'static, 'static> {
@@ -297,6 +296,11 @@ pub fn get() -> App<'static, 'static> {
                 (about: "Display all the nodes registered in Rio/OS.")
                 (aliases: &["listnode"])
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
+            )
+            (@subcommand describe =>
+                (about: "Display the detailed state of datacenter")
+                (aliases: &["nodescribe"])
+                (@arg NODE_ID: +required +takes_value "Id for the node")
             )
         )
         (@subcommand storages =>

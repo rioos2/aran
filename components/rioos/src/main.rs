@@ -87,6 +87,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("nodes", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_node_list(ui, m)?,
+                ("describe",Some(m)) => sub_node_describe(ui,m)?,
                 _ => unreachable!(),
             }
         }
@@ -209,6 +210,17 @@ fn sub_node_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         auth_email_param_or_env(&m)?,
     )
 }
+fn sub_node_describe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+let config_file = m.value_of("NODE_ID").map(|v| v.into());
+    command::node::describe::start(
+        ui,
+        &api_server_param_or_env(&m)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        config_file.unwrap(),
+    )
+}
+
 fn sub_images_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 
     command::image::list::start(

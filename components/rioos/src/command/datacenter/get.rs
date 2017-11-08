@@ -1,12 +1,9 @@
 pub use error::{Error, Result};
 
 use common::ui::UI;
-use rioos_core::env;
-
-use api_client::{self, Client};
+use api_client::{Client};
 
 use {PRODUCT, VERSION};
-use config;
 
 use super::super::common::pretty_table;
 
