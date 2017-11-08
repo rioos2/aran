@@ -70,16 +70,16 @@ impl NodeDS {
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
-        let NODES_METRIC_SCOPE: Vec<String> = vec![
+        let nodes_metric_scope: Vec<String> = vec![
             "cpu_total".to_string(),
             "ram_total".to_string(),
             "disk_total".to_string(),
         ];
-        let NODES_GROUP_SCOPE: Vec<String> = vec!["group=nodes".to_string()];
+        let nodes_group_scope: Vec<String> = vec!["group=nodes".to_string()];
 
         let scope = CollectorScope {
-            metric_names: NODES_METRIC_SCOPE,
-            labels: NODES_GROUP_SCOPE,
+            metric_names: nodes_metric_scope,
+            labels: nodes_group_scope,
             last_x_minutes: None,
         };
 

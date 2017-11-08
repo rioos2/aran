@@ -6,7 +6,6 @@ use persistent;
 use router::Router;
 use ansi_term::Colour;
 
-use protocol::net::{self, ErrCode};
 use rio_net::http::controller::*;
 use rio_net::http::middleware::PrometheusCli;
 use node::node_ds::NodeDS;
@@ -14,7 +13,7 @@ use db::data_store::Broker;
 use db;
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
 use protocol::asmsrv::Condition;
@@ -82,81 +81,61 @@ struct BridgeReq {
     bridge_type: String,
 }
 
-
-
-
-
 pub fn node_create(req: &mut Request) -> AranResult<Response> {
     let mut node_create = Node::new();
     {
         match req.get::<bodyparser::Struct<NodeCreateReq>>() {
             Ok(Some(body)) => {
-                let mut spec = Spec::new();
-                spec.set_assembly_cidr(body.spec.assembly_cidr);
-                spec.set_external_id(body.spec.external_id);
-                spec.set_provider_id(body.spec.provider_id);
-                spec.set_unschedulable(body.spec.unschedulable);
-
-                let mut taints_collection = Vec::new();
-
-                for data in body.spec.taints {
-                    let mut taints = Taints::new();
-                    taints.set_value(data.value);
-                    taints.set_key(data.key);
-                    taints.set_effect(data.effect);
-                    taints.set_time_added(data.time_added);
-                    taints_collection.push(taints);
-                }
-                spec.set_taints(taints_collection);
-                node_create.set_spec(spec);
-
-                let mut status = Status::new();
-
-                status.set_capacity(body.status.capacity);
-                status.set_allocatable(body.status.allocatable);
-                status.set_phase(body.status.phase);
-
-                let mut condition_collection = Vec::new();
-
-                for conn in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_condition_type(conn.condition_type);
-                    condition.set_last_probe_time(conn.last_probe_time);
-                    condition.set_last_transition_time(conn.last_transition_time);
-                    condition.set_reason(conn.reason);
-                    condition.set_status(conn.status);
-                    condition.set_message(conn.message);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-
-                let mut addresse_collection = Vec::new();
-
-                for addr in body.status.addresses {
-                    let mut addresses = Addresses::new();
-                    addresses.set_node_type(addr.node_type);
-                    addresses.set_address(addr.address);
-                    addresse_collection.push(addresses);
-                }
-                status.set_addresses(addresse_collection);
-
-                let mut node_info = NodeInfo::new();
-                node_info.set_machine_id(body.status.node_info.machine_id);
-                node_info.set_system_uuid(body.status.node_info.system_uuid);
-                node_info.set_kernel_version(body.status.node_info.kernel_version);
-                node_info.set_os_image(body.status.node_info.os_image);
-                node_info.set_architecture(body.status.node_info.architecture);
-                let mut bridge_collection = Vec::new();
-                for bridge in body.status.node_info.bridges {
-                    let mut bri = Bridge::new();
-                    bri.set_bridge_name(bridge.bridge_name);
-                    bri.set_physical_device(bridge.physical_device);
-                    bri.set_bridge_type(bridge.bridge_type);
-                    bridge_collection.push(bri);
-                }
-                node_info.set_bridges(bridge_collection);
-                status.set_node_info(node_info);
-                node_create.set_status(status);
+                node_create.set_spec(Spec::new(
+                    &body.spec.assembly_cidr,
+                    &body.spec.external_id,
+                    &body.spec.provider_id,
+                    body.spec.unschedulable,
+                    body.spec
+                        .taints
+                        .iter()
+                        .map(|x| Taints::new(&x.key, &x.value, &x.effect, &x.time_added))
+                        .collect::<Vec<_>>(),
+                ));
+                node_create.set_status(Status::new(
+                    body.status.capacity,
+                    body.status.allocatable,
+                    &body.status.phase,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                    body.status
+                        .addresses
+                        .iter()
+                        .map(|x| Addresses::new(&x.node_type, &x.address))
+                        .collect::<Vec<_>>(),
+                    NodeInfo::new(
+                        &body.status.node_info.machine_id,
+                        &body.status.node_info.system_uuid,
+                        &body.status.node_info.kernel_version,
+                        &body.status.node_info.os_image,
+                        &body.status.node_info.architecture,
+                        body.status
+                            .node_info
+                            .bridges
+                            .iter()
+                            .map(|x| {
+                                Bridge::new(&x.bridge_name, &x.physical_device, &x.bridge_type)
+                            })
+                            .collect::<Vec<_>>(),
+                    ),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -215,54 +194,45 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<CommonStatusReq>>() {
             Ok(Some(body)) => {
-                let mut status = Status::new();
-
-                status.set_capacity(body.status.capacity);
-                status.set_allocatable(body.status.allocatable);
-                status.set_phase(body.status.phase);
-
-                let mut condition_collection = Vec::new();
-
-                for conn in body.status.conditions {
-                    let mut condition = Condition::new();
-                    condition.set_condition_type(conn.condition_type);
-                    condition.set_last_probe_time(conn.last_probe_time);
-                    condition.set_last_transition_time(conn.last_transition_time);
-                    condition.set_reason(conn.reason);
-                    condition.set_status(conn.status);
-                    condition.set_message(conn.message);
-                    condition_collection.push(condition);
-                }
-                status.set_conditions(condition_collection);
-
-                let mut addresse_collection = Vec::new();
-
-                for addr in body.status.addresses {
-                    let mut addresses = Addresses::new();
-                    addresses.set_node_type(addr.node_type);
-                    addresses.set_address(addr.address);
-                    addresse_collection.push(addresses);
-                }
-                status.set_addresses(addresse_collection);
-
-                let mut node_info = NodeInfo::new();
-                node_info.set_machine_id(body.status.node_info.machine_id);
-                node_info.set_system_uuid(body.status.node_info.system_uuid);
-                node_info.set_kernel_version(body.status.node_info.kernel_version);
-                node_info.set_os_image(body.status.node_info.os_image);
-                node_info.set_architecture(body.status.node_info.architecture);
-                let mut bridge_collection = Vec::new();
-                for bridge in body.status.node_info.bridges {
-                    let mut bri = Bridge::new();
-                    bri.set_bridge_name(bridge.bridge_name);
-                    bri.set_physical_device(bridge.physical_device);
-                    bri.set_bridge_type(bridge.bridge_type);
-                    bridge_collection.push(bri);
-                }
-                node_info.set_bridges(bridge_collection);
-
-                status.set_node_info(node_info);
-                node_create.set_status(status);
+                node_create.set_status(Status::new(
+                    body.status.capacity,
+                    body.status.allocatable,
+                    &body.status.phase,
+                    body.status
+                        .conditions
+                        .iter()
+                        .map(|x| {
+                            Condition::with_type(
+                                &x.message,
+                                &x.reason,
+                                &x.status,
+                                &x.last_transition_time,
+                                &x.last_probe_time,
+                                &x.condition_type,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                    body.status
+                        .addresses
+                        .iter()
+                        .map(|x| Addresses::new(&x.node_type, &x.address))
+                        .collect::<Vec<_>>(),
+                    NodeInfo::new(
+                        &body.status.node_info.machine_id,
+                        &body.status.node_info.system_uuid,
+                        &body.status.node_info.kernel_version,
+                        &body.status.node_info.os_image,
+                        &body.status.node_info.architecture,
+                        body.status
+                            .node_info
+                            .bridges
+                            .iter()
+                            .map(|x| {
+                                Bridge::new(&x.bridge_name, &x.physical_device, &x.bridge_type)
+                            })
+                            .collect::<Vec<_>>(),
+                    ),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(

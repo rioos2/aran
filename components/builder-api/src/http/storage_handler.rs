@@ -9,7 +9,6 @@ use storage::storage_ds::StorageDS;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::net::{self, ErrCode};
 use router::Router;
 use protocol::asmsrv::{IdGet, Condition, Status};
 use protocol::storagesrv::{Storage, DataCenter, Disks, Disk, StoragePool};
@@ -19,7 +18,7 @@ use db;
 use std::collections::BTreeMap;
 use http::deployment_handler;
 use rio_net::util::errors::AranResult;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 define_event_log!();

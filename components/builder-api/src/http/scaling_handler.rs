@@ -6,7 +6,6 @@ use bodyparser;
 use persistent;
 use rio_core::event::*;
 use rio_net::http::controller::*;
-use rio_net::metrics::collector::CollectorScope;
 use rio_net::http::middleware::PrometheusCli;
 use ansi_term::Colour;
 
@@ -16,13 +15,12 @@ use iron::status;
 use iron::typemap;
 use protocol::scalesrv::{HorizontalScaling, Spec, Metrics, MetricObject, MetricResource, TimeSpec, Status};
 use protocol::asmsrv::IdGet;
-use protocol::net::{self, ErrCode};
 use router::Router;
 use db::data_store::Broker;
 use db;
 use common::ui;
 use rio_net::util::errors::AranResult;
-use error::{Result, Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 

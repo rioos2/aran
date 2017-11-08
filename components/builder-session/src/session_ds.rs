@@ -331,7 +331,7 @@ impl SessionDS {
                     })
                     .collect();
 
-                let import_failure = &imported.iter().filter(|f| (*f).is_err()).count();
+                let _import_failure = &imported.iter().filter(|f| (*f).is_err()).count();
 
                 let import_count =
                     format!(

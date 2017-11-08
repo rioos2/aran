@@ -7,7 +7,6 @@ use error::{Result, Error};
 use protocol::{asmsrv, plansrv, servicesrv};
 use postgres;
 use db::data_store::DataStoreConn;
-use db;
 use serde_json;
 
 pub struct DeploymentDS;
@@ -192,7 +191,7 @@ impl DeploymentDS {
         ).map_err(Error::AssemblyFactoryCreate)?;
         if rows.len() > 0 {
             for row in rows {
-                let assembly_factory = row_to_assembly_factory(&rows.get(0))?;
+                let assembly_factory = row_to_assembly_factory(&row)?;
                 return Ok(Some(assembly_factory));
             }
         }
@@ -312,10 +311,39 @@ impl DeploymentDS {
         let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
         let mut endpoint_get = asmsrv::IdGet::new();
         endpoint_get.set_id(assembly.get_id());
-        let mut endpoints = Self::endpoints_show(&datastore, &endpoint_get)?;
+        let endpoints = Self::endpoints_show(&datastore, &endpoint_get)?;
         assembly.set_spec(data);
         assembly.set_endpoints(endpoints);
         Ok(assembly)
+    }
+
+    pub fn plan_create(datastore: &DataStoreConn, plan: &plansrv::Plan) -> Result<Option<plansrv::Plan>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let data: Vec<String> = plan.get_services()
+            .into_iter()
+            .map(|plan| {
+                let d = serde_json::to_string(plan).unwrap();
+                d
+            })
+            .collect();
+        let rows = &conn.query(
+            "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$5,$6,$7)",
+            &[
+                &(plan.get_group_name() as String),
+                &(plan.get_description() as String),
+                &(plan.get_tags() as Vec<String>),
+                &(plan.get_url() as String),
+                &(plan.get_origin() as String),
+                &(plan.get_artifacts() as Vec<String>),
+                &(data as Vec<String>),
+            ],
+        ).map_err(Error::PlanCreate)?;
+        if rows.len() > 0 {
+            let plan = row_to_plan(&rows.get(0))?;
+            return Ok(Some(plan));
+        }
+        Ok(None)
+
     }
 
     pub fn plan_show(datastore: &DataStoreConn, plan_url: String) -> Result<Option<plansrv::Plan>> {

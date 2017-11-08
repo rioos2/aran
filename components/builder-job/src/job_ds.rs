@@ -7,8 +7,6 @@ use error::{Result, Error};
 use protocol::jobsrv;
 use postgres;
 use db::data_store::DataStoreConn;
-use rio_net::metrics::prometheus::PrometheusClient;
-use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
 
 

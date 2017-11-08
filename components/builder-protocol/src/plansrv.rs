@@ -97,37 +97,13 @@ pub struct Service {
 }
 
 impl Service {
-    pub fn new() -> Service {
-        ::std::default::Default::default()
-    }
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-    pub fn get_name(&self) -> ::std::string::String {
-        self.name.clone()
-    }
-
-    pub fn set_description(&mut self, v: ::std::string::String) {
-        self.description = v;
-    }
-    pub fn get_description(&self) -> ::std::string::String {
-        self.description.clone()
-    }
-
-    pub fn set_href(&mut self, v: ::std::string::String) {
-        self.href = v;
-    }
-    pub fn get_href(&self) -> ::std::string::String {
-        self.href.clone()
-    }
-
-
-    pub fn set_characteristics(&mut self, v: BTreeMap<String, String>) {
-        self.characteristics = v;
-    }
-
-    pub fn get_characteristics(&self) -> &BTreeMap<String, String> {
-        &self.characteristics
+    pub fn new(name: &str, description: &str, href: &str, characteristics: BTreeMap<String, String>) -> Service {
+        Service {
+            name: name.to_string(),
+            description: description.to_string(),
+            href: href.to_string(),
+            characteristics: characteristics,
+        }
     }
 }
 

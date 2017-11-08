@@ -40,7 +40,7 @@ use hyper::client::{IntoUrl, RequestBuilder};
 use hyper::status::StatusCode;
 use hyper::header::{ContentType, Accept, Authorization, Bearer};
 use protocol::net::NetError;
-use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
+// use url::percent_encoding::{percent_encode, PATH_SEGMENT_ENCODE_SET};
 use protocol::{sessionsrv, asmsrv, nodesrv, plansrv, storagesrv, originsrv, jobsrv, netsrv};
 use rioos_http::util::decoded_response;
 use rio_net::http::headers::*;
