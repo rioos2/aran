@@ -273,18 +273,12 @@ pub struct Status {
 }
 
 impl Status {
-    pub fn new() -> Status {
-        ::std::default::Default::default()
-    }
-    pub fn set_last_scale_time(&mut self, v: ::std::string::String) {
-        self.last_scale_time = v;
-    }
-
-    pub fn set_current_replicas(&mut self, v: u64) {
-        self.current_replicas = v;
-    }
-    pub fn set_desired_replicas(&mut self, v: u64) {
-        self.desired_replicas = v;
+    pub fn new(last_scale_time: &str, current_replicas: u64, desired_replicas: u64) -> Status {
+        Status {
+            last_scale_time: last_scale_time.to_string(),
+            current_replicas: current_replicas,
+            desired_replicas: desired_replicas,
+        }
     }
 }
 

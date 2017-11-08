@@ -107,19 +107,13 @@ pub fn storage_create(req: &mut Request) -> AranResult<Response> {
                         .collect::<Vec<_>>(),
                 ));
 
-                let mut disk_collection = Vec::new();
-
-                let mut disks = Disks::new();
-                for data in body.storage_info.disks {
-                    let mut disk = Disk::new();
-                    disk.set_disk(data.disk);
-                    disk.set_disk_type(data.disk_type);
-                    disk.set_point(data.point);
-                    disk.set_size(data.size);
-                    disk_collection.push(disk);
-                }
-                disks.set_disks(disk_collection);
-                storage_create.set_storage_info(disks);
+                storage_create.set_storage_info(Disks::new(
+                    body.storage_info
+                        .disks
+                        .iter()
+                        .map(|x| Disk::new(&x.disk, &x.disk_type, &x.point, &x.size))
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -197,19 +191,13 @@ pub fn storage_update(req: &mut Request) -> AranResult<Response> {
                 storage_create.set_host_ip(body.host_ip);
                 storage_create.set_storage_type(body.storage_type);
                 storage_create.set_paramaters(body.parameters);
-                let mut disk_collection = Vec::new();
-
-                let mut disks = Disks::new();
-                for data in body.storage_info.disks {
-                    let mut disk = Disk::new();
-                    disk.set_disk(data.disk);
-                    disk.set_disk_type(data.disk_type);
-                    disk.set_point(data.point);
-                    disk.set_size(data.size);
-                    disk_collection.push(disk);
-                }
-                disks.set_disks(disk_collection);
-                storage_create.set_storage_info(disks);
+                storage_create.set_storage_info(Disks::new(
+                    body.storage_info
+                        .disks
+                        .iter()
+                        .map(|x| Disk::new(&x.disk, &x.disk_type, &x.point, &x.size))
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
@@ -421,19 +409,13 @@ pub fn storage_pool_create(req: &mut Request) -> AranResult<Response> {
                         .collect::<Vec<_>>(),
                 ));
 
-                let mut disk_collection = Vec::new();
-
-                let mut disks = Disks::new();
-                for data in body.storage_info.disks {
-                    let mut disk = Disk::new();
-                    disk.set_disk(data.disk);
-                    disk.set_disk_type(data.disk_type);
-                    disk.set_point(data.point);
-                    disk.set_size(data.size);
-                    disk_collection.push(disk);
-                }
-                disks.set_disks(disk_collection);
-                storage_create.set_storage_info(disks);
+                storage_create.set_storage_info(Disks::new(
+                    body.storage_info
+                        .disks
+                        .iter()
+                        .map(|x| Disk::new(&x.disk, &x.disk_type, &x.point, &x.size))
+                        .collect::<Vec<_>>(),
+                ));
             }
             Err(err) => {
                 return Err(malformed_body(
