@@ -27,7 +27,6 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
                 i.get_storage_type(),
                 i.get_host_ip(),
                 i.get_storage_info().get_disks().iter().map(|d|{ format!("{}  ",d.get_size())}).collect(),
-                // rio_client.get_storagepool_by_id(&token,&email,&(i.get_id())).unwrap().get_items().iter().map(|f| { f.get_storage_info().get_disks().iter().map(|d| {format!("{}  ",d.get_size())}).collect()}).collect()
                 rio_client.get_storagepool_by_id(&token,&email,&(i.get_id())).unwrap().get_items().iter_mut().map(|f|{format!("{}  ",f.get_id())}).collect()
                  ]
 
@@ -35,7 +34,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let title = row!["Id", "Type", "Stored At Server","Available Disk","Pool Id"];
 
-    pretty_table(value, title);
+    pretty_table(value.to_owned(), title);
 
     ui.br()?;
 
@@ -44,8 +43,8 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
         https://www.rioos.sh/docs/reference/deployment/",
     )?;
 
-    // ui.end(
-    //     format!("{} records listed.", value.to_owned().len()),
-    // )?;
+    ui.end(
+        format!("{} records listed.", value.to_owned().len()),
+    )?;
     Ok(())
 }
