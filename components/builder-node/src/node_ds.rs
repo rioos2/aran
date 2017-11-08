@@ -33,6 +33,23 @@ impl NodeDS {
         Ok(None)
     }
 
+    pub fn node_get(datastore: &DataStoreConn, node_get: &asmsrv::IdGet) -> Result<Option<nodesrv::Node>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = conn.query(
+            "SELECT * from get_node_v1($1)",
+            &[
+                &(node_get.get_id().parse::<i64>().unwrap()),
+            ],
+        ).map_err(Error::NodeGet)?;
+        if rows.len() > 0 {
+            let node = row_to_node(&rows.get(0))?;
+            return Ok(Some(node));
+        }
+        Ok(None)
+    }
+
+
+
     pub fn node_list(datastore: &DataStoreConn) -> Result<Option<nodesrv::NodeGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 

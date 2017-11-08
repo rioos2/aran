@@ -1,12 +1,8 @@
 pub use error::{Error, Result};
 
 use common::ui::UI;
-use rioos_core::env;
-
-use api_client::{self, Client};
-
+use api_client::{Client};
 use {PRODUCT, VERSION};
-use config;
 
 use super::super::common::pretty_table;
 
@@ -27,8 +23,6 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
     ui.para(&format!("Status: {}", result.get_status().get_phase()))?;
     ui.para(&format!("Enabled : {}",result.get_enabled()))?;
     ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
-    let net = result.get_networks();
-    let node = result.get_nodes();
 
     let storageconn = rio_client.get_storageconnector_by_id(&token,&email,&result.get_storage())?;
     let storagepool = rio_client.get_storagepool_by_scid(&token, &email, &storageconn.get_id())?;

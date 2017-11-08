@@ -137,6 +137,8 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         nodes: post "/nodes" => XHandler::new(C(node_create)).before(basic.clone()),
         nodes_list: get "/nodes" => XHandler::new(C(node_list)).before(basic.clone()),
         node_status: put "/nodes/:id/status" => XHandler::new(C(node_status_update)).before(basic.clone()),
+        node_get: get "/nodes/:id" => XHandler::new(C(node_get)).before(basic.clone()),
+
 
         //secret API
         secrets: post "/origins/:origin/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),

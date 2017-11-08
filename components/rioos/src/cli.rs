@@ -5,7 +5,6 @@ use std::path::Path;
 use std::result;
 
 use clap::{App, AppSettings, Arg};
-use url::Url;
 
 pub fn get() -> App<'static, 'static> {
     let alias_login = sub_auth_login()
@@ -301,6 +300,11 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["listnode"])
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
             )
+            (@subcommand describe =>
+                (about: "Display the detailed state of datacenter")
+                (aliases: &["nodescribe"])
+                (@arg NODE_ID: +required +takes_value "Id for the node")
+            )
         )
         (@subcommand storages =>
             (about: "Commands relating to Rio/OS Storage")
@@ -387,6 +391,7 @@ pub fn get() -> App<'static, 'static> {
         (subcommand: alias_new)
         (subcommand: alias_init)
         (subcommand: alias_deploy)
+        (subcommand: alias_list)
         (subcommand: alias_deployapp)
         (after_help: "\nALIASES:\
             \n    login      Alias for: 'auth login'\
@@ -498,9 +503,9 @@ fn file_exists(val: String) -> result::Result<(), String> {
 }
 
 
-fn valid_url(val: String) -> result::Result<(), String> {
-    match Url::parse(&val) {
-        Ok(_) => Ok(()),
-        Err(_) => Err(format!("URL: '{}' is not valid", &val)),
-    }
-}
+// fn valid_url(val: String) -> result::Result<(), String> {
+//     match Url::parse(&val) {
+//         Ok(_) => Ok(()),
+//         Err(_) => Err(format!("URL: '{}' is not valid", &val)),
+//     }
+// }

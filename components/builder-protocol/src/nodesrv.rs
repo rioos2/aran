@@ -119,6 +119,7 @@ pub struct Status {
 }
 
 impl Status {
+
     pub fn new(capacity: BTreeMap<String, String>, allocatable: BTreeMap<String, String>, phase: &str, conditions: Vec<asmsrv::Condition>, addresses: Vec<Addresses>, node_info: NodeInfo) -> Status {
         Status {
             capacity: capacity,
@@ -132,6 +133,21 @@ impl Status {
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
+
+    pub fn get_conditions(&self) -> &Vec<asmsrv::Condition> {
+        &self.conditions
+    }
+
+    pub fn get_addresses(&self) -> &Vec<Addresses> {
+        &self.addresses
+    }
+    pub fn get_node_info(&self) -> &NodeInfo {
+        &self.node_info
+    }
+    pub fn get_capacity(&self) -> &BTreeMap<String, String> {
+        &self.capacity
+    }
+
 }
 
 
@@ -142,11 +158,18 @@ pub struct Addresses {
 }
 
 impl Addresses {
+
     pub fn new(node_type: &str, address: &str) -> Addresses {
         Addresses {
             node_type: node_type.to_string(),
             address: address.to_string(),
         }
+    }
+    pub fn get_node_type(&self) ->  ::std::string::String {
+        self.node_type.clone()
+    }
+    pub fn get_address(&self) ->  ::std::string::String {
+        self.address.clone()
     }
 }
 
@@ -162,6 +185,7 @@ pub struct NodeInfo {
 }
 
 impl NodeInfo {
+
     pub fn new(machine_id: &str, system_uuid: &str, kernel_version: &str, os_image: &str, architecture: &str, bridges: Vec<Bridge>) -> NodeInfo {
         NodeInfo {
             machine_id: machine_id.to_string(),
@@ -171,6 +195,12 @@ impl NodeInfo {
             architecture: architecture.to_string(),
             bridges: bridges,
         }
+    }
+    pub fn get_architecture(&self) -> ::std::string::String {
+        self.architecture.clone()
+    }
+    pub fn get_os_image(&self) -> ::std::string::String {
+        self.os_image.clone()
     }
 }
 

@@ -16,7 +16,7 @@ use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_fou
 use error::{Error, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
-use protocol::asmsrv::Condition;
+use protocol::asmsrv::{Condition,IdGet};
 use http::deployment_handler;
 use common::ui;
 
@@ -180,6 +180,34 @@ pub fn node_list(req: &mut Request) -> AranResult<Response> {
     }
 }
 
+pub fn node_get(req: &mut Request) -> AranResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("id").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut node_get = IdGet::new();
+    node_get.set_id(id.to_string());
+
+    match NodeDS::node_get(&conn, &node_get) {
+        Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
+        Err(err) => {
+            Err(internal_error(&format!("{}\n", err)))
+        }
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &node_get.get_id()
+            )))
+        }
+        }
+}
 
 pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
     let mut node_create = Node::new();

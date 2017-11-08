@@ -14,6 +14,7 @@ pub enum Error {
     NodeCreate(postgres::error::Error),
     NodeList(postgres::error::Error),
     NodeSetStatus(postgres::error::Error),
+    NodeGet(postgres::error::Error),
 }
 
 
@@ -26,6 +27,8 @@ impl fmt::Display for Error {
             Error::NodeCreate(ref e) => format!("Database error creating a node, {}", e),
             Error::NodeList(ref e) => format!("Database error list nodes, {}", e),
             Error::NodeSetStatus(ref e) => format!("Database error update node status, {}", e),
+            Error::NodeGet(ref e) => format!("Database error get node , {}", e),
+
         };
         write!(f, "{}", msg)
     }
@@ -38,6 +41,7 @@ impl error::Error for Error {
             Error::NodeCreate(ref err) => err.description(),
             Error::NodeList(ref err) => err.description(),
             Error::NodeSetStatus(ref err) => err.description(),
+            Error::NodeGet(ref err) => err.description(),
         }
     }
 }
