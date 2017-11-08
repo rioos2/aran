@@ -57,6 +57,17 @@ impl Migratable for NodeProcedures {
 
         migrator.migrate(
             "nodesrv",
+            r#"CREATE OR REPLACE FUNCTION get_node_v1(nid bigint) RETURNS SETOF node AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM node where id = nid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
+        migrator.migrate(
+            "nodesrv",
             r#"CREATE OR REPLACE FUNCTION get_nodes_v1() RETURNS SETOF node AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM node;
