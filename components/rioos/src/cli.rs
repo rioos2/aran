@@ -311,6 +311,11 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["liststorages"])
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
             )
+            (@subcommand describe =>
+                (about: "Display the detailed state of storage")
+                (aliases: &["storedescribe"])
+                (@arg STORAGE_ID: +required +takes_value "Id for the storage")
+            )
         )
         (@subcommand datacenters =>
             (about: "Commands relating to Rio/OS Datacenters(Locations)")
@@ -337,6 +342,11 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["g","ge","get"])
                 (@arg DATACENTER_ID: +required +takes_value
                     "A datacenter identifier (ex: 1, 2)")
+            )
+            (@subcommand describe =>
+                (about: "Display the detailed state of datacenter")
+                (aliases: &["datacendescribe"])
+                (@arg DATACENTER_ID: +required +takes_value "Id for the Datacenter")
             )
         )
         (@subcommand jobs =>

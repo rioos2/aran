@@ -109,6 +109,9 @@ impl Disks {
     pub fn set_disks(&mut self, v: Vec<Disk>) {
         self.disks = v;
     }
+    pub fn get_disks(&self) -> Vec<Disk> {
+        self.disks.clone()
+    }
 }
 
 
@@ -139,6 +142,10 @@ impl Disk {
     pub fn set_size(&mut self, v: ::std::string::String) {
         self.size = v;
     }
+
+    pub fn get_size(&self) -> ::std::string::String {
+        self.size.clone()
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -157,6 +164,9 @@ impl StorageGetResponse {
         self.items = v;
         self.kind = STORAGELIST.to_string();
         self.api_version = DEFAULT_API_VERSION.to_string();
+    }
+    pub fn get_items(&self) -> Vec<Storage> {
+        self.items.clone()
     }
 }
 
@@ -402,5 +412,8 @@ impl StoragePoolGetResponse {
         self.items = v;
         self.kind = STOARGEPOOLLIST.to_string();
         self.api_version = DEFAULT_API_VERSION.to_string();
+    }
+    pub fn get_items(&self) -> Vec<StoragePool> {
+        self.items.clone()
     }
 }
