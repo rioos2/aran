@@ -239,7 +239,7 @@ impl AranError for ConcreteAranError {
     }
 
     fn cause(&self) -> &str {
-        INTERNALERROR
+        &self.cause
     }
     fn human(&self) -> bool {
         self.human
@@ -362,7 +362,7 @@ pub fn internal_error(error: &str) -> Box<AranError> {
     Box::new(ConcreteAranError {
         description: error.to_string(),
         detail: None,
-        cause: "".to_string(),
+        cause: INTERNALERROR.to_string(),
         human: false,
     })
 }
