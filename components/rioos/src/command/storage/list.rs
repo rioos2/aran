@@ -11,22 +11,41 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
 
-    let  results = rio_client.get_storageconnector(&token, &email)?;
-    let value = results.get_items()
-            .iter_mut()
-            .map(|i| {
+    let results = rio_client.get_storageconnector(&token, &email)?;
+    let value = results
+        .get_items()
+        .iter_mut()
+        .map(|i| {
 
-                vec![
+            vec![
                 i.get_id(),
                 i.get_storage_type(),
                 i.get_host_ip(),
-                i.get_storage_info().get_disks().iter().map(|d|{ format!("{}  ",d.get_size())}).collect(),
-                rio_client.get_storagepool_by_id(&token,&email,&(i.get_id())).unwrap().get_items().iter_mut().map(|f|{format!("{}  ",f.get_id())}).collect()
-                 ]
+                i.get_storage_info()
+                    .get_disks()
+                    .iter()
+                    .map(|d| format!("{}  ", d.get_size()))
+                    .collect(),
+                rio_client
+                    .get_storagepool_by_id(&token, &email, &(i.get_id()))
+                    .unwrap()
+                    .get_items()
+                    .iter_mut()
+                    .map(|f| format!("{}  ", f.get_id()))
+                    .collect(),
+            ]
 
-            }).collect::<Vec<_>>();
+        })
+        .collect::<Vec<_>>();
 
-    let title = row!["Id", "Type", "Stored At Server","Available Disk","Pool Id"];
+    let title =
+        row![
+        "Id",
+        "Type",
+        "Stored At Server",
+        "Available Disk",
+        "Pool Id"
+    ];
 
     pretty_table(value.to_owned(), title);
 

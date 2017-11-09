@@ -9,6 +9,7 @@ extern crate rioos_core;
 extern crate rioos_common as common;
 extern crate rioos_api_client as api_client;
 extern crate rioos_http_client as http_client;
+extern crate rioos_builder_protocol as protocol;
 extern crate handlebars;
 
 
@@ -29,6 +30,7 @@ extern crate url;
 extern crate uuid;
 extern crate walkdir;
 extern crate base64;
+extern crate human_size;
 #[macro_use]
 extern crate prettytable;
 

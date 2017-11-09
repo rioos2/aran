@@ -21,7 +21,7 @@ pub fn start(ui: &mut UI, _token: String, maybe_name: Option<String>) -> Result<
     ui.begin("Constructing a cozy digitalcloud for you...")?;
     ui.br()?;
 
-    let (root, name) = match maybe_name {
+    let (root, _name) = match maybe_name {
         Some(name) => (name.clone(), name.clone()),
         // load the yaml file and call the api.
         None => {

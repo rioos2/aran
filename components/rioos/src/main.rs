@@ -148,7 +148,7 @@ fn sub_cli_login(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     command::cli::login::start(ui, &api_server_param_or_env(&m)?)
 }
 
-fn sub_cli_logout(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+fn sub_cli_logout(ui: &mut UI, _m: &ArgMatches) -> Result<()> {
     init();
 
     command::cli::logout::start(ui)
