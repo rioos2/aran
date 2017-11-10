@@ -21,6 +21,27 @@ pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";
 /// additional comments.
 pub const DEV_GITHUB_CLIENT_SECRET: &'static str = "438223113eeb6e7edf2d2f91a232b72de72b9bdf";
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub enum SecureBackend {
+    Local,
+    VAULT,
+}
+
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct SecurerCfg {
+    pub backend: SecureBackend,
+}
+
+impl Default for SecurerCfg {
+    fn default() -> Self {
+        SecurerCfg { backend: SecureBackend::Local }
+    }
+}
+
+pub trait SecurerAuth {
+    fn backend(&self) -> SecureBackend;
+}
 
 pub trait PasswordAuth {}
 
@@ -87,6 +108,7 @@ impl Default for PrometheusCfg {
         PrometheusCfg { url: DEFAULT_PROMETHEUS_URL.to_string() }
     }
 }
+
 
 /// Configuration structure for connecting to a Router
 #[derive(Clone, Debug, Deserialize)]

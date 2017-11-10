@@ -5,6 +5,7 @@ use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 
 use service::service_account_ds::ServiceAccountDS;
+use super::super::*;
 use iron::prelude::*;
 use iron::status;
 use router::Router;
@@ -141,9 +142,12 @@ pub fn secret_create(req: &mut Request) -> AranResult<Response> {
         format!("======= parsed {:?} ", secret_create),
     );
 
-    let conn = Broker::connect().unwrap();
+    let data = securer::from_config(
+        &req.get::<persistent::Read<SecurerBroker>>().unwrap(),
+        &Broker::connect().unwrap(),
+    )?;
 
-    match ServiceAccountDS::secret_create(&conn, &secret_create) {
+    match data.secure(&secret_create) {
         Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
