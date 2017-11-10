@@ -10,11 +10,10 @@ use db::data_store::DataStoreConn;
 use serde_json;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
+
 const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 const HORIZONTALPODAUTOSCALAR: &'static str = "HorizontalPodAutoscaler";
-
-
 
 pub struct ScalingDS;
 

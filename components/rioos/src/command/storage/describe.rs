@@ -46,8 +46,8 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
     ))?;
 
     ui.para(
-        "For more information on digitalclouds datacenter: \
-        https://www.rioos.sh/docs/reference/deployment/",
+        "For more information on storages: \
+        https://www.rioos.sh/docs/reference/storages/",
     )?;
 
     Ok(())

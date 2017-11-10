@@ -109,8 +109,8 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
     let mut config = match args.value_of("config") {
         Some(cfg_path) => try!(Config::from_file(cfg_path)),
         None => {
-            /// Override with the default tls config if the pkcs12 file named
-            /// serving-rioos-api-server.pfx exists
+            // Override with the default tls config if the pkcs12 file named
+            // serving-rioos-api-server.pfx exists
             let mut default_config = Config::default();
 
             if let Some(identity_pkcs12_file) = SERVING_TLS_PFX.to_str() {
