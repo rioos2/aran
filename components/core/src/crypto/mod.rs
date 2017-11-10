@@ -83,7 +83,7 @@ pub mod test_support {
     use std::io::Read;
     use std::fs::File;
     use std::path::PathBuf;
-
+    use time;
 
     use error as herror;
 
