@@ -1,13 +1,11 @@
+#[warn(unused_assignments)]
 pub use error::{Error, Result};
-
 use common::ui::UI;
 use api_client::Client;
 use {PRODUCT, VERSION};
 use protocol::nodesrv;
 use super::super::common::condition_table;
 use human_size::Size;
-
-
 
 pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -> Result<()> {
     ui.begin(&format!("Constructing a {} node for you...", id))?;
@@ -37,8 +35,44 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
             ]
         })
         .collect::<Vec<_>>();
+
+    let x = result
+        .get_status()
+        .get_capacity()
+        .get("memory")
+        .unwrap()
+        .parse::<Size>()
+        .unwrap()
+        .into_bytes() -
+        result
+            .get_status()
+            .get_allocatable()
+            .get("memory")
+            .unwrap()
+            .parse::<Size>()
+            .unwrap()
+            .into_bytes();
+
+    let sto = result
+        .get_status()
+        .get_capacity()
+        .get("storage")
+        .unwrap()
+        .parse::<Size>()
+        .unwrap()
+        .into_bytes() -
+        result
+            .get_status()
+            .get_allocatable()
+            .get("storage")
+            .unwrap()
+            .parse::<Size>()
+            .unwrap()
+            .into_bytes();
+
     let cpu = vec![
         vec![
+            "Cpu".to_string(),
             (result
                  .get_status()
                  .get_capacity()
@@ -71,28 +105,8 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
                 .unwrap()
                 .to_string(),
         ],
-    ];
-    let mut x = result
-        .get_status()
-        .get_capacity()
-        .get("memory")
-        .unwrap()
-        .parse::<Size>()
-        .unwrap()
-        .into_bytes() -
-        result
-            .get_status()
-            .get_allocatable()
-            .get("memory")
-            .unwrap()
-            .parse::<Size>()
-            .unwrap()
-            .into_bytes();
-
-
-
-    let memory = vec![
         vec![
+            "Memory".to_string(),
             bytes_to_human(x),
             result
                 .get_status()
@@ -107,27 +121,8 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
                 .unwrap()
                 .to_string(),
         ],
-    ];
-
-    let mut sto = result
-        .get_status()
-        .get_capacity()
-        .get("storage")
-        .unwrap()
-        .parse::<Size>()
-        .unwrap()
-        .into_bytes() -
-        result
-            .get_status()
-            .get_allocatable()
-            .get("storage")
-            .unwrap()
-            .parse::<Size>()
-            .unwrap()
-            .into_bytes();
-
-    let storage = vec![
         vec![
+            "Storage".to_string(),
             bytes_to_human(sto),
             result
                 .get_status()
@@ -143,47 +138,33 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
                 .to_string(),
         ],
     ];
-
     ui.heading("OverView")?;
     ui.para(&format!("Id: {}", result.get_id()))?;
     ui.para(&format!("IP Address: {}", addr))?;
     ui.para(&format!(
-        "Node Os image: {} - {}",
+        "Os image: {} - {}",
         result.get_status().get_node_info().get_os_image(),
         result.get_status().get_node_info().get_architecture()
     ))?;
     ui.para(
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
-    ui.br()?;
-    ui.heading("Status conditions")?;
-    let title = row!["Condition Type", "Status", "Reason", "last Transition Time"];
+    ui.para(&format!("Hrs Ago: {}", result.get_created_at()))?;
+    ui.heading("Conditions")?;
+    let title = row!["Type", "Status", "Reason", "LastTransitionTime"];
     condition_table(conditions.to_owned(), title);
     ui.br()?;
 
-
-    ui.heading("CPU :")?;
-    let title1 = row!["Used", "Free", "Total"];
+    ui.heading("Capacity")?;
+    let title1 = row!["Resource", "Used", "Free", "Total"];
     condition_table(cpu, title1);
     ui.br()?;
 
 
-    ui.heading("Memory:")?;
-    let title2 = row!["Used", "Free", "Total"];
-    condition_table(memory, title2);
-    ui.br()?;
-
-
-    ui.heading("Storage :")?;
-    let title3 = row!["Used", "Free", "Total"];
-    condition_table(storage, title3);
-    ui.br()?;
-
-    ui.para(&format!("Hrs Ago: {}", result.get_created_at()))?;
 
     ui.para(
-        "For more information on digitalclouds node: \
-        https://www.rioos.sh/docs/reference/deployment/",
+        "For more information on node: \
+        https://www.rioos.sh/docs/reference/node/",
     )?;
 
     Ok(())
@@ -201,14 +182,11 @@ pub fn check(a: Vec<nodesrv::Addresses>, param: &str) -> String {
 
 pub fn bytes_to_human(mut x: f64) -> String {
     let mut i = 0;
-    let mut y = 0.00;
     while x > 1024.00 {
         i = i + 1;
         x = x / 1024.00;
-
     }
-    let mut size = "".to_string();
-
+    let size: String;
     match i {
         0 => size = " B".to_string(),
         1 => size = " KB".to_string(),
@@ -218,5 +196,5 @@ pub fn bytes_to_human(mut x: f64) -> String {
         _ => size = " PiB".to_string(),
 
     }
-    format!("{} {}", x, size)
+    format!("{:.2} {}", x, size)
 }
