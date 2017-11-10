@@ -40,12 +40,15 @@ extern crate serde_json;
 extern crate staticfile;
 extern crate toml;
 extern crate unicase;
+extern crate postgres;
+
 
 pub mod config;
 pub mod error;
 pub mod http;
 pub mod command;
 pub mod server;
+pub mod securer;
 
 pub use self::config::Config;
 pub use self::error::{Error, Result};

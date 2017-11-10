@@ -11,6 +11,7 @@ use common;
 use rio_core;
 use hyper;
 use db;
+use service;
 pub const MISSING_FIELD: &'static str = "Missing value for field:";
 pub const BODYNOTFOUND: &'static str = "nothing found in body";
 pub const IDMUSTNUMBER: &'static str = "id must be a number";
@@ -19,6 +20,7 @@ pub const IDMUSTNUMBER: &'static str = "id must be a number";
 #[derive(Debug)]
 pub enum Error {
     Db(db::error::Error),
+    Secret(service::Error),
     BadPort(String),
     RioosAranCore(rio_core::Error),
     RioosAranCommon(common::Error),
@@ -34,6 +36,7 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
+            Error::Secret(ref e) => format!("{}", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::RioosAranCommon(ref e) => format!("{}", e),
             Error::HyperError(ref e) => format!("{}", e),
@@ -49,6 +52,7 @@ impl error::Error for Error {
         match *self {
             Error::Db(ref err) => err.description(),
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
+            Error::Secret(ref err) => err.description(),
             Error::RioosAranCore(ref err) => err.description(),
             Error::RioosAranCommon(ref err) => err.description(),
             Error::HyperError(ref err) => err.description(),

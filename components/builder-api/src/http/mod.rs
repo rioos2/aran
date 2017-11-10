@@ -22,7 +22,6 @@ use common::ui::UI;
 use rio_net::http::middleware::*;
 use rio_net::auth::default::PasswordAuthClient;
 use rio_net::metrics::prometheus::PrometheusClient;
-
 // turn it on later
 //use rio_core::event::EventLogger;
 
@@ -142,7 +141,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
         //secret API
         secrets: post "/origins/:origin/secrets" => XHandler::new(C(secret_create)).before(basic.clone()),
-        secrets_list: get "/secrets" => XHandler::new(C(secret_list)),
+        secrets_list: get "/secrets" => XHandler::new(C(secret_list)).before(basic.clone()),
         secret_show: get "/secrets/:id" => XHandler::new(C(secret_show)).before(basic.clone()),
         secret_show_by_origin: get "/origins/:origin/secrets" => XHandler::new(C(secret_show_by_origin)),
 
@@ -217,6 +216,10 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
 
     chain.link(persistent::Read::<PrometheusCli>::both(
         PrometheusClient::new(&*config),
+    ));
+
+    chain.link(persistent::Read::<SecurerBroker>::both(
+        SecurerConn::new(&*config),
     ));
 
     chain.link(persistent::Read::<DataStoreBroker>::both(
