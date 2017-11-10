@@ -232,6 +232,20 @@ impl Condition {
             last_probe_time: last_probe_time.to_string(),
         }
     }
+
+    pub fn get_condition_type(&self) -> ::std::string::String {
+        self.condition_type.clone()
+    }
+    pub fn get_status(&self) -> ::std::string::String {
+        self.status.clone()
+    }
+    pub fn get_reason(&self) -> ::std::string::String {
+        self.reason.clone()
+    }
+    pub fn get_last_transition_time(&self) -> ::std::string::String {
+        self.last_transition_time.clone()
+    }
+
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]

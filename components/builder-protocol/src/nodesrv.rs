@@ -147,6 +147,9 @@ impl Status {
     pub fn get_capacity(&self) -> &BTreeMap<String, String> {
         &self.capacity
     }
+    pub fn get_allocatable(&self) -> &BTreeMap<String, String> {
+        &self.allocatable
+    }
 
 }
 

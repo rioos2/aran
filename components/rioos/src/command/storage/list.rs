@@ -38,7 +38,6 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
         .flat_map(|s| s)
         .collect::<Vec<_>>();
 
-
     let title = row![
         "Id",
         "Type",
