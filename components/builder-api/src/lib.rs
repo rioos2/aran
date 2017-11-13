@@ -21,12 +21,12 @@ extern crate rioos_builder_storagesrv as storage;
 extern crate rioos_builder_workersrv as worker;
 extern crate rioos_builder_jobsrv as job;
 
-
-
 extern crate rioos_builder_db as db;
 extern crate hyper;
 extern crate hyper_native_tls;
 extern crate iron;
+extern crate rioos_http_client as rioos_http;
+
 #[macro_use]
 extern crate log;
 extern crate mount;
@@ -40,12 +40,16 @@ extern crate serde_json;
 extern crate staticfile;
 extern crate toml;
 extern crate unicase;
+extern crate postgres;
+extern crate url;
+
 
 pub mod config;
 pub mod error;
 pub mod http;
 pub mod command;
 pub mod server;
+pub mod securer;
 
 pub use self::config::Config;
 pub use self::error::{Error, Result};

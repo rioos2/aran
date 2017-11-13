@@ -136,6 +136,29 @@ impl Key for DataStoreBroker {
     type Value = DataStoreConn;
 }
 
+pub struct SecurerBroker;
+
+impl Key for SecurerBroker {
+    type Value = SecurerConn;
+}
+
+#[derive(Clone)]
+pub struct SecurerConn {
+    pub backend: config::SecureBackend,
+    pub endpoint: String,
+    pub token: String,
+}
+
+#[allow(unused_variables)]
+impl SecurerConn {
+    pub fn new<T: config::SecurerAuth>(config: &T) -> Self {
+        SecurerConn {
+            backend: config.backend(),
+            endpoint: config.endpoint().to_string(),
+            token: config.token().to_string(),
+        }
+    }
+}
 
 impl BeforeMiddleware for DataStoreBroker {
     fn before(&self, req: &mut Request) -> IronResult<()> {

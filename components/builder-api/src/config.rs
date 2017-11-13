@@ -7,7 +7,7 @@ use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
-use rio_net::config::{PasswordAuth, ShieldCfg, ShieldAuth, PrometheusCfg, Prometheus};
+use rio_net::config::{PasswordAuth, ShieldCfg, ShieldAuth, PrometheusCfg, Prometheus, SecurerCfg, SecurerAuth, SecureBackend};
 use rio_core::config::ConfigFile;
 
 use error::Error;
@@ -23,7 +23,7 @@ pub struct Config {
     //  Where to pull and record metrics
     pub prometheus: PrometheusCfg,
     //  Where to store the hidden treasures
-    // pub vaults: VaultsCfg,
+    pub vaults: SecurerCfg,
     //  Whether to log events for metrics
     pub events_enabled: bool,
     /// Where to record log events for metrics
@@ -37,7 +37,7 @@ impl Default for Config {
             ui: UiCfg::default(),
             shield: ShieldCfg::default(),
             prometheus: PrometheusCfg::default(),
-            // vaults: VaultsCfg::default(),
+            vaults: SecurerCfg::default(),
             events_enabled: false,
             log_dir: env::temp_dir().to_string_lossy().into_owned(),
         }
@@ -62,6 +62,19 @@ impl ShieldAuth for Config {
 
     fn github_client_secret(&self) -> &str {
         &self.prometheus.url
+    }
+}
+
+
+impl SecurerAuth for Config {
+    fn backend(&self) -> SecureBackend {
+        self.vaults.backend.clone()
+    }
+    fn endpoint(&self) -> &str {
+        &self.vaults.endpoint
+    }
+    fn token(&self) -> &str {
+        &self.vaults.token
     }
 }
 
