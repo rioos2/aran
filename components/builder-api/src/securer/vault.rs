@@ -13,8 +13,6 @@
 //! Currently the archiver must be configured with both an access key
 //! ID and a secret access key.
 
-use std::panic::{self, AssertUnwindSafe};
-use std::str::FromStr;
 
 use rioos_http::ApiClient as HyperClient;
 
@@ -23,7 +21,7 @@ use rio_net::http::middleware::SecurerConn;
 use error::{Result, Error};
 use hyper::header::{ContentType, Accept};
 use hyper::client::IntoUrl;
-use std::io::{Read, Write};
+use std::io::Read;
 
 use protocol::servicesrv::Secret;
 

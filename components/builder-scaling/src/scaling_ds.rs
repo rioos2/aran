@@ -14,6 +14,12 @@ use rio_net::metrics::collector::{Collector, CollectorScope};
 const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 const HORIZONTALPODAUTOSCALAR: &'static str = "HorizontalPodAutoscaler";
+const JOB: &'static str = "job";
+const RIOOS_ASSEMBLY: &'static str = "rioos_assmbly";
+const MODE: &'static str = "mode";
+const SYSTEM: &'static str = "system";
+
+
 
 pub struct ScalingDS;
 
@@ -125,9 +131,15 @@ impl ScalingDS {
     }
 
     pub fn hs_metrics(client: &PrometheusClient, af_id: &str, metric_source_name: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {
-        let label_name = format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id);
+        let label_name1 = format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id);
+        let label_name2 = format!("{}={}", JOB, RIOOS_ASSEMBLY);
+        let label_name3 = format!("{}={}", MODE, SYSTEM);
         let metric_scope = vec![metric_source_name.to_string()];
-        let group_scope: Vec<String> = vec![label_name.to_string()];
+        let group_scope: Vec<String> = vec![
+            label_name1.to_string(),
+            label_name2.to_string(),
+            label_name3.to_string(),
+        ];
 
         let scope = CollectorScope {
             metric_names: metric_scope,
@@ -135,7 +147,7 @@ impl ScalingDS {
             last_x_minutes: Some(METRIC_DEFAULT_LAST_X_MINUTE.to_string()),
         };
 
-        let mut metric_collector = Collector::new(client, scope);
+        let mut metric_collector = Collector::new(client, query);
         let metric_response = metric_collector.metric_by().unwrap();
 
         let mut metrics = nodesrv::Osusages::new();

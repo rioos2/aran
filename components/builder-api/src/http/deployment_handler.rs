@@ -89,9 +89,10 @@ struct CommonStatusReq {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VolumeReq {
-    id: String,
+    id: u32,
     target: String,
     volume_type: String,
+    size: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -349,7 +350,9 @@ pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
                 assembly_create.set_volumes(
                     body.volumes
                         .iter()
-                        .map(|x| Volume::with_volumes(&x.id, &x.target, &x.volume_type))
+                        .map(|x| {
+                            Volume::with_volumes(x.id, &x.target, &x.volume_type, &x.size)
+                        })
                         .collect::<Vec<_>>(),
                 );
                 assembly_create.set_type_meta(TypeMeta::new(ASSEMBLY));
