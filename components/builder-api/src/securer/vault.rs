@@ -1,13 +1,12 @@
 // Copyright (c) 2017 RioCorp Inc.
 //
 
-//! Archiver variant which uses Vault (or an API compatible clone) for
-//! vault.
+//! Archiver variant which uses EnvKey (or an API compatible clone) for
+//! EnvKey.
 //!
-//! Has been tested against [vaultproject](https://vaultproject.io).
 //!
-//! All secrets are stored in the vault using the auth/master keys of the
-//! vault
+//! All secrets are stored in the EnvKey using the auth/master keys of the
+//! EnvKey
 //!
 //! # Configuration
 //!
@@ -17,21 +16,37 @@
 use std::panic::{self, AssertUnwindSafe};
 use std::str::FromStr;
 
-use hyper::client::Client as HyperClient;
+use rioos_http::ApiClient as HyperClient;
 
 use super::Securer;
 use rio_net::http::middleware::SecurerConn;
 use error::{Result, Error};
+use hyper::header::{ContentType, Accept};
+use hyper::client::IntoUrl;
+use std::io::{Read, Write};
 
 use protocol::servicesrv::Secret;
 
-//
-// pub struct EnvKeySecurer {
-//     client: VaultClient<HyperClient>,
-// }
-
+pub struct EnvKeyClient {
+    inner: HyperClient,
+    token: String,
+}
+impl EnvKeyClient {
+    pub fn new<U>(url: U, token: &str) -> Result<Self>
+    where
+        U: IntoUrl,
+    {
+        let url = url.into_url()?;
+        Ok(EnvKeyClient {
+            token: token.to_string(),
+            inner: HyperClient::new(url, "rioos", "v1", None).map_err(
+                Error::HabitatHttpClient,
+            )?,
+        })
+    }
+}
 pub struct EnvKeySecurer {
-    client: SecurerConn,
+    client: EnvKeyClient,
 }
 
 impl EnvKeySecurer {
@@ -39,18 +54,16 @@ impl EnvKeySecurer {
         // let final_endpoint = match config.endpoint {
         //     Some(ref url) => {
         //         let url = extern_url::Url::parse(url.as_str()).expect("Invalid endpoint URL given");
-        //         Some(url)
+        //         url
         //     }
         //     None => None,
         // };
-        //
-        // let user_agent = format!("RioOS-API/{}", VERSION);
-        //
-        // let token = config.token.as_str().unwrap();
-        //
-        // let client = VaultClient::new(endpoint);
 
-        Ok(EnvKeySecurer { client: config.clone() })
+        let token = config.token.split("-").collect::<Vec<_>>();
+
+        Ok(EnvKeySecurer {
+            client: EnvKeyClient::new(&config.endpoint, token[0])?,
+        })
     }
 }
 
@@ -99,7 +112,7 @@ impl Securer for EnvKeySecurer {
         Ok(Some(security_req.clone()))
     }
 
-    fn retrieve(&self, security_id: u64) -> Result<Vec<String>> {
+    fn retrieve(&self) -> Result<Option<Secret>> {
         // //As above when uploading a job file, we currently need to
         // // catch a potential panic if the object store cannot be reached
         // let result = panic::catch_unwind(AssertUnwindSafe(
@@ -134,8 +147,22 @@ impl Securer for EnvKeySecurer {
         //     .collect();
         //
         // Ok(lines)
+        // let res = self.client.inner.get("").send().map_err(Error::HyperError)?;
 
-        let data = vec![];
-        Ok(data)
+
+        let mut res = self.client
+            .inner
+            .get(&self.client.token)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .send()
+            .map_err(Error::HyperError)?;
+
+        let mut encoded = String::new();
+
+        res.read_to_string(&mut encoded).map_err(Error::IO)?;
+        let mut secret = Secret::new();
+        secret.set_secret_type(encoded);
+        Ok(Some(secret))
     }
 }

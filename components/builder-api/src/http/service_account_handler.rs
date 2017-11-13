@@ -195,13 +195,19 @@ pub fn secret_show(req: &mut Request) -> AranResult<Response> {
 #[allow(unused_variables)]
 pub fn secret_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
-    match ServiceAccountDS::secret_list(&conn) {
-        Ok(Some(service_list)) => Ok(render_json(status::Ok, &service_list)),
-        Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
-        }
+
+    let data = securer::from_config(
+        &req.get::<persistent::Read<SecurerBroker>>().unwrap(),
+        &Broker::connect().unwrap(),
+    )?;
+
+    match data.retrieve() {
+        Ok(service_list) => Ok(render_json(status::Ok, &service_list)),
+        // Ok(None) => {
+        //     Err(not_found_error(
+        //         &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+        //     ))
+        // }
         Err(err) => Err(internal_error(&format!("{}", err))),
     }
 }
