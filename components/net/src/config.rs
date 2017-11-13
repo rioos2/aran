@@ -21,26 +21,39 @@ pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";
 /// additional comments.
 pub const DEV_GITHUB_CLIENT_SECRET: &'static str = "438223113eeb6e7edf2d2f91a232b72de72b9bdf";
 
+pub const ENV_KEY_URL: &'static str = "https://env.envkey.com/v1/";
+
+pub const TOKEN: &'static str = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R";
+
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum SecureBackend {
     Local,
-    VAULT,
+    EnvKey,
 }
 
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SecurerCfg {
     pub backend: SecureBackend,
+    pub endpoint: String,
+    pub token: String,
 }
 
 impl Default for SecurerCfg {
     fn default() -> Self {
-        SecurerCfg { backend: SecureBackend::Local }
+        SecurerCfg {
+            backend: SecureBackend::EnvKey,
+            endpoint: ENV_KEY_URL.to_string(),
+            token: TOKEN.to_string(),
+        }
     }
 }
 
 pub trait SecurerAuth {
     fn backend(&self) -> SecureBackend;
+    fn endpoint(&self) -> &str;
+    fn token(&self) -> &str;
 }
 
 pub trait PasswordAuth {}

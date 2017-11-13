@@ -37,8 +37,7 @@ impl Securer for LocalSecurer {
         Ok(secret)
     }
 
-    fn retrieve(&self, security_id: u64) -> Result<Vec<String>> {
-        let data = vec![];
-        Ok(data)
+    fn retrieve(&self) -> Result<Option<Secret>> {
+        Ok(Some(Secret::new()))
     }
 }

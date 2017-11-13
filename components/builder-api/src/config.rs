@@ -70,6 +70,12 @@ impl SecurerAuth for Config {
     fn backend(&self) -> SecureBackend {
         self.vaults.backend.clone()
     }
+    fn endpoint(&self) -> &str {
+        &self.vaults.endpoint
+    }
+    fn token(&self) -> &str {
+        &self.vaults.token
+    }
 }
 
 

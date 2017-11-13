@@ -34,13 +34,13 @@ pub trait Securer: Send {
 
     /// Given a `job_id`, retrieves the log output for that job from
     /// long-term storage.
-    fn retrieve(&self, security_id: u64) -> Result<Vec<String>>;
+    fn retrieve(&self) -> Result<Option<Secret>>;
 }
 
 /// Create appropriate Securer variant based on configuration values.
 pub fn from_config(config: &SecurerConn, conn: &DataStoreConn) -> Result<Box<Securer>> {
     match config.backend {
         SecureBackend::Local => Ok(Box::new(local::LocalSecurer::new(conn)?)),
-        SecureBackend::VAULT => Ok(Box::new(vault::EnvKeySecurer::new(config)?)),
+        SecureBackend::EnvKey => Ok(Box::new(vault::EnvKeySecurer::new(config)?)),
     }
 }
