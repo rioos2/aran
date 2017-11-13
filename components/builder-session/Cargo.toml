@@ -15,6 +15,7 @@ chrono = { version = "0.3.0", features = ["serde"] }
 rand = "*"
 serde = "1.0.11"
 serde_json = "1.0.2"
+persistent = "*"
 
 [dependencies.clap]
 version = "*"
@@ -25,6 +26,7 @@ path = "../builder-db"
 
 [dependencies.rioos_builder_protocol]
 path = "../builder-protocol"
+
 
 [dependencies.ldap3]
 version = "0.5"

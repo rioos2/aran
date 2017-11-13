@@ -11,10 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-#[macro_use]
 extern crate rioos_builder_db as db;
-extern crate rioos_builder_sessionsrv as sessionsrv;
+extern crate rioos_builder_session as session;
 extern crate rioos_builder_protocol as protocol;
+extern crate rand;
 
 mod data_store;

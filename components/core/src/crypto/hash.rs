@@ -28,9 +28,7 @@ where
 pub fn hash_string(data: &str) -> String {
     let mut out = [0u8; libsodium_sys::crypto_generichash_BYTES];
     let mut st = vec![0u8; (unsafe { libsodium_sys::crypto_generichash_statebytes() })];
-    let pst = unsafe {
-        mem::transmute::<*mut u8, *mut libsodium_sys::crypto_generichash_state>(st.as_mut_ptr())
-    };
+    let pst = unsafe { mem::transmute::<*mut u8, *mut libsodium_sys::crypto_generichash_state>(st.as_mut_ptr()) };
     unsafe {
         libsodium_sys::crypto_generichash_init(pst, ptr::null_mut(), 0, out.len());
         libsodium_sys::crypto_generichash_update(pst, data[..].as_ptr(), data.len() as u64);
@@ -42,9 +40,7 @@ pub fn hash_string(data: &str) -> String {
 pub fn hash_bytes(data: &[u8]) -> String {
     let mut out = [0u8; libsodium_sys::crypto_generichash_BYTES];
     let mut st = vec![0u8; (unsafe { libsodium_sys::crypto_generichash_statebytes() })];
-    let pst = unsafe {
-        mem::transmute::<*mut u8, *mut libsodium_sys::crypto_generichash_state>(st.as_mut_ptr())
-    };
+    let pst = unsafe { mem::transmute::<*mut u8, *mut libsodium_sys::crypto_generichash_state>(st.as_mut_ptr()) };
     unsafe {
         libsodium_sys::crypto_generichash_init(pst, ptr::null_mut(), 0, out.len());
         libsodium_sys::crypto_generichash_update(pst, data[..].as_ptr(), data.len() as u64);
@@ -56,9 +52,7 @@ pub fn hash_bytes(data: &[u8]) -> String {
 pub fn hash_reader(reader: &mut BufReader<File>) -> Result<String> {
     let mut out = [0u8; libsodium_sys::crypto_generichash_BYTES];
     let mut st = vec![0u8; (unsafe { libsodium_sys::crypto_generichash_statebytes() })];
-    let pst = unsafe {
-        mem::transmute::<*mut u8, *mut libsodium_sys::crypto_generichash_state>(st.as_mut_ptr())
-    };
+    let pst = unsafe { mem::transmute::<*mut u8, *mut libsodium_sys::crypto_generichash_state>(st.as_mut_ptr()) };
     unsafe {
         libsodium_sys::crypto_generichash_init(pst, ptr::null_mut(), 0, out.len());
     }

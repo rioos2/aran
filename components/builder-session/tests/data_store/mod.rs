@@ -1,93 +1,77 @@
 use protocol::sessionsrv;
-use sessionsrv::data_store::DataStore;
+use db::data_store::Broker;
+use session::session_ds::SessionDS;
+use rand;
+
+
+fn create_force_account() -> sessionsrv::Session {
+    let mut ac = sessionsrv::SessionCreate::new();
+    let conn = Broker::connect().unwrap();
+    let api_key = rand::random::<u64>().to_string();
+    ac.set_apikey(api_key);
+    ac.set_email("vino@info.io".to_string());
+    ac.set_token("t34567#$%dfgbnmkjhgfdfgbn".to_string());
+    ac.set_password("123456789".to_string());
+    SessionDS::find_or_create_account_via_session(&conn, &ac, true, false, "select_or_insert_account_v1").expect("Should create account")
+}
 
 #[test]
 fn create_account() {
-    let ds = datastore_test!(DataStore);
-    let mut sc = sessionsrv::SessionCreate::new();
-    sc.set_token(String::from("hail2theking"));
-    sc.set_extern_id(64);
-    sc.set_email(String::from("bobo@chef.io"));
-    sc.set_name(String::from("Bobo T. Clown"));
-    sc.set_provider(sessionsrv::OAuthProvider::PasswordAuth);
+    let conn = Broker::connect().unwrap();
+    let mut account_create = sessionsrv::SessionCreate::new();
+    let api_key = rand::random::<u64>().to_string();
+    account_create.set_apikey(api_key);
+    account_create.set_token("ty987645yhnbfert".to_string());
+    account_create.set_name("suganya".to_string());
+    account_create.set_email("suga@riocorp.io".to_string());
+    account_create.set_first_name("suagnya".to_string());
+    account_create.set_last_name("k".to_string());
+    account_create.set_phone("1234567890".to_string());
+    account_create.set_password("12345678".to_string());
+    account_create.set_states("true".to_string());
+    account_create.set_suspend("suapendes".to_string());
+    account_create.set_approval("approve".to_string());
+    account_create.set_roles(vec!["role/rioos:superuser".to_string()]);
+    account_create.set_registration_ip_address("192.1.1.1".to_string());
 
-    let session = ds.find_or_create_account_via_session(&sc, true, false, false)
-        .expect("Should create account");
-    assert!(session.get_id() != 0, "Created account has an ID");
-    assert_eq!(session.get_email(), "bobo@chef.io");
-    assert_eq!(session.get_name(), "Bobo T. Clown");
+    let session = SessionDS::find_or_create_account_via_session(
+        &conn,
+        &account_create,
+        true,
+        false,
+        "select_or_insert_account_v1",
+    ).expect("Should create account");
+    assert!(session.get_id() != "", "Created account has an ID");
+    assert_eq!(session.get_email(), "suga@riocorp.io");
+    assert_eq!(session.get_name(), "suganya");
 
-    let session2 = ds.find_or_create_account_via_session(&sc, true, false, false)
-        .expect("Should return account");
-    assert_eq!(session.get_id(), session2.get_id());
-    assert_eq!(session.get_email(), session2.get_email());
-    assert_eq!(session.get_name(), session2.get_name());
 }
 
-fn create_bobo_account(ds: &DataStore) -> sessionsrv::Session {
-    let mut sc = sessionsrv::SessionCreate::new();
-    sc.set_token(String::from("hail2theking"));
-    sc.set_extern_id(64);
-    sc.set_email(String::from("bobo@chef.io"));
-    sc.set_name(String::from("Bobo T. Clown"));
-    sc.set_provider(sessionsrv::OAuthProvider::PasswordAuth);
-    ds.find_or_create_account_via_session(&sc, true, false, false)
-        .expect("Should create account")
-}
 
 #[test]
-fn get_account() {
-    let ds = datastore_test!(DataStore);
-    let bobo = create_bobo_account(&ds);
-
-    let mut ag = sessionsrv::AccountGet::new();
-    ag.set_name(bobo.get_name().to_string());
-    let bobo2 = ds.get_account(&ag)
+fn get_account_by_email() {
+    let conn = Broker::connect().unwrap();
+    let account: sessionsrv::Session = create_force_account();
+    let mut ac = sessionsrv::AccountGet::new();
+    ac.set_email(account.get_email().to_string());
+    let get_ac = SessionDS::get_account(&conn, &ac)
         .expect("Should run without error")
-        .expect("Bobo should exist");
+        .expect("Account should exist");
 
-    assert_eq!(bobo.get_id(), bobo2.get_id());
-    assert_eq!(bobo.get_email(), bobo2.get_email());
-    assert_eq!(bobo.get_name(), bobo2.get_name());
+    assert_eq!(account.get_email(), get_ac.get_email());
+
 }
 
 #[test]
 fn get_account_by_id() {
-    let ds = datastore_test!(DataStore);
-    let bobo = create_bobo_account(&ds);
-
-    let mut ag = sessionsrv::AccountGetId::new();
-    ag.set_id(bobo.get_id());
-    let bobo2 = ds.get_account_by_id(&ag)
+    let conn = Broker::connect().unwrap();
+    let account: sessionsrv::Session = create_force_account();
+    let mut ac = sessionsrv::AccountGetId::new();
+    ac.set_id(account.get_id().to_string());
+    let get_ac = SessionDS::get_account_by_id(&conn, &ac)
         .expect("Should run without error")
-        .expect("Bobo should exist");
+        .expect("Account should exist");
 
-    assert_eq!(bobo.get_id(), bobo2.get_id());
-    assert_eq!(bobo.get_email(), bobo2.get_email());
-    assert_eq!(bobo.get_name(), bobo2.get_name());
-}
+    assert_eq!(account.get_id(), get_ac.get_id());
 
-#[test]
-fn get_session() {
-    let ds = datastore_test!(DataStore);
-    let bobo = create_bobo_account(&ds);
-
-    let mut sg = sessionsrv::SessionGet::new();
-    sg.set_name(String::from(bobo.get_name()));
-    sg.set_token(String::from(bobo.get_token()));
-
-    let session = ds.get_session(&sg)
-        .expect("Should run without error")
-        .expect("Session should exist");
-    assert_eq!(bobo, session);
-
-    // Should expire sessions that are more than a day old
-    {
-        let conn = ds.pool.get(&sg).expect("get the connection back");
-        conn.execute(
-            "UPDATE account_sessions SET expires_at = now() - interval '2 day' WHERE token = $1",
-            &[&sg.get_token()],
-        ).expect("Execute successfully");
-    }
-    assert_eq!(None, ds.get_session(&sg).expect("Should run without error"));
 }

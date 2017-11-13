@@ -15,7 +15,6 @@ extern crate postgres;
 extern crate rand;
 extern crate serde;
 extern crate serde_json;
-
 pub mod privilege;
 pub mod session_ds;
 pub mod ldap;
