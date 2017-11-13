@@ -9,6 +9,7 @@ use serde_json;
 use std::collections::{BTreeMap, HashMap};
 use protocol::nodesrv;
 use itertools::Itertools;
+use super::expression::*;
 
 
 pub const CPU_TOTAL: &'static str = "cpu_total";
@@ -36,7 +37,7 @@ impl<'a> Collector<'a> {
     }
 
     pub fn metric_by(&mut self) -> Result<Vec<nodesrv::PromResponse>> {
-        let content_datas = self.do_collect();
+        let content_datas = self.avg_collect();
         let metrics = self.set_metrics(Ok(content_datas.clone())); //make it os_usages
         Ok(metrics.unwrap())
     }
@@ -50,13 +51,42 @@ impl<'a> Collector<'a> {
 
     fn do_collect(&self) -> Vec<nodesrv::PromResponse> {
         let mut content_datas = vec![];
-        let s: String = self.scope.labels.clone().into_iter().collect();
-        let l = self.scope.last_x_minutes.clone().unwrap_or("".to_string());
-        let label_group = format!("{}{}{}{}", "{", s, "}", l);
         for scope in self.scope.metric_names.iter() {
-            let content = self.client.pull_metrics(
-                &format!("{}{}", scope, label_group),
+            let query = Operators::NoOp(IRateInfo {
+                labels: self.scope.labels,
+                metric: scope.to_string(),
+                last_x_minutes: self.scope.last_x_minutes,
+            });
+            let content = self.client.pull_metrics(&format!("{}", query));
+
+            if content.is_ok() {
+                let response: nodesrv::PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
+                content_datas.push(response);
+            }
+        }
+        content_datas
+    }
+
+
+    fn avg_collect(&self) -> Vec<nodesrv::PromResponse> {
+        let mut content_datas = vec![];
+        for scope in self.scope.metric_names.iter() {
+            let avg = Functions::Avg(AvgInfo {
+                operator: Operators::IRate(IRateInfo {
+                    labels: self.scope.labels,
+                    metric: scope.to_string(),
+                    last_x_minutes: self.scope.last_x_minutes,
+                }),
+            });
+            let data = format!(
+                "{}",
+                MetricQueryBuilder::new(MetricQuery {
+                    functions: avg,
+                    by: "instance".to_string(),
+                })
             );
+            let content = self.client.pull_metrics(&data);
+
             if content.is_ok() {
                 let response: nodesrv::PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
                 content_datas.push(response);

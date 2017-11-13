@@ -19,24 +19,24 @@ pub enum Operators {
 
 
 pub struct AvgInfo {
-    operator: Operators,
+    pub operator: Operators,
 }
 
 pub struct IRateInfo {
     pub labels: Vec<String>,
     pub metric: String,
-    pub last_x_minutes: String,
+    pub last_x_minutes: Option<String>,
 }
 
 pub struct MetricQuery {
-    functions: Functions,
-    by: String,
+    pub functions: Functions,
+    pub by: String,
 }
 
 pub struct MetricQueryBuilder(MetricQuery);
 
 impl MetricQueryBuilder {
-    fn new(query: MetricQuery) -> MetricQueryBuilder {
+    pub fn new(query: MetricQuery) -> MetricQueryBuilder {
         MetricQueryBuilder(query)
     }
 }
@@ -67,7 +67,7 @@ impl fmt::Display for Operators {
             Operators::IRate(ref i) => {
                 let s: String = i.labels.clone().into_iter().collect();
                 format!(
-                    "irate({}{}{}{}{})",
+                    "irate({}{}{}{}{:?})",
                     i.metric,
                     "{",
                     s,
@@ -78,7 +78,7 @@ impl fmt::Display for Operators {
             Operators::NoOp(ref i) => {
                 let s: String = i.labels.clone().into_iter().collect();
                 format!(
-                    "{}{}{}{}{}",
+                    "{}{}{}{}{:?}",
                     i.metric,
                     "{",
                     s,
