@@ -25,7 +25,7 @@ pub struct AvgInfo {
 pub struct IRateInfo {
     pub labels: Vec<String>,
     pub metric: String,
-    pub last_x_minutes: Option<String>,
+    pub last_x_minutes: String,
 }
 
 pub struct MetricQuery {
@@ -65,9 +65,16 @@ impl fmt::Display for Operators {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Operators::IRate(ref i) => {
-                let s: String = i.labels.clone().into_iter().collect();
+                let s: String = i.labels
+                    .clone()
+                    .into_iter()
+                    .map(|x| {
+                        let data = x.split("=").collect::<Vec<_>>();
+                        format!("{}={}{}{}{}", data[0], '"', data[1], '"', ",")
+                    })
+                    .collect();
                 format!(
-                    "irate({}{}{}{}{:?})",
+                    "irate({}{}{}{}{})",
                     i.metric,
                     "{",
                     s,
@@ -76,9 +83,16 @@ impl fmt::Display for Operators {
                 )
             }
             Operators::NoOp(ref i) => {
-                let s: String = i.labels.clone().into_iter().collect();
+                let s: String = i.labels
+                    .clone()
+                    .into_iter()
+                    .map(|x| {
+                        let data = x.split("=").collect::<Vec<_>>();
+                        format!("{}={}{}{}{}", data[0], '"', data[1], '"', ",")
+                    })
+                    .collect();
                 format!(
-                    "{}{}{}{}{:?}",
+                    "{}{}{}{}{}",
                     i.metric,
                     "{",
                     s,

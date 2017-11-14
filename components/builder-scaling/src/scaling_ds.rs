@@ -4,7 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{scalesrv, asmsrv, nodesrv};
+use protocol::{scalesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -15,7 +15,7 @@ const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 const HORIZONTALPODAUTOSCALAR: &'static str = "HorizontalPodAutoscaler";
 const JOB: &'static str = "job";
-const RIOOS_ASSEMBLY: &'static str = "rioos_assmbly";
+const RIOOS_ASSEMBLY: &'static str = "rioos-assemblys";
 const MODE: &'static str = "mode";
 const SYSTEM: &'static str = "system";
 
@@ -131,45 +131,24 @@ impl ScalingDS {
     }
 
     pub fn hs_metrics(client: &PrometheusClient, af_id: &str, metric_source_name: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {
-        let label_name1 = format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id);
-        let label_name2 = format!("{}={}", JOB, RIOOS_ASSEMBLY);
-        let label_name3 = format!("{}={}", MODE, SYSTEM);
         let metric_scope = vec![metric_source_name.to_string()];
         let group_scope: Vec<String> = vec![
-            label_name1.to_string(),
-            label_name2.to_string(),
-            label_name3.to_string(),
+            format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id).to_string(),
+            format!("{}={}", JOB, RIOOS_ASSEMBLY).to_string(),
+            format!("{}={}", MODE, SYSTEM).to_string(),
         ];
 
         let scope = CollectorScope {
             metric_names: metric_scope,
             labels: group_scope,
-            last_x_minutes: Some(METRIC_DEFAULT_LAST_X_MINUTE.to_string()),
+            last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
         };
 
-        let mut metric_collector = Collector::new(client, query);
-        let metric_response = metric_collector.metric_by().unwrap();
+        let mut metric_collector = Collector::new(client, scope);
+        let metric_response = metric_collector.metric_by_avg().unwrap();
 
-        let mut metrics = nodesrv::Osusages::new();
-
-        let all_items = metric_response
-            .into_iter()
-            .map(|p| {
-                let p1: nodesrv::Osusages = p.into();
-                p1.get_items()
-            })
-            .collect::<Vec<_>>();
-
-        metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
-
-        let mut response = scalesrv::ScalingGet::new();
-        response.set_title("Scaling metrics ".to_owned() + af_id);
-        /*res.set_from_date(from_date);
-        res.set_to_date(to_date);*/
-        response.set_metrics(metrics);
-
-        let response: scalesrv::ScalingGetResponse = response.into();
-
+        let mut response = scalesrv::ScalingGetResponse::new();
+        response.set_metrics(metric_response);
         Ok(Some(response))
     }
 }

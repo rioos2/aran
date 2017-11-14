@@ -95,7 +95,7 @@ impl NodeDS {
         let scope = CollectorScope {
             metric_names: nodes_metric_scope,
             labels: nodes_group_scope,
-            last_x_minutes: None,
+            last_x_minutes: "".to_string(),
         };
 
 
@@ -129,7 +129,7 @@ impl NodeDS {
         let scope_data = CollectorScope {
             metric_names: metric_scope,
             labels: group_scope,
-            last_x_minutes: Some(METRIC_DEFAULT_LAST_X_MINUTE.to_string()),
+            last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
         };
 
         let mut os_checker = Collector::new(client, scope_data);
