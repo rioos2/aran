@@ -290,36 +290,6 @@ pub fn assemblys_show_by_origin(req: &mut Request) -> AranResult<Response> {
     }
 }
 
-pub fn assemblys_show_by_services(req: &mut Request) -> AranResult<Response> {
-    let serv_name = {
-        let params = req.extensions.get::<Router>().unwrap();
-        let serv_name = params.find("servicesid").unwrap().to_owned();
-        serv_name
-    };
-
-    let conn = Broker::connect().unwrap();
-
-    let mut assemblys_get = IdGet::new();
-    assemblys_get.set_id(serv_name);
-
-    ui::rawdumpln(
-        Colour::White,
-        '✓',
-        format!("======= parsed {:?} ", assemblys_get),
-    );
-    match DeploymentDS::assemblys_show_by_services(&conn, &assemblys_get) {
-        Ok(Some(assemblys)) => Ok(render_json(status::Ok, &assemblys)),
-        Ok(None) => {
-            Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(db::error::Error::RecordsNotFound),
-                &assemblys_get.get_id()
-            )))
-        }
-        Err(err) => Err(internal_error(&format!("{}", err))),
-    }
-}
-
 
 pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
     let id = {

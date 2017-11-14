@@ -108,7 +108,6 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         assembly_status: put "/assemblys/:id/status" => XHandler::new(C(assembly_status_update)).before(basic.clone()),
         assembly_update: put "/assemblys/:id" => XHandler::new(C(assembly_update)).before(basic.clone()),
         assemblys_show_by_origin : get "/origins/:origin/assemblys" => XHandler::new(C(assemblys_show_by_origin)).before(basic.clone()),
-        assemblys_show_by_services : get "/assemblys/services/:servicesid" => XHandler::new(C(assemblys_show_by_services)).before(basic.clone()),
 
 
         //scaling API: horizontal scaling
@@ -137,6 +136,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         nodes_list: get "/nodes" => XHandler::new(C(node_list)).before(basic.clone()),
         node_status: put "/nodes/:id/status" => XHandler::new(C(node_status_update)).before(basic.clone()),
         node_get: get "/nodes/:id" => XHandler::new(C(node_get)).before(basic.clone()),
+        node_get_by_node_ip: get "/nodes/nodeip" => XHandler::new(C(node_get_by_node_ip)).before(basic.clone()),
 
 
         //secret API
@@ -158,13 +158,13 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         //Network API
         networks: post "/networks" => XHandler::new(C(network_create)).before(basic.clone()),
         network_list: get "/networks" => XHandler::new(C(network_list)).before(basic.clone()),
-
         //StorageConnectors API
         storages: post "/storageconnectors" => XHandler::new(C(storage_create)).before(basic.clone()),
         storages_list: get "/storageconnectors" => XHandler::new(C(storage_list)).before(basic.clone()),
         storages_show: get "/storageconnectors/:id" => XHandler::new(C(storage_show)).before(basic.clone()),
         storage_status: put "storageconnectors/:id/status" => XHandler::new(C(storage_status_update)).before(basic.clone()),
         storage_update: put "storageconnectors/:id" => XHandler::new(C(storage_update)).before(basic.clone()),
+        storage_get_by_ip: get "/storageconnectors/ip" => XHandler::new(C(storage_get_by_ip)).before(basic.clone()),
 
         //StoragePool API
         storages_pool: post "/storagespool" => XHandler::new(C(storage_pool_create)).before(basic.clone()),
@@ -191,7 +191,6 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         services: post "/origins/:origin/services" => XHandler::new(C(services_create)).before(basic.clone()),
         services_show: get "/services/:id" =>XHandler::new(C(services_show)).before(basic.clone()),
         services_list: get "/services" => XHandler::new(C(services_list)).before(basic.clone()),
-        services_list_by_assembly: get "/assemblys/:id/services" => XHandler::new(C(services_list_by_assembly)).before(basic.clone()),
         services_list_by_origin: get "/origins/:origin/services" => XHandler::new(C(services_list_by_origin)).before(basic.clone()),
 
         plan_factory: post "/planfactory" =>XHandler::new(C(plan_factory_create)).before(basic.clone()),
@@ -201,13 +200,13 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         jobs: post "/jobs" => XHandler::new(C(jobs_create)).before(basic.clone()),
         jobs_get: get "/jobs" => XHandler::new(C(jobs_get)).before(basic.clone()),
         jobs_status_update: put "/jobs/:jobid/status" => XHandler::new(C(jobs_status_update)).before(basic.clone()),
+        jobs_get_by_node: get "/jobs/node" => XHandler::new(C(jobs_get_by_node)).before(basic.clone()),
 
 
         //Internal: Streaming watch
         watches: get "/:name/watch/list" => watch_show,
 
     );
-
     let mut chain = Chain::new(router);
 
     chain.link(persistent::Read::<PasswordAuthCli>::both(
@@ -228,7 +227,6 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
              ds.setup(ui).unwrap().clone()
          }),
     ));
-
     chain.link_before(DataStoreBroker);
     chain.link_after(Custom404);
 

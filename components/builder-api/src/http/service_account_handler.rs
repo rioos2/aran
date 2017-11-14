@@ -655,32 +655,3 @@ pub fn services_list_by_origin(req: &mut Request) -> AranResult<Response> {
         Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
-pub fn services_list_by_assembly(req: &mut Request) -> AranResult<Response> {
-    let assm_name = {
-        let params = req.extensions.get::<Router>().unwrap();
-        let assm_name = params.find("id").unwrap().to_owned();
-        assm_name
-    };
-
-    let conn = Broker::connect().unwrap();
-
-    let mut services_get = IdGet::new();
-    services_get.set_id(assm_name);
-
-    ui::rawdumpln(
-        Colour::White,
-        '✓',
-        format!("======= parsed {:?} ", services_get),
-    );
-    match ServiceAccountDS::services_list_by_assembly(&conn, &services_get) {
-        Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
-        Ok(None) => {
-            Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(db::error::Error::RecordsNotFound),
-                &services_get.get_id()
-            )))
-        }
-        Err(err) => Err(internal_error(&format!("{}\n", err))),
-    }
-}
