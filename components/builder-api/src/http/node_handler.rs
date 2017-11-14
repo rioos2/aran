@@ -80,6 +80,7 @@ struct CommonStatusReq {
 struct BridgeReq {
     bridge_name: String,
     physical_device: String,
+    network_type: String,
     bridge_type: String,
 }
 
@@ -134,7 +135,12 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
                             .bridges
                             .iter()
                             .map(|x| {
-                                Bridge::new(&x.bridge_name, &x.physical_device, &x.bridge_type)
+                                Bridge::new(
+                                    &x.bridge_name,
+                                    &x.physical_device,
+                                    &x.network_type,
+                                    &x.bridge_type,
+                                )
                             })
                             .collect::<Vec<_>>(),
                     ),
@@ -284,7 +290,12 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
                             .bridges
                             .iter()
                             .map(|x| {
-                                Bridge::new(&x.bridge_name, &x.physical_device, &x.bridge_type)
+                                Bridge::new(
+                                    &x.bridge_name,
+                                    &x.physical_device,
+                                    &x.network_type,
+                                    &x.bridge_type,
+                                )
                             })
                             .collect::<Vec<_>>(),
                     ),

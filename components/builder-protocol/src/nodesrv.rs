@@ -214,14 +214,16 @@ impl NodeInfo {
 pub struct Bridge {
     bridge_name: String,
     physical_device: String,
+    network_type: String,
     bridge_type: String,
 }
 
 impl Bridge {
-    pub fn new(bridge_name: &str, physical_device: &str, bridge_type: &str) -> Bridge {
+    pub fn new(bridge_name: &str, physical_device: &str, network_type: &str, bridge_type: &str) -> Bridge {
         Bridge {
             bridge_name: bridge_name.to_string(),
             physical_device: physical_device.to_string(),
+            network_type: network_type.to_string(),
             bridge_type: bridge_type.to_string(),
         }
     }
