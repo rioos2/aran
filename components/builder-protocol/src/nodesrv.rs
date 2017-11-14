@@ -9,6 +9,7 @@ use constants::*;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
     id: String,
+    node_ip: String,
     object_meta: asmsrv::ObjectMeta,
     type_meta: asmsrv::TypeMeta,
     spec: Spec,
@@ -25,6 +26,12 @@ impl Node {
     }
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
+    }
+    pub fn set_node_ip(&mut self, v: ::std::string::String) {
+        self.node_ip = v;
+    }
+    pub fn get_node_ip(&self) -> ::std::string::String {
+        self.node_ip.clone()
     }
     pub fn set_spec(&mut self, v: Spec) {
         self.spec = v;
@@ -119,7 +126,6 @@ pub struct Status {
 }
 
 impl Status {
-
     pub fn new(capacity: BTreeMap<String, String>, allocatable: BTreeMap<String, String>, phase: &str, conditions: Vec<asmsrv::Condition>, addresses: Vec<Addresses>, node_info: NodeInfo) -> Status {
         Status {
             capacity: capacity,
@@ -150,7 +156,6 @@ impl Status {
     pub fn get_allocatable(&self) -> &BTreeMap<String, String> {
         &self.allocatable
     }
-
 }
 
 
@@ -161,17 +166,16 @@ pub struct Addresses {
 }
 
 impl Addresses {
-
     pub fn new(node_type: &str, address: &str) -> Addresses {
         Addresses {
             node_type: node_type.to_string(),
             address: address.to_string(),
         }
     }
-    pub fn get_node_type(&self) ->  ::std::string::String {
+    pub fn get_node_type(&self) -> ::std::string::String {
         self.node_type.clone()
     }
-    pub fn get_address(&self) ->  ::std::string::String {
+    pub fn get_address(&self) -> ::std::string::String {
         self.address.clone()
     }
 }
@@ -188,7 +192,6 @@ pub struct NodeInfo {
 }
 
 impl NodeInfo {
-
     pub fn new(machine_id: &str, system_uuid: &str, kernel_version: &str, os_image: &str, architecture: &str, bridges: Vec<Bridge>) -> NodeInfo {
         NodeInfo {
             machine_id: machine_id.to_string(),

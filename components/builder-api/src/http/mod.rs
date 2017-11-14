@@ -136,6 +136,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         nodes_list: get "/nodes" => XHandler::new(C(node_list)).before(basic.clone()),
         node_status: put "/nodes/:id/status" => XHandler::new(C(node_status_update)).before(basic.clone()),
         node_get: get "/nodes/:id" => XHandler::new(C(node_get)).before(basic.clone()),
+        node_get_by_node_ip: get "/nodes/nodeip" => XHandler::new(C(node_get_by_node_ip)).before(basic.clone()),
 
 
         //secret API
@@ -199,6 +200,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         jobs: post "/jobs" => XHandler::new(C(jobs_create)).before(basic.clone()),
         jobs_get: get "/jobs" => XHandler::new(C(jobs_get)).before(basic.clone()),
         jobs_status_update: put "/jobs/:jobid/status" => XHandler::new(C(jobs_status_update)).before(basic.clone()),
+        jobs_get_by_node: get "/jobs/node" => XHandler::new(C(jobs_get_by_node)).before(basic.clone()),
 
 
         //Internal: Streaming watch

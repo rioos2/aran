@@ -31,6 +31,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
         "Status: {}",
         storageconn.get_status().get_phase()
     ))?;
+
     ui.para(
         &format!("Hrs ago: {}", storageconn.get_created_at()),
     )?;

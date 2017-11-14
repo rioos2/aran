@@ -27,6 +27,7 @@ impl Migratable for NodeProcedures {
             "nodesrv",
             r#"CREATE TABLE  IF NOT EXISTS node (
              id bigint PRIMARY KEY DEFAULT next_id_v1('node_id_seq'),
+             node_ip text,
              spec text,
              status text,
              updated_at timestamptz,
@@ -41,13 +42,14 @@ impl Migratable for NodeProcedures {
         migrator.migrate(
             "nodesrv",
             r#"CREATE OR REPLACE FUNCTION insert_node_v1 (
+                node_ip text,
                 spec text,
                 status text
 
             ) RETURNS SETOF node AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO node(spec,status)
-                                        VALUES (spec,status)
+                                    RETURN QUERY INSERT INTO node(node_ip,spec,status)
+                                        VALUES (node_ip,spec,status)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -60,6 +62,15 @@ impl Migratable for NodeProcedures {
             r#"CREATE OR REPLACE FUNCTION get_node_v1(nid bigint) RETURNS SETOF node AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM node where id = nid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+        migrator.migrate(
+            "nodesrv",
+            r#"CREATE OR REPLACE FUNCTION get_nodes_by_node_ip_v1(nodeip text) RETURNS SETOF node AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM node where node_ip = nodeip;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,

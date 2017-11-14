@@ -4,7 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::jobsrv;
+use protocol::{jobsrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -16,8 +16,9 @@ impl JobDS {
     pub fn jobs_create(datastore: &DataStoreConn, jobs_create: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_jobs_v1($1,$2,$3,$4)",
+            "SELECT * FROM insert_jobs_v1($1,$2,$3,$4,$5)",
             &[
+                &(jobs_create.get_node_id().parse::<i64>().unwrap()),
                 &(serde_json::to_string(jobs_create.get_spec()).unwrap()),
                 &(serde_json::to_string(jobs_create.get_status()).unwrap()),
                 &(serde_json::to_string(jobs_create.get_object_meta()).unwrap()),
@@ -68,12 +69,36 @@ impl JobDS {
         }
         Ok(None)
     }
+
+    pub fn jobs_get_by_node(datastore: &DataStoreConn, job_get: &asmsrv::IdGet) -> Result<Option<jobsrv::JobGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_jobs_by_node_v1($1)",
+            &[&(job_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::JobsGet)?;
+
+        let mut response = jobsrv::JobGetResponse::new();
+
+        let mut jobs_collection = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+
+                jobs_collection.push(row_to_jobs(&row)?)
+            }
+            response.set_jobs_collection(jobs_collection);
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
 }
 
 fn row_to_jobs(row: &postgres::rows::Row) -> Result<jobsrv::Jobs> {
     let mut job_create = jobsrv::Jobs::new();
 
     let id: i64 = row.get("id");
+    let node_id: i64 = row.get("node_id");
     let status: String = row.get("status");
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
@@ -81,6 +106,7 @@ fn row_to_jobs(row: &postgres::rows::Row) -> Result<jobsrv::Jobs> {
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     job_create.set_id(id.to_string());
+    job_create.set_node_id(node_id.to_string());
     job_create.set_spec(serde_json::from_str(&spec).unwrap());
     job_create.set_status(serde_json::from_str(&status).unwrap());
     job_create.set_object_meta(serde_json::from_str(&object_meta).unwrap());

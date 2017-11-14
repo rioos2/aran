@@ -19,9 +19,11 @@ use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge}
 use protocol::asmsrv::{Condition, IdGet};
 use http::deployment_handler;
 use common::ui;
+use extract_query_value;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NodeCreateReq {
+    node_ip: String,
     spec: SpecReq,
     status: StatusReq,
 }
@@ -86,6 +88,7 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<NodeCreateReq>>() {
             Ok(Some(body)) => {
+                node_create.set_node_ip(body.node_ip);
                 node_create.set_spec(Spec::new(
                     &body.spec.assembly_cidr,
                     &body.spec.external_id,
@@ -163,6 +166,33 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
             ))
         }
 
+    }
+}
+
+
+pub fn node_get_by_node_ip(req: &mut Request) -> AranResult<Response> {
+    let node_ip = {
+        match extract_query_value("node_ip", req) {
+            Some(ip) => ip,
+            None => {
+                return Err(not_found_error(
+                    &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+                ))
+            }
+        }
+    };
+    let conn = Broker::connect().unwrap();
+
+    let mut node_get = IdGet::new();
+    node_get.set_id(node_ip.to_string());
+    match NodeDS::node_get_by_node_ip(&conn, &node_get) {
+        Ok(Some(node_get)) => Ok(render_json(status::Ok, &node_get)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
     }
 }
 
