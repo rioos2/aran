@@ -5,7 +5,6 @@ debug = true
 members = [
   "components/builder-api",
   "components/builder-api-client",
-  "components/builder-core",
   "components/builder-db",
   "components/builder-deployment",
   "components/builder-scaling",

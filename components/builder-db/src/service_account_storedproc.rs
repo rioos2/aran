@@ -187,7 +187,7 @@ impl Migratable for ServiceAccountProcedure {
         ui.para("[✓] endpoints");
 
         migrator.migrate(
-            "asmsrv",
+            "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_endpoints_v1 (
                 target_ref bigint,
                 origin_name text,
@@ -255,12 +255,13 @@ impl Migratable for ServiceAccountProcedure {
             "servicesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS serv_id_seq;"#,
         )?;
+
         migrator.migrate(
             "servicesrv",
             r#"CREATE TABLE  IF NOT EXISTS services (
              id bigint PRIMARY KEY DEFAULT next_id_v1('serv_id_seq'),
              origin_id bigint REFERENCES origins(id),
-             assembly_id bigint REFERENCES assembly(id),
+             assembly_factory_id bigint REFERENCES assembly_factory(id),
              spec text,
              status text,
              object_meta text,
@@ -272,10 +273,10 @@ impl Migratable for ServiceAccountProcedure {
         ui.para("[✓] services");
 
         migrator.migrate(
-            "asmsrv",
+            "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_services_v1 (
                 origin_name text,
-                assembly_id bigint,
+                assembly_factory_id bigint,
                 spec  text,
                 status  text,
                 object_meta text,
@@ -285,14 +286,15 @@ impl Migratable for ServiceAccountProcedure {
                            this_origin origins%rowtype;
                                 BEGIN
                                 SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO services(origin_id,assembly_id,spec,status,object_meta,type_meta)
-                                        VALUES (this_origin.id,assembly_id,spec,status,object_meta,type_meta )
+                                    RETURN QUERY INSERT INTO services(origin_id,assembly_factory_id,spec,status,object_meta,type_meta)
+                                        VALUES (this_origin.id,assembly_factory_id,spec,status,object_meta,type_meta )
                                         RETURNING *;
                                     RETURN;
                                 END
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
+
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION get_services_v1 (sid bigint) RETURNS SETOF services AS $$
@@ -302,6 +304,7 @@ impl Migratable for ServiceAccountProcedure {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
+
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION get_services_list_v1() RETURNS SETOF services AS $$
@@ -313,7 +316,7 @@ impl Migratable for ServiceAccountProcedure {
         )?;
 
         migrator.migrate(
-            "asmsrv",
+            "servicesrv",
             r#"CREATE OR REPLACE FUNCTION get_services_by_origin_v1(org_name text) RETURNS SETOF services AS $$
                 DECLARE
                 this_origin origins%rowtype;
@@ -327,15 +330,14 @@ impl Migratable for ServiceAccountProcedure {
 
 
         migrator.migrate(
-            "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION get_services_by_assebmly_v1(asmid bigint) RETURNS SETOF services AS $$
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_services_by_assembly_factory_v1(asm_factory_id bigint) RETURNS SETOF services AS $$
                         BEGIN
-                         RETURN QUERY SELECT * FROM services WHERE assembly_id=asmid;
+                         RETURN QUERY SELECT * FROM services WHERE assembly_factory_id=asm_factory_id;
                          RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
 
 
         ui.end("ServiceAccountProcedure");

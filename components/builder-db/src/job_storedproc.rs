@@ -16,10 +16,10 @@ impl JobProcedures {
 
 impl Migratable for JobProcedures {
     fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
-        ui.begin("JobProcedure");
+        ui.begin("Jobprocedure");
 
         migrator.migrate(
-            "nodesrv",
+            "jobsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS job_id_seq;"#,
         )?;
 
@@ -36,12 +36,12 @@ impl Migratable for JobProcedures {
             )"#,
         )?;
 
-        ui.para("[✓] node");
+        ui.para("[✓] jobs");
 
 
         // Insert a new job into the jobs table
         migrator.migrate(
-            "nodesrv",
+            "jobsrv",
             r#"CREATE OR REPLACE FUNCTION insert_jobs_v1 (
                 spec text,
                 status text,
@@ -60,7 +60,7 @@ impl Migratable for JobProcedures {
         )?;
 
         migrator.migrate(
-            "asmsrv",
+            "jobsrv",
             r#"CREATE OR REPLACE FUNCTION get_jobs_v1() RETURNS SETOF jobs AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM jobs;
@@ -70,7 +70,7 @@ impl Migratable for JobProcedures {
         )?;
 
         migrator.migrate(
-            "asmsrv",
+            "jobsrv",
             r#"CREATE OR REPLACE FUNCTION set_job_status_v1 (jid bigint, job_status text) RETURNS SETOF jobs AS $$
                             BEGIN
                                 RETURN QUERY UPDATE jobs SET status=job_status, updated_at=now() WHERE id=jid

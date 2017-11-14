@@ -16,7 +16,7 @@ impl NodeProcedures {
 
 impl Migratable for NodeProcedures {
     fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
-        ui.begin("NodeProcedure");
+        ui.begin("Nodeprocedure");
 
         migrator.migrate(
             "nodesrv",
@@ -85,7 +85,7 @@ impl Migratable for NodeProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        ui.end("Nodeprocedure");
+        ui.end("NodeProcedure");
 
         Ok(())
     }

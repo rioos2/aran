@@ -16,7 +16,7 @@ impl StorageProcedures {
 
 impl Migratable for StorageProcedures {
     fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
-        ui.begin("StorageProcedures");
+        ui.begin("Storageprocedure");
 
         migrator.migrate(
             "storagesrv",
@@ -63,8 +63,6 @@ impl Migratable for StorageProcedures {
         )?;
 
 
-        ui.para("[✓] insert_storage_v1");
-
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION get_storages_v1() RETURNS SETOF storages AS $$
@@ -74,9 +72,6 @@ impl Migratable for StorageProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        ui.para("[✓] get_storages_v1");
-
 
         migrator.migrate(
             "storagesrv",
@@ -88,10 +83,9 @@ impl Migratable for StorageProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        ui.para("[✓] get_storages_v1");
 
         migrator.migrate(
-            "asmsrv",
+            "storagesrv",
             r#"CREATE OR REPLACE FUNCTION set_storage_status_v1 (sid bigint, storage_status text) RETURNS SETOF storages AS $$
                             BEGIN
                                 RETURN QUERY UPDATE storages SET status=storage_status, updated_at=now() WHERE id=sid
@@ -101,10 +95,8 @@ impl Migratable for StorageProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        ui.para("[✓] set_storage_status_v1");
-
         migrator.migrate(
-            "asmsrv",
+            "storagesrv",
             r#"CREATE OR REPLACE FUNCTION update_storage_v1(
             sid bigint,
             s_name text,
@@ -119,8 +111,6 @@ impl Migratable for StorageProcedures {
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
-
-        ui.para("[✓] update_storage_v1");
 
 
         migrator.migrate(
@@ -146,7 +136,6 @@ impl Migratable for StorageProcedures {
              )"#,
         )?;
 
-        ui.para("[✓] data_center");
 
         migrator.migrate(
             "storagesrv",
@@ -172,8 +161,6 @@ impl Migratable for StorageProcedures {
         )?;
 
 
-        ui.para("[✓] insert_dc_v1");
-
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION get_data_centers_v1() RETURNS SETOF data_center AS $$
@@ -184,8 +171,6 @@ impl Migratable for StorageProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        ui.para("[✓] get_data_centers_v1");
-
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION get_data_center_v1(did bigint) RETURNS SETOF data_center AS $$
@@ -195,8 +180,6 @@ impl Migratable for StorageProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        ui.para("[✓] get_data_center_v1");
 
 
         migrator.migrate(
@@ -242,8 +225,6 @@ impl Migratable for StorageProcedures {
         )?;
 
 
-        ui.para("[✓] insert_storage_pool_v1");
-
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION get_storage_pool_v1 (sid bigint) RETURNS SETOF storages_pool AS $$
@@ -253,8 +234,6 @@ impl Migratable for StorageProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        ui.para("[✓] get_storages_pool_v1");
 
         migrator.migrate(
             "storagesrv",
@@ -266,10 +245,8 @@ impl Migratable for StorageProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-        ui.para("[✓] get_storage_pool_all_v1");
-
         migrator.migrate(
-            "asmsrv",
+            "storagesrv",
             r#"CREATE OR REPLACE FUNCTION set_storage_pool_status_v1 (sid bigint, sp_status text) RETURNS SETOF storages_pool AS $$
                             BEGIN
                                 RETURN QUERY UPDATE storages_pool SET status=sp_status, updated_at=now() WHERE id=sid
@@ -279,10 +256,8 @@ impl Migratable for StorageProcedures {
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        ui.para("[✓] set_storage_pool_status_v1");
 
-
-        ui.end("StorageProcedures");
+        ui.end("StorageProcedure");
 
         Ok(())
     }
