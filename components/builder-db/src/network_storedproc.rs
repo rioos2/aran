@@ -16,7 +16,7 @@ impl NetworkProcedures {
 
 impl Migratable for NetworkProcedures {
     fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()> {
-        ui.begin("NetworkProcedures");
+        ui.begin("Networkprocedure");
 
         migrator.migrate(
             "netsrv",
@@ -24,7 +24,7 @@ impl Migratable for NetworkProcedures {
         )?;
 
         migrator.migrate(
-            "nodesrv",
+            "netsrv",
             r#"CREATE TABLE  IF NOT EXISTS networks (
              id bigint PRIMARY KEY DEFAULT next_id_v1('net_id_seq'),
              name text,
@@ -39,12 +39,12 @@ impl Migratable for NetworkProcedures {
              )"#,
         )?;
 
-        ui.para("[✓] network");
+        ui.para("[✓] networks");
 
 
         // Insert a new job into the jobs table
         migrator.migrate(
-            "nodesrv",
+            "netsrv",
             r#"CREATE OR REPLACE FUNCTION insert_network_v1 (
                 name text,
                 network_type text,
@@ -65,10 +65,9 @@ impl Migratable for NetworkProcedures {
         )?;
 
 
-        ui.para("[✓] insert_network_v1");
 
         migrator.migrate(
-            "networksrv",
+            "netsrv",
             r#"CREATE OR REPLACE FUNCTION get_networks_v1() RETURNS SETOF networks AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM networks;
@@ -76,8 +75,6 @@ impl Migratable for NetworkProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
-        ui.para("[✓] get_networks_v1");
 
         ui.end("NetworkProcedures");
 

@@ -73,7 +73,7 @@ impl Migratable for ScaleProcedures {
         )?;
 
         migrator.migrate(
-            "asmsrv",
+            "scalesrv",
             r#"CREATE OR REPLACE FUNCTION get_hs_by_origin_v1(org_name text) RETURNS SETOF horizontal_scaling AS $$
                 DECLARE
                 this_origin origins%rowtype;
@@ -128,7 +128,7 @@ impl Migratable for ScaleProcedures {
 
 
 
-        ui.end("Scaleprocedure");
+        ui.end("ScaleProcedure");
 
         Ok(())
     }
