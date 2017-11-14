@@ -7,12 +7,14 @@ use std::error;
 use std::fmt;
 use std::result;
 use db;
+use service;
 
 
 #[derive(Debug)]
 pub enum Error {
     Db(db::error::Error),
     AssemblyCreate(postgres::error::Error),
+    EndPoints(service::Error),
     AssemblyUpdate(postgres::error::Error),
     AssemblyGet(postgres::error::Error),
     AssemblyFactoryCreate(postgres::error::Error),
@@ -34,6 +36,7 @@ impl fmt::Display for Error {
             Error::Db(ref e) => format!("{}", e),
             Error::AssemblyCreate(ref e) => format!("Database error creating a new assembly, {}", e),
             Error::AssemblyUpdate(ref e) => format!("Database error updating a assembly, {}", e),
+            Error::EndPoints(ref e) => format!("{}", e),
             Error::AssemblyGet(ref e) => format!("Database error getting assembly data, {}", e),
             Error::AssemblyFactoryCreate(ref e) => format!("Database error creating a new assembly factory, {}", e),
             Error::AssemblyFactoryGet(ref e) => format!("Database error getting assembly factory data, {}", e),
@@ -55,6 +58,7 @@ impl error::Error for Error {
             Error::AssemblyCreate(ref err) => err.description(),
             Error::AssemblyUpdate(ref err) => err.description(),
             Error::AssemblyGet(ref err) => err.description(),
+            Error::EndPoints(ref err) => err.description(),
             Error::AssemblyFactoryCreate(ref err) => err.description(),
             Error::AssemblyFactoryGet(ref err) => err.description(),
             Error::PlanGet(ref err) => err.description(),

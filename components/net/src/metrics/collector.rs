@@ -43,9 +43,13 @@ impl<'a> Collector<'a> {
     }
 
     //os usage metric
-    pub fn metric_by(&mut self) -> Result<Vec<nodesrv::PromResponse>> {
+    pub fn metric_by_os_usage(&mut self) -> Result<Vec<nodesrv::PromResponse>> {
         let content_datas = self.do_collect();
-        let metrics = self.set_metrics_for_os_usage(Ok(content_datas.clone())); //make it os_usages
+        let metrics = self.set_metrics_for_os_usage(Ok(content_datas.clone()));
+        println!(
+            "======================metrics=========================={:?}",
+            metrics
+        );
         Ok(metrics.unwrap())
     }
 
@@ -73,6 +77,10 @@ impl<'a> Collector<'a> {
                 content_datas.push(response);
             }
         }
+        println!(
+            "----------------content_datas----------------------------------{:?}",
+            content_datas
+        );
         content_datas
     }
 

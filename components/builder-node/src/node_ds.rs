@@ -11,7 +11,12 @@ use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
 use protocol::constants::*;
-
+const OS_VALUE: &'static str = "ubuntu";
+const OS_KEY: &'static str = "rioos_os_name";
+const JOB: &'static str = "job";
+const RIOOS_ASSEMBLY: &'static str = "rioos-assemblys";
+const MODE: &'static str = "mode";
+const SYSTEM: &'static str = "system";
 pub struct NodeDS;
 
 impl NodeDS {
@@ -85,7 +90,7 @@ impl NodeDS {
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
-        let nodes_metric_scope: Vec<String> = vec![
+        /*let nodes_metric_scope: Vec<String> = vec![
             "cpu_total".to_string(),
             "ram_total".to_string(),
             "disk_total".to_string(),
@@ -120,21 +125,27 @@ impl NodeDS {
         }
         let mut statistic = nodesrv::Statistics::new();
         statistic.set_title("Statistics".to_string());
-        statistic.set_nodes(lstatistics);
+        statistic.set_nodes(lstatistics);*/
 
-        let group_scope = vec!["node_cpu".to_string()];
-        let label_name = format!("{}", METRIC_NODE);
-        let metric_scope: Vec<String> = vec![label_name.to_string()];
+        let metric_scope = vec!["node_cpu".to_string()];
+        let label_scope: Vec<String> = vec![
+            format!("{}={}", OS_KEY, OS_VALUE).to_string(),
+            format!("{}={}", JOB, RIOOS_ASSEMBLY).to_string(),
+            format!("{}={}", MODE, SYSTEM).to_string(),
+        ];
 
         let scope_data = CollectorScope {
             metric_names: metric_scope,
-            labels: group_scope,
+            labels: label_scope,
             last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
         };
 
         let mut os_checker = Collector::new(client, scope_data);
-        let os_response = os_checker.metric_by().unwrap();
-
+        let os_response = os_checker.metric_by_os_usage().unwrap();
+        println!(
+            "---------------os response----------------------------{:?}",
+            os_response
+        );
         let mut metrics = nodesrv::Osusages::new();
 
         let all_items = os_response

@@ -196,7 +196,7 @@ impl ServiceAccountDS {
                 return Ok(Some(end));
             }
         }
-        Ok(None)
+        Ok(Some(servicesrv::EndPoints::new()))
     }
 
     pub fn endpoints_list_by_origin(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndpointsGetResponse>> {

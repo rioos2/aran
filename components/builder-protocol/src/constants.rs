@@ -49,7 +49,7 @@ pub const STOARGEPOOLLIST: &'static str = "StoragePoolList";
 pub const DATACENTERLIST: &'static str = "DatacenterList";
 
 pub const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
-pub const METRIC_NODE: &'static str = "linux";
+
 
 pub const INITIAL_CONDITIONS: &'static [&'static str] = &["AssemblyStorageReady", "AssemblyNetworkReady"];
 pub const NEW_REPLICA_INITALIZING: &'static str = "Initializing replica ";
