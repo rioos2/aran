@@ -1,6 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 use std::collections::BTreeMap;
-use constants::*;
+use DEFAULT_API_VERSION;
+const PLANLIST: &'static str = "PlanList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Plan {

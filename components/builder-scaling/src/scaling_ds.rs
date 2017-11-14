@@ -4,7 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{scalesrv, asmsrv};
+use protocol::{scalesrv, asmsrv, nodesrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -12,14 +12,7 @@ use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 
 const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
-const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 const HORIZONTALPODAUTOSCALAR: &'static str = "HorizontalPodAutoscaler";
-const JOB: &'static str = "job";
-const RIOOS_ASSEMBLY: &'static str = "rioos-assemblys";
-const MODE: &'static str = "mode";
-const SYSTEM: &'static str = "system";
-
-
 
 pub struct ScalingDS;
 
@@ -134,14 +127,14 @@ impl ScalingDS {
         let metric_scope = vec![metric_source_name.to_string()];
         let group_scope: Vec<String> = vec![
             format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id).to_string(),
-            format!("{}={}", JOB, RIOOS_ASSEMBLY).to_string(),
-            format!("{}={}", MODE, SYSTEM).to_string(),
+            nodesrv::JOBS.to_string(),
+            nodesrv::MODE.to_string(),
         ];
 
         let scope = CollectorScope {
             metric_names: metric_scope,
             labels: group_scope,
-            last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
+            last_x_minutes: nodesrv::METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
         };
 
         let mut metric_collector = Collector::new(client, scope);

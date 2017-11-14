@@ -1,7 +1,8 @@
 // Copyright (c) 2017 RioCorp Inc.
 use asmsrv;
 use std::collections::BTreeMap;
-use constants::*;
+use DEFAULT_API_VERSION;
+const HORIZONTALSCALINGLIST: &'static str = "HorizontalPodAutoscalerList";
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScaling {
     id: String,

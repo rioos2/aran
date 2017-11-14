@@ -11,9 +11,8 @@ use deploy::replicas::Replicas;
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, TypeMeta};
+use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, TypeMeta, INITIAL_CONDITIONS, NEW_REPLICA_INITALIZING, INITIALIZING};
 use protocol::plansrv::{Plan, Service};
-use protocol::constants::*;
 use router::Router;
 use db::data_store::Broker;
 use std::collections::BTreeMap;
@@ -22,7 +21,8 @@ use db;
 use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
-
+const ASSEMBLYFACTORY: &'static str = "AssemblyFactory";
+const ASSEMBLY: &'static str = "Assembly";
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

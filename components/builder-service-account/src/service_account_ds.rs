@@ -8,7 +8,6 @@ use protocol::{servicesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-use protocol::constants::*;
 
 
 pub struct ServiceAccountDS;
@@ -240,8 +239,7 @@ impl ServiceAccountDS {
     pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;
         let asmid = services_create.get_spec().get_selector().get(
-            &RIO_ASM_FAC_ID
-                .to_string(),
+            &servicesrv::RIO_ASM_FAC_ID.to_string(),
         );
         let rows = &conn.query(
             "SELECT * FROM insert_services_v1($1,$2,$3,$4,$5,$6)",

@@ -1,9 +1,9 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 use {asmsrv, servicesrv};
-use constants::*;
+use DEFAULT_API_VERSION;
 use std::collections::BTreeMap;
-
+const JOBSLIST: &'static str = "JobsList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Jobs {

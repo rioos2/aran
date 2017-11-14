@@ -3,8 +3,11 @@
 use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
-use constants::*;
-
+use DEFAULT_API_VERSION;
+const NODELIST: &'static str = "NodeList";
+pub const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
+pub const JOBS: &'static str = "job=rioos-assemblys";
+pub const MODE: &'static str = "mode=system";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -119,7 +122,6 @@ pub struct Status {
 }
 
 impl Status {
-
     pub fn new(capacity: BTreeMap<String, String>, allocatable: BTreeMap<String, String>, phase: &str, conditions: Vec<asmsrv::Condition>, addresses: Vec<Addresses>, node_info: NodeInfo) -> Status {
         Status {
             capacity: capacity,
@@ -150,7 +152,6 @@ impl Status {
     pub fn get_allocatable(&self) -> &BTreeMap<String, String> {
         &self.allocatable
     }
-
 }
 
 
@@ -161,17 +162,16 @@ pub struct Addresses {
 }
 
 impl Addresses {
-
     pub fn new(node_type: &str, address: &str) -> Addresses {
         Addresses {
             node_type: node_type.to_string(),
             address: address.to_string(),
         }
     }
-    pub fn get_node_type(&self) ->  ::std::string::String {
+    pub fn get_node_type(&self) -> ::std::string::String {
         self.node_type.clone()
     }
-    pub fn get_address(&self) ->  ::std::string::String {
+    pub fn get_address(&self) -> ::std::string::String {
         self.address.clone()
     }
 }
@@ -188,7 +188,6 @@ pub struct NodeInfo {
 }
 
 impl NodeInfo {
-
     pub fn new(machine_id: &str, system_uuid: &str, kernel_version: &str, os_image: &str, architecture: &str, bridges: Vec<Bridge>) -> NodeInfo {
         NodeInfo {
             machine_id: machine_id.to_string(),

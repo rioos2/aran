@@ -3,7 +3,14 @@
 use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
-use constants::*;
+use DEFAULT_API_VERSION;
+const ASSEMBLYLIST: &'static str = "AssemblyList";
+const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
+pub const INITIAL_CONDITIONS: &'static [&'static str] = &["AssemblyStorageReady", "AssemblyNetworkReady"];
+pub const NEW_REPLICA_INITALIZING: &'static str = "Initializing replica ";
+pub const ASSEMBLYS_URI: &'static str = "v1/assembly";
+pub const INITIALIZING: &'static str = "Initializing";
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
