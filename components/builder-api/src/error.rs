@@ -17,6 +17,7 @@ use service;
 pub const MISSING_FIELD: &'static str = "Missing value for field:";
 pub const BODYNOTFOUND: &'static str = "nothing found in body";
 pub const IDMUSTNUMBER: &'static str = "id must be a number";
+pub const INVALIDQUERY: &'static str = "invalid query params";
 
 
 #[derive(Debug)]

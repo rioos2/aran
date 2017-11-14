@@ -20,7 +20,7 @@ use std::collections::BTreeMap;
 use db;
 use http::{service_account_handler, deployment_handler};
 use rio_net::util::errors::AranResult;
-use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER, INVALIDQUERY};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 use protocol::constants::*;
 use extract_query_value;
@@ -141,11 +141,7 @@ pub fn jobs_get_by_node(req: &mut Request) -> AranResult<Response> {
     let node_id = {
         match extract_query_value("node_id", req) {
             Some(id) => id,
-            None => {
-                return Err(not_found_error(
-                    &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-                ))
-            }
+            None => return Err(bad_request(&INVALIDQUERY)),
         }
     };
     let conn = Broker::connect().unwrap();

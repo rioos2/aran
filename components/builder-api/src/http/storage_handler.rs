@@ -18,7 +18,7 @@ use db;
 use std::collections::BTreeMap;
 use http::deployment_handler;
 use rio_net::util::errors::AranResult;
-use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER, INVALIDQUERY};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 use extract_query_value;
 define_event_log!();
@@ -153,11 +153,8 @@ pub fn storage_get_by_ip(req: &mut Request) -> AranResult<Response> {
     let ip = {
         match extract_query_value("host_ip", req) {
             Some(ip) => ip,
-            None => {
-                return Err(not_found_error(
-                    &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-                ))
-            }
+            None => return Err(bad_request(&INVALIDQUERY)),
+
         }
     };
 
