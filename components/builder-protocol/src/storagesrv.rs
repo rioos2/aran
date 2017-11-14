@@ -1,7 +1,10 @@
 // Copyright (c) 2017 RioCorp Inc.
 use {asmsrv, servicesrv};
 use std::collections::BTreeMap;
-use constants::*;
+use DEFAULT_API_VERSION;
+const DATACENTERLIST: &'static str = "DatacenterList";
+const STORAGELIST: &'static str = "StorageList";
+const STOARGEPOOLLIST: &'static str = "StoragePoolList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Storage {

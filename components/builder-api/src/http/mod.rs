@@ -115,7 +115,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         horizontal_scaling_list: get "/horizontalscaling" => XHandler::new(C(hs_list)).before(basic.clone()),
         horizontal_scaling_status: put "/horizontalscaling/:id/status" => XHandler::new(C(hs_status_update)).before(basic.clone()),
         horizontal_scaling_update: put "/horizontalscaling/:id" => XHandler::new(C(hs_update)).before(basic.clone()),
-        horizontal_scaling_metrics: get "/horizontalscaling/:id/metrics" => XHandler::new(C(hs_metrics)).before(basic.clone()),
+        horizontal_scaling_metrics: get "/horizontalscaling/:id/metrics/:source" => XHandler::new(C(hs_metrics)).before(basic.clone()),
         horizontal_scaling_list_by_origin : get "/origins/:origin/horizontalscaling" => XHandler::new(C(horizontal_scaling_list_by_origin)).before(basic.clone()),
 
 

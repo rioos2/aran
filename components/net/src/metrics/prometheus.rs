@@ -55,6 +55,10 @@ impl PrometheusClient {
     pub fn pull_metrics(&self, path: &str) -> Result<Contents> {
 
         let url = Url::parse(&format!("{}/query?query={}", self.url, path)).unwrap();
+        println!(
+            "-------------------------url-----------------------{:?}",
+            url
+        );
         let mut rep = http_get(url, path)?;
         let mut body = String::new();
         rep.read_to_string(&mut body)?;

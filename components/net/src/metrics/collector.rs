@@ -9,6 +9,7 @@ use serde_json;
 use std::collections::{BTreeMap, HashMap};
 use protocol::nodesrv;
 use itertools::Itertools;
+use super::expression::*;
 
 
 pub const CPU_TOTAL: &'static str = "cpu_total";
@@ -24,7 +25,7 @@ pub struct Collector<'a> {
 pub struct CollectorScope {
     pub metric_names: Vec<String>,
     pub labels: Vec<String>,
-    pub last_x_minutes: Option<String>,
+    pub last_x_minutes: String,
 }
 
 impl<'a> Collector<'a> {
@@ -34,13 +35,25 @@ impl<'a> Collector<'a> {
             scope: scope,
         }
     }
-
-    pub fn metric_by(&mut self) -> Result<Vec<nodesrv::PromResponse>> {
-        let content_datas = self.do_collect();
-        let metrics = self.set_metrics(Ok(content_datas.clone())); //make it os_usages
+    // average of metrics
+    pub fn metric_by_avg(&mut self) -> Result<BTreeMap<String, String>> {
+        let content_datas = self.avg_collect();
+        let metrics = self.set_metrics_average(Ok(content_datas.clone()));
         Ok(metrics.unwrap())
     }
 
+    //os usage metric
+    pub fn metric_by_os_usage(&mut self) -> Result<Vec<nodesrv::PromResponse>> {
+        let content_datas = self.do_collect();
+        let metrics = self.set_metrics_for_os_usage(Ok(content_datas.clone()));
+        println!(
+            "======================metrics=========================={:?}",
+            metrics
+        );
+        Ok(metrics.unwrap())
+    }
+
+    //overall metrics
     pub fn overall(&mut self) -> Result<(Vec<nodesrv::PromResponse>, Vec<nodesrv::PromResponse>)> {
         let content_datas = self.do_collect();
         let gauges = self.set_gauges(Ok(content_datas.clone()));
@@ -48,15 +61,49 @@ impl<'a> Collector<'a> {
         Ok((gauges.unwrap(), statistics.unwrap()))
     }
 
+    //collect the metric data for total ram and cpu and os usage(query is format is different)
     fn do_collect(&self) -> Vec<nodesrv::PromResponse> {
         let mut content_datas = vec![];
-        let s: String = self.scope.labels.clone().into_iter().collect();
-        let l = self.scope.last_x_minutes.clone().unwrap_or("".to_string());
-        let label_group = format!("{}{}{}{}", "{", s, "}", l);
         for scope in self.scope.metric_names.iter() {
-            let content = self.client.pull_metrics(
-                &format!("{}{}", scope, label_group),
+            let query = Operators::NoOp(IRateInfo {
+                labels: self.scope.labels.clone(),
+                metric: scope.to_string(),
+                last_x_minutes: self.scope.last_x_minutes.clone(),
+            });
+            let content = self.client.pull_metrics(&format!("{}", query));
+
+            if content.is_ok() {
+                let response: nodesrv::PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
+                content_datas.push(response);
+            }
+        }
+        println!(
+            "----------------content_datas----------------------------------{:?}",
+            content_datas
+        );
+        content_datas
+    }
+
+    // collect the average data for the cpu usage from prometheus
+    fn avg_collect(&self) -> Vec<nodesrv::PromResponse> {
+        let mut content_datas = vec![];
+        for scope in self.scope.metric_names.iter() {
+            let avg = Functions::Avg(AvgInfo {
+                operator: Operators::IRate(IRateInfo {
+                    labels: self.scope.labels.clone(),
+                    metric: scope.to_string(),
+                    last_x_minutes: self.scope.last_x_minutes.clone(),
+                }),
+            });
+            let data = format!(
+                "100 - ({} * 100)",
+                MetricQueryBuilder::new(MetricQuery {
+                    functions: avg,
+                    by: "rioos_assembly_id".to_string(),
+                })
             );
+            let content = self.client.pull_metrics(&data);
+
             if content.is_ok() {
                 let response: nodesrv::PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
                 content_datas.push(response);
@@ -108,7 +155,7 @@ impl<'a> Collector<'a> {
         }
     }
 
-    fn set_metrics(&self, response: Result<Vec<nodesrv::PromResponse>>) -> Result<Vec<nodesrv::PromResponse>> {
+    fn set_metrics_for_os_usage(&self, response: Result<Vec<nodesrv::PromResponse>>) -> Result<Vec<nodesrv::PromResponse>> {
         match response {
             Ok(proms) => {
                 return Ok(
@@ -117,6 +164,29 @@ impl<'a> Collector<'a> {
                         .map(|mut x| (x.os_usage().clone()))
                         .collect::<Vec<_>>(),
                 );
+            }
+            _ => return Err(error::Error::CryptoError(String::new())),
+        }
+    }
+
+    fn set_metrics_average(&self, response: Result<Vec<nodesrv::PromResponse>>) -> Result<BTreeMap<String, String>> {
+        match response {
+            Ok(proms) => {
+                let mut data = BTreeMap::new();
+                proms
+                    .into_iter()
+                    .map(|mut x| {
+                        if let nodesrv::Data::Vector(ref mut instancevec) = x.data {
+                            instancevec
+                                .iter_mut()
+                                .map(|x| for (_k, v) in &x.metric {
+                                    data.insert(v.to_string(), x.value.1.clone());
+                                })
+                                .collect::<Vec<_>>();
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                Ok(data)
             }
             _ => return Err(error::Error::CryptoError(String::new())),
         }

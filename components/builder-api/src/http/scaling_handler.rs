@@ -241,7 +241,7 @@ pub fn hs_metrics(req: &mut Request) -> AranResult<Response> {
     let promcli = req.get::<persistent::Read<PrometheusCli>>().unwrap();
     let af_id = {
         let params = req.extensions.get::<Router>().unwrap();
-        let id = params.find("assembly_factory_id").unwrap().to_owned();
+        let id = params.find("id").unwrap().to_owned();
         id
     };
     let source = {

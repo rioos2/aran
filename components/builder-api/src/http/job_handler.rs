@@ -22,8 +22,9 @@ use http::{service_account_handler, deployment_handler};
 use rio_net::util::errors::AranResult;
 use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER, INVALIDQUERY};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
-use protocol::constants::*;
+const JOB: &'static str = "Job";
 use extract_query_value;
+
 
 define_event_log!();
 

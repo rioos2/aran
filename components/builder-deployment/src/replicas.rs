@@ -1,10 +1,11 @@
 // Copyright (c) 2017 RioCorp Inc.
 
 use deployment_ds::DeploymentDS;
-use protocol::asmsrv::{Assembly, AssemblyFactory, Status, Condition, TypeMeta};
+use protocol::asmsrv::{Assembly, AssemblyFactory, Status, Condition, TypeMeta, INITIAL_CONDITIONS, NEW_REPLICA_INITALIZING, ASSEMBLYS_URI, INITIALIZING};
 use db::data_store::DataStoreConn;
 use error::Result;
-use protocol::constants::*;
+const ASSEMBLY: &'static str = "Assembly";
+
 pub struct Replicas<'a> {
     current: u32,
     desired: u32,

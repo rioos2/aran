@@ -10,15 +10,17 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 use db::data_store::Broker;
-use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData, EndPoints, Subsets, Addesses, Ports, Services, Spec};
+use protocol::servicesrv::{Secret, ObjectReference, ServiceAccount, ObjectMetaData, EndPoints, Subsets, Addesses, Ports, Services, Spec, RIO_ASM_FAC_ID};
 use protocol::asmsrv::{TypeMeta, IdGet, Status, Condition};
 use std::collections::BTreeMap;
 use http::deployment_handler;
 use common::ui;
 use db;
 use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
-use protocol::constants::*;
-
+const ENDPOINT: &'static str = "Endpoint";
+const SECRET: &'static str = "Secret";
+const SERVICE: &'static str = "Service";
+const SERVICE_ACCOUNT: &'static str = "ServiceAccount";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SecretCreateReq {

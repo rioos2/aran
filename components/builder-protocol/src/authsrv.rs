@@ -1,6 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
-
-use constants::*;
+const ROLESLIST: &'static str = "RolesList";
+const PERMISSIONSLIST: &'static str = "PermissionsList";
+use DEFAULT_API_VERSION;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Roles {

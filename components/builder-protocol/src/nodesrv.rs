@@ -3,8 +3,11 @@
 use asmsrv;
 use std::collections::BTreeMap;
 use serde_json;
-use constants::*;
-
+use DEFAULT_API_VERSION;
+const NODELIST: &'static str = "NodeList";
+pub const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
+pub const JOBS: &'static str = "job=rioos-assemblys";
+pub const MODE: &'static str = "mode=system";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
