@@ -16,7 +16,7 @@ use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_fou
 use error::{Error, BODYNOTFOUND, IDMUSTNUMBER};
 
 use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
-use protocol::asmsrv::{Condition,IdGet};
+use protocol::asmsrv::{Condition, IdGet};
 use http::deployment_handler;
 use common::ui;
 
@@ -196,9 +196,7 @@ pub fn node_get(req: &mut Request) -> AranResult<Response> {
 
     match NodeDS::node_get(&conn, &node_get) {
         Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
@@ -206,7 +204,7 @@ pub fn node_get(req: &mut Request) -> AranResult<Response> {
                 &node_get.get_id()
             )))
         }
-        }
+    }
 }
 
 pub fn node_status_update(req: &mut Request) -> AranResult<Response> {

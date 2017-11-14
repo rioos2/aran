@@ -124,28 +124,6 @@ impl DeploymentDS {
         }
         Ok(None)
     }
-    pub fn assemblys_show_by_services(datastore: &DataStoreConn, assemblys_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
-        let conn = datastore.pool.get_shard(0)?;
-
-        let rows = &conn.query(
-            "SELECT * FROM get_assemblys_by_services_v1($1)",
-            &[&(assemblys_get.get_id() as String)],
-        ).map_err(Error::AssemblyGet)?;
-
-        let mut response = asmsrv::AssemblysGetResponse::new();
-
-        let mut assemblys_collection = Vec::new();
-        if rows.len() > 0 {
-            for row in rows {
-                let assembly = Self::collect_spec(&row, &datastore)?;
-                assemblys_collection.push(assembly);
-            }
-            response.set_assemblys(assemblys_collection);
-            return Ok(Some(response));
-        }
-        Ok(None)
-    }
-
 
 
     pub fn assembly_status_update(datastore: &DataStoreConn, assembly: &asmsrv::Assembly) -> Result<Option<asmsrv::Assembly>> {

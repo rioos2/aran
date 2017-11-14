@@ -125,16 +125,7 @@ impl Migratable for DeployProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-        migrator.migrate(
-            "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION get_assemblys_by_services_v1(serv_name text) RETURNS SETOF assembly AS $$
 
-                        BEGIN
-                         RETURN QUERY SELECT * FROM assembly WHERE serv_name = ANY(selector);
-                         RETURN;
-                        END
-                        $$ LANGUAGE plpgsql STABLE"#,
-        )?;
 
         migrator.migrate(
             "asmsrv",

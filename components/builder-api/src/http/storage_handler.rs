@@ -20,7 +20,7 @@ use http::deployment_handler;
 use rio_net::util::errors::AranResult;
 use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
-
+use extract_query_value;
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -145,6 +145,38 @@ pub fn storage_list(req: &mut Request) -> AranResult<Response> {
         }
     }
 }
+
+
+
+pub fn storage_get_by_ip(req: &mut Request) -> AranResult<Response> {
+
+    let ip = {
+        match extract_query_value("host_ip", req) {
+            Some(ip) => ip,
+            None => {
+                return Err(not_found_error(
+                    &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+                ))
+            }
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+    let mut str_get = IdGet::new();
+    str_get.set_id(ip.to_string());
+    match StorageDS::storage_get_by_ip(&conn, &str_get) {
+        Ok(Some(storage)) => Ok(render_json(status::Ok, &storage)),
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &str_get.get_id()
+            )))
+        }
+    }
+}
+
 
 
 pub fn storage_show(req: &mut Request) -> AranResult<Response> {
