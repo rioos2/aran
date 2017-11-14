@@ -1,8 +1,12 @@
 // Copyright (c) 2017 RioCorp Inc.
 use asmsrv;
 use std::collections::BTreeMap;
-use constants::*;
-
+use DEFAULT_API_VERSION;
+pub const RIO_ASM_FAC_ID: &'static str = "rioos_assembly_factory_id";
+const ENDPOINTSLIST: &'static str = "EndpointsList";
+const SECRETLIST: &'static str = "SecretList";
+const SERVICELIST: &'static str = "ServiceList";
+const SERVICEACCOUNTLIST: &'static str = "ServiceAccountsList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {

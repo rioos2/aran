@@ -10,7 +10,6 @@ use iron::prelude::*;
 use iron::status;
 use iron::typemap;
 use protocol::originsrv::Origin;
-use protocol::constants::*;
 use router::Router;
 use protocol::servicesrv::ObjectMetaData;
 use protocol::asmsrv::{TypeMeta, IdGet};
@@ -20,6 +19,8 @@ use http::{service_account_handler, deployment_handler};
 use rio_net::util::errors::AranResult;
 use error::{Error, MISSING_FIELD, BODYNOTFOUND};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
+const ORIGIN: &'static str = "Origin";
+
 
 define_event_log!();
 

@@ -10,8 +10,8 @@ use db::data_store::DataStoreConn;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 use serde_json;
-use protocol::constants::*;
-
+const OS: &'static str = "rioos_os_name=ubuntu";
+const NODE: &'static str = "Node";
 pub struct NodeDS;
 
 impl NodeDS {
@@ -106,56 +106,63 @@ impl NodeDS {
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
-        let nodes_metric_scope: Vec<String> = vec![
-            "cpu_total".to_string(),
-            "ram_total".to_string(),
-            "disk_total".to_string(),
+        // let nodes_metric_scope: Vec<String> = vec![
+        //     "cpu_total".to_string(),
+        //     "ram_total".to_string(),
+        //     "disk_total".to_string(),
+        // ];
+        //
+        // let nodes_group_scope: Vec<String> = vec!["job=prometheus".to_string(), "group=canary".to_string()];
+        //
+        // let scope = CollectorScope {
+        //     metric_names: nodes_metric_scope,
+        //     labels: nodes_group_scope,
+        //     last_x_minutes: "".to_string(),
+        // };
+        //
+        //
+        // let mut health_checker = Collector::new(client, scope);
+        //
+        // let metric_response = health_checker.overall().unwrap();
+        //
+        // let mut coun_collection = Vec::new();
+        // for data in metric_response.0 {
+        //     let lgauges: nodesrv::Counters = data.into();
+        //     coun_collection.push(lgauges);
+        // }
+        //
+        // let mut guague = nodesrv::Guages::new();
+        // guague.set_title("Cumulative operations counter".to_string());
+        // guague.set_counters(coun_collection);
+        //
+        //
+        // let mut lstatistics = vec![nodesrv::NodeStatistic::new()];
+        // for st_data in metric_response.1 {
+        //     lstatistics = st_data.into();
+        // }
+        // let mut statistic = nodesrv::Statistics::new();
+        // statistic.set_title("Statistics".to_string());
+        // statistic.set_nodes(lstatistics);
+
+        let metric_scope = vec!["node_cpu".to_string()];
+        let label_group: Vec<String> = vec![
+            OS.to_string(),
+            nodesrv::JOBS.to_string(),
+            nodesrv::MODE.to_string(),
         ];
-        let nodes_group_scope: Vec<String> = vec!["group=nodes".to_string()];
-
-        let scope = CollectorScope {
-            metric_names: nodes_metric_scope,
-            labels: nodes_group_scope,
-            last_x_minutes: None,
-        };
-
-
-        let mut health_checker = Collector::new(client, scope);
-
-        let metric_response = health_checker.overall().unwrap();
-
-        let mut coun_collection = Vec::new();
-        for data in metric_response.0 {
-            let lgauges: nodesrv::Counters = data.into();
-            coun_collection.push(lgauges);
-        }
-
-        let mut guague = nodesrv::Guages::new();
-        guague.set_title("Cumulative operations counter".to_string());
-        guague.set_counters(coun_collection);
-
-
-        let mut lstatistics = vec![nodesrv::NodeStatistic::new()];
-        for st_data in metric_response.1 {
-            lstatistics = st_data.into();
-        }
-        let mut statistic = nodesrv::Statistics::new();
-        statistic.set_title("Statistics".to_string());
-        statistic.set_nodes(lstatistics);
-
-        let group_scope = vec!["node_cpu".to_string()];
-        let label_name = format!("{}", METRIC_NODE);
-        let metric_scope: Vec<String> = vec![label_name.to_string()];
 
         let scope_data = CollectorScope {
             metric_names: metric_scope,
-            labels: group_scope,
-            last_x_minutes: Some(METRIC_DEFAULT_LAST_X_MINUTE.to_string()),
+            labels: label_group,
+            last_x_minutes: nodesrv::METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
         };
 
         let mut os_checker = Collector::new(client, scope_data);
-        let os_response = os_checker.metric_by().unwrap();
-
+        let os_response = os_checker.metric_by_os_usage().unwrap();
+        println!(
+            "---------------os response----------------------------{:?}",
+            os_response
+        );
         let mut metrics = nodesrv::Osusages::new();
 
         let all_items = os_response

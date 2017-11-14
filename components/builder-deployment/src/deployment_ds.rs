@@ -4,10 +4,12 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{asmsrv, plansrv, servicesrv};
+use protocol::{asmsrv, plansrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+use service::service_account_ds::ServiceAccountDS;
+
 
 pub struct DeploymentDS;
 
@@ -289,7 +291,8 @@ impl DeploymentDS {
         let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
         let mut endpoint_get = asmsrv::IdGet::new();
         endpoint_get.set_id(assembly.get_id());
-        let endpoints = Self::endpoints_show(&datastore, &endpoint_get)?;
+        let endpoints = ServiceAccountDS::endpoints_show_by_asm_id(&datastore, &endpoint_get)
+            .map_err(Error::EndPoints)?;
         assembly.set_spec(data);
         assembly.set_endpoints(endpoints);
         Ok(assembly)
@@ -357,22 +360,6 @@ impl DeploymentDS {
         }
         Ok(None)
     }
-
-    pub fn endpoints_show(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
-        let conn = datastore.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * FROM get_endpoints_by_assebmly_v1($1)",
-            &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::EndPointsGet)?;
-        if rows.len() > 0 {
-            for row in rows {
-                let end = row_to_endpoints(&row)?;
-                return Ok(Some(end));
-            }
-        }
-        let endpoints = servicesrv::EndPoints::new();
-        Ok(Some(endpoints))
-    }
 }
 
 fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
@@ -408,25 +395,6 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {
 
     Ok(assembly)
 }
-fn row_to_endpoints(row: &postgres::rows::Row) -> Result<servicesrv::EndPoints> {
-    let mut endpoints = servicesrv::EndPoints::new();
-    let id: i64 = row.get("id");
-    let target_ref: i64 = row.get("target_ref");
-    let subsets: String = row.get("subsets");
-    let created_at = row.get::<&str, DateTime<UTC>>("created_at");
-    let object_meta: String = row.get("object_meta");
-    let type_meta: String = row.get("type_meta");
-
-    endpoints.set_id(id.to_string());
-    endpoints.set_target_ref(target_ref.to_string());
-    endpoints.set_subsets(serde_json::from_str(&subsets).unwrap());
-    endpoints.set_object_meta(serde_json::from_str(&object_meta).unwrap());
-    endpoints.set_type_meta(serde_json::from_str(&type_meta).unwrap());
-    endpoints.set_created_at(created_at.to_rfc3339());
-
-    Ok(endpoints)
-}
-
 
 fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::AssemblyFactory> {
 

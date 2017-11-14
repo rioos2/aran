@@ -8,7 +8,6 @@ use protocol::{servicesrv, asmsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-use protocol::constants::*;
 
 
 pub struct ServiceAccountDS;
@@ -199,6 +198,21 @@ impl ServiceAccountDS {
         Ok(None)
     }
 
+    pub fn endpoints_show_by_asm_id(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_endpoints_by_assebmly_v1($1)",
+            &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::EndPointsGet)?;
+        if rows.len() > 0 {
+            for row in rows {
+                let end = row_to_endpoints(&row)?;
+                return Ok(Some(end));
+            }
+        }
+        Ok(Some(servicesrv::EndPoints::new()))
+    }
+
     pub fn endpoints_list_by_origin(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndpointsGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
@@ -240,8 +254,7 @@ impl ServiceAccountDS {
     pub fn services_create(datastore: &DataStoreConn, services_create: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
         let conn = datastore.pool.get_shard(0)?;
         let asmid = services_create.get_spec().get_selector().get(
-            &RIO_ASM_FAC_ID
-                .to_string(),
+            &servicesrv::RIO_ASM_FAC_ID.to_string(),
         );
         let rows = &conn.query(
             "SELECT * FROM insert_services_v1($1,$2,$3,$4,$5,$6)",

@@ -8,7 +8,7 @@ use protocol::{servicesrv, asmsrv, netsrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-use protocol::constants::*;
+const NETWORKS: &'static str = "Networks";
 
 pub struct NetworkDS;
 

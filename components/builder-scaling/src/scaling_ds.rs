@@ -12,7 +12,6 @@ use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
 
 const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
-const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 const HORIZONTALPODAUTOSCALAR: &'static str = "HorizontalPodAutoscaler";
 
 pub struct ScalingDS;
@@ -125,39 +124,24 @@ impl ScalingDS {
     }
 
     pub fn hs_metrics(client: &PrometheusClient, af_id: &str, metric_source_name: &str) -> Result<Option<scalesrv::ScalingGetResponse>> {
-        let label_name = format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id);
         let metric_scope = vec![metric_source_name.to_string()];
-        let group_scope: Vec<String> = vec![label_name.to_string()];
+        let group_scope: Vec<String> = vec![
+            format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id).to_string(),
+            nodesrv::JOBS.to_string(),
+            nodesrv::MODE.to_string(),
+        ];
 
         let scope = CollectorScope {
             metric_names: metric_scope,
             labels: group_scope,
-            last_x_minutes: Some(METRIC_DEFAULT_LAST_X_MINUTE.to_string()),
+            last_x_minutes: nodesrv::METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
         };
 
         let mut metric_collector = Collector::new(client, scope);
-        let metric_response = metric_collector.metric_by().unwrap();
+        let metric_response = metric_collector.metric_by_avg().unwrap();
 
-        let mut metrics = nodesrv::Osusages::new();
-
-        let all_items = metric_response
-            .into_iter()
-            .map(|p| {
-                let p1: nodesrv::Osusages = p.into();
-                p1.get_items()
-            })
-            .collect::<Vec<_>>();
-
-        metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
-
-        let mut response = scalesrv::ScalingGet::new();
-        response.set_title("Scaling metrics ".to_owned() + af_id);
-        /*res.set_from_date(from_date);
-        res.set_to_date(to_date);*/
-        response.set_metrics(metrics);
-
-        let response: scalesrv::ScalingGetResponse = response.into();
-
+        let mut response = scalesrv::ScalingGetResponse::new();
+        response.set_metrics(metric_response);
         Ok(Some(response))
     }
 }

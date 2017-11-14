@@ -3,7 +3,14 @@
 use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
-use constants::*;
+use DEFAULT_API_VERSION;
+const ASSEMBLYLIST: &'static str = "AssemblyList";
+const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
+pub const INITIAL_CONDITIONS: &'static [&'static str] = &["AssemblyStorageReady", "AssemblyNetworkReady"];
+pub const NEW_REPLICA_INITALIZING: &'static str = "Initializing replica ";
+pub const ASSEMBLYS_URI: &'static str = "v1/assembly";
+pub const INITIALIZING: &'static str = "Initializing";
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
@@ -196,17 +203,19 @@ impl Status {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Volume {
-    id: String,
+    id: u32,
     target: String,
     volume_type: String,
+    size: String,
 }
 
 impl Volume {
-    pub fn with_volumes(id: &str, target: &str, volume_type: &str) -> Volume {
+    pub fn with_volumes(id: u32, target: &str, volume_type: &str, size: &str) -> Volume {
         Volume {
-            id: id.to_string(),
+            id: id,
             target: target.to_string(),
             volume_type: volume_type.to_string(),
+            size: size.to_string(),
         }
     }
 }
@@ -245,7 +254,6 @@ impl Condition {
     pub fn get_last_transition_time(&self) -> ::std::string::String {
         self.last_transition_time.clone()
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
