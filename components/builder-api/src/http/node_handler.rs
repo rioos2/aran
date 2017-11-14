@@ -13,15 +13,17 @@ use db::data_store::Broker;
 use db;
 use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
-use error::{Error, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, BODYNOTFOUND, IDMUSTNUMBER, INVALIDQUERY};
 
 use protocol::nodesrv::{Node, Spec, Status, Taints, Addresses, NodeInfo, Bridge};
-use protocol::asmsrv::{Condition,IdGet};
+use protocol::asmsrv::{Condition, IdGet};
 use http::deployment_handler;
 use common::ui;
+use extract_query_value;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct NodeCreateReq {
+    node_ip: String,
     spec: SpecReq,
     status: StatusReq,
 }
@@ -78,6 +80,7 @@ struct CommonStatusReq {
 struct BridgeReq {
     bridge_name: String,
     physical_device: String,
+    network_type: String,
     bridge_type: String,
 }
 
@@ -86,6 +89,7 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<NodeCreateReq>>() {
             Ok(Some(body)) => {
+                node_create.set_node_ip(body.node_ip);
                 node_create.set_spec(Spec::new(
                     &body.spec.assembly_cidr,
                     &body.spec.external_id,
@@ -131,7 +135,12 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
                             .bridges
                             .iter()
                             .map(|x| {
-                                Bridge::new(&x.bridge_name, &x.physical_device, &x.bridge_type)
+                                Bridge::new(
+                                    &x.bridge_name,
+                                    &x.physical_device,
+                                    &x.network_type,
+                                    &x.bridge_type,
+                                )
                             })
                             .collect::<Vec<_>>(),
                     ),
@@ -166,6 +175,29 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
     }
 }
 
+
+pub fn node_get_by_node_ip(req: &mut Request) -> AranResult<Response> {
+    let node_ip = {
+        match extract_query_value("node_ip", req) {
+            Some(ip) => ip,
+            None => return Err(bad_request(&INVALIDQUERY)),
+        }
+    };
+    let conn = Broker::connect().unwrap();
+
+    let mut node_get = IdGet::new();
+    node_get.set_id(node_ip.to_string());
+    match NodeDS::node_get_by_node_ip(&conn, &node_get) {
+        Ok(Some(node_get)) => Ok(render_json(status::Ok, &node_get)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
+    }
+}
+
 #[allow(unused_variables)]
 pub fn node_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
@@ -196,9 +228,7 @@ pub fn node_get(req: &mut Request) -> AranResult<Response> {
 
     match NodeDS::node_get(&conn, &node_get) {
         Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
-        Err(err) => {
-            Err(internal_error(&format!("{}\n", err)))
-        }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
             Err(not_found_error(&format!(
                 "{} for {}",
@@ -206,7 +236,7 @@ pub fn node_get(req: &mut Request) -> AranResult<Response> {
                 &node_get.get_id()
             )))
         }
-        }
+    }
 }
 
 pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
@@ -256,7 +286,12 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
                             .bridges
                             .iter()
                             .map(|x| {
-                                Bridge::new(&x.bridge_name, &x.physical_device, &x.bridge_type)
+                                Bridge::new(
+                                    &x.bridge_name,
+                                    &x.physical_device,
+                                    &x.network_type,
+                                    &x.bridge_type,
+                                )
                             })
                             .collect::<Vec<_>>(),
                     ),

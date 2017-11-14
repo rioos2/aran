@@ -326,18 +326,6 @@ impl Migratable for ServiceAccountProcedure {
         )?;
 
 
-        migrator.migrate(
-            "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION get_services_by_assebmly_v1(asmid bigint) RETURNS SETOF services AS $$
-                        BEGIN
-                         RETURN QUERY SELECT * FROM services WHERE assembly_id=asmid;
-                         RETURN;
-                        END
-                        $$ LANGUAGE plpgsql STABLE"#,
-        )?;
-
-
-
         ui.end("ServiceAccountProcedure");
 
         Ok(())

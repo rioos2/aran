@@ -12,7 +12,7 @@ use router::Router;
 use job::job_ds::JobDS;
 use protocol::jobsrv::{SpecData, Jobs};
 use protocol::servicesrv::ObjectMetaData;
-use protocol::asmsrv::{TypeMeta, Status, Condition};
+use protocol::asmsrv::{TypeMeta, Status, Condition, IdGet};
 use db::data_store::Broker;
 use common::ui;
 use ansi_term::Colour;
@@ -20,14 +20,16 @@ use std::collections::BTreeMap;
 use db;
 use http::{service_account_handler, deployment_handler};
 use rio_net::util::errors::AranResult;
-use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER};
+use error::{Error, MISSING_FIELD, BODYNOTFOUND, IDMUSTNUMBER, INVALIDQUERY};
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 use protocol::constants::*;
+use extract_query_value;
 
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct JobsReq {
+    node_id: String,
     type_meta: deployment_handler::TypeMetaReq,
     object_meta: service_account_handler::ObjectMetaReq,
     spec: SpecDataReq,
@@ -51,9 +53,10 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<JobsReq>>() {
             Ok(Some(body)) => {
-                if body.spec.node_id.len() <= 0 {
+                if body.node_id.len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "node_id")));
                 }
+                jobs_create.set_node_id(body.node_id);
                 let mut spec = SpecData::new();
                 spec.set_node_id(body.spec.node_id);
                 spec.set_target_ref(body.spec.target_ref);
@@ -133,6 +136,28 @@ pub fn jobs_get(req: &mut Request) -> AranResult<Response> {
     }
 }
 
+
+pub fn jobs_get_by_node(req: &mut Request) -> AranResult<Response> {
+    let node_id = {
+        match extract_query_value("node_id", req) {
+            Some(id) => id,
+            None => return Err(bad_request(&INVALIDQUERY)),
+        }
+    };
+    let conn = Broker::connect().unwrap();
+
+    let mut nodeid_get = IdGet::new();
+    nodeid_get.set_id(node_id.to_string());
+    match JobDS::jobs_get_by_node(&conn, &nodeid_get) {
+        Ok(Some(jobs_get)) => Ok(render_json(status::Ok, &jobs_get)),
+        Err(err) => Err(internal_error(&format!("{}", err))),
+        Ok(None) => {
+            Err(not_found_error(
+                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
+            ))
+        }
+    }
+}
 pub fn jobs_status_update(req: &mut Request) -> AranResult<Response> {
     let id = {
         let params = req.extensions.get::<Router>().unwrap();

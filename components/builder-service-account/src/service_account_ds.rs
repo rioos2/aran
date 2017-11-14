@@ -316,28 +316,7 @@ impl ServiceAccountDS {
         }
         Ok(None)
     }
-    pub fn services_list_by_assembly(datastore: &DataStoreConn, services_get: &asmsrv::IdGet) -> Result<Option<servicesrv::ServicesGetResponse>> {
-        let conn = datastore.pool.get_shard(0)?;
-
-        let rows = &conn.query(
-            "SELECT * FROM get_services_by_assebmly_v1($1)",
-            &[&(services_get.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::ServicesGetResponse)?;
-
-        let mut response = servicesrv::ServicesGetResponse::new();
-
-        let mut services_collection = Vec::new();
-        if rows.len() > 0 {
-            for row in rows {
-                services_collection.push(row_to_services(&row))
-            }
-            response.set_services_collection(services_collection);
-            return Ok(Some(response));
-        }
-        Ok(None)
-    }
 }
-
 
 fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {
     let mut secret = servicesrv::Secret::new();
