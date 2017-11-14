@@ -313,7 +313,7 @@ impl DeploymentDS {
         let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
         let mut endpoint_get = asmsrv::IdGet::new();
         endpoint_get.set_id(assembly.get_id());
-        let endpoints = ServiceAccountDS::endpoints_show(&datastore, &endpoint_get)
+        let endpoints = ServiceAccountDS::endpoints_show_by_asm_id(&datastore, &endpoint_get)
             .map_err(Error::EndPoints)?;
         assembly.set_spec(data);
         assembly.set_endpoints(endpoints);

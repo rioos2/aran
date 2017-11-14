@@ -195,6 +195,21 @@ impl ServiceAccountDS {
                 return Ok(Some(end));
             }
         }
+        Ok(None)
+    }
+
+    pub fn endpoints_show_by_asm_id(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_endpoints_by_assebmly_v1($1)",
+            &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::EndPointsGet)?;
+        if rows.len() > 0 {
+            for row in rows {
+                let end = row_to_endpoints(&row)?;
+                return Ok(Some(end));
+            }
+        }
         Ok(Some(servicesrv::EndPoints::new()))
     }
 
