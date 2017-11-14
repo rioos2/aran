@@ -26,6 +26,7 @@ extern crate hyper;
 extern crate hyper_native_tls;
 extern crate iron;
 extern crate rioos_http_client as rioos_http;
+extern crate urlencoded;
 
 #[macro_use]
 extern crate log;
@@ -53,3 +54,22 @@ pub mod securer;
 
 pub use self::config::Config;
 pub use self::error::{Error, Result};
+use urlencoded::UrlEncodedQuery;
+use iron::prelude::*;
+
+pub fn extract_query_value(key: &str, req: &mut Request) -> Option<String> {
+    match req.get_ref::<UrlEncodedQuery>() {
+        Ok(ref map) => {
+            for (k, v) in map.iter() {
+                if key == *k {
+                    if v.len() < 1 {
+                        return None;
+                    }
+                    return Some(v[0].clone());
+                }
+            }
+            None
+        }
+        Err(_) => None,
+    }
+}

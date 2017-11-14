@@ -239,7 +239,6 @@ impl ServiceAccountDS {
     }    
 }
 
-
 fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {
     let mut secret = servicesrv::Secret::new();
     let id: i64 = row.get("id");

@@ -75,6 +75,18 @@ impl Migratable for StorageProcedures {
 
         migrator.migrate(
             "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION get_storages_by_ip_v1 (hostip text) RETURNS SETOF storages AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM storages WHERE host_ip = hostip;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        ui.para("[✓] get_storages_by_ip_v1");
+
+        migrator.migrate(
+            "storagesrv",
             r#"CREATE OR REPLACE FUNCTION get_storage_v1 (sid bigint) RETURNS SETOF storages AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM storages WHERE id = sid;
@@ -82,6 +94,7 @@ impl Migratable for StorageProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
+
 
 
         migrator.migrate(

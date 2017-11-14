@@ -27,14 +27,14 @@ impl Server {
     /// # Errors
     ///
     /// * HTTPS server could not start
-    pub fn run(&mut self, ui: &mut UI,) -> Result<()> {
+    pub fn run(&mut self, ui: &mut UI) -> Result<()> {
         let cfg1 = self.config.clone();
 
         ui.begin(&format!(
             "Rio/OS API listening on {}:{}",
             self.config.http.listen,
-            self.config.http.port)
-        )?;
+            self.config.http.port
+        ))?;
         ui.heading("Ready to go.")?;
 
         let http = try!(http::run(cfg1, ui));

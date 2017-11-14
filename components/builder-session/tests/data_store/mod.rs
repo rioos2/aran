@@ -1,4 +1,4 @@
-use protocol::sessionsrv;
+use protocol::{sessionsrv, servicesrv, asmsrv, originsrv, constants};
 use db::data_store::Broker;
 use session::session_ds::SessionDS;
 use rand;
@@ -14,6 +14,22 @@ fn create_force_account() -> sessionsrv::Session {
     ac.set_password("123456789".to_string());
     SessionDS::find_or_create_account_via_session(&conn, &ac, true, false, "select_or_insert_account_v1").expect("Should create account")
 }
+
+// fn origin_create_fn() -> originsrv::Origin {
+//     let conn = Broker::connect().unwrap();
+//     let mut origin_create = originsrv::Origin::new();
+//     let uid: sessionsrv::Session = create_force_account();
+//     let mut object_meta = servicesrv::ObjectMetaData::new();
+//     object_meta.set_origin("rioos1".to_string());
+//     object_meta.set_name("rioos1".to_string());
+//     object_meta.set_uid(uid.get_id());
+//     origin_create.set_object_meta(object_meta);
+//     origin_create.set_type_meta(asmsrv::TypeMeta::new(constants::ORIGIN));
+//
+//     SessionDS::origin_create(&conn, &origin_create).unwrap()
+//
+//
+// }
 
 #[test]
 fn create_account() {
@@ -75,3 +91,37 @@ fn get_account_by_id() {
     assert_eq!(account.get_id(), get_ac.get_id());
 
 }
+
+#[test]
+fn origin_create() {
+    let conn = Broker::connect().unwrap();
+    let mut origin_create = originsrv::Origin::new();
+    let uid: sessionsrv::Session = create_force_account();
+    let mut object_meta = servicesrv::ObjectMetaData::new();
+    object_meta.set_origin("rioos".to_string());
+    object_meta.set_name("rioos".to_string());
+    object_meta.set_uid(uid.get_id());
+    origin_create.set_object_meta(object_meta);
+    origin_create.set_type_meta(asmsrv::TypeMeta::new(constants::ORIGIN));
+
+    let origin = SessionDS::origin_create(&conn, &origin_create)
+        .unwrap()
+        .expect("Should create origin");
+    assert!(origin.get_id() != "", "Created origin has id");
+    assert_eq!(origin.get_object_meta().get_origin(), "rioos");
+
+}
+
+// #[test]
+// fn origin_get() {
+//     let conn = Broker::connect().unwrap();
+//     let org: originsrv::Origin = origin_create_fn();
+//     let mut org_name = asmsrv::IdGet::new();
+//     org_name.set_name(org.get_object_meta().get_origin().to_string());
+//     let get_org = SessionDS::origin_show(&conn, &org_name).expect("Should run without error");
+//
+//     assert_eq!(
+//         org.get_object_meta().get_origin(),
+//         get_org.get_object_meta().get_origin()
+//     );
+// }

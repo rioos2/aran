@@ -8,6 +8,7 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Jobs {
     id: String,
+    node_id: String,
     type_meta: asmsrv::TypeMeta,
     object_meta: servicesrv::ObjectMetaData,
     spec: SpecData,
@@ -24,6 +25,12 @@ impl Jobs {
     }
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
+    }
+    pub fn set_node_id(&mut self, v: ::std::string::String) {
+        self.node_id = v;
+    }
+    pub fn get_node_id(&self) -> ::std::string::String {
+        self.node_id.clone()
     }
     pub fn set_spec(&mut self, v: SpecData) {
         self.spec = v;

@@ -336,7 +336,7 @@ impl SessionDS {
                 let msg =
                     format!(
                     "{} failure, {} successful",
-                    fail_count, imported.len(), 
+                    fail_count, imported.len(),
                 );
 
                 let mut impres = sessionsrv::ImportResult::new();

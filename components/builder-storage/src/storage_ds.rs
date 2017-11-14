@@ -53,6 +53,27 @@ impl StorageDS {
         }
         Ok(None)
     }
+    pub fn storage_get_by_ip(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::StorageGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_storages_by_ip_v1($1)",
+            &[&(get_storage.get_id() as String)],
+        ).map_err(Error::StorageGetResponse)?;
+
+        let mut response = storagesrv::StorageGetResponse::new();
+
+        let mut storage_collection = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                storage_collection.push(row_to_storage(&row)?)
+            }
+            response.set_storage_collection(storage_collection);
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
 
     pub fn storage_show(datastore: &DataStoreConn, get_storage: &asmsrv::IdGet) -> Result<Option<storagesrv::Storage>> {
         let conn = datastore.pool.get_shard(0)?;
