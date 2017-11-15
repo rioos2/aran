@@ -4,10 +4,13 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{asmsrv, plansrv, servicesrv};
+use protocol::asmsrv;
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+use service::service_account_ds::ServiceAccountDS;
+use assemblyfactory_ds::AssemblyFactoryDS;
+
 
 pub struct AssemblyDS;
 
@@ -165,21 +168,43 @@ impl AssemblyDS {
         Ok(None)
     }
 
+    pub fn show_by_assemblyfactory(datastore: &DataStoreConn, assemblydes_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_assemblys_by_parentid_v1($1)",
+            &[&(assemblydes_get.get_id() as String)],
+        ).map_err(Error::AssemblyGet)?;
+
+        let mut response = asmsrv::AssemblysGetResponse::new();
+
+        let mut assemblys_collection = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+                let assembly = Self::collect_spec(&row, &datastore)?;
+                assemblys_collection.push(assembly);
+            }
+            response.set_assemblys(assemblys_collection);
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
 
     fn collect_spec(row: &postgres::rows::Row, datastore: &DataStoreConn) -> Result<asmsrv::Assembly> {
         let mut assembly = row_to_assembly(&row)?;
         let mut asm_fac_get = asmsrv::IdGet::new();
         asm_fac_get.set_id(assembly.get_parent_id());
-        let data = Self::assembly_factory_show(&datastore, &asm_fac_get)?;
+        let data = AssemblyFactoryDS::show(&datastore, &asm_fac_get)?;
         let mut endpoint_get = asmsrv::IdGet::new();
         endpoint_get.set_id(assembly.get_id());
-        let endpoints = ServiceAccountDS::endpoints_show_by_asm_id(&datastore, &endpoint_get)
+        let endpoints = ServiceAccountDS::show_by_assembly(&datastore, &endpoint_get)
             .map_err(Error::EndPoints)?;
         assembly.set_spec(data);
         assembly.set_endpoints(endpoints);
         Ok(assembly)
     }
-
 }
 
 fn row_to_assembly(row: &postgres::rows::Row) -> Result<asmsrv::Assembly> {

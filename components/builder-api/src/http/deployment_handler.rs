@@ -6,8 +6,11 @@ use bodyparser;
 use ansi_term::Colour;
 use rio_core::event::*;
 use rio_net::http::controller::*;
-use deploy::deployment_ds::DeploymentDS;
+use deploy::assemblyfactory_ds::AssemblyFactoryDS;
+use deploy::assembly_ds::AssemblyDS;
 use deploy::replicas::Replicas;
+use deploy::planfactory_ds::PlanFactoryDS;
+
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
@@ -208,7 +211,7 @@ pub fn assembly_create(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match DeploymentDS::assembly_create(&conn, &assembly_create) {
+    match AssemblyDS::create(&conn, &assembly_create) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
@@ -233,7 +236,7 @@ pub fn assembly_show(req: &mut Request) -> AranResult<Response> {
     let mut asm_get = IdGet::new();
     asm_get.set_id(id.to_string());
 
-    match DeploymentDS::assembly_show(&conn, &asm_get) {
+    match AssemblyDS::show(&conn, &asm_get) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
@@ -249,7 +252,7 @@ pub fn assembly_show(req: &mut Request) -> AranResult<Response> {
 #[allow(unused_variables)]
 pub fn assembly_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
-    match DeploymentDS::assembly_list(&conn) {
+    match AssemblyDS::list(&conn) {
         Ok(Some(assembly_list)) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
@@ -277,7 +280,7 @@ pub fn assemblys_show_by_origin(req: &mut Request) -> AranResult<Response> {
         '✓',
         format!("======= parsed {:?} ", assemblys_get),
     );
-    match DeploymentDS::assemblys_show_by_origin(&conn, &assemblys_get) {
+    match AssemblyDS::show_by_origin(&conn, &assemblys_get) {
         Ok(Some(assemblys)) => Ok(render_json(status::Ok, &assemblys)),
         Ok(None) => {
             Err(not_found_error(&format!(
@@ -338,7 +341,7 @@ pub fn assembly_update(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match DeploymentDS::assembly_update(&conn, &assembly_create) {
+    match AssemblyDS::update(&conn, &assembly_create) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
@@ -396,7 +399,7 @@ pub fn assembly_status_update(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match DeploymentDS::assembly_status_update(&conn, &assembly) {
+    match AssemblyDS::status_update(&conn, &assembly) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
@@ -512,7 +515,7 @@ pub fn assembly_factory_show(req: &mut Request) -> AranResult<Response> {
     let mut asm_fac_get = IdGet::new();
     asm_fac_get.set_id(id.to_string());
 
-    match DeploymentDS::assembly_factory_show(&conn, &asm_fac_get) {
+    match AssemblyFactoryDS::show(&conn, &asm_fac_get) {
         Ok(Some(assembly_factory)) => Ok(render_json(status::Ok, &assembly_factory)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -569,7 +572,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
 
     let conn = Broker::connect().unwrap();
 
-    match DeploymentDS::assembly_factory_status_update(&conn, &assembly_factory) {
+    match AssemblyFactoryDS::status_update(&conn, &assembly_factory) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -586,7 +589,7 @@ pub fn assembly_factory_status_update(req: &mut Request) -> AranResult<Response>
 #[allow(unused_variables)]
 pub fn assembly_factory_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
-    match DeploymentDS::assembly_factory_list(&conn) {
+    match AssemblyFactoryDS::list(&conn) {
         Ok(Some(assembly_list)) => Ok(render_json(status::Ok, &assembly_list)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -614,7 +617,7 @@ pub fn assemblyfactorys_list_by_origin(req: &mut Request) -> AranResult<Response
         '✓',
         format!("======= parsed {:?} ", assemblyfactory_get),
     );
-    match DeploymentDS::assemblyfactorys_show_by_origin(&conn, &assemblyfactory_get) {
+    match AssemblyFactoryDS::show_by_origin(&conn, &assemblyfactory_get) {
         Ok(Some(assemblyfac)) => Ok(render_json(status::Ok, &assemblyfac)),
         Ok(None) => {
             Err(not_found_error(&format!(
@@ -647,7 +650,7 @@ pub fn assembly_factorys_describe(req: &mut Request) -> AranResult<Response> {
         '✓',
         format!("======= parsed {:?} ", assemblydes_get),
     );
-    match DeploymentDS::assembly_factorys_describe(&conn, &assemblydes_get) {
+    match AssemblyDS::show_by_assemblyfactory(&conn, &assemblydes_get) {
         Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
         Ok(None) => {
             Err(not_found_error(&format!(
@@ -695,7 +698,7 @@ pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match DeploymentDS::plan_create(&conn, &plan_create) {
+    match PlanFactoryDS::create(&conn, &plan_create) {
         Ok(Some(plan)) => Ok(render_json(status::Ok, &plan)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -709,7 +712,7 @@ pub fn plan_factory_create(req: &mut Request) -> AranResult<Response> {
 #[allow(unused_variables)]
 pub fn plan_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
-    match DeploymentDS::plan_list(&conn) {
+    match PlanFactoryDS::list(&conn) {
         Ok(Some(plan_list)) => Ok(render_json(status::Ok, &plan_list)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {

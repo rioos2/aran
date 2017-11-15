@@ -198,21 +198,6 @@ impl ServiceAccountDS {
         Ok(None)
     }
 
-    pub fn endpoints_show_by_asm_id(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
-        let conn = datastore.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * FROM get_endpoints_by_assebmly_v1($1)",
-            &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::EndPointsGet)?;
-        if rows.len() > 0 {
-            for row in rows {
-                let end = row_to_endpoints(&row)?;
-                return Ok(Some(end));
-            }
-        }
-        Ok(Some(servicesrv::EndPoints::new()))
-    }
-
     pub fn endpoints_list_by_origin(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndpointsGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
@@ -234,7 +219,7 @@ impl ServiceAccountDS {
         Ok(None)
     }
 
-    pub fn endpoints_get_by_assembly(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
+    pub fn show_by_assembly(datastore: &DataStoreConn, endpoints_get: &asmsrv::IdGet) -> Result<Option<servicesrv::EndPoints>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -249,8 +234,8 @@ impl ServiceAccountDS {
             }
 
         }
-        Ok(None)
-    }    
+        Ok(Some(servicesrv::EndPoints::new()))
+    }
 }
 
 fn row_to_secret(row: &postgres::rows::Row) -> servicesrv::Secret {

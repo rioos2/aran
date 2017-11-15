@@ -4,7 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{asmsrv, plansrv, servicesrv};
+use protocol::plansrv;
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
@@ -12,7 +12,6 @@ use serde_json;
 pub struct PlanFactoryDS;
 
 impl PlanFactoryDS {
-
     pub fn create(datastore: &DataStoreConn, plan: &plansrv::Plan) -> Result<Option<plansrv::Plan>> {
         let conn = datastore.pool.get_shard(0)?;
         let data: Vec<String> = plan.get_services()

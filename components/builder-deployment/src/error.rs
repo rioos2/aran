@@ -25,6 +25,9 @@ pub enum Error {
     AsmFactorySetStatus(postgres::error::Error),
     AsmSetStatus(postgres::error::Error),
     EndPointsGet(postgres::error::Error),
+    ServicesCreate(postgres::error::Error),
+    ServicesGet(postgres::error::Error),
+    ServicesGetResponse(postgres::error::Error),
 }
 
 
@@ -46,6 +49,9 @@ impl fmt::Display for Error {
             Error::AsmFactorySetStatus(ref e) => format!("Database error setting Assembly Factory status, {}", e),
             Error::EndPointsGet(ref e) => format!("Error retrive endpoint, {}", e),
             Error::AsmSetStatus(ref e) => format!("Database error setting Assembly status, {}", e),
+            Error::ServicesCreate(ref e) => format!("Database error creating services, {}", e),
+            Error::ServicesGet(ref e) => format!("Error retrive service, {}", e),
+            Error::ServicesGetResponse(ref e) => format!("Error retrive services list, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -67,6 +73,10 @@ impl error::Error for Error {
             Error::AsmFactorySetStatus(ref err) => err.description(),
             Error::EndPointsGet(ref err) => err.description(),
             Error::AsmSetStatus(ref err) => err.description(),
+            Error::ServicesCreate(ref err) => err.description(),
+            Error::ServicesGet(ref err) => err.description(),
+            Error::ServicesGetResponse(ref err) => err.description(),
+
         }
     }
 }

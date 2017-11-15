@@ -13,7 +13,7 @@ const NETWORKS: &'static str = "Networks";
 pub struct NetworkDS;
 
 impl NetworkDS {
-    pub fn network_create(datastore: &DataStoreConn, net_create: &netsrv::Network) -> Result<Option<netsrv::Network>> {
+    pub fn create(datastore: &DataStoreConn, net_create: &netsrv::Network) -> Result<Option<netsrv::Network>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_network_v1($1,$2,$3,$4,$5,$6,$7)",
@@ -34,7 +34,7 @@ impl NetworkDS {
         Ok(None)
     }
 
-    pub fn network_list(datastore: &DataStoreConn) -> Result<Option<netsrv::NetworkGetResponse>> {
+    pub fn list(datastore: &DataStoreConn) -> Result<Option<netsrv::NetworkGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query("SELECT * FROM get_networks_v1()", &[]).map_err(
