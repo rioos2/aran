@@ -4,15 +4,17 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
-use protocol::{asmsrv, plansrv, servicesrv};
+use protocol::asmsrv;
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
+use planfactory_ds::PlanFactoryDS;
+
 
 pub struct AssemblyFactoryDS;
 
 impl AssemblyFactoryDS {
-////////// AF STARTS
+    ////////// AF STARTS
     pub fn create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
 
         let conn = datastore.pool.get_shard(0)?;
@@ -56,7 +58,7 @@ impl AssemblyFactoryDS {
         if rows.len() > 0 {
             for row in rows {
                 let mut assembly_factory = row_to_assembly_factory(&row)?;
-                let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
+                let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
                 assembly_factory.set_plan_data(data);
                 return Ok(Some(assembly_factory));
             }
@@ -77,34 +79,10 @@ impl AssemblyFactoryDS {
         if rows.len() > 0 {
             for row in rows {
                 let mut assembly_factory = row_to_assembly_factory(&row)?;
-                let data = Self::plan_show(&datastore, assembly_factory.get_plan().clone())?;
+                let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
                 assembly_factory.set_plan_data(data);
                 return Ok(Some(assembly_factory));
             }
-        }
-        Ok(None)
-    }
-
-
-    pub fn describe(datastore: &DataStoreConn, assemblydes_get: &asmsrv::IdGet) -> Result<Option<asmsrv::AssemblysGetResponse>> {
-        let conn = datastore.pool.get_shard(0)?;
-
-        let rows = &conn.query(
-            "SELECT * FROM get_assemblys_by_parentid_v1($1)",
-            &[&(assemblydes_get.get_id() as String)],
-        ).map_err(Error::AssemblyGet)?;
-
-        let mut response = asmsrv::AssemblysGetResponse::new();
-
-        let mut assemblys_collection = Vec::new();
-
-        if rows.len() > 0 {
-            for row in rows {
-                let assembly = Self::collect_spec(&row, &datastore)?;
-                assemblys_collection.push(assembly);
-            }
-            response.set_assemblys(assemblys_collection);
-            return Ok(Some(response));
         }
         Ok(None)
     }

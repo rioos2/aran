@@ -163,7 +163,7 @@ pub fn node_create(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match NodeDS::node_create(&conn, &node_create) {
+    match NodeDS::create(&conn, &node_create) {
         Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -187,7 +187,7 @@ pub fn node_get_by_node_ip(req: &mut Request) -> AranResult<Response> {
 
     let mut node_get = IdGet::new();
     node_get.set_id(node_ip.to_string());
-    match NodeDS::node_get_by_node_ip(&conn, &node_get) {
+    match NodeDS::show_by_node_ip(&conn, &node_get) {
         Ok(Some(node_get)) => Ok(render_json(status::Ok, &node_get)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
@@ -201,7 +201,7 @@ pub fn node_get_by_node_ip(req: &mut Request) -> AranResult<Response> {
 #[allow(unused_variables)]
 pub fn node_list(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
-    match NodeDS::node_list(&conn) {
+    match NodeDS::list(&conn) {
         Ok(Some(node_list)) => Ok(render_json(status::Ok, &node_list)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -226,7 +226,7 @@ pub fn node_get(req: &mut Request) -> AranResult<Response> {
     let mut node_get = IdGet::new();
     node_get.set_id(id.to_string());
 
-    match NodeDS::node_get(&conn, &node_get) {
+    match NodeDS::show(&conn, &node_get) {
         Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -314,7 +314,7 @@ pub fn node_status_update(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match NodeDS::node_status_update(&conn, &node_create) {
+    match NodeDS::status_update(&conn, &node_create) {
         Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {

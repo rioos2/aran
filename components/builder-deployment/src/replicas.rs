@@ -1,6 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 
-use deployment_ds::DeploymentDS;
+use assembly_ds::AssemblyDS;
+use assemblyfactory_ds::AssemblyFactoryDS;
 use protocol::asmsrv::{Assembly, AssemblyFactory, Status, Condition, TypeMeta, INITIAL_CONDITIONS, NEW_REPLICA_INITALIZING, ASSEMBLYS_URI, INITIALIZING};
 use db::data_store::DataStoreConn;
 use error::Result;
@@ -40,7 +41,7 @@ impl<'a> Replicas<'a> {
 
     //This is reponsible for managing the replicas in an assembly factory upto the desired.
     pub fn new_desired(&self) -> Result<Option<AssemblyFactory>> {
-        match DeploymentDS::assembly_factory_create(&self.conn, &self.response) {
+        match AssemblyFactoryDS::create(&self.conn, &self.response) {
             Ok(Some(response)) => {
                 let _replicated = self.upto_desired(&response.get_id())?;
                 Ok(Some(response))
@@ -61,7 +62,7 @@ impl<'a> Replicas<'a> {
             .deploys
             .iter()
             .map(|k| if k.get_name().len() > 0 {
-                DeploymentDS::assembly_create(&self.conn, &k)
+                AssemblyDS::create(&self.conn, &k)
             } else {
                 Ok(None)
             })
