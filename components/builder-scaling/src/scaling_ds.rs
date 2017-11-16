@@ -19,8 +19,6 @@ pub struct ScalingDS;
 impl ScalingDS {
     pub fn hs_create(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
         let conn = datastore.pool.get_shard(0)?;
-        let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
-        let status_str = serde_json::to_string(hs.get_status()).unwrap();
         let rows = &conn.query(
             "SELECT * FROM insert_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
             &[
@@ -32,8 +30,8 @@ impl ScalingDS {
                 &(hs.get_representation_skew() as String),
                 &(hs.get_state() as String),
                 &(hs.get_metadata() as Vec<String>),
-                &(spec_str as String),
-                &(status_str as String),
+                &(serde_json::to_value(hs.get_spec()).unwrap()),
+                &(serde_json::to_string(hs.get_status()).unwrap()),
             ],
         ).map_err(Error::HSCreate)?;
         if rows.len() > 0 {
@@ -101,7 +99,6 @@ impl ScalingDS {
 
     pub fn hs_update(datastore: &DataStoreConn, hs: &scalesrv::HorizontalScaling) -> Result<Option<scalesrv::HorizontalScaling>> {
         let conn = datastore.pool.get_shard(0)?;
-        let spec_str = serde_json::to_string(hs.get_spec()).unwrap();
         let rows = &conn.query(
             "SELECT * FROM update_hs_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
@@ -113,7 +110,7 @@ impl ScalingDS {
                 &(hs.get_representation_skew() as String),
                 &(hs.get_state() as String),
                 &(hs.get_metadata() as Vec<String>),
-                &(spec_str as String),
+                &(serde_json::to_string(hs.get_spec()).unwrap()),
             ],
         ).map_err(Error::HSUpdate)?;
         if rows.len() > 0 {
@@ -144,6 +141,20 @@ impl ScalingDS {
         response.set_metrics(metric_response);
         Ok(Some(response))
     }
+
+
+    pub fn scale_get_by_asmfacid(datastore: &DataStoreConn, scale_get: &asmsrv::IdGet) -> Result<Option<scalesrv::HorizontalScaling>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_scale_by_asmfacid_v1($1)",
+            &[&(scale_get.get_id() as String)],
+        ).map_err(Error::HSGet)?;
+        if rows.len() > 0 {
+            let scale = row_to_hs(&rows.get(0))?;
+            return Ok(Some(scale));
+        }
+        Ok(None)
+    }
 }
 
 fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
@@ -152,7 +163,6 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     let id: i64 = row.get("id");
     let origin: i64 = row.get("origin_id");
     let status: String = row.get("status");
-    let spec: String = row.get("spec");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     hs.set_id(id.to_string() as String);
@@ -164,7 +174,7 @@ fn row_to_hs(row: &postgres::rows::Row) -> Result<scalesrv::HorizontalScaling> {
     hs.set_representation_skew(row.get("representation_skew"));
     hs.set_state(row.get("state"));
     hs.set_metadata(row.get("metadata"));
-    hs.set_spec(serde_json::from_str(&spec).unwrap());
+    hs.set_spec(serde_json::from_value(row.get("spec")).unwrap());
     hs.set_status(serde_json::from_str(&status).unwrap());
 
     let mut obj_meta = asmsrv::ObjectMeta::new();

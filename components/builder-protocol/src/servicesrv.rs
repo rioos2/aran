@@ -6,7 +6,7 @@ pub const RIO_ASM_FAC_ID: &'static str = "rioos_assembly_factory_id";
 const ENDPOINTSLIST: &'static str = "EndpointsList";
 const SECRETLIST: &'static str = "SecretList";
 const SERVICELIST: &'static str = "ServiceList";
-const SERVICEACCOUNTLIST: &'static str = "ServiceAccountsList";
+const SERVICEACCOUNTLIST: &'static str = "ServiceAccountList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {

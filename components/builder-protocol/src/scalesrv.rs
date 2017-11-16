@@ -163,6 +163,20 @@ impl Spec {
     pub fn set_metrics(&mut self, v: Vec<Metrics>) {
         self.metrics = v;
     }
+    pub fn get_min_replicas(&self) -> u64 {
+        self.min_replicas
+    }
+
+    pub fn get_max_replicas(&self) -> u64 {
+        self.max_replicas
+    }
+
+    pub fn get_metrics(&self) -> Vec<Metrics> {
+        self.metrics.clone()
+    }
+    pub fn get_scale_target_ref(&self) -> ::std::string::String {
+        self.scale_target_ref.clone()
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -185,6 +199,9 @@ impl Metrics {
 
     pub fn set_metric_resource(&mut self, v: MetricResource) {
         self.resource = v;
+    }
+    pub fn get_metric_resource(&self) -> MetricResource {
+        self.resource.clone()
     }
 }
 
@@ -236,6 +253,19 @@ impl MetricResource {
     pub fn set_metric_time_spec(&mut self, v: TimeSpec) {
         self.metric_time_spec = v;
     }
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn get_min_target_value(&self) -> ::std::string::String {
+        self.min_target_value.clone()
+    }
+    pub fn get_max_target_value(&self) -> ::std::string::String {
+        self.max_target_value.clone()
+    }
+    pub fn get_metric_time_spec(&self) -> TimeSpec {
+        self.metric_time_spec.clone()
+    }
 }
 
 
@@ -264,6 +294,20 @@ impl TimeSpec {
     pub fn set_scale_down_wait_time(&mut self, v: ::std::string::String) {
         self.scale_down_wait_time = v;
     }
+
+    pub fn get_scale_up_by(&self) -> ::std::string::String {
+        self.scale_up_by.clone()
+    }
+
+    pub fn get_scale_up_wait_time(&self) -> ::std::string::String {
+        self.scale_up_wait_time.clone()
+    }
+    pub fn get_scale_down_by(&self) -> ::std::string::String {
+        self.scale_down_by.clone()
+    }
+    pub fn get_scale_down_wait_time(&self) -> ::std::string::String {
+        self.scale_down_wait_time.clone()
+    }
 }
 
 
@@ -281,6 +325,15 @@ impl Status {
             current_replicas: current_replicas,
             desired_replicas: desired_replicas,
         }
+    }
+    pub fn get_last_scale_time(&self) -> ::std::string::String {
+        self.last_scale_time.clone()
+    }
+    pub fn get_current_replicas(&self) -> u64 {
+        self.current_replicas.clone()
+    }
+    pub fn get_desired_replicas(&self) -> u64 {
+        self.desired_replicas.clone()
     }
 }
 
