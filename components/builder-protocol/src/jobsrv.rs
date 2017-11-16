@@ -67,6 +67,8 @@ impl Jobs {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SpecData {
     node_id: String,
+    group: String,
+    action: String,
     target_ref: String,
     selector: BTreeMap<String, String>,
 }
@@ -80,6 +82,18 @@ impl SpecData {
     }
     pub fn get_node_id(&self) -> ::std::string::String {
         self.node_id.clone()
+    }
+    pub fn set_group(&mut self, v: ::std::string::String) {
+        self.group = v;
+    }
+    pub fn get_group(&self) -> ::std::string::String {
+        self.group.clone()
+    }
+    pub fn set_action(&mut self, v: ::std::string::String) {
+        self.action = v;
+    }
+    pub fn get_action(&self) -> ::std::string::String {
+        self.action.clone()
     }
     pub fn set_target_ref(&mut self, v: ::std::string::String) {
         self.target_ref = v;

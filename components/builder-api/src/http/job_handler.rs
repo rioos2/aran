@@ -39,6 +39,8 @@ struct JobsReq {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SpecDataReq {
     node_id: String,
+    group: String,
+    action: String,
     target_ref: String,
     selector: BTreeMap<String, String>,
 }
@@ -58,6 +60,8 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
                 }
                 let mut spec = SpecData::new();
                 spec.set_node_id(body.spec.node_id);
+                spec.set_group(body.spec.group);
+                spec.set_action(body.spec.action);
                 spec.set_target_ref(body.spec.target_ref);
                 spec.set_selector(body.spec.selector);
                 jobs_create.set_spec(spec);
