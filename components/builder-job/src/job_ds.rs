@@ -13,7 +13,7 @@ use serde_json;
 pub struct JobDS;
 
 impl JobDS {
-    pub fn jobs_create(datastore: &DataStoreConn, jobs_create: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
+    pub fn create(datastore: &DataStoreConn, jobs_create: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_jobs_v1($1,$2,$3,$4)",
@@ -32,7 +32,7 @@ impl JobDS {
         Ok(None)
     }
 
-    pub fn jobs_get(datastore: &DataStoreConn) -> Result<Option<jobsrv::JobGetResponse>> {
+    pub fn list(datastore: &DataStoreConn) -> Result<Option<jobsrv::JobGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query("SELECT * FROM get_jobs_v1()", &[]).map_err(
@@ -53,7 +53,7 @@ impl JobDS {
         }
         Ok(None)
     }
-    pub fn jobs_status_update(datastore: &DataStoreConn, job: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
+    pub fn status_update(datastore: &DataStoreConn, job: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM set_job_status_v1($1, $2)",
@@ -69,7 +69,7 @@ impl JobDS {
         Ok(None)
     }
 
-    pub fn jobs_get_by_node(datastore: &DataStoreConn, job_get: &asmsrv::IdGet) -> Result<Option<jobsrv::JobGetResponse>> {
+    pub fn show_by_node(datastore: &DataStoreConn, job_get: &asmsrv::IdGet) -> Result<Option<jobsrv::JobGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(

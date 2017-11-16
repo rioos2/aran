@@ -66,7 +66,7 @@ ifneq ($(shell dot -V),)
 endif
 
 BIN = rioos
-LIB = builder-db builder-core builder-protocol  builder-deployment builder-scaling common core builder-api-client http-client net
+LIB = builder-db builder-protocol  builder-deployment builder-scaling common core builder-api-client http-client net
 SRV = builder-api
 ALL = $(BIN) $(LIB) $(SRV)
 VERSION := $(shell cat VERSION)

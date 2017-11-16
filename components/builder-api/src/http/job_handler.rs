@@ -114,7 +114,7 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match JobDS::jobs_create(&conn, &jobs_create) {
+    match JobDS::create(&conn, &jobs_create) {
         Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
         Err(err) => Err(internal_error(&format!("{}\n", err))),
         Ok(None) => {
@@ -128,7 +128,7 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
 #[allow(unused_variables)]
 pub fn jobs_get(req: &mut Request) -> AranResult<Response> {
     let conn = Broker::connect().unwrap();
-    match JobDS::jobs_get(&conn) {
+    match JobDS::list(&conn) {
         Ok(Some(jobs_get)) => Ok(render_json(status::Ok, &jobs_get)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
@@ -151,7 +151,7 @@ pub fn jobs_get_by_node(req: &mut Request) -> AranResult<Response> {
 
     let mut nodeid_get = IdGet::new();
     nodeid_get.set_id(node_id.to_string());
-    match JobDS::jobs_get_by_node(&conn, &nodeid_get) {
+    match JobDS::show_by_node(&conn, &nodeid_get) {
         Ok(Some(jobs_get)) => Ok(render_json(status::Ok, &jobs_get)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {
@@ -205,7 +205,7 @@ pub fn jobs_status_update(req: &mut Request) -> AranResult<Response> {
 
     let conn = Broker::connect().unwrap();
 
-    match JobDS::jobs_status_update(&conn, &jobs) {
+    match JobDS::status_update(&conn, &jobs) {
         Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
         Err(err) => Err(internal_error(&format!("{}", err))),
         Ok(None) => {

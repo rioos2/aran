@@ -60,6 +60,44 @@ function rioos::util::create_client_certkey {
 EOF
 }
 
+# creates a self-contained rioconfig: args are sudo, dest-dir, ca file, host, port, client id, token(optional)
+function rioos::util::write_client_rioconfig {
+    local sudo=$1
+    local dest_dir=$2
+    local ca_file=$3
+    local api_host=$4
+    local api_port=$5
+    local client_id=$6
+    local token=${7:-}
+    cat <<EOF | ${sudo} tee "${dest_dir}"/${client_id}.rioconfig > /dev/null
+apiVersion: v1
+kind: Config
+clusters:
+  cluster:
+    certificate-authority: ${ca_file}
+    server: https://${api_host}:${api_port}/
+    name: local-up-cluster
+users:
+  user:
+    token: ${token}
+    client-certificate: ${dest_dir}/client-${client_id}.crt
+    client-key: ${dest_dir}/client-${client_id}.key
+    name: local-up-cluster
+contexts:
+  context:
+    cluster: local-up-cluster
+    user: local-up-cluster
+    name: local-up-cluster
+current-context: local-up-cluster
+EOF
+
+    # flatten the rioconfig files to make them self contained
+    username=$(whoami)
+    ${sudo} /bin/bash -e <<EOF 
+    chown ${username} "${dest_dir}/${client_id}.rioconfig"
+EOF
+}
+
 # signs a serving certificate: args are sudo, dest-dir, ca, filename (roughly), subject, hosts...
 function rioos::util::create_serving_certkey {
     local sudo=$1
@@ -125,6 +163,7 @@ rioos::util::ensure-temp-dir() {
     rioos::util::trap_add rioos::util::cleanup-temp-dir EXIT
   fi
 }
+
 
 # Downloads cfssl/cfssljson into $1 directory if they do not already exist in PATH
 #

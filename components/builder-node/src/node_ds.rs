@@ -15,7 +15,7 @@ const NODE: &'static str = "Node";
 pub struct NodeDS;
 
 impl NodeDS {
-    pub fn node_create(datastore: &DataStoreConn, node_create: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
+    pub fn create(datastore: &DataStoreConn, node_create: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_node_v1($1,$2,$3)",
@@ -34,7 +34,7 @@ impl NodeDS {
         Ok(None)
     }
 
-    pub fn node_get(datastore: &DataStoreConn, node_get: &asmsrv::IdGet) -> Result<Option<nodesrv::Node>> {
+    pub fn show(datastore: &DataStoreConn, node_get: &asmsrv::IdGet) -> Result<Option<nodesrv::Node>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT * from get_node_v1($1)",
@@ -46,7 +46,7 @@ impl NodeDS {
         }
         Ok(None)
     }
-    pub fn node_get_by_node_ip(datastore: &DataStoreConn, node_get: &asmsrv::IdGet) -> Result<Option<nodesrv::NodeGetResponse>> {
+    pub fn show_by_node_ip(datastore: &DataStoreConn, node_get: &asmsrv::IdGet) -> Result<Option<nodesrv::NodeGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -69,7 +69,7 @@ impl NodeDS {
 
 
 
-    pub fn node_list(datastore: &DataStoreConn) -> Result<Option<nodesrv::NodeGetResponse>> {
+    pub fn list(datastore: &DataStoreConn) -> Result<Option<nodesrv::NodeGetResponse>> {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query("SELECT * FROM get_nodes_v1()", &[]).map_err(
@@ -89,7 +89,7 @@ impl NodeDS {
         Ok(None)
     }
 
-    pub fn node_status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
+    pub fn status_update(datastore: &DataStoreConn, node: &nodesrv::Node) -> Result<Option<nodesrv::Node>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT set_node_status_v1($1, $2)",
@@ -106,43 +106,43 @@ impl NodeDS {
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<nodesrv::HealthzAllGetResponse>> {
-        // let nodes_metric_scope: Vec<String> = vec![
-        //     "cpu_total".to_string(),
-        //     "ram_total".to_string(),
-        //     "disk_total".to_string(),
-        // ];
-        //
-        // let nodes_group_scope: Vec<String> = vec!["job=prometheus".to_string(), "group=canary".to_string()];
-        //
-        // let scope = CollectorScope {
-        //     metric_names: nodes_metric_scope,
-        //     labels: nodes_group_scope,
-        //     last_x_minutes: "".to_string(),
-        // };
-        //
-        //
-        // let mut health_checker = Collector::new(client, scope);
-        //
-        // let metric_response = health_checker.overall().unwrap();
-        //
-        // let mut coun_collection = Vec::new();
-        // for data in metric_response.0 {
-        //     let lgauges: nodesrv::Counters = data.into();
-        //     coun_collection.push(lgauges);
-        // }
-        //
-        // let mut guague = nodesrv::Guages::new();
-        // guague.set_title("Cumulative operations counter".to_string());
-        // guague.set_counters(coun_collection);
-        //
-        //
-        // let mut lstatistics = vec![nodesrv::NodeStatistic::new()];
-        // for st_data in metric_response.1 {
-        //     lstatistics = st_data.into();
-        // }
-        // let mut statistic = nodesrv::Statistics::new();
-        // statistic.set_title("Statistics".to_string());
-        // statistic.set_nodes(lstatistics);
+        let nodes_metric_scope: Vec<String> = vec![
+            "cpu_total".to_string(),
+            "ram_total".to_string(),
+            "disk_total".to_string(),
+        ];
+
+        let nodes_group_scope: Vec<String> = vec!["job=prometheus".to_string(), "group=canary".to_string()];
+
+        let scope = CollectorScope {
+            metric_names: nodes_metric_scope,
+            labels: nodes_group_scope,
+            last_x_minutes: "".to_string(),
+        };
+
+
+        let mut health_checker = Collector::new(client, scope);
+
+        let metric_response = health_checker.overall().unwrap();
+
+        let mut coun_collection = Vec::new();
+        for data in metric_response.0 {
+            let lgauges: nodesrv::Counters = data.into();
+            coun_collection.push(lgauges);
+        }
+
+        let mut guague = nodesrv::Guages::new();
+        guague.set_title("Cumulative operations counter".to_string());
+        guague.set_counters(coun_collection);
+
+
+        let mut lstatistics = vec![nodesrv::NodeStatistic::new()];
+        for st_data in metric_response.1 {
+            lstatistics = st_data.into();
+        }
+        let mut statistic = nodesrv::Statistics::new();
+        statistic.set_title("Statistics".to_string());
+        statistic.set_nodes(lstatistics);
 
         let metric_scope = vec!["node_cpu".to_string()];
         let label_group: Vec<String> = vec![
@@ -159,10 +159,7 @@ impl NodeDS {
 
         let mut os_checker = Collector::new(client, scope_data);
         let os_response = os_checker.metric_by_os_usage().unwrap();
-        println!(
-            "---------------os response----------------------------{:?}",
-            os_response
-        );
+
         let mut metrics = nodesrv::Osusages::new();
 
         let all_items = os_response

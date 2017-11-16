@@ -123,7 +123,7 @@ impl Migratable for PlanProcedures {
         )?;
 
 
-        ui.end("Planprocedure");
+        ui.end("PlanProcedure");
 
         Ok(())
     }

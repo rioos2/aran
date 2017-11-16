@@ -432,6 +432,10 @@ impl Spec {
     pub fn get_selector(&self) -> &BTreeMap<String, String> {
         &self.selector
     }
+
+    pub fn get_service_type(&self) -> ::std::string::String {
+        self.service_type.clone()
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -450,5 +454,8 @@ impl ServicesGetResponse {
         self.items = v;
         self.kind = SERVICELIST.to_string();
         self.api_version = DEFAULT_API_VERSION.to_string();
+    }
+    pub fn get_items(&self) -> Vec<Services> {
+        self.items.clone()
     }
 }

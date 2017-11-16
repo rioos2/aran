@@ -13,6 +13,8 @@ pub mod network_handler;
 pub mod storage_handler;
 pub mod watch_handler;
 pub mod job_handler;
+pub mod endpoints_handler;
+pub mod service_handler;
 
 
 use std::sync::{mpsc, Arc};
@@ -44,6 +46,8 @@ use self::network_handler::*;
 use self::storage_handler::*;
 use self::watch_handler::*;
 use self::job_handler::*;
+use self::endpoints_handler::*;
+use self::service_handler::*;
 
 use db::data_store::*;
 // use std::sync::mpsc::channel;
@@ -185,7 +189,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         endpoints_list: get "/endpoints" =>  XHandler::new(C(endpoints_list)).before(basic.clone()),
         endpoints_show: get "/endpoints/:id" => XHandler::new(C(endpoints_show)).before(basic.clone()),
         endpoints_list_by_origin: get "/origins/:origin/endpoints" => XHandler::new(C(endpoints_list_by_origin)).before(basic.clone()),
-        endpoints_get_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(C(endpoints_get_by_assembly)).before(basic.clone()),
+        show_by_assembly: get "/assemblys/:asmid/endpoints" => XHandler::new(C(show_by_assembly)).before(basic.clone()),
 
         //services API
 
