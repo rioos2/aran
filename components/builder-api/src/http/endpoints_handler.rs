@@ -46,8 +46,6 @@ struct PortsReq {
     protocol: String,
 }
 
-
-
 pub fn endpoints_create(req: &mut Request) -> AranResult<Response> {
     let mut endpoints_create = EndPoints::new();
     {
