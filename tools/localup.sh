@@ -17,6 +17,8 @@ API_HOST=${API_HOST:-localhost}
 API_HOST_IP=${API_HOST_IP:-"127.0.0.1"}
 FIRST_SERVICE_CLUSTER_IP=${FIRST_SERVICE_CLUSTER_IP:-10.0.0.1}
 
+API_PORT=${API_PORT:-9636}
+API_SECURE_PORT=${API_SECURE_PORT:-7443}
 
 # Stop right away if the build fails
 set -e
@@ -83,16 +85,23 @@ function start_pkica {
     # This is the default dir and filename where the apiserver will generate a self-signed cert
     # which should be able to be used as the CA to verify itself
 
-    rioos::util::create_signing_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" server '"server auth"'
+    rioos::util::create_signing_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" server '"client auth","server auth"'
     #rioos::util::create_signing_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" client '"client auth"'
+
+    #create client keys from server keys
+    cp "${CERT_DIR}/server-ca.key" "${CERT_DIR}/client-ca.key"
+    cp "${CERT_DIR}/server-ca.crt" "${CERT_DIR}/client-ca.crt"
+    cp "${CERT_DIR}/server-ca-config.json" "${CERT_DIR}/client-ca-config.json"
 
     # serving cert for rioos-apiserver
     rioos::util::create_serving_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "server-ca" rioos-apiserver rioos.default rioos.default.svc "localhost" ${API_HOST_IP} ${API_HOST} ${FIRST_SERVICE_CLUSTER_IP}
 
-    # We don't use client-ca.
-		# Create client certs signed with client-ca, given id, given CN and a number of groups
-		# TO-DO: will remove after test the full identity
-    #rioos::util::create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' controller system:kube-controller-manager
+    # Create client certs signed with client-ca, given id, given CN and a number of groups
+    # TO-DO: will remove after test the full identity
+    rioos::util::create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' controller system:rio-controller-manager
+
+    # Create rioconfigs for all components, using client certs
+    rioos::util::write_client_rioconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" controller
 }
 
 function print_success {
