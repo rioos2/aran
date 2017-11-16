@@ -30,7 +30,6 @@ define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct JobsReq {
-    node_id: String,
     type_meta: deployment_handler::TypeMetaReq,
     object_meta: service_account_handler::ObjectMetaReq,
     spec: SpecDataReq,
@@ -54,10 +53,9 @@ pub fn jobs_create(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<JobsReq>>() {
             Ok(Some(body)) => {
-                if body.node_id.len() <= 0 {
+                if body.spec.node_id.len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "node_id")));
                 }
-                jobs_create.set_node_id(body.node_id);
                 let mut spec = SpecData::new();
                 spec.set_node_id(body.spec.node_id);
                 spec.set_target_ref(body.spec.target_ref);

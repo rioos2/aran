@@ -139,7 +139,7 @@ pub struct ServiceAccount {
     id: String,
     object_meta: ObjectMetaData,
     type_meta: asmsrv::TypeMeta,
-    secrets: ObjectReference,
+    secrets: Vec<ObjectReference>,
     created_at: String,
 }
 impl ServiceAccount {
@@ -152,11 +152,12 @@ impl ServiceAccount {
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
     }
-    pub fn set_secrets(&mut self, v: ObjectReference) {
+
+    pub fn set_secrets(&mut self, v: Vec<ObjectReference>) {
         self.secrets = v;
     }
 
-    pub fn get_secrets(&self) -> &ObjectReference {
+    pub fn get_secrets(&self) -> &Vec<ObjectReference> {
         &self.secrets
     }
     pub fn set_type_meta(&mut self, v: asmsrv::TypeMeta) {
@@ -211,7 +212,7 @@ pub struct ObjectReference {
 }
 
 impl ObjectReference {
-    pub fn new(kind: &str, name: &str, origin: &str, uid: &str) -> ObjectReference {
+    pub fn with_secrets(kind: &str, name: &str, origin: &str, uid: &str) -> ObjectReference {
         ObjectReference {
             kind: kind.to_string(),
             name: name.to_string(),
