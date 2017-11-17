@@ -16,10 +16,9 @@ impl JobDS {
     pub fn create(datastore: &DataStoreConn, jobs_create: &jobsrv::Jobs) -> Result<Option<jobsrv::Jobs>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_jobs_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM insert_jobs_v1($1,$2,$3,$4)",
             &[
-                &(jobs_create.get_node_id().parse::<i64>().unwrap()),
-                &(serde_json::to_string(jobs_create.get_spec()).unwrap()),
+                &(serde_json::to_value(jobs_create.get_spec()).unwrap()),
                 &(serde_json::to_string(jobs_create.get_status()).unwrap()),
                 &(serde_json::to_string(jobs_create.get_object_meta()).unwrap()),
                 &(serde_json::to_string(jobs_create.get_type_meta()).unwrap()),
@@ -75,7 +74,7 @@ impl JobDS {
 
         let rows = &conn.query(
             "SELECT * FROM get_jobs_by_node_v1($1)",
-            &[&(job_get.get_id().parse::<i64>().unwrap())],
+            &[&(job_get.get_id() as String)],
         ).map_err(Error::JobsGet)?;
 
         let mut response = jobsrv::JobGetResponse::new();
@@ -98,16 +97,13 @@ fn row_to_jobs(row: &postgres::rows::Row) -> Result<jobsrv::Jobs> {
     let mut job_create = jobsrv::Jobs::new();
 
     let id: i64 = row.get("id");
-    let node_id: i64 = row.get("node_id");
     let status: String = row.get("status");
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
-    let spec: String = row.get("spec");
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
 
     job_create.set_id(id.to_string());
-    job_create.set_node_id(node_id.to_string());
-    job_create.set_spec(serde_json::from_str(&spec).unwrap());
+    job_create.set_spec(serde_json::from_value(row.get("spec")).unwrap());
     job_create.set_status(serde_json::from_str(&status).unwrap());
     job_create.set_object_meta(serde_json::from_str(&object_meta).unwrap());
     job_create.set_type_meta(serde_json::from_str(&type_meta).unwrap());
