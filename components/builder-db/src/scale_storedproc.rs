@@ -35,7 +35,7 @@ impl Migratable for ScaleProcedures {
              representation_skew text,
              state text,
              metadata text[],
-             spec text,
+             spec jsonb,
              status text,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
@@ -56,7 +56,7 @@ impl Migratable for ScaleProcedures {
                 representation_skew text,
                 state text,
                 metadata text[],
-                spec text,
+                spec jsonb,
                 status text
                         ) RETURNS SETOF horizontal_scaling AS $$
                         DECLARE
@@ -117,7 +117,7 @@ impl Migratable for ScaleProcedures {
                 hs_representation_skew text,
                 hs_state text,
                 hs_metadata text[],
-                hs_spec text) RETURNS SETOF horizontal_scaling AS $$
+                hs_spec jsonb) RETURNS SETOF horizontal_scaling AS $$
                             BEGIN
                                 RETURN QUERY UPDATE horizontal_scaling SET name=hs_name, description=hs_description,tags=hs_tags, scale_type=hs_scale_type, representation_skew=hs_representation_skew, state=hs_state,metadata=hs_metadata,spec=hs_spec, updated_at=now() WHERE id=hid
                                 RETURNING *;
@@ -125,6 +125,18 @@ impl Migratable for ScaleProcedures {
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
+
+
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION get_scale_by_asmfacid_v1(asmfac text) RETURNS SETOF horizontal_scaling AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM horizontal_scaling WHERE spec ->> 'scale_target_ref' = asmfac ;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
 
 
 

@@ -76,19 +76,15 @@ impl Migratable for PlanProcedures {
             "plansrv",
             r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('1_virtualmachine_centos','/v3/plan/centos','centos operating system','{"centos"}','rioos:2.0','{}',
             '{"{\"name\":\"Centos\",\"description\":\"centos 7.4.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"image\":\"centos.png\",\"version\":\"7.4\"}}"}')"#,
-
         )?;
 
         ui.para("[✓] plan_factory_centos");
 
-        // migrator.migrate(
-        //     "plansrv",
-        //     r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_container_rioos','/v3/plan/rioos','tutum/hello-world is testing simple light weight docker container','{"tutum","hello-world"}','rioos:2.0','{}',
-        //     '{"{\"name\":\"hello-world\",\"description\":\"tutum is a Debian-based simple container.\",\"href\":\https://www.tutum.com\",\"characteristics\":{\"os\":\"centos\",\"http.host.port\":\"8080\",\"http.container.port\":\"80\"}}"}')"#,
-        //
-        // )?;
-        //
-        // ui.para("[✓] plan_factory_container");
+
+        migrator.migrate(
+           "plansrv",
+           r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_container_rioos','/v3/plan/rioos','tutum/hello-world is testing simple light weight docker container','{"tutum","hello-world"}','rioos:2.0','{}','{"{\"name\":\"hello-world\",\"description\":\"tutum is a Debian-based simple container.\",\"href\":\"https://www.tutum.com\",\"characteristics\":{\"os\":\"centos\",\"port\":\"8080\"}}"}')"#,
+       )?;
 
         migrator.migrate(
             "plansrv",

@@ -29,7 +29,7 @@ struct SecretCreateReq {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ServiceAccountCreateReq {
-    secrets: ObjectReferenceReq,
+    secrets: Vec<ObjectReferenceReq>,
     object_meta: ObjectMetaReq,
     type_meta: deployment_handler::TypeMetaReq,
 }
@@ -208,12 +208,15 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
     {
         match req.get::<bodyparser::Struct<ServiceAccountCreateReq>>() {
             Ok(Some(body)) => {
-                service_create.set_secrets(ObjectReference::new(
-                    &body.secrets.name,
-                    &body.secrets.kind,
-                    &body.secrets.origin,
-                    &body.secrets.uid,
-                ));
+                service_create.set_secrets(
+                    body.secrets
+                        .iter()
+                        .map(|x| {
+                            ObjectReference::with_secrets(&x.name, &x.kind, &x.origin, &x.uid)
+                        })
+                        .collect::<Vec<_>>(),
+                );
+
                 let mut object_meta = ObjectMetaData::new();
                 object_meta.set_name(ser_name);
                 object_meta.set_origin(org_name);

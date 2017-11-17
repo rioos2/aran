@@ -27,8 +27,7 @@ impl Migratable for JobProcedures {
             "jobsrv",
             r#"CREATE TABLE  IF NOT EXISTS jobs (
              id bigint PRIMARY KEY DEFAULT next_id_v1('job_id_seq'),
-             node_id bigint REFERENCES node(id),
-             spec text,
+             spec jsonb,
              status text,
              object_meta text,
              type_meta text,
@@ -44,16 +43,15 @@ impl Migratable for JobProcedures {
         migrator.migrate(
             "jobsrv",
             r#"CREATE OR REPLACE FUNCTION insert_jobs_v1 (
-                node_id bigint,
-                spec text,
+                spec jsonb,
                 status text,
                 object_meta text,
                 type_meta text
 
             ) RETURNS SETOF jobs AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO jobs(node_id,spec,status,object_meta, type_meta)
-                                        VALUES (node_id,spec,status, object_meta, type_meta)
+                                    RETURN QUERY INSERT INTO jobs(spec,status,object_meta, type_meta)
+                                        VALUES (spec,status, object_meta, type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -73,9 +71,9 @@ impl Migratable for JobProcedures {
 
         migrator.migrate(
             "jobsrv",
-            r#"CREATE OR REPLACE FUNCTION get_jobs_by_node_v1(node bigint) RETURNS SETOF jobs AS $$
+            r#"CREATE OR REPLACE FUNCTION get_jobs_by_node_v1(node text) RETURNS SETOF jobs AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM jobs WHERE node_id =node;
+                          RETURN QUERY SELECT * FROM jobs WHERE spec ->> 'node_id' = node ;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,

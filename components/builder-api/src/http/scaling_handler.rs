@@ -102,6 +102,12 @@ pub fn hs_create(req: &mut Request) -> AranResult<Response> {
                 if body.origin.len() <= 0 {
                     return Err(bad_request(&format!("{} {}", MISSING_FIELD, "origin")));
                 }
+
+                if body.spec.scale_target_ref.len() <= 0 {
+                    return Err(bad_request(
+                        &format!("{} {}", MISSING_FIELD, "assembly factory id"),
+                    ));
+                }
                 hs_create.set_name(body.name);
                 hs_create.set_description(body.description);
                 hs_create.set_tags(body.tags);
@@ -234,6 +240,36 @@ pub fn horizontal_scaling_list_by_origin(req: &mut Request) -> AranResult<Respon
         Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
+
+
+
+pub fn horizontal_scaling_get_by_assembly_factory(req: &mut Request) -> AranResult<Response> {
+    let id = {
+        let params = req.extensions.get::<Router>().unwrap();
+        match params.find("asmfacid").unwrap().parse::<u64>() {
+            Ok(id) => id,
+            Err(_) => return Err(bad_request(&IDMUSTNUMBER)),
+        }
+    };
+
+    let conn = Broker::connect().unwrap();
+
+    let mut scale_get = IdGet::new();
+    scale_get.set_id(id.to_string());
+
+    match ScalingDS::scale_get_by_asmfacid(&conn, &scale_get) {
+        Ok(Some(scale)) => Ok(render_json(status::Ok, &scale)),
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
+        Ok(None) => {
+            Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(db::error::Error::RecordsNotFound),
+                &scale_get.get_id()
+            )))
+        }
+    }
+}
+
 
 
 
