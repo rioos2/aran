@@ -209,8 +209,8 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
         match req.get::<bodyparser::Struct<ServiceAccountCreateReq>>() {
             Ok(Some(body)) => {
                 service_create.set_secrets(ObjectReference::new(
-                    &body.secrets.name,
                     &body.secrets.kind,
+                    &body.secrets.name,
                     &body.secrets.origin,
                     &body.secrets.uid,
                 ));
