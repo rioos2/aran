@@ -1,6 +1,6 @@
 // Copyright (c) 2017 RioCorp Inc.
-const ROLESLIST: &'static str = "RolesList";
-const PERMISSIONSLIST: &'static str = "PermissionsList";
+const ROLESLIST: &'static str = "RoleList";
+const PERMISSIONSLIST: &'static str = "PermissionList";
 use DEFAULT_API_VERSION;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]

@@ -128,9 +128,11 @@ fn row_to_services(row: &postgres::rows::Row) -> servicesrv::Services {
     services.set_id(id.to_string());
     services.set_spec(serde_json::from_str(&spec).unwrap());
     services.set_status(serde_json::from_str(&status).unwrap());
-    services.set_object_meta(serde_json::from_str(&object_meta).unwrap());
     services.set_type_meta(serde_json::from_str(&type_meta).unwrap());
     services.set_created_at(created_at.to_rfc3339());
 
+    let mut obj: servicesrv::ObjectMetaData = serde_json::from_str(&object_meta).unwrap();
+    obj.set_name(id.to_string());
+    services.set_object_meta(obj);
     services
 }

@@ -3,7 +3,7 @@ use asmsrv;
 use std::collections::BTreeMap;
 use DEFAULT_API_VERSION;
 pub const RIO_ASM_FAC_ID: &'static str = "rioos_assembly_factory_id";
-const ENDPOINTSLIST: &'static str = "EndpointsList";
+const ENDPOINTSLIST: &'static str = "EndpointList";
 const SECRETLIST: &'static str = "SecretList";
 const SERVICELIST: &'static str = "ServiceList";
 const SERVICEACCOUNTLIST: &'static str = "ServiceAccountList";
