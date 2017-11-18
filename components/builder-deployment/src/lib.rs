@@ -27,6 +27,7 @@ pub mod service_graph;
 pub mod error;
 pub mod replicas;
 pub mod indent;
+pub mod helper;
 
 
 pub use self::error::{Error, Result};

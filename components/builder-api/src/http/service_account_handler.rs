@@ -212,7 +212,7 @@ pub fn service_account_create(req: &mut Request) -> AranResult<Response> {
                     body.secrets
                         .iter()
                         .map(|x| {
-                            ObjectReference::with_secrets(&x.name, &x.kind, &x.origin, &x.uid)
+                            ObjectReference::with_secrets(&x.kind, &x.name, &x.origin, &x.uid)
                         })
                         .collect::<Vec<_>>(),
                 );

@@ -3,7 +3,7 @@
 use {asmsrv, servicesrv};
 use DEFAULT_API_VERSION;
 use std::collections::BTreeMap;
-const JOBSLIST: &'static str = "JobsList";
+const JOBSLIST: &'static str = "JobList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Jobs {

@@ -43,7 +43,7 @@ pub struct SecurerCfg {
 impl Default for SecurerCfg {
     fn default() -> Self {
         SecurerCfg {
-            backend: SecureBackend::EnvKey,
+            backend: SecureBackend::Local,
             endpoint: ENV_KEY_URL.to_string(),
             token: TOKEN.to_string(),
         }
