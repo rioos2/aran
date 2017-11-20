@@ -5,7 +5,6 @@ services:
 stages:
 - test
 before_script:
-- gem install erdf
 - ./support/ci/fast_pass.sh || exit 0
 - ./support/ci/compile_libsodium.sh
 - ./support/ci/install_rustfmt.sh
