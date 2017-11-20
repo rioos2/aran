@@ -28,6 +28,7 @@ pub enum Error {
     ServicesCreate(postgres::error::Error),
     ServicesGet(postgres::error::Error),
     ServicesGetResponse(postgres::error::Error),
+    ServicesUpdate(postgres::error::Error),
 }
 
 
@@ -52,6 +53,8 @@ impl fmt::Display for Error {
             Error::ServicesCreate(ref e) => format!("Database error creating services, {}", e),
             Error::ServicesGet(ref e) => format!("Error retrive service, {}", e),
             Error::ServicesGetResponse(ref e) => format!("Error retrive services list, {}", e),
+            Error::ServicesUpdate(ref e) => format!("Error updating service, {}", e),
+
         };
         write!(f, "{}", msg)
     }
@@ -76,6 +79,7 @@ impl error::Error for Error {
             Error::ServicesCreate(ref err) => err.description(),
             Error::ServicesGet(ref err) => err.description(),
             Error::ServicesGetResponse(ref err) => err.description(),
+            Error::ServicesUpdate(ref err) => err.description(),
 
         }
     }

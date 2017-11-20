@@ -25,9 +25,9 @@ impl PlanFactoryDS {
             "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$5,$6,$7)",
             &[
                 &(plan.get_group_name() as String),
+                &(plan.get_url() as String),
                 &(plan.get_description() as String),
                 &(plan.get_tags() as Vec<String>),
-                &(plan.get_url() as String),
                 &(plan.get_origin() as String),
                 &(plan.get_artifacts() as Vec<String>),
                 &(data as Vec<String>),

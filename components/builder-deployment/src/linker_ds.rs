@@ -112,6 +112,34 @@ impl LinkersDS {
         }
         Ok(None)
     }
+    pub fn update(datastore: &DataStoreConn, service: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let asmid = service.get_spec().get_selector().get(
+            &servicesrv::RIO_ASM_FAC_ID
+                .to_string(),
+        );
+
+        let rows = &conn.query(
+            "SELECT * FROM update_servive_by_v1($1,$2,$3,$4,$5,$6,$7)",
+            &[
+                &(service.get_id().parse::<i64>().unwrap()),
+                &(service.get_object_meta().get_origin() as String),
+                &(asmid.unwrap().parse::<i64>().unwrap()),
+                &(serde_json::to_string(service.get_spec()).unwrap()),
+                &(serde_json::to_string(service.get_status()).unwrap()),
+                &(serde_json::to_string(service.get_object_meta()).unwrap()),
+                &(serde_json::to_string(service.get_type_meta()).unwrap()),
+            ],
+        ).map_err(Error::ServicesUpdate)?;
+
+        if rows.len() > 0 {
+            for row in rows {
+                let end = row_to_services(&row);
+                return Ok(Some(end));
+            }
+        }
+        Ok(None)
+    }
 }
 
 
