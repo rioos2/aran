@@ -59,7 +59,7 @@ impl AssemblyFactoryDS {
             for row in rows {
                 let mut assembly_factory = row_to_assembly_factory(&row)?;
                 let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
-                assembly_factory.set_plan_data(data);
+                assembly_factory.set_plan_data(data.unwrap());
                 return Ok(Some(assembly_factory));
             }
         }
@@ -80,7 +80,7 @@ impl AssemblyFactoryDS {
             for row in rows {
                 let mut assembly_factory = row_to_assembly_factory(&row)?;
                 let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
-                assembly_factory.set_plan_data(data);
+                assembly_factory.set_plan_data(data.unwrap());
                 return Ok(Some(assembly_factory));
             }
         }

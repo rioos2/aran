@@ -14,6 +14,8 @@ rand = "*"
 serde = "1.0.11"
 serde_json = "1.0.2"
 serde_derive = "*"
+regex = "0.2"
+
 
 
 [dependencies.clap]
@@ -29,7 +31,6 @@ path = "../builder-db"
 
 [dependencies.rioos_builder_servicesrv]
 path = "../builder-service-account"
-
 
 [features]
 functional = []

@@ -6,7 +6,7 @@ use error::{Result, Error};
 use protocol::{servicesrv, asmsrv};
 use service_graph::ServiceGraph;
 use std::collections::BTreeMap;
-use linkers_state::{LOADBALANCER, EXTERNALNAME};
+use protocol::asmsrv::{LOADBALANCER, EXTERNALNAME};
 
 pub struct LinkerGraphStats {
     pub target: String,

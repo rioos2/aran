@@ -6,10 +6,8 @@ use assembly_ds::AssemblyDS;
 use db::data_store::DataStoreConn;
 use protocol::servicesrv;
 use std::collections::BTreeMap;
-use protocol::asmsrv::IdGet;
+use protocol::asmsrv::{IdGet, LOADBALANCER, EXTERNALNAME};
 use service_graph::ServiceGraph;
-pub const LOADBALANCER: &'static str = "LoadBalancer";
-pub const EXTERNALNAME: &'static str = "ExternalName";
 use error::Result;
 
 pub struct LinkersState<'a> {
@@ -70,7 +68,8 @@ impl<'a> LinkersState<'a> {
     /// [LoadBalancer] = node_count=0
     pub fn add_loadbalancer_connection(&self, service: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
         if self.stats.get(LOADBALANCER).unwrap().node_count <= 0 {
-            LinkersDS::create(self.conn, service)?;
+            let data = LinkersDS::create(self.conn, service)?;
+            return Ok(data);
         }
         Ok(None)
     }
@@ -78,7 +77,8 @@ impl<'a> LinkersState<'a> {
     /// [ExternalName] = node_count=0
     pub fn add_dns_connection(&self, service: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
         if self.stats.get(EXTERNALNAME).unwrap().node_count <= 0 {
-            LinkersDS::create(self.conn, service)?;
+            let data = LinkersDS::create(self.conn, service)?;
+            return Ok(data);
         }
         Ok(None)
     }
@@ -97,21 +97,3 @@ impl<'a> LinkersState<'a> {
         }
     }*/
 }
-
-// fn main() {
-//     //// Usecase 1: New assemblyfactory trying to add dns service
-//     let dns = servicesrv::Services::new(); //create a "From" to Service
-//     let l = LinkersState::new(ids, conn);
-//     l.add_dns_connection(dns);
-//
-//
-//     //// Usecase 2: Remove
-//     let lb = servicesrv::Services::new(); //create a "From" to Service
-//     let s = LinkersState::new(ids, conn);
-//     l.remove_loadbalancer_connection(lb);
-//
-//     //// Usecase 3: Remove
-//     let lb = servicesrv::Services::new(); //create a "From" to Service
-//     let l = LinkersState::new(ids, conn);
-//     l.remove_dns_connection(lb);
-// }

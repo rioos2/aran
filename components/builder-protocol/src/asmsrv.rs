@@ -4,12 +4,20 @@ use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
 use DEFAULT_API_VERSION;
+use std::path::PathBuf;
 const ASSEMBLYLIST: &'static str = "AssemblyList";
 const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
 pub const INITIAL_CONDITIONS: &'static [&'static str] = &["AssemblyStorageReady", "AssemblyNetworkReady"];
+pub const SERVICE_LB_INITIAL_CONDITIONS: &'static [&'static str] = &["ServiceFrontendReady", "ServiceBackendReady"];
+pub const SERVICE_DNS_INITIAL_CONDITIONS: &'static [&'static str] = &["ServiceFrontendReady", "ServiceBackendReady"];
+
 pub const NEW_REPLICA_INITALIZING: &'static str = "Initializing replica ";
 pub const ASSEMBLYS_URI: &'static str = "v1/assembly";
 pub const INITIALIZING: &'static str = "Initializing";
+const SERVICE: &'static str = "Service";
+pub const LOADBALANCER: &'static str = "LoadBalancer";
+pub const EXTERNALNAME: &'static str = "ExternalName";
+
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -321,7 +329,7 @@ pub struct AssemblyFactory {
     replicas: u32,
     properties: Properties,
     plan: String,
-    plan_data: Option<plansrv::Plan>,
+    plan_data: plansrv::Plan,
     external_management_resource: Vec<String>,
     component_collection: BTreeMap<String, String>,
     status: Status,
@@ -463,9 +471,71 @@ impl AssemblyFactory {
         self.created_at.clone()
     }
 
-    pub fn set_plan_data(&mut self, v: Option<plansrv::Plan>) {
+    pub fn set_plan_data(&mut self, v: plansrv::Plan) {
         self.plan_data = v;
     }
+    pub fn get_plan_data(&self) -> &plansrv::Plan {
+        &self.plan_data
+    }
+}
+
+pub fn generate_service(assembly_fac: &AssemblyFactory, service_type: &str) -> servicesrv::Services {
+    let mut service = servicesrv::Services::new();
+    let mut selector = BTreeMap::new();
+    selector.insert(
+        servicesrv::RIO_ASM_FAC_ID.to_string(),
+        assembly_fac.get_id(),
+    );
+    if service_type == LOADBALANCER {
+        selector.insert("Loadbalancer_provider".to_string(), "vulcand".to_string());
+        selector.insert(
+            "Loadbalancer_provider_image".to_string(),
+            "/v1/plan/vulcand".to_string(),
+        );
+        service.set_spec(servicesrv::Spec::new(
+            selector,
+            service_type,
+            "",
+            BTreeMap::new(),
+            BTreeMap::new(),
+        ));
+        service.set_status(Status::with_conditions(
+            INITIALIZING,
+            NEW_REPLICA_INITALIZING,
+            "",
+            SERVICE_LB_INITIAL_CONDITIONS
+                .iter()
+                .map(|x| Condition::with_type("", "", "False", "", "", x))
+                .collect::<Vec<_>>(),
+        ));
+    } else {
+        selector.insert("Dns_provider".to_string(), "powerdns".to_string());
+        selector.insert(
+            "Dns_provider_image".to_string(),
+            "/v1/plan/powerdns".to_string(),
+        );
+        let mut name = BTreeMap::new();
+        name.insert(assembly_fac.get_id(), assembly_fac.get_name());
+        service.set_spec(servicesrv::Spec::new(
+            selector,
+            service_type,
+            "",
+            name,
+            BTreeMap::new(),
+        ));
+        service.set_status(Status::with_conditions(
+            INITIALIZING,
+            NEW_REPLICA_INITALIZING,
+            "",
+            SERVICE_DNS_INITIAL_CONDITIONS
+                .iter()
+                .map(|x| Condition::with_type("", "", "False", "", "", x))
+                .collect::<Vec<_>>(),
+        ));
+    }
+    service.set_type_meta(TypeMeta::new(SERVICE));
+    service
+
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -507,7 +577,9 @@ impl ObjectMeta {
     pub fn set_labels(&mut self, v: BTreeMap<String, String>) {
         self.labels = v;
     }
-
+    pub fn get_labels(&self) -> &BTreeMap<String, String> {
+        &self.labels
+    }
     pub fn set_annotations(&mut self, v: BTreeMap<String, String>) {
         self.annotations = v;
     }
