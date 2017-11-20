@@ -1,0 +1,9 @@
+image: 'rust:latest'
+stages:
+  - test
+test_with_lab:
+  stage: test
+  script: 'npm test'
+test_with_cargo:
+  stage: test
+  script: 'cargo test'
