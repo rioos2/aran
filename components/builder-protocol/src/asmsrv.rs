@@ -538,6 +538,8 @@ pub fn generate_service(assembly_fac: &AssemblyFactory, service_type: &str) -> s
 
 }
 
+
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectMeta {
     name: String,

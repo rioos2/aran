@@ -36,6 +36,10 @@ impl<'a> LinkersState<'a> {
                 services.map(|s| (s, assemblys.unwrap().unwrap().get_items()))
             })
             .collect::<Vec<_>>();
+        println!(
+            "********************linkers********************************8\n{:?}",
+            linkers
+        );
 
         let stats = graph.build(linkers.into_iter());
 

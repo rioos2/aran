@@ -9,13 +9,14 @@ use rio_net::http::controller::*;
 use deploy::assemblyfactory_ds::AssemblyFactoryDS;
 use deploy::assembly_ds::AssemblyDS;
 use deploy::replicas::Replicas;
-use deploy::helper::{LinkCalculator, LinkerTypeActions};
+use deploy::link_calculator::LinkCalculator;
+use deploy::link_attacher::LinkerGenerator;
 use deploy::planfactory_ds::PlanFactoryDS;
 
 use iron::prelude::*;
 use iron::status;
 use iron::typemap;
-use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, TypeMeta, INITIAL_CONDITIONS, NEW_REPLICA_INITALIZING, INITIALIZING, generate_service, LOADBALANCER, EXTERNALNAME};
+use protocol::asmsrv::{Assembly, IdGet, AssemblyFactory, Status, Condition, Properties, OpsSettings, Volume, TypeMeta, INITIAL_CONDITIONS, NEW_REPLICA_INITALIZING, INITIALIZING};
 use protocol::plansrv::{Plan, Service};
 use router::Router;
 use db::data_store::Broker;
@@ -493,29 +494,15 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
         &assembly_factory_create,
     ).new_desired() {
         Ok(Some(assembly_fac)) => {
-            let calculator = LinkCalculator::new(&conn, vec![assembly_fac.get_id()]);
-            let category = assembly_fac
-                .get_plan_data()
-                .get_group_name()
-                .split("_")
-                .collect::<Vec<_>>();
-            match calculator.has_ability(category[1]) {
-                true => {
-                    match calculator.need_lb(assembly_fac.get_object_meta().get_labels()) {
-                        true => {
-                            calculator.loadbalancer(LinkerTypeActions::LoadBalancerAdd(
-                                generate_service(&assembly_fac, LOADBALANCER),
-                            ))
-                        }
-                        false => {}
-                    }
-                }
-                false => {
-                    calculator.dns(LinkerTypeActions::DNSPeerAdd(
-                        generate_service(&assembly_fac, EXTERNALNAME),
-                    ))
-                }
-            }
+            LinkCalculator::new(
+                &conn,
+                vec![assembly_fac.get_id()],
+                LinkerGenerator::new(
+                    &assembly_fac.get_plan_data().get_group_name(),
+                    assembly_fac.get_object_meta().get_labels().clone(),
+                ).generate()
+                    .unwrap(),
+            ).attach()?;
             Ok(render_json(status::Ok, &assembly_fac))
         }
         Err(err) => Err(internal_error(&format!("{}\n", err))),

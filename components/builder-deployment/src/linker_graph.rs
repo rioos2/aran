@@ -2,7 +2,7 @@
 //
 use std::iter::Iterator;
 use std::collections::HashMap;
-use error::{Result, Error};
+use error::Result;
 use protocol::{servicesrv, asmsrv};
 use service_graph::ServiceGraph;
 use std::collections::BTreeMap;

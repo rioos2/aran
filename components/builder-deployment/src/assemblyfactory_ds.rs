@@ -40,7 +40,9 @@ impl AssemblyFactoryDS {
         ).map_err(Error::AssemblyFactoryCreate)?;
         if rows.len() > 0 {
             for row in rows {
-                let assembly_factory = row_to_assembly_factory(&row)?;
+                let mut assembly_factory = row_to_assembly_factory(&row)?;
+                let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
+                assembly_factory.set_plan_data(data.unwrap());
                 return Ok(Some(assembly_factory));
             }
         }

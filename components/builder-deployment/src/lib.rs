@@ -28,7 +28,8 @@ pub mod service_graph;
 pub mod error;
 pub mod replicas;
 pub mod indent;
-pub mod helper;
+pub mod link_calculator;
+pub mod link_attacher;
 
 
 pub use self::error::{Error, Result};
