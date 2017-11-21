@@ -3,14 +3,14 @@ services:
 - postgres:latest
 stages:
 - test
-
-
 before_script:
+- export PATH=$HOME/.cargo/bin:$PATH
+- gem install bundler
 - gem install erdf
 - ./support/ci/fast_pass.sh || exit 0
 - ./support/ci/compile_libsodium.sh
 - ./support/ci/install_rustfmt.sh
-test_with_lab:
+cargo_test:
   stage: test
   script: 
   - ./support/ci/rust_tests.sh
