@@ -10,10 +10,10 @@ describe('Plan Factory API', function() {
       request.post('/planfactory')
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"name":"iscsi","host_ip":"192.168.1.100","storage_type":"iscsi","parameters": {"pool_name": "iscsi-pool","user_id": "iscsi-user","password": "iscsi-password"}, "storage_info":{"disks": [{"disk": "/dev/sdb","disk_type": "/dev/sdb1","point": "/home","size": "50GB"},{"disk": "/dev/sdb1","disk_type": "/dev/sdb2","point": "/home/ranji","size": "500GB"}]},"status":{"phase":"","message": "","reason": "","conditions":[{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":" ","condition_type":" "}]}})
+        .send({"group_name":"2_application_python","url": "/v3/plan/java","description": "The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.","tags": ["tomcat","java","jdk"],"origin":"rioos:2.0","artifacts":[],"services":[{ "name":"tomcat","description":"","href":"http://tomcat.apache.org/","characteristics":{}}]})
         .expect(200)
         .end(function(err, res) {
-          expect(res.body);
+         expect(res.body.group_name).to.equal("2_application_python");
           done(err);
         });
     });

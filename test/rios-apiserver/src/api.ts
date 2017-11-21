@@ -1,11 +1,15 @@
 // Sets up the framework
 import "./helpers";
-//import "./scaling";
 import "./auth";
-//import "./deployments";
-//import "./node";
-//import "./storage";
 //import "./session";
-//import "./plan";
-//import "./service";
+import "./plan";
+import "./node";
+import "./networks";
+import "./storage";
+import "./storagespool";
+import "./datacenter";
 import "./job";
+//import "./deployments";
+import "./service";
+import "./endpoints";
+//import "./scaling";
