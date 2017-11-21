@@ -3,8 +3,10 @@ services:
 - postgres:latest
 stages:
 - test
+variables:
+  COMPONENTS: "bin"
+
 before_script:
-- export COMPONENTS=bin
 - ./support/ci/fast_pass.sh || exit 0
 - ./support/ci/compile_libsodium.sh
 - ./support/ci/install_rustfmt.sh
