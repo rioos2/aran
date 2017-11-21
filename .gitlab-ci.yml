@@ -3,8 +3,7 @@ services:
 - postgres:latest
 stages:
 - test
-variables:
-  COMPONENTS: "bin"
+
 
 before_script:
 - ./support/ci/fast_pass.sh || exit 0
