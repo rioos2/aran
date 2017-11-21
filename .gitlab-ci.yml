@@ -2,9 +2,13 @@ image: rust:latest
 services:
 - postgres:latest
 
+
+
 stages:
 - test
 before_script:
+- export PATH=$HOME/.cargo/bin:$PATH
+- export COMPONENTS=bin
 - ./support/ci/fast_pass.sh || exit 0
 - ./support/ci/compile_libsodium.sh
 - ./support/ci/install_rustfmt.sh
@@ -13,6 +17,7 @@ before_script:
 test_with_lab:
   stage: test
   script: 
+  - ./support/ci/rust_tests.sh
   - ./support/ci/lint.sh
   - cargo test
  
