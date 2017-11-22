@@ -15,7 +15,7 @@ pub struct AssemblyFactoryDS;
 
 impl AssemblyFactoryDS {
     ////////// AF STARTS
-    pub fn create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
+    pub fn create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<asmsrv::AssemblyFactory> {
 
         let conn = datastore.pool.get_shard(0)?;
 
@@ -38,15 +38,11 @@ impl AssemblyFactoryDS {
                 &(serde_json::to_string(assembly_fac.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
-        if rows.len() > 0 {
-            for row in rows {
-                let mut assembly_factory = row_to_assembly_factory(&row)?;
-                let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
-                assembly_factory.set_plan_data(data.unwrap());
-                return Ok(Some(assembly_factory));
-            }
-        }
-        Ok(None)
+
+        let mut assembly_factory = row_to_assembly_factory(&rows.get(0))?;
+        let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
+        assembly_factory.set_plan_data(data.unwrap());
+        Ok(assembly_factory)
     }
 
 

@@ -1,4 +1,4 @@
-use protocol::{servicesrv, asmsrv};
+use protocol::servicesrv;
 use linkers_state::LinkersState;
 use db::data_store::DataStoreConn;
 use error::Result;
@@ -23,10 +23,10 @@ pub struct LinkCalculator {
 }
 
 impl LinkCalculator {
-    pub fn new(conn: &DataStoreConn, af_id: Vec<String>, linkgen: LinkerGenerated) -> Self {
+    pub fn new(conn: &DataStoreConn, linkgen: LinkerGenerated) -> Self {
         let mut l = LinkCalculator {
             conn: conn.clone(),
-            af_id: af_id,
+            af_id: linkgen.af_id,
             actions: linkgen.actions,
             is_unedged: false,
         };
@@ -55,9 +55,8 @@ impl Linkerable for LinkCalculator {
     /// Verifies if the deployment has the ability to link
     /// Write a function that takes a string and does what is needed.
     fn has_ability(&self, category: &str, labels: BTreeMap<String, String>) -> bool {
-        prefixed_for_linking(category) || labels.contains_key(asmsrv::LOADBALANCER)
+        prefixed_for_linking(category) && labels.contains_key(servicesrv::LOADBALANCER)
     }
-
 
     ///use the parms for DeploymentLink and
     fn loadbalancer(&self, deplink: &LinkerAction) -> Result<Option<servicesrv::Services>> {
@@ -90,7 +89,6 @@ impl Linkerable for LinkCalculator {
 
     //Call the linkergraph and do add_loadbalancer_conenction
     fn handle_add_dns(&self, data: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
-        println!("**************************************************************************8");
         let data = LinkersState::new(self.af_id.clone(), &self.conn)
             .add_dns_connection(data)?;
         Ok(data)

@@ -5,6 +5,8 @@ use assemblyfactory_ds::AssemblyFactoryDS;
 use protocol::asmsrv::{Assembly, AssemblyFactory, Status, Condition, TypeMeta, INITIAL_CONDITIONS, NEW_REPLICA_INITALIZING, ASSEMBLYS_URI, INITIALIZING};
 use db::data_store::DataStoreConn;
 use error::Result;
+use std::collections::BTreeMap;
+
 const ASSEMBLY: &'static str = "Assembly";
 
 pub struct Replicas<'a> {
@@ -40,33 +42,36 @@ impl<'a> Replicas<'a> {
 
 
     //This is reponsible for managing the replicas in an assembly factory upto the desired.
-    pub fn new_desired(&self) -> Result<Option<AssemblyFactory>> {
+    pub fn new_desired(&self) -> Result<(AssemblyFactory, Vec<(String, String)>)> {
         match AssemblyFactoryDS::create(&self.conn, &self.response) {
-            Ok(Some(response)) => {
-                let _replicated = self.upto_desired(&response.get_id())?;
-                Ok(Some(response))
+            Ok(response) => {
+                let replicated = self.upto_desired(&response.get_id());
+                let assembly: Vec<(String, String)> = replicated
+                    .into_iter()
+                    .map(|x| ("".to_string(), "".to_string()))
+                    .collect::<Vec<_>>();
+                Ok((response, assembly))
             }
-            Ok(None) => Ok(None),
             Err(err) => Err(err),
         }
     }
 
 
     //This is reponsible for managing the replicas in an assembly factory upto the desired.
-    pub fn upto_desired(&self, id: &str) -> Result<Option<Vec<Assembly>>> {
+    pub fn upto_desired(&self, id: &str) -> Vec<Result<Option<Assembly>>> {
         let mut context = ReplicaContext::new(&self.response, self.current(), self.desired());
         context.calculate(id);
 
         //deploy the assemblys
-        let _deployed = context
+        context
             .deploys
             .iter()
             .map(|k| if k.get_name().len() > 0 {
                 AssemblyDS::create(&self.conn, &k)
             } else {
-                Ok(None)
+                return vec![];
             })
-            .collect::<Vec<_>>();
+            .collect::<Vec<_>>()
 
 
         /*remove the assemblys
@@ -86,8 +91,6 @@ impl<'a> Replicas<'a> {
         let deploy_failure = &deployed.iter().filter(|f| (*f).is_err()).count();
         let  nuke_failure = &nuked.iter().filter(|f| (*f).is_err()).count();
 	    */
-
-        Ok(None)
     }
 }
 

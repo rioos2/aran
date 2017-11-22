@@ -493,24 +493,16 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
         assembly_factory_create.get_replicas(),
         &assembly_factory_create,
     ).new_desired() {
-        Ok(Some(assembly_fac)) => {
+        Ok((assembly_fac, data)) => {
             LinkCalculator::new(
                 &conn,
-                vec![assembly_fac.get_id()],
-                LinkerGenerator::new(
-                    &assembly_fac.get_plan_data().get_group_name(),
-                    assembly_fac.get_object_meta().get_labels().clone(),
-                ).generate()
+                LinkerGenerator::new(&assembly_fac, data)
+                    .generate()
                     .unwrap(),
             ).attach()?;
             Ok(render_json(status::Ok, &assembly_fac))
         }
         Err(err) => Err(internal_error(&format!("{}\n", err))),
-        Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
-        }
     }
 }
 

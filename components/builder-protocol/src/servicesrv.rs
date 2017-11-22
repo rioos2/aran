@@ -7,6 +7,10 @@ const ENDPOINTSLIST: &'static str = "EndpointList";
 const SECRETLIST: &'static str = "SecretList";
 const SERVICELIST: &'static str = "ServiceList";
 const SERVICEACCOUNTLIST: &'static str = "ServiceAccountList";
+pub const LOADBALANCER: &'static str = "LoadBalancer";
+pub const EXTERNALNAME: &'static str = "ExternalName";
+pub const SERVICE: &'static str = "Service";
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {

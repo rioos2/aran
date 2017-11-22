@@ -6,7 +6,7 @@ use assembly_ds::AssemblyDS;
 use db::data_store::DataStoreConn;
 use protocol::servicesrv;
 use std::collections::BTreeMap;
-use protocol::asmsrv::{IdGet, LOADBALANCER, EXTERNALNAME};
+use protocol::asmsrv::IdGet;
 use service_graph::ServiceGraph;
 use error::Result;
 
@@ -33,14 +33,17 @@ impl<'a> LinkersState<'a> {
                 id_get.set_id(id.to_string());
                 let assemblys = AssemblyDS::show_by_assemblyfactory(conn, &id_get);
                 let services = LinkersDS::list_by_assembly_factory(conn, &id_get);
-                services.map(|s| (s, assemblys.unwrap().unwrap().get_items()))
+                services
+                    .map(|s| {
+                        (
+                            s.unwrap_or(servicesrv::ServicesGetResponse::new())
+                                .get_items(),
+                            assemblys.unwrap().unwrap().get_items(),
+                        )
+                    })
+                    .unwrap()
             })
             .collect::<Vec<_>>();
-        println!(
-            "********************linkers********************************8\n{:?}",
-            linkers
-        );
-
         let stats = graph.build(linkers.into_iter());
 
         LinkersState {
@@ -54,7 +57,7 @@ impl<'a> LinkersState<'a> {
     pub fn loadbalancers_connections(&self) -> Vec<&ServiceGraph> {
         self.state
             .graphs
-            .get(LOADBALANCER)
+            .get(servicesrv::LOADBALANCER)
             .iter()
             .cloned()
             .collect::<Vec<_>>()
@@ -63,7 +66,7 @@ impl<'a> LinkersState<'a> {
     pub fn dns_connections(&self) -> Vec<&ServiceGraph> {
         self.state
             .graphs
-            .get(EXTERNALNAME)
+            .get(servicesrv::EXTERNALNAME)
             .iter()
             .cloned()
             .collect::<Vec<_>>()
@@ -71,7 +74,7 @@ impl<'a> LinkersState<'a> {
     /// add loadbalancer links if none of the nodes exists of type LoadBalancer exists
     /// [LoadBalancer] = node_count=0
     pub fn add_loadbalancer_connection(&self, service: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
-        if self.stats.get(LOADBALANCER).unwrap().node_count <= 0 {
+        if self.stats.get(servicesrv::LOADBALANCER).unwrap().node_count <= 0 {
             let data = LinkersDS::create(self.conn, service)?;
             return Ok(data);
         }
@@ -80,7 +83,7 @@ impl<'a> LinkersState<'a> {
     /// add dns connection if none of the nodes exists of type ExternalName
     /// [ExternalName] = node_count=0
     pub fn add_dns_connection(&self, service: &servicesrv::Services) -> Result<Option<servicesrv::Services>> {
-        if self.stats.get(EXTERNALNAME).unwrap().node_count <= 0 {
+        if self.stats.get(servicesrv::EXTERNALNAME).unwrap().node_count <= 0 {
             let data = LinkersDS::create(self.conn, service)?;
             return Ok(data);
         }

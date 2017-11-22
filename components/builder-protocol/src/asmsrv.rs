@@ -8,15 +8,11 @@ use std::path::PathBuf;
 const ASSEMBLYLIST: &'static str = "AssemblyList";
 const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
 pub const INITIAL_CONDITIONS: &'static [&'static str] = &["AssemblyStorageReady", "AssemblyNetworkReady"];
-pub const SERVICE_LB_INITIAL_CONDITIONS: &'static [&'static str] = &["ServiceFrontendReady", "ServiceBackendReady"];
-pub const SERVICE_DNS_INITIAL_CONDITIONS: &'static [&'static str] = &["ServiceFrontendReady", "ServiceBackendReady"];
 
 pub const NEW_REPLICA_INITALIZING: &'static str = "Initializing replica ";
 pub const ASSEMBLYS_URI: &'static str = "v1/assembly";
 pub const INITIALIZING: &'static str = "Initializing";
-const SERVICE: &'static str = "Service";
-pub const LOADBALANCER: &'static str = "LoadBalancer";
-pub const EXTERNALNAME: &'static str = "ExternalName";
+
 
 
 
@@ -196,6 +192,9 @@ pub struct Status {
 }
 
 impl Status {
+    pub fn new() -> Status {
+        ::std::default::Default::default()
+    }
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
@@ -239,6 +238,9 @@ pub struct Condition {
 }
 
 impl Condition {
+    pub fn new() -> Condition {
+        ::std::default::Default::default()
+    }
     pub fn with_type(message: &str, reason: &str, status: &str, last_transition_time: &str, last_probe_time: &str, condition_type: &str) -> Condition {
         Condition {
             condition_type: condition_type.to_string(),
@@ -479,66 +481,18 @@ impl AssemblyFactory {
     }
 }
 
-pub fn generate_service(assembly_fac: &AssemblyFactory, service_type: &str) -> servicesrv::Services {
-    let mut service = servicesrv::Services::new();
-    let mut selector = BTreeMap::new();
-    selector.insert(
-        servicesrv::RIO_ASM_FAC_ID.to_string(),
-        assembly_fac.get_id(),
-    );
-    if service_type == LOADBALANCER {
-        selector.insert("Loadbalancer_provider".to_string(), "vulcand".to_string());
-        selector.insert(
-            "Loadbalancer_provider_image".to_string(),
-            "/v1/plan/vulcand".to_string(),
-        );
-        service.set_spec(servicesrv::Spec::new(
-            selector,
-            service_type,
-            "",
-            BTreeMap::new(),
-            BTreeMap::new(),
-        ));
-        service.set_status(Status::with_conditions(
-            INITIALIZING,
-            NEW_REPLICA_INITALIZING,
-            "",
-            SERVICE_LB_INITIAL_CONDITIONS
-                .iter()
-                .map(|x| Condition::with_type("", "", "False", "", "", x))
-                .collect::<Vec<_>>(),
-        ));
-    } else {
-        selector.insert("Dns_provider".to_string(), "powerdns".to_string());
-        selector.insert(
-            "Dns_provider_image".to_string(),
-            "/v1/plan/powerdns".to_string(),
-        );
-        let mut name = BTreeMap::new();
-        name.insert(assembly_fac.get_id(), assembly_fac.get_name());
-        service.set_spec(servicesrv::Spec::new(
-            selector,
-            service_type,
-            "",
-            name,
-            BTreeMap::new(),
-        ));
-        service.set_status(Status::with_conditions(
-            INITIALIZING,
-            NEW_REPLICA_INITALIZING,
-            "",
-            SERVICE_DNS_INITIAL_CONDITIONS
-                .iter()
-                .map(|x| Condition::with_type("", "", "False", "", "", x))
-                .collect::<Vec<_>>(),
-        ));
+
+impl Into<servicesrv::Services> for AssemblyFactory {
+    fn into(self) -> servicesrv::Services {
+        let mut s = servicesrv::Services::new();
+        s.set_status(Status::with_conditions(INITIALIZING, "", "", vec![]));
+        s.set_type_meta(TypeMeta::new(servicesrv::SERVICE));
+        let mut object_meta = servicesrv::ObjectMetaData::new();
+        object_meta.set_origin(self.get_origin());
+        s.set_object_meta(object_meta);
+        s
     }
-    service.set_type_meta(TypeMeta::new(SERVICE));
-    service
-
 }
-
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectMeta {
