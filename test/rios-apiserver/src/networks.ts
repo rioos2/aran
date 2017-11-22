@@ -4,7 +4,7 @@ import supertest = require('supertest');
 const request = supertest('http://localhost:9636/api/v1');
 const globalAny:any = global;
 
-describe('Job  API', function() {
+describe('Network  API', function() {
 
     it('returns the created network', function(done) {
       request.post('/networks')

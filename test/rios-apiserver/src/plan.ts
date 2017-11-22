@@ -18,9 +18,16 @@ describe('Plan Factory API', function() {
         });
     });
 
+    it('returns all plan factory', function(done) {
+      request.get('/plans')
+        .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .expect(200)
+        .end(function(err, res) {
+          done(err);
+        });
+    });
+
   });
-
-
-
 
   });

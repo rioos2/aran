@@ -100,7 +100,8 @@ impl Migratable for ScaleProcedures {
             "scalesrv",
             r#"CREATE OR REPLACE FUNCTION set_hs_status_v1 (hid bigint, hs_status text) RETURNS SETOF horizontal_scaling AS $$
                             BEGIN
-                                RETURN QUERY UPDATE horizontal_scaling SET status=hs_status, updated_at=now() WHERE id=hid;
+                                RETURN QUERY UPDATE horizontal_scaling SET status=hs_status, updated_at=now() WHERE id=hid
+                            RETURNING *;
                             RETURN;
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,

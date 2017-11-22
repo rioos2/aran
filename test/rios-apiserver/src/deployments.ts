@@ -20,7 +20,7 @@ describe('Assembly_factory API', function() {
       });
   });
   it('returns the assembly_factory by id', function(done) {
-    request.get('/assembly_factorys/' + globalAny.asm_fac_id)
+    request.get('/assemblyfactorys/'+globalAny.asm_fac_id)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .expect(200)
@@ -30,7 +30,7 @@ describe('Assembly_factory API', function() {
       });
   });
   it('returns the assembly_factorys_status_update by id', function(done) {
-    request.put('/assembly_factorys/status/'+ globalAny.asm_fac_id)
+    request.put('/assemblyfactorys/'+globalAny.asm_fac_id+'/status')
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .send({ "status":{"phase":"pending","message":"","reason":"","conditions":[{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":"","condition_type":" "}]}})
@@ -42,7 +42,17 @@ describe('Assembly_factory API', function() {
       });
   });
   it('returns the all assemblys_factory', function(done) {
-    request.get('/assembly_factorys')
+    request.get('/assemblyfactorys')
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .expect(200)
+      .end(function(err, res) {
+      expect(res.body.items.length).to.equal(1);
+        done(err);
+      });
+  });
+  it('returns the assembly_factory by origin', function(done) {
+    request.get('/origins/'+globalAny.origin_id+'/assemblyfactorys')
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .expect(200)
@@ -50,12 +60,14 @@ describe('Assembly_factory API', function() {
         done(err);
       });
   });
-  it('returns the assembly_factory by origin', function(done) {
-    request.get('origin/'+globalAny.origin_id+'/assembly_factorys')
+  it('returns the assemblys by assemblyfactory id', function(done) {
+    request.get('/assemblyfactorys/'+globalAny.asm_fac_id+'/describe')
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .expect(200)
       .end(function(err, res) {
+      expect(res.body.items.length).to.equal(2);
+        globalAny.asm_id =res.body.items[0].id;
         done(err);
       });
   });

@@ -86,7 +86,7 @@ impl ScalingDS {
         let id = hs.get_id().parse::<i64>().unwrap();
         let status_str = serde_json::to_string(hs.get_status()).unwrap();
         let rows = &conn.query(
-            "SELECT set_hs_status_v1($1, $2)",
+            "SELECT * FROM set_hs_status_v1($1, $2)",
             &[&id, &(status_str as String)],
         ).map_err(Error::HSSetStatus)?;
         if rows.len() > 0 {

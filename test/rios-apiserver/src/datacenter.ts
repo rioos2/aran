@@ -9,7 +9,7 @@ describe('Datacenter  API', function() {
       request.post('/datacenters')
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"name":"chennai","nodes":["844747261714907136"],"storage": "844753542467035136","networks": ["844751056645668864"],"enabled": true,"advanced_settings":{"storage":"true","storage":"false","storage": "true"},"flag":"ch.png","currency":"rs","status":{"phase":"ready","message": "","reason": "","conditions": [{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":" ","condition_type":" "}]} })
+        .send({"name":"chennai","nodes":["844747261714907136"],"storage": globalAny.stp_id,"networks": ["844751056645668864"],"enabled": true,"advanced_settings":{"storage":"true"},"flag":"ch.png","currency":"rs","status":{"phase":"ready","message": "","reason": "","conditions": [{"message":"","reason":"","status":" ","last_transition_time":" ","last_probe_time":" ","condition_type":" "}]} })
         .expect(200)
         .end(function(err, res) {
          expect(res.body.name).to.equal("chennai");
@@ -23,6 +23,7 @@ describe('Datacenter  API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
+        expect(res.body.items.length).to.equal(1);
           done(err);
         });
     });

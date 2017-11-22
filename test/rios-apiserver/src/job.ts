@@ -19,7 +19,7 @@ describe('Job  API', function() {
         });
     });
 
-    it('returns all nodes', function(done) {
+    it('returns all jobs', function(done) {
       request.get('/jobs')
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)

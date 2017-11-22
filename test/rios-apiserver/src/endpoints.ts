@@ -17,7 +17,6 @@ describe('Service account API', function() {
           expect(res.body);
           globalAny.endpoints_id =res.body.id;
           globalAny.target_ref=res.body.target_ref;
-
           done(err);
         });
     });
@@ -27,7 +26,6 @@ describe('Service account API', function() {
         .set('Authorization', globalAny.bobo_bearer)
         .expect(200)
         .end(function(err, res) {
-
           expect(res.body);
           done(err);
         });
@@ -42,15 +40,7 @@ describe('Service account API', function() {
           done(err);
         });
     });
-    it('returns  endpoints list by orgin', function(done) {
-      request.get('/origins/'+globalAny.origin_id+'/endpoints')
-      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .set('Authorization', globalAny.bobo_bearer)
-        .expect(200)
-        .end(function(err, res) {
-          done(err);
-        });
-    });
+    
 
     it('returns  endpoints list by assembly', function(done) {
       request.get('/assemblys/'+globalAny.target_ref+'/endpoints')
