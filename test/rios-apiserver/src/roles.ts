@@ -19,7 +19,7 @@ describe('User Roles API', function() {
    });
 
    it('returns the role by id', function(done) {
-     request.get('/roles/' + globalAny.role_id)
+     request.get('/roles/'+globalAny.role_id)
        .set('Authorization', globalAny.bobo_bearer)
        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
        .expect(200)
@@ -35,14 +35,8 @@ describe('User Roles API', function() {
        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
        .expect(200)
        .end(function(err, res) {
-     //  expect(res.body.results.length).to.equal(1);
+       expect(res.body.items.length).to.equal(3);
          done(err);
        });
    });
  });
-
-
-
-
-
-  });

@@ -30,7 +30,7 @@ describe('User Permission API', function() {
     });
 
     it('returns the permission by id', function(done) {
-      request.get('/permissions/' + globalAny.perm_id)
+      request.get('/permissions/'+ globalAny.perm_id)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
@@ -58,15 +58,9 @@ describe('User Permission API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-      //  expect(res.body.results.length).to.equal(1);
+      expect(res.body.items.length).to.equal(5);
           done(err);
         });
     });
-
-  });
-
-
-
-
 
   });
