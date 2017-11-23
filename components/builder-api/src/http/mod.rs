@@ -197,6 +197,7 @@ pub fn router(config: Arc<Config>, ui: &mut UI) -> Result<Chain> {
         services_show: get "/services/:id" =>XHandler::new(C(services_show)).before(basic.clone()),
         services_list: get "/services" => XHandler::new(C(services_list)).before(basic.clone()),
         services_list_by_origin: get "/origins/:origin/services" => XHandler::new(C(services_list_by_origin)).before(basic.clone()),
+        services_update: put "/services/:id" =>XHandler::new(C(services_update)).before(basic.clone()),
 
         plan_factory: post "/planfactory" =>XHandler::new(C(plan_factory_create)).before(basic.clone()),
 

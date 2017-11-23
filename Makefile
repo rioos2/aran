@@ -41,29 +41,27 @@ else
 	docs_host := 127.0.0.1
 endif
 
+# define ERDF_ERROR
+#
+# FATAL: you need erdf (gem install erdf) to generate ER diagram from the postgres database.
+#       Check README.md for details
+#
+# endef
 
-define ERDF_ERROR
-
-FATAL: you need erdf (gem install erdf) to generate ER diagram from the postgres database.
-       Check README.md for details
-
-
-endef
-
-define GRAPHVIZ_ERROR
-FATAL: you need graphviz to generate a ER picture in ./support/db/schema.png
-       Check README.md for details
-endef
-
-schema_erdf:
-ifeq ($(shell erdf version),)
- $(warning $(ERDF_ERROR)))
-endif
-
-schema_graphviz:
-ifneq ($(shell dot -V),)
- $(warning $(GRAPHVIZ_ERROR)))
-endif
+# define GRAPHVIZ_ERROR
+# FATAL: you need graphviz to generate a ER picture in ./support/db/schema.png
+#        Check README.md for details
+# endef
+#
+# schema_erdf:
+# ifeq ($(shell erdf version),)
+#  $(warning $(ERDF_ERROR)))
+# endif
+#
+# schema_graphviz:
+# ifneq ($(shell dot -V),)
+#  $(warning $(GRAPHVIZ_ERROR)))
+# endif
 
 BIN = rioos
 LIB = builder-db builder-protocol  builder-deployment builder-scaling common core builder-api-client http-client net
@@ -86,9 +84,9 @@ build-lib: $(addprefix build-,$(LIB)) ## builds the library components
 build-srv: $(addprefix build-,$(SRV)) ## builds the service components
 .PHONY: build-srv
 
-schema:
-	erdf database postgres://postgres:postgres@localhost/rioosdb?search_path=shard_0,public ./support/db/schema.png
-.PHONY: schema_erdf schema_graphviz
+##schema:
+	##erdf database postgres://postgres:postgres@localhost/rioosdb?search_path=shard_0,public ./support/db/schema.png
+##.PHONY: schema_erdf schema_graphviz
 
 unit: unit-bin unit-lib unit-srv ## executes all the components' unit test suites
 unit-all: unit

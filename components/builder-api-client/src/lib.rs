@@ -828,36 +828,36 @@ fn err_from_response(mut response: hyper::client::Response) -> Error {
 
 
 
-#[cfg(test)]
-mod tests {
-    use serde_json;
-    use super::*;
-
-    #[test]
-    fn json_round_trip_u64_fields() {
-        let pre = OriginSecretKey {
-            id: 705705315793903646,
-            origin_id: 705705305031319582,
-            name: "core".to_string(),
-            revision: "20160810182414".to_string(),
-            body: vec![1, 2, 3],
-            owner_id: 0,
-        };
-
-        let as_json = serde_json::to_value(&pre).unwrap();
-        let expected = json!({
-            "id": "705705315793903646",
-            "origin_id": "705705305031319582",
-            "name": "core",
-            "revision": "20160810182414",
-            "body": [
-                1,
-                2,
-                3
-            ],
-            "owner_id": "0"
-        });
-        assert_eq!(as_json, expected);
-
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use serde_json;
+//     use super::*;
+//
+//     #[test]
+//     fn json_round_trip_u64_fields() {
+//         let pre = OriginSecretKey {
+//             id: 705705315793903646,
+//             origin_id: 705705305031319582,
+//             name: "core".to_string(),
+//             revision: "20160810182414".to_string(),
+//             body: vec![1, 2, 3],
+//             owner_id: 0,
+//         };
+//
+//         let as_json = serde_json::to_value(&pre).unwrap();
+//         let expected = json!({
+//             "id": "705705315793903646",
+//             "origin_id": "705705305031319582",
+//             "name": "core",
+//             "revision": "20160810182414",
+//             "body": [
+//                 1,
+//                 2,
+//                 3
+//             ],
+//             "owner_id": "0"
+//         });
+//         assert_eq!(as_json, expected);
+//
+//     }
+// }

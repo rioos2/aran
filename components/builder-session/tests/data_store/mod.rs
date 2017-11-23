@@ -1,7 +1,8 @@
-use protocol::{sessionsrv, servicesrv, asmsrv, originsrv, constants};
+use protocol::{sessionsrv, servicesrv, asmsrv, originsrv};
 use db::data_store::Broker;
 use session::session_ds::SessionDS;
 use rand;
+const ORIGIN: &'static str = "Origin";
 
 
 fn create_force_account() -> sessionsrv::Session {
@@ -102,7 +103,7 @@ fn origin_create() {
     object_meta.set_name("rioos".to_string());
     object_meta.set_uid(uid.get_id());
     origin_create.set_object_meta(object_meta);
-    origin_create.set_type_meta(asmsrv::TypeMeta::new(constants::ORIGIN));
+    origin_create.set_type_meta(asmsrv::TypeMeta::new(ORIGIN));
 
     let origin = SessionDS::origin_create(&conn, &origin_create)
         .unwrap()

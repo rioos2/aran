@@ -338,6 +338,19 @@ impl Migratable for ServiceAccountProcedure {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION update_servive_by_v1 (sid bigint, origin_name text, asm_factory_id bigint, spec_data text,status_data text,object_meta_data text,type_meta_data text) RETURNS SETOF services AS $$
+                        DECLARE
+                            this_origin origins%rowtype;
+                            BEGIN
+                            SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
+                                RETURN QUERY UPDATE services SET origin_id=this_origin.id,assembly_factory_id=asm_factory_id,spec=spec_data,status=status_data,object_meta=object_meta_data,type_meta=type_meta_data,updated_at=now() WHERE id=sid
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
 
 
         ui.end("ServiceAccountProcedure");
