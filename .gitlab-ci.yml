@@ -1,3 +1,4 @@
+image: rust:latest
 variables:
 - COMPONENTS=bin LIBSODIUM_PREFIX=$HOME/pkgs/libsodium/1.0.12 PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$LIBSODIUM_PREFIX/lib/pkgconfig" LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LIBSODIUM_PREFIX/lib" LIBRARY_PATH="$LIBRARY_PATH"image: rust:latest
 services:
