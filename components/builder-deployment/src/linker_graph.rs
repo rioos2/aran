@@ -2,11 +2,10 @@
 //
 use std::iter::Iterator;
 use std::collections::HashMap;
-use error::{Result, Error};
+use error::Result;
 use protocol::{servicesrv, asmsrv};
 use service_graph::ServiceGraph;
 use std::collections::BTreeMap;
-use linkers_state::{LOADBALANCER, EXTERNALNAME};
 
 pub struct LinkerGraphStats {
     pub target: String,
@@ -22,7 +21,7 @@ impl LinkerGraph {
     pub fn new() -> Self {
         let mut graphs = HashMap::new();
 
-        for target_str in &[LOADBALANCER, EXTERNALNAME] {
+        for target_str in &[servicesrv::LOADBALANCER, servicesrv::EXTERNALNAME] {
             graphs.insert(target_str.to_string(), ServiceGraph::new());
         }
 
@@ -39,10 +38,10 @@ impl LinkerGraph {
 
     pub fn build<T>(&mut self, services: T) -> BTreeMap<String, LinkerGraphStats>
     where
-        T: Iterator<Item = Result<(Option<servicesrv::ServicesGetResponse>, Vec<asmsrv::Assembly>)>>,
+        T: Iterator<Item = (Vec<servicesrv::Services>, Vec<asmsrv::Assembly>)>,
     {
         for s in services {
-            for data in s.unwrap().0.unwrap().get_items() {
+            for data in s.0 {
                 match self.graph_mut(&data.get_spec().get_service_type()) { //LoadBalancer or ExternalName
                     Some(ref mut graph) => {
                         graph.extend(&data);

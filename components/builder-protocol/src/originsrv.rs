@@ -1,7 +1,7 @@
 // Copyright (c) 2017 RioCorp Inc.
 use {asmsrv, servicesrv};
 use DEFAULT_API_VERSION;
-const ORIGINSLIST: &'static str = "OriginsList";
+const ORIGINSLIST: &'static str = "OriginList";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Origin {

@@ -3,10 +3,14 @@ use asmsrv;
 use std::collections::BTreeMap;
 use DEFAULT_API_VERSION;
 pub const RIO_ASM_FAC_ID: &'static str = "rioos_assembly_factory_id";
-const ENDPOINTSLIST: &'static str = "EndpointsList";
+const ENDPOINTSLIST: &'static str = "EndpointList";
 const SECRETLIST: &'static str = "SecretList";
 const SERVICELIST: &'static str = "ServiceList";
 const SERVICEACCOUNTLIST: &'static str = "ServiceAccountList";
+pub const LOADBALANCER: &'static str = "LoadBalancer";
+pub const EXTERNALNAME: &'static str = "ExternalName";
+pub const SERVICE: &'static str = "Service";
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {

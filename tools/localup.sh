@@ -99,9 +99,15 @@ function start_pkica {
     # Create client certs signed with client-ca, given id, given CN and a number of groups
     # TO-DO: will remove after test the full identity
     rioos::util::create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' controller system:rio-controller-manager
+    rioos::util::create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' nodelet system:node:${HOSTNAME_OVERRIDE} system:nodes
+    rioos::util::create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' controller system:rio-controller-manager
+    rioos::util::create_client_certkey "${CONTROLPLANE_SUDO}" "${CERT_DIR}" 'client-ca' scheduler  system:rio-scheduler
 
     # Create rioconfigs for all components, using client certs
     rioos::util::write_client_rioconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" controller
+    rioos::util::write_client_rioconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" nodelet
+    rioos::util::write_client_rioconfig "${CONTROLPLANE_SUDO}" "${CERT_DIR}" "${ROOT_CA_FILE}" "${API_HOST}" "${API_SECURE_PORT}" scheduler
+
 }
 
 function print_success {

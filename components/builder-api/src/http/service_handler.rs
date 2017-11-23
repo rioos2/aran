@@ -14,9 +14,9 @@ use http::service_account_handler;
 use std::collections::BTreeMap;
 use common::ui;
 use db;
-use protocol::servicesrv::{Services, Spec, RIO_ASM_FAC_ID, ObjectMetaData};
+
+use protocol::servicesrv::{Services, Spec, RIO_ASM_FAC_ID, SERVICE, ObjectMetaData};
 use protocol::asmsrv::{TypeMeta, IdGet, Status, Condition};
-const SERVICE: &'static str = "Service";
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ServicesReq {
     spec: SpecReq,

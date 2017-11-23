@@ -9,6 +9,8 @@ use rio_net::http::controller::*;
 use deploy::assemblyfactory_ds::AssemblyFactoryDS;
 use deploy::assembly_ds::AssemblyDS;
 use deploy::replicas::Replicas;
+use deploy::link_calculator::LinkCalculator;
+use deploy::link_attacher::LinkerGenerator;
 use deploy::planfactory_ds::PlanFactoryDS;
 
 use iron::prelude::*;
@@ -26,6 +28,7 @@ use rio_net::util::errors::AranResult;
 use rio_net::util::errors::{bad_request, internal_error, malformed_body, not_found_error};
 const ASSEMBLYFACTORY: &'static str = "AssemblyFactory";
 const ASSEMBLY: &'static str = "Assembly";
+
 define_event_log!();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -490,13 +493,16 @@ pub fn assembly_factory_create(req: &mut Request) -> AranResult<Response> {
         assembly_factory_create.get_replicas(),
         &assembly_factory_create,
     ).new_desired() {
-        Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
-        Err(err) => Err(internal_error(&format!("{}\n", err))),
-        Ok(None) => {
-            Err(not_found_error(
-                &format!("{}", Error::Db(db::error::Error::RecordsNotFound)),
-            ))
+        Ok((assembly_fac, data)) => {
+            LinkCalculator::new(
+                &conn,
+                LinkerGenerator::new(&assembly_fac, data)
+                    .generate()
+                    .unwrap(),
+            ).attach()?;
+            Ok(render_json(status::Ok, &assembly_fac))
         }
+        Err(err) => Err(internal_error(&format!("{}\n", err))),
     }
 }
 
