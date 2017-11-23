@@ -144,7 +144,6 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
 
-
     assembly_factory.set_id(id.to_string());
     assembly_factory.set_name(row.get("name"));
     assembly_factory.set_uri(row.get("uri"));

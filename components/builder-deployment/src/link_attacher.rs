@@ -16,23 +16,27 @@ pub struct LinkerGenerator<'a> {
     labels: BTreeMap<String, String>,
     af_id: Vec<String>,
     response: &'a asmsrv::AssemblyFactory,
-    assembly: BTreeMap<String, String>,
+    assembly: Vec<(String, String)>,
+    names: BTreeMap<String, String>,
+    selector: BTreeMap<String, String>,
 }
 
 //The Linker actions builder
 impl<'a> LinkerGenerator<'a> {
-    pub fn new(assemblyfactory: &'a asmsrv::AssemblyFactory, assembly: BTreeMap<String, String>) -> Self {
+    pub fn new(assemblyfactory: &'a asmsrv::AssemblyFactory, assembly: Vec<(String, String)>) -> Self {
         LinkerGenerator {
             group: assemblyfactory.get_plan_data().get_group_name(),
             labels: assemblyfactory.get_object_meta().get_labels().clone(),
             af_id: vec![assemblyfactory.get_id()],
             response: &*assemblyfactory,
             assembly: assembly,
+            names: BTreeMap::new(),
+            selector: BTreeMap::new(),
         }
     }
 
     /// Returns a `LinkerActions` representing the linkeraction for every enum
-    pub fn generate(&self) -> Result<LinkerGenerated> {
+    pub fn generate(&mut self) -> Result<LinkerGenerated> {
         let loadbalancer = self.build_loadbalancer_action();
 
         let dns = self.build_dns_action();
@@ -46,15 +50,14 @@ impl<'a> LinkerGenerator<'a> {
     }
 
     /// Returns a `LinkerAction` representing the service that the deployment tried to link
-    fn build_loadbalancer_action(&self) -> LinkerAction {
+    fn build_loadbalancer_action(&mut self) -> LinkerAction {
         let mut s: servicesrv::Services = self.response.clone().into();
-        let mut selector = BTreeMap::new();
-        selector.insert(
+        self.selector.insert(
             servicesrv::RIO_ASM_FAC_ID.to_string(),
             self.response.get_id(),
         );
         s.set_spec(servicesrv::Spec::new(
-            selector,
+            self.selector.clone(),
             servicesrv::LOADBALANCER,
             "",
             BTreeMap::new(),
@@ -64,18 +67,22 @@ impl<'a> LinkerGenerator<'a> {
     }
 
     /// Returns a `LinkerAction` representing the service that the deployment tried to link
-    fn build_dns_action(&self) -> LinkerAction {
+    fn build_dns_action(&mut self) -> LinkerAction {
         let mut s: servicesrv::Services = self.response.clone().into();
-        let mut selector = BTreeMap::new();
-        selector.insert(
+        self.assembly
+            .clone()
+            .into_iter()
+            .map(|x| self.names.insert(x.0, x.1))
+            .collect::<Vec<_>>();
+        self.selector.insert(
             servicesrv::RIO_ASM_FAC_ID.to_string(),
             self.response.get_id(),
         );
         s.set_spec(servicesrv::Spec::new(
-            selector,
+            self.selector.clone(),
             servicesrv::EXTERNALNAME,
             "",
-            self.assembly.clone(),
+            self.names.clone(),
             BTreeMap::new(),
         ));
         LinkerAction::DNSPeerAdd(s)

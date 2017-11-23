@@ -5,7 +5,6 @@ use assemblyfactory_ds::AssemblyFactoryDS;
 use protocol::asmsrv::{Assembly, AssemblyFactory, Status, Condition, TypeMeta, INITIAL_CONDITIONS, NEW_REPLICA_INITALIZING, ASSEMBLYS_URI, INITIALIZING};
 use db::data_store::DataStoreConn;
 use error::Result;
-use std::collections::BTreeMap;
 
 const ASSEMBLY: &'static str = "Assembly";
 
@@ -48,7 +47,10 @@ impl<'a> Replicas<'a> {
                 let replicated = self.upto_desired(&response.get_id());
                 let assembly: Vec<(String, String)> = replicated
                     .into_iter()
-                    .map(|x| ("".to_string(), "".to_string()))
+                    .map(|x| {
+                        let y = x.unwrap().unwrap();
+                        (y.clone().get_id(), y.clone().get_name())
+                    })
                     .collect::<Vec<_>>();
                 Ok((response, assembly))
             }
@@ -61,16 +63,11 @@ impl<'a> Replicas<'a> {
     pub fn upto_desired(&self, id: &str) -> Vec<Result<Option<Assembly>>> {
         let mut context = ReplicaContext::new(&self.response, self.current(), self.desired());
         context.calculate(id);
-
         //deploy the assemblys
         context
             .deploys
             .iter()
-            .map(|k| if k.get_name().len() > 0 {
-                AssemblyDS::create(&self.conn, &k)
-            } else {
-                return vec![];
-            })
+            .map(|k| AssemblyDS::create(&self.conn, &k))
             .collect::<Vec<_>>()
 
 
@@ -93,7 +90,7 @@ impl<'a> Replicas<'a> {
 	    */
     }
 }
-
+#[derive(Debug)]
 struct ReplicaContext<'a> {
     current: u32,
     desired: u32,
@@ -112,8 +109,8 @@ impl<'a> ReplicaContext<'a> {
             desired: desired_replicas,
             response: &*response,
             namer: ReplicaNamer::new(&base_name, response.get_replicas()),
-            deploys: vec![Assembly::new()],
-            nukes: vec![Assembly::new()],
+            deploys: vec![],
+            nukes: vec![],
         }
 
     }
@@ -188,13 +185,13 @@ impl ReplicaNamer {
         }
     }
 
-    fn fqdn_as_tuples(&self) -> (&str, &str) {
+    fn fqdn_as_tuples(&self) -> (&str, &str, &str) {
         if self.name.contains(".") {
             let subdot_fqdn = &self.name.split(".").collect::<Vec<_>>();
 
-            return (subdot_fqdn[0], subdot_fqdn[1]);
+            return (subdot_fqdn[0], subdot_fqdn[1], subdot_fqdn[2]);
         }
-        (&self.name, "")
+        (&self.name, "", "")
 
     }
 
@@ -203,7 +200,7 @@ impl ReplicaNamer {
     fn next(&self, count: u32) -> String {
         if self.upto > 1 {
             let fqdns = self.fqdn_as_tuples();
-            return format!("{}{}.{}", fqdns.0, count, fqdns.1);
+            return format!("{}{}.{}.{}", fqdns.0, count, fqdns.1, fqdns.2);
         }
 
         self.name.clone()
