@@ -15,7 +15,7 @@ pub struct AssemblyFactoryDS;
 
 impl AssemblyFactoryDS {
     ////////// AF STARTS
-    pub fn create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<Option<asmsrv::AssemblyFactory>> {
+    pub fn create(datastore: &DataStoreConn, assembly_fac: &asmsrv::AssemblyFactory) -> Result<asmsrv::AssemblyFactory> {
 
         let conn = datastore.pool.get_shard(0)?;
 
@@ -38,13 +38,11 @@ impl AssemblyFactoryDS {
                 &(serde_json::to_string(assembly_fac.get_type_meta()).unwrap()),
             ],
         ).map_err(Error::AssemblyFactoryCreate)?;
-        if rows.len() > 0 {
-            for row in rows {
-                let assembly_factory = row_to_assembly_factory(&row)?;
-                return Ok(Some(assembly_factory));
-            }
-        }
-        Ok(None)
+
+        let mut assembly_factory = row_to_assembly_factory(&rows.get(0))?;
+        let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
+        assembly_factory.set_plan_data(data.unwrap());
+        Ok(assembly_factory)
     }
 
 
@@ -59,7 +57,7 @@ impl AssemblyFactoryDS {
             for row in rows {
                 let mut assembly_factory = row_to_assembly_factory(&row)?;
                 let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
-                assembly_factory.set_plan_data(data);
+                assembly_factory.set_plan_data(data.unwrap());
                 return Ok(Some(assembly_factory));
             }
         }
@@ -80,7 +78,7 @@ impl AssemblyFactoryDS {
             for row in rows {
                 let mut assembly_factory = row_to_assembly_factory(&row)?;
                 let data = PlanFactoryDS::show(&datastore, assembly_factory.get_plan().clone())?;
-                assembly_factory.set_plan_data(data);
+                assembly_factory.set_plan_data(data.unwrap());
                 return Ok(Some(assembly_factory));
             }
         }
@@ -145,7 +143,6 @@ fn row_to_assembly_factory(row: &postgres::rows::Row) -> Result<asmsrv::Assembly
     let created_at = row.get::<&str, DateTime<UTC>>("created_at");
     let object_meta: String = row.get("object_meta");
     let type_meta: String = row.get("type_meta");
-
 
     assembly_factory.set_id(id.to_string());
     assembly_factory.set_name(row.get("name"));

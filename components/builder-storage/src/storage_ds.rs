@@ -8,7 +8,7 @@ use protocol::{servicesrv, asmsrv, storagesrv};
 use postgres;
 use db::data_store::DataStoreConn;
 use serde_json;
-const DATACENTER: &'static str = "DataCenter";
+const DATACENTER: &'static str = "Datacenter";
 const STORAGEPOOL: &'static str = "StoragePool";
 const STORAGE: &'static str = "Storage";
 pub struct StorageDS;

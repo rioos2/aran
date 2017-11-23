@@ -4,12 +4,16 @@ use plansrv;
 use servicesrv;
 use std::collections::BTreeMap;
 use DEFAULT_API_VERSION;
+use std::path::PathBuf;
 const ASSEMBLYLIST: &'static str = "AssemblyList";
 const ASSEMBLYFACTORYLIST: &'static str = "AssemblyFactoryList";
 pub const INITIAL_CONDITIONS: &'static [&'static str] = &["AssemblyStorageReady", "AssemblyNetworkReady"];
+
 pub const NEW_REPLICA_INITALIZING: &'static str = "Initializing replica ";
 pub const ASSEMBLYS_URI: &'static str = "v1/assembly";
 pub const INITIALIZING: &'static str = "Initializing";
+
+
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -188,6 +192,9 @@ pub struct Status {
 }
 
 impl Status {
+    pub fn new() -> Status {
+        ::std::default::Default::default()
+    }
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
@@ -231,6 +238,9 @@ pub struct Condition {
 }
 
 impl Condition {
+    pub fn new() -> Condition {
+        ::std::default::Default::default()
+    }
     pub fn with_type(message: &str, reason: &str, status: &str, last_transition_time: &str, last_probe_time: &str, condition_type: &str) -> Condition {
         Condition {
             condition_type: condition_type.to_string(),
@@ -321,7 +331,7 @@ pub struct AssemblyFactory {
     replicas: u32,
     properties: Properties,
     plan: String,
-    plan_data: Option<plansrv::Plan>,
+    plan_data: plansrv::Plan,
     external_management_resource: Vec<String>,
     component_collection: BTreeMap<String, String>,
     status: Status,
@@ -463,8 +473,24 @@ impl AssemblyFactory {
         self.created_at.clone()
     }
 
-    pub fn set_plan_data(&mut self, v: Option<plansrv::Plan>) {
+    pub fn set_plan_data(&mut self, v: plansrv::Plan) {
         self.plan_data = v;
+    }
+    pub fn get_plan_data(&self) -> &plansrv::Plan {
+        &self.plan_data
+    }
+}
+
+
+impl Into<servicesrv::Services> for AssemblyFactory {
+    fn into(self) -> servicesrv::Services {
+        let mut s = servicesrv::Services::new();
+        s.set_status(Status::with_conditions(INITIALIZING, "", "", vec![]));
+        s.set_type_meta(TypeMeta::new(servicesrv::SERVICE));
+        let mut object_meta = servicesrv::ObjectMetaData::new();
+        object_meta.set_origin(self.get_origin());
+        s.set_object_meta(object_meta);
+        s
     }
 }
 
@@ -507,7 +533,9 @@ impl ObjectMeta {
     pub fn set_labels(&mut self, v: BTreeMap<String, String>) {
         self.labels = v;
     }
-
+    pub fn get_labels(&self) -> &BTreeMap<String, String> {
+        &self.labels
+    }
     pub fn set_annotations(&mut self, v: BTreeMap<String, String>) {
         self.annotations = v;
     }

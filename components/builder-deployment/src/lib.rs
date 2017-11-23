@@ -16,6 +16,7 @@ extern crate serde;
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
+extern crate regex;
 
 pub mod assembly_ds;
 pub mod assemblyfactory_ds;
@@ -27,7 +28,8 @@ pub mod service_graph;
 pub mod error;
 pub mod replicas;
 pub mod indent;
-pub mod helper;
+pub mod link_calculator;
+pub mod link_attacher;
 
 
 pub use self::error::{Error, Result};
