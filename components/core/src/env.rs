@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the common env loader
 
@@ -119,7 +119,11 @@ pub fn var_os<K: AsRef<OsStr>>(key: K) -> std::option::Option<OsString> {
 ///
 pub fn sudo_user() -> std::option::Option<String> {
     match self::var("SUDO_USER") {
-        Ok(val) => if val != "root" { Some(val) } else { None },
+        Ok(val) => if val != "root" {
+            Some(val)
+        } else {
+            None
+        },
         Err(_) => None,
     }
 }

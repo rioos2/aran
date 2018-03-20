@@ -1,0 +1,33 @@
+---
+# ================================================================
+# Network Information
+# ================================================================
+network:
+  object_meta:
+    name: '' # network name
+    account: '' # account_id of the user
+  network_type: '' # ip4,ip6
+  subnet_ip: ''
+  netmask: ''
+  gateway: ''
+  status:
+    phase: ready
+  bridge_hosts: {} # node_ip with its bridge name
+
+# ================================================================
+# Datacenter Information
+# ================================================================
+datacenter:
+  nodes:
+  - '' # required atleast node_id
+  storage: '' # required  storage_id
+  networks:
+  - '' # required atleast network_id
+  enabled: true
+  flag: ''
+  currency: ''
+  status:
+    phase: ready
+  object_meta:
+    name: '' #  name of the datacenter
+    account: ''

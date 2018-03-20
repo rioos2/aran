@@ -2,22 +2,20 @@ pub use error::{Error, Result};
 
 use common::ui::UI;
 use api_client::Client;
-use {PRODUCT, VERSION};
 use super::super::common::pretty_table;
+use protocol::api::base::MetaFields;
 
-pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -> Result<()> {
+pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: String) -> Result<()> {
     ui.begin(
         &format!("Constructing a {} datacenter for you...", id),
     )?;
     ui.br()?;
 
-    let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
-
     let result = rio_client.describe_datacenter(&token, &email, &id)?;
 
     ui.heading("OverView")?;
     ui.para(&format!("Id: {}", result.get_id()))?;
-    ui.para(&format!("Name: {}", result.get_name()))?;
+    ui.para(&format!("Name: {}", result.object_meta().name))?;
     ui.para(
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
@@ -39,7 +37,9 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
     ui.heading("StoragesConnector:")?;
 
     ui.para(&format!("Id: {}", storageconn.get_id()))?;
-    ui.para(&format!("Name: {}", storageconn.get_name()))?;
+    ui.para(
+        &format!("Name: {}", storageconn.object_meta().name),
+    )?;
     ui.para(&format!("Host IP : {}", storageconn.get_host_ip()))?;
     ui.para(
         &format!("Type : {}", storageconn.get_storage_type()),
@@ -64,7 +64,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
 
     ui.para(
         "For more information on datacenter: \
-        https://www.rioos.sh/docs/reference/datacenters/",
+         https://www.rioos.sh/docs/reference/datacenters/",
     )?;
 
     Ok(())

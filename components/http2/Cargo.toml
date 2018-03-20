@@ -1,0 +1,40 @@
+[package]
+name = "rioos_http2"
+version = "0.0.0"
+authors = ["Rajthilak Rajamani <rajthilak.rajamani@rio.company>"]
+workspace = "../../"
+
+[lib]
+doctest = false
+
+[dependencies]
+
+log             = "0.*"
+futures         = "0.*"
+futures-cpupool = "0.*"
+tokio-core      = "0.*"
+tokio-io        = "0.*"
+tokio-timer     = "0.*"
+tokio-tls-api   = "0.*"
+tls-api         = "0.*"
+tls-api-stub    = "0.*"
+void            = "1"
+net2 = "0.2"
+bytes = "0.*"
+
+[target.'cfg(unix)'.dependencies]
+tokio-uds       = "0.*"
+unix_socket     = "0.*"
+
+[dev-dependencies]
+
+env_logger         = "0.*"
+regex              = "0.2"
+tls-api-native-tls = "0.*"
+tls-api-openssl    = "0.*"
+url                = "1"
+
+[target.'cfg(unix)'.dev-dependencies]
+
+tempdir         = "0.*"
+

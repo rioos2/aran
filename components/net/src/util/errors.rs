@@ -2,27 +2,25 @@
 use std::any::Any;
 use std::error::Error;
 use std::fmt;
-use iron::prelude::*;
-use iron::status::Status;
-use super::super::http::controller::*;
+use std::io::Read;
 
-// use diesel::result::Error as DieselError;
+use iron::prelude::*;
+use bodyparser::BodyError;
+use bodyparser::BodyErrorCause::JsonError;
+use reqwest;
+use iron::status::Status;
+use http::rendering::render_json;
+use error::Error as ReqwestError;
 
 pub const SUCCESS: &'static str = "Success";
 pub const FAILURE: &'static str = "Failure";
 pub const NOTFOUND: &'static str = "Not Found";
-pub const INTERNALERROR: &'static str = "DB Error";
+pub const INTERNALERROR: &'static str = "Must have database, blockchain running. Is it started yet ?";
 pub const BADREQUEST: &'static str = "Bad Request";
 pub const MALFORMED: &'static str = "MalformedBody";
 
-pub enum DBError {
-    NotFound,
-    DataBaseError,
-}
-
-
-#[derive(Serialize)]
-struct Bad {
+#[derive(Serialize, Debug, Clone)]
+pub struct Bad {
     // Status of the operation.
     // One of: "Success" or "Failure".
     status: String,
@@ -37,6 +35,27 @@ struct Bad {
     // "Failure" status. If this value is empty there
     // is no information available. A Reason clarifies an HTTP status
     reason: String,
+}
+
+impl fmt::Display for Bad {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "")
+    }
+}
+
+impl Error for Bad {
+    fn description(&self) -> &str {
+        ""
+    }
+}
+
+pub fn bad_err(err: &Box<AranError>) -> Bad {
+    Bad {
+        status: err.status().to_string(),
+        code: err.code().to_string(),
+        message: err.description().to_string(),
+        reason: err.cause().to_string(),
+    }
 }
 
 // =============================================================================
@@ -56,7 +75,6 @@ pub trait AranError: Send + fmt::Display + 'static {
     fn description(&self) -> &str;
 
     fn cause(&self) -> &str;
-
 
     fn response(&self) -> Option<Response> {
         Some(render_json(
@@ -93,7 +111,6 @@ impl AranError for Box<AranError> {
     fn http_code(&self) -> Status {
         (**self).http_code()
     }
-
 
     fn description(&self) -> &str {
         (**self).description()
@@ -142,16 +159,23 @@ impl<T: AranError> AranError for Box<T> {
 
 pub type AranResult<T> = Result<T, Box<AranError>>;
 
+pub type AranValidResult<T> = Result<Box<T>, Box<AranError>>;
+
+
 // =============================================================================
 // Error impls
 impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
     fn from(err: E) -> Box<AranError> {
-        // if let Some(err) = Any::downcast_ref::<DBError>(&err) {
-        //     if let DBError::NotFound = *err {
-        //         return Box::new(NotFound);
-        //     }
-        // }
-
+        if let Some(err) = Any::downcast_ref::<BodyError>(&err) {
+            {
+                if let JsonError(ref err1) = err.cause {
+                    return Box::new(MalformedBody(
+                        format!("{}", err.detail),
+                        format!("{}", err1),
+                    ));
+                }
+            }
+        }
         struct Shim<E>(E);
         impl<E: Error + Send + 'static> AranError for Shim<E> {
             fn http_code(&self) -> Status {
@@ -176,32 +200,6 @@ impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
             }
         }
         Box::new(Shim(err))
-    }
-}
-
-impl AranError for ::curl::Error {
-    fn code(&self) -> &str {
-        "500"
-    }
-
-    fn description(&self) -> &str {
-        Error::description(self)
-    }
-    fn cause(&self) -> &str {
-        "unknown"
-    }
-}
-
-impl AranError for ::serde_json::Error {
-    fn code(&self) -> &str {
-        "500"
-    }
-
-    fn description(&self) -> &str {
-        Error::description(self)
-    }
-    fn cause(&self) -> &str {
-        "unknown"
     }
 }
 
@@ -293,7 +291,32 @@ impl AranError for Unauthorized {
 
 impl fmt::Display for Unauthorized {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        "must be logged in to perform that action".fmt(f)
+        "Refused since authentication is required and has failed or has not yet been provided. Refer  https://bit.ly/rioosauthetication for the supported authentication.".fmt(f)
+    }
+}
+
+pub struct NotAcceptable(String);
+
+impl AranError for NotAcceptable {
+    fn http_code(&self) -> Status {
+        Status::NotAcceptable
+    }
+
+    fn code(&self) -> &str {
+        "406"
+    }
+
+    fn description(&self) -> &str {
+        self.0.as_ref()
+    }
+    fn cause(&self) -> &str {
+        "NotAcceptable"
+    }
+}
+
+impl fmt::Display for NotAcceptable {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        "Refused since the requested resource is must have headers for the supported authentication. Refer  https://bit.ly/rioosauthetication for the supported authentication.".fmt(f)
     }
 }
 
@@ -323,7 +346,7 @@ impl fmt::Display for BadRequest {
     }
 }
 
-struct MalformedBody(String);
+struct MalformedBody(String, String);
 
 impl AranError for MalformedBody {
     fn http_code(&self) -> Status {
@@ -339,7 +362,7 @@ impl AranError for MalformedBody {
     }
 
     fn cause(&self) -> &str {
-        MALFORMED
+        self.1.as_ref()
     }
 }
 
@@ -350,12 +373,39 @@ impl fmt::Display for MalformedBody {
 }
 
 
+pub struct Entitlement(String);
+
+impl AranError for Entitlement {
+    fn http_code(&self) -> Status {
+        Status::NotFound
+    }
+
+    fn code(&self) -> &str {
+        "402"
+    }
+
+    fn description(&self) -> &str {
+        self.0.as_ref()
+    }
+
+    fn cause(&self) -> &str {
+        NOTFOUND
+    }
+}
+
+impl fmt::Display for Entitlement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+
 pub fn bad_request<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(BadRequest(error.to_string()))
 }
 
-pub fn malformed_body<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
-    Box::new(MalformedBody(error.to_string()))
+pub fn malformed_body<S: ToString + ?Sized>(error: &S, cause: &str) -> Box<AranError> {
+    Box::new(MalformedBody(error.to_string(), cause.to_string()))
 }
 
 pub fn internal_error(error: &str) -> Box<AranError> {
@@ -375,27 +425,30 @@ pub fn unauthorized_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(Unauthorized(error.to_string()))
 }
 
+pub fn not_acceptable_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(NotAcceptable(error.to_string()))
+}
 
-pub fn std_error(e: Box<AranError>) -> Box<Error + Send> {
-    #[derive(Debug)]
-    struct E(Box<AranError>);
-    impl Error for E {
-        fn description(&self) -> &str {
-            self.0.description()
+pub fn entitlement_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(Entitlement(error.to_string()))
+}
+
+pub fn err_from_response(mut response: reqwest::Response) -> ReqwestError {
+    if response.status() == reqwest::StatusCode::Unauthorized {
+        return ReqwestError::APIError(
+            response.status(),
+            "Your token mismatch and requires permissions.".to_string(),
+        );
+    }
+
+    let mut buff = String::new();
+    match response.read_to_string(&mut buff) {
+        Ok(_) => {
+            ReqwestError::APIError(response.status(), buff)
+        }
+        Err(_) => {
+            buff.truncate(0);
+            ReqwestError::APIError(response.status(), buff)
         }
     }
-    impl fmt::Display for E {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "{}", self.0)?;
-
-            // let mut err = &*self.0;
-            // while let Some(cause) = err.cause() {
-            //     err = cause;
-            //     write!(f, "\nCaused by: {}", err)?;
-            // }
-
-            Ok(())
-        }
-    }
-    Box::new(E(e))
 }

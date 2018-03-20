@@ -1,141 +1,60 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 //
-
-
-use std::env;
-use std::fs::create_dir_all;
-use std::fs::{File, canonicalize};
-
-use std::io::Write;
-use std::path::Path;
-use std::collections::HashMap;
-
-use handlebars::Handlebars;
-
-use common::ui::{UI, Status};
+use std::fs::File;
+use serde_yaml;
+use common::ui::UI;
 use error::Result;
+use api_client::Client;
+use protocol::api::{deploy, scale};
+use rio_net::http::schema::type_meta_url;
+use protocol::api::base::MetaFields;
 
-const DEFAULT_RIOBLU_TEMPLATE: &'static str = ""; //include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rioblu.yaml"));
-
-pub fn start(ui: &mut UI, _token: String, maybe_name: Option<String>) -> Result<()> {
+pub fn start(ui: &mut UI, rio_client: Client, cache_path: &str, token: &str, email: &str) -> Result<()> {
+    ui.br()?;
     ui.begin("Constructing a cozy digitalcloud for you...")?;
     ui.br()?;
+    let file = File::open(cache_path)?;
+    let content: DeployData = serde_yaml::from_reader(file)?;
+    let assembly_fac: deploy::AssemblyFactory = rio_client.deploy_digicloud(
+        content.assembly_factory.clone(),
+        token,
+        email,
+    )?;
+    if let Some(i) = content.horizontal_scaling {
+        let mut hscale: scale::HorizontalScaling = i;
+        let ref mut object_data = hscale.mut_meta(
+            hscale.object_meta(),
+            hscale.object_meta().name,
+            hscale.object_meta().account,
+        );
 
-    let (root, _name) = match maybe_name {
-        Some(name) => (name.clone(), name.clone()),
-        // load the yaml file and call the api.
-        None => {
-            // try loading the default rioblu.yaml from the current directory
-            (
-                "habitat".into(),
-                canonicalize(".")
-                    .ok()
-                    .and_then(|path| {
-                        path.components().last().and_then(|val| {
-                            // Type gymnastics!
-                            val.as_os_str().to_os_string().into_string().ok()
-                        })
-                    })
-                    .unwrap_or("unnamed".into()),
-            )
-        }
-    };
+        hscale.set_owner_reference(
+            object_data,
+            assembly_fac.type_meta().kind,
+            assembly_fac.type_meta().api_version,
+            hscale.object_meta().name,
+            assembly_fac.get_id(),
+        );
+        hscale.set_meta(type_meta_url("".to_string()), object_data.clone());
 
-    // Build out the variables passed.
-    let handlebars = Handlebars::new();
-    let mut data = HashMap::new();
-    let location = "test".to_string();
-    let origin = "default".to_string();
-    data.insert("location".to_string(), location);
-    data.insert("origin".to_string(), origin);
-
-    // Add all environment variables that start with "rio_" as variables in
-    // the template.
-    for (key, value) in env::vars() {
-        if key.starts_with("rio_") {
-            data.insert(key, value);
-        }
+        rio_client.create_horizontal_scaling(
+            hscale.clone(),
+            token,
+            email,
+        )?;
     }
 
-    let _rendered_blu_yaml = handlebars.template_render(DEFAULT_RIOBLU_TEMPLATE, &data)?;
-    let rendered_plan = "";
-    create_with_template(ui, &format!("{}/rioblu.yaml", root), &rendered_plan)?;
-
+    ui.end("Your digitalcloud is ready")?;
+    ui.br()?;
     ui.para(
-        "`rioblue.yaml` is the foundation of your new digital cloud. It contains \
-        declaration for your cloud os.",
+        "For more information on connecting to your digital cloud: \
+        https://www.rioos.sh/docs/reference/digitalcloud/",
     )?;
-
-    let config_path = format!("{}/config/", root);
-    match Path::new(&config_path).exists() {
-        true => {
-            ui.status(
-                Status::Using,
-                format!("existing directory: {}", config_path),
-            )?
-        }
-        false => {
-            ui.status(
-                Status::Creating,
-                format!("directory: {}", config_path),
-            )?;
-            create_dir_all(&config_path)?;
-        }
-    };
-    ui.para(
-        "`/config/` contains configuration files for your app.",
-    )?;
-
-
-    ui.para(
-        "For more information on any of the files: \
-        https://www.rioos.sh/docs/reference/blu-syntax/",
-    )?;
-
-
-    /*let api_client = Client::new(url, PRODUCT, VERSION, None)?;
-    let ident = "";
-    let abcd = "";
-    ui.begin(format!("Applying {} from {}", ident, abcd))?;
-
-    let ident ="";
-    let channel ="";
-    let token = "";
-
-    match api_client.apply_blu(ident, channel, token) {
-        Ok(_) => (),
-        Err(e) => {
-            println!("Failed to apply '{}': {:?}", ident, e);
-            return Err(Error::from(e));
-        }
-    }
-
-    ui.status(Status::Applied, ident)?;
-    */
     Ok(())
 }
 
-fn create_with_template(ui: &mut UI, location: &str, template: &str) -> Result<()> {
-    let path = Path::new(&location);
-    match path.exists() {
-        false => {
-            ui.status(Status::Creating, format!("file: {}", location))?;
-            // If the directory doesn't exist we need to make it.
-            if let Some(directory) = path.parent() {
-                create_dir_all(directory)?;
-            }
-            // Create and then render the template with Handlebars
-            File::create(path).and_then(
-                |mut file| file.write(template.as_bytes()),
-            )?;
-        }
-        true => {
-            // If the user has already configured a file overwriting would be impolite.
-            ui.status(
-                Status::Using,
-                format!("existing file: {}", location),
-            )?;
-        }
-    };
-    Ok(())
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+struct DeployData {
+    assembly_factory: deploy::AssemblyFactory,
+    horizontal_scaling: Option<scale::HorizontalScaling>,
 }

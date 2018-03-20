@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "**** THESE TESTS WILL START YOUR COCKROACHDB ****"
+echo "**** THESE TESTS WILL START YOUR PostgreSQL ****"
 
 pushd ../../
 env RIOS_FUNC_TEST=1 ./support/linux/bin/forego start -f support/Procfile -e support/bldr.env 2>&1 > ./test/rios-apiserver/rios-apiserver.log &

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 //
 
 use std::path::Path;
@@ -104,7 +104,7 @@ pub fn get() -> App<'static, 'static> {
             (@subcommand deploy =>
                 (about: "Deploys the Rioblu.yaml blueprint in Rio/OS")
                 (aliases: &["digideplo"])
-                (@arg SOURCE: +takes_value {file_exists} "A filepath of the rioblu.yaml")
+                (@arg SOURCE: +required +takes_value {file_exists} "A filepath of the riobluhscale.yaml")
             )
             (@subcommand list =>
                 (about: "Displays the default configuration options for a service")
@@ -170,6 +170,16 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["digiwatch"])
                 (@arg DIGICLOUD_IDENT: +required +takes_value
                     "A digital cloud identifier (ex: 1, 2)")
+            )
+        )
+        (@subcommand cluster =>
+            (about: "Commands relating to Rio/OS cluster Setup")
+            (aliases: &["clu"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand setup =>
+                (about: "Setup the Cluster from file in Rio/OS")
+                (aliases: &["digisetup"])
+                (@arg SOURCE: +required +takes_value {file_exists} "A filepath of the cluster.yaml")
             )
         )
         (@subcommand app =>
@@ -430,7 +440,6 @@ fn sub_cli_whoami() -> App<'static, 'static> {
     )
 }
 
-
 fn sub_cli_completers() -> App<'static, 'static> {
     let sub = clap_app!(@subcommand completers =>
         (about: "Creates command-line completers for your shell."));
@@ -445,7 +454,7 @@ fn sub_cli_completers() -> App<'static, 'static> {
         Arg::with_name("SHELL")
             .help(
                 "The name of the shell you want to generate the command-completion. Supported \
-               Shells: bash, fish, zsh, powershell",
+                 Shells: bash, fish, zsh, powershell",
             )
             .short("s")
             .long("shell")
@@ -485,14 +494,11 @@ fn sub_digicloud_deploy() -> App<'static, 'static> {
     )
 }
 
-
 fn sub_app_deploy() -> App<'static, 'static> {
     clap_app!(@subcommand deploy =>
         (about: "Deploys the Rioblu.yaml app blueprint in Rio/OS")
     )
 }
-
-
 
 fn file_exists(val: String) -> result::Result<(), String> {
     if Path::new(&val).is_file() {

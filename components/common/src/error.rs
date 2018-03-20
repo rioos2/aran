@@ -34,22 +34,16 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
-            Error::ArtifactIdentMismatch((ref a, ref ai, ref i)) => {
-                format!(
-                    "Artifact ident {} for `{}' does not match expected ident {}",
-                    ai,
-                    a,
-                    i
-                )
-            }
+            Error::ArtifactIdentMismatch((ref a, ref ai, ref i)) => format!(
+                "Artifact ident {} for `{}' does not match expected ident {}",
+                ai, a, i
+            ),
             Error::CantUploadGossipToml => format!("Can't upload gossip.toml, it's a reserved file name"),
             Error::CryptoKeyError(ref s) => format!("Missing or invalid key: {}", s),
-            Error::GossipFileRelativePath(ref s) => {
-                format!(
-                    "Path for gossip file cannot have relative components (eg: ..): {}",
-                    s
-                )
-            }
+            Error::GossipFileRelativePath(ref s) => format!(
+                "Path for gossip file cannot have relative components (eg: ..): {}",
+                s
+            ),
             Error::FileNameError => format!("Failed to extract a filename"),
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::IO(ref err) => format!("{}", err),

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //stored procedures for authentication (users, origins, origin_members, roles, permissions)
 
@@ -24,112 +24,87 @@ impl Migratable for AuthProcedures {
             "authsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS account_id_seq;"#,
         )?;
-
+        ui.para("[✓] accounts");
         // Create table accounts
+
         migrator.migrate(
             "authsrv",
             r#"CREATE TABLE  IF NOT EXISTS accounts (
          id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('account_id_seq'),
-         name text,
          email text UNIQUE,
          first_name text,
          last_name text,
          phone text,
          api_key text,
          password text,
-         states text,
-         approval text,
-         suspend text,
+         approval bool,
+         suspend bool,
          roles text[],
          registration_ip_address text,
+         trust_level text,
+         company_name text,
+         object_meta jsonb,
+         type_meta jsonb,
+         avatar bytea,
          updated_at timestamptz,
          created_at timestamptz DEFAULT now())"#,
         )?;
 
         ui.para("[✓] accounts");
 
-        // Insert a new account into the accounts table
-        migrator.migrate(
-            "authsrv",
-            r#"CREATE OR REPLACE FUNCTION insert_account_v1 (
-                        name text,
-                        email text,
-                        first_name text,
-                        last_name text,
-                        phone text,
-                        api_key text,
-                        password text,
-                        states text,
-                        approval text,
-                        suspend text,
-                        roles text[],
-                        registration_ip_address text
-                    ) RETURNS SETOF accounts AS $$
-                            BEGIN
-                                RETURN QUERY INSERT INTO accounts(name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, roles,registration_ip_address)
-                                    VALUES (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, roles,registration_ip_address)
-                                    RETURNING *;
-                                RETURN;
-                            END
-                        $$ LANGUAGE plpgsql VOLATILE
-                        "#,
-        )?;
-
-
         migrator.migrate(
             "accountsrv",
             r#"CREATE OR REPLACE FUNCTION select_or_insert_account_v1 (
-                  account_name text,
                   account_email text,
                   account_first_name text,
                   account_last_name text,
                   account_phone text,
                   account_api_key text,
                   account_password text,
-                  account_states text,
-                  account_approval text,
-                  account_suspend text,
+                  account_approval bool,
+                  account_suspend bool,
                   account_roles text[],
                   account_registration_ip_address text,
-                  default_origin text
+                  account_trust_level text,
+                  account_company_name text,
+                  account_object_meta jsonb,
+                  account_type_meta jsonb,
+                  account_avatar bytea
                 ) RETURNS SETOF accounts AS $$
                     DECLARE
-                        inserted_account accounts;
                        existing_account accounts%rowtype;
                     BEGIN
                        SELECT * INTO existing_account FROM accounts WHERE email = account_email LIMIT 1;
                        IF FOUND THEN
                            RETURN NEXT existing_account;
                        ELSE
-                            INSERT INTO accounts (name, email, first_name, last_name, phone, api_key, password, states, approval, suspend, roles,registration_ip_address)
-                            VALUES (account_name, account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password, account_states,
-                                account_approval, account_suspend, account_roles,account_registration_ip_address) ON CONFLICT DO NOTHING RETURNING * into inserted_account;
-                                PERFORM insert_origin_v1(default_origin,inserted_account.id,inserted_account.name,'{"kind":"Origin","api_version":"v1"}','{"name":"megam","origin":"default","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}');
-                                RETURN NEXT inserted_account;
-                                RETURN;
+                             RETURN QUERY INSERT INTO accounts ( email, first_name, last_name, phone, api_key, password, approval, suspend, roles,registration_ip_address,trust_level,company_name,object_meta,type_meta,avatar)
+                            VALUES (account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password,
+                                account_approval, account_suspend, account_roles,account_registration_ip_address,account_trust_level, account_company_name, account_object_meta, account_type_meta,account_avatar) ON CONFLICT DO NOTHING RETURNING *;
                        END IF;
                        RETURN;
                     END
                 $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-
         migrator.migrate(
             "accountsrv",
             r#"CREATE OR REPLACE FUNCTION select_only_account_v1 (
-                  account_name text,
                   account_email text,
                   account_first_name text,
                   account_last_name text,
                   account_phone text,
                   account_api_key text,
                   account_password text,
-                  account_states text,
-                  account_approval text,
-                  account_suspend text,
+                  account_approval bool,
+                  account_suspend bool,
                   account_roles text[],
                   account_registration_ip_address text,
-                  origin_name text
+                  account_trust_level text,
+                  account_company_name text,
+                  account_object_meta jsonb,
+                  account_type_meta jsonb,
+                  account_avatar bytea
 
                 ) RETURNS SETOF accounts AS $$
                     BEGIN
@@ -195,11 +170,11 @@ impl Migratable for AuthProcedures {
             "sessionsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS ldap_id_seq;"#,
         )?;
-        //sequence ldap_config table creation
+        //sequence ldap_configs table creation
 
         migrator.migrate(
             "sessionsrv",
-            r#"CREATE TABLE  IF NOT EXISTS ldap_config (
+            r#"CREATE TABLE  IF NOT EXISTS ldap_configs (
              id bigint PRIMARY KEY DEFAULT next_id_v1('ldap_id_seq'),
              host text,
              port text,
@@ -216,7 +191,7 @@ impl Migratable for AuthProcedures {
              )"#,
         )?;
 
-        ui.para("[✓] ldap_config");
+        ui.para("[✓] ldap_configs");
         //ldap config table value insert
 
         migrator.migrate(
@@ -232,9 +207,9 @@ impl Migratable for AuthProcedures {
                 client_cert text,
                 user_search text,
                 group_search text
-            ) RETURNS SETOF ldap_config AS $$
+            ) RETURNS SETOF ldap_configs AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO ldap_config(host,port,enforce_starttls,use_ldaps,lookup_dn,lookup_password,ca_certs,client_cert,user_search,group_search)
+                                    RETURN QUERY INSERT INTO ldap_configs(host,port,enforce_starttls,use_ldaps,lookup_dn,lookup_password,ca_certs,client_cert,user_search,group_search)
                                         VALUES (host,port,enforce_starttls,use_ldaps,lookup_dn,lookup_password,ca_certs,client_cert,user_search,group_search)
                                         RETURNING *;
                                     RETURN;
@@ -243,15 +218,13 @@ impl Migratable for AuthProcedures {
                             "#,
         )?;
 
-
         ui.para("[✓] insert_ldap_config_v1");
-
 
         migrator.migrate(
             "sessionsrv",
-            r#"CREATE OR REPLACE FUNCTION get_ldap_config_v1 (aid bigint) RETURNS SETOF ldap_config AS $$
+            r#"CREATE OR REPLACE FUNCTION get_ldap_config_v1 (aid bigint) RETURNS SETOF ldap_configs AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM ldap_config WHERE id = aid;
+                          RETURN QUERY SELECT * FROM ldap_configs WHERE id = aid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -262,11 +235,11 @@ impl Migratable for AuthProcedures {
             "sessionsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS saml_provider_id_seq;"#,
         )?;
-        //sequence saml_provider table creation
+        //sequence saml_providers table creation
 
         migrator.migrate(
             "sessionsrv",
-            r#"CREATE TABLE  IF NOT EXISTS saml_provider (
+            r#"CREATE TABLE  IF NOT EXISTS saml_providers (
                      id bigint PRIMARY KEY DEFAULT next_id_v1('saml_provider_id_seq'),
                      description text,
                      idp_metadata text,
@@ -276,7 +249,7 @@ impl Migratable for AuthProcedures {
                      )"#,
         )?;
 
-        ui.para("[✓] saml_provider");
+        ui.para("[✓] saml_providers");
         //saml config table value insert
 
         migrator.migrate(
@@ -285,9 +258,9 @@ impl Migratable for AuthProcedures {
                         description text,
                         idp_metadata text,
                         sp_base_url text
-                    ) RETURNS SETOF saml_provider AS $$
+                    ) RETURNS SETOF saml_providers AS $$
                                         BEGIN
-                                            RETURN QUERY INSERT INTO saml_provider(description,idp_metadata,sp_base_url)
+                                            RETURN QUERY INSERT INTO saml_providers(description,idp_metadata,sp_base_url)
                                                 VALUES (description,idp_metadata,sp_base_url)
                                                 RETURNING *;
                                             RETURN;
@@ -296,15 +269,13 @@ impl Migratable for AuthProcedures {
                                     "#,
         )?;
 
-
         ui.para("[✓] insert_saml_provider_v1");
-
 
         migrator.migrate(
             "sessionsrv",
-            r#"CREATE OR REPLACE FUNCTION get_saml_provider_all_v1() RETURNS SETOF saml_provider AS $$
+            r#"CREATE OR REPLACE FUNCTION get_saml_provider_all_v1() RETURNS SETOF saml_providers AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM saml_provider;
+                          RETURN QUERY SELECT * FROM saml_providers;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -312,9 +283,9 @@ impl Migratable for AuthProcedures {
 
         migrator.migrate(
             "sessionsrv",
-            r#"CREATE OR REPLACE FUNCTION get_saml_v1 (sid bigint) RETURNS SETOF saml_provider AS $$
+            r#"CREATE OR REPLACE FUNCTION get_saml_v1 (sid bigint) RETURNS SETOF saml_providers AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM saml_provider WHERE id = sid;
+                          RETURN QUERY SELECT * FROM saml_providers WHERE id = sid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -322,17 +293,16 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] get_saml_v1");
 
-
-        //sequence oidc_provider id generation
+        //sequence oidc_providers id generation
         migrator.migrate(
             "sessionsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS oidc_provider_id_seq;"#,
         )?;
-        //sequence oidc_provider table creation
+        //sequence oidc_providers table creation
 
         migrator.migrate(
             "sessionsrv",
-            r#"CREATE TABLE  IF NOT EXISTS oidc_provider (
+            r#"CREATE TABLE  IF NOT EXISTS oidc_providers (
                      id bigint PRIMARY KEY DEFAULT next_id_v1('oidc_provider_id_seq'),
                      description text,
                      issuer text,
@@ -346,7 +316,7 @@ impl Migratable for AuthProcedures {
                      )"#,
         )?;
 
-        // ui.para("[✓] oidc_provider");
+        // ui.para("[✓] oidc_providers");
         //open id config table value insert
 
         migrator.migrate(
@@ -359,9 +329,9 @@ impl Migratable for AuthProcedures {
                 client_id text,
                 verify_server_certificate bool,
                 ca_certs text
-                    ) RETURNS SETOF oidc_provider AS $$
+                    ) RETURNS SETOF oidc_providers AS $$
                                         BEGIN
-                                            RETURN QUERY INSERT INTO oidc_provider(description, issuer, base_url, client_secret, client_id , verify_server_certificate,ca_certs)
+                                            RETURN QUERY INSERT INTO oidc_providers(description, issuer, base_url, client_secret, client_id , verify_server_certificate,ca_certs)
                                                 VALUES (description, issuer, base_url, client_secret, client_id , verify_server_certificate,ca_certs)
                                                 RETURNING *;
                                             RETURN;
@@ -370,14 +340,13 @@ impl Migratable for AuthProcedures {
                                     "#,
         )?;
 
-
         ui.para("[✓] insert_oidc_provider_v1");
 
         migrator.migrate(
             "sessionsrv",
-            r#"CREATE OR REPLACE FUNCTION get_oidc_provider_all_v1() RETURNS SETOF oidc_provider AS $$
+            r#"CREATE OR REPLACE FUNCTION get_oidc_provider_all_v1() RETURNS SETOF oidc_providers AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM oidc_provider;
+                          RETURN QUERY SELECT * FROM oidc_providers;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -385,19 +354,15 @@ impl Migratable for AuthProcedures {
 
         migrator.migrate(
             "sessionsrv",
-            r#"CREATE OR REPLACE FUNCTION get_odic_v1 (oid bigint) RETURNS SETOF oidc_provider AS $$
+            r#"CREATE OR REPLACE FUNCTION get_odic_v1 (oid bigint) RETURNS SETOF oidc_providers AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM oidc_provider WHERE id = oid;
+                          RETURN QUERY SELECT * FROM oidc_providers WHERE id = oid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
         ui.para("[✓] get_odic_v1");
-
-
-
-
 
         migrator.migrate(
             "authsrv",
@@ -424,7 +389,7 @@ impl Migratable for AuthProcedures {
             r#"CREATE OR REPLACE FUNCTION get_account_session_v1 (
                     account_email text,
                     account_token text
-                ) RETURNS TABLE(id bigint, email text, name text, token text, api_key text, is_admin bool, is_service_access bool) AS $$
+                ) RETURNS TABLE(id bigint, email text, token text, api_key text, is_admin bool, is_service_access bool) AS $$
                      DECLARE
                         this_account accounts%rowtype;
                      BEGIN
@@ -433,9 +398,7 @@ impl Migratable for AuthProcedures {
                             DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token AND expires_at < now();
                             IF NOT FOUND THEN
                                 RETURN QUERY
-                                    SELECT accounts.id, accounts.email, accounts.api_key,
-                                           accounts.name, account_sessions.token,
-                                           account_sessions.is_admin,
+                                    SELECT accounts.id, accounts.email, accounts.api_key, account_sessions.token,account_sessions.is_admin,
                                            account_sessions.is_service_access
                                       FROM accounts
                                         INNER JOIN account_sessions ON account_sessions.account_id = accounts.id
@@ -448,22 +411,18 @@ impl Migratable for AuthProcedures {
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-
         migrator.migrate(
             "originsrv",
             r#"CREATE SEQUENCE IF NOT EXISTS origin_id_seq;"#,
         )?;
-
 
         migrator.migrate(
             "originsrv",
             r#"CREATE TABLE IF NOT EXISTS origins (
                     id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('origin_id_seq'),
                     name text UNIQUE,
-                    owner_id bigint,
-                    type_meta text,
-                    object_meta text,
-                    session_sync bool DEFAULT false,
+                    type_meta jsonb,
+                    object_meta jsonb,
                     created_at timestamptz DEFAULT now(),
                     updated_at timestamptz
              )"#,
@@ -476,15 +435,13 @@ impl Migratable for AuthProcedures {
             r#"CREATE SEQUENCE IF NOT EXISTS origin_mem_id_seq;"#,
         )?;
 
-
         migrator.migrate(
             "originsrv",
             r#"CREATE TABLE IF NOT EXISTS origin_members (
                     id bigint PRIMARY KEY DEFAULT next_id_v1('origin_mem_id_seq'),
-                    origin_id bigint REFERENCES origins(id),
-                    origin_name text ,
-                    account_id bigint REFERENCES accounts(id),
-                    account_name text,
+                    type_meta jsonb,
+                    object_meta jsonb,
+                    meta_data jsonb,
                     created_at timestamptz DEFAULT now(),
                     updated_at timestamptz
                 )"#,
@@ -492,38 +449,71 @@ impl Migratable for AuthProcedures {
 
         ui.para("[✓] origin_members");
 
+        migrator.migrate("originsrv", r#"CREATE SEQUENCE IF NOT EXISTS team_id_seq;"#)?;
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE TABLE IF NOT EXISTS teams (
+                    id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('team_id_seq'),
+                    name text UNIQUE,
+                    type_meta jsonb,
+                    object_meta jsonb,
+                    meta_data jsonb,
+                    created_at timestamptz DEFAULT now(),
+                    updated_at timestamptz
+             )"#,
+        )?;
+
+        ui.para("[✓] team");
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS team_mem_id_seq;"#,
+        )?;
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE TABLE IF NOT EXISTS team_members (
+                    id bigint PRIMARY KEY DEFAULT next_id_v1('team_mem_id_seq'),
+                    type_meta jsonb,
+                    object_meta jsonb,
+                    meta_data jsonb,
+                    created_at timestamptz DEFAULT now(),
+                    updated_at timestamptz
+                )"#,
+        )?;
+
+        ui.para("[✓] team_members");
 
         migrator.migrate(
             "originsrv",
             r#"CREATE OR REPLACE FUNCTION insert_origin_member_v1 (
-                     om_origin_id bigint,
-                     om_origin_name text,
-                     om_account_id bigint,
-                     om_account_name text
+                     om_type_meta jsonb,
+                     om_obj_meta jsonb,
+                     om_meta_data jsonb
                  ) RETURNS void AS $$
                      BEGIN
-                         INSERT INTO origin_members (origin_id, origin_name, account_id, account_name)
-                                VALUES (om_origin_id, om_origin_name, om_account_id, om_account_name);
+                         INSERT INTO origin_members ( type_meta, object_meta,meta_data)
+                                VALUES (om_type_meta,om_obj_meta,om_meta_data);
                      END
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        // migrator.migrate(
-        //     "originsrv",
-        //     r#"INSERT INTO origins (name,object_meta,type_meta) VALUES ('rioos-system','{"name":"megam","origin":"rioos-system","uid":"","created_at":"","cluster_name":"","labels":{"group":"development","key2":"value2"},"annotations":{"key1":"value1","key2":"value2"}}','{"kind":"Origin","api_version":"v1"}')
-        //     ON CONFLICT (name) DO NOTHING"#,
-        // )?;
-        //
-        // ui.para("[✓] origins: rioos-system");
+        migrator.migrate(
+            "originsrv",
+            r#"INSERT INTO origins (name,object_meta,type_meta) VALUES ('rioos_system','{"name":"rioos_system", "labels": {}, "account": "", "created_at": "", "deleted_at": "", "finalizers": [], "annotations": {}, "cluster_name": "", "initializers": {"result": {"code": 0, "reason": "", "status": "", "details": {"uid": "", "kind": "", "name": "", "group": "", "causes": [], "retry_after_seconds": 0}, "message": "", "type_meta": {"kind": "", "api_version": ""}}, "pending": []}, "owner_references": [{"uid": "", "kind": "", "name": "", "api_version": "", "block_owner_deletion": false}], "deletion_grace_period_seconds": 0}','{"kind":"Origin","api_version":"v1"}')
+            ON CONFLICT (name) DO NOTHING"#,
+        )?;
+
+        ui.para("[✓] origins: rioos-system");
 
         migrator.migrate(
             "originsrv",
             r#"CREATE OR REPLACE FUNCTION insert_origin_v1 (
                      origin_name text,
-                     origin_owner_id bigint,
-                     origin_owner_name text,
-                     origin_type_meta text,
-                     origin_object_meta text
+                     origin_type_meta jsonb,
+                     origin_object_meta jsonb,
+                     origin_mem_type_meta jsonb
                  ) RETURNS SETOF origins AS $$
                      DECLARE
                        existing_origin origins%rowtype;
@@ -533,9 +523,9 @@ impl Migratable for AuthProcedures {
                      IF FOUND THEN
                          RETURN NEXT existing_origin;
                      ELSE
-                         INSERT INTO origins (name, owner_id,type_meta,object_meta)
-                                VALUES (origin_name, origin_owner_id,origin_type_meta,origin_object_meta) ON CONFLICT (name) DO NOTHING RETURNING * into inserted_origin;
-                         PERFORM insert_origin_member_v1(inserted_origin.id, origin_name, origin_owner_id, origin_owner_name);
+                         INSERT INTO origins (name,type_meta,object_meta)
+                                VALUES (origin_name,origin_type_meta,origin_object_meta) ON CONFLICT (name) DO NOTHING RETURNING * into inserted_origin;
+                         PERFORM insert_origin_member_v1(origin_mem_type_meta,origin_object_meta, json_build_object('origin',inserted_origin.name)::jsonb);
                          RETURN NEXT inserted_origin;
                          RETURN;
                 END IF;
@@ -544,6 +534,48 @@ impl Migratable for AuthProcedures {
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_team_member_v1 (
+                     om_type_meta jsonb,
+                     om_obj_meta jsonb,
+                     om_meta_data jsonb
+                 ) RETURNS void AS $$
+                     BEGIN
+                         INSERT INTO team_members ( type_meta, object_meta,meta_data)
+                                VALUES (om_type_meta,om_obj_meta,om_meta_data);
+                     END
+                 $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        migrator.migrate(
+            "originsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_team_v1 (
+                     team_name text,
+                     origin text,
+                     team_object_meta jsonb,
+                     team_type_meta jsonb,
+                     team_meta_data jsonb,
+                     team_mem_type_meta jsonb
+                 ) RETURNS SETOF teams AS $$
+                     DECLARE
+                       existing_team teams%rowtype;
+                       inserted_team teams;
+                     BEGIN
+                     SELECT * INTO existing_team FROM teams WHERE name = team_name LIMIT 1;
+                     IF FOUND THEN
+                         RETURN NEXT existing_team;
+                     ELSE
+                         INSERT INTO teams (name,type_meta,object_meta,meta_data)
+                                VALUES (team_name,team_type_meta,team_object_meta,team_meta_data) ON CONFLICT (name) DO NOTHING RETURNING * into inserted_team;
+                                    PERFORM insert_origin_member_v1(team_mem_type_meta,team_object_meta, json_build_object('team',inserted_team.name, 'origin',origin)::jsonb);
+                         RETURN NEXT inserted_team;
+                         RETURN;
+                END IF;
+                RETURN;
+             END
+                 $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
 
         migrator.migrate(
             "originsrv",
@@ -577,7 +609,6 @@ impl Migratable for AuthProcedures {
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
 
         migrator.migrate(
             "originsrv",
@@ -647,10 +678,7 @@ impl Migratable for AuthProcedures {
         )?;
 
         // The core role_id_seq table
-        migrator.migrate(
-            "authsrv",
-            r#"CREATE SEQUENCE IF NOT EXISTS role_id_seq;"#,
-        )?;
+        migrator.migrate("authsrv", r#"CREATE SEQUENCE IF NOT EXISTS role_id_seq;"#)?;
 
         // Create table roles
         migrator.migrate(
@@ -705,14 +733,8 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-
-
         // The core role_id_seq table
-        migrator.migrate(
-            "authsrv",
-            r#"CREATE SEQUENCE IF NOT EXISTS perm_id_seq;"#,
-        )?;
-
+        migrator.migrate("authsrv", r#"CREATE SEQUENCE IF NOT EXISTS perm_id_seq;"#)?;
 
         // Create table permissions
         migrator.migrate(
@@ -797,7 +819,6 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-
         migrator.migrate(
             "authsrv",
             r#"CREATE OR REPLACE FUNCTION get_specfic_permission_role_v1 (
@@ -841,6 +862,5 @@ impl Migratable for AuthProcedures {
         )?;
 
         Ok(())
-
     }
 }

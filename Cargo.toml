@@ -4,19 +4,23 @@ debug = true
 [workspace]
 members = [
   "components/builder-api",
+  "components/builder-api-audit",
+  "components/builder-apimachinery",
   "components/builder-api-client",
   "components/builder-db",
   "components/builder-deployment",
   "components/builder-scaling",
   "components/builder-authorize",
-  "components/builder-protocol",
   "components/builder-session",
-  "components/builder-service-account",
+  "components/builder-audit",
+  "components/builder-securer",
   "components/builder-network",
   "components/builder-storage",
+  "components/builder-marketplace",
   "components/common",
   "components/core",
   "components/http-client",
   "components/net",
-  "components/rioos"
+  "components/rioos",
+  "components/builder-api-marketplace",
 ]

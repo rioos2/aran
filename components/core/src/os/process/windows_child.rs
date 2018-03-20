@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 // This contains code largely copy/pasted from the rust-lang/rust repo
 // We will need to create processes using different windows API calls in
@@ -57,9 +57,8 @@ impl Child {
                 // Split the value and test each path to see if the
                 // program exists.
                 for path in env::split_paths(&v) {
-                    let path = path.join(program).with_extension(
-                        env::consts::EXE_EXTENSION,
-                    );
+                    let path = path.join(program)
+                        .with_extension(env::consts::EXE_EXTENSION);
                     if fs::metadata(&path).is_ok() {
                         res = Some(path.into_os_string());
                     }
@@ -369,11 +368,15 @@ pub fn anon_pipe(ours_readable: bool) -> io::Result<Pipes> {
         opts.read(!ours_readable);
         opts.share_mode(0);
         let theirs = File::open(Path::new(&name), &opts)?;
-        let theirs = AnonPipe { inner: theirs.into_handle() };
+        let theirs = AnonPipe {
+            inner: theirs.into_handle(),
+        };
 
         Ok(Pipes {
             ours: AnonPipe { inner: ours },
-            theirs: AnonPipe { inner: theirs.into_handle() },
+            theirs: AnonPipe {
+                inner: theirs.into_handle(),
+            },
         })
     }
 }
@@ -468,11 +471,7 @@ impl OpenOptions {
             (false, true, false, None) => Ok(winapi::GENERIC_WRITE),
             (true, true, false, None) => Ok(winapi::GENERIC_READ | winapi::GENERIC_WRITE),
             (false, _, true, None) => Ok(winapi::FILE_GENERIC_WRITE & !winapi::FILE_WRITE_DATA),
-            (true, _, true, None) => {
-                Ok(
-                    winapi::GENERIC_READ | (winapi::FILE_GENERIC_WRITE & !winapi::FILE_WRITE_DATA),
-                )
-            }
+            (true, _, true, None) => Ok(winapi::GENERIC_READ | (winapi::FILE_GENERIC_WRITE & !winapi::FILE_WRITE_DATA)),
             (false, false, false, None) => Err(io::Error::from_raw_os_error(ERROR_INVALID_PARAMETER)),
         }
     }
@@ -504,17 +503,15 @@ impl OpenOptions {
     }
 
     fn get_flags_and_attributes(&self) -> winapi::DWORD {
-        self.custom_flags | self.attributes | self.security_qos_flags |
-            if self.security_qos_flags != 0 {
-                winapi::SECURITY_SQOS_PRESENT
-            } else {
-                0
-            } |
-            if self.create_new {
-                winapi::FILE_FLAG_OPEN_REPARSE_POINT
-            } else {
-                0
-            }
+        self.custom_flags | self.attributes | self.security_qos_flags | if self.security_qos_flags != 0 {
+            winapi::SECURITY_SQOS_PRESENT
+        } else {
+            0
+        } | if self.create_new {
+            winapi::FILE_FLAG_OPEN_REPARSE_POINT
+        } else {
+            0
+        }
     }
 }
 
@@ -539,7 +536,9 @@ impl File {
         if handle == winapi::INVALID_HANDLE_VALUE {
             Err(io::Error::last_os_error())
         } else {
-            Ok(File { handle: Handle::new(handle) })
+            Ok(File {
+                handle: Handle::new(handle),
+            })
         }
     }
 
@@ -686,9 +685,7 @@ impl RawHandle {
         unsafe {
             let mut bytes = 0;
             let wait = if wait { winapi::TRUE } else { winapi::FALSE };
-            let res = cvt({
-                kernel32::GetOverlappedResult(self.raw(), overlapped, &mut bytes, wait)
-            });
+            let res = cvt({ kernel32::GetOverlappedResult(self.raw(), overlapped, &mut bytes, wait) });
             match res {
                 Ok(_) => Ok(bytes as usize),
                 Err(e) => {
@@ -857,13 +854,10 @@ fn null_stdio_handle() -> Result<Handle> {
     opts.read(true);
     opts.write(false);
     opts.security_attributes(&mut sa);
-    Ok(File::open(Path::new("NUL"), &opts).map(
-        |file| file.into_handle(),
-    )?)
+    Ok(File::open(Path::new("NUL"), &opts).map(|file| file.into_handle())?)
 }
 
 unsafe fn read_to_end_uninitialized(r: &mut Read, buf: &mut Vec<u8>) -> io::Result<usize> {
-
     let start_len = buf.len();
     buf.reserve(16);
 

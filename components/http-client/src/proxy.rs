@@ -1,16 +1,5 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
+// Copyright 2018 The Rio Advancement Inc
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 use url::{self, Url};
 use url::percent_encoding::percent_decode;
@@ -27,12 +16,12 @@ use error::{Error, Result};
 /// A proxy server with no credentials required:
 ///
 /// ```
-/// extern crate habitat_http_client;
+/// extern crate rioos_http_client;
 /// extern crate url;
 ///
 /// use std::str::FromStr;
 /// use url::Url;
-/// use habitat_http_client::proxy::ProxyInfo;
+/// use rioos_http_client::proxy::ProxyInfo;
 ///
 /// fn main() {
 ///     let url = Url::from_str("http://proxy.example.com:8001/").unwrap();
@@ -48,12 +37,12 @@ use error::{Error, Result};
 /// A proxy server using basic authorization:
 ///
 /// ```
-/// extern crate habitat_http_client;
+/// extern crate rioos_http_client;
 /// extern crate url;
 ///
 /// use std::str::FromStr;
 /// use url::Url;
-/// use habitat_http_client::proxy::{ProxyBasicAuthorization, ProxyInfo};
+/// use rioos_http_client::proxy::{ProxyBasicAuthorization, ProxyInfo};
 ///
 /// fn main() {
 ///     let url = Url::from_str("http://proxy.example.com").unwrap();
@@ -138,7 +127,7 @@ impl ProxyInfo {
 /// # Examples
 ///
 /// ```
-/// use habitat_http_client::proxy::ProxyBasicAuthorization;
+/// use rioos_http_client::proxy::ProxyBasicAuthorization;
 ///
 /// let authz = ProxyBasicAuthorization::new("foo".to_string(), "bar".to_string());
 ///
@@ -191,7 +180,7 @@ impl ProxyBasicAuthorization {
 ///
 /// ```
 /// use std;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// std::env::set_var("http_proxy", "http://proxy.example.com:8001/");
 /// let info = proxy::http_proxy().unwrap().unwrap();
@@ -206,7 +195,7 @@ impl ProxyBasicAuthorization {
 ///
 /// ```
 /// use std;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// std::env::set_var("http_proxy", "http://itsme:asecret@proxy.example.com");
 /// let info = proxy::http_proxy().unwrap().unwrap();
@@ -221,7 +210,7 @@ impl ProxyBasicAuthorization {
 ///
 /// ```
 /// use std;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// std::env::set_var("HTTP_PROXY", "http://upper.example.com");
 /// std::env::set_var("http_proxy", "http://lower.example.com");
@@ -234,7 +223,7 @@ impl ProxyBasicAuthorization {
 ///
 /// ```
 /// use std;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// std::env::set_var("http_proxy", "");
 ///
@@ -250,12 +239,10 @@ impl ProxyBasicAuthorization {
 pub fn http_proxy() -> Result<Option<ProxyInfo>> {
     match env::var("http_proxy") {
         Ok(url) => parse_proxy_url(&url),
-        _ => {
-            match env::var("HTTP_PROXY") {
-                Ok(url) => parse_proxy_url(&url),
-                _ => Ok(None),
-            }
-        }
+        _ => match env::var("HTTP_PROXY") {
+            Ok(url) => parse_proxy_url(&url),
+            _ => Ok(None),
+        },
     }
 }
 
@@ -279,7 +266,7 @@ pub fn http_proxy() -> Result<Option<ProxyInfo>> {
 ///
 /// ```
 /// use std;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// std::env::set_var("https_proxy", "http://proxy.example.com:8001/");
 /// let info = proxy::https_proxy().unwrap().unwrap();
@@ -294,7 +281,7 @@ pub fn http_proxy() -> Result<Option<ProxyInfo>> {
 ///
 /// ```
 /// use std;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// std::env::set_var("https_proxy", "http://itsme:asecret@proxy.example.com");
 /// let info = proxy::https_proxy().unwrap().unwrap();
@@ -309,7 +296,7 @@ pub fn http_proxy() -> Result<Option<ProxyInfo>> {
 ///
 /// ```
 /// use std;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// std::env::set_var("HTTPS_PROXY", "http://upper.example.com");
 /// std::env::set_var("https_proxy", "http://lower.example.com");
@@ -322,7 +309,7 @@ pub fn http_proxy() -> Result<Option<ProxyInfo>> {
 ///
 /// ```
 /// use std;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// std::env::set_var("https_proxy", "");
 ///
@@ -338,12 +325,10 @@ pub fn http_proxy() -> Result<Option<ProxyInfo>> {
 pub fn https_proxy() -> Result<Option<ProxyInfo>> {
     match env::var("https_proxy") {
         Ok(url) => parse_proxy_url(&url),
-        _ => {
-            match env::var("HTTPS_PROXY") {
-                Ok(url) => parse_proxy_url(&url),
-                _ => Ok(None),
-            }
-        }
+        _ => match env::var("HTTPS_PROXY") {
+            Ok(url) => parse_proxy_url(&url),
+            _ => Ok(None),
+        },
     }
 }
 
@@ -369,12 +354,12 @@ pub fn https_proxy() -> Result<Option<ProxyInfo>> {
 /// Behavior when domain matches extension set for http_proxy:
 ///
 /// ```
-/// extern crate habitat_http_client;
+/// extern crate rioos_http_client;
 /// extern crate url;
 ///
 /// use std::str::FromStr;
 /// use url::Url;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// fn main() {
 ///     std::env::set_var("http_proxy", "http://proxy.example.com:8001/");
@@ -390,12 +375,12 @@ pub fn https_proxy() -> Result<Option<ProxyInfo>> {
 /// Behavior when domain matches extension set for https_proxy:
 ///
 /// ```
-/// extern crate habitat_http_client;
+/// extern crate rioos_http_client;
 /// extern crate url;
 ///
 /// use std::str::FromStr;
 /// use url::Url;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// fn main() {
 ///     std::env::set_var("https_proxy", "http://proxy.example.com:8001/");
@@ -410,12 +395,12 @@ pub fn https_proxy() -> Result<Option<ProxyInfo>> {
 /// Behavior when both lower case and uppercase environment variables are set:
 ///
 /// ```
-/// extern crate habitat_http_client;
+/// extern crate rioos_http_client;
 /// extern crate url;
 ///
 /// use std::str::FromStr;
 /// use url::Url;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// fn main() {
 ///     std::env::set_var("HTTPS_PROXY", "http://upper.example.com");
@@ -432,12 +417,12 @@ pub fn https_proxy() -> Result<Option<ProxyInfo>> {
 /// Behavior when domain does not match extension set:
 ///
 /// ```
-/// extern crate habitat_http_client;
+/// extern crate rioos_http_client;
 /// extern crate url;
 ///
 /// use std::str::FromStr;
 /// use url::Url;
-/// use habitat_http_client::proxy;
+/// use rioos_http_client::proxy;
 ///
 /// fn main() {
 ///     std::env::set_var("https_proxy", "http://itsme:asecret@proxy.example.com:8001/");
@@ -459,17 +444,13 @@ pub fn proxy_unless_domain_exempted(for_domain: Option<&Url>) -> Result<Option<P
     };
     match env::var("no_proxy") {
         Ok(domains) => process_no_proxy(for_domain, scheme, domains),
-        _ => {
-            match env::var("NO_PROXY") {
-                Ok(domains) => process_no_proxy(for_domain, scheme, domains),
-                _ => {
-                    match scheme {
-                        "https" => https_proxy(),
-                        _ => http_proxy(),
-                    }
-                }
-            }
-        }
+        _ => match env::var("NO_PROXY") {
+            Ok(domains) => process_no_proxy(for_domain, scheme, domains),
+            _ => match scheme {
+                "https" => https_proxy(),
+                _ => http_proxy(),
+            },
+        },
     }
 }
 
@@ -482,9 +463,7 @@ fn process_no_proxy(for_domain: Option<&Url>, scheme: &str, domains: String) -> 
         if domain.ends_with(extension) {
             debug!(
                 "Domain {} matches domain extension {} from no_proxy='{}'",
-                &domain,
-                &extension,
-                &domains
+                &domain, &extension, &domains
             );
             return Ok(None);
         }
@@ -498,16 +477,14 @@ fn process_no_proxy(for_domain: Option<&Url>, scheme: &str, domains: String) -> 
 fn parse_proxy_url(url: &str) -> Result<Option<ProxyInfo>> {
     let url = try!(Url::parse(&url));
     let auth = match url.password() {
-        Some(password) => {
-            Some(ProxyBasicAuthorization::new(
-                percent_decode(url.username().as_bytes())
-                    .decode_utf8_lossy()
-                    .into_owned(),
-                percent_decode(password.as_bytes())
-                    .decode_utf8_lossy()
-                    .into_owned(),
-            ))
-        }
+        Some(password) => Some(ProxyBasicAuthorization::new(
+            percent_decode(url.username().as_bytes())
+                .decode_utf8_lossy()
+                .into_owned(),
+            percent_decode(password.as_bytes())
+                .decode_utf8_lossy()
+                .into_owned(),
+        )),
         None => None,
     };
     Ok(Some(try!(ProxyInfo::new(url, auth))))

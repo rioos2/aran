@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
+// Copyright 2018 The Rio Advancement Inc
 //
 
 use std::fmt;
@@ -13,9 +13,9 @@ use term::{Terminal, TerminfoTerminal};
 use error::Result;
 use self::tty::StdStream;
 
-pub const NONINTERACTIVE_ENVVAR: &'static str = "HAB_NONINTERACTIVE";
+pub const NONINTERACTIVE_ENVVAR: &'static str = "RIO_NONINTERACTIVE";
 
-pub const NOCOLORING_ENVVAR: &'static str = "HAB_NOCOLORING";
+pub const NOCOLORING_ENVVAR: &'static str = "RIO_NOCOLORING";
 
 pub enum Status {
     Applying,
@@ -67,7 +67,9 @@ pub struct UI {
 
 impl UI {
     pub fn default_with(coloring: Coloring, isatty: Option<bool>) -> Self {
-        UI { shell: Shell::default_with(coloring, isatty) }
+        UI {
+            shell: Shell::default_with(coloring, isatty),
+        }
     }
 
     pub fn begin<T: ToString>(&mut self, message: T) -> Result<()> {
@@ -86,23 +88,19 @@ impl UI {
         let ref mut stream = self.shell.out;
         let (symbol, status_str, color) = status.parts();
         match stream.is_colored() {
-            true => {
-                try!(write!(
-                    stream,
-                    "{} {}\n",
-                    color.bold().paint(format!("{} {}", symbol, status_str)),
-                    message.to_string()
-                ))
-            }
-            false => {
-                try!(write!(
-                    stream,
-                    "{} {} {}\n",
-                    symbol,
-                    status_str,
-                    message.to_string()
-                ))
-            }
+            true => try!(write!(
+                stream,
+                "{} {}\n",
+                color.bold().paint(format!("{} {}", symbol, status_str)),
+                message.to_string()
+            )),
+            false => try!(write!(
+                stream,
+                "{} {} {}\n",
+                symbol,
+                status_str,
+                message.to_string()
+            )),
         }
         try!(stream.flush());
         Ok(())
@@ -115,9 +113,9 @@ impl UI {
                 try!(write!(
                     stream,
                     "{}\n",
-                    Colour::Yellow.bold().paint(
-                        format!("∅ {}", message.to_string()),
-                    )
+                    Colour::Yellow
+                        .bold()
+                        .paint(format!("∅ {}", message.to_string()),)
                 ));
             }
             false => {
@@ -142,10 +140,9 @@ impl UI {
                 try!(write!(
                     stream,
                     "{}\n",
-                    Colour::Red.bold().paint(format!(
-                        "✗✗✗\n{}\n✗✗✗",
-                        formatted_message
-                    ))
+                    Colour::Red
+                        .bold()
+                        .paint(format!("✗✗✗\n{}\n✗✗✗", formatted_message))
                 ));
             }
             false => {
@@ -176,11 +173,9 @@ impl UI {
                 try!(write!(
                     stream,
                     "{}\n\n",
-                    Colour::Green.bold().paint(format!(
-                        "{:=<width$}",
-                        "",
-                        width = text.chars().count()
-                    ))
+                    Colour::Green
+                        .bold()
+                        .paint(format!("{:=<width$}", "", width = text.chars().count()))
                 ));
             }
             false => {
@@ -227,36 +222,30 @@ impl UI {
             Some(yes) => {
                 if yes {
                     match stream.is_colored() {
-                        true => {
-                            format!(
-                                "{}{}{}",
-                                Colour::White.paint("["),
-                                Colour::White.bold().paint("Yes"),
-                                Colour::White.paint("/no/quit]")
-                            )
-                        }
+                        true => format!(
+                            "{}{}{}",
+                            Colour::White.paint("["),
+                            Colour::White.bold().paint("Yes"),
+                            Colour::White.paint("/no/quit]")
+                        ),
                         false => format!("[Yes/no/quit]"),
                     }
                 } else {
                     match stream.is_colored() {
-                        true => {
-                            format!(
-                                "{}{}{}",
-                                Colour::White.paint("[yes/"),
-                                Colour::White.bold().paint("No"),
-                                Colour::White.paint("/quit]")
-                            )
-                        }
+                        true => format!(
+                            "{}{}{}",
+                            Colour::White.paint("[yes/"),
+                            Colour::White.bold().paint("No"),
+                            Colour::White.paint("/quit]")
+                        ),
                         false => format!("[yes/No/quit]"),
                     }
                 }
             }
-            None => {
-                match stream.is_colored() {
-                    true => format!("{}", Colour::White.paint("[yes/no/quit]")),
-                    false => format!("[yes/no/quit]"),
-                }
-            }
+            None => match stream.is_colored() {
+                true => format!("{}", Colour::White.paint("[yes/no/quit]")),
+                false => format!("[yes/no/quit]"),
+            },
         };
         loop {
             try!(stream.flush());
@@ -283,12 +272,10 @@ impl UI {
                 'y' | 'Y' => return Ok(true),
                 'n' | 'N' => return Ok(false),
                 'q' | 'Q' => process::exit(0),
-                '\n' => {
-                    match default {
-                        Some(default) => return Ok(default),
-                        None => continue,
-                    }
-                }
+                '\n' => match default {
+                    Some(default) => return Ok(default),
+                    None => continue,
+                },
                 _ => continue,
             }
         }
@@ -297,19 +284,15 @@ impl UI {
     pub fn prompt_ask(&mut self, question: &str, default: Option<&str>) -> Result<String> {
         let ref mut stream = self.shell.out;
         let choice = match default {
-            Some(d) => {
-                match stream.is_colored() {
-                    true => {
-                        format!(
-                            " {}{}{}",
-                            Colour::White.paint("[default: "),
-                            Colour::White.bold().paint(d),
-                            Colour::White.paint("]")
-                        )
-                    }
-                    false => format!(" [default: {}]", d),
-                }
-            }
+            Some(d) => match stream.is_colored() {
+                true => format!(
+                    " {}{}{}",
+                    Colour::White.paint("[default: "),
+                    Colour::White.bold().paint(d),
+                    Colour::White.paint("]")
+                ),
+                false => format!(" [default: {}]", d),
+            },
             None => "".to_string(),
         };
         loop {
@@ -345,15 +328,13 @@ impl UI {
 
     fn write_heading<T: ToString>(stream: &mut OutputStream, color: Colour, symbol: char, message: T) -> Result<()> {
         match stream.is_colored() {
-            true => {
-                try!(write!(
-                    stream,
-                    "{}\n",
-                    color.bold().paint(
-                        format!("{} {}", symbol, message.to_string()),
-                    )
-                ))
-            }
+            true => try!(write!(
+                stream,
+                "{}\n",
+                color
+                    .bold()
+                    .paint(format!("{} {}", symbol, message.to_string()),)
+            )),
             false => try!(write!(stream, "{} {}\n", symbol, message.to_string())),
         }
         try!(stream.flush());
@@ -427,7 +408,7 @@ impl Shell {
         let stdout = OutputStream::from_stdout(coloring, isatty);
         debug!(
             "OutputStream(stdout): {{ is_colored(): {}, supports_color(): {}, \
-                is_a_terminal(): {} }}",
+             is_a_terminal(): {} }}",
             stdout.is_colored(),
             stdout.supports_color(),
             stdout.is_a_terminal()
@@ -435,7 +416,7 @@ impl Shell {
         let stderr = OutputStream::from_stderr(coloring, isatty);
         debug!(
             "OutputStream(stderr): {{ is_colored(): {}, supports_color(): {}, \
-                is_a_terminal(): {} }}",
+             is_a_terminal(): {} }}",
             stderr.is_colored(),
             stderr.supports_color(),
             stderr.is_a_terminal()
@@ -544,7 +525,6 @@ impl OutputStream {
         match self.inner {
             WriteStream::Color(_) => true,
             WriteStream::NoColor(_) => false,
-
         }
     }
 
@@ -738,7 +718,6 @@ pub fn rawdump<T: ToString>(color: Colour, symbol: char, message: T) {
         "{}",
         color.paint(format!("{} {}", symbol, message.to_string()))
     );
-
 }
 
 pub fn rawdumpln<T: ToString>(color: Colour, symbol: char, message: T) {
@@ -746,5 +725,4 @@ pub fn rawdumpln<T: ToString>(color: Colour, symbol: char, message: T) {
         "{}",
         color.paint(format!("{} {}", symbol, message.to_string()))
     );
-
 }

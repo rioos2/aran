@@ -1,40 +1,24 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
+// Copyright 2018 The Rio Advancement Inc
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 use std::path::Path;
 use std::time::Duration;
-
+use std::fs::File;
+use std::io::Read;
 use rio_core::util::sys;
-use hyper::client::{Client as HyperClient, IntoUrl, RequestBuilder};
-use hyper::client::pool::{Config, Pool};
-use hyper::header::UserAgent;
-use hyper::http::h1::Http11Protocol;
-use hyper::net::HttpsConnector;
-use hyper_openssl::OpensslClient;
-use openssl::ssl::{SslConnectorBuilder, SslConnector, SslMethod, SslOption, SSL_OP_NO_SSLV2, SSL_OP_NO_SSLV3, SSL_OP_NO_COMPRESSION};
+use reqwest::{Client as ReqwestClient, IntoUrl, RequestBuilder};
+use reqwest;
+use reqwest::header::{Headers, UserAgent};
+
 use url::Url;
 
 use error::Result;
-use net::ProxyHttpsConnector;
 use proxy::{ProxyInfo, proxy_unless_domain_exempted};
-use ssl;
 
 // Read and write TCP socket timeout for Hyper/HTTP client calls.
 const CLIENT_SOCKET_RW_TIMEOUT: u64 = 30;
 
 header! { (ProxyAuthorization, "Proxy-Authorization") => [String] }
-
 /// A generic wrapper around a Hyper HTTP client intended for API-like usage.
 ///
 /// When an `ApiClient` is created, it has a constant URL base which is assumed to be some API
@@ -46,7 +30,7 @@ pub struct ApiClient {
     endpoint: Url,
     /// An instance of a `hyper::Client` which is configured with an SSL context and optionally
     /// using an HTTP proxy.
-    inner: HyperClient,
+    pub inner: ReqwestClient,
     /// Proxy information, if a proxy is being used.
     proxy: Option<ProxyInfo>,
     /// The URL scheme of the endpoint.
@@ -71,7 +55,7 @@ impl ApiClient {
         let endpoint = endpoint.into_url()?;
 
         Ok(ApiClient {
-            inner: new_hyper_client(&endpoint, fs_root_path)?,
+            inner: new_reqwest_client(&endpoint, fs_root_path)?,
             proxy: proxy_unless_domain_exempted(Some(&endpoint))?,
             target_scheme: endpoint.scheme().to_string(),
             endpoint: endpoint,
@@ -92,7 +76,8 @@ impl ApiClient {
         let mut url = self.url_for(path);
         customize_url(&mut url);
         debug!("GET {} with {:?}", &url, &self);
-        self.add_headers(self.inner.get(url))
+        //To-Do add the header
+        self.inner.get(url)
     }
 
     /// Builds an HTTP HEAD request for a given path.
@@ -108,7 +93,7 @@ impl ApiClient {
         let mut url = self.url_for(path);
         customize_url(&mut url);
         debug!("HEAD {} with {:?}", &url, &self);
-        self.add_headers(self.inner.head(url))
+        self.inner.head(url)
     }
 
     /// Builds an HTTP PATCH request for a given path.
@@ -124,7 +109,7 @@ impl ApiClient {
         let mut url = self.url_for(path);
         customize_url(&mut url);
         debug!("PATH {} with {:?}", &url, &self);
-        self.add_headers(self.inner.patch(url))
+        self.inner.patch(url)
     }
 
     /// Builds an HTTP POST request for a given path.
@@ -140,7 +125,7 @@ impl ApiClient {
         let mut url = self.url_for(path);
         customize_url(&mut url);
         debug!("POST {} with {:?}", &url, &self);
-        self.add_headers(self.inner.post(url))
+        self.inner.post(url)
     }
 
     /// Builds an HTTP PUT request for a given path.
@@ -156,7 +141,8 @@ impl ApiClient {
         let mut url = self.url_for(path);
         customize_url(&mut url);
         debug!("PUT {} with {:?}", &url, &self);
-        self.add_headers(self.inner.put(url))
+        self.add_headers();
+        self.inner.put(url)
     }
 
     /// Builds an HTTP DELETE request for a given path.
@@ -172,24 +158,26 @@ impl ApiClient {
         let mut url = self.url_for(path);
         customize_url(&mut url);
         debug!("DELETE {} with {:?}", &url, &self);
-        self.add_headers(self.inner.delete(url))
+        self.inner.delete(url)
     }
 
-    fn add_headers<'a>(&'a self, rb: RequestBuilder<'a>) -> RequestBuilder {
-        let mut rb = rb.header(self.user_agent_header.clone());
+    fn add_headers(&self) -> Headers {
+        let mut headers = Headers::new();
+        headers.set(self.user_agent_header.clone());
+        // let mut rb = rb.header(self.user_agent_header.clone());
         // If the target URL is an `"http"` scheme and we're using a proxy server, then add the
         // proxy authorization header if appropriate. Note that for `"https"` targets, the proxy
         // server will be operating in TCP tunneling mode and will be authenticated on connection to
-        // the proxy server which is why we should not add an additional header in this latter
+        // the proxy server which is why we should not d an additional header in this latter
         // case.
         if self.target_scheme == "http" {
             if let Some(ref info) = self.proxy {
                 if let Some(header_value) = info.authorization_header_value() {
-                    rb = rb.header(ProxyAuthorization(header_value));
+                    headers.set(ProxyAuthorization(header_value));
                 }
             }
         }
-        rb
+        headers
     }
 
     fn url_for(&self, path: &str) -> Url {
@@ -236,28 +224,33 @@ impl ApiClient {
 /// library will default to using this on the Mac. Therefore the behavior on the Mac remains
 /// unchanged and will use the system's certificates.
 ///
-fn new_hyper_client(url: &Url, fs_root_path: Option<&Path>) -> Result<HyperClient> {
-    let connector = try!(ssl_connector(fs_root_path));
-    let ssl_client = OpensslClient::from(connector);
+fn new_reqwest_client(url: &Url, fs_root_path: Option<&Path>) -> Result<ReqwestClient> {
     let timeout = Some(Duration::from_secs(CLIENT_SOCKET_RW_TIMEOUT));
-
+    let mut buf = Vec::new();
     match proxy_unless_domain_exempted(Some(url))? {
         Some(proxy) => {
             debug!("Using proxy {}:{}...", proxy.host(), proxy.port());
-            let connector = try!(ProxyHttpsConnector::new(proxy, ssl_client));
-            let pool = Pool::with_connector(Config::default(), connector);
-            let mut client = HyperClient::with_protocol(Http11Protocol::with_connector(pool));
-            client.set_read_timeout(timeout);
-            client.set_write_timeout(timeout);
-            Ok(client)
+            if !fs_root_path.is_none() && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok() {
+                Ok(ReqwestClient::builder()
+                    .timeout(timeout)
+                    .add_root_certificate(reqwest::Certificate::from_pem(&buf)?)
+                    .proxy(reqwest::Proxy::https(
+                        &format!("{}:{}", proxy.host(), proxy.port()),
+                    )?)
+                    .build()?)
+            } else {
+                Ok(ReqwestClient::builder().timeout(timeout).build()?)
+            }
         }
         None => {
-            let connector = HttpsConnector::new(ssl_client);
-            let pool = Pool::with_connector(Config::default(), connector);
-            let mut client = HyperClient::with_protocol(Http11Protocol::with_connector(pool));
-            client.set_read_timeout(timeout);
-            client.set_write_timeout(timeout);
-            Ok(client)
+            if !fs_root_path.is_none() && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok() {
+                Ok(ReqwestClient::builder()
+                    .add_root_certificate(reqwest::Certificate::from_pem(&buf)?)
+                    .timeout(timeout)
+                    .build()?)
+            } else {
+                Ok(ReqwestClient::builder().timeout(timeout).build()?)
+            }
         }
     }
 }
@@ -297,19 +290,5 @@ fn user_agent(product: &str, version: &str) -> Result<UserAgent> {
         uname.release.trim().to_lowercase()
     );
     debug!("User-Agent: {}", &ua);
-    Ok(UserAgent(ua))
-}
-
-fn ssl_connector(fs_root_path: Option<&Path>) -> Result<SslConnector> {
-    let mut conn = try!(SslConnectorBuilder::new(SslMethod::tls()));
-    let mut options = SslOption::empty();
-    options.toggle(SSL_OP_NO_SSLV2);
-    options.toggle(SSL_OP_NO_SSLV3);
-    options.toggle(SSL_OP_NO_COMPRESSION);
-    try!(ssl::set_ca(conn.builder_mut(), fs_root_path));
-    conn.builder_mut().set_options(options);
-    try!(conn.builder_mut().set_cipher_list(
-        "ALL!EXPORT!EXPORT40!EXPORT56!aNULL!LOW!RC4@STRENGTH",
-    ));
-    Ok(conn.build())
+    Ok(UserAgent::new(ua))
 }

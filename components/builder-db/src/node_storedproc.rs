@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //stored procedures for plan_factory
 
@@ -25,31 +25,33 @@ impl Migratable for NodeProcedures {
 
         migrator.migrate(
             "nodesrv",
-            r#"CREATE TABLE  IF NOT EXISTS node (
+            r#"CREATE TABLE  IF NOT EXISTS nodes (
              id bigint PRIMARY KEY DEFAULT next_id_v1('node_id_seq'),
              node_ip text,
-             spec text,
-             status text,
+             spec jsonb,
+             status jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
             )"#,
         )?;
 
-        ui.para("[✓] node");
-
+        ui.para("[✓] nodes");
 
         // Insert a new job into the jobs table
         migrator.migrate(
             "nodesrv",
             r#"CREATE OR REPLACE FUNCTION insert_node_v1 (
                 node_ip text,
-                spec text,
-                status text
-
-            ) RETURNS SETOF node AS $$
+                spec jsonb,
+                status jsonb,
+                object_meta jsonb,
+                type_meta jsonb
+            ) RETURNS SETOF nodes AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO node(node_ip,spec,status)
-                                        VALUES (node_ip,spec,status)
+                                    RETURN QUERY INSERT INTO nodes(node_ip,spec,status,object_meta,type_meta)
+                                        VALUES (node_ip,spec,status,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -59,29 +61,18 @@ impl Migratable for NodeProcedures {
 
         migrator.migrate(
             "nodesrv",
-            r#"CREATE OR REPLACE FUNCTION get_node_v1(nid bigint) RETURNS SETOF node AS $$
+            r#"CREATE OR REPLACE FUNCTION get_node_v1(nid bigint) RETURNS SETOF nodes AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM node where id = nid;
+                          RETURN QUERY SELECT * FROM nodes where id = nid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
         migrator.migrate(
             "nodesrv",
-            r#"CREATE OR REPLACE FUNCTION get_nodes_by_node_ip_v1(nodeip text) RETURNS SETOF node AS $$
+            r#"CREATE OR REPLACE FUNCTION get_nodes_by_node_ip_v1(nodeip text) RETURNS SETOF nodes AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM node where node_ip = nodeip;
-                          RETURN;
-                        END
-                        $$ LANGUAGE plpgsql STABLE"#,
-        )?;
-
-
-        migrator.migrate(
-            "nodesrv",
-            r#"CREATE OR REPLACE FUNCTION get_nodes_v1() RETURNS SETOF node AS $$
-                        BEGIN
-                          RETURN QUERY SELECT * FROM node;
+                          RETURN QUERY SELECT * FROM nodes where node_ip = nodeip;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -89,9 +80,21 @@ impl Migratable for NodeProcedures {
 
         migrator.migrate(
             "nodesrv",
-            r#"CREATE OR REPLACE FUNCTION set_node_status_v1 (nid bigint, node_status text) RETURNS void AS $$
+            r#"CREATE OR REPLACE FUNCTION get_nodes_v1() RETURNS SETOF nodes AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM nodes;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        migrator.migrate(
+            "nodesrv",
+            r#"CREATE OR REPLACE FUNCTION set_node_status_v1 (nid bigint, node_status jsonb) RETURNS SETOF nodes AS $$
                             BEGIN
-                                UPDATE node SET status=node_status, updated_at=now() WHERE id=nid;
+                                RETURN QUERY UPDATE nodes SET status=node_status, updated_at=now() WHERE id=nid
+                                RETURNING *;
+                                RETURN;
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;

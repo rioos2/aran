@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //stored procedures for plan_factory
 
@@ -27,12 +27,14 @@ impl Migratable for StorageProcedures {
             "storagesrv",
             r#"CREATE TABLE  IF NOT EXISTS storages (
              id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('storage_id_seq'),
-             name text,
              host_ip text,
              storage_type text,
-             parameters text,
-             storage_info text,
-             status text,
+             parameters jsonb,
+             storage_info jsonb,
+             node_info jsonb,
+             status jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
              )"#,
@@ -40,28 +42,28 @@ impl Migratable for StorageProcedures {
 
         ui.para("[✓] storage");
 
-
         // Insert a new job into the jobs table
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION insert_storage_v1 (
-                name text,
                 host_ip text,
                 storage_type text,
-                parameters text,
-                storage_info text,
-                status text
+                parameters jsonb,
+                storage_info jsonb,
+                node_info jsonb,
+                status jsonb,
+                object_meta jsonb,
+                type_meta jsonb
             ) RETURNS SETOF storages AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO storages(name,host_ip,storage_type,parameters,storage_info,status)
-                                        VALUES (name,host_ip,storage_type,parameters,storage_info,status)
+                                    RETURN QUERY INSERT INTO storages(host_ip,storage_type,parameters,storage_info,node_info,status,object_meta,type_meta)
+                                        VALUES (host_ip,storage_type,parameters,storage_info,node_info,status,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-
 
         migrator.migrate(
             "storagesrv",
@@ -95,11 +97,9 @@ impl Migratable for StorageProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-
-
         migrator.migrate(
             "storagesrv",
-            r#"CREATE OR REPLACE FUNCTION set_storage_status_v1 (sid bigint, storage_status text) RETURNS SETOF storages AS $$
+            r#"CREATE OR REPLACE FUNCTION set_storage_status_v1 (sid bigint, storage_status jsonb) RETURNS SETOF storages AS $$
                             BEGIN
                                 RETURN QUERY UPDATE storages SET status=storage_status, updated_at=now() WHERE id=sid
                                 RETURNING *;
@@ -112,19 +112,20 @@ impl Migratable for StorageProcedures {
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION update_storage_v1(
             sid bigint,
-            s_name text,
             s_host_ip text,
             s_storage_type text,
-            s_parameters text,
-            s_storage_info text) RETURNS SETOF storages AS $$
+            s_parameters jsonb,
+            s_storage_info jsonb,
+            s_node_info jsonb,
+            s_status jsonb,
+            s_object_meta jsonb) RETURNS SETOF storages AS $$
                             BEGIN
-                                RETURN QUERY UPDATE storages SET name=s_name,host_ip=s_host_ip,storage_type=s_storage_type,parameters=s_parameters,storage_info=s_storage_info,updated_at=now() WHERE id=sid
+                                RETURN QUERY UPDATE storages SET host_ip=s_host_ip,storage_type=s_storage_type,parameters=s_parameters,storage_info=s_storage_info,node_info=s_node_info,status = s_status,object_meta=s_object_meta,updated_at=now() WHERE id=sid
                                 RETURNING *;
                                 RETURN;
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
-
 
         migrator.migrate(
             "storagesrv",
@@ -133,39 +134,40 @@ impl Migratable for StorageProcedures {
 
         migrator.migrate(
             "storagesrv",
-            r#"CREATE TABLE  IF NOT EXISTS data_center (
+            r#"CREATE TABLE  IF NOT EXISTS data_centers (
              id bigint PRIMARY KEY DEFAULT next_id_v1('dc_id_seq'),
-             name text,
              nodes text[],
              networks text[],
              enabled bool,
              storage text,
-             advanced_settings text,
+             advanced_settings jsonb,
              flag text,
              currency text,
-             status text,
+             status jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
              )"#,
         )?;
 
-
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION insert_dc_v1 (
-                name text,
                 nodes text[],
                 networks text[],
                 enabled bool,
                 storage text,
-                advanced_settings text,
+                advanced_settings jsonb,
                 flag text,
                 currency text,
-                status text
-            ) RETURNS SETOF data_center AS $$
+                status jsonb,
+                object_meta jsonb,
+                type_meta jsonb
+            ) RETURNS SETOF data_centers AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO data_center(name,nodes,networks,enabled,storage,advanced_settings,flag,currency,status)
-                                        VALUES (name,nodes,networks,enabled,storage,advanced_settings,flag,currency,status)
+                                    RETURN QUERY INSERT INTO data_centers(nodes,networks,enabled,storage,advanced_settings,flag,currency,status,object_meta,type_meta)
+                                        VALUES (nodes,networks,enabled,storage,advanced_settings,flag,currency,status,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -173,12 +175,11 @@ impl Migratable for StorageProcedures {
                             "#,
         )?;
 
-
         migrator.migrate(
             "storagesrv",
-            r#"CREATE OR REPLACE FUNCTION get_data_centers_v1() RETURNS SETOF data_center AS $$
+            r#"CREATE OR REPLACE FUNCTION get_data_centers_v1() RETURNS SETOF data_centers AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM data_center;
+                          RETURN QUERY SELECT * FROM data_centers;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -186,14 +187,13 @@ impl Migratable for StorageProcedures {
 
         migrator.migrate(
             "storagesrv",
-            r#"CREATE OR REPLACE FUNCTION get_data_center_v1(did bigint) RETURNS SETOF data_center AS $$
+            r#"CREATE OR REPLACE FUNCTION get_data_center_v1(did bigint) RETURNS SETOF data_centers AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM data_center WHERE id = did;
+                          RETURN QUERY SELECT * FROM data_centers WHERE id = did;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
 
         migrator.migrate(
             "storagesrv",
@@ -204,11 +204,12 @@ impl Migratable for StorageProcedures {
             "storagesrv",
             r#"CREATE TABLE  IF NOT EXISTS storages_pool (
              id bigint PRIMARY KEY DEFAULT next_id_v1('storages_pool_id_seq'),
-             name text,
              connector_id bigint REFERENCES storages(id),
-             parameters text,
-             storage_info text,
-             status text,
+             parameters jsonb,
+             storage_info jsonb,
+             status jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
              )"#,
@@ -216,27 +217,26 @@ impl Migratable for StorageProcedures {
 
         ui.para("[✓] storages_pool");
 
-
         // Insert a new job into the jobs table
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION insert_storage_pool_v1 (
-                name text,
                 connector_id bigint,
-                parameters text,
-                storage_info text,
-                status text
+                parameters jsonb,
+                storage_info jsonb,
+                status jsonb,
+                object_meta jsonb,
+                type_meta jsonb
             ) RETURNS SETOF storages_pool AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO storages_pool(name,connector_id,parameters,storage_info,status)
-                                        VALUES (name,connector_id,parameters,storage_info,status)
+                                    RETURN QUERY INSERT INTO storages_pool(connector_id,parameters,storage_info,status, object_meta,type_meta)
+                                        VALUES (connector_id,parameters,storage_info,status,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
                             $$ LANGUAGE plpgsql VOLATILE
                             "#,
         )?;
-
 
         migrator.migrate(
             "storagesrv",
@@ -247,7 +247,15 @@ impl Migratable for StorageProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
+        migrator.migrate(
+            "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION get_storage_pool_by_id_v1 (sid bigint) RETURNS SETOF storages_pool AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM storages_pool WHERE id = sid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
         migrator.migrate(
             "storagesrv",
             r#"CREATE OR REPLACE FUNCTION get_storage_pool_all_v1() RETURNS SETOF storages_pool AS $$
@@ -260,7 +268,7 @@ impl Migratable for StorageProcedures {
 
         migrator.migrate(
             "storagesrv",
-            r#"CREATE OR REPLACE FUNCTION set_storage_pool_status_v1 (sid bigint, sp_status text) RETURNS SETOF storages_pool AS $$
+            r#"CREATE OR REPLACE FUNCTION set_storage_pool_status_v1 (sid bigint, sp_status jsonb) RETURNS SETOF storages_pool AS $$
                             BEGIN
                                 RETURN QUERY UPDATE storages_pool SET status=sp_status, updated_at=now() WHERE id=sid
                                 RETURNING *;
@@ -268,7 +276,6 @@ impl Migratable for StorageProcedures {
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
-
 
         ui.end("StorageProcedure");
 

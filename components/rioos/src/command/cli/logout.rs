@@ -1,5 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 use common::ui::UI;
 use config;
@@ -12,7 +11,7 @@ pub fn start(ui: &mut UI) -> Result<()> {
     ui.heading("Logout")?;
     ui.para(
         "For more information on authenticating using commandline, please read the \
-          documentation at https://docs.rioos.sh/docs/identity-overview/",
+         documentation at https://docs.rioos.sh/docs/identity-overview/",
     )?;
 
     ui.br()?;
@@ -25,7 +24,6 @@ pub fn start(ui: &mut UI) -> Result<()> {
     ui.para("That's all for now. Thanks for using Rio/OS!")?;
     Ok(())
 }
-
 
 fn write_cli_config_auth_token(auth_token: &str) -> Result<()> {
     let mut config = config::load()?;

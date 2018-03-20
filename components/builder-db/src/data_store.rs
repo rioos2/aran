@@ -1,6 +1,5 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
-use async::AsyncServer;
 use error::{Result, Error};
 use pool::Pool;
 use config::DataStore;
@@ -16,40 +15,36 @@ use service_account_storedproc::*;
 use network_storedproc::*;
 use storage_storedproc::*;
 use job_storedproc::*;
+use volume_storedproc::*;
+use watch_storedproc::*;
+use package_storedproc::*;
+use marketplace_storedproc::*;
+use devtooling_storedproc::*;
+use system_secret::*;
+use marketplace_differ::*;
 
-
-/// A messaging Broker for proxying messages from clients to one or more `RouteSrv` and vice versa.
-pub struct Broker {}
-
-impl Broker {
-    pub fn connect() -> Result<DataStoreConn> {
-        let conn = DataStoreConn::new()?;
-        Ok(conn)
-    }
-}
+use protocol::cache::InMemoryExpander;
 
 #[derive(Clone)]
 pub struct DataStoreConn {
     pub pool: Pool,
-    pub async: AsyncServer,
+    pub expander: InMemoryExpander,
 }
 
 impl DataStoreConn {
     pub fn new() -> Result<DataStoreConn> {
         let datastore = DataStore::default();
         let pool = Pool::new(&datastore, (0..SHARD_COUNT).collect())?;
-        let ap = pool.clone();
         Ok(DataStoreConn {
             pool: pool,
-            async: AsyncServer::new(ap),
+            expander: InMemoryExpander::new(),
         })
     }
     // Create a new DataStore from a pre-existing pool; useful for testing the database.
     pub fn from_pool(pool: Pool) -> Result<DataStoreConn> {
-        let ap = pool.clone();
         Ok(DataStoreConn {
             pool: pool,
-            async: AsyncServer::new(ap),
+            expander: InMemoryExpander::new(),
         })
     }
 
@@ -65,11 +60,32 @@ impl DataStoreConn {
 
         migrator.setup()?;
 
-        self.setup_fromsrvs(&mut migrator, ui).unwrap();
+        self.setup_fromsrvs(&mut migrator, ui)?;
 
         migrator.finish()?;
         ui.end("Database setup complete.");
+        SystemSecret::new(self.clone()).setup()?;
+        MarketPlaceDiffer::new(self.clone()).setup()?;
+        Ok(self)
+    }
 
+
+    /// Setup the datastore.
+    /// This includes all the schema and data migrations, along with stored procedures for data
+    /// access.
+    pub fn setup_marketplace(&self, ui: &mut UI) -> Result<&DataStoreConn> {
+        ui.heading("Database");
+        ui.begin("Auto Migration...");
+        let conn = self.pool.get_raw()?;
+        let xact = conn.transaction().map_err(Error::DbTransactionStart)?;
+        let mut migrator = Migrator::new(xact, self.pool.shards.clone());
+
+        migrator.setup()?;
+
+        self.setup_fromsrvs(&mut migrator, ui)?;
+
+        migrator.finish()?;
+        ui.end("Database setup complete.");
         Ok(self)
     }
 
@@ -87,8 +103,12 @@ impl DataStoreConn {
         NetworkProcedures::new()?.migrate(migrator, ui)?;
         StorageProcedures::new()?.migrate(migrator, ui)?;
         ServiceAccountProcedure::new()?.migrate(migrator, ui)?;
-        JobProcedures::new()?.migrate(migrator,ui)?;
-//        WorkerProcedures::new()?.migrate(migrator)?;
+        JobProcedures::new()?.migrate(migrator, ui)?;
+        VolumeProcedures::new()?.migrate(migrator, ui)?;
+        WatchProcedures::new()?.migrate(migrator, ui)?;
+        PackageProcedures::new()?.migrate(migrator, ui)?;
+        MarketPlaceProcedures::new()?.migrate(migrator, ui)?;
+        DevtoolingProcedures::new()?.migrate(migrator, ui)?;
         Ok(())
     }
 }

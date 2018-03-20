@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
 use postgres;
@@ -6,7 +6,6 @@ use std::error;
 use std::fmt;
 use std::result;
 use db;
-
 
 #[derive(Debug)]
 pub enum Error {
@@ -21,7 +20,6 @@ pub enum Error {
     StoragePoolGetResponse(postgres::error::Error),
     StoragePoolSetStatus(postgres::error::Error),
 }
-
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -59,7 +57,6 @@ impl error::Error for Error {
         }
     }
 }
-
 
 impl From<db::error::Error> for Error {
     fn from(err: db::error::Error) -> Self {

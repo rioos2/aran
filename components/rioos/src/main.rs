@@ -1,37 +1,48 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 //
 
-#![recursion_limit="128"]
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
+#![recursion_limit = "128"]
+#![cfg_attr(feature = "clippy", feature(plugin))]
+#![cfg_attr(feature = "clippy", plugin(clippy))]
 
 extern crate clap;
 extern crate env_logger;
-extern crate rioos;
-extern crate rioos_core as rcore;
-extern crate rioos_common as common;
 extern crate handlebars;
 #[macro_use]
 extern crate log;
-extern crate base64;
+extern crate rioos;
+extern crate rioos_common as common;
+extern crate rioos_core as rcore;
+extern crate rioos_api_client as api_client;
+#[macro_use]
+extern crate lazy_static;
 
+use std::path::PathBuf;
 use std::env;
 use std::ffi::OsString;
-use std::io;
 use std::thread;
 
-use clap::{ArgMatches, Shell};
+use clap::ArgMatches;
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 use rcore::crypto::init;
 use rcore::env as henv;
 
 use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, API_SERVER_ENVVAR};
 use rioos::error::{Error, Result};
+use rcore::fs::rioconfig_config_path;
 
+use api_client::Client;
+
+pub const PRODUCT: &'static str = "rioos";
+pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
+
+lazy_static! {
+    static  ref SERVER_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("server-ca.cert.pem").to_str().unwrap());
+}
 
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init();
     let mut ui = ui();
 
     if let Err(e) = start(&mut ui) {
@@ -63,7 +74,7 @@ fn start(ui: &mut UI) -> Result<()> {
             match matches.subcommand() {
                 ("init", Some(m)) => sub_cli_login(ui, m)?,
                 ("list", Some(m)) => sub_cli_login(ui, m)?,
-                ("completers", Some(m)) => sub_cli_completers(m)?,
+                // ("completers", Some(m)) => sub_cli_completers(m)?,
                 ("new", Some(m)) => sub_cli_new(ui, m)?,
                 ("whoami", Some(_)) => sub_cli_whoami(ui)?,
                 _ => unreachable!(),
@@ -84,6 +95,13 @@ fn start(ui: &mut UI) -> Result<()> {
                 _ => unreachable!(),
             }
         }
+
+        ("cluster", Some(matches)) => {
+            match matches.subcommand() {
+                ("setup", Some(m)) => sub_cluster_setup(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
         ("nodes", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_node_list(ui, m)?,
@@ -100,7 +118,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("datacenters", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_datacenters_list(ui, m)?,
-                ("get", Some(m)) => sub_datacenetrs_get(ui, m)?,
+                ("get", Some(m)) => sub_datacenters_get(ui, m)?,
                 ("describe", Some(m)) => sub_datacenters_decribe(ui, m)?,
                 _ => unreachable!(),
             }
@@ -120,6 +138,7 @@ fn start(ui: &mut UI) -> Result<()> {
                 _ => unreachable!(),
             }
         }
+
         ("jobs", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_job_list(ui, m)?,
@@ -132,7 +151,6 @@ fn start(ui: &mut UI) -> Result<()> {
                 _ => unreachable!(),
             }
         }
-
         ("login", Some(m)) => sub_cli_login(ui, m)?,
         ("logout", Some(_)) => sub_cli_logout(ui)?,
         ("new", Some(m)) => sub_cli_new(ui, m)?,
@@ -145,200 +163,196 @@ fn start(ui: &mut UI) -> Result<()> {
 
 fn sub_cli_login(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     init();
-
-    command::cli::login::start(ui, &api_server_param_or_env(&m)?)
+    command::cli::login::start(ui, create_client(&api_server_param_or_env(&m)?)?)
 }
 
-
 fn sub_cli_logout(ui: &mut UI) -> Result<()> {
-
     init();
 
     command::cli::logout::start(ui)
-
 }
-
 
 fn sub_cli_new(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     init();
-
-    command::cli::new::start(ui, &api_server_param_or_env(&m)?)
-
+    command::cli::new::start(ui, create_client(&api_server_param_or_env(&m)?)?)
 }
+
 fn sub_cli_whoami(ui: &mut UI) -> Result<()> {
     init();
 
     command::cli::whoami::start(ui)
-
 }
 
+// fn sub_cli_completers(m: &ArgMatches) -> Result<()> {
+//     let shell = m.value_of("SHELL").expect(
+//         "Missing Shell; A shell is required",
+//     );
+//     cli::get().gen_completions_to("rioos", shell.parse::<Shell>().unwrap(), &mut io::stdout());
+//     Ok(())
+// }
+//
 
-fn sub_cli_completers(m: &ArgMatches) -> Result<()> {
-    let shell = m.value_of("SHELL").expect(
-        "Missing Shell; A shell is required",
-    );
-    cli::get().gen_completions_to("rioos", shell.parse::<Shell>().unwrap(), &mut io::stdout());
-    Ok(())
-}
-
-
-fn sub_digicloud_deploy(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
-    let config_file = m.value_of("CONFIG").map(|v| v.into());
-
-    command::digicloud::deploy::start(
-        ui,
-        auth_token_param_or_env(&m)?,
-        //api_server_param_or_env(&m)?,
-        config_file,
-    )
-}
-
+//digitalcloud informations
 
 fn sub_digicloud_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
     command::digicloud::list::start(
         ui,
-        &api_server_param_or_env(&m)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-    )
-}
-fn sub_node_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
-    command::node::list::start(
-        ui,
-        &api_server_param_or_env(&m)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-    )
-}
-fn sub_node_describe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    let config_file = m.value_of("NODE_ID").map(|v| v.into());
-    command::node::describe::start(
-        ui,
-        &api_server_param_or_env(&m)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-        config_file.unwrap(),
-    )
-}
-
-fn sub_images_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
-    command::image::list::start(
-        ui,
-        &api_server_param_or_env(&m)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-    )
-}
-
-fn sub_datacenters_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
-    command::datacenter::list::start(
-        ui,
-        &api_server_param_or_env(&m)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-    )
-}
-fn sub_origin_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
-    command::origin::list::start(
-        ui,
-        &api_server_param_or_env(&m)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-    )
-}
-fn sub_job_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
-    command::job::list::start(
-        ui,
-        &api_server_param_or_env(&m)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-    )
-}
-fn sub_network_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
-    command::network::list::start(
-        ui,
-        &api_server_param_or_env(&m)?,
+        create_client(&api_server_param_or_env(&m)?)?,
         auth_token_param_or_env(&m)?,
         auth_email_param_or_env(&m)?,
     )
 }
 
 fn sub_digicloud_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    let config_file = m.value_of("DIGICLOUD_NAME").map(|v| v.into());
-
     command::digicloud::describe::start(
         ui,
-        &api_server_param_or_env(&m)?,
+        create_client(&api_server_param_or_env(&m)?)?,
         auth_token_param_or_env(&m)?,
         auth_email_param_or_env(&m)?,
-        config_file.unwrap(),
+        m.value_of("DIGICLOUD_NAME").map(|v| v.into()).unwrap(),
     )
 }
 
-fn sub_datacenetrs_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    let config_file = m.value_of("DATACENTER_ID").map(|v| v.into());
+fn sub_digicloud_deploy(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::digicloud::deploy::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        m.value_of("SOURCE").map(|v| v.into()).unwrap(),
+        &auth_token_param_or_env(&m)?,
+        &auth_email_param_or_env(&m)?,
+    )
+}
 
+
+//cluster setup
+fn sub_cluster_setup(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::cluster::setup::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        m.value_of("SOURCE").map(|v| v.into()).unwrap(),
+        &auth_token_param_or_env(&m)?,
+        &auth_email_param_or_env(&m)?,
+    )
+}
+
+// nodes information
+fn sub_node_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::node::list::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+
+fn sub_node_describe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::node::describe::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        m.value_of("NODE_ID").map(|v| v.into()).unwrap(),
+    )
+}
+
+//image information
+fn sub_images_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::image::list::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+
+//datacenter informations
+fn sub_datacenters_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::datacenter::list::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+
+fn sub_datacenters_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     command::datacenter::get::start(
         ui,
-        &api_server_param_or_env(&m)?,
+        create_client(&api_server_param_or_env(&m)?)?,
         auth_token_param_or_env(&m)?,
         auth_email_param_or_env(&m)?,
-        config_file.unwrap(),
+        m.value_of("DATACENTER_ID").map(|v| v.into()).unwrap(),
     )
 }
 
-fn sub_origin_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    let config_file = m.value_of("ORG_IDENT").map(|v| v.into());
-
-    command::origin::get::start(
-        ui,
-        &api_server_param_or_env(&m)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-        config_file.unwrap(),
-    )
-}
 fn sub_datacenters_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    let config_file = m.value_of("DATACENTER_ID").map(|v| v.into());
-
     command::datacenter::describe::start(
         ui,
-        &api_server_param_or_env(&m)?,
+        create_client(&api_server_param_or_env(&m)?)?,
         auth_token_param_or_env(&m)?,
         auth_email_param_or_env(&m)?,
-        config_file.unwrap(),
+        m.value_of("DATACENTER_ID").map(|v| v.into()).unwrap(),
     )
 }
 
+//storages information
 fn sub_storage_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-
     command::storage::list::start(
         ui,
-        &api_server_param_or_env(&m)?,
+        create_client(&api_server_param_or_env(&m)?)?,
         auth_token_param_or_env(&m)?,
         auth_email_param_or_env(&m)?,
     )
 }
 fn sub_storage_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    let config_file = m.value_of("STORAGE_ID").map(|v| v.into());
-
     command::storage::describe::start(
         ui,
-        &api_server_param_or_env(&m)?,
+        create_client(&api_server_param_or_env(&m)?)?,
         auth_token_param_or_env(&m)?,
         auth_email_param_or_env(&m)?,
-        config_file.unwrap(),
+        m.value_of("STORAGE_ID").map(|v| v.into()).unwrap(),
     )
 }
 
+//origin information
+fn sub_origin_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::origin::list::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+
+fn sub_origin_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::origin::get::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+        m.value_of("ORG_IDENT").map(|v| v.into()).unwrap(),
+    )
+}
+
+//job information
+fn sub_job_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::job::list::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
+
+//network information
+fn sub_network_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::network::list::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
+}
 
 
 fn ui() -> UI {
@@ -406,8 +420,6 @@ fn auth_token_param_or_env(m: &ArgMatches) -> Result<String> {
     }
 }
 
-
-
 fn auth_email_param_or_env(m: &ArgMatches) -> Result<String> {
     match m.value_of("EMAIL_TOKEN") {
         Some(o) => Ok(o.to_string()),
@@ -425,7 +437,6 @@ fn auth_email_param_or_env(m: &ArgMatches) -> Result<String> {
         }
     }
 }
-
 
 /// Check to see if the user has passed in an API_SERVER_ENVVAR param.  If not, check the RIOOS_API_SERVER env
 /// var. If not, check the /rioos/etc/cli.toml config if there is an origin. If that's empty too,
@@ -446,4 +457,13 @@ fn api_server_param_or_env(m: &ArgMatches) -> Result<String> {
             }
         }
     }
+}
+
+fn create_client(url: &str) -> Result<Client> {
+    Ok(Client::new(
+        url,
+        PRODUCT,
+        VERSION,
+        Some(&SERVER_CERTIFICATE),
+    )?)
 }

@@ -1,41 +1,31 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 //
 
-#![recursion_limit="128"]
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
+#![recursion_limit = "128"]
+#![cfg_attr(feature = "clippy", feature(plugin))]
+#![cfg_attr(feature = "clippy", plugin(clippy))]
 
-extern crate rioos_core;
-extern crate rioos_common as common;
-extern crate rioos_api_client as api_client;
-extern crate rioos_http_client as http_client;
-extern crate rioos_builder_protocol as protocol;
 extern crate handlebars;
+extern crate rioos_api_client as api_client;
+extern crate rioos_builder_apimachinery as protocol;
+extern crate rioos_common as common;
+extern crate rioos_core;
+extern crate rioos_net as rio_net;
 
-
-extern crate ansi_term;
 #[macro_use]
 extern crate clap;
-extern crate hyper;
+extern crate human_size;
 #[macro_use]
 extern crate log;
-extern crate pbr;
-extern crate regex;
-extern crate retry;
+#[macro_use]
+extern crate prettytable;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate toml;
 extern crate url;
-extern crate uuid;
-extern crate walkdir;
-extern crate base64;
-extern crate human_size;
-#[macro_use]
-extern crate prettytable;
+extern crate serde_yaml;
 
-#[cfg(test)]
-extern crate tempdir;
 #[macro_use]
 extern crate lazy_static;
 

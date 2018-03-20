@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Config
+clusters:
+  cluster:
+    certificate-authority-data: {{server_ca}}
+    server: https://{{ip}}:{{port}}/
+    name: elixir_cluster
+users:
+  user:
+    token:
+    client-certificate-data: {{cert}}
+    client-key-data: {{key}}
+    name: elixir_cluster
+contexts:
+  context:
+    cluster: elixir_cluster
+    user: elixir_cluster
+    name: elixir_cluster
+current-context: elixir_cluster

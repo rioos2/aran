@@ -1,0 +1,79 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'codelab-monitor'
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first.rules"
+  # - "second.rules"
+
+scrape_configs:
+- job_name: 'prometheus'
+
+  static_configs:
+  - targets: ['localhost:9090', 'localhost:9104', 'localhost:8081']
+
+- job_name: 'rioos-assemblys'
+
+  rioos_sd_configs:
+  - role: 'assembly'
+
+    api_server: 'https://localhost:7443'
+
+    watch_server: 'https://localhost:8443'
+   
+    metric_port: '10252'
+
+    tls_config:
+      ca_file: /home/rajthilak/code/megam/directory/rio/config/server-ca.crt
+      cert_file: /home/rajthilak/code/megam/directory/rio/config/client-nodelet.crt
+      key_file: /home/rajthilak/code/megam/directory/rio/config/client-nodelet.key
+
+    service-account-private-key-file: /home/rajthilak/code/megam/directory/rio/conf/rsa.pem
+
+  relabel_configs:  
+  - source_labels: [__meta_rioos_assembly_id]
+    action: replace
+    target_label: rioos_assembly_id
+  - source_labels: [__meta_rioos_assemblyfactory_id]
+    action: replace
+    target_label: rioos_assemblyfactory_id
+  - source_labels: [__meta_rioos_os_name]
+    action: replace
+    target_label: rioos_os_name
+
+- job_name: 'rioos-nodes'
+ 
+  rioos_sd_configs:
+  - role: 'node'
+  
+    api_server: 'https://localhost:7443'
+
+    watch_server: 'https://localhost:8443'
+   
+    metric_port: '10250'
+    
+    tls_config:
+      ca_file: /home/rajthilak/code/megam/directory/rio/config/server-ca.cert.pem
+      cert_file: /home/rajthilak/code/megam/directory/rio/config/client-prometheus.pub
+      key_file: /home/rajthilak/code/megam/directory/rio/config/client-prometheus.key
+
+    service-account-private-key-file: /home/rajthilak/code/megam/directory/rio/config/service-account.key
+
+  relabel_configs:  
+  - source_labels: [__meta_rioos_node_name]
+    action: replace
+    target_label: rioos_node_name
+  - source_labels: [__meta_rioos_node_address]
+    action: replace
+    target_label: rioos_node_address
+  - action: labelmap
+    regex: __meta_rioos_node_address_(.+)
+

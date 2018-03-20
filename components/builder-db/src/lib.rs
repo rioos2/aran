@@ -1,5 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 //! # Builder database design
 //!
@@ -45,29 +44,38 @@
 //! 1. Q: But what about those horror stories? A: The horror stories are about encoding your business logic in the database. For example, doing complex transformations on the data, or map reducing it, or all kinds of other crazy business. Both our application and our access patterns mean we likely won't need to do a whole lot of that.
 //!
 
+extern crate fallible_iterator;
 extern crate fnv;
+extern crate jsonwebtoken as jwt;
+
 #[macro_use]
 extern crate log;
 extern crate num_cpus;
 extern crate postgres;
-extern crate threadpool;
-extern crate rand;
-extern crate time;
 extern crate r2d2;
 extern crate r2d2_postgres;
+extern crate rand;
+extern crate rioos_builder_apimachinery as protocol;
+extern crate rioos_common as common;
+extern crate rioos_core as rcore;
 extern crate serde;
+extern crate base64;
+
 #[macro_use]
 extern crate serde_derive;
-extern crate fallible_iterator;
-extern crate rioos_builder_protocol as protocol;
-extern crate rioos_core as rcore;
-extern crate rioos_common as common;
-extern crate iron;
+#[macro_use]
+extern crate serde_json;
+extern crate serde_yaml;
+
+#[macro_use]
+extern crate lazy_static;
+
+extern crate threadpool;
+extern crate time;
 
 pub mod config;
 pub mod error;
 pub mod pool;
-pub mod async;
 pub mod test;
 #[allow(unused_must_use)]
 pub mod data_store;
@@ -90,3 +98,16 @@ pub mod storage_storedproc;
 pub mod migration;
 #[allow(unused_must_use)]
 pub mod job_storedproc;
+#[allow(unused_must_use)]
+pub mod volume_storedproc;
+#[allow(unused_must_use)]
+pub mod watch_storedproc;
+pub mod package_storedproc;
+#[allow(unused_must_use)]
+pub mod marketplace_storedproc;
+#[allow(unused_must_use)]
+pub mod devtooling_storedproc;
+#[allow(unused_must_use)]
+pub mod system_secret;
+#[allow(unused_must_use)]
+pub mod marketplace_differ;

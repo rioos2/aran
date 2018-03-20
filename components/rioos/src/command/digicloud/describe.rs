@@ -3,24 +3,23 @@ pub use error::{Error, Result};
 use common::ui::UI;
 
 use api_client::Client;
-use {PRODUCT, VERSION};
 
 use super::super::common::pretty_table;
 
-pub fn start(ui: &mut UI, url: &str, token: String, email: String, name: String) -> Result<()> {
+use protocol::api::base::MetaFields;
+
+pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name: String) -> Result<()> {
     ui.begin(&format!(
         "Constructing a {} digitalcloud for you...",
         name
     ))?;
     ui.br()?;
 
-    let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
-
     let result = rio_client.describe_deploy(&token, &email, &name)?;
 
     ui.heading("OverView")?;
     ui.para(&format!("Id: {}", result.get_id()))?;
-    ui.para(&format!("Name: {}", result.get_name()))?;
+    ui.para(&format!("Name: {}", result.object_meta().name))?;
     ui.para(&format!(
         "Replicas: {}",
         result.get_replicas().to_string()
@@ -28,15 +27,10 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, name: String)
     ui.para(
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
-    ui.para(&format!(
-        "Located: {}",
-        result.get_properties().clone().get_region()
-    ))?;
-    ui.para(&format!("Origin: {}", result.get_origin()))?;
+
     ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
 
-
-    let hs_result = rio_client.get_hs_by_asmfac_id(
+    /*let hs_result = rio_client.get_hs_by_asmfac_id(
         &token,
         &email,
         &result.get_id(),
@@ -78,15 +72,8 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, name: String)
     ))?;
 
     ui.heading("Metric Resource")?;
-    let resorce_title = row![
-        "Name",
-        "Min Target Value",
-        "Max Target Value",
-        "Scale Up By",
-        "Scale Up Wait Time",
-        "Scale Down By",
-        "Scale Down Wait Time"
-    ];
+    let resorce_title =
+        row!["Name","Min Target Value","Max Target Value","Scale Up By","Scale Up Wait Time","Scale Down By","Scale Down Wait Time"];
     let metric = hs_result
         .get_spec()
         .get_metrics()
@@ -112,7 +99,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, name: String)
         })
         .collect::<Vec<_>>();
 
-    pretty_table(metric.to_owned(), resorce_title);
+    pretty_table(metric.to_owned(), resorce_title);*/
 
     let replicas = rio_client.get_assembly_by_id(
         &token,
@@ -121,7 +108,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, name: String)
     )?;
 
     ui.heading("Replicas")?;
-    let title = row!["Id", "Name", "Status", "Origin", "Hrs ago"];
+    let title = row!["Id", "Name", "owner", "Status", "Hrs ago"];
 
     pretty_table(replicas.to_owned(), title);
 
@@ -133,7 +120,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, name: String)
 
     ui.para(
         "For more information on digitalclouds deployments: \
-        https://www.rioos.sh/docs/reference/deployment/",
+         https://www.rioos.sh/docs/reference/deployment/",
     )?;
 
     Ok(())

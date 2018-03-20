@@ -1,0 +1,37 @@
+// Copyright 2018 The Rio Advancement Inc
+
+
+use events::{Event, EventHandler};
+use node::runtime::{RuntimeHandler, ExternalMessage};
+
+use api::audit::ledger;
+
+impl EventHandler for RuntimeHandler {
+    fn handle_event(&mut self, event: Event) {
+        match event {
+            Event::Api(api) => self.handle_api_event(api),
+            Event::Internal(internal) => info!("skip {:?}", internal),
+        }
+    }
+}
+
+//Send the stuff to the audit block chain server
+impl RuntimeHandler {
+    fn handle_api_event(&mut self, event: ExternalMessage) {
+        match event {
+            ExternalMessage::PeerAdd(event_envl) => {
+                println!("--> ledger config is {:?}", self.config);
+
+                match ledger::from_config(&self.config) {
+                    Ok(ledger) => {
+                        match ledger.record(&event_envl) {
+                            Ok(_) => println!("--> save success"),
+                            _ => println!("--> save fail. {:?}", event_envl),
+                        };
+                    }
+                    _ => println!("--> ledger load  fail."),
+                }
+            }
+        }
+    }
+}

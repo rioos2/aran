@@ -1,5 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 use std::path::Path;
 
@@ -44,24 +43,22 @@ pub fn set_owner<T: AsRef<Path>, X: AsRef<str>>(path: T, owner: X, group: X) -> 
     let s_path = match path.as_ref().to_str() {
         Some(s) => s,
         None => {
-            return Err(Error::PermissionFailed(
-                format!("Invalid path {:?}", &path.as_ref()),
-            ))
+            return Err(Error::PermissionFailed(format!(
+                "Invalid path {:?}",
+                &path.as_ref()
+            )))
         }
-
     };
     let result = filesystem::chown(s_path, uid, gid);
 
     match result {
         Err(err) => Err(err),
         Ok(0) => Ok(()),
-        _ => {
-            Err(Error::PermissionFailed(format!(
-                "Can't change owner of {:?} to {:?}",
-                &path.as_ref(),
-                &owner.as_ref()
-            )))
-        }
+        _ => Err(Error::PermissionFailed(format!(
+            "Can't change owner of {:?} to {:?}",
+            &path.as_ref(),
+            &owner.as_ref()
+        ))),
     }
 }
 
@@ -69,24 +66,22 @@ pub fn set_permissions<T: AsRef<Path>>(path: T, mode: u32) -> Result<()> {
     let s_path = match path.as_ref().to_str() {
         Some(s) => s,
         None => {
-            return Err(Error::PermissionFailed(
-                format!("Invalid path {:?}", &path.as_ref()),
-            ))
+            return Err(Error::PermissionFailed(format!(
+                "Invalid path {:?}",
+                &path.as_ref()
+            )))
         }
-
     };
 
     let result = filesystem::chmod(s_path, mode);
     match result {
         Err(err) => Err(err),
         Ok(0) => Ok(()),
-        _ => {
-            Err(Error::PermissionFailed(format!(
-                "Can't set permissions on {:?} to {:?}",
-                &path.as_ref(),
-                &mode
-            )))
-        }
+        _ => Err(Error::PermissionFailed(format!(
+            "Can't set permissions on {:?} to {:?}",
+            &path.as_ref(),
+            &mode
+        ))),
     }
 }
 

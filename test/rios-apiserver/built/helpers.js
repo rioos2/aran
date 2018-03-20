@@ -1,10 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("mocha");
+var fs = require("fs");
+var path = require('path');
 var globalAny = global;
-// Users we can authenticate as
-globalAny.bobo_bearer = "Bearer ydukl6BhNeJi5V6pT5";
-//globalAny.email = "info@ricorp.io";
-//globalAny.asm_id = "836961694570782720";
-//globalAny.logan_bearer = "Bearer logan";
-//globalAny.provider_id ="1234567890";
+globalAny.version = "v1";
+globalAny.account = "Account";
+globalAny.assemblys = "Assemblys";
+globalAny.assemblylist = "AssemblyList";
+globalAny.plan = "PlanFactory";
+globalAny.planlist = "PlanFactoryList";
+globalAny.assemblyfactory = "AssemblyFactory";
+globalAny.assemblyfactorylist = "AssemblyFactoryList";
+globalAny.endpoint = "EndPoint";
+globalAny.endpointlist = "EndPointList";
+globalAny.rootCA = fs.readFileSync(path.join(process.env.RIOOS_HOME, 'config/server-ca.cert.pem'));
+globalAny.apiServer = 'https://localhost:7443/api/v1';
+globalAny.joblist = "JobList";

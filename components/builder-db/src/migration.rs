@@ -1,5 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 use postgres;
 use protocol::ShardId;
@@ -17,12 +16,10 @@ pub struct Migrator<'a> {
     shards: Vec<ShardId>,
 }
 
-
 /// Provides an interface for migrating the implementing type for `Migratables`.
 pub trait Migratable {
     fn migrate(&self, migrator: &mut Migrator, ui: &mut UI) -> Result<()>;
 }
-
 
 impl<'a> Migrator<'a> {
     pub fn new(xact: postgres::transaction::Transaction<'a>, shards: Vec<ShardId>) -> Migrator {
@@ -60,20 +57,41 @@ impl<'a> Migrator<'a> {
 
             let schema_name = format!("{}_{}", schema_prefix, shard);
             let sql_create_schema = format!("CREATE SCHEMA IF NOT EXISTS {}", schema_name);
+            // match schema_xact.execute(&sql_create_schema, &[]) {
+            //     Ok(_) => {}
+            //     Err(postgres::error::Error::Db(db_error)) => {
+            //         match db_error.code {
+            //             postgres::error::UNIQUE_VIOLATION => {
+            //                 debug!(
+            //                     "This is a concurrency bug with schema creation - you can \
+            //                         ignore it"
+            //                 )
+            //             }
+            //             _ => return Err(Error::SchemaCreate(postgres::error::Error::Db(db_error))),
+            //         }
+            //     }
+            //     Err(e) => return Err(Error::SchemaCreate(e)),
+            // };
+
             match schema_xact.execute(&sql_create_schema, &[]) {
                 Ok(_) => {}
-                Err(postgres::error::Error::Db(db_error)) => {
-                    match db_error.code {
-                        postgres::error::SqlState::UniqueViolation => {
-                            debug!(
-                                "This is a concurrency bug with schema creation - you can \
-                                    ignore it"
-                            )
+                Err(err) => {
+                    let orig_err = format!("{:?}", &err);
+
+                    match &err.code() {
+                        &Some(e) => {
+                            if e.code() == postgres::error::UNIQUE_VIOLATION.code() {
+                                debug!(
+                                    "This is a concurrency bug with schema creation - you can \
+                                     ignore it"
+                                )
+                            } else {
+                                return Err(Error::SchemaCreate(orig_err.to_string()));
+                            }
                         }
-                        _ => return Err(Error::SchemaCreate(postgres::error::Error::Db(db_error))),
+                        _ => return Err(Error::SchemaCreate(orig_err.to_string())),
                     }
                 }
-                Err(e) => return Err(Error::SchemaCreate(e)),
             }
 
             let set_search_path = format!("SET search_path TO {}", schema_name);
@@ -114,7 +132,6 @@ impl<'a> Migrator<'a> {
 
             debug!("=> [✓] fn: next_id_v1 in {}", schema_name);
 
-
             schema_xact
                 .execute(
                     r#"CREATE TABLE IF NOT EXISTS builder_db_migrations (
@@ -128,7 +145,6 @@ impl<'a> Migrator<'a> {
                 .map_err(Error::MigrationTable)?;
 
             debug!("=> [✓] builder_db_migrations in {}", schema_name);
-
 
             schema_xact
                 .execute(
@@ -146,11 +162,9 @@ impl<'a> Migrator<'a> {
                 .map_err(Error::FunctionCreate)?;
             schema_xact.commit().map_err(Error::TransactionCommit)?;
             debug!("=> DONE: Migration");
-
         }
         Ok(())
     }
-
 
     pub fn migrate(&mut self, prefix: &str, sql: &str) -> Result<()> {
         let hashed_content = hash_string(sql);
@@ -170,7 +184,7 @@ impl<'a> Migrator<'a> {
                 self.xact
                     .execute(
                         "INSERT INTO builder_db_migrations (prefix, hashed_content) VALUES \
-                              ($1, $2)",
+                         ($1, $2)",
                         &[&prefix, &hashed_content],
                     )
                     .map_err(Error::MigrationTracking)?;

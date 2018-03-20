@@ -2,16 +2,14 @@
 pub use error::{Error, Result};
 use common::ui::UI;
 use api_client::Client;
-use {PRODUCT, VERSION};
-use protocol::nodesrv;
+use protocol::api::node;
 use super::super::common::condition_table;
 use human_size::Size;
+use protocol::api::base::MetaFields;
 
-pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -> Result<()> {
+pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: String) -> Result<()> {
     ui.begin(&format!("Constructing a {} node for you...", id))?;
     ui.br()?;
-
-    let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
 
     let result = rio_client.node_describe(&token, &email, &id)?;
     let ips = vec!["ExternalIP", "InternalIP", "Hostname"];
@@ -140,6 +138,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
     ];
     ui.heading("OverView")?;
     ui.para(&format!("Id: {}", result.get_id()))?;
+    ui.para(&format!("Name: {}", result.object_meta().name))?;
     ui.para(&format!("IP Address: {}", addr))?;
     ui.para(&format!(
         "Os image: {} - {}",
@@ -160,17 +159,15 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String, id: String) -
     condition_table(cpu, title1);
     ui.br()?;
 
-
-
     ui.para(
         "For more information on node: \
-        https://www.rioos.sh/docs/reference/node/",
+         https://www.rioos.sh/docs/reference/node/",
     )?;
 
     Ok(())
 }
 
-pub fn check(a: Vec<nodesrv::Addresses>, param: &str) -> String {
+pub fn check(a: Vec<node::Addresses>, param: &str) -> String {
     let iter: String = a.iter()
         .take_while(|x| x.get_node_type().contains(param))
         .collect::<Vec<_>>()
@@ -194,7 +191,6 @@ pub fn bytes_to_human(mut x: f64) -> String {
         3 => size = " GiB".to_string(),
         4 => size = " TiB".to_string(),
         _ => size = " PiB".to_string(),
-
     }
     format!("{:.2} {}", x, size)
 }

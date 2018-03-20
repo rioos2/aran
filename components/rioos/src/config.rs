@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 //
 
 use std::env;
@@ -18,7 +18,6 @@ lazy_static! {
 
 //eg: If the user is not root. eg: /home/rajthilak/.rioos/etc/cli.toml
 const CLI_CONFIG_PATH: &'static str = "rioos/etc/cli.toml";
-
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Config {
@@ -71,7 +70,6 @@ pub fn save(config: &Config) -> Result<()> {
     file.write_all(raw.as_bytes())?;
     Ok(())
 }
-
 
 fn cli_config_path() -> PathBuf {
     if !am_i_root() {

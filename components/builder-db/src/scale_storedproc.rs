@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //stored procedures for plan_factory
 
@@ -25,46 +25,36 @@ impl Migratable for ScaleProcedures {
 
         migrator.migrate(
             "scalesrv",
-            r#"CREATE TABLE  IF NOT EXISTS horizontal_scaling (
+            r#"CREATE TABLE  IF NOT EXISTS horizontal_scalings (
              id bigint PRIMARY KEY DEFAULT next_id_v1('hs_id_seq'),
-             name text,
-             description text,
-             tags text[],
-             origin_id bigint REFERENCES origins(id),
              scale_type text,
-             representation_skew text,
              state text,
-             metadata text[],
+             metadata jsonb,
              spec jsonb,
-             status text,
+             status jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now())"#,
         )?;
 
-        ui.para("[✓] horizontal_scaling");
-
+        ui.para("[✓] horizontal_scalings");
 
         // Insert a new job into the jobs table
         migrator.migrate(
             "scalesrv",
             r#"CREATE OR REPLACE FUNCTION insert_hs_v1 (
-                name text,
-                description text,
-                tags text[],
-                origin_name text,
                 scale_type text,
-                representation_skew text,
                 state text,
-                metadata text[],
+                metadata jsonb,
                 spec jsonb,
-                status text
-                        ) RETURNS SETOF horizontal_scaling AS $$
-                        DECLARE
-                           this_origin origins%rowtype;
+                status jsonb,
+                object_meta jsonb,
+                type_meta jsonb
+                        ) RETURNS SETOF horizontal_scalings AS $$
                                 BEGIN
-                                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO horizontal_scaling(name,description,tags,origin_id, scale_type,representation_skew,state,metadata,spec,status)
-                                        VALUES (name,description,tags, this_origin.id,scale_type,representation_skew,state,metadata,spec,status)
+                                    RETURN QUERY INSERT INTO horizontal_scalings(scale_type,state,metadata,spec,status,object_meta,type_meta)
+                                        VALUES (scale_type,state,metadata,spec,status,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -74,23 +64,9 @@ impl Migratable for ScaleProcedures {
 
         migrator.migrate(
             "scalesrv",
-            r#"CREATE OR REPLACE FUNCTION get_hs_by_origin_v1(org_name text) RETURNS SETOF horizontal_scaling AS $$
-                DECLARE
-                this_origin origins%rowtype;
+            r#"CREATE OR REPLACE FUNCTION get_horizontal_scaling_v1(hid bigint) RETURNS SETOF horizontal_scalings AS $$
                         BEGIN
-                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
-                         RETURN QUERY SELECT * FROM horizontal_scaling WHERE origin_id=this_origin.id;
-                         RETURN;
-                        END
-                        $$ LANGUAGE plpgsql STABLE"#,
-        )?;
-
-
-        migrator.migrate(
-            "scalesrv",
-            r#"CREATE OR REPLACE FUNCTION get_hs_v1() RETURNS SETOF horizontal_scaling AS $$
-                        BEGIN
-                          RETURN QUERY SELECT * FROM horizontal_scaling;
+                          RETURN QUERY SELECT * FROM horizontal_scalings WHERE id=hid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -98,9 +74,19 @@ impl Migratable for ScaleProcedures {
 
         migrator.migrate(
             "scalesrv",
-            r#"CREATE OR REPLACE FUNCTION set_hs_status_v1 (hid bigint, hs_status text) RETURNS SETOF horizontal_scaling AS $$
+            r#"CREATE OR REPLACE FUNCTION get_hs_v1() RETURNS SETOF horizontal_scalings AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM horizontal_scalings;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION set_hs_status_v1 (hid bigint, hs_status jsonb) RETURNS SETOF horizontal_scalings AS $$
                             BEGIN
-                                RETURN QUERY UPDATE horizontal_scaling SET status=hs_status, updated_at=now() WHERE id=hid
+                                RETURN QUERY UPDATE horizontal_scalings SET status=hs_status, updated_at=now() WHERE id=hid
                             RETURNING *;
                             RETURN;
                             END
@@ -111,35 +97,114 @@ impl Migratable for ScaleProcedures {
             "scalesrv",
             r#"CREATE OR REPLACE FUNCTION update_hs_v1 (
                 hid bigint,
-                hs_name text,
-                hs_description text,
-                hs_tags text[],
                 hs_scale_type text,
-                hs_representation_skew text,
                 hs_state text,
-                hs_metadata text[],
-                hs_spec jsonb) RETURNS SETOF horizontal_scaling AS $$
+                hs_metadata jsonb,
+                hs_spec jsonb,
+                hs_status jsonb,
+                hs_object_meta jsonb) RETURNS SETOF horizontal_scalings AS $$
                             BEGIN
-                                RETURN QUERY UPDATE horizontal_scaling SET name=hs_name, description=hs_description,tags=hs_tags, scale_type=hs_scale_type, representation_skew=hs_representation_skew, state=hs_state,metadata=hs_metadata,spec=hs_spec, updated_at=now() WHERE id=hid
+                                RETURN QUERY UPDATE horizontal_scalings SET   scale_type=hs_scale_type, state=hs_state,metadata=hs_metadata,spec=hs_spec, status=hs_status,object_meta =hs_object_meta,updated_at=now() WHERE id=hid
                                 RETURNING *;
                                 RETURN;
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS vs_id_seq;"#,
+        )?;
 
         migrator.migrate(
             "scalesrv",
-            r#"CREATE OR REPLACE FUNCTION get_scale_by_asmfacid_v1(asmfac text) RETURNS SETOF horizontal_scaling AS $$
+            r#"CREATE TABLE  IF NOT EXISTS vertical_scalings (
+             id bigint PRIMARY KEY DEFAULT next_id_v1('vs_id_seq'),
+             scale_type text,
+             state text,
+             update_policy jsonb,
+             metadata jsonb,
+             spec jsonb,
+             status jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
+             updated_at timestamptz,
+             created_at timestamptz DEFAULT now())"#,
+        )?;
+
+        ui.para("[✓] vertical_scalings");
+
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION insert_vs_v1 (
+                scale_type text,
+                state text,
+                update_policy jsonb,
+                metadata jsonb,
+                spec jsonb,
+                status jsonb,
+                object_meta jsonb,
+                type_meta jsonb
+                        ) RETURNS SETOF vertical_scalings AS $$
+                                BEGIN
+                                    RETURN QUERY INSERT INTO vertical_scalings(scale_type,state,update_policy,metadata,spec,status,object_meta,type_meta)
+                                        VALUES (scale_type,state,update_policy,metadata,spec,status,object_meta,type_meta)
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#,
+        )?;
+
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION get_vs_v1() RETURNS SETOF vertical_scalings AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM horizontal_scaling WHERE spec ->> 'scale_target_ref' = asmfac ;
+                          RETURN QUERY SELECT * FROM vertical_scalings;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION set_vs_status_v1 (vid bigint, hs_status jsonb) RETURNS SETOF vertical_scalings AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE vertical_scalings SET status=hs_status, updated_at=now() WHERE id=vid
+                            RETURNING *;
+                            RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
 
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION get_vertical_scaling_v1(vid bigint) RETURNS SETOF vertical_scalings AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM vertical_scalings WHERE id=vid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
+        migrator.migrate(
+            "scalesrv",
+            r#"CREATE OR REPLACE FUNCTION update_vs_v1 (
+                vid bigint,
+                vs_scale_type text,
+                vs_state text,
+                vs_update_policy jsonb,
+                vs_metadata jsonb,
+                vs_spec jsonb,
+                vs_status jsonb,
+                vs_object_meta jsonb) RETURNS SETOF vertical_scalings AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE vertical_scalings SET  scale_type=vs_scale_type, state=vs_state,update_policy=vs_update_policy,metadata=vs_metadata,spec=vs_spec, status=vs_status,object_meta =vs_object_meta,updated_at=now() WHERE id=vid
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
 
         ui.end("ScaleProcedure");
 

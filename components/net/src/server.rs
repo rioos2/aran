@@ -1,17 +1,10 @@
-// Copyright (c) 2017 RiioCorp Inc
+// Copyright 2018 The Rio Advancement Inc
 //
 
 use std::error;
 use std::result;
-// use std::sync::{Arc, RwLock};
 
 use core::os::process;
-// use fnv::FnvHasher;
-// use time;
-
-// use config::{self, RouterCfg, Shards, ToAddrString};
-// use error::{Error, Result};
-
 
 pub trait Application {
     type Error: error::Error;

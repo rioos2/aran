@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 use std::collections::HashMap;
 use std::ffi::OsString;
@@ -131,30 +131,24 @@ impl Child {
     pub fn new(child: &mut windows_child::Child) -> Result<Child> {
         let (win_handle, status) = match handle_from_pid(child.id()) {
             Some(handle) => (Some(handle), Ok(None)),
-            _ => {
-                (None, {
-                    match child.wait() {
-                        Ok(exit) => Ok(Some(exit.code().unwrap() as u32)),
-                        Err(e) => {
-                            Err(format!(
-                                "Failed to retrieve exit code for pid {} : {}",
-                                child.id(),
-                                e
-                            ))
-                        }
-                    }
-                })
-            }
+            _ => (None, {
+                match child.wait() {
+                    Ok(exit) => Ok(Some(exit.code().unwrap() as u32)),
+                    Err(e) => Err(format!(
+                        "Failed to retrieve exit code for pid {} : {}",
+                        child.id(),
+                        e
+                    )),
+                }
+            }),
         };
 
         match status {
-            Ok(status) => {
-                Ok(Child {
-                    handle: win_handle,
-                    last_status: status,
-                    pid: child.id(),
-                })
-            }
+            Ok(status) => Ok(Child {
+                handle: win_handle,
+                last_status: status,
+                pid: child.id(),
+            }),
             Err(e) => Err(Error::GetHabChildFailed(e)),
         }
     }
@@ -165,7 +159,9 @@ impl Child {
 
     pub fn status(&mut self) -> Result<HabExitStatus> {
         if self.last_status.is_some() {
-            return Ok(HabExitStatus { status: Some(self.last_status.unwrap()) });
+            return Ok(HabExitStatus {
+                status: Some(self.last_status.unwrap()),
+            });
         }
 
         let exit_status = exit_status(self.handle.unwrap())?;
@@ -174,7 +170,9 @@ impl Child {
             return Ok(HabExitStatus { status: None });
         };
 
-        Ok(HabExitStatus { status: Some(exit_status) })
+        Ok(HabExitStatus {
+            status: Some(exit_status),
+        })
     }
 
     pub fn kill(&mut self) -> Result<ShutdownMethod> {
@@ -275,9 +273,9 @@ impl Child {
 
                 // Loop through all processes until we find one hwere `szExeFile` == `name`.
                 while process_success == 1 {
-                    let children = table.entry(process_entry.th32ParentProcessID).or_insert(
-                        Vec::new(),
-                    );
+                    let children = table
+                        .entry(process_entry.th32ParentProcessID)
+                        .or_insert(Vec::new());
                     (*children).push(process_entry.th32ProcessID);
 
                     process_success = unsafe { kernel32::Process32NextW(processes_snap_handle, &mut process_entry) };

@@ -1,16 +1,5 @@
-// Copyright (c) 2016-2017 Chef Software Inc. and/or applicable contributors
+// Copyright 2018 The Rio Advancement Inc
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 use std::error;
 use std::io;
@@ -18,21 +7,18 @@ use std::fmt;
 use std::result;
 
 use rio_core;
-use hyper;
-use openssl::{self, ssl};
+use reqwest;
 use serde_json;
 use url;
 
 #[derive(Debug)]
 pub enum Error {
     RioosAranCore(rio_core::Error),
-    HyperError(hyper::error::Error),
+    ReqwestError(reqwest::Error),
     /// Occurs when an improper http or https proxy value is given.
     Json(serde_json::Error),
     InvalidProxyValue(String),
     IO(io::Error),
-    SslError(ssl::Error),
-    SslErrorStack(openssl::error::ErrorStack),
     /// When an error occurs attempting to parse a string into a URL.
     UrlParseError(url::ParseError),
 }
@@ -43,12 +29,10 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::RioosAranCore(ref e) => format!("{}", e),
-            Error::HyperError(ref err) => format!("{}", err),
+            Error::ReqwestError(ref err) => format!("{}", err),
             Error::Json(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::InvalidProxyValue(ref e) => format!("Invalid proxy value: {:?}", e),
-            Error::SslError(ref e) => format!("{}", e),
-            Error::SslErrorStack(ref e) => format!("{}", e),
             Error::UrlParseError(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
@@ -59,12 +43,10 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::RioosAranCore(ref err) => err.description(),
-            Error::HyperError(ref err) => err.description(),
+            Error::ReqwestError(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::InvalidProxyValue(_) => "Invalid proxy value",
-            Error::SslError(ref err) => err.description(),
-            Error::SslErrorStack(ref err) => err.description(),
             Error::UrlParseError(ref err) => err.description(),
         }
     }
@@ -76,27 +58,15 @@ impl From<rio_core::Error> for Error {
     }
 }
 
-impl From<hyper::error::Error> for Error {
-    fn from(err: hyper::error::Error) -> Error {
-        Error::HyperError(err)
+impl From<reqwest::Error> for Error {
+    fn from(err: reqwest::Error) -> Error {
+        Error::ReqwestError(err)
     }
 }
 
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {
         Error::IO(err)
-    }
-}
-
-impl From<ssl::Error> for Error {
-    fn from(err: ssl::Error) -> Error {
-        Error::SslError(err)
-    }
-}
-
-impl From<openssl::error::ErrorStack> for Error {
-    fn from(err: openssl::error::ErrorStack) -> Error {
-        Error::SslErrorStack(err)
     }
 }
 
