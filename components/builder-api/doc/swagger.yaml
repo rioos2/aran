@@ -135,7 +135,7 @@ paths:
         '400':
           description: invalid input
         '500':
-          description: internal server error
+          description: internal seiceer error
         '409':
           description: input conflict
         default:
@@ -530,7 +530,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ServicesList'
+                $ref: '#/components/schemas/ServiceList'
         '404':
           description: services not found
           content:
@@ -1501,8 +1501,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HorizontalScalingResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '500':
-          description: "DB error"
+          description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
             application/json:
               schema:
@@ -1524,12 +1551,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HorizontalScalingList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
           description: horizontal scaling not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/horizontalscaling/{HorizontalScalingId}':
     put:
       tags:
@@ -1544,12 +1595,6 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HorizontalScaling'
-
       responses:
         '200':
           description: successful operation
@@ -1557,18 +1602,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HorizontalScalingResponse'
-        '500':
-          description: "DB error"
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/500Error'
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
           description: horizontal scaling not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HorizontalScaling'
   '/horizontalscaling/{HorizontalScalingId}/status':
     put:
       tags:
@@ -1589,7 +1666,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HorizontalScalingResponse'
+                $ref: '#/components/schemas/HorizontalScalingStatusUpdateResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
           description: horizontal scaling not found
           content:
@@ -1597,7 +1701,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/404Error'
         '500':
-          description: "DB error"
+          description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
             application/json:
               schema:
@@ -1626,19 +1730,37 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssemblyFactoryResponse'
-        '500':
-          description: "DB error"
+                $ref: '#/components/schemas/AssemblyFactoryReadyResponse'
+        '401':
+          description:  UnAuthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/500Error'
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
           description: horizontal scaling not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/horizontalscaling/{AssemblyFactoryId}/metrics?source={sourceName}&job={jobName}':
     get:
       tags:
@@ -1654,13 +1776,13 @@ paths:
             type: string
         - name: sourceName
           in: path
-          description: name of the source to get assembly/container metric(Ex - container_cpu_user_seconds_total/node_cpu)
+          description: name of the source to get machine/container metric(Ex - container_cpu_user_seconds_total/node_cpu)
           required: true
           schema:
             type: string
         - name: jobName
           in: path
-          description: name of the job to get assembly/container metric(Ex - rioos_sh_containers/rioos_sh_machines)
+          description: name of the job to get machine/container metric(Ex - rioos_sh_containers/rioos_sh_machines)
           required: true
           schema:
             type: string
@@ -1671,6 +1793,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MetricResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
           description: metrics not found
           content:
@@ -1678,7 +1818,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/404Error'
         '500':
-          description: "Promethues connection Refused"
+          description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
             application/json:
               schema:
@@ -3683,13 +3823,13 @@ components:
   schemas:
     Assembly:
       type: object
-      required:
-        - name
-        - uid
-        - account
       properties:
         object_meta:
           type: object
+          required:
+            - name
+            - uid
+            - account
           properties:
             name:
               type: string
@@ -4068,7 +4208,7 @@ components:
       properties:
         id:
           type: string
-          example: '87653212345011113'
+          example: '87653212345011112'
         type_meta:
           type: object
           properties:
@@ -4170,7 +4310,103 @@ components:
         created_at:
           type: string
           example: "2017-09-21T06:51:38.763014+00:00"
-
+    ServicesResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              description: "kind is a string value representing the REST resource this object represents."
+            api_version:
+              type: string
+              description: "api version defines the versioned schema of this representation of an object"
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              $ref: '#/components/schemas/Initializers'
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                  uid:
+                    type: string
+                    description: "UID of the referent."
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+        spec:
+           $ref: '#/components/schemas/ServiceSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+        metadata:
+          type: object
+          description: "Standard object's metadata. Can contain optional label selector team, origin"
+        created_at:
+          type: string
+    ServiceList:
+      type: array
+      items:
+        $ref: '#/components/schemas/ServicesResponse'
+      example:
+        - id: "87653212345011113"
+          type_meta: {"kind": "Service","api_version":"v1"}
+          object_meta: {"name": "rough-bush-8634.svc.local","account": "870109412813971456","created_at": "2017-12-11T11:29:50.547529+00:00","deleted_at": "","deletion_grace_period_seconds": 30,"cluster_name": "","labels": {},"annotations": {},"initializers": {"pending": [],"result": {"type_meta": {"kind": "","api_version": ""},"status": "","message": "","reason": "","details": { "name": "","group": "","kind": "", "causes": [],"uid": "","retry_after_seconds": 0},"code": 0}},  "finalizers": [""],"owner_references": [{"kind": "AssemblyFactory","api_version": "v1","name": "rough-bush-8634.svc.local","uid": "87543211234567876","block_owner_deletion": false}]}
+          spec: {"service_type": "ExternalName","loadbalancer_ip": "","names": {"849703502417502200": "rough-bush-8634.svc.local"},"external_names": {}}
+          status: {"phase": "ready","message": "","reason": "","conditions": [{"message": " ","reason": " ","status": " ","last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
+          metadata: {}
+          created_at: "2017-12-11T11:29:50.547529+00:00"
+        - id: "87653212345011112"
+          type_meta: {"kind": "Service","api_version":"v1"}
+          object_meta: {"name": "rough-bush-8634.svc.local","account": "870109412813971456","created_at": "2017-12-11T11:29:50.547529+00:00","deleted_at": "","deletion_grace_period_seconds": 30,"cluster_name": "","labels":{} ,"annotations": {},"initializers": {"pending": [],"result": { "type_meta": {"kind": "", "api_version": ""},"status": "","message": "", "reason": "","details": { "name": "", "group": "", "kind": "","causes": [], "uid": "","retry_after_seconds": 0  }, "code": 0}},"finalizers": [""],"owner_references": [{"kind": "AssemblyFactory","api_version": "v1","name": "rough-bush-8634.svc.local","uid": "87543211234567876","block_owner_deletion": false}]}
+          spec: {"service_type": "LoadBalancer","loadbalancer_ip": "","names": {}, "external_names": {}}
+          status: {"phase": "ready","message": "","reason": "", "conditions": [{ "message": " ", "reason": " ","status": " ", "last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
+          metadata: {"rioos_sh_loadbalancer_imagein": "container","rioos_sh_loadbalancer_imagename": "registry.rioos.xyz:5000/rioos/loadbalancer","rioos_sh_loadbalancer_cpu": "1","rioos_sh_loadbalancer_memory": "1024 MiB","rioos_sh_loadbalancer_disk": "1 GiB"}
+          created_at: "2017-12-11T11:29:50.547529+00:00"
     Accounts:
       type: object
       required:
@@ -5256,13 +5492,15 @@ components:
             plan:
               $ref: '#/components/schemas/PlanResponse'
             services:
-              $ref: '#/components/schemas/ServicesDNSResponse'
+              $ref: '#/components/schemas/ServiceList'
         metadata:
           type: object
           description: "Standard object's metadata. Can contain optional label selector team, origin"
         created_at:
           type: string
           example: "2017-12-11T11:29:50.547529+00:00"
+
+
     AssemblyFactoryGet:
       type: object
       properties:
@@ -5461,6 +5699,21 @@ components:
           type: string
           description: "The IP address created and attached to access the loadbalancer."
           example: ""
+        names:
+          type: object
+          description: "name(internal) is the reference that internal powerdns will return as a CNAME record for this service. No proxying will be involved. Must be a valid RFC-1123 hostname (https://tools.ietf.org/html/rfc1123) and requires Type to be ExternalName"
+        external_names:
+          type: object
+          description: "ExternalName maps to a public dns . Rio/OS automatically figures out the ip address is public or private."
+    ServiceSpec:
+      type: object
+      properties:
+        service_type:
+          type: string
+          description: "Only applies to Service Type: LoadBalancer LoadBalancer will get created with the IP specified in this field.type determines how the Service is exposed."
+        loadbalancer_ip:
+          type: string
+          description: "The IP address created and attached to access the loadbalancer."
         names:
           type: object
           description: "name(internal) is the reference that internal powerdns will return as a CNAME record for this service. No proxying will be involved. Must be a valid RFC-1123 hostname (https://tools.ietf.org/html/rfc1123) and requires Type to be ExternalName"
@@ -5773,11 +6026,8 @@ components:
     HorizontalScaling:
       type: object
       required:
-        - name
-        - account
         - state
         - scale_type
-        - uid
       properties:
         scale_type:
           type: string
@@ -5787,9 +6037,6 @@ components:
           type: string
           description: "The state represents when controller apply the scaling rule on assemblies."
           example: "ABLETOSCALE"
-        metadata:
-          type: object
-          description: "Standard object's metadata. Can contain optional label selector team, origin"
         spec:
           type: object
           properties:
@@ -5799,14 +6046,16 @@ components:
               example: 4
             max_replicas:
               type: integer
-              description: "Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less that minReplicas"
+              description: "Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less than minReplicas"
               example: 5
             scale_up_wait_time:
               type: string
-              example: "5m"
+              description: " wait minutes for the after last scale action for scale up"
+              example: "5"
             scale_down_wait_time:
               type: string
-              example: "5m"
+              description: " wait minutes for the after last scale action for scale down"
+              example: "5"
             metrics:
               type: array
               items:
@@ -5840,19 +6089,22 @@ components:
                             example: "1"
                   resource:
                     type: object
+                    required:
+                      - min_target_value
+                      - max_target_value
                     description: "`Resource` refers to a resource metric (such as those specified in requests and limits) known to rioos describing each assembly in the current scale target (e.g. CPU or memory).Such metrics are built in to Rioos, and have special scaling options on top of those available to normal per-assembly metrics using the 'AssemblyFactory' source."
                     properties:
                       name:
                         type: string
                         description: "`Name` is the name of the metric in question."
-                        example: "memory"
+                        example: "cpu"
                       min_target_value:
                         type: string
-                        description: "`MinTargetValue` is the percentage of the resouce scale down"
+                        description: "`MinTargetValue` is the percentage of the resource to scale down"
                         example: "20"
                       max_target_value:
                         type: string
-                        description: "`MaxTargetValue` is the percentage of the resouce scale up"
+                        description: "`MaxTargetValue`  is the percentage of the resource to scale up"
                         example: "80"
                       metric_time_spec:
                         type: object
@@ -5864,14 +6116,9 @@ components:
                           scale_down_by:
                             type: string
                             example: "1"
-
         status:
           type: object
           properties:
-            last_scale_time:
-              type: string
-              description: "`last_scale_time` is the last time the HorizontalScaler scaled the number of assemblys,  used by the horizontalscaler to control how often the number of assemblys is changed."
-              example: ""
             current_replicas:
               type: integer
               description: "`current_replicas` is current number of replicas of assemblys managed by this horizontalscaler, as last seen by the horizontalscaler."
@@ -5880,6 +6127,48 @@ components:
               type: integer
               description: "`desired_replicas` is the desired number of replicas of assemblys managed by this horizontalscaler, as last calculated by the horizontalscaler."
               example: 1
+        object_meta:
+          type: object
+          required:
+            - name
+            - account
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "hscale"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "870109412813971456"
+            owner_references:
+              type: array
+              required:
+               - uid
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                $ref: '#/components/schemas/OwnerReference'
+              example:
+                - name: "rough-bush-8634.svc.local"
+                  kind: "AssemblyFactory"
+                  api_version: "v1"
+                  uid: "87543211234567876"
+                  block_owner_deletion: true
+    HorizontalScalingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "876543212345671234"
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              example: HorizontalScaling
+            api_version:
+              type: string
+              example: v1
         object_meta:
           type: object
           properties:
@@ -5913,6 +6202,8 @@ components:
             annotations:
               type: object
               description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              $ref: '#/components/schemas/Initializers'
             finalizers:
               type: array
               description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
@@ -5921,36 +6212,17 @@ components:
                 example: ""
             owner_references:
               type: array
+              required:
+               - uid
               description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
               items:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                    description: "Kind of the referent."
-                    example: "AssemblyFactory"
-                  api_version:
-                    type: string
-                    description: " API version of the referent."
-                    example: "v1"
-                  name:
-                    type: string
-                    description: "Name of the referent."
-                    example: "rough-bush-8634.svc.local"
-                  uid:
-                    type: string
-                    description: "UID of the referent."
-                    example: "89878987654432342"
-                  block_owner_deletion:
-                    type: boolean
-                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
-                    example: true
-    HorizontalScalingResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          example: "87654321234567"
+                $ref: '#/components/schemas/OwnerReference'
+              example:
+                - name: "rough-bush-8634.svc.local"
+                  kind: "AssemblyFactory"
+                  api_version: "v1"
+                  uid: "87543211234567876"
+                  block_owner_deletion: true
         scale_type:
           type: string
           description: "There are two types of  horizontal scaler. “MANUALHS”, “AUTOHS”"
@@ -5971,14 +6243,16 @@ components:
               example: 4
             max_replicas:
               type: integer
-              description: "Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less that minReplicas"
+              description: "Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less than minReplicas"
               example: 5
             scale_up_wait_time:
               type: string
-              example: "5m"
+              description: " wait minutes for the after last scale action for scale up"
+              example: "5"
             scale_down_wait_time:
               type: string
-              example: "5m"
+              description: " wait minutes for the after last scale action for scale down"
+              example: "5"
             metrics:
               type: array
               items:
@@ -6051,6 +6325,24 @@ components:
               type: integer
               description: "`desired_replicas` is the desired number of replicas of assemblys managed by this horizontalscaler, as last calculated by the horizontalscaler."
               example: 1
+        created_at:
+          type: string
+          example: "2017-09-21T06:51:38.763014+00:00"
+    HorizontalScalingStatusUpdateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "876543212345671234"
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              example: HorizontalScaling
+            api_version:
+              type: string
+              example: v1
         object_meta:
           type: object
           properties:
@@ -6094,39 +6386,119 @@ components:
                 example: ""
             owner_references:
               type: array
+              required:
+               - uid
               description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                $ref: '#/components/schemas/OwnerReference'
+              example:
+                - name: "rough-bush-8634.svc.local"
+                  kind: "AssemblyFactory"
+                  api_version: "v1"
+                  uid: "87543211234567876"
+                  block_owner_deletion: true
+        scale_type:
+          type: string
+          description: "There are two types of  horizontal scaler. “MANUALHS”, “AUTOHS”"
+          example: AUTOHS
+        state:
+          type: string
+          description: "The state represents when controller apply the scaling rule on assemblies."
+          example: "ABLETOSCALE"
+        metadata:
+          type: object
+          description: "Standard object's metadata. Can contain optional label selector team, origin"
+        spec:
+          type: object
+          properties:
+            min_replicas:
+              type: integer
+              description: "Min_replicas is the lower limit for the number of replicas to which the horizontalscaler can scale down"
+              example: 4
+            max_replicas:
+              type: integer
+              description: "Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less than minReplicas"
+              example: 5
+            scale_up_wait_time:
+              type: string
+              description: " wait minutes for the after last scale action for scale up"
+              example: "5"
+            scale_down_wait_time:
+              type: string
+              description: " wait minutes for the after last scale action for scale down"
+              example: "5"
+            metrics:
+              type: array
               items:
                 type: object
                 properties:
-                  kind:
+                  metric_type:
                     type: string
-                    description: "Kind of the referent."
-                    example: "AssemblyFactory"
-                  api_version:
-                    type: string
-                    description: " API version of the referent."
-                    example: "v1"
-                  name:
-                    type: string
-                    description: "Name of the referent."
-                    example: "rough-bush-8634.svc.local"
-                  uid:
-                    type: string
-                    description: "UID of the referent."
-                    example: "89878987654432342"
-                  block_owner_deletion:
-                    type: boolean
-                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
-                    example: true
-        type_meta:
+                    description: "`Type` is the type of metric source.  It should be one of Object,  Resource, each mapping to a matching field in the object."
+                    example: "Resource"
+                  object:
+                    type: object
+                    description: "`Object` refers to a metric describing a single rioos object. (for example, hits-per-second on an Services:Loadbalancer object)."
+                    properties:
+                      target:
+                        type: string
+                        description: "`Target`:  Target is the described Rioos object. (example Services)"
+                        example: hits_as_per_second
+                      target_value:
+                        type: integer
+                        description: "`TargetValue` is the target value of the metric (as a quantity)."
+                        example: 1000
+                      metric_time_spec:
+                        type: object
+                        description: "`scale_up_by` `scale_up_wait_time`, ..down..: Control the rate of scaling in two ways, both for scaling up and for scaling down. We can define how many instances are added or removed, and set a delay."
+                        properties:
+                          scale_up_by:
+                            type: string
+                            example: "1"
+                          scale_down_by:
+                            type: string
+                            example: "1"
+                  resource:
+                    type: object
+                    description: "`Resource` refers to a resource metric (such as those specified in requests and limits) known to rioos describing each assembly in the current scale target (e.g. CPU or memory).Such metrics are built in to Rioos, and have special scaling options on top of those available to normal per-assembly metrics using the 'AssemblyFactory' source."
+                    properties:
+                      name:
+                        type: string
+                        description: "`Name` is the name of the metric in question."
+                        example: "memory"
+                      min_target_value:
+                        type: string
+                        description: "`MinTargetValue` is the percentage of the resource to scale down"
+                        example: "20"
+                      max_target_value:
+                        type: string
+                        description: "`MaxTargetValue`  is the percentage of the resource to scale up"
+                        example: "80"
+                      metric_time_spec:
+                        type: object
+                        description: "`scale_up_by` `scale_up_wait_time`, ..down..: Control the rate of scaling in two ways, both for scaling up and for scaling down. We can define how many instances are added or removed, and set a delay."
+                        properties:
+                          scale_up_by:
+                            type: string
+                            example: "1"
+                          scale_down_by:
+                            type: string
+                            example: "1"
+        status:
           type: object
           properties:
-            kind:
+            last_scale_time:
               type: string
-              example: HorizontalScaling
-            api_version:
-              type: string
-              example: v1
+              description: "`last_scale_time` is the last time the HorizontalScaler scaled the number of assemblys,  used by the horizontalscaler to control how often the number of assemblys is changed."
+              example: "2017-09-21T06:51:38.763014+00:00"
+            current_replicas:
+              type: integer
+              description: "`current_replicas` is current number of replicas of assemblys managed by this horizontalscaler, as last seen by the horizontalscaler."
+              example: 1
+            desired_replicas:
+              type: integer
+              description: "`desired_replicas` is the desired number of replicas of assemblys managed by this horizontalscaler, as last calculated by the horizontalscaler."
+              example: 2
         created_at:
           type: string
           example: "2017-09-21T06:51:38.763014+00:00"
@@ -6588,6 +6960,9 @@ components:
                 example: ""
             owner_references:
               type: array
+              required:
+                - uid
+                - kind
               description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
               items:
                 type: object
@@ -9462,7 +9837,7 @@ components:
         last_scale_time:
           type: string
           description: "`last_scale_time` is the last time the HorizontalScaler scaled the number of assemblys,  used by the horizontalscaler to control how often the number of assemblys is changed."
-          example: ""
+          example: 'RFC3339("2018-03-20T19:09:10+05:30")'
         current_replicas:
           type: integer
           description: "`current_replicas` is current number of replicas of assemblys managed by this horizontalscaler, as last seen by the horizontalscaler."
@@ -9470,7 +9845,7 @@ components:
         desired_replicas:
           type: integer
           description: "`desired_replicas` is the desired number of replicas of assemblys managed by this horizontalscaler, as last calculated by the horizontalscaler."
-          example: 1
+          example: 2
     VerticalScaling:
       type: object
       required:
@@ -9496,10 +9871,12 @@ components:
           properties:
             scale_up_wait_time:
               type: string
-              example: "5m"
+              description: " wait minutes for the after last scale action for scale up"
+              example: "5"
             scale_down_wait_time:
               type: string
-              example: "5m"
+              description: " wait minutes for the after last scale action for scale down"
+              example: "5"
             min_resource:
               type: object
               description: "Min_resource is the lower limit for the number of resource to which the vertical scaler can scale down"
@@ -9531,6 +9908,9 @@ components:
                     example: "Resource"
                   resource:
                     type: object
+                    required:
+                      - min_target_value
+                      - max_target_value
                     description: "`Resource` refers to a resource metric (such as those specified in requests and limits) known to rioos describing each assembly in the current scale target (e.g. CPU or memory).Such metrics are built in to Rioos, and have special scaling options on top of those available to normal per-assembly metrics using the 'AssemblyFactory' source."
                     properties:
                       name:
@@ -9676,10 +10056,12 @@ components:
           properties:
             scale_up_wait_time:
               type: string
-              example: "5m"
+              description: " wait minutes for the after last scale action for scale up"
+              example: "5"
             scale_down_wait_time:
               type: string
-              example: "5m"
+              description: " wait minutes for the after last scale action for scale down"
+              example: "5"
             min_resource:
               type: object
               description: "Min_resource is the lower limit for the number of resource to which the vertical scaler can scale down"
@@ -9952,6 +10334,7 @@ components:
                   name: "lev.megam.io"
                   uid: "891176347156619264"
                   block_owner_deletion: true
+                  meta_data: {"sample":"sample"}
                 - kind: "StoragePool"
                   api_version: "v1"
                   name: "sto1"
@@ -9960,6 +10343,7 @@ components:
     OwnerReference:
       type: object
       required:
+        - kind
         - uid
       properties:
         kind:
@@ -10388,11 +10772,11 @@ components:
     MetricResponse:
       type: object
       properties:
-        876543212345667789:
+        849703502417502208:
           type: string
           example: "93.99999779999999"
           description: "value of the assembly metric"
-        849703502417502208:
+        849703502417500209:
           type: string
           example: "98.99999999999999"
           description: "value of the assembly metric"
