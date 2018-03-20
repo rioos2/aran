@@ -12,31 +12,35 @@ use rioos;
 
 #[derive(Debug)]
 pub enum Error {
-    Auth(rioos::AuthErr),   
-    IO(io::Error),   
+    Auth(rioos::AuthErr),
+    IO(io::Error),
     SignatureExpired,
     SignatureInvalid,
     JWTInvalid,
     IssuerInvalid,
+    OtpInvalid,
     FormatInvalid(SJError),
     OpenSslError(ErrorStack),
     ProtocolError(B64Error),
+    RemoveOtp(String),
 }
 
 pub type Result<T> = result::Result<T, Error>;
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let msg = match *self {           
-            Error::Auth(ref e) => format!("Rio/OS authorization error, {}", e),            
-            Error::IO(ref e) => format!("{}", e),   
-            Error::FormatInvalid(ref e) => format!("Rio/OS authorization error, {}", e), 
-            Error::OpenSslError(ref e) => format!("Rio/OS authorization error, {}", e), 
+        let msg = match *self {
+            Error::Auth(ref e) => format!("Rio/OS authorization error, {}", e),
+            Error::IO(ref e) => format!("{}", e),
+            Error::FormatInvalid(ref e) => format!("Rio/OS authorization error, {}", e),
+            Error::OpenSslError(ref e) => format!("Rio/OS authorization error, {}", e),
             Error::ProtocolError(ref e) => format!("Rio/OS authorization error, {}", e),
-            Error::SignatureExpired => format!("signature was expired"), 
+            Error::SignatureExpired => format!("signature was expired"),
             Error::SignatureInvalid => format!("signature invalid"),
-            Error::JWTInvalid => format!("JWT token is invalid"), 
-            Error::IssuerInvalid => format!("JWT token issuer was invalid"), 
+            Error::JWTInvalid => format!("JWT token is invalid"),
+            Error::IssuerInvalid => format!("JWT token issuer was invalid"),
+            Error::OtpInvalid => format!("Rio/OS OTP Invlid"),
+            Error::RemoveOtp(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -45,15 +49,17 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::Auth(ref err) => err.description(),            
-            Error::IO(ref err) => err.description(),  
+            Error::Auth(ref err) => err.description(),
+            Error::IO(ref err) => err.description(),
             Error::FormatInvalid(ref err) => err.description(),
             Error::OpenSslError(ref err) => err.description(),
-            Error::ProtocolError(ref err) => err.description(),   
-            Error::SignatureExpired => "signature expired",    
+            Error::ProtocolError(ref err) => err.description(),
+            Error::RemoveOtp(ref _e) => "OTP Removing error",
+            Error::SignatureExpired => "signature expired",
             Error::SignatureInvalid => "signature invalid",
             Error::JWTInvalid => "JWT token invalid",
             Error::IssuerInvalid => "JWT token issuer invalid",
+            Error::OtpInvalid => "Rio/OS OTP Invalid",
         }
     }
 }

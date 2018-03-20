@@ -8,7 +8,7 @@ use protocol::api::session::*;
 use rioos;
 use util::token_target::TokenTarget;
 use util::jwt_authenticator::JWTAuthenticator;
-use super::super::error::{self, Result};
+use super::super::error::{self, Result, Error};
 use rand::{self, Rng};
 
 const TOKEN_LEN: usize = 18;
@@ -22,7 +22,6 @@ const SECRETNAMECLAIM: &'static str = "rioos_sh/useraccount/secret.name";
 pub struct UserAccountAuthenticate {}
 
 impl UserAccountAuthenticate {
-
     //Generates a token of 18 ascii random character
     pub fn token() -> Result<String> {
         Ok(
@@ -40,12 +39,12 @@ impl UserAccountAuthenticate {
 
     // it authenticates username and password values
     // it validate username and password are exists or not in database and return result in bool (true or false)
-    // incase account is exists then it validate the password 
+    // incase account is exists then it validate the password
     pub fn from_username_and_password(datastore: &DataStoreConn, username: String, password: String) -> Result<bool> {
-    	let mut account_get = session::AccountGet::new();
-    	account_get.set_email(username.clone());
-    	account_get.set_password(password);
-    	match SessionDS::get_account(&datastore, &account_get) {
+        let mut account_get = session::AccountGet::new();
+        account_get.set_email(username.clone());
+        account_get.set_password(password);
+        match SessionDS::get_account(&datastore, &account_get) {
             Ok(opt_account) => {
                 let account = opt_account.unwrap();
                 GoofyCrypto::new()
@@ -64,9 +63,9 @@ impl UserAccountAuthenticate {
             }
             Err(err) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
-                            error: format!("Couldn't find {} in session.",username.clone()),
-                            error_description: format!("{}", err),
-                        }))
+                    error: format!("Couldn't find {} in session.", username.clone()),
+                    error_description: format!("{}", err),
+                }))
             }
         }
     }
@@ -76,7 +75,7 @@ impl UserAccountAuthenticate {
     // then check valid bearer token and validate their expiry period
     // otherwise it returns error response
     pub fn from_email_and_token(datastore: &DataStoreConn, email: String, token: String) -> Result<bool> {
-    	let tk_target = TokenTarget::new(email.to_string(), token.to_string());
+        let tk_target = TokenTarget::new(email.to_string(), token.to_string());
         let request: SessionGet = tk_target.into();
 
         match SessionDS::get_session(datastore, &request) {
@@ -91,16 +90,34 @@ impl UserAccountAuthenticate {
             }
             Err(err) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
-                            error: format!("Couldn't find {} in session.",email),
-                            error_description: format!("{}", err),
-                        }))              
+                    error: format!("Couldn't find {} in session.", email),
+                    error_description: format!("{}", err),
+                }))
             }
+        }
+    }
+
+
+    // it authenticates otp token values
+    // it checks account is exists or not in database
+    // then check valid bearer token and validate their expiry period
+    // otherwise it returns error response
+    pub fn from_otp(datastore: &DataStoreConn, otp: String) -> Result<bool> {
+        match SessionDS::get_otp(datastore, &otp) {
+            Ok(Some(otp)) => {
+                match SessionDS::remove_otp(datastore, otp) {
+                    Ok(_) => Ok(true),
+                    Err(err) => Err(Error::RemoveOtp(format!("{}", err))),
+                }
+            }
+            Ok(None) => return Err(Error::OtpInvalid),
+            Err(_err) => return Err(Error::OtpInvalid),
         }
     }
 
     // it authenticates user email and JWT token values
     // first it validates some static header and payload claims
-    // then token is valid or not 
+    // then token is valid or not
     pub fn from_email_and_webtoken(datastore: &DataStoreConn, email: String, webtoken: String) -> Result<bool> {
         let jwt = try!(JWTAuthenticator::new(webtoken.clone()));
         try!(jwt.has_correct_issuer(LEGACYUSERACCOUNTISSUER));
@@ -109,13 +126,12 @@ impl UserAccountAuthenticate {
         try!(jwt.has_account_uid_claim(USERACCOUNTUIDCLAIM));
         try!(jwt.has_correct_token_from_secret(datastore, SECRETUIDCLAIM));
         let mut session_tk: SessionCreate = SessionCreate::new();
-                session_tk.set_email(email);
-                session_tk.set_token(webtoken.clone());
+        session_tk.set_email(email);
+        session_tk.set_token(webtoken.clone());
 
         let _session = try!(session_create(datastore, session_tk));
-    	Ok(true)
+        Ok(true)
     }
-
 }
 
 pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> Result<Session> {
@@ -125,7 +141,7 @@ pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> Result<Se
             return Err(error::Error::Auth(rioos::AuthErr {
                 error: format!("Couldn not create session for the account."),
                 error_description: format!("{}", e),
-            }))    
-        }        
+            }))
+        }
     }
 }

@@ -105,3 +105,35 @@ impl FromStr for XAuthRioOSUserAccountEmail {
         Ok(XAuthRioOSUserAccountEmail(value.to_string()))
     }
 }
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct XAuthRioOSOTP(pub String);
+
+impl Header for XAuthRioOSOTP {
+    fn header_name() -> &'static str {
+        "X-AUTH-RIOOS-OTP"
+    }
+
+    fn parse_header(raw: &[Vec<u8>]) -> Result<Self, HttpError> {
+        from_one_raw_str(raw).map(XAuthRioOSOTP)
+    }
+}
+
+impl HeaderFormat for XAuthRioOSOTP {
+    fn fmt_header(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(&self, f)
+    }
+}
+impl fmt::Display for XAuthRioOSOTP {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+impl FromStr for XAuthRioOSOTP {
+    type Err = Error;
+
+    fn from_str(value: &str) -> result::Result<Self, Self::Err> {
+        Ok(XAuthRioOSOTP(value.to_string()))
+    }
+}

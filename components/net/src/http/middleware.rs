@@ -63,9 +63,11 @@ where
                         Ok(response)
                     }
                     None => {
-                        let err = internal_error(&format!("BUG! Report to development http://bit.ly/rioosbug"));
+                        let err = internal_error(&format!(
+                            "BUG! Report to development http://bit.ly/rioosbug"
+                        ));
                         Err(render_json_error(&bad_err(&err), err.http_code()))
-                    }                      
+                    }
                 }
             }
         }
@@ -282,8 +284,9 @@ pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
     pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {
-        let reqheader = req.headers.clone(); 
+        let reqheader = req.headers.clone();
         let email = reqheader.get::<XAuthRioOSEmail>();
+        let otp = reqheader.get::<XAuthRioOSOTP>();
         let serviceaccount = reqheader.get::<XAuthRioOSServiceAccountName>();
         let useraccount = reqheader.get::<XAuthRioOSUserAccountEmail>();
 
@@ -322,6 +325,8 @@ impl ProceedAuthenticating {
                 email: &useraccount.unwrap().0,
                 webtoken: token,
             };
+        } else if !otp.is_none() {
+            auth_enum = Authenticatable::OtpAuth { token: &otp.unwrap().0 };
         } else {
             let err = not_acceptable_error(&format!(
                 "Authentication not supported. You must have headers for the supported authetication. Refer https://www.rioos.sh/admin/auth."
@@ -334,7 +339,7 @@ impl ProceedAuthenticating {
                 let err = unauthorized_error(&format!("{}\n", err));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
-        }        
+        }
     }
 }
 
