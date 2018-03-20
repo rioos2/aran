@@ -1,29 +1,23 @@
 [package]
 name = "rioos_builder_nodesrv"
 version = "0.0.0"
-authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
+authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
 description = "RIO/OS Deployment library"
 workspace = "../../"
 
 [dependencies]
-postgres = { version = "0.14.2", features = ["with-chrono"] }
-chrono = { version = "0.3.0", features = ["serde"] }
-rand = "*"
-serde = "1.0.11"
-serde_json = "1.0.2"
+postgres = { version = "0.15.1", features = ["with-chrono"] }
+chrono = { version = "0.4.0", features = ["serde"] }
+serde_json = "1.0.10"
 
-[dependencies.clap]
-version = "*"
-features = [ "suggestions", "color", "unstable" ]
-
-[dependencies.rioos_net]
-path = "../net"
-
-[dependencies.rioos_builder_protocol]
-path = "../builder-protocol"
+[dependencies.rioos_builder_apimachinery]
+path = "../builder-apimachinery"
 
 [dependencies.rioos_builder_db]
 path = "../builder-db"
+
+[dependencies.rioos_net]
+path = "../net"
 
 
 [features]

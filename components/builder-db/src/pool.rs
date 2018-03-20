@@ -1,5 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 use std::ops::{Deref, DerefMut};
 use std::thread;
@@ -11,13 +10,14 @@ use rand::{self, Rng};
 use r2d2;
 use r2d2_postgres::{self, PostgresConnectionManager, TlsMode};
 use protocol::{ShardId, SHARD_COUNT};
-
+// use postgres::tls::openssl::OpenSsl;
 use config::DataStore;
 use error::{Error, Result};
+
 //
 //This is for future use. Where we could shard in the database based on functionality
 //
-use protocol::routesrv::{Routable, RouteKey};
+use protocol::api::routesrv::{Routable, RouteKey};
 
 #[derive(Clone)]
 pub struct Pool {
@@ -39,12 +39,15 @@ impl fmt::Debug for Pool {
 impl Pool {
     pub fn new(config: &DataStore, shards: Vec<ShardId>) -> Result<Pool> {
         loop {
-            let pool_config_builder = r2d2::Config::builder()
-                .pool_size(config.pool_size)
-                .connection_timeout(Duration::from_secs(config.connection_timeout_sec));
-            let pool_config = pool_config_builder.build();
+            // let openssl = OpenSsl::new().unwrap();
+            //
+            // let manager = PostgresConnectionManager::new(config, TlsMode::Require(Box::new(openssl)))?;
             let manager = PostgresConnectionManager::new(config, TlsMode::None)?;
-            match r2d2::Pool::new(pool_config, manager) {
+
+            match r2d2::Pool::builder()
+                .max_size(config.pool_size)
+                .connection_timeout(Duration::from_secs(config.connection_timeout_sec))
+                .build(manager) {
                 Ok(pool) => {
                     return Ok(Pool {
                         inner: pool,
@@ -78,7 +81,6 @@ impl Pool {
         )?;
         Ok(conn)
     }
-
 
     pub fn get<T: Routable>(&self, routable: &T) -> Result<r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>> {
         let optional_shard_id = routable.route_key().map(

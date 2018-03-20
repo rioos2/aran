@@ -1,7 +1,7 @@
 [package]
 name = "rioos"
 version = "0.0.0"
-authors = ["Vinothini V <vino.v@megam.io>", "Kishorekumar Neelamegam <nkishore@megam.io>"]
+authors = ["Suganya Kaliyamoorthy <suganya.kaliyamoorthy@rio.company>", "Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
 description = "RIO/OS CLI"
 build = "../build-rioos.rs"
 workspace = "../../"
@@ -12,26 +12,19 @@ doc = false
 
 [dependencies]
 clippy = {version = "*", optional = true}
-base64 = "*"
-ansi_term = "*"
-env_logger = "*"
-hyper = "*"
+env_logger = "0.5.3"
 handlebars = { version = "*", default-features = false }
 lazy_static = "*"
 libc = "*"
-log = "*"
-pbr = "*"
-regex = "*"
-retry = "*"
-serde = "*"
+log = "0.4.1"
+serde = "1.0.27"
 serde_derive = "*"
 toml = { version = "*", default-features = false }
-url = "*"
+url = "1.7.0"
 prettytable-rs = "*"
-walkdir = "*"
-rioos_builder_protocol = { path = "../builder-protocol" }
 human-size = "0.2.0"
-
+serde_yaml = "0.7"
+rioos_builder_apimachinery = { path = "../builder-apimachinery" }
 
 [dependencies.clap]
 version = "*"
@@ -46,15 +39,9 @@ path = "../common"
 [dependencies.rioos_api_client]
 path = "../builder-api-client"
 
-[dependencies.rioos_http_client]
-path = "../http-client"
 
-[dependencies.uuid]
-version = "*"
-features = ["v4"]
-
-[dev-dependencies]
-tempdir = "*"
+[dependencies.rioos_net]
+path = "../net"
 
 [features]
 default = []

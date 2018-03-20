@@ -1,21 +1,18 @@
 image: rust:latest
 variables:
- COMPONENTS: bin 
- LIBSODIUM_PREFIX: $HOME/pkgs/libsodium/1.0.12 
- PKG_CONFIG_PATH: "$PKG_CONFIG_PATH:$LIBSODIUM_PREFIX/lib/pkgconfig" 
- LD_LIBRARY_PATH: "$LD_LIBRARY_PATH:$LIBSODIUM_PREFIX/lib" 
+ COMPONENTS: bin
+ LD_LIBRARY_PATH: "$LD_LIBRARY_PATH"
  LIBRARY_PATH: "$LIBRARY_PATH"
+ RIOOS_HOME: "$CI_PROJECT_DIR/rioos"
 services:
 - postgres:latest
 stages:
 - test
 before_script:
-- ./support/ci/fast_pass.sh || exit 0
-- ./support/ci/compile_libsodium.sh
+- ./support/ci/install_packages.sh
 - ./support/ci/install_rustfmt.sh
 cargo_test:
   stage: test
-  script: 
+  script:
   - ./support/ci/rust_tests.sh
-  - ./support/ci/lint.sh
-  - cargo test
+  # - ./support/ci/lint.sh

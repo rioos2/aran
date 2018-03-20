@@ -18,8 +18,7 @@ output (this target requires `perl`).
 
 **Stable Rust:**
 
-To [install stable Rust](https://www.rust-lang.org/install.html), run: `curl -sSf
-https://sh.rustup.rs | sh`.
+To [install stable Rust](https://www.rust-lang.org/install.html), run: `curl -sSf https://sh.rustup.rs | sh`.
 
 **Rustfmt**
 
@@ -32,7 +31,7 @@ An easy way to install it (assuming you have
 Rust installed as above), is to run `cargo install rustfmt` and adding
 `$HOME/.cargo/bin` to your `PATH`.
 
-## Ubuntu: Latest (16.04/16.10/Yakkety)
+## Ubuntu: Latest (16.04+)
 
 This installation method uses as many packages from Ubuntu as possible.
 

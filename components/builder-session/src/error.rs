@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder session
 
@@ -7,15 +7,12 @@ use std::fmt;
 use std::io;
 use std::result;
 use std::num;
-use hyper;
 use postgres;
 use db;
 
 #[derive(Debug)]
 pub enum Error {
     Db(db::error::Error),
-    HTTP(hyper::status::StatusCode),
-    HyperError(hyper::error::Error),
     AccountIdFromString(num::ParseIntError),
     AccountCreate(postgres::error::Error),
     AccountGet(postgres::error::Error),
@@ -26,6 +23,7 @@ pub enum Error {
     AccountOriginInvitationAccept(postgres::error::Error),
     OriginAccountList(postgres::error::Error),
     OriginCreate(postgres::error::Error),
+    TeamCreate(postgres::error::Error),
     OriginGetResponse(postgres::error::Error),
     OriginGet(postgres::error::Error),
     LdapConfigCreate(postgres::error::Error),
@@ -44,8 +42,6 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
-            Error::HTTP(ref e) => format!("{}", e),
-            Error::HyperError(ref e) => format!("{}", e),
             Error::AccountIdFromString(ref e) => format!("Cannot convert from string to Account ID, {}", e),
             Error::AccountCreate(ref e) => format!("Error creating account in database, {}", e),
             Error::AccountGet(ref e) => format!("Error getting account from database, {}", e),
@@ -56,6 +52,7 @@ impl fmt::Display for Error {
             Error::AccountOriginInvitationAccept(ref e) => format!("Error accepting invitation in database, {}", e),
             Error::OriginAccountList(ref e) => format!("Error listing origins for account in database, {}", e),
             Error::OriginCreate(ref e) => format!("Error creating origin for account in database, {}", e),
+            Error::TeamCreate(ref e) => format!("Error creating team for origin in database, {}", e),
             Error::OriginGetResponse(ref e) => format!("Error retrive origin for account in database, {}", e),
             Error::OriginGet(ref e) => format!("Error retrive origin by name, {}", e),
             Error::LdapConfigCreate(ref e) => format!("Error creating ldap config, {}", e),
@@ -66,7 +63,6 @@ impl fmt::Display for Error {
             Error::SamlProviderGet(ref e) => format!("Error get saml provider data, {}", e),
             Error::OpenidProviderGetResponse(ref e) => format!("Error get all open id  provider data, {}", e),
             Error::OidcProviderGet(ref e) => format!("Error get openid  provider data, {}", e),
-
         };
         write!(f, "{}", msg)
     }
@@ -76,8 +72,6 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Db(ref err) => err.description(),
-            Error::HTTP(_) => "Non-200 HTTP response.",
-            Error::HyperError(ref err) => err.description(),
             Error::AccountIdFromString(ref err) => err.description(),
             Error::AccountCreate(ref err) => err.description(),
             Error::AccountGet(ref err) => err.description(),
@@ -88,6 +82,7 @@ impl error::Error for Error {
             Error::AccountOriginInvitationAccept(ref err) => err.description(),
             Error::OriginAccountList(ref err) => err.description(),
             Error::OriginCreate(ref err) => err.description(),
+            Error::TeamCreate(ref err) => err.description(),
             Error::OriginGetResponse(ref err) => err.description(),
             Error::OriginGet(ref err) => err.description(),
             Error::LdapConfigCreate(ref err) => err.description(),
@@ -98,15 +93,7 @@ impl error::Error for Error {
             Error::SamlProviderGet(ref err) => err.description(),
             Error::OpenidProviderGetResponse(ref err) => err.description(),
             Error::OidcProviderGet(ref err) => err.description(),
-
         }
-    }
-}
-
-
-impl From<hyper::error::Error> for Error {
-    fn from(err: hyper::error::Error) -> Self {
-        Error::HyperError(err)
     }
 }
 

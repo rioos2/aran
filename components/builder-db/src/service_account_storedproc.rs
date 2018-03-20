@@ -1,7 +1,6 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //stored procedures service account
-
 use error::Result;
 use migration::{Migratable, Migrator};
 use common::ui::UI;
@@ -28,10 +27,10 @@ impl Migratable for ServiceAccountProcedure {
             r#"CREATE TABLE  IF NOT EXISTS secrets (
              id bigint PRIMARY KEY DEFAULT next_id_v1('sec_id_seq'),
              secret_type text,
-             origin_id bigint REFERENCES origins(id),
-             data text,
-             object_meta text,
-             type_meta text,
+             data jsonb,
+             metadata jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
              )"#,
@@ -39,23 +38,19 @@ impl Migratable for ServiceAccountProcedure {
 
         ui.para("[✓] secret");
 
-
         // Insert a new job into the jobs table
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_secret_v1 (
                 secret_type text,
-                origin_name text,
-                data text,
-                object_meta text,
-                type_meta text
+                data jsonb,
+                metadata jsonb,
+                object_meta jsonb,
+                type_meta jsonb
             ) RETURNS SETOF secrets AS $$
-            DECLARE
-               this_origin origins%rowtype;
             BEGIN
-                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO secrets(secret_type,origin_id,data,object_meta,type_meta)
-                                        VALUES (secret_type,this_origin.id,data,object_meta,type_meta)
+                                    RETURN QUERY INSERT INTO secrets(secret_type,data,metadata,object_meta,type_meta)
+                                        VALUES (secret_type,data,metadata,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -84,20 +79,35 @@ impl Migratable for ServiceAccountProcedure {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_secrets_by_origin_v1 (origin text, name text) RETURNS SETOF secrets AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM secrets WHERE object_meta ->> 'name' = name AND metadata ->> 'origin' = origin ;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
         migrator.migrate(
             "servicesrv",
-            r#"CREATE OR REPLACE FUNCTION get_secrets_by_origin_v1(org_name text) RETURNS SETOF secrets AS $$
-                DECLARE
-                this_origin origins%rowtype;
+            r#"CREATE OR REPLACE FUNCTION get_secrets_by_account_v1(obj_id text) RETURNS SETOF secrets AS $$
                         BEGIN
-                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
-                         RETURN QUERY SELECT * FROM secrets WHERE origin_id=this_origin.id;
+                         RETURN QUERY SELECT * FROM secrets WHERE object_meta ->> 'account'=obj_id;
                          RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_secrets_by_origin_v1(obj_id text) RETURNS SETOF secrets AS $$
+                        BEGIN
+                         RETURN QUERY SELECT * FROM secrets WHERE metadata ->> 'origin'=obj_id;
+                         RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
         migrator.migrate(
             "servicesrv",
@@ -106,36 +116,31 @@ impl Migratable for ServiceAccountProcedure {
 
         migrator.migrate(
             "servicesrv",
-            r#"CREATE TABLE  IF NOT EXISTS service_account(
+            r#"CREATE TABLE  IF NOT EXISTS service_accounts(
              id bigint PRIMARY KEY DEFAULT next_id_v1('service_id_seq'),
-             origin_id bigint REFERENCES origins(id),
-             name text,
-             secrets text,
-             object_meta text,
-             type_meta text,
+             secrets jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
+             metadata jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
              )"#,
         )?;
 
-        ui.para("[✓] service_account");
+        ui.para("[✓] service_accounts");
 
-        // Insert a new job into the jobs table
+        // Insert a new service account into the service accounts table
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_service_account_v1 (
-                origin_name text,
-                name text,
-                secrets text,
-                object_meta text,
-                type_meta text
-            ) RETURNS SETOF service_account AS $$
-            DECLARE
-               this_origin origins%rowtype;
+                secrets jsonb,
+                object_meta jsonb,
+                type_meta jsonb,
+                metadata jsonb
+            ) RETURNS SETOF service_accounts AS $$
             BEGIN
-                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                 RETURN QUERY INSERT INTO service_account(origin_id,name,secrets,object_meta,type_meta)
-                     VALUES (this_origin.id,name,secrets,object_meta,type_meta)
+                 RETURN QUERY INSERT INTO service_accounts(secrets,object_meta,type_meta,metadata)
+                     VALUES (secrets,object_meta,type_meta,metadata)
                      RETURNING *;
                  RETURN;
             END
@@ -144,10 +149,21 @@ impl Migratable for ServiceAccountProcedure {
         )?;
 
         migrator.migrate(
+            "asmsrv",
+            r#"CREATE OR REPLACE FUNCTION update_service_account_v1 (aid bigint,sa_secrets jsonb,asm_object_meta jsonb) RETURNS SETOF service_accounts AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE service_accounts SET secrets=sa_secrets,object_meta = asm_object_meta,updated_at=now() WHERE id=aid
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        migrator.migrate(
             "servicesrv",
-            r#"CREATE OR REPLACE FUNCTION get_service_account_v1() RETURNS SETOF service_account AS $$
+            r#"CREATE OR REPLACE FUNCTION get_service_account_v1() RETURNS SETOF service_accounts AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM service_account;
+                          RETURN QUERY SELECT * FROM service_accounts;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -155,12 +171,19 @@ impl Migratable for ServiceAccountProcedure {
 
         migrator.migrate(
             "servicesrv",
-            r#"CREATE OR REPLACE FUNCTION get_service_account_by_origin_v1(ser_name text,org_name text) RETURNS SETOF service_account AS $$
-                DECLARE
-                this_origin origins%rowtype;
+            r#"CREATE OR REPLACE FUNCTION get_service_account_by_id_v1 (sid bigint) RETURNS SETOF service_accounts AS $$
                         BEGIN
-                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
-                         RETURN QUERY SELECT * FROM service_account WHERE origin_id=this_origin.id AND name=ser_name;
+                          RETURN QUERY SELECT * FROM service_accounts WHERE id = sid;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_serviceaccount_by_originid_v1(ser_name text,acc_id text) RETURNS SETOF service_accounts AS $$
+                        BEGIN
+                         RETURN QUERY SELECT * FROM service_accounts WHERE object_meta ->> 'name'=ser_name;
                          RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -174,11 +197,9 @@ impl Migratable for ServiceAccountProcedure {
             "servicesrv",
             r#"CREATE TABLE  IF NOT EXISTS endpoints (
              id bigint PRIMARY KEY DEFAULT next_id_v1('end_id_seq'),
-             origin_id bigint REFERENCES origins(id),
-             target_ref bigint REFERENCES assembly(id),
-             subsets text,
-             object_meta text,
-             type_meta text,
+             subsets jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
              )"#,
@@ -189,18 +210,13 @@ impl Migratable for ServiceAccountProcedure {
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_endpoints_v1 (
-                target_ref bigint,
-                origin_name text,
-                subsets  text,
-                object_meta text,
-                type_meta text
+                subsets  jsonb,
+                object_meta jsonb,
+                type_meta jsonb
                         ) RETURNS SETOF endpoints AS $$
-                        DECLARE
-                           this_origin origins%rowtype;
                                 BEGIN
-                                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO endpoints(origin_id,target_ref,subsets,object_meta,type_meta)
-                                        VALUES (this_origin.id,target_ref,subsets,object_meta,type_meta )
+                                    RETURN QUERY INSERT INTO endpoints(subsets,object_meta,type_meta)
+                                        VALUES (subsets,object_meta,type_meta )
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -229,23 +245,19 @@ impl Migratable for ServiceAccountProcedure {
 
         migrator.migrate(
             "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION get_endpoints_by_origin_v1(org_name text) RETURNS SETOF endpoints AS $$
-                DECLARE
-                this_origin origins%rowtype;
+            r#"CREATE OR REPLACE FUNCTION get_endpoints_by_account_v1(account_id text) RETURNS SETOF endpoints AS $$
                         BEGIN
-                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
-                         RETURN QUERY SELECT * FROM endpoints WHERE origin_id=this_origin.id;
+                         RETURN QUERY SELECT * FROM endpoints WHERE object_meta ->> 'account'=account_id;
                          RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-
         migrator.migrate(
             "asmsrv",
-            r#"CREATE OR REPLACE FUNCTION get_endpoints_by_assebmly_v1(target bigint) RETURNS SETOF endpoints AS $$
+            r#"CREATE OR REPLACE FUNCTION get_endpoints_by_assebmly_v1(pid text) RETURNS SETOF endpoints AS $$
                         BEGIN
-                         RETURN QUERY SELECT * FROM endpoints WHERE target_ref=target;
+                         RETURN QUERY SELECT * FROM endpoints  WHERE object_meta @> json_build_object('owner_references',json_build_array(json_build_object('uid',pid)))::jsonb;
                          RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
@@ -260,12 +272,11 @@ impl Migratable for ServiceAccountProcedure {
             "servicesrv",
             r#"CREATE TABLE  IF NOT EXISTS services (
              id bigint PRIMARY KEY DEFAULT next_id_v1('serv_id_seq'),
-             origin_id bigint REFERENCES origins(id),
-             assembly_factory_id bigint REFERENCES assembly_factory(id),
-             spec text,
-             status text,
-             object_meta text,
-             type_meta text,
+             spec jsonb,
+             metadata jsonb,
+             status jsonb,
+             object_meta jsonb,
+             type_meta jsonb,
              updated_at timestamptz,
              created_at timestamptz DEFAULT now()
              )"#,
@@ -275,19 +286,15 @@ impl Migratable for ServiceAccountProcedure {
         migrator.migrate(
             "servicesrv",
             r#"CREATE OR REPLACE FUNCTION insert_services_v1 (
-                origin_name text,
-                assembly_factory_id bigint,
-                spec  text,
-                status  text,
-                object_meta text,
-                type_meta text
+                spec  jsonb,
+                metadata  jsonb,
+                status  jsonb,
+                object_meta jsonb,
+                type_meta jsonb
                         ) RETURNS SETOF services AS $$
-                        DECLARE
-                           this_origin origins%rowtype;
                                 BEGIN
-                                SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                    RETURN QUERY INSERT INTO services(origin_id,assembly_factory_id,spec,status,object_meta,type_meta)
-                                        VALUES (this_origin.id,assembly_factory_id,spec,status,object_meta,type_meta )
+                                    RETURN QUERY INSERT INTO services(spec,metadata,status,object_meta,type_meta)
+                                        VALUES (spec,metadata,status,object_meta,type_meta )
                                         RETURNING *;
                                     RETURN;
                                 END
@@ -315,43 +322,84 @@ impl Migratable for ServiceAccountProcedure {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        //use this if  api for get service by asm_fac
         migrator.migrate(
             "servicesrv",
-            r#"CREATE OR REPLACE FUNCTION get_services_by_origin_v1(org_name text) RETURNS SETOF services AS $$
-                DECLARE
-                this_origin origins%rowtype;
+            r#"CREATE OR REPLACE FUNCTION get_services_by_assembly_factory_v1(pid text) RETURNS SETOF services AS $$
                         BEGIN
-                         SELECT * FROM origins WHERE origins.name = org_name LIMIT 1 INTO this_origin;
-                         RETURN QUERY SELECT * FROM services WHERE origin_id=this_origin.id;
+                         RETURN QUERY SELECT * FROM services WHERE object_meta @> json_build_object('owner_references',json_build_array(json_build_object('uid',pid)))::jsonb;
                          RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
-
         migrator.migrate(
             "servicesrv",
-            r#"CREATE OR REPLACE FUNCTION get_services_by_assembly_factory_v1(asm_factory_id bigint) RETURNS SETOF services AS $$
-                        BEGIN
-                         RETURN QUERY SELECT * FROM services WHERE assembly_factory_id=asm_factory_id;
-                         RETURN;
-                        END
-                        $$ LANGUAGE plpgsql STABLE"#,
-        )?;
-        migrator.migrate(
-            "servicesrv",
-            r#"CREATE OR REPLACE FUNCTION update_servive_by_v1 (sid bigint, origin_name text, asm_factory_id bigint, spec_data text,status_data text,object_meta_data text,type_meta_data text) RETURNS SETOF services AS $$
-                        DECLARE
-                            this_origin origins%rowtype;
+            r#"CREATE OR REPLACE FUNCTION update_servive_by_v1 (sid bigint, spec_data jsonb,serv_metadata jsonb,status_data jsonb,object_meta_data jsonb) RETURNS SETOF services AS $$
                             BEGIN
-                            SELECT * FROM origins WHERE origins.name = origin_name LIMIT 1 INTO this_origin;
-                                RETURN QUERY UPDATE services SET origin_id=this_origin.id,assembly_factory_id=asm_factory_id,spec=spec_data,status=status_data,object_meta=object_meta_data,type_meta=type_meta_data,updated_at=now() WHERE id=sid
+                                RETURN QUERY UPDATE services SET spec=spec_data,metadata=serv_metadata,status=status_data,object_meta=object_meta_data,updated_at=now() WHERE id=sid
                                 RETURNING *;
                                 RETURN;
                             END
                          $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE SEQUENCE IF NOT EXISTS set_map_id_seq;"#,
+        )?;
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE TABLE  IF NOT EXISTS settings_map (
+         id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('set_map_id_seq'),
+         data jsonb,
+         metadata jsonb,
+         object_meta jsonb,
+         type_meta jsonb,
+         updated_at timestamptz,
+         created_at timestamptz DEFAULT now())"#,
+        )?;
+
+        ui.para("[✓] settings_map");
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION insert_settings_map_v1 (
+                metadata  jsonb,
+                data  jsonb,
+                object_meta jsonb,
+                type_meta jsonb
+                        ) RETURNS SETOF settings_map AS $$
+                                BEGIN
+                                    RETURN QUERY INSERT INTO settings_map(metadata,data,object_meta,type_meta)
+                                        VALUES (metadata,data,object_meta,type_meta )
+                                        RETURNING *;
+                                    RETURN;
+                                END
+                            $$ LANGUAGE plpgsql VOLATILE
+                            "#,
+        )?;
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_settings_map_v1 (origin text, name text) RETURNS SETOF settings_map AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM settings_map WHERE object_meta ->> 'name' = name AND metadata ->> 'origin' = origin ;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        migrator.migrate(
+            "servicesrv",
+            r#"CREATE OR REPLACE FUNCTION get_settings_maps_v1() RETURNS SETOF settings_map AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM settings_map;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
         ui.end("ServiceAccountProcedure");
 

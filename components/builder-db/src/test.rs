@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! Shared code for testing crates that use this database layer.
 //!

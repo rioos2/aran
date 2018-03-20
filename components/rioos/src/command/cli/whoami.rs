@@ -1,10 +1,8 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 pub use error::{Error, Result};
 use common::ui::UI;
 use config;
-
 
 pub fn start(ui: &mut UI) -> Result<()> {
     ui.br()?;

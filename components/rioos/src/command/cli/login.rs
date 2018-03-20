@@ -1,27 +1,21 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 pub use error::{Error, Result};
 
 use common::ui::UI;
 use rioos_core::env;
-
-
 use api_client::Client;
 use AUTH_TOKEN_ENVVAR;
-use {PRODUCT, VERSION};
 use config;
 
-
-
-pub fn start(ui: &mut UI, url: &str) -> Result<()> {
+pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     ui.br()?;
     ui.title("Rio/OS CLI")?;
 
     ui.heading("Login")?;
     ui.para(
         "For more information on authenticating using commandline, please read the \
-          documentation at https://docs.rioos.sh/docs/identity-overview/",
+         documentation at https://docs.rioos.sh/docs/identity-overview/",
     )?;
 
     ui.br()?;
@@ -29,7 +23,7 @@ pub fn start(ui: &mut UI, url: &str) -> Result<()> {
     let userid = prompt_userid(ui)?;
     let password = prompt_password(ui)?;
 
-    let auth_token = login(ui, url, &userid, &password)?;
+    let auth_token = login(ui, client, &userid, &password)?;
 
     write_cli_config_auth_token(&auth_token, &userid)?;
 
@@ -38,7 +32,6 @@ pub fn start(ui: &mut UI, url: &str) -> Result<()> {
     Ok(())
 }
 
-
 fn write_cli_config_auth_token(auth_token: &str, email: &str) -> Result<()> {
     let mut config = config::load()?;
     config.auth_token = Some(auth_token.to_string());
@@ -46,9 +39,7 @@ fn write_cli_config_auth_token(auth_token: &str, email: &str) -> Result<()> {
     config::save(&config)
 }
 
-
-fn login(ui: &mut UI, url: &str, userid: &str, password: &str) -> Result<String> {
-    let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
+fn login(ui: &mut UI, rio_client: Client, userid: &str, password: &str) -> Result<String> {
 
     ui.br()?;
 
@@ -63,7 +54,7 @@ fn prompt_userid(ui: &mut UI) -> Result<String> {
         Some(o) => {
             ui.para(
                 "You already have a default auth token set up, but feel free to change it \
-                       if you wish.",
+                 if you wish.",
             )?;
             Some(o)
         }
@@ -72,14 +63,13 @@ fn prompt_userid(ui: &mut UI) -> Result<String> {
     Ok(ui.prompt_ask("Userid", default.as_ref().map(|x| &**x))?)
 }
 
-
 fn prompt_password(ui: &mut UI) -> Result<String> {
     let config = config::load()?;
     let default = match config.auth_token {
         Some(o) => {
             ui.para(
                 "You already have a default auth token set up, but feel free to change it \
-                       if you wish.",
+                 if you wish.",
             )?;
             Some(o)
         }

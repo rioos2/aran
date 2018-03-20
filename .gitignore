@@ -14,9 +14,7 @@ tmp/
 
 *.code-workspace
 .vagrant/
-*.sig.key
-*.box.key
-*.sym.key
+*.fmt
 test/**/node_modules/
 test/**/built/
 *.log

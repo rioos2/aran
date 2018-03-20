@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! Rio/OS core encryption and cryptography.
 //!
@@ -19,24 +19,28 @@
 //! ## Certificate authority key
 //!
 //! ```text
-//! ca.crt
-//! ca.key
+//! server_ca.cert.pem
+//! server_ca.key
 //! ```
 //!
 //! ## API Server
 //!
 //! ```text
-//! api-server.crt
-//! api-server.key
+//! api-server.pfx [api-server.cert.pem, api-server.key]
 //! ```
 //!
 //! ## Service Accont key
 //!
 //! ```text
-//! service-account.crt
+//! service-account.pub
 //! service-account.key
 //! ```
 //!
+//! ## Controller, Scheduler, Nodelet, Storlet
+//!
+//! ```text
+//! client-<nodelet/storlet/scheduler/controller>.pub
+//! client-<nodelet/storlet/scheduler/controller>.key
 
 use std::path::{Path, PathBuf};
 
@@ -48,19 +52,26 @@ use fs::rioconfig_key_path;
 /// The suffix on the end of a public X509 certs file
 pub static PUBLIC_KEY_SUFFIX: &'static str = "cert.pem";
 
-/// The suffix on the end of a public X509 key file
+/// The suffix on the end of a private RSA key file
 pub static SECRET_SIG_KEY_SUFFIX: &'static str = "key";
 
-/// The prefix of the root certificate authority
-pub static ROOT_CA: &'static str = "ca";
+/// The suffix on the end of a public RSA key file
+pub static PUBLIC_RSA_SUFFIX: &'static str = "pub";
+
+/// The suffix on the end of a pkcs12 bundled public + private key file
+/// Both the X509 public and private RSA key combined into a pkcs12 pfx file
+pub static PUBLIC_PFX_SUFFIX: &'static str = "pfx";
+
+/// The prefix of the server root certificate authority
+pub static ROOT_CA: &'static str = "server-ca";
 
 /// This environment variable allows you to override the fs::CACHE_KEY_PATH
 /// at runtime. This is useful for testing.
 pub static CACHE_KEY_PATH_ENV_VAR: &'static str = "RIO_CACHE_KEY_PATH";
 
-/// Create secret key files with these permissions
-static PUBLIC_KEY_PERMISSIONS: u32 = 0o400;
-static SECRET_KEY_PERMISSIONS: u32 = 0o400;
+/// Create key files with these permissions (both public and secret)
+static REGULAR_KEY_PERMISSIONS: u32 = 0o400;
+//static SECRET_KEY_PERMISSIONS: u32 = 0o400;
 
 pub use self::keys::sig_key_pair::SigKeyPair;
 

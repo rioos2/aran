@@ -1,25 +1,34 @@
-
 use iron::headers::ContentType;
 use iron::mime::{Mime, TopLevel, SubLevel};
 use iron::modifiers::Header;
 use iron::prelude::*;
 use iron::status;
+use util::errors::Bad;
+
+use http::schema::ApiSchema;
 use serde::Serialize;
 use serde_json;
-use protocol::net::NetError;
-use super::net_err_to_http;
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ResponseList<T> {
+    api_version: String,
+    kind: String,
+    pub items: T,
+}
 
 /// Return an Modifier<Result> containing the body of a NetError and the appropriate HTTP response status
 /// as json
 /// This is used by BeforeMiddlerware and others where an error needs to be communicated as json.
-pub fn render_json_error<T: Serialize>(err: &NetError, status: status::Status, response: &T) -> IronError {
-    let encoded = serde_json::to_string(response).unwrap();
+pub fn render_json_error(err: &Bad, status: status::Status) -> IronError {
+    let encoded = serde_json::to_string(err).unwrap();
     let headers = Header(ContentType(
         Mime(TopLevel::Application, SubLevel::Json, vec![]),
     ));
 
     IronError::new(err.clone(), (status, encoded, headers))
 }
+
+
 
 pub fn render_json<T: Serialize>(status: status::Status, response: &T) -> Response {
     let encoded = serde_json::to_string(response).unwrap();
@@ -30,17 +39,17 @@ pub fn render_json<T: Serialize>(status: status::Status, response: &T) -> Respon
     Response::with((status, encoded, headers))
 }
 
-/// Return an IronResult containing the body of a NetError and the appropriate HTTP response status
-/// for the corresponding NetError.
-///
-/// For example, a NetError::ENTITY_NOT_FOUND will result in an HTTP response containing the body
-/// of the NetError with an HTTP status of 404.
-///
-/// # Panics
-///
-/// * The given encoded message was not a NetError
-/// * The given message could not be decoded
-/// * The NetError could not be encoded to JSON
-pub fn render_net_error(err: &NetError) -> Response {
-    render_json(net_err_to_http(err.get_code()), err)
+pub fn render_json_list<T>(status: status::Status, ident: ApiSchema, response: &T) -> Response
+where
+    T: Serialize,
+{
+    let encoded = serde_json::to_string(&ResponseList {
+        api_version: ident.version,
+        kind: ident.kind,
+        items: response,
+    }).unwrap();
+    let headers = Header(ContentType(
+        Mime(TopLevel::Application, SubLevel::Json, vec![]),
+    ));
+    Response::with((status, encoded, headers))
 }

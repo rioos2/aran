@@ -1,0 +1,3954 @@
+[33mcommit 1df6ddb544e8e5c320efaebe649f94cde2b8e5c6[m[33m ([m[1;36mHEAD -> [m[1;32m2.0[m[33m, [m[1;31mmaster/2.0[m[33m)[m
+Author: rajthilak <rajthilak@megam.io>
+Date:   Fri Feb 23 20:56:09 2018 +0530
+
+    enable agent JWT authentication
+
+[33mcommit c0bd0f49b5116328ef01be50012d69765a53a9a5[m
+Merge: fd8b5228 0ab60d25
+Author: rajthilak <rajthilak@megam.io>
+Date:   Fri Feb 23 16:07:54 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit fd8b5228840240fd8fa8cb7701828a9bcf2bb5f4[m
+Author: rajthilak <rajthilak@megam.io>
+Date:   Fri Feb 23 15:50:19 2018 +0530
+
+    merge
+
+[33mcommit 0ab60d25f14d1ba3c99bb02d78a5a0c23f672400[m[33m ([m[1;31morigin/2.0[m[33m)[m
+Merge: 2e658e39 9eac13a5
+Author: vino <vino.v@megam.io>
+Date:   Fri Feb 23 09:52:24 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    service account testcase
+    
+    See merge request rioos/aran!310
+
+[33mcommit 9eac13a523e071ac863675084695ea1b649fe565[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Feb 23 13:11:12 2018 +0530
+
+    service account testcase
+
+[33mcommit 2e658e397e4005038db110b1ce7b951cf95d794a[m
+Merge: 10aced50 10c1b440
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 23 07:40:09 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    create plan_factory from local file while starting api server
+    
+    See merge request rioos/aran!309
+
+[33mcommit 10c1b440fb5d1f2659a2d375af5a9cbcd1a0c98e[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 23 13:06:38 2018 +0530
+
+    api.toml changed
+
+[33mcommit 78d4c72b117ccf52863af2d84b67895ee93ae41c[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 23 13:05:06 2018 +0530
+
+    code changed
+
+[33mcommit 3a7a303b69a729f529adf9cf09bd523397a32b82[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 23 11:46:18 2018 +0530
+
+    code for marketplace sync process
+
+[33mcommit 10aced50d2541a5e62e51eb49994a4909dbf891b[m
+Merge: 32a54429 38ccde23
+Author: vino <vino.v@megam.io>
+Date:   Thu Feb 22 14:39:07 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    imageref api creation
+    
+    See merge request rioos/aran!308
+
+[33mcommit 38ccde2395c91c407002871fab6b336d0bab64b9[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 22 20:04:18 2018 +0530
+
+    remove implementation
+
+[33mcommit ffeecc08e8cf4ebff0688fd7d2af53af1f658537[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Feb 22 19:59:27 2018 +0530
+
+    planfactory sync process
+
+[33mcommit 96e864b76336fb64a158392ee8d39a9e978025df[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 22 19:48:02 2018 +0530
+
+    remove implements
+
+[33mcommit 7d6b08c3828b362380e84d5dd4fef5517bfad157[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 22 19:38:13 2018 +0530
+
+    implement removal
+
+[33mcommit 5f03c93055f6d50d06be2305a156140db222a438[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 22 18:44:05 2018 +0530
+
+    swaggerhub update for devtooling
+
+[33mcommit 2bae8302e86958852f20ef265f8d4f909a02e66a[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 22 18:39:33 2018 +0530
+
+    unit testing builds changes
+
+[33mcommit de3cfcc59deeb01ef09f4cd8a38f1f65cf07265a[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 22 18:34:19 2018 +0530
+
+    remove default from audit
+
+[33mcommit ca537fa870e7f395be71459c622c814ebf2bc72e[m
+Merge: f4f56acd 32a54429
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 22 18:29:49 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit f4f56acd23842e6bcef8ccfece4ab4093619a02d[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 22 17:05:03 2018 +0530
+
+    image ref api creation
+
+[33mcommit 69f3525dbc5ae2769d00e82a63bdabd9ee61e8ed[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Feb 21 20:29:10 2018 +0530
+
+    image ref api creation
+
+[33mcommit 32a54429a1a33fe6785921cf1ec3f5ac9ad46253[m
+Merge: eb62d6f4 b6469c27
+Author: vino <vino.v@megam.io>
+Date:   Wed Feb 21 12:59:00 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    test cases for build config and build
+    
+    See merge request rioos/aran!307
+
+[33mcommit eb62d6f4c5278f3d3e51bee48ee0ffa43aa3dc20[m
+Merge: cfdbfbeb 7b877ebb
+Author: indykish <nkishore@megam.io>
+Date:   Wed Feb 21 12:54:10 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    marketplace sync process
+    
+    See merge request rioos/aran!306
+
+[33mcommit 7b877ebbe6bd82ebb2d130772a2651945f3cf740[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 21 17:42:39 2018 +0530
+
+    secret_agent file exists check before create the key and pub
+
+[33mcommit 4f35a62849299973d41a25b2dc42c2de4d217c2c[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 21 15:48:45 2018 +0530
+
+    timestamp is added to marketplace.ymal
+
+[33mcommit 24f2516ee4dd01a856d52810a90ae0e7b5a8f613[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 21 13:13:44 2018 +0530
+
+    marketplace.yaml file created
+
+[33mcommit a69220fa1595f83b47c07cc808029f21227db664[m
+Merge: b6469c27 cfdbfbeb
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Feb 21 13:02:27 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit b6469c2727d2688b06586d96ca8898bae26b5088[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Feb 21 11:59:19 2018 +0530
+
+    test cases for build config and build
+
+[33mcommit cfdbfbebd750b9c90d2127b04b66924c23ecfa7e[m
+Merge: 52aa0c40 88bd7611
+Author: vino <vino.v@megam.io>
+Date:   Wed Feb 21 04:34:39 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    build config api creation
+    
+    See merge request rioos/aran!305
+
+[33mcommit 88bd7611e73178dbdf89097af8702768ad34d9dc[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 20 20:48:33 2018 +0530
+
+    move api to devtooling
+
+[33mcommit 33cc498d18f02a77015ff0a4f136a1ddf15135c6[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 20 20:44:28 2018 +0530
+
+    marketplace sync process
+
+[33mcommit b84cfeb37a48f23754e0f95115978df6cc03c11b[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 20 18:28:38 2018 +0530
+
+    build api creation
+
+[33mcommit 52aa0c4081307848bca756d743cc0305f3b20cf0[m
+Merge: ebf57976 3a17893d
+Author: indykish <nkishore@megam.io>
+Date:   Tue Feb 20 06:57:58 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    create agent secret and update secret_name in gulp.rioconfig
+    
+    See merge request rioos/aran!304
+
+[33mcommit 3a17893dbae35d7c77a6abae68632ff56ab69b20[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 20 12:22:33 2018 +0530
+
+    create agent secret and update secret_name in gulp.rioconfig
+
+[33mcommit ebf57976fbd2f8e89ea8c1428c16b5ca028183e8[m
+Merge: da82c349 0baf9448
+Author: vino <vino.v@megam.io>
+Date:   Tue Feb 20 06:38:26 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    build config api creation
+    
+    See merge request rioos/aran!303
+
+[33mcommit 0baf9448193d91cc70740c6f80541907f58ce49d[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 20 12:02:23 2018 +0530
+
+    build config creation fixes
+
+[33mcommit ea00c966f5fe4faf3305907881b4960a28cbc691[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 20 10:57:49 2018 +0530
+
+    rand package remove
+
+[33mcommit 3616fe48dacb0c687738ec4ccf92171b02d640c8[m
+Merge: 9d75df2a da82c349
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 20 10:36:11 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 9d75df2aba3b72a00269d885698627acf424e6b9[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 20 10:28:43 2018 +0530
+
+    build config commet removal
+
+[33mcommit 95a193ea4803ec02e9c7ec1c5cdb4c9234940c9e[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 20 10:16:30 2018 +0530
+
+    build config api
+
+[33mcommit 85f6aed796b92483777da3b4fc81d1573c053dce[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Feb 19 19:58:24 2018 +0530
+
+    build config creation
+
+[33mcommit da82c349c8ac86848e6f41323643244f80e7901c[m
+Merge: 9587a537 fc0cdef3
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 16 15:26:14 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    create storelet.rioconfig and  marketplace config added
+    
+    See merge request rioos/aran!301
+
+[33mcommit fc0cdef370630dcb6eb5906760222dddf5e949c2[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 16 20:46:28 2018 +0530
+
+    key generation for prometheus changed
+
+[33mcommit 331db8dd3ba2ae80c6dbbc4992f30b2008a4f3ab[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 16 19:57:49 2018 +0530
+
+    signed_key pair changed
+
+[33mcommit 9587a537fff747aecbef7e0376fe66199503210a[m
+Merge: 1121693e ab5f74bd
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 16 13:57:46 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    fix for assembly update
+    
+    See merge request rioos/aran!302
+
+[33mcommit ab5f74bd676a9009bc2f09a84fff5693200868e8[m
+Author: foo <foo@example.com>
+Date:   Fri Feb 16 19:05:17 2018 +0530
+
+    fix for assembly update
+
+[33mcommit 6da310238beba8da9a2fa8dbc976fd3e9800710d[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 16 16:13:56 2018 +0530
+
+    marketplace binary directory name changed
+
+[33mcommit 14a5d9689ddc5c112cf7de5050fc9b78f7ed0d08[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 16 15:40:23 2018 +0530
+
+    create storelet and  marketplace config added
+
+[33mcommit 1121693eefbbb37290f3634b4677779441154d2a[m
+Merge: 03b66074 72ab876d
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 16 07:31:26 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    generate key for gulp and prometheus
+    
+    See merge request rioos/aran!300
+
+[33mcommit 72ab876dcea97ff7107d9b0bfd6f96d2d20a7fb1[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 16 12:46:55 2018 +0530
+
+    generate key for gulp and prometheus
+
+[33mcommit 03b660749af6c7099330d67fe336233aedae895d[m
+Merge: 45347e40 e326b15d
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 16 06:08:47 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    rioconfig.hbs changed
+    
+    See merge request rioos/aran!299
+
+[33mcommit e326b15df52803a6e53701f37ef09e29a8206ba4[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 16 11:36:03 2018 +0530
+
+    rioconfig.hbs changed
+
+[33mcommit 45347e407b08f3c0550453f020690f0a902159e6[m
+Merge: dd839f02 dbff380e
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 16 05:33:49 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    builder_dev.md changed
+    
+    See merge request rioos/aran!298
+
+[33mcommit dbff380e3fcd5176b7dae3db7679e0e332ce3f10[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 16 10:56:53 2018 +0530
+
+    builder_dev.md changed
+
+[33mcommit dd839f025071091b86451c8199e36218def354bb[m
+Merge: ff20fb18 67843200
+Author: indykish <nkishore@megam.io>
+Date:   Thu Feb 15 13:59:48 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    pre-commit file changed
+    
+    See merge request rioos/aran!297
+
+[33mcommit 67843200da555b95588ec2a9cbd7387e482bb301[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Feb 15 19:23:54 2018 +0530
+
+    pre-commit file changed
+
+[33mcommit ff20fb18a2f15fb0db520fc394a40c06172a442d[m
+Merge: b80553d0 5afe740c
+Author: indykish <nkishore@megam.io>
+Date:   Thu Feb 15 12:40:47 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    setting map created for nodelet while migration
+    
+    See merge request rioos/aran!296
+
+[33mcommit 5afe740c506d4d2a608ed0c5f58e20deda4442a7[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Feb 15 18:02:00 2018 +0530
+
+    setting map generation
+
+[33mcommit b80553d03b613cbcc7c3ea646b958fc640712320[m
+Merge: 1b66541e d67006ef
+Author: indykish <nkishore@megam.io>
+Date:   Thu Feb 15 10:06:39 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Enable serviceaccount authentication with https
+    
+    See merge request rioos/aran!295
+
+[33mcommit d67006eff99c64627f0fe48de1ef25a7b1cfa4be[m
+Author: foo <foo@example.com>
+Date:   Thu Feb 15 15:17:00 2018 +0530
+
+    change some corrections
+
+[33mcommit 88bdb496612fa54afaa3e97a739cf267c2d540d8[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 14 20:21:49 2018 +0530
+
+    nodelet config added in db
+
+[33mcommit f8c01588b6e69e4cfdaea467955f7e27dde08838[m
+Merge: 2b73cffb 1b66541e
+Author: foo <foo@example.com>
+Date:   Wed Feb 14 19:53:07 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 1b66541e76f579f783305be423f2202d085cca89[m
+Merge: 16ad1f21 19e98c21
+Author: indykish <nkishore@megam.io>
+Date:   Wed Feb 14 11:36:56 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Remove localup.sh, testcases cleanup, add locust py for auth
+    
+    See merge request rioos/aran!294
+
+[33mcommit 16ad1f21f8f61362ce48310b8a1e5e1db3844df8[m
+Merge: f1f1c220 b8ef9965
+Author: indykish <nkishore@megam.io>
+Date:   Wed Feb 14 11:34:13 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    error msg for notification while starting api server
+    
+    See merge request rioos/aran!293
+
+[33mcommit b8ef9965cbd6d7e69d0ed58dfd7a97296736aa76[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 14 16:50:43 2018 +0530
+
+    error msg changed
+
+[33mcommit 4d023b3749f3a273297439e5fbf9ea9ac89a5b88[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 14 16:42:21 2018 +0530
+
+    config file checked when api server start
+
+[33mcommit 19e98c217ab22dc07a4462009f75dbe7c4e90cdb[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Feb 14 16:41:19 2018 +0530
+
+    Remove localup.sh, testcases cleanup, add locust py for auth
+
+[33mcommit 347a87e35ebe536be0f51ca2f1f1c27441bd110c[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 14 15:56:40 2018 +0530
+
+    error msg for notification while starting api server
+
+[33mcommit f1f1c220d5d4d546c80b2587804c50cddc19e6af[m
+Merge: f85cd64f 1470e78d
+Author: indykish <nkishore@megam.io>
+Date:   Wed Feb 14 06:14:31 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    create secret for bootstrap config while db migration
+    
+    See merge request rioos/aran!292
+
+[33mcommit 1470e78dc35bc1f31b0af3bb389d25428d2e84b7[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 14 11:10:41 2018 +0530
+
+    secret create for bootstrap config while db migration
+
+[33mcommit da8c7892e70dd5be507690e19385660eac095c32[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 19:58:59 2018 +0530
+
+    code for create secret while migration
+
+[33mcommit 2b73cffb8453791162d3ac9753c65b4130569088[m
+Author: foo <foo@example.com>
+Date:   Tue Feb 13 19:39:12 2018 +0530
+
+    service account authentication (scheduler)
+
+[33mcommit f85cd64f0480eb1125f0489ca0d37c0c87b7911a[m
+Merge: e69093c5 e3122eec
+Author: indykish <nkishore@megam.io>
+Date:   Tue Feb 13 12:39:23 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    services data added with assembly factory spec
+    
+    See merge request rioos/aran!291
+
+[33mcommit e3122eec49cc4458866a4141b45d48b83d7d5ea6[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 17:42:12 2018 +0530
+
+    comment added in assembly_factory.rs
+
+[33mcommit 0f03bd44bf09d787d7c5490b7becd961d451d1b6[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 17:38:32 2018 +0530
+
+    println removed
+
+[33mcommit e69093c5f9a30e08dc328fdb970b2969a3f03324[m
+Merge: d844a4d2 e2f67e97
+Author: vino <vino.v@megam.io>
+Date:   Tue Feb 13 12:06:55 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    storagepool show
+    
+    See merge request rioos/aran!290
+
+[33mcommit 958e8e65e10fcc580d392d36ebbe53822c81ff85[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 17:32:28 2018 +0530
+
+    services data added with assembly factory spec
+
+[33mcommit e2f67e9757d13c3c5093bcfded989cb3c42a7075[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 13 16:41:18 2018 +0530
+
+    swagger hub update for storagespool get
+
+[33mcommit 16922ad0ea5c19d666af483202f2b9f99a535316[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 13 15:33:56 2018 +0530
+
+    test case add for storagepool show
+
+[33mcommit 0abb0a21b1ce41d9c68096d3c4237833f2d1ddd1[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Feb 13 15:20:50 2018 +0530
+
+    storagepool show
+
+[33mcommit d844a4d22832a36b8583f6467869bb8b468c7d1e[m
+Merge: b5fae1d3 8d3e12cb
+Author: indykish <nkishore@megam.io>
+Date:   Tue Feb 13 07:41:18 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Use common prefix rioos_sh for all the built in keys provided by Rio/OS
+    
+    See merge request rioos/aran!289
+
+[33mcommit 8d3e12cb775abbc0c7768091eca3d90e4c60717a[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 12:51:54 2018 +0530
+
+    readme changed
+
+[33mcommit cbb357d8bb0806303e480e4212e5664d64817a8b[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 12:41:18 2018 +0530
+
+    keys name changed for secret
+
+[33mcommit b5fae1d3abcacb1cd6209043cfadbdd5e3d5403b[m
+Merge: 096c9a90 19c31b8d
+Author: indykish <nkishore@megam.io>
+Date:   Tue Feb 13 06:48:32 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code for create bootstrap config and token
+    
+    See merge request rioos/aran!288
+
+[33mcommit 19c31b8da76a5b263730d78c4204f01ddf20efbf[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 12:04:06 2018 +0530
+
+    api_server pfx created
+
+[33mcommit 4921fbed6b172035ca3632aa37d5b5b08bd9065a[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 11:54:54 2018 +0530
+
+    comment line removed
+
+[33mcommit db8c16bd652b817d059a33315865aca1e5ddd0e6[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 13 11:43:10 2018 +0530
+
+    code for create bootstrap config and token
+
+[33mcommit 096c9a909cc29e58de326f9dc5418d52d0ec481b[m
+Merge: 6d1a227f 6214a3d0
+Author: indykish <nkishore@megam.io>
+Date:   Tue Feb 13 05:31:14 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    swagger hub update for audits
+    
+    See merge request rioos/aran!287
+
+[33mcommit 0813ca125f23b3c4acc50c5f87a1a29885bcbac8[m
+Merge: 6624a418 6d1a227f
+Author: foo <foo@example.com>
+Date:   Mon Feb 12 20:33:03 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 6624a41821affabe409fae3cc75dc34f0ae0801b[m
+Merge: 25589bf3 b324bf27
+Author: foo <foo@example.com>
+Date:   Mon Feb 12 20:04:01 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 6214a3d01b11a210d6bc3cee25275415511f922d[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Feb 12 19:20:17 2018 +0530
+
+    swagger hub update for audits
+
+[33mcommit 6d1a227f580a2adbb428aabf16696c4cef547dc9[m
+Merge: 654ec7ab b957fa02
+Author: vino <vino.v@megam.io>
+Date:   Mon Feb 12 12:17:24 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    swagger update for LB, DNS service and vertical scaling
+    
+    See merge request rioos/aran!284
+
+[33mcommit b957fa02216bcde65c46d3fff8ee9ab02a3ba7d6[m
+Merge: d65952e3 654ec7ab
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Feb 12 16:37:18 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit d65952e37d65c6f832dc099cef330ebf2ce92917[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Feb 12 16:36:36 2018 +0530
+
+    service update
+
+[33mcommit 654ec7ab98a5eee2b314bc0fe80f41f5402c5159[m
+Merge: 6fbe8ed1 0afe2ce9
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 9 16:49:12 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Change timestamp format to systemtime format
+    
+    See merge request rioos/aran!285
+
+[33mcommit 0afe2ce903ffbf7c7b80c2b8ef0ee7fde9668abc[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 9 22:16:05 2018 +0530
+
+    timestamp changed
+
+[33mcommit 25589bf393c9af5cbbb26d8eda6919d0f2285bba[m
+Author: foo <foo@example.com>
+Date:   Fri Feb 9 19:13:14 2018 +0530
+
+    service account authentication
+
+[33mcommit 80df51e0657081f005613042d85489eaa7ecde1f[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Feb 9 19:10:07 2018 +0530
+
+    swagger update for LB, DNS service and vertical scaling
+
+[33mcommit 5f676f4371480d8692c0b775da7d026d7dffcf56[m
+Merge: 59e65c54 6fbe8ed1
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 9 18:37:10 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 6fbe8ed189749cef9bb702d969c60b4a5b47f4bd[m
+Merge: 08245cd3 5149ccc1
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 9 13:05:04 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code for audit
+    
+    See merge request rioos/aran!282
+
+[33mcommit 08245cd394afb3676709448c959896647ddb5c42[m
+Merge: b324bf27 884492ed
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 9 13:02:17 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Move assemblyfactory describe to api/assembly due to need of expanders like volume, endpoints.
+    
+    See merge request rioos/aran!283
+
+[33mcommit 884492edc79354593e7c56030a5ba31ec7971c14[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Feb 9 18:13:25 2018 +0530
+
+    Move assemblyfactory describe to api/assembly due to need of expander
+
+[33mcommit 59e65c54d409424d636a7dd8ae2db3caa39049f8[m
+Merge: 5149ccc1 b324bf27
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 9 17:57:28 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 5149ccc14023b81d0e4714e1b53d9e3b08dba47b[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 9 17:36:13 2018 +0530
+
+    println removed
+
+[33mcommit 78f0f43143146ea9239bedf0b24d9be5e51bd083[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 9 17:31:41 2018 +0530
+
+    code for audit
+
+[33mcommit b324bf27f92f29076867afba05c396e5a2347b3e[m
+Merge: 2a615a20 7139c5f3
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 9 11:37:17 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    PFX builder - api-server, revamp to generate pem or x509
+    
+    See merge request rioos/aran!281
+
+[33mcommit 7139c5f3f86c3f4036c6016591a68462f384d864[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Feb 9 16:47:38 2018 +0530
+
+    PFX builder - api-server, revamp to generate pem or x509
+
+[33mcommit 2a615a207b5fa87eccd070461544a72ea883b598[m
+Merge: 372956e4 eba8bc78
+Author: vino <vino.v@megam.io>
+Date:   Fri Feb 9 07:28:58 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    network show, update, testcase and swagger update
+    
+    See merge request rioos/aran!279
+
+[33mcommit 372956e435733a3ddf536677dad526536a1b6aa3[m
+Merge: d64d7bf6 3ff10903
+Author: indykish <nkishore@megam.io>
+Date:   Fri Feb 9 07:27:02 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    audit test in api server and blockchain api
+    
+    See merge request rioos/aran!280
+
+[33mcommit 3ff10903b9b83c0415e299573a4a1409c19241ec[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Feb 9 12:37:01 2018 +0530
+
+    audit test in api server and blockchain api
+
+[33mcommit eba8bc780674217c52c571ed514ecb28839904e8[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Feb 9 12:23:38 2018 +0530
+
+    network get, update, testcase, swagger update
+
+[33mcommit 953926c6095f96c9472206c6d61c7ac36f2d095d[m
+Merge: 551c271e d64d7bf6
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Feb 9 10:00:02 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit d64d7bf6a45ab4ddc18b8ca4b3a36ee7f6d0925a[m
+Merge: 8517db20 47352be0
+Author: indykish <nkishore@megam.io>
+Date:   Thu Feb 8 15:11:16 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Display blockchain-server listening  address correctly
+    
+    See merge request rioos/aran!278
+
+[33mcommit 551c271e4fcabad33e08fe3e39c1206bcc7b2e0b[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 8 20:34:54 2018 +0530
+
+    network get api
+
+[33mcommit 47352be0aca240c3d579ef99e1f61cd864caf6e2[m
+Merge: 05e390eb 8517db20
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Feb 8 20:27:04 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 8517db209d9ea2c6941705848779326aeeb3e4db[m
+Merge: be298650 60010a2e
+Author: indykish <nkishore@megam.io>
+Date:   Thu Feb 8 14:54:16 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    API server starting problem fixed
+    
+    See merge request rioos/aran!277
+
+[33mcommit 60010a2ed48a014872ab7eff7d335cd8cef28438[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Feb 8 20:12:49 2018 +0530
+
+    owner_references set for dns services
+
+[33mcommit 05e390eb7477f84de5add09cc0a207d2b70b167b[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Feb 8 20:07:38 2018 +0530
+
+    Display blockchain-server listening  address correctly
+
+[33mcommit ca4092516aa2c85cb14982f8afcf10ea7d8d6534[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Feb 8 19:48:49 2018 +0530
+
+    API server starting problem fixed
+
+[33mcommit be2986506205ab24403b8880667cabfff49cd3c8[m
+Merge: d77c3733 23444e79
+Author: indykish <nkishore@megam.io>
+Date:   Thu Feb 8 13:10:56 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    template for config file
+    
+    See merge request rioos/aran!276
+
+[33mcommit 23444e79ded4a553c555510bafebb4c4b06b4cff[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Feb 8 18:27:20 2018 +0530
+
+    template for config file
+
+[33mcommit d77c3733c73c9114d5cbd5fc55ab76dfad2341d2[m
+Merge: ee32d636 1974e334
+Author: indykish <nkishore@megam.io>
+Date:   Thu Feb 8 10:49:24 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code for record and retrive audit in blockchain api
+    
+    See merge request rioos/aran!275
+
+[33mcommit 1974e3349e1b5f56f7a5f3d66c17d2e131f3dc87[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Feb 8 16:16:16 2018 +0530
+
+    error from reqwest method make as common
+
+[33mcommit 7a7570c2a895ad75f94d3ffd0f0b8b2797fcbf00[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Feb 8 15:29:28 2018 +0530
+
+    network update
+
+[33mcommit b7a0e52dc3b13e4ba5af9894d90c4c95042b1048[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Feb 8 12:48:22 2018 +0530
+
+    code for record and retrive audit in blockchain api
+
+[33mcommit ee32d636c5352148b3e96550a2c2c185d480e0c1[m
+Merge: f66c05ee 3bc96d1c
+Author: indykish <nkishore@megam.io>
+Date:   Wed Feb 7 14:29:34 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Add Owner ref, create service based on rules as documented, bug fix for #15 #16 #24
+    
+    See merge request rioos/aran!274
+
+[33mcommit 3bc96d1c7d3fdd752b7c42e08ad9bfe963d8e4d2[m
+Merge: 3786c7f6 f66c05ee
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Feb 7 19:50:41 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 3786c7f6aff2e01d670a61a063ad39084061fa01[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Feb 7 19:37:22 2018 +0530
+
+    Add Owner ref, create service based on rule, bug fix for #15 #16 #24
+
+[33mcommit f66c05eea32345b7a73722b2a8a7209702b42dc3[m
+Merge: 1c302a4d 58d685bc
+Author: indykish <nkishore@megam.io>
+Date:   Wed Feb 7 07:10:00 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code for create the config file
+    
+    See merge request rioos/aran!273
+
+[33mcommit 58d685bca8721f883314989dea166f0d62fa636a[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 7 12:27:39 2018 +0530
+
+    exonumtestkit version changed
+
+[33mcommit 481fc6766591eedbda8c591543aff0d728849f4e[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Feb 7 10:28:14 2018 +0530
+
+    config file location change
+
+[33mcommit 14aacc996c9465810f712a049b21b5ca2d87839a[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 6 20:27:54 2018 +0530
+
+    code changed
+
+[33mcommit 70c307a25c60fc8329d30393094f6250674fcd95[m
+Merge: 89db7684 1c302a4d
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 6 19:55:27 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 89db76846c15a3d8c55c2a5fef899c89c385db90[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 6 19:50:58 2018 +0530
+
+    code for create the config file
+
+[33mcommit 1c302a4d6e9629e33554e9818c0ed8655afdff7f[m
+Merge: 7e90f6d9 f50bd9ab
+Author: indykish <nkishore@megam.io>
+Date:   Tue Feb 6 06:47:16 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Audits and events are backed by a blockchain
+    
+    See merge request rioos/aran!272
+
+[33mcommit f50bd9ab51845da5e3fa0cf19f192407ff567bb3[m
+Merge: 489c5f73 7e90f6d9
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Feb 6 12:01:38 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 489c5f73f02303837bf3c243b2ad13bef89d2534[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Feb 6 11:38:11 2018 +0530
+
+    Schema type_meta names for audit api are Event, EventList
+
+[33mcommit 1451a22ffd24f82b767937af54f9a32e45325713[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Feb 6 11:23:20 2018 +0530
+
+    Ledger client for exonum when events are posted in accounts /audits
+
+[33mcommit 7e90f6d9262eceb98f05198726040ca6ecea4455[m
+Merge: c52a1fb2 9f33195a
+Author: indykish <nkishore@megam.io>
+Date:   Tue Feb 6 05:32:51 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Public key generation
+    
+    See merge request rioos/aran!271
+
+[33mcommit 9f33195a704fee8ffbe48c678069db34f740e118[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 6 10:55:17 2018 +0530
+
+    public key generate from cerficate key
+
+[33mcommit b819479e0e0033826d001e45330f5ee8ac7c28bb[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 6 10:24:47 2018 +0530
+
+    variable name changes
+
+[33mcommit 7035caf1ce4bd5be31c1cf50c01d3725f5d46383[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 6 10:17:32 2018 +0530
+
+    name changes for variable
+
+[33mcommit 52d1cabb763fbe1bd4a5b6990226cabbc2f259fb[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Feb 6 09:54:09 2018 +0530
+
+    public key generation
+
+[33mcommit a86597e222859592c1e781d4eb78d18c09f5d1a8[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Feb 6 00:40:26 2018 +0530
+
+    Added an audit block chain configurable using backed: Exonum
+
+[33mcommit c7089c45d6baae0f6743381159aedc81803535c4[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Mon Feb 5 17:46:00 2018 +0530
+
+    Added parse for  account_id in the /accounts/:account_id/audits url
+
+[33mcommit 714ba6c5e23eb54a73ed5a29a0eed5a1ef499dd3[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Mon Feb 5 16:55:05 2018 +0530
+
+    Rio audit blockchain server compiles with initial support in blockchain
+
+[33mcommit 0f949767dc62f0d30ebdce4a35064fa4cc0a3a2a[m
+Merge: d1565bd2 c52a1fb2
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Feb 5 15:54:12 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 7d5b3d2715d40204e177513ba5da9e0ab8851b17[m
+Author: foo <foo@example.com>
+Date:   Mon Jan 29 18:50:09 2018 +0530
+
+    merge
+
+[33mcommit 69498e255c2b242713761736cb5a6e0d5e4f7598[m
+Merge: f80b84a3 c52a1fb2
+Author: foo <foo@example.com>
+Date:   Mon Jan 29 10:27:19 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit f80b84a3e3a6a12c48e828c92a035925e686d07f[m
+Author: foo <foo@example.com>
+Date:   Fri Jan 26 02:51:13 2018 +0530
+
+    enable serviceaccount and secret apis
+
+[33mcommit c52a1fb2499d1c578a6ee802760d54dcc9374ff5[m
+Merge: 9de54475 22296969
+Author: indykish <nkishore@megam.io>
+Date:   Wed Jan 24 11:04:49 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Fix for poison error
+    
+    See merge request rioos/aran!270
+
+[33mcommit 22296969f4e4699deeada1754f5a05d3c9c54405[m
+Author: foo <foo@example.com>
+Date:   Wed Jan 24 16:02:43 2018 +0530
+
+    Add some comments
+
+[33mcommit aea19c9edd92dd3c5488f6e533ac70188bbeccd9[m
+Author: foo <foo@example.com>
+Date:   Wed Jan 24 15:35:36 2018 +0530
+
+    Fix for poison error
+
+[33mcommit e242660c5ac7fac46cd1f9e9e4e53c4b525188b4[m
+Merge: e7d993cf 9de54475
+Author: foo <foo@example.com>
+Date:   Wed Jan 24 09:52:38 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit e7d993cf21729bfa3b8ec5a5c74705dec7c7e23c[m
+Author: foo <foo@example.com>
+Date:   Wed Jan 24 09:45:08 2018 +0530
+
+    merge
+
+[33mcommit 9de54475431a6c8a328c2b38f57d4ef4d5a3cabb[m
+Merge: 3aa3e778 cf7b5407
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 23 05:22:11 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    calculate overall usage of each os in assembly
+    
+    See merge request rioos/aran!269
+
+[33mcommit d1565bd226592eb39d31929f285fba791842be97[m
+Merge: cf7b5407 3aa3e778
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Jan 23 10:43:37 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit cf7b54070cdb8ea8bc2a2ea9f69bb05669a88605[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Jan 23 10:39:52 2018 +0530
+
+    config changed for blockchain
+
+[33mcommit be6b4c3c90884c29ff80d1ec220ede0518dee3c8[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Jan 22 16:01:34 2018 +0530
+
+    audit api for the user
+
+[33mcommit e16db64b951cc2d78f919a78a4685626890ba551[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Sat Jan 20 15:25:00 2018 +0530
+
+    time coversion  for os usage
+
+[33mcommit d5b44644d603df90ac5979ea0bc3b7b64d673672[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Sat Jan 20 13:43:07 2018 +0530
+
+    overall usage of each os
+
+[33mcommit 0247e1cc52ca31af92fe6fd0e934bbf6180803cf[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Jan 19 22:02:06 2018 +0530
+
+    cumulative value of cpu usage for baed on assembly os
+
+[33mcommit 3aa3e778044c4a2a6ad32136bb41b05aa276d24d[m
+Merge: 7f77f17b 55919808
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 19 14:31:45 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    prometheus data collection for command center and assembly metrics
+    
+    See merge request rioos/aran!268
+
+[33mcommit 55919808ef18edc4d02e012d2c3e23b7464873a6[m
+Merge: 5ac7a3d1 43006192
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Jan 19 19:55:42 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 7f77f17bd9d96c8fc3fb476987977ea128fd456b[m
+Merge: 43006192 d0964244
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 19 14:19:21 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Removed unit test in the hooks, as its handled by gitlab CI
+    
+    See merge request rioos/aran!267
+
+[33mcommit d0964244685805044e9dac93c732f247ab8aa208[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 19 19:47:44 2018 +0530
+
+    Removed unit test in the hooks, as its handled by gitlab CI
+
+[33mcommit 5ac7a3d120ce443b9ce2ff25721d899f31ff4dcf[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Jan 19 19:46:59 2018 +0530
+
+    code for prometheus metric collection
+
+[33mcommit 4300619265b808426e82e9d2223d8063d7672caf[m
+Merge: f188e9c4 ad2bcb93
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 19 14:16:27 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Average the cpu metric - an birds cpu view of a DC
+    
+    See merge request rioos/aran!266
+
+[33mcommit ad2bcb937ec8a71daacad7efc853bf3ff026e991[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 19 19:33:04 2018 +0530
+
+    Average the cpu metric - an birds cpu view of a DC
+
+[33mcommit f188e9c4307dfb32f629ce06b33bbae6aad92f9e[m
+Merge: c53cfb38 672a9bda
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 19 11:54:05 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    enable streamer for all apis and start server with streamer option
+    
+    See merge request rioos/aran!265
+
+[33mcommit 672a9bdacd374d8064a22453a29a8e28e61ebb72[m
+Author: foo <foo@example.com>
+Date:   Fri Jan 19 16:53:12 2018 +0530
+
+    clear some issues
+
+[33mcommit 293bff88f7c60be5998b323aba8b4d60ff7851b1[m
+Author: foo <foo@example.com>
+Date:   Fri Jan 19 16:43:54 2018 +0530
+
+    clear some issues
+
+[33mcommit b534b2b2530e3b03eeeb6a3feaab66cffdb40ba0[m
+Author: foo <foo@example.com>
+Date:   Fri Jan 19 15:37:02 2018 +0530
+
+    enable streamer for all apis and start server with streamer option
+
+[33mcommit ea4d07c598cf2bdda1459e012fdad988dacd6b08[m
+Merge: b83b0a40 c53cfb38
+Author: foo <foo@example.com>
+Date:   Fri Jan 19 15:35:59 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit c53cfb38351e277c1e0d1eeecf71d8273d28b9c4[m
+Merge: f50a045f 122d8fe3
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 19 07:14:45 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Added precommit hook
+    
+    See merge request rioos/aran!264
+
+[33mcommit 122d8fe39f6b67a811721f4334eebf4e238013e2[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 19 12:27:20 2018 +0530
+
+    Added precommit hook
+
+[33mcommit f50a045f728df216b0f78db049aaa8a1006c59b7[m
+Merge: 090a175c 7abf8a5b
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 19 06:16:53 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Make unit test pass - change to pack.rs
+    
+    See merge request rioos/aran!263
+
+[33mcommit 7abf8a5bbc0fdbd0d5aad447b6e0c56f1d7c5bac[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 19 11:33:57 2018 +0530
+
+    Make unit test pass
+
+[33mcommit b83b0a4053c85c4bc8282150956593f686c9fbfb[m
+Merge: 7c898122 090a175c
+Author: foo <foo@example.com>
+Date:   Fri Jan 19 10:54:15 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 7c898122664ba0813929a9a24992b5a76bed1622[m
+Author: foo <foo@example.com>
+Date:   Fri Jan 19 10:51:02 2018 +0530
+
+    enable watch urls for all apis
+
+[33mcommit 090a175cc4b297b1c71ca40d47a61e7e4c28f104[m
+Merge: 96219916 a53d880d
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 19 05:19:21 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Mk read_key_in_bytes which reads a file as bytes directly
+    
+    See merge request rioos/aran!262
+
+[33mcommit a53d880dd9f6d170f25a83236d7c05c3b63ff79a[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 19 10:47:34 2018 +0530
+
+    Mk read_key_in_bytes which reads a file as bytes directly
+
+[33mcommit 2e2af3f346ed7cc4783a44dc5f16623387abcaeb[m
+Author: foo <foo@example.com>
+Date:   Thu Jan 18 20:22:17 2018 +0530
+
+    watch streamer response with expanders
+
+[33mcommit 56119a9eeb540e3a1faa8624051bd716781d41cb[m
+Merge: 47873c0b 96219916
+Author: foo <foo@example.com>
+Date:   Thu Jan 18 18:03:09 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 47873c0b247d36a5098b77f1d8f22471e2f97bd5[m
+Author: foo <foo@example.com>
+Date:   Thu Jan 18 17:49:04 2018 +0530
+
+    watch response datas with expanders
+
+[33mcommit 962199168bdfec3dc5b3d3b4dafad7da857b1897[m
+Merge: c7e073b2 f1d847d0
+Author: indykish <nkishore@megam.io>
+Date:   Thu Jan 18 12:17:21 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code for vertical scaling
+    
+    See merge request rioos/aran!258
+
+[33mcommit f1d847d0b54c543d5e7778f35ad1839bbd06fa69[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 18 17:44:08 2018 +0530
+
+    text changed
+
+[33mcommit 2a4075353af1f540a8ba601af627502b6c300537[m
+Merge: 37749ae1 c7e073b2
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 18 17:37:28 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 37749ae16c0052cd44965b5b5d5b2af1d1386281[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 18 17:32:56 2018 +0530
+
+    test case for verticalscaling
+
+[33mcommit c7e073b221f90dd788f83068d088e470a34485cc[m
+Merge: 6d9ede3d bb314df2
+Author: indykish <nkishore@megam.io>
+Date:   Thu Jan 18 12:00:54 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Added the const cache keys to used by the api/deploy/assembly&factory
+    
+    See merge request rioos/aran!261
+
+[33mcommit bb314df24925df35b606a3b96cc3ba0db510ed44[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Jan 18 17:29:36 2018 +0530
+
+    Added the const cache keys to used by the api/deploy/assembly&factory
+
+[33mcommit 6d9ede3dd3c51923f8d17179562d135f14bed044[m
+Merge: d6918cd9 141f8736
+Author: indykish <nkishore@megam.io>
+Date:   Thu Jan 18 11:55:04 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Invalidates caches when needed. Conditionally turned on updates
+    
+    See merge request rioos/aran!260
+
+[33mcommit 141f87363be325925e58f01de34a272ac924d25e[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Jan 18 17:22:48 2018 +0530
+
+    Invalidates caches when needed. Conditionally turned on updates
+
+[33mcommit 719ff27f75f47be76d3276683dba830651ed5d01[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 18 16:06:39 2018 +0530
+
+    job and mode used from node.rs
+
+[33mcommit 49706260b3a4410faf49c7b78ab9fd04c4a53ed2[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 18 15:10:45 2018 +0530
+
+    scehema changed
+
+[33mcommit 09f6680ac3408e1c69e1c95aef46b43e2f17fa95[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 18 14:52:45 2018 +0530
+
+    code for vertical scaling
+
+[33mcommit a5bf4285da9905fd35e20dc38ace27c52d829ec4[m
+Merge: 82a57134 d6918cd9
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 18 12:18:52 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 82a571349e3be5d8b21ecd1e8bb1a568d19fcc1e[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 18 11:44:23 2018 +0530
+
+    error condition check in vertical scaling
+
+[33mcommit d6918cd9875537768692534aa7265e794fff2c73[m
+Merge: c4778f9c f554db96
+Author: indykish <nkishore@megam.io>
+Date:   Thu Jan 18 06:11:26 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Implementation for Runtime Guard.
+    
+    See merge request rioos/aran!259
+
+[33mcommit f554db96ca614a578f63d5585cc56c79507dc185[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Jan 18 11:40:16 2018 +0530
+
+    Refined comments in Node
+
+[33mcommit 9bd9fa3c0e41de67d671eaf5b03008b942e3c977[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Jan 18 11:32:48 2018 +0530
+
+    Break the threads to their own impl (api_wirer, runtime, streamer)
+
+[33mcommit c0a438addd8ce33bd5c64b12ef5fd9e175082075[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 17 19:28:45 2018 +0530
+
+    db procedure added
+
+[33mcommit 92e1bf105be06b4c0913e22f76ca11e1fa77a2c4[m
+Author: foo <foo@example.com>
+Date:   Wed Jan 17 19:23:36 2018 +0530
+
+    rewrite assembly expander code
+
+[33mcommit 9e483f4cd4789008159f84bf538b9b937c32efbc[m
+Merge: bb89ccba c4778f9c
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 17 18:26:25 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit bb89ccba9dbf93474a0337da1578fa7ef4495019[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 17 18:07:17 2018 +0530
+
+    code for vertical scaling
+
+[33mcommit d0fb9e9c6b98a39cb05aa7808e80fb0a8a6a7528[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Jan 17 13:05:18 2018 +0530
+
+    Added a sender channel to send events.
+
+[33mcommit a3f73d28d48ca23e0330b822c03929d2750aae69[m
+Merge: 34c04ad0 c4778f9c
+Author: foo <foo@example.com>
+Date:   Wed Jan 17 12:11:26 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 34c04ad0b6dd0083f4052415d0751bf24db1ad2c[m
+Author: foo <foo@example.com>
+Date:   Wed Jan 17 12:11:21 2018 +0530
+
+    merge
+
+[33mcommit 63bb6a52c2ace4e098ffa78d41bd559fd8fdbca2[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 16 00:43:19 2018 +0530
+
+    EventLogger accepts an api_sender channel
+
+[33mcommit 5964adf8453509caaa6d239050c28ce7a3c475b8[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Sun Jan 14 22:45:15 2018 +0530
+
+    Audits - blockchain - i'm born. EventLog added in the chain
+
+[33mcommit c4778f9c313c88d3aa5c9d7f5b805d66eca4e0ca[m
+Merge: 814395f1 fd48d2cd
+Author: indykish <nkishore@megam.io>
+Date:   Sat Jan 13 12:04:17 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Added CompressMiddleware, upgrade serde, env_logger to latest
+    
+    See merge request rioos/aran!257
+
+[33mcommit fd48d2cdb30c67a6f134f895f1f1c38270b22e71[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Sat Jan 13 16:55:14 2018 +0530
+
+    Add CompressMiddleware chain, upgrade serde to the latest version
+
+[33mcommit 66cab87e7fc15d120bddb037999d4164cf2e9923[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 12 20:42:18 2018 +0530
+
+    Removed warning in the compile.
+
+[33mcommit c42a5f7c046afe0a11b5ed907e340b987b93e3dd[m
+Merge: 65280a84 814395f1
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 12 20:24:49 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 814395f17a49b399c549e0c2fe1d44244773755f[m
+Merge: f6913718 520e3ade
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 12 14:47:09 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    testing in gitlab
+    
+    See merge request rioos/aran!256
+
+[33mcommit 65280a848a74bbb82277c218a2772582f97e44f8[m
+Merge: 82564fd5 f6913718
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 12 20:14:57 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 82564fd584fc900187d074a0726f4f7020f0e996[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 12 20:13:35 2018 +0530
+
+    r2d2, postgres, chrono  updated to remove duplicate deps
+
+[33mcommit 520e3aded5a59db05989f1f0a625f19b123ea8ad[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 19:43:40 2018 +0530
+
+    gitlab ci changes
+
+[33mcommit 31eaebbb3996a48592d1ff922c2711e7f34f8517[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 19:36:38 2018 +0530
+
+    add rustfmt in gitlab.ci
+
+[33mcommit 78406fe8834d1a10a04539e9a5feac69c58cbc15[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 19:29:06 2018 +0530
+
+    changes in gitlab.ci
+
+[33mcommit f691371838e5b1ccaedbafe65a0a0a131d66ef50[m
+Merge: d2d6be84 23ff4fd2
+Author: vino <vino.v@megam.io>
+Date:   Fri Jan 12 13:26:27 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    assembly response with  metrics
+    
+    See merge request rioos/aran!255
+
+[33mcommit 43f719300825a6b7b8289e6ee3144cb2d41bc3ca[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Jan 12 18:55:04 2018 +0530
+
+    code for vertical scaling
+
+[33mcommit 23ff4fd2abcc76da7cbd6c68c0a3dc1569f720ef[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 18:51:39 2018 +0530
+
+    metrics get
+
+[33mcommit ec06ff538148d08dfdaddfdeb61da1374e5fa0cf[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 17:07:20 2018 +0530
+
+    remove unwanted testcase code
+
+[33mcommit 40763819fd0b818a2790ebcb7ddf1bacf99c80ca[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 15:58:44 2018 +0530
+
+    remove multicache crate
+
+[33mcommit 9a21e4e4ca586e97c204d8f665509bc5e9f43d98[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 15:44:25 2018 +0530
+
+    add -y in install
+
+[33mcommit 62ca6e8fb337d49e14e1f4dabbf35e284add36a5[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 15:37:41 2018 +0530
+
+    add yes option
+
+[33mcommit e6875e898f0eaf04b50f5ca1c694e066daf4fe65[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 15:32:05 2018 +0530
+
+    apt update
+
+[33mcommit d2d6be8422ed77ae5b68409a45ad6bda277cfd58[m
+Merge: 575927a6 6e21d6d8
+Author: vino <vino.v@megam.io>
+Date:   Fri Jan 12 10:01:55 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    add kryptonite secret type
+    
+    See merge request rioos/aran!254
+
+[33mcommit 6e21d6d83d39e619eda582b749000eb604630ce2[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 15:29:50 2018 +0530
+
+    add apt-get update
+
+[33mcommit cf900ac9bc249c55fbc147072b29172374bb479a[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 15:23:58 2018 +0530
+
+    sudo removal
+
+[33mcommit be444923c4b9145a83963ef5c6e06d992ec3cc84[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 15:20:02 2018 +0530
+
+    permission chnaged
+
+[33mcommit eada2f33664b64bd17484bc3002ae76b01ffd940[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 15:06:05 2018 +0530
+
+    add kryptonite secret type
+
+[33mcommit 6bf9f504e50c5ab725bcd79f9361660221935c0d[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 14:02:20 2018 +0530
+
+    gitlab chnages
+
+[33mcommit c5b20ed5d232f427666350f3e6e1e10e87c28b98[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 13:57:47 2018 +0530
+
+    gitlab ci changes
+
+[33mcommit f78fbc9a08b55d5baf6668cc94ca86248d8ebb96[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 13:20:58 2018 +0530
+
+    add libsodium file
+
+[33mcommit 0f2aa545633955503dc7368fc604edaf75f19890[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 13:06:58 2018 +0530
+
+    git lab ci changes
+
+[33mcommit e5f94f09d00547f180e578d119ace9d3a8ddfa66[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 13:03:16 2018 +0530
+
+    gitlab.cl changes
+
+[33mcommit e89cdc3579c8696673bd8745f90444d278b0e7eb[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 12:57:51 2018 +0530
+
+    remove .gitlab.ci.yaml file
+
+[33mcommit 64d76ef0793cb51fed55f5228fa0be9a9202a244[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 12 12:53:43 2018 +0530
+
+    promethues ip change
+
+[33mcommit 5184adae522ba5fecd852bbe9b5c6993c3dc96a0[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 11 20:44:35 2018 +0530
+
+    id name changed
+
+[33mcommit fe4e9a06f1e65b03917cf19220709d5a4d93985b[m
+Merge: 8138ed88 575927a6
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 11 20:42:04 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 8138ed88925c90ec52d4910bdd79f5d7523868a3[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 11 20:39:58 2018 +0530
+
+    code changed
+
+[33mcommit 575927a62ca4a9608908fd41c0cc3aa0230ef463[m
+Merge: ad4afab6 e1617369
+Author: vino <vino.v@megam.io>
+Date:   Thu Jan 11 15:08:33 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    add metrics  in assembly response
+    
+    See merge request rioos/aran!253
+
+[33mcommit e16173699caf84f350150b876922ddb5b9fa41e0[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 11 20:35:18 2018 +0530
+
+    add error in metrics
+
+[33mcommit 08758a5cb52a5b90e5b3fdef1f7d4cf365896165[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 11 19:57:45 2018 +0530
+
+    remove println
+
+[33mcommit 12cd0f4b55efe5450f2d0f89335321e6de69c58c[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 11 19:56:18 2018 +0530
+
+    add metrics in assembly response
+
+[33mcommit 11a662fae5fe3600acd78865ca738a4d303973e3[m
+Merge: e175ea1a ad4afab6
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 11 15:22:35 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit e175ea1afd1c7fec42719c3f1fa9947d9c09fee8[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 11 15:21:47 2018 +0530
+
+    scale up testcase
+
+[33mcommit ad4afab6cfa1b1ae34c6129fb790f71d5ab11f3d[m
+Merge: 69ce8601 572c4062
+Author: indykish <nkishore@megam.io>
+Date:   Thu Jan 11 09:50:59 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    service creation with load balancer
+    
+    See merge request rioos/aran!252
+
+[33mcommit 69ce8601bdb922becbd667703b5bcfe01ac624c0[m
+Merge: 9d350d32 33b5162e
+Author: indykish <nkishore@megam.io>
+Date:   Thu Jan 11 09:49:36 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    collect metrics for assembly
+    
+    See merge request rioos/aran!251
+
+[33mcommit 572c4062ed90470e9df3b5d9d87bd163acb43380[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 11 13:22:58 2018 +0530
+
+    service creation with load balancer
+
+[33mcommit ba97b2a3845f068c07aa69c9638988e950c4f1a2[m
+Merge: 33b5162e 9d350d32
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 11 12:18:41 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 33b5162e55e921805f05958768d07ee7127447d8[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 11 12:17:27 2018 +0530
+
+    collect metrics for assembly
+
+[33mcommit dc2997650105c74667843aea94e8f1b1534b23fd[m
+Merge: 6a404789 9d350d32
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Jan 10 18:29:58 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 6a40478945fee0a1cb68aae6b2c6f1f7ee817f48[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Jan 10 18:29:27 2018 +0530
+
+    build-release add in amke file
+
+[33mcommit 9d350d32fba4adac0e9ccc2708e9aceb9a72a0fb[m
+Merge: b7adf2b8 64e404ba
+Author: vino <vino.v@megam.io>
+Date:   Wed Jan 10 12:54:03 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code changed
+    
+    See merge request rioos/aran!250
+
+[33mcommit 64e404ba8c7d51f46b2536f8e2efe51705fd1214[m
+Merge: 112bcbe3 b7adf2b8
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 10 18:23:02 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 112bcbe3b39fb98c3680cc4ac4d9fc2edb94df53[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 10 18:20:58 2018 +0530
+
+    code changed
+
+[33mcommit b7adf2b859fd153f8a18a13585d8d5a3b5994a9d[m
+Merge: eaa1a4ae 3f8b4ed8
+Author: vino <vino.v@megam.io>
+Date:   Wed Jan 10 12:49:44 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    assembly and assembly factory new response  with testing
+    
+    See merge request rioos/aran!248
+
+[33mcommit eaa1a4aeb1b637d33abcd69349b22292fc33ab95[m
+Merge: 99db1f74 dee150e8
+Author: indykish <nkishore@megam.io>
+Date:   Wed Jan 10 12:48:05 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code for scale hs and get assembly factory metrics
+    
+    See merge request rioos/aran!249
+
+[33mcommit dee150e8da60fe5eee161e979568a68288548165[m
+Merge: cce73654 99db1f74
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 10 17:45:00 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit cce73654fba67b9647198fb087815ac521c4834c[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 10 17:35:17 2018 +0530
+
+    code for scale hs and get assembly factory metrics
+
+[33mcommit 3f8b4ed8191da82a06ac7731dca7887353d1539e[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Jan 10 17:26:07 2018 +0530
+
+    add plan and volume response in swagger hub
+
+[33mcommit afb894e655a521d182b55182a1a025435dde5502[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Jan 10 16:52:56 2018 +0530
+
+    assembly factory response with cache data
+
+[33mcommit 99db1f74774d995cd745532a385b46ea8eba4508[m
+Merge: 7b6370e3 cd5b9f40
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 9 13:59:37 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Remove some warnings
+    
+    See merge request rioos/aran!247
+
+[33mcommit cd5b9f40a893415b8ba5fc260b801204ae1fbc60[m
+Merge: 8a99f616 7b6370e3
+Author: foo <foo@example.com>
+Date:   Tue Jan 9 19:26:23 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 8a99f61683d2ff2fe75f479f1f7609d91a436004[m
+Author: foo <foo@example.com>
+Date:   Tue Jan 9 19:08:05 2018 +0530
+
+    Remove some warnings
+
+[33mcommit be69b5431334249c9b74eb61e51743b0002cb27e[m
+Author: foo <foo@example.com>
+Date:   Tue Jan 9 19:06:16 2018 +0530
+
+    Remove some warnings
+
+[33mcommit e558d7df8262597bc4a3a52f715e92e91571974b[m
+Merge: adcc19c6 7b6370e3
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 9 18:31:58 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit adcc19c60cc062d8de72bedac72e588b0c1abc40[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 9 18:30:00 2018 +0530
+
+    assembly factory show id prblem
+
+[33mcommit 7b6370e37d2f950a6029ff4326584a7537a16aa1[m
+Merge: d50b9b60 b63211df
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 9 12:59:42 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Cleanup warnings, Added a method with_id_name for IdGet (cache fix)
+    
+    See merge request rioos/aran!246
+
+[33mcommit b63211dfd6d4ee5142e7551b0bc2f1df97d2ea7f[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 9 18:28:25 2018 +0530
+
+    Cleanup warnings, Added a method with_id_name for IdGet (cache fix)
+
+[33mcommit ededfd6d54f14c3db572109fbbb73b7717b1b641[m
+Merge: a1071700 d50b9b60
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 9 17:44:36 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit d50b9b6069abbef16b2e458b9829ebce4f4c0a79[m
+Merge: 56578b63 78dbab2a
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 9 12:14:04 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Append cache id keys with their nature.
+    
+    See merge request rioos/aran!245
+
+[33mcommit a10717005ddd25349a3c5709c133aecc40613ac2[m
+Merge: da0cda05 56578b63
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 9 17:44:02 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 78dbab2ab89f082f55d1a2d3648ebade0eddace6[m
+Merge: f400a4f7 56578b63
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 9 17:37:40 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit f400a4f793eebbc9dd9f7051a1202c5bb3b04fb0[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 9 17:34:03 2018 +0530
+
+    Append cache ids with their nature eg: _volume_<id>.
+
+[33mcommit 56578b63c3e850c7e3e8aea7aabe3b5d8756d4db[m
+Merge: eaff12eb dfeebaa4
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 9 11:36:54 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    ubuntu image removed
+    
+    See merge request rioos/aran!244
+
+[33mcommit dfeebaa445e170e95bcc8c9edadbc18db7283dd2[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Jan 9 17:05:23 2018 +0530
+
+    ubuntu image removed
+
+[33mcommit da0cda05c8974cb3cda354636f5f714bb550712a[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 9 16:56:46 2018 +0530
+
+    change toleration as array
+
+[33mcommit eaff12ebbefa12055063ed1c5e88b04c1a55b491[m
+Merge: 09fba00f b65881a4
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 9 11:11:04 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Upon creation of assemblyfactory the id/created_at is returned.
+    
+    See merge request rioos/aran!243
+
+[33mcommit b65881a49bb9369b2c4fd19b4dad82a063701e33[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 9 16:39:07 2018 +0530
+
+    Saved assemblyfactory is returned with id, created_at upon creation
+
+[33mcommit adb788f384547ce9b5e0821a34911584394bd03d[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 9 16:23:23 2018 +0530
+
+    Revert set_af_id in assembly_factory to set_id
+
+[33mcommit 09fba00f8ce9adc52ed2cb0fec3a5decf44afb89[m
+Merge: afe0b847 cadf6035
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 9 10:44:20 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Watch Server running with minimal CPU
+    
+    See merge request rioos/aran!239
+
+[33mcommit afe0b847068b66ce19d2caa721983a5be09ccf33[m
+Merge: d964132c 5961d8a5
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 9 10:01:10 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    warning and unwanted package removed in rioo-marketplaces
+    
+    See merge request rioos/aran!242
+
+[33mcommit 5961d8a53a49e026d0b4d879dafe8037d4d2bbcc[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Jan 9 15:26:12 2018 +0530
+
+    warning and unwanted package removed in rioo-marketplaces
+
+[33mcommit cadf603526b559d4374967f03976900b3a1b83aa[m
+Merge: 9b2af000 d964132c
+Author: foo <foo@example.com>
+Date:   Tue Jan 9 11:29:49 2018 +0530
+
+    clear some commented codes and enable https for list api server
+
+[33mcommit 9b2af000d23eea42e895c04b7f1d889b41248d20[m
+Author: foo <foo@example.com>
+Date:   Tue Jan 9 11:25:25 2018 +0530
+
+    clear some commented codes and enable https for list api server
+
+[33mcommit d964132ca5b98a2d1481e54afa5e56a83d192cdb[m
+Merge: a9b38ce0 00b4b162
+Author: indykish <nkishore@megam.io>
+Date:   Tue Jan 9 05:21:42 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    new rioos-marketplace created
+    
+    See merge request rioos/aran!232
+
+[33mcommit 00b4b162660c5e171eb5defba99cc06134c5869c[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Jan 9 10:47:51 2018 +0530
+
+    code for create ssh key
+
+[33mcommit 95e84fadbba33871099fe66af1049ef94cde0a34[m
+Merge: 9cfc5f68 a9b38ce0
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 9 10:45:22 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 9cfc5f687ce4f802b6155a30ab008b536abfc683[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 9 10:44:39 2018 +0530
+
+    assembly factory response changes
+
+[33mcommit 0213ee085b7e2dd41781ff4aa9dd15ce916c22bd[m
+Merge: 90a90bc9 a9b38ce0
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Jan 9 10:09:53 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit a9b38ce0dba42de3de176f06b6953c4b4587b875[m
+Merge: 2120eef2 0f13f1e1
+Author: indykish <nkishore@megam.io>
+Date:   Mon Jan 8 18:47:58 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Secure ssh shall use the CA from the default_config_key_path
+    
+    See merge request rioos/aran!241
+
+[33mcommit 0f13f1e1ce88229e8a4a563d0ba6592feb6f2376[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 9 00:16:09 2018 +0530
+
+    Secure ssh shall use the CA from the default_config_key_path
+
+[33mcommit 2120eef293417e3d07537118dd017bb6808f8640[m
+Merge: c2304f0b 3cc55c8d
+Author: indykish <nkishore@megam.io>
+Date:   Mon Jan 8 16:58:30 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Signed certs fix - generated by `rioos-api-server setup` command.
+    
+    See merge request rioos/aran!240
+
+[33mcommit 3cc55c8d261fc0d3a3d493e513e9b545e4ed1d36[m
+Merge: 7b7b670a c2304f0b
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Mon Jan 8 22:02:45 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 7b7b670a13ec2b1b352e3fd2511055dbac4efcbc[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Mon Jan 8 21:59:32 2018 +0530
+
+    Generate CA, signed pairs. openssl verify succeeds for signed certs
+
+[33mcommit 90a90bc9d560a711f4ae8177a28ba9b3571384b6[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Jan 8 20:37:37 2018 +0530
+
+    println removed
+
+[33mcommit 56a37ef8e61e324ed79c7c8b872757b0d3745ed4[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Jan 8 20:16:48 2018 +0530
+
+    code for download image using marketplace id
+
+[33mcommit c2304f0b6d32f50bbaef642fac44c38464fb788b[m
+Merge: 95b064fa ed03f844
+Author: indykish <nkishore@megam.io>
+Date:   Mon Jan 8 13:13:36 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    add with_volume cache
+    
+    See merge request rioos/aran!236
+
+[33mcommit ed03f844c9f4063dff7b7df6f670a81052b86af7[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Jan 8 18:19:09 2018 +0530
+
+    Prometheus local server testing
+
+[33mcommit 15c95c657c95a3a36d9d989566356d647714c59b[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Jan 8 16:23:47 2018 +0530
+
+    code changed
+
+[33mcommit b35060029fbb372554a6dcc3d50a0257513862e4[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Jan 8 15:50:42 2018 +0530
+
+    marketplace created
+
+[33mcommit f6dc34e0045c0ee096e4e4a092e4cbaf1a38dec2[m
+Merge: 20ab0b50 95b064fa
+Author: foo <foo@example.com>
+Date:   Mon Jan 8 13:58:48 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 20ab0b503c20e5694bc3da5e9c6e060ee2bf973f[m
+Author: foo <foo@example.com>
+Date:   Mon Jan 8 11:19:53 2018 +0530
+
+    merge
+
+[33mcommit 5dcddf5b9bf8aeb30a7b019b490426fff8d6d317[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Jan 8 11:14:52 2018 +0530
+
+    joblist kind change
+
+[33mcommit d10928c04c3fe9e8de59271c7d3705781d5fe0b3[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Sat Jan 6 12:38:16 2018 +0530
+
+    code for download the image
+
+[33mcommit ba2c784ea66b36b81c047227e1528bf2c6140a81[m
+Merge: 7f2ceaf4 95b064fa
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Sat Jan 6 10:49:20 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 6fad147b3fb7943f8e2e0a589a72898dd97a6a69[m
+Merge: a3feb918 95b064fa
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Jan 5 20:25:57 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 7f2ceaf4b2e003a7290d151fd7f522dd2d19b42e[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Jan 5 20:24:39 2018 +0530
+
+    swagger hub update for image vulnerablity and security
+
+[33mcommit a3feb918136f1b1c0cfd6ab3840b3581d260d2ee[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Jan 5 12:38:13 2018 +0530
+
+    scehema added
+
+[33mcommit c0736f936754983676349b4e201600316ee49860[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Jan 5 11:54:22 2018 +0530
+
+    package create api
+
+[33mcommit 95b064fa8398ef89dcbfa67cc52c113b7964e353[m
+Merge: 61fff0ec 045559ec
+Author: indykish <nkishore@megam.io>
+Date:   Fri Jan 5 05:36:58 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    added allow unused to reduce the warnings
+    
+    See merge request rioos/aran!238
+
+[33mcommit 045559ecb85c6f4323c4cd24b95b96d3318699c2[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 5 11:05:22 2018 +0530
+
+    Added `allow unused_` macro to reduce the warnings
+
+[33mcommit 146eb5208781bb9acdc002af4d1c6a827368549d[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Jan 5 10:40:01 2018 +0530
+
+    removed a tmp file
+
+[33mcommit 8c6f5a30c21c44c1770712ca24f5423e05152266[m
+Merge: 698377d6 61fff0ec
+Author: foo <foo@example.com>
+Date:   Fri Jan 5 09:33:22 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 61fff0ecff320544ebdf6dd62a1caca489184349[m
+Merge: 0b0d303b 811ec0c0
+Author: indykish <nkishore@megam.io>
+Date:   Thu Jan 4 16:01:41 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    SSH auth generates pub/private keys under CA.
+    
+    See merge request rioos/aran!237
+
+[33mcommit 811ec0c0f161e0c59649f2e7c094b85c23243f68[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Jan 4 21:26:44 2018 +0530
+
+    SSH auth generates pub/private keys under CA.
+
+[33mcommit 7cd19b16d7b514697347ed68ff9b7c2d48aa3372[m
+Merge: 0e25f603 0b0d303b
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 4 20:09:09 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 698377d6c89ea852a297e3a4f8e77dd4a3d91851[m
+Merge: e0714851 0b0d303b
+Author: foo <foo@example.com>
+Date:   Thu Jan 4 19:38:33 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit e071485175d38a1226e0e8e80e020169c31a0e65[m
+Merge: 6f1c933c 57f4d03f
+Author: foo <foo@example.com>
+Date:   Thu Jan 4 17:31:24 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 0e25f6035ffdd0d65e153429d15d9d1e22a6a269[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 4 17:08:43 2018 +0530
+
+    check plan data in assembly
+
+[33mcommit 0b0d303bf58b94170f0b7cf0d4106f83461917b6[m
+Merge: 3b59973e 1d94467c
+Author: indykish <nkishore@megam.io>
+Date:   Thu Jan 4 11:38:05 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Add debug for monitoring the cache status.
+    
+    See merge request rioos/aran!235
+
+[33mcommit 1d94467c6736724afdb516cd48df000acea94719[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Jan 4 17:06:57 2018 +0530
+
+    Add debug to monitor the cache
+
+[33mcommit 3f04c297e056a6f4c831083cee19416e23bcde1e[m
+Merge: a31a2cf1 3b59973e
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Jan 4 16:22:46 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit a31a2cf1c11118437dc63b837fab375dc6da9200[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Jan 4 16:22:25 2018 +0530
+
+    Generate keypair with rsa of the requested bitsize
+
+[33mcommit 4c4386863a014db900ab88f783f678d4cb6d2ec4[m
+Merge: 1fb353d6 3b59973e
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Jan 4 15:17:59 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 3b59973eedf486dcb6f735fcb018d115d34de928[m
+Merge: 4f702681 c8dd9801
+Author: vino <vino.v@megam.io>
+Date:   Thu Jan 4 09:46:45 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    anchore image vulnerality check
+    
+    See merge request rioos/aran!234
+
+[33mcommit c8dd980162ddf62c2b94dcb01de99162769bc813[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 4 15:12:36 2018 +0530
+
+    imagevulner strcut add
+
+[33mcommit ef360d258694a18e226fef402cf4b9faf59f2665[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 4 11:57:55 2018 +0530
+
+    error changes in reqwest client
+
+[33mcommit 8ba9ca0b0187c3a08b4d2460cc44862b2efce992[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 4 11:28:13 2018 +0530
+
+    reqwest client file creation for both promethus and anchore
+
+[33mcommit 52928df294cccee2fb0352b8b8b7ed5b44c0763e[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 4 10:22:32 2018 +0530
+
+    println removal
+
+[33mcommit 0db9dc29395b55b09eb1099a19c1642b06b146f8[m
+Merge: 9faeaa8d 4f702681
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Jan 4 10:00:27 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 9faeaa8dcb3b3a5235ba8f7233f4c8968077c2e6[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Jan 3 20:30:58 2018 +0530
+
+    assemblyfactory show with plan
+
+[33mcommit 1fb353d63ca26eabfe2b9510f3cba414e7471ac1[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 3 19:55:38 2018 +0530
+
+    minor changes in http-client
+
+[33mcommit 4f702681d30d8704ed5f00e9e8f5eeb5a1552096[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Jan 3 19:24:52 2018 +0530
+
+    Load the loadbalancer defaults used when creating Service
+
+[33mcommit a71b7f2f9bca5216673a18997cada502dffdaf42[m
+Merge: 9620eb58 57f4d03f
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Jan 3 16:40:22 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit f2c2fb1c267f51ad0e6f9a9ef9bf9f5f55ef857b[m
+Merge: bd12da97 57f4d03f
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Jan 3 16:05:47 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 6f1c933cded8cd7be65911dea736eac99039ca32[m
+Author: foo <foo@example.com>
+Date:   Wed Jan 3 15:55:10 2018 +0530
+
+    merge
+
+[33mcommit 9620eb58d5141c9916a66c29b61115cb86a205c6[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Jan 3 15:39:34 2018 +0530
+
+    anchore image vulnerablity check
+
+[33mcommit 57f4d03f85827e19a9606370236c7459853bb3e3[m
+Merge: 53442c9b 74e36080
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Jan 3 13:52:57 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 53442c9b4e0e97f72f3c33d1a17a7bd727bf2d36[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Jan 3 13:52:01 2018 +0530
+
+    Cache based expander for plan, endpoint, volume, factory
+
+[33mcommit 74e36080ac1206611b1c4eb649e878ade18ce2c3[m
+Merge: a87b27c3 8ec3b606
+Author: indykish <nkishore@megam.io>
+Date:   Wed Jan 3 08:13:42 2018 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    swagger hub update for log api
+    
+    See merge request rioos/aran!233
+
+[33mcommit b976fc898fde317a2e3b0b4307cca9b0d81828c3[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Jan 3 12:40:10 2018 +0530
+
+    Whew the cache is rewritten using multi-cache (cloned)
+
+[33mcommit 4458e927ce492cbb2174cd2bdf28b81f2a36005d[m
+Merge: 8bd63342 a87b27c3
+Author: foo <foo@example.com>
+Date:   Tue Jan 2 20:00:00 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 201f0df98789ff956234a311b58dcc3103d16332[m
+Merge: 8ec3b606 a87b27c3
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 2 16:44:14 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 8ec3b60642067035949ffc00b9e470b6bd998549[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Jan 2 11:47:26 2018 +0530
+
+    swagger inflexdb connection refused error add
+
+[33mcommit 8bd633420f5359c82c3f67c2625d05b937d8e2a0[m
+Author: foo <foo@example.com>
+Date:   Tue Jan 2 10:12:19 2018 +0530
+
+    merge
+
+[33mcommit 96601dc0a9c5034f66ffbc903964dd5f3521f4bc[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 2 01:44:39 2018 +0530
+
+    Mut is gone now for cache.
+
+[33mcommit 1286241cb75a31ff7301ffd57529412a106e12f3[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Jan 2 00:15:02 2018 +0530
+
+    Mut all the selfs that use the expander cache.
+
+[33mcommit a9b5d97b1efe7494be089b999ccc64db56d9bd3f[m
+Merge: d1d54241 a87b27c3
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Mon Jan 1 00:29:53 2018 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit d1d542413d144b7a5ca0715ec73d6f6ebeb5fcc5[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Sun Dec 31 17:48:02 2017 +0530
+
+    Cache inserts and applies the closure cache service
+
+[33mcommit 64d1e5bb26e0cff0506a3d6dff81b38ddc08dad9[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Sat Dec 30 02:14:30 2017 +0530
+
+    Feeds are getting fixed.
+
+[33mcommit e0353793b9fc5bf7a4f9e40e77b44f0a9b399e7a[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Sat Dec 30 01:09:01 2017 +0530
+
+    Decode the cached string from the cash  as rust object (Unmarshall)
+
+[33mcommit f620bbed42b72cdd5b153ece5870c45c0e709944[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 29 20:17:31 2017 +0530
+
+    swagger hub update for log api
+
+[33mcommit bd12da97ffe5980284e9058122747dd52baabbb8[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 29 19:36:37 2017 +0530
+
+    new rioos-marketplace created
+
+[33mcommit a87b27c3c23aa02c9a7d816d355ab6ff20738795[m
+Merge: d563ea55 c6455a04
+Author: indykish <nkishore@megam.io>
+Date:   Fri Dec 29 14:05:43 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Log Api for machine and container
+    
+    See merge request rioos/aran!230
+
+[33mcommit 295bb385feddaf18c590211d1d76e45a8347ac5a[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Dec 29 18:29:15 2017 +0530
+
+    Whew, cache is compiles and fixed.
+
+[33mcommit c6455a04cfea91b04768737aa8e06c3653cfcc84[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 29 13:48:31 2017 +0530
+
+    minor change
+
+[33mcommit 8edc4495ab227ea1ace355e702ab459eab279d3e[m
+Merge: 2e926e15 d563ea55
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 29 13:45:51 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 2e926e157f19902b1dfb282a199789a38d2c0447[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 29 13:27:55 2017 +0530
+
+    changes in log api
+
+[33mcommit d563ea55136e67224d0d313d3512df988e670e99[m
+Merge: 8af580a9 de07b011
+Author: vino <vino.v@megam.io>
+Date:   Fri Dec 29 07:32:44 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    cli signup and trust_level field add in account profile
+    
+    See merge request rioos/aran!231
+
+[33mcommit de07b011be0b6d5ad3fd9ba527db725ccfd0d500[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 29 12:36:09 2017 +0530
+
+    cli signup changes
+
+[33mcommit e88d5d7563cbdd2ce01906da840f80925199ee16[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Dec 29 00:55:20 2017 +0530
+
+    Getting close
+
+[33mcommit fb50cd7f2d9bf56f07b9aef47b192f1dafbd4c46[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Dec 28 18:10:03 2017 +0530
+
+    Removed the I generic type. Still 2 errors to go.
+
+[33mcommit 0682ae2a957f893510cd414c3ff119c5174f48d1[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 28 17:23:17 2017 +0530
+
+    cli signup params structure changes
+
+[33mcommit 3474b8bffd27e0cf80471da8a3ca9cf0d73f1c99[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 28 17:08:29 2017 +0530
+
+    query param validation check
+
+[33mcommit 392a072c18a219b20f443e7735784cda4e1ea4f7[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 28 11:14:11 2017 +0530
+
+    code for validate the query params
+
+[33mcommit a857c86c087082a16d16ad2c7c6ebbee51f91ce2[m
+Author: foo <foo@example.com>
+Date:   Wed Dec 27 19:44:12 2017 +0530
+
+    rewrite watch channel structure
+
+[33mcommit c03e96b315a22117409f5567f9a61028840e56a1[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Dec 27 18:30:59 2017 +0530
+
+    Interim cache fix#1, compile error count =2. Committing for reference
+
+[33mcommit f107587aea291c6c60916d6213b0c699f73b2ded[m
+Merge: 5547687e 8af580a9
+Author: foo <foo@example.com>
+Date:   Wed Dec 27 09:25:12 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 65a735462a137d1cfcef463a450356710ecd7c86[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Dec 26 23:28:04 2017 +0530
+
+    Revamp cache, in a much simpler way.
+
+[33mcommit 5547687e3920546e409022882918a32495c4f40c[m
+Author: foo <foo@example.com>
+Date:   Tue Dec 26 19:32:40 2017 +0530
+
+    send data from database watch to output channel
+
+[33mcommit 7d13a69bda7262c0d9ea54fa59b8450c89e6a1fa[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 18:12:12 2017 +0530
+
+    verify_id changes
+
+[33mcommit dcd9dce3009924a680795eb46861808d5f170345[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 26 18:06:01 2017 +0530
+
+    limit removed
+
+[33mcommit 3535c07ff3be659610ab0f8e607d940c20577431[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 26 17:45:23 2017 +0530
+
+    minor change
+
+[33mcommit 991e210d1b38f3d03516a97ee3848cfa062518af[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 26 17:16:46 2017 +0530
+
+    list assembly and container log from influxdb
+
+[33mcommit 4efcfd93d0049f45ec6682e43cc66dd4814b9948[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 15:53:08 2017 +0530
+
+    ci changes
+
+[33mcommit 6e4d5293b4ca46c142f845d663d1f1c8db02de94[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 26 15:36:32 2017 +0530
+
+    code for multiple query support
+
+[33mcommit dd950a44e549fb64955c623bc1aa9db3c1916820[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 15:23:51 2017 +0530
+
+    ci changes
+
+[33mcommit 4e436bdf77e1aa82f9803e94a62126df97b9a194[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 15:18:16 2017 +0530
+
+    ci changes
+
+[33mcommit cd07e8317dc4e6aef696708e31605269ec3d60e4[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 15:10:53 2017 +0530
+
+    ci chnages
+
+[33mcommit 2683fd80794340dfc5651bd0a7305cc4cb43425b[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 13:52:26 2017 +0530
+
+    ci changes
+
+[33mcommit 80456103f0d12229a6e26aed7f5885249493dd78[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 12:58:06 2017 +0530
+
+    println removal
+
+[33mcommit ca7e4f54f2e32f55d7c9ae54e7725f27853382ba[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 12:54:28 2017 +0530
+
+    cli signup and trust_level field add
+
+[33mcommit 58ddf6cb4b75f32650a2b64976e5d7ccebaf8427[m
+Merge: 12b1096d 8af580a9
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 12:47:35 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 12b1096d23628fc16cd9d7c58adb7414689829cf[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 26 12:46:45 2017 +0530
+
+    cli signup and trust_level add
+
+[33mcommit 627b71878675089898afee5f4cf83bdfe1b5a596[m
+Merge: 6c3c7d8f 8af580a9
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 26 10:33:59 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit a74038f19a79f7bbaac7c7692406adfc39a4d26e[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Mon Dec 25 23:37:41 2017 +0530
+
+    wire InMemoryExpander  with planfeeder.
+
+[33mcommit 839358427249fedc48de81480ddea870cc4130f6[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Sun Dec 24 20:41:00 2017 +0530
+
+    Cache implementation that compiles
+
+[33mcommit 8af580a939727cc8c73161af38ab55f87f98e717[m
+Merge: 4bcec88e d77537f9
+Author: vino <vino.v@megam.io>
+Date:   Fri Dec 22 14:42:30 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    cli new changes for list , get and describe
+    
+    See merge request rioos/aran!229
+
+[33mcommit 6c3c7d8f1120a567412b50006c79dd66c9c677c2[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 22 19:57:11 2017 +0530
+
+    code changes
+
+[33mcommit 5675b974acb817da1d78257a742085c9bd4bc522[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 22 18:53:03 2017 +0530
+
+    warning removed
+
+[33mcommit a3eeae0fbbf688e90025e10b42363ea516fc51c9[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 22 18:39:21 2017 +0530
+
+    code for get log machine and container
+
+[33mcommit f093adf69dc55f66db2fe41dad50122d51fd847a[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Dec 22 17:59:40 2017 +0530
+
+    Build expander cache in assemblyfactory and assembly.
+
+[33mcommit d05da4737505465d00ae0fec087c1c12feee8dea[m
+Merge: 7da12ffd 4bcec88e
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 22 17:26:12 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit d77537f95b4916bd6aa5335cc14dd868248530d5[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 22 12:59:33 2017 +0530
+
+    team api testing
+
+[33mcommit c6bd9561dd3f908e87c600742550cc4415e4fce9[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 22 11:21:56 2017 +0530
+
+    scale_up_wait_time and scale_down_wait_time field changes in scaling
+
+[33mcommit 3f85d9fec6a9b58b62e8c3f284e466ef8dc34ad7[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 22 10:26:23 2017 +0530
+
+    aran issues resolved: default secret creation and get by origin
+
+[33mcommit 9f7178bafb4a7da3d56c0c1ca0cbc0fdec84efc5[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Fri Dec 22 01:23:59 2017 +0530
+
+    mk loadbalancer/dns, widen assembly/assembly from an optional cache
+
+[33mcommit b3878d351bcbc2b83dc05e28ce455583787f4528[m
+Merge: 4485fdcb 4bcec88e
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Dec 21 23:41:41 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 4485fdcb78d6529946151e024111fcc927f5b34e[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Dec 21 23:37:48 2017 +0530
+
+    Expand api resource objects using a lru cache
+
+[33mcommit ff4d6408b7148f5e8bfb884a754b87e7f8e4db8e[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 21 19:10:53 2017 +0530
+
+    decoded_response function removal
+
+[33mcommit 2ff6fe1d88fe6b01c9649051bad24217ebbb8062[m
+Merge: 4c8250a9 4bcec88e
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 21 19:00:47 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 4c8250a9d3167d693263b6cf6af1f95b97e744a6[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 21 18:52:02 2017 +0530
+
+    cli new changes for list get and describe
+
+[33mcommit 7da12ffd9dca74646454ac35ff48c6551140ac97[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 21 17:01:26 2017 +0530
+
+    code changed
+
+[33mcommit 4bcec88e2f35c8334baf3fa8d808108b200beec7[m
+Merge: a817f942 d7cb4b6d
+Author: vino <vino.v@megam.io>
+Date:   Thu Dec 21 11:27:27 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    start watch server using config file with tls certs
+    
+    See merge request rioos/aran!228
+
+[33mcommit d7cb4b6ddfddb28bf9b3115fde42af63acfdc487[m
+Author: foo <foo@example.com>
+Date:   Thu Dec 21 16:53:57 2017 +0530
+
+    change start.sh mod permission
+
+[33mcommit c57bdaf2e95e1c4348a76c3c2e738cd6e72731f7[m
+Author: foo <foo@example.com>
+Date:   Thu Dec 21 16:48:40 2017 +0530
+
+    clear commit bugs
+
+[33mcommit 9984af66a2eef9e33cced284f9e9d3729ab1b492[m
+Merge: 63643dfc a817f942
+Author: foo <foo@example.com>
+Date:   Thu Dec 21 13:30:54 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 63643dfc0076458378ba9ccdcdf3489dc4eca12c[m
+Author: foo <foo@example.com>
+Date:   Thu Dec 21 13:07:45 2017 +0530
+
+    start watch server with config file
+
+[33mcommit fcd9acd266fceb4a61a25a3dd6b101026b84f92d[m
+Merge: d255db7e a817f942
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Dec 21 12:04:05 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit d255db7ec992cbf3665081ccb92b16c7aaa65b60[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Dec 21 12:03:23 2017 +0530
+
+    Cleanup services/loadbalancer creation
+
+[33mcommit 1715d005201aec3aeaa40ee9037fccd3e6002ab6[m
+Merge: b6c9a8c9 a817f942
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 21 11:08:40 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit a817f94247353980e48bc41a165cb7cb7f44ee92[m
+Merge: de32f30b e10b59c7
+Author: indykish <nkishore@megam.io>
+Date:   Thu Dec 21 05:37:36 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    rioo cli code changes
+    
+    See merge request rioos/aran!227
+
+[33mcommit b6c9a8c9c30f76779d3f5feded073d04e855b44e[m
+Merge: 6fa2928b de32f30b
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 21 11:05:23 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 11adbdaea1d2cae0743baa170ec13428bcc1e8e2[m
+Merge: af34d38f de32f30b
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 21 11:03:27 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit de32f30b0e51ea9da9c2ee27c625e519d1c30c83[m
+Merge: facd92dc a7d2e2ee
+Author: vino <vino.v@megam.io>
+Date:   Thu Dec 21 05:31:39 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    origin integration testing
+    
+    See merge request rioos/aran!226
+
+[33mcommit 6fa2928b5f9839b80bab05a7157a2e36db5be121[m
+Merge: a7d2e2ee facd92dc
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 21 10:57:07 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit af34d38f94e1009204cda4e1b50d5a8a15f87665[m
+Merge: e10b59c7 facd92dc
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 21 10:55:24 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit e10b59c75e5c06e48d7a7d65651877f7a68f670c[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 21 10:54:21 2017 +0530
+
+    rioo cli code
+
+[33mcommit a7d2e2ee5b9bfce56ffb2a715c1c3df3288df41d[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 21 10:49:26 2017 +0530
+
+    origin set_name changes and integration testing
+
+[33mcommit e3f377ba2bc192d9d83cc45bccc3b6ff84758872[m
+Merge: 70d6b175 facd92dc
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Dec 21 10:46:40 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 40082eddab1282c963c9c017af7358d66e955b31[m
+Merge: d6f1111c b01b9be3
+Author: foo <foo@example.com>
+Date:   Wed Dec 20 19:26:29 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit facd92dc43cb915b7a7f54578b0c0af18484ff1f[m
+Merge: 85b04982 b4dda072
+Author: indykish <nkishore@megam.io>
+Date:   Wed Dec 20 12:12:27 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    integration testing for vertical scaling
+    
+    See merge request rioos/aran!225
+
+[33mcommit a82323606eddfc06ef42e26b4a8be830e9926a19[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Dec 20 17:08:49 2017 +0530
+
+    integration and unit testing settingsmap api
+
+[33mcommit fd19d65f5ba44561fdb53f2545280c6970f5c2e8[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Dec 20 16:37:58 2017 +0530
+
+    settingsmap api for create and show
+
+[33mcommit c77b7c9a3a72deced9cad6a5076ef77f4a60e267[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Dec 20 15:00:39 2017 +0530
+
+    default origin rioos_system creation
+
+[33mcommit b4dda0723eb90378e0e3b3a1dac8116e3e8f05ac[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Dec 20 12:44:33 2017 +0530
+
+    swagger hub update for volume api
+
+[33mcommit 0fe1a26ad79da8d6c9244e0cf86de73a00092d01[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Dec 20 11:22:31 2017 +0530
+
+    swagger update for horizontal scaling and vertical scaling
+
+[33mcommit 70d6b175180e0a5de7466a6eee95142ee4ba7305[m
+Merge: 4de0e721 85b04982
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Dec 20 00:59:23 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 4de0e7219aa188e5e26cad05211d84a846904d49[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Wed Dec 20 00:47:20 2017 +0530
+
+    Add cache, rename linker with service
+
+[33mcommit a2c9f7985dfd062a9e9acffa276e18e638383572[m
+Merge: d339348e 85b04982
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 19 19:44:10 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit d339348e37552be1e2819b4cf08b3a9fded69562[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 19 19:40:07 2017 +0530
+
+    integration testing for vertical scaling
+
+[33mcommit 85b049827e3560d39d9f380433b204dd55ccebea[m
+Merge: 8d6e5559 57b39c72
+Author: vino <vino.v@megam.io>
+Date:   Tue Dec 19 13:37:31 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    horizontal scaling structure changes, unit testing and integration testing
+    
+    See merge request rioos/aran!224
+
+[33mcommit 57b39c728bd8aa96fbab040d16807b0626bfdd67[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 19 18:48:28 2017 +0530
+
+    vertical scaling status update and whole update api
+
+[33mcommit 9cff406ea602aeb94f2522ea1177b4cfe6f8e084[m
+Merge: f03226d1 8d6e5559
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 19 18:34:54 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit f03226d1c11ca0b0573e4a72054951bf34590d47[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 19 18:32:17 2017 +0530
+
+    vertical scaling create and list api
+
+[33mcommit 8d6e5559a15ad02040dfafc86186e6869e7ffbac[m
+Merge: 33433a29 a43730b0
+Author: indykish <nkishore@megam.io>
+Date:   Tue Dec 19 12:02:25 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code for create secret with account
+    
+    See merge request rioos/aran!223
+
+[33mcommit a43730b09dbabe619105dca936c0a2fc0be62313[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 19 16:24:46 2017 +0530
+
+    service account api created
+
+[33mcommit d6bfbbc273bfe96d6c1c106a695a6af19152f82e[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 19 15:37:36 2017 +0530
+
+    horizontal scaling structure changes, unit testing and integration testing
+
+[33mcommit b5227ac8f538ae556553babfb9bf0da2a7ddf1d2[m
+Merge: 0c6e7cc2 33433a29
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 19 12:06:19 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 0c6e7cc2a1335fee5bdcf870de95cd876c245301[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 19 12:02:39 2017 +0530
+
+    intergration and unit test for secret api and return error if no secret_type match
+
+[33mcommit 33433a2997e247bd2cef86c3be5e8883fb4b74cf[m
+Merge: b01b9be3 9d3bf268
+Author: vino <vino.v@megam.io>
+Date:   Mon Dec 18 14:19:47 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    swagger update and aran fixes
+    
+    See merge request rioos/aran!222
+
+[33mcommit dacb56682be9b36b4e8d0eb1d3ef012768a863c0[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Dec 18 19:39:16 2017 +0530
+
+    code for create secret with account
+
+[33mcommit 9d3bf26831ec89707f712590fa1792370530be90[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Dec 18 18:44:59 2017 +0530
+
+    swagger update for aran fixes changes
+
+[33mcommit 0c9e345476311a87c44cda2a2d6cd79851dc3aa6[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Dec 18 17:51:20 2017 +0530
+
+    change the initializer field
+
+[33mcommit c407e103bbc2e313995c12e9a639dc310ed4bd99[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Dec 18 13:42:23 2017 +0530
+
+    swagger update and aran fixes
+
+[33mcommit d6f1111c312a47e89f4717a1ee4e02df437e19c5[m
+Merge: 266beaf4 85f7b9be
+Author: foo <foo@example.com>
+Date:   Mon Dec 18 10:02:46 2017 +0530
+
+    Merge branch '2.0' of https://gitlab.com/rajthilak/aran into 2.0
+
+[33mcommit 266beaf424e6d7025922a30dcccebddb9a3814df[m
+Author: foo <foo@example.com>
+Date:   Mon Dec 18 10:01:46 2017 +0530
+
+    started watch server
+
+[33mcommit b01b9be39c0aa0f007b4e4fb825ebbe103cb2b8f[m
+Merge: aba0f140 be35d729
+Author: indykish <nkishore@megam.io>
+Date:   Fri Dec 15 14:42:22 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Authorization Bearer check
+    
+    See merge request rioos/aran!221
+
+[33mcommit aba0f140c89f4e94e618d55ee9a875bd70d4eff2[m
+Merge: b80ffae0 f299fa10
+Author: indykish <nkishore@megam.io>
+Date:   Fri Dec 15 14:42:04 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    set_created_at changes
+    
+    See merge request rioos/aran!219
+
+[33mcommit f299fa10701d3a7cb12e756f860bf3bb59ae6e0c[m
+Merge: b6db89ba b80ffae0
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 15 20:11:02 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit b6db89ba36f45e93625844990e68180f46a591d2[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 15 20:04:25 2017 +0530
+
+    volume testcase
+
+[33mcommit be35d7292e760e0563794c5bd4e10721f67e847d[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 15 19:57:31 2017 +0530
+
+    Authorization Bearer check
+
+[33mcommit b80ffae075308a1e85dce758f8ceef11d6fbef4c[m[33m ([m[1;32mmaster[m[33m)[m
+Merge: 6f904611 c6125a41
+Author: indykish <nkishore@megam.io>
+Date:   Fri Dec 15 14:27:12 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Fix for check phase, Malformed error exact reason, create service
+    
+    See merge request rioos/aran!220
+
+[33mcommit 85f7b9be190ebcd1f86960f81c6a804c0dd441d4[m
+Merge: c6205033 24533d0b
+Author: rajthilak <rajthilak@megam.io>
+Date:   Fri Dec 15 14:18:25 2017 +0000
+
+    Merge branch '24533d0b0951573e1fdc8e410b56d1a70c2c10f6' into '2.0'
+    
+    24533d0b0951573e1fdc8e410b56d1a70c2c10f6
+    
+    See merge request rajthilak/aran!1
+
+[33mcommit c6125a415c1f8ae78d516f40f04d3d65f817ed99[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 15 18:05:38 2017 +0530
+
+    phase removed from plan_factory
+
+[33mcommit b46b391bd7c5a753376cb219d48c3a5b48f9ae1a[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 15 18:01:43 2017 +0530
+
+    code for change service selector
+
+[33mcommit 35a5515256fad63c1fbf785da7ad1c1217c9eaff[m
+Merge: 4229ece2 04da9484
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 15 17:25:07 2017 +0530
+
+    Merge remote-tracking branch 'master/2.0' into 2.0
+
+[33mcommit 4229ece22711b29311beb9082948c808e0db3b2a[m
+Merge: f1a8848f 6f904611
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 15 17:22:38 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 04da9484c1a1cfc142eeb9ccd572a7cba9c6cb66[m
+Author: suganya <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 15 11:37:27 2017 +0000
+
+    remove with_meta_fields
+
+[33mcommit ada81eea44f900e482acf6908a626470ab4b96e9[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 15 16:48:01 2017 +0530
+
+    fix for check phase and service create
+
+[33mcommit 91053d4392ad0ab8c6d99e1eefb28b3e76c59f46[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 15 12:03:23 2017 +0530
+
+    Fix for malformed error
+
+[33mcommit 31e60c096f3f2c4a73fdbe09648ad63bbf303d89[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 14 19:55:13 2017 +0530
+
+    malformed error response
+
+[33mcommit f1a8848f12883c40718110bcf0174d7899e6f72c[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 14 18:09:50 2017 +0530
+
+    set_created_at changes
+
+[33mcommit 6f9046114b3390109885af2334d20e7a486ad00a[m
+Merge: c7fc4afd d2d5f844
+Author: vino <vino.v@megam.io>
+Date:   Thu Dec 14 12:35:50 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    2.0
+    
+    See merge request rioos/aran!218
+
+[33mcommit d2d5f844031c7538cf6d871024e51f1153db6fdd[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 14 18:03:59 2017 +0530
+
+    code chnaged
+
+[33mcommit 392ee52e7e686427c2fbee63fb3e816b6b9ba784[m
+Merge: 0612e45a c7fc4afd
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 14 17:52:45 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 0612e45a4b03f4d9a01e1890fbe6392e7b0acf4f[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 14 17:51:54 2017 +0530
+
+    code changes
+
+[33mcommit c7fc4afd07de3f8616e3b6879e36034cca789349[m
+Merge: 778fd957 e4e3c071
+Author: vino <vino.v@megam.io>
+Date:   Thu Dec 14 11:56:59 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    plan list integration testing
+    
+    See merge request rioos/aran!217
+
+[33mcommit e4e3c071a3e9bcf78692b114fcad802c5cd5583c[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 14 15:40:57 2017 +0530
+
+    plan list integration testing
+
+[33mcommit 778fd957eae19b3ec6d6a8882c190c9bc060e718[m
+Merge: a39d39f2 83ff1767
+Author: indykish <nkishore@megam.io>
+Date:   Thu Dec 14 09:40:09 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    code for endpoints and services
+    
+    See merge request rioos/aran!216
+
+[33mcommit a39d39f21c370b668c95c7b842793ee2336c8f2c[m
+Merge: bf5e1a32 e1cb34bc
+Author: indykish <nkishore@megam.io>
+Date:   Thu Dec 14 09:39:39 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    job and node integration testing
+    
+    See merge request rioos/aran!213
+
+[33mcommit 83ff17679227dc6da186d94688c9ffecaec7bc7b[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 14 15:09:08 2017 +0530
+
+    enpoints creted and listed
+
+[33mcommit 106fcc4a22a4993bff2f8ec2ea0d438678060beb[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 14 14:50:30 2017 +0530
+
+    code for endpoints and services
+
+[33mcommit e1cb34bc1927d22684f4a7064a63e8a7c8061f69[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 14 13:23:26 2017 +0530
+
+    build removal
+
+[33mcommit 25e45dcf3a0ebd7207dd3fed1751ee11baebbaab[m
+Merge: 06229b17 bf5e1a32
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 14 13:12:56 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 06229b1744cc5cf46bc06940b3471438aaf88168[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 14 13:03:50 2017 +0530
+
+    integration testing for network, storage and datacenter
+
+[33mcommit bf5e1a3235d6282a835ec47c55b59b4db7eb3eea[m
+Merge: cdd65d5b 74ecc6a2
+Author: indykish <nkishore@megam.io>
+Date:   Thu Dec 14 06:59:58 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    owner_reference set for assembly and type_meta for assembly list added
+    
+    See merge request rioos/aran!215
+
+[33mcommit 74ecc6a2bbc561c012b319e8828dd7ff737a8e07[m
+Merge: 102ac875 cdd65d5b
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 14 12:24:17 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 102ac8754868fd3bb1c813d0af7d6ead808460e8[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Thu Dec 14 12:23:31 2017 +0530
+
+    Integration test for assembly
+
+[33mcommit cdd65d5b95a9f4df98c0637ab44f20a781a70851[m
+Merge: d27c1e9f 8efd76a0
+Author: indykish <nkishore@megam.io>
+Date:   Wed Dec 13 14:14:49 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    intergration testing for assembly and assmbly factory
+    
+    See merge request rioos/aran!214
+
+[33mcommit 8efd76a09ca67824d37ae00a78d585f5218a1aec[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Dec 13 19:34:37 2017 +0530
+
+    intergration testing for assembly and assmbly factory
+
+[33mcommit 1d45dd7dec54dc9212770046cb75660de979c283[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Dec 13 18:30:27 2017 +0530
+
+    job and node integration testing
+
+[33mcommit d27c1e9f9eb61d834e4168440232521eef1e95e1[m
+Merge: 3990715f 553c3b01
+Author: indykish <nkishore@megam.io>
+Date:   Wed Dec 13 04:19:51 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    swagger hub updates
+    
+    See merge request rioos/aran!212
+
+[33mcommit 553c3b01d5c0f9edebb793101f682d335bc6bd1a[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 12 19:31:16 2017 +0530
+
+    swagger hub update for deployment
+
+[33mcommit 3990715fecbf7e4a7b815562d48b1009320abb6f[m
+Merge: b19ec8d1 a377aa0c
+Author: indykish <nkishore@megam.io>
+Date:   Tue Dec 12 13:27:24 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    account get_by_id check with header and without header
+    
+    See merge request rioos/aran!211
+
+[33mcommit a377aa0c1219443ec3a818d14558fdf82ed43185[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 12 18:32:15 2017 +0530
+
+    account get_by_id check with header and without header
+
+[33mcommit e9ec0646aa8000c66c11e938ce3253dd821e3706[m
+Merge: 01d3146f b19ec8d1
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 12 18:23:35 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 01d3146f415f71baaf7866601f8193cf3887b7ab[m
+Merge: f03c8ccb 575c74ad
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 12 18:23:27 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit e3d725d729af2c00ab01a6b560a3a9666c59d166[m
+Merge: 507c7150 b19ec8d1
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Dec 12 18:14:57 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 507c7150300838bee271326f1b287a31cafbe4b3[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Dec 12 18:10:03 2017 +0530
+
+    Add typemeta for linker
+
+[33mcommit b19ec8d1ebf07bb1129faceb4cca8de24d88f1a3[m
+Merge: 575c74ad 2a630dff
+Author: indykish <nkishore@megam.io>
+Date:   Tue Dec 12 12:39:04 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    integration test for planfactory
+    
+    See merge request rioos/aran!210
+
+[33mcommit 2a630dffb1929f5ef67bb0b492f187d54fcd9b2d[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 12 18:04:56 2017 +0530
+
+    integration test for planfactory
+
+[33mcommit 575c74ad081027b8d25de5df46b158a3579385b3[m
+Merge: 620bba7e 56744338
+Author: indykish <nkishore@megam.io>
+Date:   Tue Dec 12 07:48:06 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    integration test for account
+    
+    See merge request rioos/aran!207
+
+[33mcommit 620bba7e16b2c4c574eda586649bb8493ab8d2f3[m
+Merge: e508a9c6 38b6e6ee
+Author: indykish <nkishore@megam.io>
+Date:   Tue Dec 12 07:47:17 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Fix for compile error CHILD_KIND
+    
+    See merge request rioos/aran!209
+
+[33mcommit 38b6e6eefcbadf4144a6d61069195fe8fce6550e[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Dec 12 13:16:20 2017 +0530
+
+    Fix for compile error CHILD_KIND
+
+[33mcommit 56744338e0ef3ecd2f3f480165d4f84b98b644b6[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 12 12:52:42 2017 +0530
+
+    404 error changed
+
+[33mcommit e0fb915689f70403bda138d0855e443d4e47b4c4[m
+Merge: 2bc305dc e508a9c6
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 12 12:51:30 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit e508a9c607b2694378e2ebb2cc077ce5a5a158d3[m
+Merge: 21c172cb 8c263de4
+Author: indykish <nkishore@megam.io>
+Date:   Tue Dec 12 07:19:14 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Add child type meta for assembly factory with Assembly/v1
+    
+    See merge request rioos/aran!208
+
+[33mcommit 8c263de4b663fba910b9840e8d0152b6b989722b[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Dec 12 12:48:14 2017 +0530
+
+    Add child type meta for assembly factory with Assembly/v1
+
+[33mcommit 2bc305dc5db0ebbe26a981065b684e661d764a6b[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Tue Dec 12 12:40:20 2017 +0530
+
+    integration test for account
+
+[33mcommit 21c172cb77376a0d6cff1ed4cb3b57657160a800[m
+Merge: ba5c1813 5824da9a
+Author: indykish <nkishore@megam.io>
+Date:   Tue Dec 12 06:37:16 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Add verify_account, change assembly assemblyfactory to support
+    
+    See merge request rioos/aran!206
+
+[33mcommit 5824da9afd80455e2114578cf55d5c66a757d924[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Tue Dec 12 12:04:48 2017 +0530
+
+    Add verify_account, change assembly assemblyfactory to support
+
+[33mcommit f03c8ccb8e76184a29848c31f5981c8495fce724[m
+Merge: 1c30886a ba5c1813
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 12 11:49:55 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 1c30886a354d639152266c6b656e0fe7772c5264[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Tue Dec 12 11:46:50 2017 +0530
+
+    account description change
+
+[33mcommit ba5c1813ba116bfce79f1c163bf02f7d27a36eb3[m
+Merge: e3ecb63f 3277bffe
+Author: indykish <nkishore@megam.io>
+Date:   Mon Dec 11 14:39:04 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    object response with account record
+    
+    See merge request rioos/aran!205
+
+[33mcommit 3277bffede85c9d623abfa314a1a9d98f6e615cd[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Dec 11 20:01:52 2017 +0530
+
+    object meta and type meta is added with response
+
+[33mcommit 2c2d3fc661f4280b3de6c01bd5ffc6befc828697[m
+Merge: b14db00a e3ecb63f
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Dec 11 19:32:32 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit e3ecb63f0b6b69bcf6e2084f8986d673cb216876[m
+Merge: 5298a2cc 2082a40e
+Author: indykish <nkishore@megam.io>
+Date:   Mon Dec 11 13:45:53 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Feed copy of objectmeta with mutable fields
+    
+    See merge request rioos/aran!204
+
+[33mcommit 2082a40e7fae15997b61991d2ae722a3b545e714[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Mon Dec 11 19:11:17 2017 +0530
+
+    Feed copy of objectmeta with mutable fields
+
+[33mcommit 5298a2ccab44c06f66ad334bb18b544d73bfac83[m
+Merge: 52b7469e 8586863a
+Author: indykish <nkishore@megam.io>
+Date:   Mon Dec 11 10:56:38 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    integration testing for node, storage
+    
+    See merge request rioos/aran!203
+
+[33mcommit 52b7469e89e94ca84b11eb41be1d930d8db757a1[m
+Merge: 26708c84 5764dadb
+Author: indykish <nkishore@megam.io>
+Date:   Mon Dec 11 10:45:44 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Assembly response get with metrics
+    
+    See merge request rioos/aran!200
+
+[33mcommit b14db00a816e5c21a474e4cd3a51db38bcd31224[m
+Merge: 5764dadb 26708c84
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Dec 11 16:12:13 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 8586863a72fdeb460a5949badd83a985b1daf39b[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Mon Dec 11 15:56:50 2017 +0530
+
+    integration testing for node, storage
+
+[33mcommit 26708c843c2c65b877cdbff4034c40ee6f44c3b2[m
+Merge: 24533d0b 478e85ac
+Author: indykish <nkishore@megam.io>
+Date:   Mon Dec 11 10:23:55 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Change with_meta_fields approach to setter - didn't work though
+    
+    See merge request rioos/aran!202
+
+[33mcommit 478e85ac0cd511d4a449f0d12579c18da35ff4e5[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Mon Dec 11 15:49:07 2017 +0530
+
+    Change with_meta_fields approach to setter - didn't work though
+
+[33mcommit 5764dadb07a6c3f8f00e1395f2d368898c4f992d[m
+Merge: edb785fc 24533d0b
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Mon Dec 11 15:23:59 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 24533d0b0951573e1fdc8e410b56d1a70c2c10f6[m
+Merge: 050f1dd0 9ca25c4f
+Author: indykish <nkishore@megam.io>
+Date:   Sun Dec 10 14:19:40 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    account structure changes
+    
+    See merge request rioos/aran!201
+
+[33mcommit 9ca25c4feedcd467c95fd82212ed94ad79d4ec08[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 8 18:31:28 2017 +0530
+
+    account structure changes
+
+[33mcommit edb785fcd4a326a303c2253b4787d1fa61f9a60d[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 8 18:25:35 2017 +0530
+
+    code changed
+
+[33mcommit 6b97e1c8fa653a195cf6c0e81afb53783783de2f[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 8 18:21:37 2017 +0530
+
+    code for set metrics in assembly response
+
+[33mcommit ace90429ff0d812bb4304d452aee53e3523e96ca[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Fri Dec 8 15:54:45 2017 +0530
+
+    account structure changes
+
+[33mcommit f35139d5da7157514ada835fb0397d044952641d[m
+Merge: 65cfffd9 050f1dd0
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 8 10:49:01 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 65cfffd95414a06d2648c9226f0ec222f2041997[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Fri Dec 8 10:48:30 2017 +0530
+
+    code
+
+[33mcommit 050f1dd00df7f599e1a4a96cd45d68a24246ac46[m
+Merge: d611997e ef942200
+Author: indykish <nkishore@megam.io>
+Date:   Thu Dec 7 13:51:34 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    Skip unmarshall  `provider` in SessionCreate by #serde[default]
+    
+    See merge request rioos/aran!199
+
+[33mcommit ef942200b0867247dd36f24ce46dca588c382c36[m
+Author: Kishorekumar Neelamegam <nkishore@megam.co.in>
+Date:   Thu Dec 7 19:19:11 2017 +0530
+
+    Skip unmarshall  `provider` in SessionCreate by #serde[default]
+
+[33mcommit d611997e8792401eb853e25240678772578f85dd[m
+Merge: 624c37c9 dae8601d
+Author: vino <vino.v@megam.io>
+Date:   Thu Dec 7 13:21:04 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    origin and team unit testing
+    
+    See merge request rioos/aran!197
+
+[33mcommit 624c37c9f3d4232ca4ff53407337ce357eec063f[m
+Merge: dde90393 c6205033
+Author: vino <vino.v@megam.io>
+Date:   Thu Dec 7 13:20:14 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    enable routes with single datastore connection
+    
+    See merge request rioos/aran!198
+
+[33mcommit c6205033249a9fd8f54333fb9d19f846b4ef10ae[m
+Merge: 7286e963 dde90393
+Author: foo <foo@example.com>
+Date:   Thu Dec 7 18:44:14 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 7286e96382a118fc840aeed32d8e759a46faa36f[m
+Author: foo <foo@example.com>
+Date:   Thu Dec 7 18:40:38 2017 +0530
+
+    enable routes with single datastore connection
+
+[33mcommit dae8601d9585ee5e988c4e9e7df99fc54ecb46e3[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 7 18:38:43 2017 +0530
+
+    origin and team unit testing
+
+[33mcommit dde90393142ef6df182c084204689d1b18605310[m
+Merge: afaeddb6 f7a2c0d8
+Author: vino <vino.v@megam.io>
+Date:   Thu Dec 7 12:26:46 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    assembly factory and assembly list by account id
+    
+    See merge request rioos/aran!196
+
+[33mcommit f7a2c0d835a2ab2f11b6a1d6bcde20ec2f9643d5[m
+Author: suganyakaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Thu Dec 7 17:19:54 2017 +0530
+
+    assembly factory and assembly list by account id
+
+[33mcommit afaeddb643defd3c20b3eb2f786bbb42b2464212[m
+Author: indykish <nkishore@megam.io>
+Date:   Thu Dec 7 05:17:03 2017 +0000
+
+    Update BUILDING.md
+
+[33mcommit 0abcaa3af07e94caca3c7f673a31a6abc2a2bd3e[m
+Merge: a2536d61 7aae35c0
+Author: foo <foo@example.com>
+Date:   Thu Dec 7 09:27:06 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit a2536d613fa4dada71397d37c9ea52accf87855d[m
+Merge: 4440d7ab 07ce503d
+Author: foo <foo@example.com>
+Date:   Thu Dec 7 09:27:01 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0
+
+[33mcommit 7aae35c090e570c6da36a845a8d0efbe0d18443f[m
+Merge: 2cc8b800 dfe07392
+Author: indykish <nkishore@megam.io>
+Date:   Wed Dec 6 13:39:02 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    unit testing
+    
+    See merge request rioos/aran!195
+
+[33mcommit 2cc8b800a0883b3f25793d5b499e869f13757404[m
+Merge: b641b4fe 9b6d59e2
+Author: indykish <nkishore@megam.io>
+Date:   Wed Dec 6 13:38:38 2017 +0000
+
+    Merge branch '2.0' into '2.0'
+    
+    create team and team_member api
+    
+    See merge request rioos/aran!194
+
+[33mcommit 9b6d59e2b93d18d62f124a2edf57ff54a9e5b855[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Dec 6 19:07:34 2017 +0530
+
+    code changed
+
+[33mcommit dfe07392ff3e575dd68cbe3be343156fb4ee78f8[m
+Author: suganya kaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Dec 6 18:55:15 2017 +0530
+
+    unit testing
+
+[33mcommit 793ebf148bf765b463b7af46a9c96af60745715d[m
+Author: vinomca-megam <vino.v@megam.io>
+Date:   Wed Dec 6 18:48:27 2017 +0530
+
+    create team and team_member api
+
+[33mcommit 006e78104a1c89fb446b355071a466e25e0b2269[m
+Merge: c14bbba6 b641b4fe
+Author: suganya kaliyamoorthy <suganyakaliyamoorthy@megam.io>
+Date:   Wed Dec 6 16:19:02 2017 +0530
+
+    Merge remote-tracking branch 'origin/2.0' into 2.0

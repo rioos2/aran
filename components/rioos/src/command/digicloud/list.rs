@@ -2,20 +2,16 @@ pub use error::{Error, Result};
 
 use common::ui::UI;
 
-
 use api_client::Client;
-use {PRODUCT, VERSION};
 use super::super::common::pretty_table;
 
-pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()> {
+pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> Result<()> {
     ui.begin("Constructing a list of digitalcloud for you...")?;
     ui.br()?;
 
-    let rio_client = Client::new(url, PRODUCT, VERSION, None)?;
-
     let results = rio_client.list_deploy(&token, &email)?;
 
-    let title = row!["Id", "Name", "Replicas", "Located", "Origin", "Hrs Ago"];
+    let title = row!["Id", "Name", "Replicas", "status", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 
@@ -23,7 +19,7 @@ pub fn start(ui: &mut UI, url: &str, token: String, email: String) -> Result<()>
 
     ui.para(
         "For more information on digitalclouds deployments: \
-        https://www.rioos.sh/docs/reference/deployment/",
+         https://www.rioos.sh/docs/reference/deployment/",
     )?;
 
     ui.end(

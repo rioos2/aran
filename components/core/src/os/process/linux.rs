@@ -1,5 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 use libc;
 use std::ffi::OsString;
@@ -106,20 +105,23 @@ impl Child {
 
     pub fn status(&mut self) -> Result<HabExitStatus> {
         match self.last_status {
-            Some(status) => Ok(HabExitStatus { status: Some(status as u32) }),
+            Some(status) => Ok(HabExitStatus {
+                status: Some(status as u32),
+            }),
             None => {
                 let mut exit_status: i32 = 0;
 
                 match unsafe { libc::waitpid(self.pid as i32, &mut exit_status, libc::WNOHANG) } {
                     0 => Ok(HabExitStatus { status: None }),
-                    -1 => {
-                        Err(Error::WaitpidFailed(
-                            format!("Error calling waitpid on pid: {}", self.pid),
-                        ))
-                    }
+                    -1 => Err(Error::WaitpidFailed(format!(
+                        "Error calling waitpid on pid: {}",
+                        self.pid
+                    ))),
                     _ => {
                         self.last_status = Some(exit_status);
-                        Ok(HabExitStatus { status: Some(exit_status as u32) })
+                        Ok(HabExitStatus {
+                            status: Some(exit_status as u32),
+                        })
                     }
                 }
             }

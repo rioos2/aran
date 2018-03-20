@@ -1,15 +1,10 @@
 #!/bin/bash
 set -eu
 
-version=0.9.0
-
 if command -v rustfmt >/dev/null; then
-  if [[ $(rustfmt --version | cut -d ' ' -f 1) = "$version-nightly" ]]; then
-    echo "--> Detected rustfmt version $version, skipping install"
-    exit 0
-  fi
+  echo "--> Detected rustfmt, skipping install"
+  exit 0
 fi
 
-echo "--> Removing rustfmt version $(rustfmt --version) and installing $version"
-cargo uninstall rustfmt || true
-cargo install --vers $version rustfmt
+echo "--> Installing rustfmt"
+rustup component add rustfmt-preview

@@ -1,37 +1,35 @@
-// Copyright (c) 2017 RiioCorp Inc
+// Copyright 2018 The Rio Advancement Inc
 //
-
-use std::fmt;
+use std::env;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
+use std::net::ToSocketAddrs;
+use std::io;
+use std::option::IntoIter;
 
-pub const DEFAULT_ROUTER_LISTEN_PORT: u16 = 5562;
-pub const DEFAULT_ROUTER_HEARTBEAT_PORT: u16 = 5563;
-
-/// URL to GitHub API endpoint
-pub const DEFAULT_GITHUB_URL: &'static str = "https://api.github.com";
-/// Default Client ID for providing a default value in development environments only. This is
-/// associated to the habitat-sh GitHub account and is configured to re-direct and point to a local
-/// builder-api.
-///
-pub const DEFAULT_PROMETHEUS_URL: &'static str = "http://192.168.2.50:9090/api/v1";
-
-/// See https://github.com/settings/connections/applications/0c2f738a7d0bd300de10
-pub const DEV_GITHUB_CLIENT_ID: &'static str = "0c2f738a7d0bd300de10";
-/// Default Client Secret for development purposes only. See the `DEV_GITHUB_CLIENT_ID` for
-/// additional comments.
-pub const DEV_GITHUB_CLIENT_SECRET: &'static str = "438223113eeb6e7edf2d2f91a232b72de72b9bdf";
-
-pub const ENV_KEY_URL: &'static str = "https://env.envkey.com/v1/";
-
+/// host url  to get the audit of the client
+pub const DEFAULT_PROMETHEUS_URL: &'static str = "http://localhost:9090/api/v1";
+///host url to check the vulnerability of the container
+pub const DEFAULT_ANCHORE_URL: &'static str = "http://localhost:8228/v1";
+/// host url  to get the audits
+pub const DEFAULT_BLOCK_CHAIN_URL: &'static str = "http://localhost:7000";
+/// Default Influx Host url to access the log of virtual machine and container
+pub const DEFAULT_LOGS_URL: &'static str = "http://localhost:8086";
+/// host url  to get the rio marketplace
+pub const DEFAULT_RIO_MARKETPLACES_URL: &'static str = "https://localhost:6443/api/v1";
+/// a default username for marketplace
+pub const DEV_RIO_COMPANY: &'static str = "dev@rio.companyadmin";
+/// a default token for the marketplace
 pub const TOKEN: &'static str = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R";
+/// a default username for anchore or anybody else who wish to use the name admin
+pub const DEFAULT_USERNAME_ADMIN: &'static str = "admin";
 
+///// Configuration for Secure vault.
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum SecureBackend {
     Local,
     EnvKey,
 }
-
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SecurerCfg {
@@ -44,8 +42,8 @@ impl Default for SecurerCfg {
     fn default() -> Self {
         SecurerCfg {
             backend: SecureBackend::Local,
-            endpoint: ENV_KEY_URL.to_string(),
-            token: TOKEN.to_string(),
+            endpoint: "".to_string(),
+            token: "".to_string(),
         }
     }
 }
@@ -56,63 +54,20 @@ pub trait SecurerAuth {
     fn token(&self) -> &str;
 }
 
+/// Trait that feeds the configuration into the APIWirers.
+/// This trait feed the configuration into the PasswordClient (via PasswordCLI)
 pub trait PasswordAuth {}
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct PasswordCfg {
-    /// URL to GitHub API
-    pub url: String,
-    /// Client identifier used for GitHub API requests
-    pub client_id: String,
-    /// Client secret used for GitHub API requests
-    pub client_secret: String,
+/// This trait feed the service account public key credential configuration into the
+/// Authenticated (Authenticated is invoked by all APIs (from APIWirers)
+pub trait SystemAuth {
+    fn serviceaccount_public_key(&self) -> Option<String>;
 }
 
-impl Default for PasswordCfg {
-    fn default() -> Self {
-        PasswordCfg {
-            url: DEFAULT_GITHUB_URL.to_string(),
-            client_id: DEV_GITHUB_CLIENT_ID.to_string(),
-            client_secret: DEV_GITHUB_CLIENT_SECRET.to_string(),
-        }
-    }
-}
-
-//Configuration structure for shield auth
-pub trait ShieldAuth {
-    fn github_url(&self) -> &str;
-    fn github_client_id(&self) -> &str;
-    fn github_client_secret(&self) -> &str;
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct ShieldCfg {
-    /// URL to GitHub API
-    pub url: String,
-    /// Client identifier used for GitHub API requests
-    pub client_id: String,
-    /// Client secret used for GitHub API requests
-    pub client_secret: String,
-}
-
-impl Default for ShieldCfg {
-    fn default() -> Self {
-        ShieldCfg {
-            url: DEFAULT_GITHUB_URL.to_string(),
-            client_id: DEV_GITHUB_CLIENT_ID.to_string(),
-            client_secret: DEV_GITHUB_CLIENT_SECRET.to_string(),
-        }
-    }
-}
-
-pub trait Prometheus {
-    fn prometheus_url(&self) -> &str;
-}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct PrometheusCfg {
-    /// URL to Prometheus API
     pub url: String,
 }
 
@@ -122,40 +77,166 @@ impl Default for PrometheusCfg {
     }
 }
 
-
-/// Configuration structure for connecting to a Router
-#[derive(Clone, Debug, Deserialize)]
-#[serde(default)]
-pub struct RouterAddr {
-    /// Listening address of command and heartbeat socket
-    pub host: IpAddr,
-    /// Listening port of command socket
-    pub port: u16,
-    /// Listening port of heartbeat socket
-    pub heartbeat: u16,
+pub trait Prometheus {
+    fn endpoint(&self) -> &str;
 }
 
-impl Default for RouterAddr {
+///// Configuration for Logs
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct LogsCfg {
+    pub url: String,
+    pub prefix: String,
+}
+
+impl Default for LogsCfg {
     fn default() -> Self {
-        RouterAddr {
-            host: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
-            port: DEFAULT_ROUTER_LISTEN_PORT,
-            heartbeat: DEFAULT_ROUTER_HEARTBEAT_PORT,
+        LogsCfg {
+            url: DEFAULT_LOGS_URL.to_string(),
+            prefix: "rioos_logs".to_string(),
         }
     }
 }
 
-impl fmt::Display for RouterAddr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}:{}", self.host, self.port)
+
+/// Public listening net address for HTTP requests, Watch requests.
+#[derive(Debug, Deserialize)]
+#[serde(default)]
+pub struct HttpCfg {
+    pub listen: IpAddr, // The listen ip address for http api/watch http2 api
+    pub port: u16, // The http api server port
+    pub watch_port: u16, // The http2 watch server port
+    /// This file is used by both http api/watch server.
+    pub tls_pkcs12_file: Option<String>, // The tls_pkcs12 is the pfx file that is used as security to start the server.
+    pub tls_pkcs12_pwd: Option<String>, // The tls_pkcs12_pwd  is the pfx file password.
+    pub serviceaccount_public_key: Option<String>,
+}
+
+impl Default for HttpCfg {
+    fn default() -> Self {
+        HttpCfg {
+            listen: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
+            port: 7443,
+            watch_port: 8443,
+            tls_pkcs12_file: None,
+            tls_pkcs12_pwd: None,
+            serviceaccount_public_key: None,
+        }
     }
 }
 
-/// Apply to server configurations which connect to a cluster of Routers
-pub trait RouterCfg {
-    /// Return a list of router addresses
-    fn route_addrs(&self) -> &Vec<RouterAddr>;
+impl ToSocketAddrs for HttpCfg {
+    type Iter = IntoIter<SocketAddr>;
+
+    fn to_socket_addrs(&self) -> io::Result<IntoIter<SocketAddr>> {
+        match self.listen {
+            IpAddr::V4(ref a) => (*a, self.port).to_socket_addrs(),
+            IpAddr::V6(ref a) => (*a, self.port).to_socket_addrs(),
+        }
+    }
 }
+
+pub trait Influx {
+    /// URL to Influx API
+    fn endpoint(&self) -> &str;
+    /// Includes the prefix of the database,table,path in influx
+    fn prefix(&self) -> &str;
+}
+
+///// Configuration for Audits (blockchain)
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub enum AuditBackend {
+    Exonum,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct BlockchainCfg {
+    pub backend: AuditBackend,
+    pub endpoint: String,
+    pub enabled: bool,
+    pub cache_dir: String,
+}
+
+impl Default for BlockchainCfg {
+    fn default() -> Self {
+        BlockchainCfg {
+            backend: AuditBackend::Exonum,
+            endpoint: DEFAULT_BLOCK_CHAIN_URL.to_string(),
+            enabled: true,
+            cache_dir: env::temp_dir().to_string_lossy().into_owned(),
+        }
+    }
+}
+
+pub trait Blockchain {
+    fn backend(&self) -> AuditBackend;
+    fn endpoint(&self) -> &str;
+    fn enabled(&self) -> bool;
+    fn cache_dir(&self) -> &str;
+}
+
+///// Configuration for rio marketplace
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct MarketplacesCfg {
+    pub endpoint: String,
+    pub sync_on_startup: bool,
+    pub username: String,
+    pub token: String,
+    pub cache_dir: String,
+}
+
+impl Default for MarketplacesCfg {
+    fn default() -> Self {
+        MarketplacesCfg {
+            endpoint: DEFAULT_RIO_MARKETPLACES_URL.to_string(),
+            sync_on_startup: false,
+            username: DEV_RIO_COMPANY.to_string(),
+            token: TOKEN.to_string(),
+            cache_dir: env::temp_dir().to_string_lossy().into_owned(),
+        }
+    }
+}
+
+pub trait Marketplaces {
+    fn endpoint(&self) -> &str;
+    fn sync_on_startup(&self) -> bool;
+    fn username(&self) -> &str;
+    fn token(&self) -> &str;
+    fn cache_dir(&self) -> &str;
+}
+
+///// Configuration for security vulnerability
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct AnchoreCfg {
+    pub url: String,
+    pub username: String,
+    pub password: String,
+}
+
+impl Default for AnchoreCfg {
+    fn default() -> Self {
+        AnchoreCfg {
+            url: DEFAULT_ANCHORE_URL.to_string(),
+            username: DEFAULT_USERNAME_ADMIN.to_string(),
+            password: DEFAULT_USERNAME_ADMIN.to_string(),
+        }
+    }
+}
+
+pub trait Anchore {
+    fn endpoint(&self) -> &str;
+    fn username(&self) -> &str;
+    fn password(&self) -> &str;
+}
+
+
 
 /// Apply to a server configuration which belongs to a sharded service
 pub trait Shards {
@@ -182,11 +263,5 @@ impl ToAddrString for SocketAddrV4 {
 impl ToAddrString for SocketAddrV6 {
     fn to_addr_string(&self) -> String {
         format!("tcp://{}:{}", self.ip(), self.port())
-    }
-}
-
-impl ToAddrString for RouterAddr {
-    fn to_addr_string(&self) -> String {
-        format!("tcp://{}:{}", self.host, self.port)
     }
 }

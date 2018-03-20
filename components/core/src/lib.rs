@@ -1,25 +1,23 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! A module containing
-extern crate base64;
 extern crate errno;
 extern crate hex;
-#[cfg(test)]
-extern crate hyper;
+extern crate serde_yaml;
+
+extern crate exonum_sodiumoxide as sodiumoxide;
 #[macro_use]
 extern crate lazy_static;
 extern crate libc;
 #[macro_use]
 extern crate log;
+extern crate openssl;
 extern crate rand;
 extern crate regex;
 extern crate serde;
-extern crate serde_json;
-extern crate openssl;
 #[macro_use]
 extern crate serde_derive;
-extern crate sodiumoxide;
-extern crate libsodium_sys;
+extern crate serde_json;
 #[cfg(test)]
 extern crate tempdir;
 extern crate time;
@@ -38,7 +36,6 @@ pub mod fs;
 pub mod util;
 pub mod crypto;
 pub mod os;
-pub mod event;
 
 pub use os::filesystem;
 pub use os::users;

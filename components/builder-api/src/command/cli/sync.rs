@@ -1,0 +1,117 @@
+use std::path::PathBuf;
+use serde_yaml;
+use chrono::prelude::*;
+
+use config::Config;
+use error::{Result, Error};
+
+use reqwest::header::{ContentType, Accept, Authorization, Bearer};
+use reqwest::StatusCode;
+
+use rioos_http::ApiClient as ReqwestClient;
+use rio_net::http::rendering::ResponseList;
+use rio_net::util::errors::err_from_response;
+
+use rio_core::fs::{write_to_file, rioconfig_config_path, append};
+
+use protocol::api::marketplace;
+
+use common::ui::UI;
+
+header! { (XAuthRioOSEmail, "X-AUTH-RIOOS-EMAIL") => [String] }
+
+const IMAGE_URL: &'static str = "rioos_sh_image_url";
+
+lazy_static! {
+    static  ref MARKETPLACE_FILE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
+    static  ref SERVER_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("server-ca.cert.pem").to_str().unwrap());
+}
+
+
+pub fn start(ui: &mut UI, config: &Config) -> Result<()> {
+    ui.br()?;
+
+    ui.para(&format!(
+        "Sync from Rio MarketPlace - {} ...",
+        &config.marketplaces.endpoint
+    ))?;
+
+    let client = ReqwestClient::new(
+        &config.marketplaces.endpoint,
+        "rioos",
+        "v1",
+        Some(&SERVER_CERTIFICATE),
+    ).map_err(Error::RioHttpClient)?;
+
+    let url = format!("marketplaces");
+
+    let mut res = client
+        .get(&url)
+        .header(Accept::json())
+        .header(Authorization(
+            Bearer { token: config.marketplaces.token.to_owned() },
+        ))
+        .header(XAuthRioOSEmail(config.marketplaces.username.to_string()))
+        .header(ContentType::json())
+        .send()
+        .map_err(Error::ReqwestError)?;
+
+    if res.status() != StatusCode::Ok {
+        return Err(Error::RioNetError(err_from_response(res)));
+    };
+
+    let market: ResponseList<Vec<marketplace::MarketPlace>> = res.json()?;
+
+    MarketPlaceSaver::new(market, &config.marketplaces.endpoint)
+        .with_url()?;
+
+    append(
+        &MARKETPLACE_FILE,
+        &("\ntime_stamp: ".to_string() + &Utc::now().to_rfc3339()),
+    )?;
+
+    ui.para(&format!("Sync complete. Start firing up Rio/OS!"))?;
+    Ok(())
+}
+
+struct MarketPlaceSaver<'a> {
+    content: ResponseList<Vec<marketplace::MarketPlace>>,
+    endpoint: &'a str,
+}
+
+impl<'a> MarketPlaceSaver<'a> {
+    fn new(marketplaces: ResponseList<Vec<marketplace::MarketPlace>>, endpoint: &'a str) -> Self {
+        MarketPlaceSaver {
+            content: marketplaces,
+            endpoint: &*endpoint,
+        }
+    }
+
+    fn with_url(&mut self) -> Result<()> {
+        let endpoint = self.endpoint;
+        self.content
+            .items
+            .iter_mut()
+            .map(|x| {
+                let mut data = x.get_characteristics().clone();
+                data.insert(
+                    IMAGE_URL.to_string(),
+                    format!(
+                        "{}/marketplaces/{}/download",
+                        endpoint.to_string(),
+                        x.get_id()
+                    ),
+                );
+                x.set_characteristics(data);
+            })
+            .collect::<Vec<_>>();
+
+        Ok(self.save()?)
+    }
+
+    fn save(&self) -> Result<()> {
+        let encoded = serde_yaml::to_string(&self.content)?;
+        write_to_file(&MARKETPLACE_FILE, &encoded)?;
+        Ok(())
+    }
+}

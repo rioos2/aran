@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //stored procedures for plan_factory
 
@@ -19,99 +19,74 @@ impl Migratable for PlanProcedures {
         ui.begin("Planprocedure");
 
         // The core plans table
-        migrator.migrate(
-            "plansrv",
-            r#"CREATE SEQUENCE IF NOT EXISTS plan_id_seq;"#,
-        )?;
-
-        migrator.migrate(
-            "plansrv",
-            r#"CREATE TABLE  IF NOT EXISTS plan_factory (
-             id bigint PRIMARY KEY DEFAULT next_id_v1('plan_id_seq'),
-             group_name text,
-             url text ,
-             description text,
-             tags text[],
-             origin text,
-             artifacts text[],
-             services text[],
-             updated_at timestamptz,
-             created_at timestamptz DEFAULT now())"#,
-        )?;
-        ui.para("[✓] plan_factory");
 
         migrator.migrate(
             "plansrv",
             r#"CREATE OR REPLACE FUNCTION insert_plan_factory_v1 (
-                group_name text,
-               url text ,
-               description text,
-               tags text[],
-               origin text,
-               artifacts text[],
-                services text[]
-                        ) RETURNS SETOF plan_factory AS $$
-                                BEGIN
-                                    RETURN QUERY INSERT INTO plan_factory(group_name, url, description,tags, origin, artifacts,services)
-                                        VALUES (group_name, url, description,tags, origin, artifacts,services)
-                                        RETURNING *;
-                                    RETURN;
-                                END
-                            $$ LANGUAGE plpgsql VOLATILE
-                            "#,
+           type_meta jsonb,
+           object_meta jsonb,
+           category text,
+           version text,
+           characteristics jsonb,
+           icon text,
+           description text,
+           ports jsonb,
+           envs jsonb,
+           lifecycle jsonb,
+           status jsonb
+                   ) RETURNS SETOF plan_factory AS $$
+                           BEGIN
+                               RETURN QUERY INSERT INTO plan_factory(type_meta, object_meta, category,version, characteristics, icon,description,ports,envs,lifecycle,status)
+                                   VALUES (type_meta, object_meta, category,version, characteristics, icon,description,ports,envs,lifecycle,status)
+                                   RETURNING *;
+                               RETURN;
+                           END
+                       $$ LANGUAGE plpgsql VOLATILE
+                       "#,
         )?;
 
 
-
         migrator.migrate(
-            "plansrv",
-            r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('1_virtualmachine_ubuntu','/v3/plan/ubuntu','Ubuntu is a Debian-based Linux operating system','{"linux", "ubuntu", "xenial", "14.04"}','rioos:2.0','{}',
-            '{"{\"name\":\"trusty\",\"description\":\"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 14.04 LTS of the Ubuntu Linux-based operating system.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"image\":\"ubuntu.png\",\"version\":\"14.04\"}}","{\"name\":\"Xenial\",\"description\":\"Ubuntu is a Debian-based Linux operating system. Trusty Tahr is the Ubuntu codename for version 16.04 LTS of the Ubuntu Linux-based operating system.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"image\":\"ubuntu.png\",\"version\":\"16.04\"}}"}')"#,
-
+            "accountsrv",
+            r#"CREATE OR REPLACE FUNCTION select_or_insert_plan_v1 (
+                pname text,
+                ptype_meta jsonb,
+                pobject_meta jsonb,
+                pcategory text,
+                pversion text,
+                pcharacteristics jsonb,
+                picon text,
+                pdescription text,
+                pports jsonb,
+                penvs jsonb,
+                plifecycle jsonb,
+                pstatus jsonb
+                ) RETURNS SETOF plan_factory AS $$
+                DECLARE
+                 existing_plan plan_factory%rowtype;
+                    BEGIN
+                        SELECT  * INTO existing_plan FROM plan_factory WHERE object_meta ->> 'name' = pname;
+                       IF FOUND THEN
+                          RETURN QUERY UPDATE plan_factory SET type_meta=ptype_meta,object_meta=pobject_meta,category=pcategory,characteristics=pcharacteristics,icon=picon,status=pstatus,
+                          description=pdescription,ports=pports,envs=penvs,lifecycle=plifecycle,updated_at=now() WHERE  object_meta ->> 'name' = pname RETURNING *;
+                       ELSE
+                       RETURN QUERY  INSERT INTO plan_factory(type_meta, object_meta, category,version, characteristics, icon,description,ports,envs,lifecycle,status)
+                       VALUES (ptype_meta, pobject_meta, pcategory,pversion, pcharacteristics, picon,pdescription,pports,penvs,plifecycle,pstatus) ON CONFLICT DO NOTHING RETURNING *;
+                       END IF;
+                       RETURN;
+                    END
+                $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-        ui.para("[✓] plan_factory_ubuntu");
-
         migrator.migrate(
             "plansrv",
-            r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('1_virtualmachine_centos','/v3/plan/centos','centos operating system','{"centos"}','rioos:2.0','{}',
-            '{"{\"name\":\"Centos\",\"description\":\"centos 7.4.\",\"href\":\"https://www.ubuntu.com\",\"characteristics\":{\"image\":\"centos.png\",\"version\":\"7.4\"}}"}')"#,
-        )?;
-
-        ui.para("[✓] plan_factory_centos");
-
-
-        migrator.migrate(
-           "plansrv",
-           r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_container_rioos','/v3/plan/rioos','tutum/hello-world is testing simple light weight docker container','{"tutum","hello-world"}','rioos:2.0','{}','{"{\"name\":\"hello-world\",\"description\":\"tutum is a Debian-based simple container.\",\"href\":\"https://www.tutum.com\",\"characteristics\":{\"os\":\"centos\",\"port\":\"8080\"}}"}')"#,
-       )?;
-
-        migrator.migrate(
-            "plansrv",
-            r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_application_java','/v3/plan/java','The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.','{"tomcat","java","jdk"}', 'rioos:2.0','{}','{"{\"name\":\"tomcat\",\"description\":\"\",\"href\":\"http://tomcat.apache.org/\",\"characteristics\":{\"os\":\"centos\",\"http.port\":\"3000\",\"username\":\"megam\",\"password\":\"team4megam\",\"version\":\"4.2\",\"image\":\"java.png\"}}"}')"#,
-
-        )?;
-
-        ui.para("[✓] plan_factory_java");
-
-
-        migrator.migrate(
-            "plansrv",
-            r#"INSERT INTO plan_factory(group_name,url,description,tags,origin,artifacts,services)VALUES ('2_application_rails','/v3/plan/rails','Rails is a web application framework written in Ruby.','{"rails", "ruby", "ror"}', 'rioos:2.0','{}','{"{\"name\":\"rails\",\"description\":\"\",\"href\":\"http://rubyonrails.org/\",\"characteristics\":{\"os\":\"centos\",\"http.port\":\"3000\",\"version\":\"4.2\",\"image\":\"rails.png\"}}"}')"#,
-
-        )?;
-        ui.para("[✓] plan_factory_rails");
-
-        migrator.migrate(
-            "plansrv",
-            r#"CREATE OR REPLACE FUNCTION get_plan_v1 (plan_url text) RETURNS SETOF plan_factory AS $$
+            r#"CREATE OR REPLACE FUNCTION get_plan_v1(pid bigint) RETURNS SETOF plan_factory AS $$
                         BEGIN
-                          RETURN QUERY SELECT * FROM plan_factory WHERE url = plan_url;
+                          RETURN QUERY SELECT * FROM plan_factory WHERE id=pid;
                           RETURN;
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
         migrator.migrate(
             "plansrv",
             r#"CREATE OR REPLACE FUNCTION get_plans_v1() RETURNS SETOF plan_factory AS $$
@@ -121,7 +96,6 @@ impl Migratable for PlanProcedures {
                         END
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
-
 
         ui.end("PlanProcedure");
 

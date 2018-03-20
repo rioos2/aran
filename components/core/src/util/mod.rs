@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 pub mod perm;
 pub mod sys;
@@ -36,13 +36,11 @@ where
         {
             match FromStr::from_str(value) {
                 Ok(t) => Ok(t),
-                Err(err) => {
-                    Err(R::custom(format!(
-                        "string cannot be parsed: \"{}\" ({})",
-                        value,
-                        err.description()
-                    )))
-                }
+                Err(err) => Err(R::custom(format!(
+                    "string cannot be parsed: \"{}\" ({})",
+                    value,
+                    err.description()
+                ))),
             }
         }
     }

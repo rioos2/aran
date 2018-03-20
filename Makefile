@@ -1,92 +1,76 @@
+TOOLS_PATH=./tools
+CONFIG_PATH=$(TOOLS_PATH)/config
+CONFIG_TEMPLATE_PATH=$(CONFIG_PATH)/template
+LICENSE_SO_PATH=$(TOOLS_PATH)/license
+
+
 UNAME_S := $(shell uname -s)
+OPENSSL := $(shell openssl version | grep 1.1)
+run :=
+bldr_run :=
+
+define OPENSSL_ERROR
+FATAL: you must have openssl 1.1x.
+endef
+
+define NOT_SET_RIOOS_HOME
+FATAL: you must set RIOOS_HOME, 'mkdir ~/code/rioos/home; export RIOOS_HOME=~/code/rioos/home'.
+	   Don't forget to set the variable in the bash file
+endef
+
+ifndef RIOOS_HOME
+ $(error $(NOT_SET_RIOOS_HOME))
+endif
+
 ifeq ($(UNAME_S),Darwin)
 	forego := support/mac/bin/forego
 else
 	forego := support/linux/bin/forego
 endif
-ifneq (${IN_DOCKER},)
-	IN_DOCKER := ${IN_DOCKER}
-else ifeq ($(UNAME_S),Darwin)
-	IN_DOCKER := true
-endif
-
-ifeq ($(IN_DOCKER),true)
-	run_args := $(run_args) -e HAB_ORIGIN=$(HAB_ORIGIN)
-	ifneq (${http_proxy},)
-		build_args := $(build_args) --build-arg http_proxy="${http_proxy}"
-		run_args := $(run_args) -e http_proxy="${http_proxy}"
-	endif
-	ifneq (${https_proxy},)
-		build_args := $(build_args) --build-arg https_proxy="${https_proxy}"
-		run_args := $(run_args) -e https_proxy="${https_proxy}"
-	endif
-
-	dimage := habitat/devshell
-	docker_cmd := env http_proxy= https_proxy= docker
-	compose_cmd := env http_proxy= https_proxy= docker-compose
-	common_run := $(compose_cmd) run --rm $(run_args)
-	run := $(common_run) shell
-	bldr_run := $(common_run) -p 9636:9636 -p 8080:8080 shell
-	docs_run := $(common_run) -p 9633:9633 shell
-	forego := support/linux/bin/forego
-else
-	run :=
-	bldr_run :=
-	docs_run :=
-endif
-
-ifneq ($(DOCKER_HOST),)
-	docs_host := ${DOCKER_HOST}
-else
-	docs_host := 127.0.0.1
-endif
-
-# define ERDF_ERROR
-#
-# FATAL: you need erdf (gem install erdf) to generate ER diagram from the postgres database.
-#       Check README.md for details
-#
-# endef
-
-# define GRAPHVIZ_ERROR
-# FATAL: you need graphviz to generate a ER picture in ./support/db/schema.png
-#        Check README.md for details
-# endef
-#
-# schema_erdf:
-# ifeq ($(shell erdf version),)
-#  $(warning $(ERDF_ERROR)))
-# endif
-#
-# schema_graphviz:
-# ifneq ($(shell dot -V),)
-#  $(warning $(GRAPHVIZ_ERROR)))
-# endif
 
 BIN = rioos
-LIB = builder-db builder-protocol  builder-deployment builder-scaling common core builder-api-client http-client net
-SRV = builder-api
-ALL = $(BIN) $(LIB) $(SRV)
+LIB = builder-db builder-apimachinery  builder-deployment builder-scaling common core builder-api-client http-client net
+API = builder-api
+AUD = builder-api-audit
+MKT = builder-api-marketplace
+
+ALL = $(BIN) $(LIB) $(API) $(AUD) $(MKT)
 VERSION := $(shell cat VERSION)
 
-.DEFAULT_GOAL := build-bin
+.DEFAULT_GOAL := buildbin
 
-build: build-bin build-lib build-srv ## builds all the components
-build-all: build
-.PHONY: build build-all
+setup:
+ifeq ("$(wildcard $(RIOOS_HOME)/config/template)","")
+	mkdir -p $(RIOOS_HOME)/config/template
+	cp -R -f $(CONFIG_TEMPLATE_PATH)/* $(RIOOS_HOME)/config/template
+endif
 
-build-bin: $(addprefix build-,$(BIN)) ## builds the binary components
-.PHONY: build-bin
+ifeq ("$(wildcard $(RIOOS_HOME)/license)","")
+	mkdir -p $(RIOOS_HOME)/license
+	cp -R -f $(LICENSE_SO_PATH) $(RIOOS_HOME)
+endif
 
-build-lib: $(addprefix build-,$(LIB)) ## builds the library components
-.PHONY: build-lib
 
-build-srv: $(addprefix build-,$(SRV)) ## builds the service components
-.PHONY: build-srv
+initialize: setup
 
-##schema:
-	##erdf database postgres://postgres:postgres@localhost/rioosdb?search_path=shard_0,public ./support/db/schema.png
-##.PHONY: schema_erdf schema_graphviz
+build: initialize buildbin buildlib buildapi buildaud buildmkt ## builds all the components
+buildall: build
+.PHONY: build buildall
+
+buildbin: $(addprefix build-,$(BIN)) ## builds the binary components
+.PHONY: builbin
+
+buildlib: $(addprefix build-,$(LIB)) ## builds the library components
+.PHONY: buildlib
+
+buildapi: $(addprefix build-,$(API)) ## builds the API components
+.PHONY: buildapi
+
+buildaud: $(addprefix build-,$(AUD)) ## builds the audit components
+.PHONY: buildaud
+
+buildmkt: $(addprefix build-,$(MKT)) ## builds the marketplace components
+.PHONY: buildmkt
 
 unit: unit-bin unit-lib unit-srv ## executes all the components' unit test suites
 unit-all: unit
@@ -159,68 +143,22 @@ help:
 	@perl -nle'print $& if m{^[a-zA-Z_-]+:.*?## .*$$}' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
 
-shell: image ## launches a development shell
-	$(run)
-.PHONY: shell
-
-bldr-shell: build-srv ## launches a development shell with forwarded ports but doesn't run anything
-	$(bldr_run)
-.PHONY: bldr-shell
-
 bldr-run: build-srv ## launches a development shell running the API
 	$(bldr_run) sh -c '$(forego) start -f support/Procfile -e support/bldr.env'
 .PHONY: bldr-run
 
-serve-docs: docs ## serves the project documentation from an HTTP server
-	@echo "==> View the docs at:\n\n        http://`\
-		echo $(docs_host) | sed -e 's|^tcp://||' -e 's|:[0-9]\{1,\}$$||'`:9633/\n\n"
-	$(docs_run) sh -c 'set -e; cd ./target/doc; python -m SimpleHTTPServer 9633;'
-.PHONY: serve-docs
-
-ifeq ($(IN_DOCKER),true)
-distclean: ## fully cleans up project tree and any associated Docker images and containers
-	$(compose_cmd) stop
-	$(compose_cmd) rm -f -v
-	$(docker_cmd) rmi $(dimage) || true
-	($(docker_cmd) images -q -f dangling=true | xargs $(docker_cmd) rmi -f) || true
-.PHONY: distclean
-
-image: ## create an image
-	@if [ -n "${force}" -o -n "${refresh}" -o -z "`$(docker_cmd) images -q $(dimage)`" ]; then \
-		if [ -n "${force}" ]; then \
-		  $(docker_cmd) build --no-cache $(build_args) -t $(dimage) .; \
-		else \
-		  $(docker_cmd) build $(build_args) -t $(dimage) .; \
-		fi \
-	fi
-.PHONY: image
-else
 image: ## no-op
 .PHONY: image
 
 distclean: clean ## fully cleans up project tree
 .PHONY: distclean
-endif
-
-changelog: image ## build the changelog
-	$(run) sh -c 'hab pkg install core/github_changelog_generator && \
-		hab pkg binlink core/github_changelog_generator github_changelog_generator && \
-		github_changelog_generator --future-release $(VERSION) --token $(GITHUB_TOKEN)'
-
-docs: image ## build the docs
-	$(run) sh -c 'set -ex; \
-		cd components/sup && cargo doc && cd ../../ \
-		rustdoc --crate-name habitat_sup README.md -o ./target/doc/habitat_sup; \
-		docco -e .sh -o target/doc/habitat_sup/hab-plan-build components/plan-build/bin/hab-plan-build.sh; \
-		cp -r images ./target/doc/habitat_sup; \
-		echo "<meta http-equiv=refresh content=0;url=habitat_sup/index.html>" > target/doc/index.html;'
 
 tag-release:
 	sh -c 'git tag $(VERSION)'
 
 define BUILD
-build-$1: image ## builds the $1 component
-	$(run) sh -c 'cd components/$1 && cargo build'
+build-$1: initialize ## builds the $1 component
+	$(run) sh -c 'cd components/$1 && cargo build $(FLAGS)'
 .PHONY: build-$1
 
 endef

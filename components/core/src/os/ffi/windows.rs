@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 use std::ffi::OsStr;
 const INVALID_UTF8: &'static str = "unexpected invalid UTF-8 code point";

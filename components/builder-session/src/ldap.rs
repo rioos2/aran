@@ -1,16 +1,16 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
 
 use error::Result;
 
 use ldap3::{LdapConn, Scope, SearchEntry};
-use protocol::sessionsrv;
+use protocol::api::session;
 use rand;
 
 #[derive(Clone)]
 pub struct LDAPClient {
-    config: sessionsrv::LdapConfig,
+    config: session::LdapConfig,
 }
 
 #[derive(Debug)]
@@ -22,7 +22,7 @@ pub struct LDAPUser {
 }
 
 impl LDAPClient {
-    pub fn new(config: sessionsrv::LdapConfig) -> Self {
+    pub fn new(config: session::LdapConfig) -> Self {
         LDAPClient { config: config }
     }
 
@@ -57,7 +57,6 @@ impl LDAPClient {
             }
             Err(err) => Err(err),
         }
-
     }
 }
 
@@ -93,14 +92,13 @@ impl Into<LDAPUser> for SearchEntry {
     }
 }
 
-impl Into<sessionsrv::SessionCreate> for LDAPUser {
-    fn into(self) -> sessionsrv::SessionCreate {
-        let mut session = sessionsrv::SessionCreate::new();
+impl Into<session::SessionCreate> for LDAPUser {
+    fn into(self) -> session::SessionCreate {
+        let mut session = session::SessionCreate::new();
         session.set_email(self.email.to_owned());
         if session.get_email().is_empty() {
             session.set_email(self.first_name.to_owned());
         }
-        session.set_name(self.first_name.to_owned());
         session.set_last_name(self.last_name.to_owned());
         session.set_apikey(rand::random::<u64>().to_string());
         session

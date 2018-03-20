@@ -1,10 +1,10 @@
-// Copyright (c) 2017 RioCorp
+// Copyright 2018 The Rio Advancement Inc
 //
 
 use std::fmt;
 
 use error::Result;
-use protocol::sessionsrv::SessionGet;
+use protocol::api::session::SessionGet;
 
 pub trait TargetValidator: fmt::Display + Into<TokenTarget> {
     fn validate(&self) -> Result<()>;
@@ -16,7 +16,6 @@ pub struct TokenTarget {
     pub token: String,
     pub apikey: String,
 }
-
 
 impl TokenTarget {
     /// Creates a new token target

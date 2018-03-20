@@ -11,6 +11,16 @@ This document outlines the steps to start and run a Rio/OS Aran API environment 
 1. Clone the aran repo to your local filesystem.
 1. The sample commands below use the `curl` tool.
 
+## Git hooks
+
+After you clone  `aran.git`, please do the following.
+
+```
+	cp .hooks/* ./.git/hooks
+    chmod 755 ./.git/hooks/pre-commit
+
+```
+
 ## PostgreSQL - Ubuntu
 
 ### Install postgres
@@ -131,10 +141,24 @@ api: target/debug/rioos-api-server  --config /home/your_alias/rioos/api.toml
 
 ## Run a build
 
-Incremental build  - used during development.
+Incremental builds  - used during development.
 
 ```
-make
+# Builds the api server only
+make buildapi
+
+# Builds the blockchain audit server only
+make buildaud
+
+# Builds the marketplace server only
+make buildmkt
+```
+Builds for release - used during production.
+For release builds append `r` to the above targets
+
+```
+make rbuildapi
+
 ```
 
 Clean build, cleans everythings and does a build.
@@ -161,20 +185,79 @@ HTTP/1.1 201 Created
     "state": "alliswell"
 }
 ```
+To verify pfx
 
+* The pfx password `TEAMRIOADVANCEMENT123`
+
+```
+openssl pkcs12 -info -in serving-rioos-apiserver.pfx
+
+```
+To verify pub/key
+
+```
+openssl verify -CAfile server-ca.crt serving-rioos-apiserver.crt
+
+```
 
 ## Run Aran
+
 1. Open a new terminal window.
-1. Export the following environment variables:
+2. Export the following environment variables:
 
 ```
 export RIOOS_HOME=$HOME/home
 ```
 
 ```
+
 ./rioos_apiserver start
+
 ```
 
+### Blockchain
+
+We want to do audit logging in blockchain rioos-api-blockchainserver. We will use [rocksdb](https://rocksdb.org) as the storage.
+
+
+Ubuntu
+```
+sudo apt-get install librocksdb-dev librocksdb4.5
+
+export ROCKSDB_LIB_DIR=/usr/lib/x86_64-linux-gnu
+export SNAPPY_LIB_DIR=/usr/lib/x86_64-linux-gnu
+```
+
+ArchLinux
+```
+yaourt rocksdb
+
+```
+
+## Performance testing
+
+We want to do load testing on the api-server. We will use [locust](https://locust.io)
+
+### Install locust.io
+
+Watch this asciinema
+
+```
+https://asciinema.org/a/LtzjvzEWOkxqPZmMo6UbhujsY
+
+```
+
+### Run scripts
+
+
+```
+cd tools/perf
+
+locust -f auth.py --host=http://<rioos_aran_api_server>
+
+```
+
+Locust's web:  [http://127.0.0.1:8089](http://127.0.0.1:8089)
 
 ## Troubleshooting
 1. If you get the following error when starting the api-server, check to make sure you have the database setup correctly.
@@ -182,5 +265,5 @@ export RIOOS_HOME=$HOME/home
 
 1. If Postgres dies when you run `systemctl start postgresql` with an error message that
    says `WARNING: out of shared memory`, edit the `postgresql.conf` file in
-   `/etc/etc/postgresql/9.5/main/postgresql.conf` and add
+   `/etc/etc/postgresql/10.1/main/postgresql.conf` and add
    `max_locks_per_transaction=128` to it.

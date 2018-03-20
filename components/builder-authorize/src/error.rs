@@ -1,14 +1,12 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder authorize
-
 
 use postgres;
 use std::error;
 use std::fmt;
 use std::result;
 use db;
-
 
 #[derive(Debug)]
 pub enum Error {
@@ -21,7 +19,6 @@ pub enum Error {
     PermissionGet(postgres::error::Error),
     RolePermissionsGet(postgres::error::Error),
 }
-
 
 pub type Result<T> = result::Result<T, Error>;
 

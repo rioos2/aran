@@ -1,11 +1,15 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
+use std::io;
 use std::error;
 use std::fmt;
 use std::result;
 
 use r2d2;
 use postgres;
+use rcore;
+use jwt;
+use serde_json;
+use serde_yaml;
 
 #[derive(Debug)]
 pub enum Error {
@@ -16,18 +20,17 @@ pub enum Error {
     AsyncFunctionCheck(postgres::error::Error),
     AsyncFunctionUpdate(postgres::error::Error),
     RecordsNotFound,
-    ConnectionTimeout(r2d2::GetTimeout),
+    ConnectionTimeout(r2d2::Error),
     FunctionCreate(postgres::error::Error),
     FunctionDrop(postgres::error::Error),
     FunctionRun(postgres::error::Error),
-    PostgresConnect(postgres::error::ConnectError),
-    SchemaCreate(postgres::error::Error),
+    PostgresConnect(postgres::error::Error),
+    SchemaCreate(String),
     SchemaDrop(postgres::error::Error),
     SchemaSwitch(postgres::error::Error),
     SetSearchPath(postgres::error::Error),
     TransactionCreate(postgres::error::Error),
     TransactionCommit(postgres::error::Error),
-    DbPoolTimeout(r2d2::GetTimeout),
     DbTransaction(postgres::error::Error),
     DbTransactionStart(postgres::error::Error),
     DbTransactionCommit(postgres::error::Error),
@@ -36,6 +39,11 @@ pub enum Error {
     MigrationTable(postgres::error::Error),
     MigrationTracking(postgres::error::Error),
     MigrationLock(postgres::error::Error),
+    IO(io::Error),
+    RioosAranCore(rcore::Error),
+    Jwt(jwt::errors::Error),
+    Json(serde_json::Error),
+    Yaml(serde_yaml::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -66,7 +74,6 @@ impl fmt::Display for Error {
             Error::SetSearchPath(ref e) => format!("Error setting local search path: {}", e),
             Error::TransactionCreate(ref e) => format!("Error creating transaction: {}", e),
             Error::TransactionCommit(ref e) => format!("Error committing transaction: {}", e),
-            Error::DbPoolTimeout(ref e) => format!("Timeout getting connection from the database pool, {}", e),
             Error::DbTransaction(ref e) => format!("Database transaction error, {}", e),
             Error::DbTransactionStart(ref e) => format!("Failed to start database transaction, {}", e),
             Error::DbTransactionCommit(ref e) => format!("Failed to commit database transaction, {}", e),
@@ -75,6 +82,11 @@ impl fmt::Display for Error {
             Error::MigrationTable(ref e) => format!("Error creating migration tracking table: {}", e),
             Error::MigrationTracking(ref e) => format!("Error updating migration tracking table: {}", e),
             Error::MigrationLock(ref e) => format!("Error getting migration lock: {}", e),
+            Error::IO(ref e) => format!("{}", e),
+            Error::RioosAranCore(ref e) => format!("{}", e),
+            Error::Jwt(ref e) => format!("{}", e),
+            Error::Json(ref e) => format!("{}", e),
+            Error::Yaml(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -101,7 +113,6 @@ impl error::Error for Error {
             Error::SetSearchPath(_) => "Error setting local search path",
             Error::TransactionCreate(_) => "Error creating a transaction",
             Error::TransactionCommit(_) => "Error committing a transaction",
-            Error::DbPoolTimeout(ref err) => err.description(),
             Error::DbTransaction(ref err) => err.description(),
             Error::DbTransactionCommit(ref err) => err.description(),
             Error::DbTransactionStart(ref err) => err.description(),
@@ -110,18 +121,53 @@ impl error::Error for Error {
             Error::MigrationTable(_) => "Error creat2ing migration tracking table",
             Error::MigrationTracking(_) => "Error updating migration tracking table",
             Error::MigrationLock(_) => "Error getting migration lock",
+            Error::IO(ref err) => err.description(),
+            Error::RioosAranCore(ref err) => err.description(),
+            Error::Jwt(ref err) => err.description(),
+            Error::Json(ref err) => err.description(),
+            Error::Yaml(ref err) => err.description(),
         }
     }
 }
 
-impl From<r2d2::GetTimeout> for Error {
-    fn from(err: r2d2::GetTimeout) -> Self {
+impl From<r2d2::Error> for Error {
+    fn from(err: r2d2::Error) -> Self {
         Error::ConnectionTimeout(err)
     }
 }
 
-impl From<postgres::error::ConnectError> for Error {
-    fn from(err: postgres::error::ConnectError) -> Self {
+impl From<postgres::error::Error> for Error {
+    fn from(err: postgres::error::Error) -> Self {
         Error::PostgresConnect(err)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self {
+        Error::IO(err)
+    }
+}
+
+impl From<rcore::Error> for Error {
+    fn from(err: rcore::Error) -> Error {
+        Error::RioosAranCore(err)
+    }
+}
+
+impl From<jwt::errors::Error> for Error {
+    fn from(err: jwt::errors::Error) -> Error {
+        Error::Jwt(err)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Error {
+        Error::Json(err)
+    }
+}
+
+impl From<serde_yaml::Error> for Error {
+    fn from(err: serde_yaml::Error) -> Error {
+        Error::Yaml(err)
     }
 }

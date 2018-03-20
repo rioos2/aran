@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+make clean
+make buildapi
+if [ $? -ne 0 ]; then
+       echo "compilation failed, please run 'make clean; make build-srv' to see the errors and fix them before committing"
+       exit 1
+fi
+
+make unit-all
+if [ $? -ne 0 ]; then
+   echo "unit tests failed, please run 'make unit-all' to see the errors and fix them before committing"
+   exit 1
+fi
+exit 0

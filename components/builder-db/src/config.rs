@@ -1,5 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
-
+// Copyright 2018 The Rio Advancement Inc
 
 use std::error::Error;
 use std::net::{Ipv4Addr, IpAddr};

@@ -1,0 +1,23 @@
+# ================================================================
+# Deploy Information
+# ================================================================
+---
+object_meta:
+  name: kong.megam.io
+  account: '923614490522558464'
+  cluster_name: newyork
+  labels:
+    rioos_category: machine
+replicas: 1
+resources:
+  compute_type: cpu
+  storage_type: hdd
+  cpu: '1'
+  memory: 1 GiB
+  storage: 3 GiB
+  private_ipv4: 'true'
+secret:
+  id: '922303941599854592'
+plan: '926517208534753280'
+status:
+  phase: ready

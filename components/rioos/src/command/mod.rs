@@ -1,4 +1,4 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 pub mod cli;
 pub mod digicloud;
@@ -10,3 +10,4 @@ pub mod origin;
 pub mod job;
 pub mod network;
 pub mod storage;
+pub mod cluster;

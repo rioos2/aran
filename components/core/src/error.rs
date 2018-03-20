@@ -1,7 +1,6 @@
-// Copyright (c) 2017 RioCorp Inc.
+// Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the common errors
-
 
 use std::error;
 use std::io;
@@ -14,6 +13,7 @@ use std::string;
 
 use regex;
 use toml;
+use serde_yaml;
 
 use openssl;
 
@@ -76,7 +76,7 @@ pub enum Error {
     /// Occurs when a service group string cannot be successfully parsed.
     InvalidServiceGroup(String),
     /// Occurs when an origin is in an invalid format
-    InvalidOrigin(String),
+    InvalidCertificateName(String),
     /// Occurs when making lower level IO calls.
     IO(io::Error),
     /// Occurs when we can't find an outbound IP address
@@ -109,6 +109,8 @@ pub enum Error {
     TerminateProcessFailed(String),
     /// When an error occurs attempting to interpret a sequence of u8 as a string.
     Utf8Error(str::Utf8Error),
+
+    Yaml(serde_yaml::Error),
 }
 
 impl fmt::Display for Error {
@@ -131,21 +133,21 @@ impl fmt::Display for Error {
             Error::ConfigInvalidArraySocketAddr(ref f) => {
                 format!(
                     "Invalid array value of network address pair strings config, field={}. \
-                         (example: [\"127.0.0.1:8080\", \"10.0.0.4:22\"])",
+                 (example: [\"127.0.0.1:8080\", \"10.0.0.4:22\"])",
                     f
                 )
             }
             Error::ConfigInvalidArrayTableString(ref f) => {
                 format!(
                     "Invalid array value of tables containing string fields and values in \
-                         config, field={}",
+                 config, field={}",
                     f
                 )
             }
             Error::ConfigInvalidArrayTarget(ref f) => {
                 format!(
                     "Invalid array value of targets containing string fields and values in \
-                         config, field={}",
+                 config, field={}",
                     f
                 )
             }
@@ -176,21 +178,21 @@ impl fmt::Display for Error {
             Error::ConfigInvalidIdent(ref f) => {
                 format!(
                     "Invalid package identifier string value in config, field={}. (example: \
-                         \"core/redis\")",
+                 \"core/redis\")",
                     f
                 )
             }
             Error::ConfigInvalidIpAddr(ref f) => {
                 format!(
                     "Invalid IP address string value in config, field={}. (example: \
-                         \"127.0.0.0\")",
+                 \"127.0.0.0\")",
                     f
                 )
             }
             Error::ConfigInvalidSocketAddr(ref f) => {
                 format!(
                     "Invalid network address pair string value in config, field={}. (example: \
-                         \"127.0.0.0:8080\")",
+                 \"127.0.0.0:8080\")",
                     f
                 )
             }
@@ -204,7 +206,7 @@ impl fmt::Display for Error {
             Error::ConfigInvalidTarget(ref f) => {
                 format!(
                     "Invalid package target string value in config, field={}. (example: \
-                         \"x86_64-linux\")",
+                 \"x86_64-linux\")",
                     f
                 )
             }
@@ -219,15 +221,15 @@ impl fmt::Display for Error {
             Error::InvalidServiceGroup(ref e) => {
                 format!(
                     "Invalid service group: {}. A valid service group string is in the form \
-                         service.group (example: redis.production)",
+                 service.group (example: redis.production)",
                     e
                 )
             }
-            Error::InvalidOrigin(ref origin) => {
+            Error::InvalidCertificateName(ref origin) => {
                 format!(
                     "Invalid origin: {}. Origins must begin with a lowercase letter or number. \
-                        Allowed characters include lowercase letters, numbers, -, and _. \
-                        No more than 255 characters.",
+                 Allowed characters include lowercase letters, numbers, -, and _. \
+                 No more than 255 characters.",
                     origin
                 )
             }
@@ -247,6 +249,7 @@ impl fmt::Display for Error {
             Error::WaitForSingleObjectFailed(ref e) => format!("{}", e),
             Error::TerminateProcessFailed(ref e) => format!("{}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
+            Error::Yaml(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -299,9 +302,9 @@ impl error::Error for Error {
             Error::InvalidArchitecture(_) => "Unsupported target architecture supplied.",
             Error::InvalidPlatform(_) => "Unsupported target platform supplied.",
             Error::InvalidServiceGroup(_) => "Service group strings must be in service.group format (example: redis.production)",
-            Error::InvalidOrigin(_) => {
+            Error::InvalidCertificateName(_) => {
                 "Origins must begin with a lowercase letter or number.  \
-                    Allowed characters include a - z, 0 - 9, _, and -. No more than 255 characters."
+                 Allowed characters include a - z, 0 - 9, _, and -. No more than 255 characters."
             }
             Error::IO(ref err) => err.description(),
             Error::NoOutboundAddr => "Failed to discover the outbound IP address",
@@ -319,6 +322,7 @@ impl error::Error for Error {
             Error::WaitForSingleObjectFailed(_) => "WaitForSingleObjectFailed failed",
             Error::TerminateProcessFailed(_) => "Failed to call TerminateProcess",
             Error::Utf8Error(_) => "Failed to interpret a sequence of bytes as a string",
+            Error::Yaml(ref err) => err.description(),
         }
     }
 }
@@ -356,5 +360,11 @@ impl From<regex::Error> for Error {
 impl From<openssl::error::ErrorStack> for Error {
     fn from(err: openssl::error::ErrorStack) -> Self {
         Error::X509Error(err)
+    }
+}
+
+impl From<serde_yaml::Error> for Error {
+    fn from(err: serde_yaml::Error) -> Error {
+        Error::Yaml(err)
     }
 }
