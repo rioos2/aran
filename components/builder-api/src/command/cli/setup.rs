@@ -8,9 +8,6 @@ use std::fs::File;
 use std::str;
 use base64;
 
-use rand::{self, Rng};
-
-
 use failure::SyncFailure;
 use handlebars::Handlebars;
 use config::Config;
@@ -18,15 +15,13 @@ use config::Config;
 use common::ui::UI;
 
 use rio_core::crypto::{ROOT_CA, SigKeyPair};
-use rio_core::fs::{read_from_yaml, write_to_file, read_from_file, rioconfig_config_path};
+use rio_core::fs::{write_to_file, read_from_file, rioconfig_config_path};
 
 use command;
 use error::Result;
 
 lazy_static! {
     static  ref RIOCONFIG_TEMPLATE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/rioconfig.hbs").to_str().unwrap());
-    static  ref BOOTSTRAP_TOKEN_TEMPLATE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/bootstrap_token_config.hbs").to_str().unwrap());
-    static  ref BOOTSTRAP_TEMPLATE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/bootstrap_config.hbs").to_str().unwrap());
 }
 
 ///Sets up the Rio/OS infrastructure to connect via PKI.
@@ -45,15 +40,6 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
     ui.para(
         "For more information on pki infrastructure and how they are used in connecting your infrastructure, \
          please consult the docs at https://bit.ly/rioosadmin_manual",
-    )?;
-
-    create_bootstrap_token(cache_path, "bootstrap_token.rioconfig")?;
-
-    create_bootstrap_config(
-        cache_path,
-        "bootstrap_token.rioconfig",
-        "bootstrap.rioconfig",
-        config,
     )?;
 
     let server_ca = "server-ca";
@@ -508,52 +494,6 @@ fn create_rioconfig(result: &SigKeyPair, cache_path: &Path, name: &str, config: 
         .collect::<Vec<_>>()
         .join("\n") + "\n";
     write_to_file(&cache_path.join(name), &s)?;
-    Ok(())
-}
-
-fn create_bootstrap_token(cache_path: &Path, token_name: &str) -> Result<()> {
-    let json = json!({
-        "token_id":rand::thread_rng()
-        .gen_ascii_chars()
-        .take(20)
-        .collect::<String>(),
-        "token_secret": rand::thread_rng()
-        .gen_ascii_chars()
-        .take(20)
-        .collect::<String>(),
-    });
-    let r = Handlebars::new()
-        .render_template(&read_from_file(&BOOTSTRAP_TOKEN_TEMPLATE)?, &json)
-        .map_err(SyncFailure::new);
-    let s = r.unwrap()
-        .lines()
-        .filter(|l| *l != "")
-        .collect::<Vec<_>>()
-        .join("\n") + "\n";
-    write_to_file(&cache_path.join(token_name), &s)?;
-    Ok(())
-}
-
-
-fn create_bootstrap_config(cache_path: &Path, token_file: &str, name: &str, config: &Config) -> Result<()> {
-    let deserialized_map = read_from_yaml(&cache_path.join(token_file))?;
-
-    let json = json!({
-            "name":deserialized_map.get("name").unwrap_or(&"".to_string()),
-            "address": config.http.listen,
-            "port": config.http.port,
-        });
-
-    let r = Handlebars::new()
-        .render_template(&read_from_file(&BOOTSTRAP_TEMPLATE)?, &json)
-        .map_err(SyncFailure::new);
-    let content = r.unwrap()
-        .lines()
-        .filter(|l| *l != "")
-        .collect::<Vec<_>>()
-        .join("\n") + "\n";
-
-    write_to_file(&cache_path.join(name), &content)?;
     Ok(())
 }
 

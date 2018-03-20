@@ -5,15 +5,12 @@ use std::path::{Path, PathBuf};
 use std::fs::File;
 use std::io::{Read, BufWriter, Write};
 use std::fs::OpenOptions;
-use std::collections::BTreeMap;
 
 use error::{Result, Error};
 
 use users;
 
 use env as renv;
-
-use serde_yaml;
 
 /// The default root path of the Rio/OS filesystem
 pub const ROOT_PATH: &'static str = "/var/lib/rioos";
@@ -236,13 +233,6 @@ fn find_command_with_pathext(candidate: &PathBuf) -> Option<PathBuf> {
 // Returns whether or not the current process is running with a root effective user id or not.
 pub fn am_i_root() -> bool {
     *EUID == 0u32
-}
-
-pub fn read_from_yaml(cache_path: &Path) -> Result<BTreeMap<String, String>> {
-    if File::open(cache_path).is_err() {
-        return Err(Error::FileNotFound(format!("{:?}", cache_path)));
-    }
-    Ok(serde_yaml::from_reader(&File::open(cache_path)?)?)
 }
 
 pub fn read_from_file(cache_path: &Path) -> Result<String> {
