@@ -46,7 +46,6 @@
 
 extern crate fallible_iterator;
 extern crate fnv;
-extern crate jsonwebtoken as jwt;
 
 #[macro_use]
 extern crate log;

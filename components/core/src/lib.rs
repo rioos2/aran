@@ -3,7 +3,6 @@
 //! A module containing
 extern crate errno;
 extern crate hex;
-extern crate serde_yaml;
 
 extern crate exonum_sodiumoxide as sodiumoxide;
 #[macro_use]
