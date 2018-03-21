@@ -10,10 +10,12 @@ class AuthBrowsingUser(TaskSet):
 
     @task(1)
     def register(l):
-        self.client.post('/authenticate/', {'username': 'username',
-                         'password': 'password'},
-                         headers={'X-RIOOS-EMAIL': 'info1@megam.io'})
-        self.tok = resp.json()['access_token']['token']
+		l.client.verify = False
+		resp = l.client.post('/api/v1/authenticate',
+												json={"email":"info@riocorp.io","password":"team4riocorp"},
+                        						cert= ("/home/suganya/nilavu_config/config/config/server-ca.cert.pem", "/home/suganya/nilavu_config/config/config/server-ca.key","/home/suganya/nilavu_config/config/config/client-ca.pub","/home/suganya/nilavu_config/config/config/client-ca.key")
+                        						)
+        	l.tok = resp.json()['token']
 
     @task(2)
     def page404(l):
@@ -27,7 +29,3 @@ class AuthBrowsingUser(TaskSet):
 class WebsiteAuthUser(HttpLocust):
 
     task_set = AuthBrowsingUser
-
-
-
-			
