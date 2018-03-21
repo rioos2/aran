@@ -49,7 +49,7 @@ impl AuthenticateDelegate {
                 username: u,
                 password: p,
             } => UserAccountAuthenticate::from_username_and_password(&self.conn, u.to_string(), p.to_string()),
-            Authenticatable::OtpAuth { token: t } => UserAccountAuthenticate::from_otp(&self.conn, t.to_string()),
+            Authenticatable::PassTicket { token: t } => UserAccountAuthenticate::from_passticket(&self.conn, t.to_string()),
             Authenticatable::UserEmailAndToken { email: u, token: p } => UserAccountAuthenticate::from_email_and_token(&self.conn, u.to_string(), p.to_string()),
             Authenticatable::UserEmailAndWebtoken {
                 email: u,

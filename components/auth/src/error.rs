@@ -21,9 +21,9 @@ pub enum Error {
     FormatInvalid(SJError),
     OpenSslError(ErrorStack),
     ProtocolError(B64Error),
-    OldOTPMustBeRemoved(String),
-    CantVerifyOT(String),
-    OTPMismatch,
+    OldPassticketMustBeRemoved(String),
+    CantVerifyPassticket(String),
+    PassticketMismatch,
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -40,9 +40,9 @@ impl fmt::Display for Error {
             Error::SignatureInvalid => format!("signature invalid"),
             Error::JWTInvalid => format!("JWT token is invalid"),
             Error::IssuerInvalid => format!("JWT token issuer was invalid"),
-            Error::OTPMismatch => format!("Rio/OS OTP Invlid"),
-            Error::OldOTPMustBeRemoved(ref e) => format!("{}", e),
-            Error::CantVerifyOT(ref e) => format!("{}", e),
+            Error::PassticketMismatch => format!("Rio/OS Passticket Invlid"),
+            Error::OldPassticketMustBeRemoved(ref e) => format!("{}", e),
+            Error::CantVerifyPassticket(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -56,9 +56,9 @@ impl error::Error for Error {
             Error::FormatInvalid(ref err) => err.description(),
             Error::OpenSslError(ref err) => err.description(),
             Error::ProtocolError(ref err) => err.description(),
-            Error::OldOTPMustBeRemoved(ref _e) => "OTP Removing error",
-            Error::CantVerifyOT(ref _e) => "OTP Mismatch error",
-            Error::OTPMismatch => "Rio/OS OTP Invalid",
+            Error::OldPassticketMustBeRemoved(ref _e) => "Passticket Removing error",
+            Error::CantVerifyPassticket(ref _e) => "Passticket Mismatch error",
+            Error::PassticketMismatch => "Rio/OS Passticket Invalid",
             Error::SignatureExpired => "signature expired",
             Error::SignatureInvalid => "signature invalid",
             Error::JWTInvalid => "JWT token invalid",

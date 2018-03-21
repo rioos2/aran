@@ -22,7 +22,7 @@ use super::headers::*;
 use config;
 
 use db::data_store::DataStoreConn;
-use session::models::session::SessionDS;
+use session::models::session as sessions;
 use entitlement::licensor::Client;
 use common::ui;
 use auth::util::authenticatable::Authenticatable;
@@ -326,7 +326,7 @@ impl ProceedAuthenticating {
                 webtoken: token,
             };
         } else if !otp.is_none() {
-            auth_enum = Authenticatable::OtpAuth { token: &otp.unwrap().0 };
+            auth_enum = Authenticatable::PassTicket { token: &otp.unwrap().0 };
         } else {
             let err = not_acceptable_error(&format!(
                 "Authentication not supported. You must have headers for the supported authetication. Refer https://www.rioos.sh/admin/auth."
@@ -389,7 +389,7 @@ impl AfterMiddleware for Cors {
 
 pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> AranResult<Session> {
     //wrong name, use another fascade method session_create
-    match SessionDS::find_account(&conn, &request) {
+    match sessions::DataStore::find_account(&conn, &request) {
         Ok(session) => return Ok(session),
         Err(e) => Err(not_found_error(&format!(
             "{}: Couldn not create session for the account.",

@@ -1,8 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use db::data_store::DataStoreConn;
-use session::models::session::SessionDS;
-use session::models::otp::OtpDS;
+use session::models::{session as sessions, passticket};
 
 use util::goofy_crypto::GoofyCrypto;
 use protocol::api::session;
@@ -46,7 +45,7 @@ impl UserAccountAuthenticate {
         let mut account_get = session::AccountGet::new();
         account_get.set_email(username.clone());
         account_get.set_password(password);
-        match SessionDS::get_account(&datastore, &account_get) {
+        match sessions::DataStore::get_account(&datastore, &account_get) {
             Ok(opt_account) => {
                 let account = opt_account.unwrap();
                 GoofyCrypto::new()
@@ -80,7 +79,7 @@ impl UserAccountAuthenticate {
         let tk_target = TokenTarget::new(email.to_string(), token.to_string());
         let request: SessionGet = tk_target.into();
 
-        match SessionDS::get_session(datastore, &request) {
+        match sessions::DataStore::get_session(datastore, &request) {
             Ok(Some(_session)) => Ok(true),
             Ok(None) => {
                 let mut session_tk: SessionCreate = SessionCreate::new();
@@ -100,20 +99,20 @@ impl UserAccountAuthenticate {
     }
 
 
-    // it authenticates otp token values
+    // it authenticates passticket token values
     // it checks account is exists or not in database
     // then check valid bearer token and validate their expiry period
     // otherwise it returns error response
-    pub fn from_otp(datastore: &DataStoreConn, otp: String) -> Result<bool> {
-        match OtpDS::get_otp(datastore, &otp) {
-            Ok(Some(otp)) => {
-                match OtpDS::remove_otp(datastore, otp) {
+    pub fn from_passticket(datastore: &DataStoreConn, passticket_id: String) -> Result<bool> {
+        match passticket::DataStore::get_passticket(datastore, &passticket_id) {
+            Ok(Some(passticket)) => {
+                match passticket::DataStore::remove_passticket(datastore, passticket) {
                     Ok(_) => Ok(true),
-                    Err(err) => Err(Error::OldOTPMustBeRemoved(format!("{}", err))),
+                    Err(err) => Err(Error::OldPassticketMustBeRemoved(format!("{}", err))),
                 }
             }
-            Ok(None) => return Err(Error::OTPMismatch),
-            Err(err) => return Err(Error::CantVerifyOT(format!("{}", err))),
+            Ok(None) => return Err(Error::PassticketMismatch),
+            Err(err) => return Err(Error::CantVerifyPassticket(format!("{}", err))),
         }
     }
 
@@ -137,7 +136,7 @@ impl UserAccountAuthenticate {
 }
 
 pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> Result<Session> {
-    match SessionDS::find_account(&conn, &request) {
+    match sessions::DataStore::find_account(&conn, &request) {
         Ok(session) => return Ok(session),
         Err(e) => {
             return Err(error::Error::Auth(rioos::AuthErr {

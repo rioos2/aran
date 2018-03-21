@@ -21,7 +21,7 @@ pub enum Authenticatable<'a> {
         webtoken: &'a str,
         key: &'a str,
     },
-    OtpAuth { token: &'a str },
+    PassTicket { token: &'a str },
 }
 
 pub trait ToAuth {
@@ -57,7 +57,7 @@ impl<'a> ToAuth for Authenticatable<'a> {
                 webtoken: p,
                 key: k,
             },
-            Authenticatable::OtpAuth { token: t } => Authenticatable::OtpAuth { token: t },
+            Authenticatable::PassTicket { token: t } => Authenticatable::PassTicket { token: t },
         }
     }
 }

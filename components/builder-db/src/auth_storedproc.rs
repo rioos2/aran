@@ -862,14 +862,14 @@ impl Migratable for AuthProcedures {
         )?;
 
         // The core otp_id_seq table
-        migrator.migrate("authsrv", r#"CREATE SEQUENCE IF NOT EXISTS otp_id_seq;"#)?;
+        migrator.migrate("authsrv", r#"CREATE SEQUENCE IF NOT EXISTS passticket_id_seq;"#)?;
 
         // Create table otp
         migrator.migrate(
             "authsrv",
-            r#"CREATE TABLE IF NOT EXISTS otps (
-         id bigint PRIMARY KEY DEFAULT next_id_v1('otp_id_seq'),
-         otp text,
+            r#"CREATE TABLE IF NOT EXISTS passtickets (
+         id bigint PRIMARY KEY DEFAULT next_id_v1('passticket_id_seq'),
+         passticket text,
          created_at timestamptz DEFAULT now())"#,
         )?;
 
@@ -877,11 +877,11 @@ impl Migratable for AuthProcedures {
 
         migrator.migrate(
             "authsrv",
-            r#"CREATE OR REPLACE FUNCTION insert_otp_v1 (
-                   o_otp text,
+            r#"CREATE OR REPLACE FUNCTION insert_passticket_v1 (
+                   o_passticket text,
                 ) RETURNS void AS $$
                     BEGIN
-                       INSERT INTO otps (otp) VALUES (o_otp);
+                       INSERT INTO passtickets (passticket) VALUES (o_passticket);
                     END
                 $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
@@ -889,9 +889,9 @@ impl Migratable for AuthProcedures {
         // Select otp table by otp
         migrator.migrate(
             "authsrv",
-            r#"CREATE OR REPLACE FUNCTION get_otp_v1 (o_otp text) RETURNS SETOF otps AS $$
+            r#"CREATE OR REPLACE FUNCTION get_passticket_v1 (o_passticket text) RETURNS SETOF passtickets AS $$
                     BEGIN
-                      RETURN QUERY SELECT * FROM otps WHERE otp = o_otp;
+                      RETURN QUERY SELECT * FROM passtickets WHERE passticket = o_passticket;
                       RETURN;
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
@@ -901,9 +901,9 @@ impl Migratable for AuthProcedures {
         // Select permission from permissions table by id
         migrator.migrate(
             "authsrv",
-            r#"CREATE OR REPLACE FUNCTION remove_otp_v1 (o_otp text) RETURNS void AS  $$
+            r#"CREATE OR REPLACE FUNCTION remove_passticket_v1 (o_passticket text) RETURNS void AS  $$
                     BEGIN
-                       DELETE FROM otps WHERE otp = o_otp;
+                       DELETE FROM passtickets WHERE passticket = o_passticket;
                     END
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;

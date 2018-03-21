@@ -1,2 +1,2 @@
 pub mod session;
-pub mod otp;
+pub mod passticket;

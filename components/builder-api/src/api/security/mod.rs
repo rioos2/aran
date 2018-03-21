@@ -8,3 +8,4 @@ pub mod authorize_api;
 pub mod secret_api;
 pub mod service_account_api;
 pub mod settings_map_api;
+pub mod passticket_api;

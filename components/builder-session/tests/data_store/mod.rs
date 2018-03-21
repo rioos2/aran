@@ -1,6 +1,6 @@
 use protocol::{sessionsrv, servicesrv, asmsrv, originsrv, constants};
 use db::data_store::DataStoreConn;
-use session::models::session::SessionDS;
+use session::models::session;
 use rand;
 const ORIGIN: &'static str = "Origin";
 
@@ -24,7 +24,7 @@ fn create_account() {
     account_create.set_registration_ip_address("192.1.1.1".to_string());
     account_create.set_trust_level("platinum".to_string());
 
-    let session = SessionDS::find_or_create_account_via_session(
+    let session = session::Datastore::find_or_create_account_via_session(
         &conn,
         &account_create,
         true,
