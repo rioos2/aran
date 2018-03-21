@@ -1,7 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use db::data_store::DataStoreConn;
-use session::session_ds::SessionDS;
+use session::models::session::SessionDS;
+use session::models::otp::OtpDS;
+
 use util::goofy_crypto::GoofyCrypto;
 use protocol::api::session;
 use protocol::api::session::*;
@@ -103,15 +105,15 @@ impl UserAccountAuthenticate {
     // then check valid bearer token and validate their expiry period
     // otherwise it returns error response
     pub fn from_otp(datastore: &DataStoreConn, otp: String) -> Result<bool> {
-        match SessionDS::get_otp(datastore, &otp) {
+        match OtpDS::get_otp(datastore, &otp) {
             Ok(Some(otp)) => {
-                match SessionDS::remove_otp(datastore, otp) {
+                match OtpDS::remove_otp(datastore, otp) {
                     Ok(_) => Ok(true),
-                    Err(err) => Err(Error::RemoveOtp(format!("{}", err))),
+                    Err(err) => Err(Error::OldOTPMustBeRemoved(format!("{}", err))),
                 }
             }
-            Ok(None) => return Err(Error::OtpInvalid),
-            Err(_err) => return Err(Error::OtpInvalid),
+            Ok(None) => return Err(Error::OTPMismatch),
+            Err(err) => return Err(Error::CantVerifyOT(format!("{}", err))),
         }
     }
 

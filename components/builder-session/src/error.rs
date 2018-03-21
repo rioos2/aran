@@ -66,7 +66,7 @@ impl fmt::Display for Error {
             Error::OpenidProviderGetResponse(ref e) => format!("Error get all open id  provider data, {}", e),
             Error::OidcProviderGet(ref e) => format!("Error get openid  provider data, {}", e),
             Error::OTPGet(ref e) => format!("Error get otp data, {}", e),
-            Error::OTPDelete(ref e) => format!("Errorremoving otp data, {}", e),
+            Error::OTPDelete(ref e) => format!("Error removing otp data, {}", e),
         };
         write!(f, "{}", msg)
     }

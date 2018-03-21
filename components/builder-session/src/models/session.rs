@@ -13,7 +13,7 @@ use db::data_store::DataStoreConn;
 use serde_json;
 
 use ldap::{LDAPClient, LDAPUser};
-use super::{SamlOutputList, OpenIdOutputList};
+use super::super::{SamlOutputList, OpenIdOutputList};
 
 pub struct SessionDS;
 
@@ -193,27 +193,6 @@ impl SessionDS {
             Ok(None)
         }
     }
-
-    pub fn get_otp(datastore: &DataStoreConn, token: &str) -> Result<Option<String>> {
-        let conn = datastore.pool.get_shard(0)?;
-        let rows = &conn.query("SELECT * FROM get_otp($1)", &[&(token.to_string())])
-            .map_err(Error::OTPGet)?;
-        if rows.len() > 0 {
-            let otp = rows.get(0).get("otp");
-            return Ok(Some(otp));
-        }
-        Ok(None)
-    }
-
-
-    pub fn remove_otp(datastore: &DataStoreConn, token: String) -> Result<()> {
-        let conn = datastore.pool.get_shard(0)?;
-        &conn.query("SELECT * FROM remove_otp($1)", &[&(token)])
-            .map_err(Error::OTPDelete)?;
-        Ok(())
-
-    }
-
 
     pub fn ldap_config_create(datastore: &DataStoreConn, ldap_config: &session::LdapConfig) -> Result<Option<session::LdapConfig>> {
         let conn = datastore.pool.get_shard(0)?;

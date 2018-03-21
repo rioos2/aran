@@ -21,7 +21,7 @@ use rio_net::util::errors::{AranResult, AranValidResult};
 use rio_net::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error};
 
 use rand;
-use session::session_ds::SessionDS;
+use session::models::session::SessionDS;
 use protocol::api::session::*;
 
 use db::data_store::DataStoreConn;
@@ -72,7 +72,7 @@ impl AuthenticateApi {
                 Ok(render_json(status::Ok, &session))
             }
             Err(e) => Err(unauthorized_error(&format!("{}", e))),
-        }      
+        }
     }
 
     //POST: accounts",

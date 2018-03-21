@@ -22,7 +22,7 @@ use super::headers::*;
 use config;
 
 use db::data_store::DataStoreConn;
-use session::session_ds::SessionDS;
+use session::models::session::SessionDS;
 use entitlement::licensor::Client;
 use common::ui;
 use auth::util::authenticatable::Authenticatable;

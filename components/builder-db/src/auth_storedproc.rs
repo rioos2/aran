@@ -861,6 +861,53 @@ impl Migratable for AuthProcedures {
             ( (select id from second_insert), 'rioos.assembly.get','Read only access to all the users  VMs, Containers'),( (select id from second_insert), 'rioos.assembly.get','Read only access to all the users  VMs, Containers')"#,
         )?;
 
+        // The core otp_id_seq table
+        migrator.migrate("authsrv", r#"CREATE SEQUENCE IF NOT EXISTS otp_id_seq;"#)?;
+
+        // Create table otp
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE TABLE IF NOT EXISTS otps (
+         id bigint PRIMARY KEY DEFAULT next_id_v1('otp_id_seq'),
+         otp text,
+         created_at timestamptz DEFAULT now())"#,
+        )?;
+
+        ui.para("[✓] otp");
+
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_otp_v1 (
+                   o_otp text,
+                ) RETURNS void AS $$
+                    BEGIN
+                       INSERT INTO otps (otp) VALUES (o_otp);
+                    END
+                $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        // Select otp table by otp
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_otp_v1 (o_otp text) RETURNS SETOF otps AS $$
+                    BEGIN
+                      RETURN QUERY SELECT * FROM otps WHERE otp = o_otp;
+                      RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
+        // Select permission from permissions table by id
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION remove_otp_v1 (o_otp text) RETURNS void AS  $$
+                    BEGIN
+                       DELETE FROM otps WHERE otp = o_otp;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
         Ok(())
     }
 }

@@ -18,11 +18,12 @@ pub enum Error {
     SignatureInvalid,
     JWTInvalid,
     IssuerInvalid,
-    OtpInvalid,
     FormatInvalid(SJError),
     OpenSslError(ErrorStack),
     ProtocolError(B64Error),
-    RemoveOtp(String),
+    OldOTPMustBeRemoved(String),
+    CantVerifyOT(String),
+    OTPMismatch,
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -39,8 +40,9 @@ impl fmt::Display for Error {
             Error::SignatureInvalid => format!("signature invalid"),
             Error::JWTInvalid => format!("JWT token is invalid"),
             Error::IssuerInvalid => format!("JWT token issuer was invalid"),
-            Error::OtpInvalid => format!("Rio/OS OTP Invlid"),
-            Error::RemoveOtp(ref e) => format!("{}", e),
+            Error::OTPMismatch => format!("Rio/OS OTP Invlid"),
+            Error::OldOTPMustBeRemoved(ref e) => format!("{}", e),
+            Error::CantVerifyOT(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -54,12 +56,13 @@ impl error::Error for Error {
             Error::FormatInvalid(ref err) => err.description(),
             Error::OpenSslError(ref err) => err.description(),
             Error::ProtocolError(ref err) => err.description(),
-            Error::RemoveOtp(ref _e) => "OTP Removing error",
+            Error::OldOTPMustBeRemoved(ref _e) => "OTP Removing error",
+            Error::CantVerifyOT(ref _e) => "OTP Mismatch error",
+            Error::OTPMismatch => "Rio/OS OTP Invalid",
             Error::SignatureExpired => "signature expired",
             Error::SignatureInvalid => "signature invalid",
             Error::JWTInvalid => "JWT token invalid",
             Error::IssuerInvalid => "JWT token issuer invalid",
-            Error::OtpInvalid => "Rio/OS OTP Invalid",
         }
     }
 }
