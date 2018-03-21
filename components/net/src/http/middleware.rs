@@ -22,7 +22,7 @@ use super::headers::*;
 use config;
 
 use db::data_store::DataStoreConn;
-use session::session_ds::SessionDS;
+use session::models::session as sessions;
 use entitlement::licensor::Client;
 use common::ui;
 use auth::util::authenticatable::Authenticatable;
@@ -63,9 +63,11 @@ where
                         Ok(response)
                     }
                     None => {
-                        let err = internal_error(&format!("BUG! Report to development http://bit.ly/rioosbug"));
+                        let err = internal_error(&format!(
+                            "BUG! Report to development http://bit.ly/rioosbug"
+                        ));
                         Err(render_json_error(&bad_err(&err), err.http_code()))
-                    }                      
+                    }
                 }
             }
         }
@@ -282,8 +284,9 @@ pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
     pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {
-        let reqheader = req.headers.clone(); 
+        let reqheader = req.headers.clone();
         let email = reqheader.get::<XAuthRioOSEmail>();
+        let otp = reqheader.get::<XAuthRioOSOTP>();
         let serviceaccount = reqheader.get::<XAuthRioOSServiceAccountName>();
         let useraccount = reqheader.get::<XAuthRioOSUserAccountEmail>();
 
@@ -322,6 +325,8 @@ impl ProceedAuthenticating {
                 email: &useraccount.unwrap().0,
                 webtoken: token,
             };
+        } else if !otp.is_none() {
+            auth_enum = Authenticatable::PassTicket { token: &otp.unwrap().0 };
         } else {
             let err = not_acceptable_error(&format!(
                 "Authentication not supported. You must have headers for the supported authetication. Refer https://www.rioos.sh/admin/auth."
@@ -334,7 +339,7 @@ impl ProceedAuthenticating {
                 let err = unauthorized_error(&format!("{}\n", err));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
-        }        
+        }
     }
 }
 
@@ -384,7 +389,7 @@ impl AfterMiddleware for Cors {
 
 pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> AranResult<Session> {
     //wrong name, use another fascade method session_create
-    match SessionDS::find_account(&conn, &request) {
+    match sessions::DataStore::find_account(&conn, &request) {
         Ok(session) => return Ok(session),
         Err(e) => Err(not_found_error(&format!(
             "{}: Couldn not create session for the account.",

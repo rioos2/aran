@@ -21,7 +21,7 @@ use rio_net::util::errors::{AranResult, AranValidResult};
 use rio_net::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error};
 
 use rand;
-use session::session_ds::SessionDS;
+use session::models::session as sessions;
 use protocol::api::session::*;
 
 use db::data_store::DataStoreConn;
@@ -37,7 +37,7 @@ pub struct AuthenticateApi {
 }
 
 /// Authenticate api: AuthenticateyApi provides ability to authenticate the user.
-/// Needs a Datastore mapper, hence a DataStoreConn needs to be sent in.
+/// Needs a DataStore mapper, hence a DataStoreConn needs to be sent in.
 //
 /// Authentication: URLs supported are.
 /// POST: /authenticate,
@@ -72,7 +72,7 @@ impl AuthenticateApi {
                 Ok(render_json(status::Ok, &session))
             }
             Err(e) => Err(unauthorized_error(&format!("{}", e))),
-        }      
+        }
     }
 
     //POST: accounts",
@@ -99,7 +99,7 @@ impl AuthenticateApi {
         let en = unmarshall_body.get_password();
         unmarshall_body.set_password(UserAccountAuthenticate::encrypt(en).unwrap());
 
-        match SessionDS::account_create(&self.conn, &unmarshall_body) {
+        match sessions::DataStore::account_create(&self.conn, &unmarshall_body) {
             Ok(account) => Ok(render_json(status::Ok, &account)),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
@@ -113,7 +113,7 @@ impl AuthenticateApi {
         let mut account_get_by_id = AccountGetId::new();
         account_get_by_id.set_id(params.get_id());
 
-        match SessionDS::get_account_by_id(&self.conn, &account_get_by_id) {
+        match sessions::DataStore::get_account_by_id(&self.conn, &account_get_by_id) {
             Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -136,7 +136,7 @@ impl AuthenticateApi {
         let mut account_get = AccountGet::new();
         account_get.set_email(name);
 
-        match SessionDS::get_account(&self.conn, &account_get) {
+        match sessions::DataStore::get_account(&self.conn, &account_get) {
             Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -152,7 +152,7 @@ impl AuthenticateApi {
     fn _session_get(&self, req: &mut Request) -> AranResult<Response> {
         let unmarshall_body = self.validate(req.get::<bodyparser::Struct<SessionGet>>()?)?;
 
-        match SessionDS::get_session(&self.conn, &unmarshall_body) {
+        match sessions::DataStore::get_session(&self.conn, &unmarshall_body) {
             Ok(Some(session)) => Ok(render_json(status::Ok, &session)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -164,7 +164,7 @@ impl AuthenticateApi {
     fn config_ldap(&self, req: &mut Request) -> AranResult<Response> {
         let unmarshall_body = self.validate(req.get::<bodyparser::Struct<LdapConfig>>()?)?;
 
-        match SessionDS::ldap_config_create(&self.conn, &unmarshall_body) {
+        match sessions::DataStore::ldap_config_create(&self.conn, &unmarshall_body) {
             Ok(Some(ldap)) => Ok(render_json(status::Ok, &ldap)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -176,7 +176,7 @@ impl AuthenticateApi {
     fn test_ldap(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match SessionDS::test_ldap_config(&self.conn, &params) {
+        match sessions::DataStore::test_ldap_config(&self.conn, &params) {
             Ok(Some(result)) => Ok(render_json(status::Ok, &result)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -189,7 +189,7 @@ impl AuthenticateApi {
     fn import_ldap(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match SessionDS::import_ldap_config(&self.conn, &params) {
+        match sessions::DataStore::import_ldap_config(&self.conn, &params) {
             Ok(result) => Ok(render_json(status::Ok, &result)),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
@@ -202,7 +202,7 @@ impl AuthenticateApi {
             req.get::<bodyparser::Struct<SamlProvider>>()?,
         )?;
 
-        match SessionDS::saml_provider_create(&self.conn, &unmarshall_body) {
+        match sessions::DataStore::saml_provider_create(&self.conn, &unmarshall_body) {
             Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -214,7 +214,7 @@ impl AuthenticateApi {
     fn saml_show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match SessionDS::saml_show(&self.conn, &params) {
+        match sessions::DataStore::saml_show(&self.conn, &params) {
             Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -229,7 +229,7 @@ impl AuthenticateApi {
     //Returns all saml (no origion)
     // Move to a separatedatastore samls
     fn saml_list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match SessionDS::saml_provider_list_blank(&self.conn) {
+        match sessions::DataStore::saml_provider_list_blank(&self.conn) {
             Ok(Some(samls)) => Ok(render_json_list(status::Ok, dispatch(req), &samls)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -245,7 +245,7 @@ impl AuthenticateApi {
 
         //do you have to set the provider id in unmarshall_body here ?
 
-        match SessionDS::oidc_provider_create(&self.conn, &unmarshall_body) {
+        match sessions::DataStore::oidc_provider_create(&self.conn, &unmarshall_body) {
             Ok(Some(oidc)) => Ok(render_json(status::Ok, &oidc)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -257,7 +257,7 @@ impl AuthenticateApi {
     fn openid_show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match SessionDS::oidc_show(&self.conn, &params) {
+        match sessions::DataStore::oidc_show(&self.conn, &params) {
             Ok(Some(openid)) => Ok(render_json(status::Ok, &openid)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -272,7 +272,7 @@ impl AuthenticateApi {
     //Returns all openid (no origion)
     // Move to a separatedatastore openidds
     fn openid_list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match SessionDS::openid_provider_list_blank(&self.conn) {
+        match sessions::DataStore::openid_provider_list_blank(&self.conn) {
             Ok(Some(openids)) => Ok(render_json_list(status::Ok, dispatch(req), &openids)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),

@@ -12,8 +12,8 @@ use rioos;
 
 #[derive(Debug)]
 pub enum Error {
-    Auth(rioos::AuthErr),   
-    IO(io::Error),   
+    Auth(rioos::AuthErr),
+    IO(io::Error),
     SignatureExpired,
     SignatureInvalid,
     JWTInvalid,
@@ -21,22 +21,28 @@ pub enum Error {
     FormatInvalid(SJError),
     OpenSslError(ErrorStack),
     ProtocolError(B64Error),
+    OldPassticketMustBeRemoved(String),
+    CantVerifyPassticket(String),
+    PassticketMismatch,
 }
 
 pub type Result<T> = result::Result<T, Error>;
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let msg = match *self {           
-            Error::Auth(ref e) => format!("Rio/OS authorization error, {}", e),            
-            Error::IO(ref e) => format!("{}", e),   
-            Error::FormatInvalid(ref e) => format!("Rio/OS authorization error, {}", e), 
-            Error::OpenSslError(ref e) => format!("Rio/OS authorization error, {}", e), 
+        let msg = match *self {
+            Error::Auth(ref e) => format!("Rio/OS authorization error, {}", e),
+            Error::IO(ref e) => format!("{}", e),
+            Error::FormatInvalid(ref e) => format!("Rio/OS authorization error, {}", e),
+            Error::OpenSslError(ref e) => format!("Rio/OS authorization error, {}", e),
             Error::ProtocolError(ref e) => format!("Rio/OS authorization error, {}", e),
-            Error::SignatureExpired => format!("signature was expired"), 
+            Error::SignatureExpired => format!("signature was expired"),
             Error::SignatureInvalid => format!("signature invalid"),
-            Error::JWTInvalid => format!("JWT token is invalid"), 
-            Error::IssuerInvalid => format!("JWT token issuer was invalid"), 
+            Error::JWTInvalid => format!("JWT token is invalid"),
+            Error::IssuerInvalid => format!("JWT token issuer was invalid"),
+            Error::PassticketMismatch => format!("Passticket mismatch"),
+            Error::OldPassticketMustBeRemoved(ref e) => format!("{}", e),
+            Error::CantVerifyPassticket(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -45,12 +51,15 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::Auth(ref err) => err.description(),            
-            Error::IO(ref err) => err.description(),  
+            Error::Auth(ref err) => err.description(),
+            Error::IO(ref err) => err.description(),
             Error::FormatInvalid(ref err) => err.description(),
             Error::OpenSslError(ref err) => err.description(),
-            Error::ProtocolError(ref err) => err.description(),   
-            Error::SignatureExpired => "signature expired",    
+            Error::ProtocolError(ref err) => err.description(),
+            Error::OldPassticketMustBeRemoved(ref _e) => "Old passticket still remains after one time use.",
+            Error::CantVerifyPassticket(ref _e) => "Passticket Mismatch error",
+            Error::PassticketMismatch => "Passticket mismatch",
+            Error::SignatureExpired => "signature expired",
             Error::SignatureInvalid => "signature invalid",
             Error::JWTInvalid => "JWT token invalid",
             Error::IssuerInvalid => "JWT token issuer invalid",
