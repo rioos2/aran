@@ -116,6 +116,24 @@ impl MetaFields for AuditEvent {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EnvelopeResponse {
+    type_meta: TypeMeta,
+    object_meta: ObjectMeta,
+    envelope: Envelope,
+}
+
+impl EnvelopeResponse {
+    pub fn with(type_meta: TypeMeta, object_meta: ObjectMeta, envelope: Envelope) -> Self {
+        EnvelopeResponse {
+            type_meta: type_meta,
+            object_meta: object_meta,
+            envelope: envelope,
+        }
+    }
+}
+
+
 // ObjectReference contains enough information to let you inspect or modify the referred object.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 pub struct ObjectReference {
