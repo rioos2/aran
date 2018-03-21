@@ -879,9 +879,11 @@ impl Migratable for AuthProcedures {
             "authsrv",
             r#"CREATE OR REPLACE FUNCTION insert_passticket_v1 (
                    o_passticket text,
-                ) RETURNS void AS $$
+                ) RETURNS SETOF passtickets AS $$
                     BEGIN
-                       INSERT INTO passtickets (passticket) VALUES (o_passticket);
+                       RETURN QUERY INSERT INTO passtickets (passticket) VALUES (o_passticket);
+                       RETURNING *;
+                   RETURN;
                     END
                 $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
