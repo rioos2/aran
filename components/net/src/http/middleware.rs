@@ -260,15 +260,14 @@ pub struct EntitlementAct;
 
 impl BeforeMiddleware for EntitlementAct {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        Ok(())
-        /*let data = req.get::<persistent::Read<LicensorCli>>().unwrap();
+        let data = req.get::<persistent::Read<LicensorCli>>().unwrap();
         match data.create_trial_or_verify() {
             Ok(_) => Ok(()),
             Err(err) => {
                 let err = entitlement_error(&format!("{}\n", err));
                 Err(render_json_error(&bad_err(&err), err.http_code()))
             }
-        }*/
+        }
     }
 }
 
