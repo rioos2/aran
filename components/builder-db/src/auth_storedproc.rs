@@ -878,10 +878,10 @@ impl Migratable for AuthProcedures {
         migrator.migrate(
             "authsrv",
             r#"CREATE OR REPLACE FUNCTION insert_passticket_v1 (
-                   o_passticket text,
+                   o_passticket text
                 ) RETURNS SETOF passtickets AS $$
                     BEGIN
-                       RETURN QUERY INSERT INTO passtickets (passticket) VALUES (o_passticket);
+                       RETURN QUERY INSERT INTO passtickets (passticket) VALUES (o_passticket)
                        RETURNING *;
                    RETURN;
                     END
@@ -907,7 +907,7 @@ impl Migratable for AuthProcedures {
                     BEGIN
                        DELETE FROM passtickets WHERE passticket = o_passticket;
                     END
-                    $$ LANGUAGE plpgsql STABLE"#,
+                    $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
         Ok(())
