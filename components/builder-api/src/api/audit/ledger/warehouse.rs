@@ -26,8 +26,8 @@ use reqwest::header::{ContentType, Accept};
 use reqwest::{StatusCode, Body};
 
 use super::Ledger;
-use protocol::api::audit::Envelope;
-use protocol::api::base::IdGet;
+use protocol::api::audit::{Envelope, EnvelopeResponse};
+use protocol::api::base::{IdGet, MetaFields};
 use api::audit::ledger::EnvelopeOutputList;
 
 pub struct ExonumClient {
@@ -99,6 +99,12 @@ impl Ledger for Blockchain {
         };
 
         let audits: Vec<Envelope> = res.json()?;
-        Ok(Some(audits))
+        let data = audits
+            .iter()
+            .map(|x| {
+                EnvelopeResponse::with(x.event.type_meta(), x.event.object_meta(), x.clone())
+            })
+            .collect::<Vec<_>>();
+        Ok(Some(data))
     }
 }
