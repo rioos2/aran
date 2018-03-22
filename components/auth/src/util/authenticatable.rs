@@ -14,19 +14,14 @@ pub enum Authenticatable<'a> {
         username: &'a str,
         password: &'a str,
     },
-    UserEmailAndToken { 
-        email: &'a str,
-        token: &'a str, 
-    },
-    UserEmailAndWebtoken {
-        email: &'a str,
-        webtoken: &'a str, 
-    },
+    UserEmailAndToken { email: &'a str, token: &'a str },
+    UserEmailAndWebtoken { email: &'a str, webtoken: &'a str },
     ServiceAccountNameAndWebtoken {
         name: &'a str,
-        webtoken: &'a str, 
-        key: &'a str, 
+        webtoken: &'a str,
+        key: &'a str,
     },
+    PassTicket { token: &'a str },
 }
 
 pub trait ToAuth {
@@ -45,13 +40,7 @@ impl<'a> ToAuth for Authenticatable<'a> {
                 username: u,
                 password: p,
             },
-            Authenticatable::UserEmailAndToken { 
-                email: u,
-                token: p, 
-            } => Authenticatable::UserEmailAndToken {
-                email: u,
-                token: p, 
-            },
+            Authenticatable::UserEmailAndToken { email: u, token: p } => Authenticatable::UserEmailAndToken { email: u, token: p },
             Authenticatable::UserEmailAndWebtoken {
                 email: u,
                 webtoken: p,
@@ -68,7 +57,7 @@ impl<'a> ToAuth for Authenticatable<'a> {
                 webtoken: p,
                 key: k,
             },
+            Authenticatable::PassTicket { token: t } => Authenticatable::PassTicket { token: t },
         }
     }
 }
-

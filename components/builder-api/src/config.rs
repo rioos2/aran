@@ -2,8 +2,8 @@
 
 //! Configuration for a Rio/OS API service
 
-use rio_net::config::{SystemAuth, PasswordAuth, Prometheus, SecurerAuth, SecureBackend, AuditBackend, Influx, Blockchain, Marketplaces, Anchore};
-use rio_net::config::{HttpCfg, PrometheusCfg, SecurerCfg, LogsCfg, BlockchainCfg, MarketplacesCfg, AnchoreCfg};
+use rio_net::config::{Anchore, AuditBackend, Blockchain, Influx, Marketplaces, PasswordAuth, Prometheus, SecureBackend, SecurerAuth, SystemAuth};
+use rio_net::config::{AnchoreCfg, BlockchainCfg, HttpCfg, LogsCfg, MarketplacesCfg, PrometheusCfg, SecurerCfg};
 use entitlement::config::{License, LicensesCfg};
 
 use rio_core::config::ConfigFile;
@@ -28,7 +28,7 @@ pub struct Config {
     //  TO-DO: This will be moved to blockchain (rocksdb) as doing analytics will be easy.
     pub logs: LogsCfg,
     //  Blockchain API configuration.
-    pub blockchain: BlockchainCfg,
+        pub blockchain: BlockchainCfg,
     //  Marketplaces API configuration
     pub marketplaces: MarketplacesCfg,
     //  Security and vulnerabilty checker API
@@ -176,7 +176,6 @@ impl License for Config {
         self.licenses.activation_code.clone()
     }
 }
-
 
 ///// Authentication delegate configuration.
 

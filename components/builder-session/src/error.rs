@@ -34,6 +34,9 @@ pub enum Error {
     SamlProviderGet(postgres::error::Error),
     OpenidProviderGetResponse(postgres::error::Error),
     OidcProviderGet(postgres::error::Error),
+    PassTicketGet(postgres::error::Error),
+    PassTicketDelete(postgres::error::Error),
+    PassTicketCreate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -63,6 +66,9 @@ impl fmt::Display for Error {
             Error::SamlProviderGet(ref e) => format!("Error get saml provider data, {}", e),
             Error::OpenidProviderGetResponse(ref e) => format!("Error get all open id  provider data, {}", e),
             Error::OidcProviderGet(ref e) => format!("Error get openid  provider data, {}", e),
+            Error::PassTicketGet(ref e) => format!("Error get otp data, {}", e),
+            Error::PassTicketDelete(ref e) => format!("Error removing otp data, {}", e),
+            Error::PassTicketCreate(ref e) => format!("Error creating otp data, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -93,6 +99,10 @@ impl error::Error for Error {
             Error::SamlProviderGet(ref err) => err.description(),
             Error::OpenidProviderGetResponse(ref err) => err.description(),
             Error::OidcProviderGet(ref err) => err.description(),
+            Error::PassTicketGet(ref err) => err.description(),
+            Error::PassTicketDelete(ref err) => err.description(),
+            Error::PassTicketCreate(ref err) => err.description(),
+
         }
     }
 }

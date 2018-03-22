@@ -7,7 +7,6 @@ use std::result;
 use r2d2;
 use postgres;
 use rcore;
-use jwt;
 use serde_json;
 use serde_yaml;
 
@@ -41,7 +40,6 @@ pub enum Error {
     MigrationLock(postgres::error::Error),
     IO(io::Error),
     RioosAranCore(rcore::Error),
-    Jwt(jwt::errors::Error),
     Json(serde_json::Error),
     Yaml(serde_yaml::Error),
 }
@@ -84,7 +82,6 @@ impl fmt::Display for Error {
             Error::MigrationLock(ref e) => format!("Error getting migration lock: {}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
-            Error::Jwt(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
             Error::Yaml(ref e) => format!("{}", e),
         };
@@ -123,7 +120,6 @@ impl error::Error for Error {
             Error::MigrationLock(_) => "Error getting migration lock",
             Error::IO(ref err) => err.description(),
             Error::RioosAranCore(ref err) => err.description(),
-            Error::Jwt(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
             Error::Yaml(ref err) => err.description(),
         }
@@ -151,12 +147,6 @@ impl From<io::Error> for Error {
 impl From<rcore::Error> for Error {
     fn from(err: rcore::Error) -> Error {
         Error::RioosAranCore(err)
-    }
-}
-
-impl From<jwt::errors::Error> for Error {
-    fn from(err: jwt::errors::Error) -> Error {
-        Error::Jwt(err)
     }
 }
 

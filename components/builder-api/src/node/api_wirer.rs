@@ -98,6 +98,9 @@ impl Wirer {
                 let mut securer = security::auth_api::AuthenticateApi::new(Box::new(ds.clone()));
                 securer.wire(self.config.clone(), &mut router);
 
+                let mut passticket = security::passticket_api::PassTicketApi::new(Box::new(ds.clone()));
+                passticket.wire(self.config.clone(), &mut router);
+
                 let mut secret = security::secret_api::SecretApi::new(
                     Box::new(ds.clone()),
                     Box::new(SecurerConn::new(&*self.config.clone())),

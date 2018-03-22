@@ -8,14 +8,14 @@
 pub mod warehouse;
 
 use error::Result;
-use protocol::api::audit::Envelope;
+use protocol::api::audit::{EnvelopeResponse, Envelope};
 use protocol::api::base::IdGet;
 use rio_net::http::middleware::BlockchainConn;
 use rio_net::config::AuditBackend;
 
 
 /// Envelope list
-pub type EnvelopeOutputList = Result<Option<Vec<Envelope>>>;
+pub type EnvelopeOutputList = Result<Option<Vec<EnvelopeResponse>>>;
 
 /// Currently implemented ledger backends
 

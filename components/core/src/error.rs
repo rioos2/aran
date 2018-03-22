@@ -13,7 +13,6 @@ use std::string;
 
 use regex;
 use toml;
-use serde_yaml;
 
 use openssl;
 
@@ -109,8 +108,6 @@ pub enum Error {
     TerminateProcessFailed(String),
     /// When an error occurs attempting to interpret a sequence of u8 as a string.
     Utf8Error(str::Utf8Error),
-
-    Yaml(serde_yaml::Error),
 }
 
 impl fmt::Display for Error {
@@ -249,7 +246,6 @@ impl fmt::Display for Error {
             Error::WaitForSingleObjectFailed(ref e) => format!("{}", e),
             Error::TerminateProcessFailed(ref e) => format!("{}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
-            Error::Yaml(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -322,7 +318,6 @@ impl error::Error for Error {
             Error::WaitForSingleObjectFailed(_) => "WaitForSingleObjectFailed failed",
             Error::TerminateProcessFailed(_) => "Failed to call TerminateProcess",
             Error::Utf8Error(_) => "Failed to interpret a sequence of bytes as a string",
-            Error::Yaml(ref err) => err.description(),
         }
     }
 }
@@ -360,11 +355,5 @@ impl From<regex::Error> for Error {
 impl From<openssl::error::ErrorStack> for Error {
     fn from(err: openssl::error::ErrorStack) -> Self {
         Error::X509Error(err)
-    }
-}
-
-impl From<serde_yaml::Error> for Error {
-    fn from(err: serde_yaml::Error) -> Error {
-        Error::Yaml(err)
     }
 }

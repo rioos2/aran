@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! The PostgreSQL backend for the SessionDS.
+//! The PostgreSQL backend for the DataStore.
 use chrono::prelude::*;
 use error::{Result, Error};
 
@@ -13,17 +13,17 @@ use db::data_store::DataStoreConn;
 use serde_json;
 
 use ldap::{LDAPClient, LDAPUser};
-use super::{SamlOutputList, OpenIdOutputList};
+use super::super::{SamlOutputList, OpenIdOutputList};
 
-pub struct SessionDS;
+pub struct DataStore;
 
-impl SessionDS {
+impl DataStore {
     //For new users to onboard in Rio/OS, which takes the full account creation arguments and returns the Session which has the token.
     //The default role and permission for the user is
     //The default origin is
     pub fn account_create(datastore: &DataStoreConn, session_create: &session::SessionCreate) -> Result<session::Session> {
         //call and do find_or_create_account_via_session
-        SessionDS::find_or_create_account_via_session(
+        Self::find_or_create_account_via_session(
             datastore,
             session_create,
             true,
@@ -36,7 +36,7 @@ impl SessionDS {
     }
 
     pub fn find_account(datastore: &DataStoreConn, session_create: &session::SessionCreate) -> Result<session::Session> {
-        SessionDS::find_or_create_account_via_session(
+        Self::find_or_create_account_via_session(
             datastore,
             session_create,
             true,

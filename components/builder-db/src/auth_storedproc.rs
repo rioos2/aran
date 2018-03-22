@@ -861,6 +861,55 @@ impl Migratable for AuthProcedures {
             ( (select id from second_insert), 'rioos.assembly.get','Read only access to all the users  VMs, Containers'),( (select id from second_insert), 'rioos.assembly.get','Read only access to all the users  VMs, Containers')"#,
         )?;
 
+        // The core otp_id_seq table
+        migrator.migrate("authsrv", r#"CREATE SEQUENCE IF NOT EXISTS passticket_id_seq;"#)?;
+
+        // Create table otp
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE TABLE IF NOT EXISTS passtickets (
+         id bigint PRIMARY KEY DEFAULT next_id_v1('passticket_id_seq'),
+         passticket text,
+         created_at timestamptz DEFAULT now())"#,
+        )?;
+
+        ui.para("[✓] otp");
+
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION insert_passticket_v1 (
+                   o_passticket text
+                ) RETURNS SETOF passtickets AS $$
+                    BEGIN
+                       RETURN QUERY INSERT INTO passtickets (passticket) VALUES (o_passticket)
+                       RETURNING *;
+                   RETURN;
+                    END
+                $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        // Select otp table by otp
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_passticket_v1 (o_passticket text) RETURNS SETOF passtickets AS $$
+                    BEGIN
+                      RETURN QUERY SELECT * FROM passtickets WHERE passticket = o_passticket;
+                      RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
+        // Select permission from permissions table by id
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION remove_passticket_v1 (o_passticket text) RETURNS void AS  $$
+                    BEGIN
+                       DELETE FROM passtickets WHERE passticket = o_passticket;
+                    END
+                    $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
         Ok(())
     }
 }

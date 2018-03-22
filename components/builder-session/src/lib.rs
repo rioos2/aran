@@ -10,7 +10,7 @@ extern crate rioos_builder_db as db;
 extern crate postgres;
 extern crate rand;
 extern crate serde_json;
-pub mod session_ds;
+pub mod models;
 pub mod origin_ds;
 pub mod team_ds;
 pub mod ldap;
