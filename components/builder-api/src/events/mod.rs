@@ -102,9 +102,10 @@ where
                 Async::Ready(Some(item)) => {
                     return Ok(Async::Ready(Some(Event::Internal(item))));
                 }
+                // comment code will be open when the internal event sender initialize
                 Async::Ready(None) => {
-                    self.done = true;
-                    return Ok(Async::Ready(None));
+                    // self.done = true;
+                    // return Ok(Async::Ready(None));
                 }
                 Async::NotReady => {}
             };

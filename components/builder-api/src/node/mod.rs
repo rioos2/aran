@@ -42,7 +42,7 @@ impl Node {
         ui.begin("Runtime Guard");
         let rg = runtime::Runtime::new(self.config.clone());
         let api_sender = rg.channel();
-        &rg.start()?;
+
         ui.end("Runtime Guard");
 
         if streamer {
@@ -57,6 +57,7 @@ impl Node {
             api_wirer::Wirer::new(self.config.clone()).start(
                 ui,
                 api_sender,
+                rg,
             )?;
             ui.end("Api Wirer");
         }

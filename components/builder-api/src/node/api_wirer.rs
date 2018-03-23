@@ -19,6 +19,7 @@ use rio_net::http::pack;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::vulnerablity::AnchoreClient;
 use entitlement::licensor;
+use node::runtime::Runtime;
 
 use api::Api;
 use api::events::EventLogger;
@@ -52,7 +53,7 @@ impl Wirer {
     // A generic implementation that launches `Node` and optionally creates threads
     // for aran api handlers.
     // Aran api v1 prefix is `/api/v1`
-    pub fn start(self, ui: &mut UI, api_sender: ApiSender) -> Result<()> {
+    pub fn start(self, ui: &mut UI, api_sender: ApiSender, rg: Runtime) -> Result<()> {
         let ods = DataStoreConn::new().ok();
 
         let api_wired_thread = match ods {
@@ -231,6 +232,8 @@ impl Wirer {
                 None
             }
         };
+
+        &rg.start()?;
 
         if let Some(api_wired_thread) = api_wired_thread {
             api_wired_thread.join().unwrap();
