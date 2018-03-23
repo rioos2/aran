@@ -78,20 +78,6 @@ impl BlockChainApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-
-        //temp fix
-        // let envelope = Envelope::new(&unmarshall_body, (
-        //     unmarshall_body.get_account(),
-        //     format!("{:?}", req.remote_addr),
-        // ));
-        //
-        // let data = ledger::from_config(&self.clientcfg)?;
-        //
-        // match data.record(&envelope) {
-        //     Ok(_) => Ok(render_json(status::Ok, &unmarshall_body)),
-        //     Err(err) => Err(internal_error(&format!("{}", err))),
-        // }
-
         //Send to the eventlogger and return.
         log_event!(req, *unmarshall_body.clone());
 
