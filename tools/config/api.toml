@@ -4,7 +4,7 @@ port = 7443
 watch_port = 8443
 tls_pkcs12_file = "api-server.pfx"
 tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
-serviceaccount_public_key = "{RIOOS_HOME}/config/service-account.pub"
+serviceaccount_public_key = "/var/lib/rioos/config/service-account.pub"
 
 [ui]
 root = "/some/path"
