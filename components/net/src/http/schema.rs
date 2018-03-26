@@ -106,6 +106,7 @@ lazy_static! {
 
         map.register("POST:imagemarks","ImageMark");
         map.register("GET:imagemarks","ImageMarkList");
+        map.register("GET:imagemarksbuilds","ImageMarkList");
 
         map.register("POST:packages","Package");
         map.register("GET:authoidcproviders","OpenidList");

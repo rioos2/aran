@@ -44,6 +44,7 @@ pub struct ImageMarksApi {
 /// GET:/imagemarks
 /// GET: /imagemarks/:id,
 /// PUT: /imagemarks/:id,
+//GET: /imagemarks/builds/:id
 
 
 impl ImageMarksApi {
@@ -123,6 +124,22 @@ impl ImageMarksApi {
             ))),
         }
     }
+
+    //GET: /imagemarks/builds/:id
+    //Input build id Returns show of imagemarks
+    fn list_by_build(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        match image_marks::DataStore::list_by_build(&self.conn, &params) {
+            Ok(Some(image)) => Ok(render_json_list(status::Ok, dispatch(req), &image)),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+        }
+    }
 }
 ///The Api wirer for ImageMarksApi
 ///Add all the api needed to be supported under `/imagemarks`
@@ -143,6 +160,9 @@ impl Api for ImageMarksApi {
 
         let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
+
+        let _self = self.clone();
+        let list_by_build = move |req: &mut Request| -> AranResult<Response> { _self.list_by_build(req) };
 
         router.post(
             "/imagemarks",
@@ -165,6 +185,12 @@ impl Api for ImageMarksApi {
             "/imagemarks/:id",
             XHandler::new(C { inner: update }).before(basic.clone()),
             "image_marks_update",
+        );
+
+        router.get(
+            "/imagemarks/builds/:id",
+            XHandler::new(C { inner: list_by_build }).before(basic.clone()),
+            "image_marks_list_by_build",
         );
     }
 }

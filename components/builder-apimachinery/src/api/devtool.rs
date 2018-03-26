@@ -936,9 +936,9 @@ mod test {
         "labels":{},
         "annotations":{},
         "owner_references":[{
-            "kind":"Build",
+            "kind":"BuildConfig",
              "api_version":"v1",
-              "name":"ruby-build",
+              "name":"ruby-sample-build",
               "uid":"921422565900042240",
               "block_owner_deletion":false}],
         "finalizers":[],
@@ -993,9 +993,9 @@ mod test {
                 "deletion_grace_period_seconds":30,
                 "labels":{},"annotations":{},
                 "owner_references":[{
-                    "kind":"  ImageReference",
+                    "kind":"Build",
                     "api_version":"v1",
-                    "name":"ruby-image",
+                    "name":"ruby-build",
                     "uid":"921422565900042240",
                     "block_owner_deletion":false}],
                 "finalizers":[],

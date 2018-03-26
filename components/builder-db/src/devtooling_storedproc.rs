@@ -351,9 +351,15 @@ impl Migratable for DevtoolingProcedures {
                  $$ LANGUAGE plpgsql VOLATILE"#,
         )?;
 
-
-
-
+        migrator.migrate(
+            "buildconfsrv",
+            r#"CREATE OR REPLACE FUNCTION get_image_marks_by_build_v1(aid text) RETURNS SETOF image_marks AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM image_marks where object_meta @> json_build_object('owner_references',json_build_array(json_build_object('uid',aid)))::jsonb;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
 
         ui.end("BuildConfigProcedures");
 
