@@ -1,6 +1,4 @@
 // Copyright 2018 The Rio Advancement Inc
-use std::ops::Index;
-
 use sodiumoxide::crypto::hash::sha512::hash as hash_sodium;
 use hex;
 
@@ -8,10 +6,18 @@ use hex;
 /// TO-DO: digest size must be  = 32 BYTES, but here we index by 10 bytes.
 ///        We need to start with an empty array of 32 bytes and use that to store the
 ///        hashed_string as opposed to flatly indexing by 10.
+///
+/// TO-DO: This method go away eventually as we will move the migration to DieselCli.
 pub fn hash_string(data: &str) -> String {
-    let out = String::from_utf8_lossy(hash_sodium(data.as_bytes()).index(..10)).into_owned();
-    hex::encode(out)
+    let hashed = &hash_sodium(data.as_bytes())[..]; //A temporary fix.
+
+    let stripped_len = { if hashed.len() > 10 { 10 } else { hashed.len() } };
+    
+    println!("==> REMOVE this after debugging [{},{:?}]\n", stripped_len, &hashed);
+
+    hex::encode(String::from_utf8_lossy(&hashed[..stripped_len]).into_owned())
 }
+
 
 #[cfg(test)]
 mod test {
