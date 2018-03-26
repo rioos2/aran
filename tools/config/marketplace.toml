@@ -4,24 +4,4 @@ port = 6443
 tls_port = 8443
 tls_pkcs12_file = "api-server.pfx"
 tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
-serviceaccount_public_key = "/home/rajthilak/code/megam/directory/rio/conf/rsa.pem.pub"
 
-[ui]
-root = "/some/path"
-
-[prometheus]
-url = "http://192.168.1.8:9090/api/v1"
-
-[vaults]
-backend = "Local"
-endpoint = "https://env.envkey.com/v1/"
-token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-
-events_enabled = false
-log_dir = "/tmp"
-state_update_timeout = 10000
-listen_address = "localhost:9637"
-
-[[targets]]
-platform = "windows"
-architecture = "x86_64"

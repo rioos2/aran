@@ -17,6 +17,7 @@ extern crate lazy_static;
 
 use std::str::FromStr;
 use std::path::PathBuf;
+use std::fs::File;
 
 use rio_core::config::ConfigFile;
 use rio_core::env as renv;
@@ -30,8 +31,10 @@ const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"))
 
 lazy_static! {
     static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("api.toml").to_str().unwrap());
-    static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("serving_rioos_apiserver.pfx").to_str().unwrap());
-    static  ref SERVICEACCOUNT_PUBLIC_KEY:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("service-account.pem").to_str().unwrap());
+    static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("api-server.pfx").to_str().unwrap());
+    static  ref SERVICEACCOUNT_PUBLIC_KEY:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("service-account.pub").to_str().unwrap());
+    static  ref SETUP_COMPLETE_FILE: PathBuf =  PathBuf::from(&*default_rioconfig_key_path(None).join(".rioos_setup_complete").to_str().unwrap());
+    static  ref MARKETPLACE_CACHE_FILE: PathBuf =  PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
 }
 
 fn main() {
@@ -87,7 +90,7 @@ fn exec_subcommand_if_called(ui: &mut UI, app_matches: &clap::ArgMatches) -> Res
 
 fn sub_cli_setup(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     init();
-    let config = match config_from_args(&matches) {
+    let config = match config_for_setup(&matches) {
         Ok(result) => result,
         Err(e) => return Err(e),
     };
@@ -98,7 +101,7 @@ fn sub_cli_setup(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 fn sub_cli_sync(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     init();
 
-    let config = match config_from_args(&matches) {
+    let config = match config_for_setup(&matches) {
         Ok(result) => result,
         Err(e) => return Err(e),
     };
@@ -107,6 +110,13 @@ fn sub_cli_sync(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 }
 
 fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
+    if File::open(&SETUP_COMPLETE_FILE.as_path()).is_err() {
+        return Err(Error::SetupNotDone);
+    }
+
+    if File::open(&MARKETPLACE_CACHE_FILE.as_path()).is_err() {
+        return Err(Error::SyncNotDone);
+    }
     ui.begin(
         r#"
     ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗     █████╗ ██████╗  █████╗ ███╗   ██╗
@@ -180,6 +190,17 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
         }
     }
 
+    Ok(config)
+}
+
+fn config_for_setup(args: &clap::ArgMatches) -> Result<Config> {
+    let config = match args.value_of("config") {
+        Some(cfg_path) => try!(Config::from_file(cfg_path)),
+        None => {
+            let mut default_config = Config::default();
+            Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(default_config)
+        }
+    };
     Ok(config)
 }
 

@@ -59,7 +59,7 @@ impl AuthenticateDelegate {
                 name: u,
                 webtoken: p,
                 key: k,
-            } => ServiceAccountAuthenticate::from_name_and_webtoken(&self.conn, u.to_string(), p.to_string(), k.to_string()),
+            } => ServiceAccountAuthenticate::from_name_and_webtoken(&self.conn, u.to_string(), p.to_string(), k),
         }
     }
 }

@@ -4,7 +4,12 @@ port = 7443
 watch_port = 8443
 tls_pkcs12_file = "api-server.pfx"
 tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
-serviceaccount_public_key = "/var/lib/rioos/config/service-account.pub"
+serviceaccount_public_key = "asfsdgunt.pub"
+
+[marketplaces]
+username = "admin"
+token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+endpoint = "https://localhost:6443/api/v1"
 
 [ui]
 root = "/some/path"
