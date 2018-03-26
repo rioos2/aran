@@ -191,7 +191,7 @@ impl Api for ImageReferencesApi {
         );
 
         router.get(
-            "/imagereferences/build_configs/:id",
+            "/imagereferences/buildconfigs/:id",
             XHandler::new(C { inner: show_by_build_config }).before(basic.clone()),
             "image_references_show_by_build_config",
         );

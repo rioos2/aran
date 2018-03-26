@@ -12,14 +12,13 @@ describe('Build Config  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"ruby-sample-build", "account":globalAny.account_id, "created_at":"","deleted_at":"", "deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io",
-        "uid":globalAny.asm_fac_id, "block_owner_deletion":false}],"finalizers":[],"cluster_name":"chennai"},  "meta_data": { "name": "ruby-sample-build"},"status":{"phase":"pending"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhooks":  [
-          {"hook_type": "GitHub",  "secret": "secret101"}],"image_change": {"last_triggered_image_id": "1001" }} ],"source": {"git": {"uri": "https://github.com/rioadvancement/news-composer-network","reference" : "master" }, "binary" : {"as_file": ""},"docker_file":"",
-          "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""}, "pull_secret": "", "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],
-          "source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMark","name": "builder-image:latest","uid":"","api_version":"","resource_version":"",
-          "field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMark","name": "node-build-1:136c86c0" ,"uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },
-          "post_commit": {"script": "bundle exec rake test"},"node_selector": {"key":"value"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
-        .expect(200)
+        .send({"status":{"phase":"pending"},"object_meta":{"name":"ruby-sample-build", "account":globalAny.account_id, "owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io", "uid":globalAny.asm_fac_id, "block_owner_deletion":false}]},
+          "meta_data": { "name": "ruby-sample-build"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhook":  {"hook_type": "GitHub",  "secret": "secret101"},"image_change": {"last_triggered_image_id": "1001" }} ],
+          "source": {"git": {"uri": "https://github.com/openshift/ruby-hello-world","reference" : "master" }, "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},
+          "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],"source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMarks",
+          "name": "builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMarks","name": "mydev-ruby-sample:latest" ,
+          "uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },"post_commit": {"script": "bundle exec rake test"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
+          .expect(200)
         .end(function(err, res) {
           globalAny.bc_id =res.body.id;
           expect(res.body);
@@ -32,13 +31,12 @@ describe('Build Config  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"", "account":globalAny.account_id, "created_at":"","deleted_at":"", "deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io",
-        "uid":globalAny.asm_fac_id, "block_owner_deletion":false}],"finalizers":[],"cluster_name":"chennai"},  "meta_data": { "name": "ruby-sample-build"},"status":{"phase":"pending"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhooks":  [
-          {"hook_type": "GitHub",  "secret": "secret101"}],"image_change": {"last_triggered_image_id": "1001" }} ],"source": {"git": {"uri": "https://github.com/rioadvancement/news-composer-network","reference" : "master" }, "binary" : {"as_file": ""},"docker_file":"",
-          "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""}, "pull_secret": "", "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],
-          "source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMark","name": "builder-image:latest","uid":"","api_version":"","resource_version":"",
-          "field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMark","name": "node-build-1:136c86c0" ,"uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },
-          "post_commit": {"script": "bundle exec rake test"},"node_selector": {"key":"value"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
+        .send({"status":{"phase":"pending"},"object_meta":{"name":"", "account":globalAny.account_id, "owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io", "uid":globalAny.asm_fac_id, "block_owner_deletion":false}]},
+          "meta_data": { "name": "ruby-sample-build"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhook":  {"hook_type": "GitHub",  "secret": "secret101"},"image_change": {"last_triggered_image_id": "1001" }} ],
+          "source": {"git": {"uri": "https://github.com/openshift/ruby-hello-world","reference" : "master" }, "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},
+          "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],"source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMarks",
+          "name": "builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMarks","name": "mydev-ruby-sample:latest" ,
+          "uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },"post_commit": {"script": "bundle exec rake test"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
           .expect(400)
         .end(function(err, res) {
           expect(res.body);
@@ -51,14 +49,13 @@ describe('Build Config  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"account":globalAny.account_id, "created_at":"","deleted_at":"", "deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io",
-        "uid":globalAny.asm_fac_id, "block_owner_deletion":false}],"finalizers":[],"cluster_name":"chennai"},  "meta_data": { "name": "ruby-sample-build"},"status":{"phase":"pending"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhooks":  [
-          {"hook_type": "GitHub",  "secret": "secret101"}],"image_change": {"last_triggered_image_id": "1001" }} ],"source": {"git": {"uri": "https://github.com/rioadvancement/news-composer-network","reference" : "master" }, "binary" : {"as_file": ""},"docker_file":"",
-          "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""}, "pull_secret": "", "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],
-          "source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMark","name": "builder-image:latest","uid":"","api_version":"","resource_version":"",
-          "field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMark","name": "node-build-1:136c86c0" ,"uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },
-          "post_commit": {"script": "bundle exec rake test"},"node_selector": {"key":"value"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
-          .expect(400)
+        .send({"status":{"phase":"pending"},"object_meta":{ "account":globalAny.account_id, "owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io", "uid":globalAny.asm_fac_id, "block_owner_deletion":false}]},
+          "meta_data": { "name": "ruby-sample-build"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhook":  {"hook_type": "GitHub",  "secret": "secret101"},"image_change": {"last_triggered_image_id": "1001" }} ],
+          "source": {"git": {"uri": "https://github.com/openshift/ruby-hello-world","reference" : "master" }, "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},
+          "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],"source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMarks",
+          "name": "builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMarks","name": "mydev-ruby-sample:latest" ,
+          "uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },"post_commit": {"script": "bundle exec rake test"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
+        .expect(400)
         .end(function(err, res) {
           expect(res.body);
           done(err);
@@ -67,14 +64,13 @@ describe('Build Config  API', function() {
     it('returns error without header create build config', function(done) {
       request.get('/buildconfigs')
       .ca(globalAny.rootCA)
-      .send({"object_meta":{"name":"ruby-sample-build", "account":globalAny.account_id, "created_at":"","deleted_at":"", "deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io",
-      "uid":globalAny.asm_fac_id, "block_owner_deletion":false}],"finalizers":[],"cluster_name":"chennai"},  "meta_data": { "name": "ruby-sample-build"},"status":{"phase":"pending"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhooks":  [
-        {"hook_type": "GitHub",  "secret": "secret101"}],"image_change": {"last_triggered_image_id": "1001" }} ],"source": {"git": {"uri": "https://github.com/rioadvancement/news-composer-network","reference" : "master" }, "binary" : {"as_file": ""},"docker_file":"",
-        "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""}, "pull_secret": "", "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],
-        "source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMark","name": "builder-image:latest","uid":"","api_version":"","resource_version":"",
-        "field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMark","name": "node-build-1:136c86c0" ,"uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },
-        "post_commit": {"script": "bundle exec rake test"},"node_selector": {"key":"value"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
-    .expect(406)
+      .send({"status":{"phase":"pending"},"object_meta":{"name":"ruby-sample-build", "account":globalAny.account_id, "owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io", "uid":globalAny.asm_fac_id, "block_owner_deletion":false}]},
+        "meta_data": { "name": "ruby-sample-build"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhook":  {"hook_type": "GitHub",  "secret": "secret101"},"image_change": {"last_triggered_image_id": "1001" }} ],
+        "source": {"git": {"uri": "https://github.com/openshift/ruby-hello-world","reference" : "master" }, "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},
+        "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],"source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMarks",
+        "name": "builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMarks","name": "mydev-ruby-sample:latest" ,
+        "uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },"post_commit": {"script": "bundle exec rake test"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -84,14 +80,13 @@ describe('Build Config  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"ruby-sample-build", "account":globalAny.account_id, "created_at":"","deleted_at":"", "deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io",
-        "uid":"", "block_owner_deletion":false}],"finalizers":[],"cluster_name":"chennai"},  "meta_data": { "name": "ruby-sample-build"},"status":{"phase":"pending"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhooks":  [
-          {"hook_type": "GitHub",  "secret": "secret101"}],"image_change": {"last_triggered_image_id": "1001" }} ],"source": {"git": {"uri": "https://github.com/rioadvancement/news-composer-network","reference" : "master" }, "binary" : {"as_file": ""},"docker_file":"",
-          "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""}, "pull_secret": "", "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],
-          "source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMark","name": "builder-image:latest","uid":"","api_version":"","resource_version":"",
-          "field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMark","name": "node-build-1:136c86c0" ,"uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },
-          "post_commit": {"script": "bundle exec rake test"},"node_selector": {"key":"value"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
-          .expect(400)
+        .send({"status":{"phase":"pending"},"object_meta":{"name":"ruby-sample-build", "account":globalAny.account_id, "owner_references":[{"kind":"AssemblyFactory", "api_version":"v1", "name":"levi.megam.io", "uid":"", "block_owner_deletion":false}]},
+          "meta_data": { "name": "ruby-sample-build"},"spec": { "run_policy": "Serial", "build_trigger_policys": [ {"trigger_type": "gittrigger", "webhook":  {"hook_type": "GitHub",  "secret": "secret101"},"image_change": {"last_triggered_image_id": "1001" }} ],
+          "source": {"git": {"uri": "https://github.com/openshift/ruby-hello-world","reference" : "master" }, "images": [ { "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},
+          "paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],"source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMarks",
+          "name": "builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMarks","name": "mydev-ruby-sample:latest" ,
+          "uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },"post_commit": {"script": "bundle exec rake test"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
+        .expect(400)
         .end(function(err, res) {
           expect(res.body);
           done(err);
@@ -114,15 +109,15 @@ describe('Build Config  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"ruby-sample-build","account":globalAny.account_id,"created_at":"2018-03-08T12:20:50.144227068+00:00","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi11.megam.io","uid":globalAny.asm_fac_id,
+        .send({"object_meta":{"name":"ruby-sample-build","account":globalAny.account_id,"created_at":"2018-03-26T11:40:33.538774230+00:00","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi.megam.io","uid":globalAny.asm_fac_id,
         "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
-        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":"chennai"},"meta_data":{"name":"ruby-sample-build"},"status":{"phase":"pending","message":"","reason":"","conditions":[]},"spec":{"run_policy":"Serial","build_trigger_policys":[{"trigger_type":"gittrigger","webhooks":[{"hook_type":"GitHub",
-        "secret":"secret101"}],"image_change":{"last_triggered_image_id":"1001"}}],"source":{"binary":{"as_file":""},"docker_file":"","git":{"uri":"https://github.com/rioadvancement/news-composer-network","reference":"master"},"source_secret":globalAny.secrets_id,"images":[{"from":{"kind":"",
-        "origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","paths":[{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]}]},"strategy":{"build_type":"Source","source_strategy":{"from":{
-          "kind":"ImageMark","origin":"","name":"builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","env":[{"name":"DISABLE_ASSET_COMPILATION","value":"true"}],"scripts":"http://somehost.com/scripts_directory","incremental":"",
-          "force_pull":false,"runtime_image":{"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""}},"docker_strategy":{"from":{"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","env":[],
-          "force_pull":false,"docker_filepath":"","image_optimization_policy":""}},"output":{"to":{"kind":"ImageMark","origin":"","name":"node-build-1:136c86c0","uid":"","api_version":"","resource_version":"","field_path":""}},"post_commit":{"script":"bundle exec rake test"},
-          "node_selector":{"key":"value"},"last_version":10,"successful_builds_history_limit":10,"failed_builds_history_limit":1}})
+        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"meta_data":{"name":"ruby-sample-build"},"spec":{"run_policy":"Serial","build_trigger_policys":[{"trigger_type":"gittrigger","webhook":{"hook_type":"GitHub","secret":"secret101"},"image_change":{"last_triggered_image_id":"1001"}}],
+        "source":{"binary":{"as_file":""},"docker_file":"","git":{"uri":"https://github.com/openshift/ruby-hello-world","reference":"master"},"source_secret":globalAny.secrets_id,"images":[{"from":{"kind":"","origin":"","name":"","uid":"","api_version":"",
+        "resource_version":"","field_path":""},"pull_secret":"","paths":[{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]}]},"strategy":{"build_type":"Source","source_strategy":{"from":{"kind":"ImageMarks","origin":"","name":"builder-image:latest","uid":"","api_version":"",
+        "resource_version":"","field_path":""},"pull_secret":"","env":[{"name":"DISABLE_ASSET_COMPILATION","value":"true"}],"scripts":"http://somehost.com/scripts_directory","incremental":"","force_pull":false,"runtime_image":{"kind":"","origin":"","name":"","uid":"","api_version":"",
+        "resource_version":"","field_path":""}},"docker_strategy":{"from":{"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","env":[],"force_pull":false,"docker_filepath":"",
+        "image_optimization_policy":""}},"output":{"to":{"kind":"ImageMarks","origin":"","name":"mydev-ruby-sample:latest","uid":"","api_version":"","resource_version":"","field_path":""}},"post_commit":{"script":"bundle exec rake test"},"node_selector":{},"last_version":10,
+        "successful_builds_history_limit":10,"failed_builds_history_limit":1},"status":{"phase":"ready","message":"","reason":"","conditions":[]}})
         .expect(200)
         .end(function(err, res) {
           expect(res.body.id).to.equal(globalAny.bc_id);
@@ -135,22 +130,18 @@ describe('Build Config  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"ruby-sample-build","account":globalAny.account_id,"created_at":"2018-03-08T12:20:50.144227068+00:00","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi11.megam.io","uid":globalAny.asm_fac_id,
+        .send({"object_meta":{"name":"ruby-sample-build","account":globalAny.account_id,"created_at":"2018-03-26T11:40:33.538774230+00:00","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi.megam.io","uid":globalAny.asm_fac_id,
         "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
-        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":"chennai"},"meta_data":{"name":"ruby-sample-build"},"status":{"phase":"pending","message":"","reason":"","conditions":[]},"spec":{"run_policy":"Serial","build_trigger_policys":[{"trigger_type":"gittrigger","webhooks":[{"hook_type":"GitHub",
-        "secret":"secret101"}],"image_change":{"last_triggered_image_id":"1001"}}],"source":{"binary":{"as_file":""},"docker_file":"","git":{"uri":"https://github.com/rioadvancement/news-composer-network","reference":"master"},"source_secret":globalAny.secrets_id,"images":[{"from":{"kind":"",
-        "origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","paths":[{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]}]},"strategy":{"build_type":"Source","source_strategy":{"from":{
-          "kind":"ImageMark","origin":"","name":"builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","env":[{"name":"DISABLE_ASSET_COMPILATION","value":"true"}],"scripts":"http://somehost.com/scripts_directory","incremental":"",
-          "force_pull":false,"runtime_image":{"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""}},"docker_strategy":{"from":{"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","env":[],
-          "force_pull":false,"docker_filepath":"","image_optimization_policy":""}},"output":{"to":{"kind":"ImageMark","origin":"","name":"node-build-1:136c86c0","uid":"","api_version":"","resource_version":"","field_path":""}},"post_commit":{"script":"bundle exec rake test"},
-          "node_selector":{"key":"value"},"last_version":10,"successful_builds_history_limit":10,"failed_builds_history_limit":1}})
+        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"meta_data":{"name":"ruby-sample-build"},"spec":{"run_policy":"Serial","build_trigger_policys":[{"trigger_type":"gittrigger","webhook":{"hook_type":"GitHub","secret":"secret101"},"image_change":{"last_triggered_image_id":"1001"}}],"source":{"binary":{"as_file":""},"docker_file":"","git":{"uri":"https://github.com/openshift/ruby-hello-world","reference":"master"},"source_secret":globalAny.secrets_id,"images":[{"from":{"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","paths":[{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]}]},"strategy":{"build_type":"Source","source_strategy":{"from":{"kind":"ImageMarks","origin":"","name":"builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","env":[{"name":"DISABLE_ASSET_COMPILATION","value":"true"}],"scripts":"http://somehost.com/scripts_directory","incremental":"","force_pull":false,"runtime_image":{"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""}},"docker_strategy":{"from":{"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},"pull_secret":"","env":[],"force_pull":false,"docker_filepath":"","image_optimization_policy":""}},
+        "output":{"to":{"kind":"ImageMarks","origin":"","name":"mydev-ruby-sample:latest","uid":"","api_version":"","resource_version":"","field_path":""}},"post_commit":{"script":"bundle exec rake test"},"node_selector":{},"last_version":10,"successful_builds_history_limit":10,"failed_builds_history_limit":1},
+        "status":{"phase":"ready","message":"","reason":"","conditions":[]}})
           .expect(404)
         .end(function(err, res) {
           done(err);
         });
     });
 
-    it('returns the build config update by id', function(done) {
+    it('returns the build config status update by id', function(done) {
       request.put('/buildconfigs/'+globalAny.bc_id+'/status')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)

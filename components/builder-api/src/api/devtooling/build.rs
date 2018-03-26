@@ -205,7 +205,7 @@ impl Api for BuildApi {
             "build_show",
         );
         router.get(
-            "/builds/buildconfig/:id",
+            "/builds/buildconfigs/:id",
             XHandler::new(C { inner: show_by_build_config }).before(basic.clone()),
             "build_list_by_buildconfig",
         );

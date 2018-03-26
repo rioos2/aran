@@ -91,7 +91,7 @@ impl MetaFields for BuildConfig {
 pub struct BuildTriggerPolicy {
     trigger_type: String, //type of the build trigger
     #[serde(default)]
-    webhooks: Vec<WebHook>, // WebHook contains the parameters for a webhook type of trigger
+    webhook: WebHook, // WebHook contains the parameters for a webhook type of trigger
     #[serde(default)]
     image_change: ImageChange, // ImageChange contains parameters for an ImageChange type of trigger
 }
@@ -378,7 +378,7 @@ pub struct BuildSpecData {
 pub struct BuildTriggerCause {
     message: String, // Message is used to store a human readable message for why the build was triggered. E.g.: "Manually triggered by user", "Configuration change",etc.
     #[serde(default)]
-    webhook_causes: Vec<WebHookCause>, // WebHook represents data for a specified webhook that fired a  specific build.
+    webhook_cause: WebHookCause, // WebHook represents data for a specified webhook that fired a  specific build.
     #[serde(default)]
     image_build_cause: ImageChangeCause, // ImageChangeBuild stores information about an imagechange event that triggered a new build.
 }
@@ -416,9 +416,8 @@ pub struct ImageReferences {
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: BuildConfig
     object_meta: ObjectMeta, //Standard object metadata
-    #[serde(default)]
-    spec: ImageStreamSpec, // Spec describes the desired state of this stream
-    status: ImageStreamStatus, // Status describes the current state of this stream
+    spec: ImageReferenceSpec, // Spec describes the desired state of this stream
+    status: ImageReferenceStatus, // Status describes the current state of this stream
     #[serde(default)]
     created_at: String,
 }
@@ -443,16 +442,16 @@ impl ImageReferences {
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
     }
-    pub fn set_spec(&mut self, v: ImageStreamSpec) {
+    pub fn set_spec(&mut self, v: ImageReferenceSpec) {
         self.spec = v;
     }
-    pub fn get_spec(&self) -> &ImageStreamSpec {
+    pub fn get_spec(&self) -> &ImageReferenceSpec {
         &self.spec
     }
-    pub fn set_status(&mut self, v: ImageStreamStatus) {
+    pub fn set_status(&mut self, v: ImageReferenceStatus) {
         self.status = v;
     }
-    pub fn get_status(&self) -> &ImageStreamStatus {
+    pub fn get_status(&self) -> &ImageReferenceStatus {
         &self.status
     }
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -480,21 +479,25 @@ impl MetaFields for ImageReferences {
     }
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct ImageStreamSpec {
+pub struct ImageReferenceSpec {
+    #[serde(default)]
     lookup_policy: bool, // lookupPolicy controls how other resources reference images within this namespace.
-    docker_image_repository: String, // Optional, if specified this stream is backed by a Docker repository on this server
-    tags: BTreeMap<String, TagReference>, // Tags map arbitrary string values to specific image locators
+    #[serde(default)]
+    map_marks: BTreeMap<String, String>, //Tags map arbitrary string values to specific image locators
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct ImageStreamStatus {
+pub struct ImageReferenceStatus {
+    #[serde(default)]
     docker_image_repository: String, // DockerImageRepository represents the effective location this stream may be accessed at. May be empty until the server determines where the repository is located
     #[serde(default)]
     public_docker_image_repository: String, // PublicDockerImageRepository represents the public location from where the image can be pulled outside the cluster.
+    #[serde(default)]
     tags: BTreeMap<String, TagEventList>, // A historical record of images associated with each tag. The first entry in the TagEvent array in the currently tagged image.
 }
 // TagEventList contains a historical record of images associated with a tag.
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TagEventList {
+    #[serde(default)]
     items: Vec<TagEvent>, // TagEvent is used by ImageRepositoryStatus to keep a historical record of images associated with a tag.
     #[serde(default)]
     conditions: Vec<TagEventCondition>, // Conditions is an array of conditions that apply to the tag event list.
@@ -633,37 +636,24 @@ pub struct Image {
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata
     name: String,
+    #[serde(default)]
+    size: u64,
+    #[serde(default)]
+    virtual_size: u64,
+    #[serde(default)]
     docker_image_reference: String, // The string that can be used to pull this image.
-    docker_image_metadata: DockerImage, // Metadata about this image
-    docker_image_meta_data_version: String, // This attribute conveys the version of docker metadata the JSON should be stored in, which if empty defaults to "1.0"
-    docker_image_manifest: String, // The raw JSON of the manifest
+    #[serde(default)]
     docker_image_layers: Vec<ImageLayer>, // DockerImageLayers represents the layers in the image. May not be set if the image does not define that data.
-    docker_image_manifest_media_type: String, // DockerImageManifestMediaType specifies the mediaType of manifest. This is a part of manifest schema v2.
-    docker_image_config: String, // DockerImageConfig is a JSON blob that the runtime uses to set up the container. This is a part of manifest schema v2.
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ImageLayer {
-    name: String, // Name of the layer as defined by the underlying store.
-    layer_size: i64, // LayerSize of the layer as defined by the underlying store.
-    media_type: String, // MediaType of the referenced object.
+    #[serde(default)]
+    layer_type: String, // type of the layer as defined by the underlying store.
+    #[serde(default)]
+    layers: Vec<String>, // DockerImage layers.
 }
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct DockerImage {
-    docker_image_id: String,
-    parent: String,
-    created: String,
-    size: i64,
-    config: DockerConfig,
-    type_meta: TypeMeta,
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct DockerConfig {
-    image: String,
-    labels: BTreeMap<String, String>,
-}
 
 #[cfg(test)]
 mod test {
@@ -677,97 +667,54 @@ mod test {
             "object_meta":{
                 "name":"ruby-build",
                 "account":"931719409490206720",
-                "created_at":"","deleted_at":"",
-                "deletion_grace_period_seconds":30,
-                "labels":{},
-                "annotations":{},
                 "owner_references":[{
                     "kind":"BuildConfig",
-                     "api_version":"v1",
-                     "name":"ruby-sample-build1",
-                     "uid":"921422565900042240",
-                     "block_owner_deletion":false}],
-                "finalizers":[],
-                "cluster_name":"chennai"},
+                    "api_version":"v1",
+                    "name":"ruby-sample-build",
+                    "uid":"921422565900042240",
+                    "block_owner_deletion":false}]},
             "status":{
                 "phase": "New",
-                "cancelled": false,
-                "reason":"","message":"",
-                "start_timestamp": "",
-                "completion_timestamp":"",
-                "duration":"",
-                "output_docker_image_reference": "",
-                "output":{"to":""}},
+                "cancelled": false},
             "spec": {
                 "triggerd_by_causes": [{
                     "message": "",
-                    "webhook_causes": [{
+                    "webhook_cause": {
                         "hook_type":"git",
                         "revision": {
                             "git": {
                                 "commit": "78rftghjvbnm",
                                 "message": "readme update"}},
-                        "secret": "876543212345678909"}],
-                    "image_build_cause": {"image_id": ""}}],
+                        "secret": "876543212345678909"}}],
                 "source": {
                     "git": {
-                        "uri": "https://github.com/rioadvancement/news-composer-network",
+                        "uri": "https://github.com/openshift/ruby-hello-world",
                         "reference" : "master"},
-                    "binary" : {"as_file": ""},
-                    "docker_file":"",
                     "images": [{
                         "from": {
-                            "kind":"",
-                            "origin":"",
-                            "name":"",
-                            "uid":"",
-                            "api_version":"",
-                            "resource_version":"",
-                            "field_path":""},
-                        "pull_secret": "",
+                            "kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},
                         "paths": [{
                             "source_path":"https:///avaf/vad",
                             "destination_dir":"/var/lib/"}]} ],
                     "source_secret": "" },
-                "strategy": {
-                    "build_type":"Docker",
-                    "docker_strategy":{
-                        "force_pull": true,
-                        "from":{
-                            "kind": "ImageMark",
-                            "name": "debian:latest",
-                            "uid":"","api_version":"",
-                            "resource_version":"",
-                            "field_path":"",
-                            "origin":""},
-                        "docker_filepath": "http://somehost.com/scripts_directory",
-                        "env":[{
-                            "name":"HTTP_PROXY",
-                            "value": "http://myproxy.net:5187/"}]}},
-                    "output": {
-                        "to": {
-                            "kind": "ImageMark",
-                            "name": "node-build-1:136c86c0",
-                            "uid":"","api_version":"",
-                            "resource_version":"",
-                            "field_path":"","origin":""}},
-                    "post_commit": { "script": "bundle exec rake test" },
-                    "node_selector": {} }
-                }"#;
+                    "strategy": {
+                        "build_type":"Docker",
+                        "source_strategy": {
+                            "from": {
+                                "kind": "ImageMarks","name": "ruby-20-centos7:latest","origin":"","uid":"","api_version":"","resource_version":"","field_path":"" }}  },
+                            "output": {
+                                "to": {
+                                    "kind": "ImageMarks","name": "mydev-ruby-sample:latest","origin":"","uid":"","api_version":"","resource_version":"","field_path":""}},
+                            "post_commit": {
+                                "script": "bundle exec rake test" } }
+                        }"#;
         let build: Build = json_decode(val).unwrap();
     }
     #[test]
     fn decode_build_status() {
         let val = r#"{
             "phase": "New",
-            "cancelled": false,
-            "reason":"",
-            "message":"",
-            "start_timestamp": "",
-            "completion_timestamp":"",
-            "duration":"",
-            "output_docker_image_reference": "",
-            "output":{"to":""}
+            "cancelled": false
         }"#;
         let build_status: BuildStatus = json_decode(val).unwrap();
         assert_eq!(build_status.phase, "New");
@@ -776,79 +723,50 @@ mod test {
     #[test]
     fn decode_build_config() {
         let val = r#"{
+            "status":{
+                "phase":"pending"},
             "object_meta":{
                 "name":"ruby-sample-build",
-                 "account":"932243540329635840",
-                 "created_at":"","deleted_at":"",
-                 "deletion_grace_period_seconds":30,
-                 "labels":{},
-                 "annotations":{},
-                 "owner_references":[{
-                     "kind":"AssemblyFactory",
-                     "api_version":"v1",
-                     "name":"levi11.megam.io",
-                     "uid":"891846866394710016",
-                     "block_owner_deletion":false}],
-                "finalizers":[],
-                "cluster_name":"chennai"},
-            "meta_data": { "name": "ruby-sample-build"},
-            "status":{"phase":"pending"},
+                "account":"932243540329635840",
+                "owner_references":[{
+                    "kind":"AssemblyFactory",
+                    "api_version":"v1",
+                    "name":"levi.megam.io",
+                    "uid":"891846866394710016",
+                    "block_owner_deletion":false}]},
+            "meta_data": {
+                 "name": "ruby-sample-build"},
             "spec": {
                 "run_policy": "Serial",
                 "build_trigger_policys": [ {
                     "trigger_type": "gittrigger",
-                    "webhooks":  [ {
+                    "webhook":  {
                         "hook_type": "GitHub",
-                        "secret": "secret101"}],
+                        "secret": "secret101"},
                     "image_change": {
                         "last_triggered_image_id": "1001" }} ],
                 "source": {
                     "git": {
-                        "uri": "https://github.com/rioadvancement/news-composer-network",
+                        "uri": "https://github.com/openshift/ruby-hello-world",
                         "reference" : "master" },
-                    "binary" : {"as_file": ""},
-                    "docker_file":"",
                     "images": [ {
-                        "from": {
-                            "kind":"",
-                            "origin":"",
-                            "name":"",
-                            "uid":"",
-                            "api_version":"",
-                            "resource_version":"",
-                            "field_path":""},
-                        "pull_secret": "",
-                        "paths": [{
-                            "source_path":"https:///avaf/vad",
-                            "destination_dir":"/var/lib/"}]} ],
-                    "source_secret": "secret_id"},
-                 "strategy":{
-                     "build_type":"Source",
-                     "source_strategy": {
-                         "env":[{
-                             "name":"DISABLE_ASSET_COMPILATION",
-                             "value": "true"}],
-                         "from":{
-                             "kind": "ImageMark",
-                             "name": "builder-image:latest",
-                             "uid":"",
-                             "api_version":"",
-                             "resource_version":"",
-                             "field_path":"",
-                             "origin":""},
-                        "scripts": "http://somehost.com/scripts_directory" } },
+                        "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},
+                    "paths": [{
+                        "source_path":"https:///avaf/vad",
+                        "destination_dir":"/var/lib/"}]} ],
+                "source_secret": "secret_id"},
+                "strategy":{
+                    "build_type":"Source",
+                    "source_strategy": {
+                        "env":[{
+                            "name":"DISABLE_ASSET_COMPILATION",
+                            "value": "true"}],
+                        "from":{"kind": "ImageMarks","name": "builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":"","origin":""},
+                    "scripts": "http://somehost.com/scripts_directory" } },
                 "output": {
                     "to": {
-                        "kind": "ImageMark",
-                        "name": "node-build-1:136c86c0" ,
-                        "uid":"",
-                        "api_version":"",
-                         "resource_version":"",
-                          "field_path":"",
-                          "origin":""} },
-                "post_commit": {
-                    "script": "bundle exec rake test"},
-                "node_selector": {"key":"value"},
+                        "kind": "ImageMarks","name": "mydev-ruby-sample:latest" ,"uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },
+                "post_commit": {"script": "bundle exec rake test"},
                 "last_version": 10,
                 "successful_builds_history_limit": 10,
                 "failed_builds_history_limit": 1}
@@ -862,58 +780,33 @@ mod test {
             "run_policy": "Serial",
             "build_trigger_policys": [ {
                 "trigger_type": "gittrigger",
-                "webhooks":  [ {
+                "webhook":  {
                     "hook_type": "GitHub",
-                    "secret": "secret101"}],
+                    "secret": "secret101"},
                 "image_change": {
                     "last_triggered_image_id": "1001" }} ],
             "source": {
                 "git": {
-                    "uri": "https://github.com/rioadvancement/news-composer-network",
+                    "uri": "https://github.com/openshift/ruby-hello-world",
                     "reference" : "master" },
-                "binary" : {"as_file": ""},
-                "docker_file":"",
                 "images": [ {
-                    "from": {
-                        "kind":"",
-                        "origin":"",
-                        "name":"",
-                        "uid":"",
-                        "api_version":"",
-                        "resource_version":"",
-                        "field_path":""},
-                    "pull_secret": "",
-                    "paths": [{
-                        "source_path":"https:///avaf/vad",
-                        "destination_dir":"/var/lib/"}]} ],
-                "source_secret": "secret_id"},
-             "strategy":{
-                 "build_type":"Source",
-                 "source_strategy": {
-                     "env":[{
-                         "name":"DISABLE_ASSET_COMPILATION",
-                         "value": "true"}],
-                     "from":{
-                         "kind": "ImageMark",
-                         "name": "builder-image:latest",
-                         "uid":"",
-                         "api_version":"",
-                         "resource_version":"",
-                         "field_path":"",
-                         "origin":""},
-                    "scripts": "http://somehost.com/scripts_directory" } },
+                    "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},
+                "paths": [{
+                    "source_path":"https:///avaf/vad",
+                    "destination_dir":"/var/lib/"}]} ],
+            "source_secret": "secret_id"},
+            "strategy":{
+                "build_type":"Source",
+                "source_strategy": {
+                    "env":[{
+                        "name":"DISABLE_ASSET_COMPILATION",
+                        "value": "true"}],
+                    "from":{"kind": "ImageMarks","name": "builder-image:latest","uid":"","api_version":"","resource_version":"","field_path":"","origin":""},
+                "scripts": "http://somehost.com/scripts_directory" } },
             "output": {
                 "to": {
-                    "kind": "ImageMark",
-                    "name": "node-build-1:136c86c0" ,
-                    "uid":"",
-                    "api_version":"",
-                     "resource_version":"",
-                      "field_path":"",
-                      "origin":""} },
-            "post_commit": {
-                "script": "bundle exec rake test"},
-            "node_selector": {"key":"value"},
+                    "kind": "ImageMarks","name": "mydev-ruby-sample:latest" ,"uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },
+            "post_commit": {"script": "bundle exec rake test"},
             "last_version": 10,
             "successful_builds_history_limit": 10,
             "failed_builds_history_limit": 1
@@ -928,53 +821,49 @@ mod test {
     #[test]
     fn decode_image_reference() {
         let val = r#"{
-       "object_meta":{
-        "name":"ruby-image",
-        "account":"888178251065729024",
-        "created_at":"","deleted_at":"",
-        "deletion_grace_period_seconds":30,
-        "labels":{},
-        "annotations":{},
-        "owner_references":[{
-            "kind":"BuildConfig",
-             "api_version":"v1",
-              "name":"ruby-sample-build",
-              "uid":"921422565900042240",
-              "block_owner_deletion":false}],
-        "finalizers":[],
-        "cluster_name":"chennai"},
-        "status":{
-        "docker_image_repository":"172.30.56.218:5000/test/origin-ruby-sample",
-        "public_docker_image_repository":"",
-        "tags":{
-            "docker": {
-                "items":[{
-                    "created": "2016-01-29T13:40:11Z",
-                    "docker_image_reference": "172.30.56.218:5000/test/origin-ruby-sample@sha256:47463d94eb5c049b2d23b03a9530bf944f8f967a0fe79147dd6b9135bf7dd13d",
-                    "image": "sha256:47463d94eb5c049b2d23b03a9530bf944f8f967a0fe79147dd6b9135bf7dd13d",
-                    "generation": 1}]
-                    }
-                  }
-             }
-         }"#;
+            "object_meta":{
+                "name":"ruby-image",
+                "account":"946086857198804992",
+                "owner_references":[{
+                    "kind":"BuildConfig",
+                    "api_version":"v1",
+                    "name":"ruby-build",
+                    "uid":"921422565900042240",
+                    "block_owner_deletion":false}]},
+            "spec":{
+                "lookup_policy":false,
+                "map_marks":{"ruby@371829c":"932309487992184832"}},
+            "status":{
+                "docker_image_repository":"172.30.56.218:5000/test/origin-ruby-sample",
+                "tags":{
+                    "docker": {
+                        "items":[{
+                            "created": "2016-01-29T13:40:11Z",
+                            "docker_image_reference": "172.30.56.218:5000/test/origin-ruby-sample@sha256:47463d94eb5c049b2d23b03a9530bf944f8f967a0fe79147dd6b9135bf7dd13d",
+                            "image": "sha256:47463d94eb5c049b2d23b03a9530bf944f8f967a0fe79147dd6b9135bf7dd13d",
+                            "generation": 1}]
+                                }
+                            }
+                        }
+                    }"#;
         let image_ref: ImageReferences = json_decode(val).unwrap();
     }
 
     #[test]
     fn decode_image_reference_status() {
         let val = r#"{
-        "docker_image_repository":"172.30.56.218:5000/test/origin-ruby-sample",
-        "tags":{
-            "docker": {
-                "items":[{
-                    "created": "2016-01-29T13:40:11Z",
-                    "docker_image_reference": "172.30.56.218:5000/test/origin-ruby-sample@sha256:47463d94eb5c049b2d23b03a9530bf944f8f967a0fe79147dd6b9135bf7dd13d",
-                    "image": "sha256:47463d94eb5c049b2d23b03a9530bf944f8f967a0fe79147dd6b9135bf7dd13d",
-                    "generation": 1 }]
-                    }
-                  }
-         }"#;
-        let image_ref_status: ImageStreamStatus = json_decode(val).unwrap();
+            "docker_image_repository":"172.30.56.218:5000/test/origin-ruby-sample",
+            "tags":{
+                "docker": {
+                    "items":[{
+                        "created": "2016-01-29T13:40:11Z",
+                        "docker_image_reference": "172.30.56.218:5000/test/origin-ruby-sample@sha256:47463d94eb5c049b2d23b03a9530bf944f8f967a0fe79147dd6b9135bf7dd13d",
+                        "image": "sha256:47463d94eb5c049b2d23b03a9530bf944f8f967a0fe79147dd6b9135bf7dd13d",
+                        "generation": 1}]
+                            }
+                        }
+                    }"#;
+        let image_ref_status: ImageReferenceStatus = json_decode(val).unwrap();
         assert_eq!(
             image_ref_status.docker_image_repository,
             "172.30.56.218:5000/test/origin-ruby-sample"
@@ -987,51 +876,24 @@ mod test {
         let val = r#"{
             "object_meta":{
                 "name":"ruby@371829c",
-                "account":"888178251065729024",
-                "created_at":"",
-                "deleted_at":"",
-                "deletion_grace_period_seconds":30,
-                "labels":{},"annotations":{},
+                "account":"946050327142998016",
                 "owner_references":[{
                     "kind":"Build",
                     "api_version":"v1",
-                    "name":"ruby-build",
+                    "name":"ruby-i",
                     "uid":"921422565900042240",
-                    "block_owner_deletion":false}],
-                "finalizers":[],
-                "cluster_name":"chennai"},
+                    "block_owner_deletion":false}]},
             "lookup_policy":false,
-             "generation":0,
-              "image":{
-                  "name": "",
-                  "type_meta":{"kind":"","api_version":""},
-                  "docker_image_reference":"ruby",
-                  "docker_image_meta_data_version":"1.0",
-                  "docker_image_manifest":"manifest",
-                  "docker_image_manifest_media_type":"application/vnd.docker.distribution.manifest.v1+json",
-                  "docker_image_config":"my-config",
-                  "docker_image_layers":[{
-                      "name":"d74508fb6632",
-                      "layer_size":1,
-                      "media_type":""},{
-                      "name":"c22013c84729",
-                      "layer_size":194,
-                      "media_type": ""}],
-                 "docker_image_metadata":{
-                     "docker_image_id":"2f095dcd37dc",
-                     "parent":"8c7059377eaf86bc913e915f064c073ff45552e8921ceeb1a3b7cbf9215ecb66",
-                     "created":"November 11, 2016 at 03.40 PM",
-                     "size":2,
-                     "type_meta":{"kind":"DockerImage","api_version":"1.0"},
-                     "config":{
-                         "image":"lizrice/childimage",
-                         "labels":{
-                             "org.label.description": "this is experiemental image that i use to test container images and labels",
-                             "org.label-schema.license":"Apache2.0",
-                             "org.label-schema.name":"childimage"
-                                    }
-                                }
-                                            }
+            "generation":0,
+            "image":{
+                "name": "ruby@123",
+                "size":156800,
+                "virtual_size": 168400,
+                "docker_image_reference":"registry.rioos.xyz/test.megam.io/ruby:latest",
+                "docker_image_layers":[{
+                    "layer_type":"",
+                    "layers":[]
+                                }]
                             }
                         }"#;
         let image_marks: ImageMarks = json_decode(val).unwrap();
@@ -1042,100 +904,24 @@ mod test {
     #[test]
     fn decode_image_data() {
         let val = r#"{
-                  "name": "",
-                  "type_meta":{"kind":"","api_version":""},
-                  "docker_image_reference":"ruby",
-                  "docker_image_meta_data_version":"1.0",
-                  "docker_image_manifest":"manifest",
-                  "docker_image_manifest_media_type":"application/vnd.docker.distribution.manifest.v1+json",
-                  "docker_image_config":"my-config",
-                  "docker_image_layers":[{
-                      "name":"d74508fb6632",
-                      "layer_size":1,
-                      "media_type":""},{
-                      "name":"c22013c84729",
-                      "layer_size":194,
-                      "media_type": ""}],
-                 "docker_image_metadata":{
-                     "docker_image_id":"2f095dcd37dc",
-                     "parent":"8c7059377eaf86bc913e915f064c073ff45552e8921ceeb1a3b7cbf9215ecb66",
-                     "created":"November 11, 2016 at 03.40 PM",
-                     "size":2,
-                     "type_meta":{"kind":"DockerImage","api_version":"1.0"},
-                     "config":{
-                         "image":"lizrice/childimage",
-                         "labels":{
-                             "org.label.description": "this is experiemental image that i use to test container images and labels",
-                             "org.label-schema.license":"Apache2.0",
-                             "org.label-schema.name":"childimage"
-                                }
-                            }
-                        }}"#;
-        let image: Image = json_decode(val).unwrap();
-        assert_eq!(image.name, "");
-        assert_eq!(image.docker_image_reference, "ruby");
-        assert_eq!(image.docker_image_meta_data_version, "1.0");
-        assert_eq!(image.docker_image_manifest, "manifest");
-        assert_eq!(
-            image.docker_image_manifest_media_type,
-            "application/vnd.docker.distribution.manifest.v1+json"
-        );
-        assert_eq!(image.docker_image_config, "my-config");
-
-    }
-
-    #[test]
-    fn decode_image_layer() {
-        let val = r#"{
-                      "name":"d74508fb6632",
-                      "layer_size":1,
-                      "media_type":""
-                  }"#;
-        let layer: ImageLayer = json_decode(val).unwrap();
-        assert_eq!(layer.name, "d74508fb6632");
-        assert_eq!(layer.layer_size, 1);
-    }
-    #[test]
-    fn decode_docker_image() {
-        let val = r#"{
-                     "docker_image_id":"2f095dcd37dc",
-                     "parent":"8c7059377eaf86bc913e915f064c073ff45552e8921ceeb1a3b7cbf9215ecb66",
-                     "created":"November 11, 2016 at 03.40 PM",
-                     "size":2,
-                     "type_meta":{"kind":"DockerImage","api_version":"1.0"},
-                     "config":{
-                         "image":"lizrice/childimage",
-                         "labels":{
-                             "org.label.description": "this is experiemental image that i use to test container images and labels",
-                             "org.label-schema.license":"Apache2.0",
-                             "org.label-schema.name":"childimage"
-                                }
-                            }}"#;
-        let image: DockerImage = json_decode(val).unwrap();
-        assert_eq!(image.docker_image_id, "2f095dcd37dc");
-        assert_eq!(
-            image.parent,
-            "8c7059377eaf86bc913e915f064c073ff45552e8921ceeb1a3b7cbf9215ecb66"
-        );
-        assert_eq!(image.created, "November 11, 2016 at 03.40 PM");
-        assert_eq!(image.size, 2);
-    }
-
-    #[test]
-    fn decode_image_docker_config() {
-        let val = r#"{
-                         "image":"lizrice/childimage",
-                         "labels":{
-                             "org.label.description": "this is experiemental image that i use to test container images and labels",
-                             "org.label-schema.license":"Apache2.0",
-                             "org.label-schema.name":"childimage"
-                                }
+                "name": "ruby@123",
+                "size":156800,
+                "virtual_size": 168400,
+                "docker_image_reference":"registry.rioos.xyz/test.megam.io/ruby:latest",
+                "docker_image_layers":[{
+                    "layer_type":"",
+                    "layers":[]
+                                }]
                             }"#;
-        let config: DockerConfig = json_decode(val).unwrap();
-        assert_eq!(config.image, "lizrice/childimage");
-        assert_eq!(config.labels.len(), 3);
-        assert!(config.labels.contains_key("org.label.description"));
-        assert!(config.labels.contains_key("org.label-schema.license"));
-        assert!(config.labels.contains_key("org.label-schema.name"));
+        let image: Image = json_decode(val).unwrap();
+        assert_eq!(image.name, "ruby@123");
+        assert_eq!(image.size, 156800);
+        assert_eq!(image.virtual_size, 168400);
+        assert_eq!(
+            image.docker_image_reference,
+            "registry.rioos.xyz/test.megam.io/ruby:latest"
+        );
+
     }
+
 }
