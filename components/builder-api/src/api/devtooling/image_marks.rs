@@ -126,7 +126,7 @@ impl ImageMarksApi {
     }
 
     //GET: /imagemarks/builds/:id
-    //Input build id Returns show of imagemarks
+    //Input build id Returns list of imagemarks
     fn list_by_build(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
