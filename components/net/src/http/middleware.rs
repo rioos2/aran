@@ -23,7 +23,6 @@ use config;
 
 use db::data_store::DataStoreConn;
 use session::models::session as sessions;
-use entitlement::licensor::Client;
 use common::ui;
 use auth::util::authenticatable::Authenticatable;
 use auth::rioos::AuthenticateDelegate;
@@ -250,26 +249,6 @@ impl BeforeMiddleware for Authenticated {
     }
 }
 
-pub struct LicensorCli;
-
-impl Key for LicensorCli {
-    type Value = Client;
-}
-
-pub struct EntitlementAct;
-
-impl BeforeMiddleware for EntitlementAct {
-    fn before(&self, req: &mut Request) -> IronResult<()> {
-        let data = req.get::<persistent::Read<LicensorCli>>().unwrap();
-        match data.create_trial_or_verify() {
-            Ok(_) => Ok(()),
-            Err(err) => {
-                let err = entitlement_error(&format!("{}\n", err));
-                Err(render_json_error(&bad_err(&err), err.http_code()))
-            }
-        }
-    }
-}
 
 /// ProceedAuthenticating starts by decoding the header.
 /// We support the following delegates.
