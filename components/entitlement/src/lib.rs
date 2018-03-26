@@ -16,5 +16,6 @@ extern crate rand;
 pub use self::error::{Error, Result};
 
 pub mod error;
+pub mod licensor;
 pub mod nalperion;
 pub mod config;
