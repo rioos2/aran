@@ -29,6 +29,8 @@ use auth::util::authenticatable::Authenticatable;
 use auth::rioos::AuthenticateDelegate;
 use iron::headers::{Authorization, Bearer};
 use util::errors::{internal_error, not_acceptable_error, bad_err, entitlement_error};
+use core::fs::rioconfig_config_path;
+
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
@@ -260,14 +262,15 @@ pub struct EntitlementAct;
 
 impl BeforeMiddleware for EntitlementAct {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        let data = req.get::<persistent::Read<LicensorCli>>().unwrap();
-        match data.create_trial_or_verify() {
-            Ok(_) => Ok(()),
-            Err(err) => {
-                let err = entitlement_error(&format!("{}\n", err));
-                Err(render_json_error(&bad_err(&err), err.http_code()))
-            }
-        }
+        // let data = req.get::<persistent::Read<LicensorCli>>().unwrap();
+        // match data.create_trial_or_verify() {
+        //     Ok(_) => Ok(()),
+        //     Err(err) => {
+        //         let err = entitlement_error(&format!("{}\n", err));
+        //         Err(render_json_error(&bad_err(&err), err.http_code()))
+        //     }
+        // }
+        Ok(())
     }
 }
 
@@ -289,6 +292,7 @@ impl ProceedAuthenticating {
         let otp = reqheader.get::<XAuthRioOSOTP>();
         let serviceaccount = reqheader.get::<XAuthRioOSServiceAccountName>();
         let useraccount = reqheader.get::<XAuthRioOSUserAccountEmail>();
+        let key = &rioconfig_config_path(None).join(public_key);
 
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
@@ -318,7 +322,7 @@ impl ProceedAuthenticating {
             auth_enum = Authenticatable::ServiceAccountNameAndWebtoken {
                 name: &serviceaccount.unwrap().0,
                 webtoken: token,
-                key: &public_key,
+                key: key,
             };
         } else if !useraccount.is_none() {
             auth_enum = Authenticatable::UserEmailAndWebtoken {

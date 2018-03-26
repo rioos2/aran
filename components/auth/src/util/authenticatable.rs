@@ -1,3 +1,4 @@
+
 // Copyright 2018 The Rio Advancement Inc
 
 //Authenticatable enum helps for various of authentication types
@@ -9,6 +10,7 @@
 //                   password: "sdkjfhkj",
 //                };
 //let auth = delegate.authenticate(&auth_enum);
+use std::path::Path;
 pub enum Authenticatable<'a> {
     UserAndPass {
         username: &'a str,
@@ -19,7 +21,7 @@ pub enum Authenticatable<'a> {
     ServiceAccountNameAndWebtoken {
         name: &'a str,
         webtoken: &'a str,
-        key: &'a str,
+        key: &'a Path,
     },
     PassTicket { token: &'a str },
 }
