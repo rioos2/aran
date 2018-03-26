@@ -117,7 +117,6 @@ fn row_to_image_marks(row: &postgres::rows::Row) -> Result<ImageMarks> {
         serde_json::from_value(row.get("type_meta")).unwrap(),
         serde_json::from_value(row.get("object_meta")).unwrap(),
     );
-
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
