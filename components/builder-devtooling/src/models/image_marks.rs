@@ -92,6 +92,24 @@ impl DataStore {
         }
         Ok(None)
     }
+
+    pub fn list_by_build(datastore: &DataStoreConn, img_get: &IdGet) -> ImageMarksOutputList {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_image_marks_by_build_v1($1)",
+            &[&(img_get.get_id() as String)],
+        ).map_err(Error::ImageMarksGet)?;
+
+        let mut response = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_image_marks(&row)?)
+            }
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
 }
 
 fn row_to_image_marks(row: &postgres::rows::Row) -> Result<ImageMarks> {
