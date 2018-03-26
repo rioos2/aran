@@ -93,7 +93,7 @@ describe('Datacenter  API', function() {
     it('returns all datacenters for without header', function(done) {
       request.get('/datacenters')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });

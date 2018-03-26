@@ -90,7 +90,7 @@ describe('volume  API', function() {
       request.post('/volumes')
       .ca(globalAny.rootCA)
       .send({"object_meta": {"account":globalAny.account_id,"name":"","labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB"})
-      .expect(401)
+      .expect(406)
         .end(function(err, res) {
           done(err);
         });

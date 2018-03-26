@@ -182,7 +182,7 @@ describe('Scaling API', function() {
       it('returns all verticalscaling without header ', function(done) {
         request.get('/verticalscaling')
         .ca(globalAny.rootCA)
-          .expect(401)
+          .expect(406)
           .end(function(err, res) {
             done(err);
           });

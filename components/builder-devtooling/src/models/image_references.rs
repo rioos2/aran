@@ -86,6 +86,20 @@ impl DataStore {
         }
         Ok(None)
     }
+    pub fn show_by_build_config(datastore: &DataStoreConn, img_get: &IdGet) -> ImageReferencesOutput {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_image_ref_by_build_config_v1($1)",
+            &[&(img_get.get_id() as String)],
+        ).map_err(Error::ImageRefGet)?;
+
+        if rows.len() > 0 {
+            let image = row_to_image_ref(&rows.get(0))?;
+            return Ok(Some(image));
+        }
+        Ok(None)
+    }
 }
 
 fn row_to_image_ref(row: &postgres::rows::Row) -> Result<ImageReferences> {

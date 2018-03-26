@@ -44,6 +44,7 @@ pub struct ImageReferencesApi {
 /// GET:/imagereferences,
 /// GET: /imagereferences/:id,
 /// PUT: /imagereferences/:id,
+/// PUT: /imagereferences/build_configs/:id,
 
 
 impl ImageReferencesApi {
@@ -126,6 +127,21 @@ impl ImageReferencesApi {
             ))),
         }
     }
+    ///GET: /imagereferences/build_configs/:id
+    ///Returns ImageReferences
+    fn show_by_build_config(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        match image_references::DataStore::show_by_build_config(&self.conn, &params) {
+            Ok(Some(image)) => Ok(render_json(status::Ok, &image)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
+        }
+    }
 }
 ///The Api wirer for ImageReferencesApi
 ///Add all the api needed to be supported under `/imageref`
@@ -146,6 +162,9 @@ impl Api for ImageReferencesApi {
 
         let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
+
+        let _self = self.clone();
+        let show_by_build_config = move |req: &mut Request| -> AranResult<Response> { _self.show_by_build_config(req) };
 
         router.post(
             "/imagereferences",
@@ -169,6 +188,12 @@ impl Api for ImageReferencesApi {
             "/imagereferences/:id",
             XHandler::new(C { inner: update }).before(basic.clone()),
             "image_references_update",
+        );
+
+        router.get(
+            "/imagereferences/build_configs/:id",
+            XHandler::new(C { inner: show_by_build_config }).before(basic.clone()),
+            "image_references_show_by_build_config",
         );
     }
 }

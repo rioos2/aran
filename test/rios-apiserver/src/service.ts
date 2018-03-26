@@ -142,7 +142,7 @@ const request = supertest.agent(globalAny.apiServer);
     it('returns unauthorized error for list services', function(done) {
       request.get('/services')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -152,7 +152,7 @@ const request = supertest.agent(globalAny.apiServer);
     it('returns unauthorized error for create services', function(done) {
       request.post('/services')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -161,7 +161,7 @@ const request = supertest.agent(globalAny.apiServer);
     it('returns unauthorized error for show services', function(done) {
       request.get('/services/1234567')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });

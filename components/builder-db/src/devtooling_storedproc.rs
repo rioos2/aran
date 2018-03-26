@@ -256,6 +256,16 @@ impl Migratable for DevtoolingProcedures {
 
         migrator.migrate(
             "buildconfsrv",
+            r#"CREATE OR REPLACE FUNCTION get_image_ref_by_build_config_v1(aid text) RETURNS SETOF image_references AS $$
+                        BEGIN
+                          RETURN QUERY SELECT * FROM image_references where object_meta @> json_build_object('owner_references',json_build_array(json_build_object('uid',aid)))::jsonb;
+                          RETURN;
+                        END
+                        $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+        migrator.migrate(
+            "buildconfsrv",
             r#"CREATE OR REPLACE FUNCTION get_image_ref_by_v1() RETURNS SETOF image_references AS $$
                         BEGIN
                           RETURN QUERY SELECT * FROM image_references;
