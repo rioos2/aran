@@ -65,12 +65,12 @@ describe('Image Marks  API', function() {
         "docker_image_manifest_media_type":"application/vnd.docker.distribution.manifest.v1+json","docker_image_config":"my-config", "docker_image_layers":[{"name":"d74508fb6632","layer_size":1,"media_type":""},{"name":"c22013c84729","layer_size":194,"media_type": ""}],"docker_image_metadata":
         { "docker_image_id":"2f095dcd37dc","parent":"8c7059377eaf86bc913e915f064c073ff45552e8921ceeb1a3b7cbf9215ecb66","created":"November 11, 2016 at 03.40 PM","size":2,"type_meta":{"kind":"DockerImage","api_version":"1.0"},"config":{"image":"lizrice/childimage","labels":
         {"org.label.description": "this is experiemental image that i use to test container images and labels","org.label-schema.license":"Apache2.0","org.label-schema.name":"childimage"}}}}})
-      .expect(401)
+      .expect(406)
         .end(function(err, res) {
           done(err);
         });
     });
-    it('returns the created imagemarks missing image reference id', function(done) {
+    it('returns the created imagemarks missing build id', function(done) {
       request.post('/imagemarks')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)

@@ -107,7 +107,7 @@ const request = supertest.agent(globalAny.apiServer);
       it('returns all storage pool without header', function(done) {
         request.get('/storagespool')
         .ca(globalAny.rootCA)
-          .expect(401)
+          .expect(406)
           .end(function(err, res) {
             done(err);
           });

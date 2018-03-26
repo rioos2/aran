@@ -127,7 +127,7 @@ describe('EndPoints API', function() {
       request.post('/endpoints')
       .ca(globalAny.rootCA)
         .send({"subsets":{"addresses":[{"name": "private","protocol_version": "ipv4","ip": "192.168.1.10","mac_address":"00:0a:95:9d:68:16"}],"unready_addresses" :[{"name": "private", "protocol_version": "ipv4", "ip": "192.168.1.11","mac_address":"00:0a:95:9d:68:17"}],"ports": [{ "name": "", "port": "","protocol":"tcp"}]},"object_meta":{"name":"endpnt1","account":"","labels":{},"annotations":{},"owner_references":[{"kind":"","api_version":"","name":"","uid":"872235286753452032","block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}})
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -136,7 +136,7 @@ describe('EndPoints API', function() {
     it('returns unauthorized error for list endpoints', function(done) {
       request.get('/endpoints')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -145,7 +145,7 @@ describe('EndPoints API', function() {
     it('returns unauthorized error for show  endpoint', function(done) {
       request.get('/endpoints/'+globalAny.endpoints_id)
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });

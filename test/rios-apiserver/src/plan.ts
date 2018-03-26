@@ -117,7 +117,7 @@ describe('Plan Factory API', function() {
       request.post('/plans')
       .ca(globalAny.rootCA)
         .send({"object_meta":{"name":"rails","account":"","labels":{},"annotations":{},"owner_references":[{"kind":"","api_version":"","name":"","uid":"","block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""},"category": "application","version": "5.2.0","characteristics" :{"image_pullpolicy": "always","git":"source url"},"icon" : "rails.png","description": "Rails is a framework for building websites. As such, Rails establishes conventions for easier collaboration and maintenance","ports": [{"container_port": 80,"host_ip":"192.168.1.10","host_port": 8001,"protocol":"TCP/UDP"}],"envs":{"RUBY_HOME":{"required":"true","value":"/usr/lib/ruby/2.4.9","editable":"false"},"RAILS_APP_HOME":{"required":"true",  "value":"/home/rails/app",  "editable":"true"}},"lifecycle": {"postStart":{"exec":{"command": ["/bin/sh","-c","echo Hello from the postStart handler > /usr/share/message"]} },"preStop": {"exec": {"command": ["/usr/sbin/nginx","-s","quit"]}}},"status":{"phase":"","message":"","reason":"","conditions":[{"message":"", "reason":"","status":"ready","last_transition_time":"","last_probe_time":"","condition_type":"","last_update_time": ""}]}})
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -126,7 +126,7 @@ describe('Plan Factory API', function() {
     it('returns unauthorized error for show plan', function(done) {
       request.get('/plans/876654688765567')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -135,7 +135,7 @@ describe('Plan Factory API', function() {
     it('returns unauthorized error for list plan factory', function(done) {
       request.get('/plans')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });

@@ -74,7 +74,7 @@ describe('Build Config  API', function() {
         "source_secret": globalAny.secrets_id}, "strategy":{ "build_type":"Source","source_strategy": {"env":[{"name":"DISABLE_ASSET_COMPILATION","value": "true"}],"from":{"kind": "ImageMark","name": "builder-image:latest","uid":"","api_version":"","resource_version":"",
         "field_path":"","origin":""}, "scripts": "http://somehost.com/scripts_directory" } },"output": { "to": { "kind": "ImageMark","name": "node-build-1:136c86c0" ,"uid":"","api_version":"", "resource_version":"", "field_path":"","origin":""} },
         "post_commit": {"script": "bundle exec rake test"},"node_selector": {"key":"value"},"last_version": 10,"successful_builds_history_limit": 10,"failed_builds_history_limit": 1}})
-    .expect(401)
+    .expect(406)
         .end(function(err, res) {
           done(err);
         });

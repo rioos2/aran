@@ -96,7 +96,7 @@ describe('Storage API', function() {
     it('returns all storage connectors without header ', function(done) {
       request.get('/storageconnectors')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });

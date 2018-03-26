@@ -27,7 +27,7 @@ describe('secrets  API', function() {
       .set('Authorization', globalAny.bobo_bearer)
       .expect(200)
       .end(function(err, res) {
-        expect(res.body.items.length).to.equal(3);
+        expect(res.body.items.length).to.equal(2);
         done(err);
       });
   });
@@ -154,7 +154,7 @@ describe('secrets  API', function() {
       .send({"secret_type": "opaque","metadata":{"origin":"rioos_system"},"data": {"username": "USERNAME","password": "PASSWORD","rsa_key": "PRIVATEKEY","rsa_pub": "PUBLICKEY","tls_key": "PRIVATEKEY", "tls_pub": "PUBLICKEY","<anykey>": "<any value>"},
       "type_meta":{"kind":"Secret","api_version":"v1"},
       "object_meta": {"name":"ca","account":globalAny.account_id}})
-      .expect(401)
+      .expect(406)
       .end(function(err, res) {
         done(err);
       });
@@ -163,7 +163,7 @@ describe('secrets  API', function() {
   it('returns  the unauthorized error secrets', function(done) {
     request.get('/secrets/'+globalAny.secrets_id)
     .ca(globalAny.rootCA)
-      .expect(401)
+      .expect(406)
       .end(function(err, res) {
         done(err);
       });
@@ -172,7 +172,7 @@ describe('secrets  API', function() {
   it('returns the unauthorized error all secrets account based', function(done) {
     request.get('/accounts/'+globalAny.account_id+'/secrets')
     .ca(globalAny.rootCA)
-      .expect(401)
+      .expect(406)
       .end(function(err, res) {
         done(err);
       });
