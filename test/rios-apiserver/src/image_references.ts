@@ -167,7 +167,7 @@ describe('Image Reference API', function() {
     });
 
     it('returns the imagereferences by build config id', function(done) {
-      request.get('/imagereferences/build_configs/'+globalAny.bc_id)
+      request.get('/imagereferences/buildconfigs/'+globalAny.bc_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -178,7 +178,7 @@ describe('Image Reference API', function() {
     });
 
     it('returns the imagereferences by wrong build config id', function(done) {
-      request.get('/imagereferences/build_configs/92142256042240')
+      request.get('/imagereferences/buildconfigs/92142256042240')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
