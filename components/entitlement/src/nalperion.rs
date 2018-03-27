@@ -48,7 +48,7 @@ impl Nalperion {
 
     // Returns the status of license verified with nalperion
     pub fn verify(&self) -> Result<()> {
-        self.fascade.check_license()?;
+        let data = self.fascade.check_license()?;
         Ok(())
     }
 }
@@ -93,7 +93,7 @@ impl API {
         unsafe {
             // open the nsl library and initialize the lib
             let open_fn = lib.get::<fn(&[u8]) -> i32>(NALP_LIB_OPEN.as_bytes())?;
-            let ret_val = open_fn(shaferchk_xml_as_bytes(secret_offset.1)?.as_bytes());            
+            let ret_val = open_fn(shaferchk_xml_as_bytes(secret_offset.1)?.as_bytes());
             if ret_val < 0 {
                 return NalperionResult::from_err(NALP_LIB_OPEN);
             }

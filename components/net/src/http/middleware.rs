@@ -28,7 +28,7 @@ use common::ui;
 use auth::util::authenticatable::Authenticatable;
 use auth::rioos::AuthenticateDelegate;
 use iron::headers::{Authorization, Bearer};
-use util::errors::{internal_error, not_acceptable_error, bad_err, entitlement_error};
+use util::errors::{internal_error, not_acceptable_error, bad_err};
 use core::fs::rioconfig_config_path;
 
 
