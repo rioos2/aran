@@ -2,9 +2,11 @@
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Roles {
+    #[serde(default)]
     id: String,
     name: String,
     description: String,
+    #[serde(default)]
     created_at: String,
 }
 
@@ -47,10 +49,12 @@ impl Roles {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Permissions {
+    #[serde(default)]
     id: String,
     role_id: String,
     name: String,
     description: String,
+    #[serde(default)]
     created_at: String,
 }
 
@@ -96,5 +100,26 @@ impl Permissions {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use serde_json::from_str as json_decode;
+
+    use super::*;
+
+    #[test]
+    fn decode_roles() {
+        let val = r#"{
+            "name": "role_rios:superuser",
+            "description":"superuser of RIO/OS. God given powers.  instance"
+            }"#;
+        let role: Roles = json_decode(val).unwrap();
+        assert_eq!(role.name, "role_rios:superuser");
+        assert_eq!(
+            role.description,
+            "superuser of RIO/OS. God given powers.  instance"
+        );
     }
 }

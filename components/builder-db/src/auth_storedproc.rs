@@ -733,6 +733,19 @@ impl Migratable for AuthProcedures {
                     $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        // Select role from roles table by name
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_role_by_name_v1 (rname text) RETURNS SETOF roles AS $$
+                    BEGIN
+                      RETURN QUERY SELECT * FROM roles WHERE name = rname;
+                      RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
+
         // The core role_id_seq table
         migrator.migrate("authsrv", r#"CREATE SEQUENCE IF NOT EXISTS perm_id_seq;"#)?;
 
@@ -839,7 +852,7 @@ impl Migratable for AuthProcedures {
             "originsrv",
             r#"with first_insert as (
                 insert into roles(name,description)
-                values('role/rios:superuser','Superuser of RIO/OS. God given powers.  instance')
+                values('role_rios:superuser','Superuser of RIO/OS. God given powers.  instance')
                 ON CONFLICT (name) DO NOTHING
                 RETURNING id
             )
@@ -852,7 +865,7 @@ impl Migratable for AuthProcedures {
             "originsrv",
             r#"with second_insert as (
                 insert into roles(name,description)
-                values('role/rios:TeamAdmin','TeamOwner of RIO/OS team')
+                values('role_rios:TeamAdmin','TeamOwner of RIO/OS team')
                 ON CONFLICT (name) DO NOTHING
                 RETURNING id
             )

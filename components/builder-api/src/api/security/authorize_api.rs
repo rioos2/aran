@@ -13,6 +13,9 @@ use api::{Api, ApiValidator, Validator, ParmsVerifier};
 use rio_net::http::schema::dispatch;
 use config::Config;
 use error::Error;
+use common::ui;
+use ansi_term::Colour;
+
 
 use rio_net::http::controller::*;
 use rio_net::util::errors::{AranResult, AranValidResult};
@@ -35,6 +38,7 @@ use error::ErrorMessage::{MustBeNumeric, MissingParameter};
 /// POST: /roles,,
 /// GET: /roles,
 /// GET: /roles/:id,
+//GET: /roles/:name
 #[derive(Clone)]
 pub struct AuthorizeApi {
     conn: Box<DataStoreConn>,
@@ -51,12 +55,17 @@ impl AuthorizeApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn role_create(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<Roles>>()?)?;
-
+        let unmarshall_body = self.validate::<Roles>(
+            req.get::<bodyparser::Struct<Roles>>()?,
+        )?;
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
         match authorize::DataStore::roles_create(&self.conn, &unmarshall_body) {
-            Ok(Some(roles_create)) => Ok(render_json(status::Ok, &roles_create)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+            Ok(roles_create) => Ok(render_json(status::Ok, &roles_create)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
 
@@ -74,13 +83,28 @@ impl AuthorizeApi {
         match authorize::DataStore::roles_show(&self.conn, &IdGet::with_id(id.clone().to_string())) {
             Ok(Some(roles)) => Ok(render_json(status::Ok, &roles)),
             Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => Err(not_found_error(
+                &format!("{} for {}", Error::Db(RecordsNotFound), id),
+            )),
+        }
+    }
+
+    //GET: /roles/:name
+    //Input as string input and returns a roles
+    fn role_show_by_name(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_name(req)?;
+        match authorize::DataStore::role_show_by_name(&self.conn, &params) {
+            Ok(Some(roles)) => Ok(render_json(status::Ok, &roles)),
+            Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(RecordsNotFound),
-                id
+                params.get_id()
             ))),
         }
     }
+
+
     //GET: /roles
     //Returns all the roles(irrespective of namespaces)
     fn role_list(&self, req: &mut Request) -> AranResult<Response> {
@@ -133,11 +157,9 @@ impl AuthorizeApi {
         match authorize::DataStore::get_rolebased_permissions(&self.conn, &IdGet::with_id(id.clone().to_string())) {
             Ok(Some(permission)) => Ok(render_json(status::Ok, &permission)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                id
-            ))),
+            Ok(None) => Err(not_found_error(
+                &format!("{} for {}", Error::Db(RecordsNotFound), id),
+            )),
         }
     }
     //GET: /permission/:id
@@ -154,11 +176,9 @@ impl AuthorizeApi {
         match authorize::DataStore::permissions_show(&self.conn, &IdGet::with_id(id.clone().to_string())) {
             Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                id
-            ))),
+            Ok(None) => Err(not_found_error(
+                &format!("{} for {}", Error::Db(RecordsNotFound), id),
+            )),
         }
     }
 
@@ -202,6 +222,10 @@ impl Api for AuthorizeApi {
         let _self = self.clone();
         let role_show = move |req: &mut Request| -> AranResult<Response> { _self.role_show(req) };
 
+        let _self = self.clone();
+        let role_show_by_name = move |req: &mut Request| -> AranResult<Response> { _self.role_show_by_name(req) };
+
+
         //closures : permissions
         let _self = self.clone();
         let permission_create = move |req: &mut Request| -> AranResult<Response> { _self.permission_create(req) };
@@ -235,40 +259,36 @@ impl Api for AuthorizeApi {
             "role_show",
         );
 
+        router.get(
+            "/roles/name/:name",
+            XHandler::new(C { inner: role_show_by_name }).before(basic.clone()),
+            "role_show_by_name",
+        );
+
         //Routes:  Authorization : Permissions
         router.post(
             "/permissions",
-            XHandler::new(C {
-                inner: permission_create,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: permission_create }).before(basic.clone()),
             "permissions",
         );
         router.get(
             "/permissions",
-            XHandler::new(C {
-                inner: permission_list,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: permission_list }).before(basic.clone()),
             "permission_list",
         );
         router.get(
             "/permissions/roles/:role_id",
-            XHandler::new(C {
-                inner: show_permissions_by_role,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show_permissions_by_role }).before(basic.clone()),
             "show_permissions_by_role",
         );
         router.get(
             "/permissions/:id",
-            XHandler::new(C {
-                inner: permission_show,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: permission_show }).before(basic.clone()),
             "permission_show",
         );
         router.get(
             "/permissions/:id/roles/:role_id",
-            XHandler::new(C {
-                inner: show_permissions_applied_for,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show_permissions_applied_for }).before(basic.clone()),
             "show_permissions_applied_for",
         );
     }
@@ -294,7 +314,15 @@ impl Validator for Permissions {
 impl Validator for Roles {
     //default implementation is to check for `name` and 'origin'
     fn valid(self) -> AranValidResult<Self> {
-        let s: Vec<String> = vec![];
+        let mut s: Vec<String> = vec![];
+
+        if self.get_name().len() <= 0 {
+            s.push("name".to_string());
+        }
+
+        if self.get_description().len() <= 0 {
+            s.push("description".to_string());
+        }
 
         if s.is_empty() {
             return Ok(Box::new(self));
