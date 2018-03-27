@@ -227,13 +227,12 @@ describe('Build Config  API', function() {
     });
 
     it('returns the build config by id', function(done) {
-      request.get('/buildconfigs/' + globalAny.bc_id)
+      request.get('/buildconfigs/' +globalAny.bc_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-         expect(res.body.id).to.equal(globalAny.bc_id);
           done(err);
         });
     });

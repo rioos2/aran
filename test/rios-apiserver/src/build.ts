@@ -66,7 +66,7 @@ describe('Build  API', function() {
       "master"},"images": [{ "from": {"kind":"","origin":"","name":"","uid":"","api_version":"","resource_version":"","field_path":""},"paths": [{"source_path":"https:///avaf/vad","destination_dir":"/var/lib/"}]} ],
       "source_secret": globalAny.secrets_id  },"strategy": {"build_type":"Docker",  "source_strategy": {"from": {"kind": "ImageMarks","name": "ruby-20-centos7:latest","origin":"","uid":"","api_version":"","resource_version":"","field_path":"" }}  },"output": {"to": {
         "kind": "ImageMarks","name": "mydev-ruby-sample:latest","origin":"","uid":"","api_version":"","resource_version":"","field_path":""}},"post_commit": { "script": "bundle exec rake test" } }})
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -95,7 +95,6 @@ describe('Build  API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.items.length).to.equal(1);
           done(err);
         });
     });
