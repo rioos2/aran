@@ -111,7 +111,7 @@ describe('Build  API', function() {
     });
 
     it('returns the build by build config id', function(done) {
-      request.get('/builds/buildconfig/'+globalAny.bc_id)
+      request.get('/builds/buildconfigs/'+globalAny.bc_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -121,7 +121,7 @@ describe('Build  API', function() {
         });
     });
     it('returns the build by wrong buildconfig id', function(done) {
-      request.get('/builds/buildconfig/'+globalAny.job_id)
+      request.get('/builds/buildconfigs/'+globalAny.job_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
