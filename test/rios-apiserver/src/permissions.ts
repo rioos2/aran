@@ -9,7 +9,7 @@ describe('User Permission API', function() {
       request.post('/permissions')
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"role_id":globalAny.role_id,"name": "rioos.assembly.get","description":"Read only access to all the users  VMs, Containers"})
+        .send({"role_id":globalAny.role_id,"name": "rioos.job.get","description":"Read only access to all the users  VMs, Containers"})
         .expect(200)
         .end(function(err, res) {
           expect(res.body.role_id).to.equal(globalAny.role_id);
@@ -24,7 +24,6 @@ describe('User Permission API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.role_id).to.equal(globalAny.role_id);
           done(err);
         });
     });
@@ -62,5 +61,16 @@ describe('User Permission API', function() {
           done(err);
         });
     });
+    it('returns the all the  permission for the specfic user', function(done) {
+      request.get('/permissions/account/' + globalAny.account_id)
+        .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .expect(200)
+        .end(function(err, res) {
+          done(err);
+        });
+    });
+
+
 
   });

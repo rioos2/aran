@@ -28,7 +28,7 @@ use protocol::api::base::IdGet;
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use error::ErrorMessage::{MustBeNumeric, MissingParameter};
+use error::ErrorMessage::{MissingParameter, MustBeNumeric};
 
 /// Authorize api: AuthorizeApi provides ability to declare the roles and Permissions
 /// and manage them.
@@ -72,20 +72,16 @@ impl AuthorizeApi {
     //GET: /roles/:id
     //Input id - u64 as input and returns a roles
     fn role_show(&self, req: &mut Request) -> AranResult<Response> {
-        let id = {
-            let params = req.extensions.get::<Router>().unwrap();
-            match params.find("id").unwrap().parse::<u64>() {
-                Ok(id) => id,
-                Err(_) => return Err(bad_request(&MustBeNumeric("id".to_string()))),
-            }
-        };
+        let params = self.verify_id(req)?;
 
-        match authorize::DataStore::roles_show(&self.conn, &IdGet::with_id(id.clone().to_string())) {
+        match authorize::DataStore::roles_show(&self.conn, &params) {
             Ok(Some(roles)) => Ok(render_json(status::Ok, &roles)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(
-                &format!("{} for {}", Error::Db(RecordsNotFound), id),
-            )),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
     }
 
@@ -122,7 +118,15 @@ impl AuthorizeApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn permission_create(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<Permissions>>()?)?;
+        let unmarshall_body = self.validate::<Permissions>(
+            req.get::<bodyparser::Struct<Permissions>>()?,
+        )?;
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
+
         match authorize::DataStore::permissions_create(&self.conn, &unmarshall_body) {
             Ok(Some(permissions_create)) => Ok(render_json(status::Ok, &permissions_create)),
             Err(err) => Err(internal_error(&format!("{}", err))),
@@ -144,41 +148,41 @@ impl AuthorizeApi {
         }
     }
 
-    //Send in the role id and get the permissions.
-    pub fn show_permissions_by_role(&self, req: &mut Request) -> AranResult<Response> {
-        let id = {
+    //Send in the role id and get all the list the permissions for the role.
+    pub fn list_permissions_by_role(&self, req: &mut Request) -> AranResult<Response> {
+        let role_id = {
             let params = req.extensions.get::<Router>().unwrap();
-            match params.find("id").unwrap().parse::<u64>() {
-                Ok(id) => id,
-                Err(_) => return Err(bad_request(&MustBeNumeric("id".to_string()))),
+            match params.find("role_id").unwrap().parse::<u64>() {
+                Ok(role_id) => role_id,
+                Err(_) => return Err(bad_request(&MustBeNumeric("role_id".to_string()))),
             }
         };
 
-        match authorize::DataStore::get_rolebased_permissions(&self.conn, &IdGet::with_id(id.clone().to_string())) {
-            Ok(Some(permission)) => Ok(render_json(status::Ok, &permission)),
+        match authorize::DataStore::get_rolebased_permissions(&self.conn, &IdGet::with_id(role_id.clone().to_string())) {
+            Ok(Some(permissions_list)) => Ok(render_json_list(
+                status::Ok,
+                dispatch(req),
+                &permissions_list,
+            )),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(
-                &format!("{} for {}", Error::Db(RecordsNotFound), id),
+                &format!("{} for {}", Error::Db(RecordsNotFound), role_id),
             )),
         }
     }
     //GET: /permission/:id
     //Input id - u64 as input and returns a permission
     fn permission_show(&self, req: &mut Request) -> AranResult<Response> {
-        let id = {
-            let params = req.extensions.get::<Router>().unwrap();
-            match params.find("id").unwrap().parse::<u64>() {
-                Ok(id) => id,
-                Err(_) => return Err(bad_request(&MustBeNumeric("id".to_string()))),
-            }
-        };
+        let params = self.verify_id(req)?;
 
-        match authorize::DataStore::permissions_show(&self.conn, &IdGet::with_id(id.clone().to_string())) {
+        match authorize::DataStore::permissions_show(&self.conn, &params) {
             Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(
-                &format!("{} for {}", Error::Db(RecordsNotFound), id),
-            )),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
     }
 
@@ -203,6 +207,24 @@ impl AuthorizeApi {
                 "{} for {}",
                 Error::Db(RecordsNotFound),
                 &perms_get.get_id()
+            ))),
+        }
+    }
+    //GET: /permission/account/:account_id
+    //Input id - u64 as input and returns a roles
+    fn list_permission_by_account(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_account(req)?;
+        match authorize::DataStore::list_permission_by_account(&self.conn, &params) {
+            Ok(Some(permissions_list)) => Ok(render_json_list(
+                status::Ok,
+                dispatch(req),
+                &permissions_list,
+            )),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_name()
             ))),
         }
     }
@@ -237,10 +259,13 @@ impl Api for AuthorizeApi {
         let permission_show = move |req: &mut Request| -> AranResult<Response> { _self.permission_show(req) };
 
         let _self = self.clone();
-        let show_permissions_by_role = move |req: &mut Request| -> AranResult<Response> { _self.show_permissions_by_role(req) };
+        let list_permissions_by_role = move |req: &mut Request| -> AranResult<Response> { _self.list_permissions_by_role(req) };
 
         let _self = self.clone();
         let show_permissions_applied_for = move |req: &mut Request| -> AranResult<Response> { _self.show_permissions_applied_for(req) };
+
+        let _self = self.clone();
+        let list_permission_by_account = move |req: &mut Request| -> AranResult<Response> { _self.list_permission_by_account(req) };
 
         //Routes:  Authorization : Roles
         router.post(
@@ -278,8 +303,8 @@ impl Api for AuthorizeApi {
         );
         router.get(
             "/permissions/roles/:role_id",
-            XHandler::new(C { inner: show_permissions_by_role }).before(basic.clone()),
-            "show_permissions_by_role",
+            XHandler::new(C { inner: list_permissions_by_role }).before(basic.clone()),
+            "list_permissions_by_role",
         );
         router.get(
             "/permissions/:id",
@@ -291,6 +316,12 @@ impl Api for AuthorizeApi {
             XHandler::new(C { inner: show_permissions_applied_for }).before(basic.clone()),
             "show_permissions_applied_for",
         );
+        router.get(
+            "/permissions/account/:account_id",
+            XHandler::new(C { inner: list_permission_by_account }).before(basic.clone()),
+            "list_permission_by_account_id",
+        );
+
     }
 }
 
@@ -301,7 +332,19 @@ impl ParmsVerifier for AuthorizeApi {}
 impl Validator for Permissions {
     //default implementation is to check for `name` and 'origin'
     fn valid(self) -> AranValidResult<Self> {
-        let s: Vec<String> = vec![];
+        let mut s: Vec<String> = vec![];
+
+        if self.get_name().len() <= 0 {
+            s.push("name".to_string());
+        }
+
+        if self.get_description().len() <= 0 {
+            s.push("description".to_string());
+        }
+
+        if self.get_role_id().len() <= 0 {
+            s.push("role_id".to_string());
+        }
 
         if s.is_empty() {
             return Ok(Box::new(self));

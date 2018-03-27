@@ -102,20 +102,18 @@ impl DataStore {
 
     pub fn permissions_create(datastore: &DataStoreConn, permissions: &Permissions) -> PermissionsOutput {
         let conn = datastore.pool.get_shard(0)?;
-        let role_id = permissions.get_role_id().parse::<i64>().unwrap();
         let rows = &conn.query(
             "SELECT * FROM insert_permission_v1 ($1,$2,$3)",
             &[
-                &role_id,
+                &(permissions.get_role_id().parse::<i64>().unwrap()),
                 &(permissions.get_name() as String),
                 &(permissions.get_description() as String),
             ],
         ).map_err(Error::PermissionsCreate)?;
+
         if rows.len() > 0 {
-            for row in rows {
-                let permissions_create = row_to_permissions(&row)?;
-                return Ok(Some(permissions_create));
-            }
+            let permissions_create = row_to_permissions(&rows.get(0))?;
+            return Ok(Some(permissions_create));
         }
         Ok(None)
     }
@@ -138,18 +136,21 @@ impl DataStore {
         Ok(None) //this isn't needed as we will send an empty vec
     }
 
-    pub fn get_rolebased_permissions(datastore: &DataStoreConn, get_permission: &IdGet) -> PermissionsOutput {
+    pub fn get_rolebased_permissions(datastore: &DataStoreConn, get_permission: &IdGet) -> PermissionsOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
-        let role_id = get_permission.get_id().parse::<i64>().unwrap();
-        let rows = &conn.query("SELECT * FROM get_permission_for_role_v1($1)", &[&role_id])
-            .map_err(Error::RolePermissionsGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_permission_for_role_v1($1)",
+            &[&(get_permission.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::RolePermissionsGet)?;
+
+        let mut response = Vec::new();
 
         if rows.len() > 0 {
             for row in rows {
-                let permissions_get = row_to_permissions(&row)?;
-                return Ok(Some(permissions_get));
+                response.push(row_to_permissions(&row)?)
             }
+            return Ok(Some(response));
         }
         Ok(None)
     }
@@ -157,16 +158,14 @@ impl DataStore {
     pub fn permissions_show(datastore: &DataStoreConn, get_perms: &IdGet) -> PermissionsOutput {
         let conn = datastore.pool.get_shard(0)?;
 
-        let perm_id = get_perms.get_id().parse::<i64>().unwrap();
-
-        let rows = &conn.query("SELECT * FROM get_permission_v1($1)", &[&perm_id])
-            .map_err(Error::PermissionGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_permission_v1($1)",
+            &[&(get_perms.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::PermissionGet)?;
 
         if rows.len() > 0 {
-            for row in rows {
-                let perm_get = row_to_permissions(&row)?;
-                return Ok(Some(perm_get));
-            }
+            let permission = row_to_permissions(&rows.get(0))?;
+            return Ok(Some(permission));
         }
         Ok(None)
     }
@@ -174,21 +173,35 @@ impl DataStore {
     pub fn get_specfic_permission_based_role(datastore: &DataStoreConn, get_perms: &IdGet) -> PermissionsOutput {
         let conn = datastore.pool.get_shard(0)?;
 
-        let perm_id = get_perms.get_id().parse::<i64>().unwrap();
-        let role_id = get_perms.get_name().parse::<i64>().unwrap();
-
         let rows = &conn.query(
             "SELECT * FROM get_specfic_permission_role_v1($1,$2)",
-            &[&perm_id, &role_id],
+            &[
+                &(get_perms.get_id().parse::<i64>().unwrap()),
+                &(get_perms.get_name().parse::<i64>().unwrap()),
+            ],
         ).map_err(Error::PermissionGet)?;
 
         if rows.len() > 0 {
-            for row in rows {
-                let perm_get = row_to_permissions(&row)?;
-                return Ok(Some(perm_get));
-            }
+            let permission = row_to_permissions(&rows.get(0))?;
+            return Ok(Some(permission));
         }
+        Ok(None)
+    }
 
+    pub fn list_permission_by_account(datastore: &DataStoreConn, get_acc: &IdGet) -> PermissionsOutputList {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_permission_by_account_v1($1)",
+            &[&(get_acc.get_name().parse::<i64>().unwrap())],
+        ).map_err(Error::PermissionsGet)?;
+
+        let mut response = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_permissions(&row)?)
+            }
+            return Ok(Some(response));
+        }
         Ok(None)
     }
 }

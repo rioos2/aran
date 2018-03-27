@@ -122,4 +122,20 @@ mod test {
             "superuser of RIO/OS. God given powers.  instance"
         );
     }
+
+    #[test]
+    fn decode_permission() {
+        let val = r#"{
+            "role_id": "98765432123456",
+            "name": "rioos.assembly.get",
+            "description":"Read only access to all the users  VMs, Containers"
+            }"#;
+        let perms: Permissions = json_decode(val).unwrap();
+        assert_eq!(perms.role_id, "98765432123456");
+        assert_eq!(perms.name, "rioos.assembly.get");
+        assert_eq!(
+            perms.description,
+            "Read only access to all the users  VMs, Containers"
+        );
+    }
 }
