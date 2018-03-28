@@ -5,7 +5,7 @@ import "./auth";
 // import "./origin";
 // import "./team";
 import "./roles";
-// import "./permissions";
+import "./permissions";
 import "./secrets";
 import "./serviceaccount";
 import "./ldap";
