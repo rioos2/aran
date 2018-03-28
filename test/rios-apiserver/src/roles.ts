@@ -102,6 +102,8 @@ describe('User Roles API', function() {
        .expect(200)
        .end(function(err, res) {
        expect(res.body.items.length).to.equal(3);
+       expect(res.body.kind).to.equal(globalAny.rolelist);
+       expect(res.body.api_version).to.equal(globalAny.version);
          done(err);
        });
    });

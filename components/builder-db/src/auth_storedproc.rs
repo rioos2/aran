@@ -846,6 +846,19 @@ impl Migratable for AuthProcedures {
                    $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+
+        // Select role from roles table by name
+        migrator.migrate(
+            "authsrv",
+            r#"CREATE OR REPLACE FUNCTION get_permission_by_email_v1 (email_id text) RETURNS SETOF permissions AS $$
+                    BEGIN
+                      RETURN QUERY SELECT * FROM permissions WHERE role_id IN(SELECT id FROM roles WHERE name = ANY((SELECT roles FROM accounts WHERE email = email_id)::text[]));
+                      RETURN;
+                    END
+                    $$ LANGUAGE plpgsql STABLE"#,
+        )?;
+
+
         ui.end("AuthProcedure");
 
         migrator.migrate(
