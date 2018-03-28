@@ -42,14 +42,11 @@ impl RuntimeHandler {
                 match self.license.create_trial_or_verify() {
                     Ok(()) => {}
                     Err(err) => {
-                        if self.license.hard_stop().is_err() {
-                            error!("License Error {:?}", err)
+                        let expiry_attempt = self.license.hard_stop();
+                        if expiry_attempt.is_err() {
+                            error!("{:?}", err)
                         }
-                        warn!(
-                            "{:?}, Message: {:?}",
-                            self.license.hard_stop().unwrap(),
-                            err
-                        )
+                        warn!("{:?}, Message: {:?}", expiry_attempt.unwrap(), err)
                     }
                 }
             }

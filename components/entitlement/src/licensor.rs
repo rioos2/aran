@@ -36,8 +36,10 @@ impl Client {
             return Err(Error::TrialExpired);
         }
         Ok(format!(
-            "You License Trial Attempt {:?}",
-            self.expiry_counter
+            "{} [{}/{}]",
+            Error::TrialExpired,
+            self.expiry_counter,
+            ALLOWED_EXPIRY
         ))
     }
 
