@@ -25,7 +25,7 @@ use api::events::EventLogger;
 use config::Config;
 use common::ui::UI;
 
-use api::{cluster, security, deploy, audit, devtooling};
+use api::{cluster, security, deploy, audit, devtooling, authorize};
 use node::runtime::ApiSender;
 
 use db::data_store::*;
@@ -137,8 +137,11 @@ impl Wirer {
                 let mut team = deploy::team::TeamApi::new(Box::new(ds.clone()));
                 team.wire(self.config.clone(), &mut router);
 
-                let mut authorize = security::authorize_api::AuthorizeApi::new(Box::new(ds.clone()));
-                authorize.wire(self.config.clone(), &mut router);
+                let mut role = authorize::role::RoleApi::new(Box::new(ds.clone()));
+                role.wire(self.config.clone(), &mut router);
+
+                let mut permission = authorize::permission::PermissionApi::new(Box::new(ds.clone()));
+                permission.wire(self.config.clone(), &mut router);
 
                 let mut settings = security::settings_map_api::SettingsMapApi::new(Box::new(ds.clone()));
                 settings.wire(self.config.clone(), &mut router);

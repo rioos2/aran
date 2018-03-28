@@ -1,1 +1,2 @@
-pub mod authorize;
+pub mod role;
+pub mod permission;

@@ -23,6 +23,7 @@ pub mod cluster;
 pub mod deploy;
 pub mod security;
 pub mod devtooling;
+pub mod authorize;
 
 mod helpers;
 use protocol::api::base::{IdGet, StatusUpdate, QueryInput};
