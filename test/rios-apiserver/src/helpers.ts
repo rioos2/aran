@@ -20,3 +20,4 @@ globalAny.rootCA = fs.readFileSync(path.join(process.env.RIOOS_HOME,'config/serv
 globalAny.apiServer = 'https://localhost:7443/api/v1';
 globalAny.joblist ="JobList";
 globalAny.permissionlist= "PermissionList";
+globalAny.rolelist= "RoleList";

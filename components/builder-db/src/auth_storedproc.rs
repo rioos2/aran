@@ -850,9 +850,9 @@ impl Migratable for AuthProcedures {
         // Select role from roles table by name
         migrator.migrate(
             "authsrv",
-            r#"CREATE OR REPLACE FUNCTION get_permission_by_account_v1 (account bigint) RETURNS SETOF permissions AS $$
+            r#"CREATE OR REPLACE FUNCTION get_permission_by_email_v1 (email_id text) RETURNS SETOF permissions AS $$
                     BEGIN
-                      RETURN QUERY SELECT * FROM permissions WHERE role_id IN(SELECT id FROM roles WHERE name = ANY((SELECT roles FROM accounts WHERE id = account)::text[]));
+                      RETURN QUERY SELECT * FROM permissions WHERE role_id IN(SELECT id FROM roles WHERE name = ANY((SELECT roles FROM accounts WHERE email = email_id)::text[]));
                       RETURN;
                     END
                     $$ LANGUAGE plpgsql STABLE"#,

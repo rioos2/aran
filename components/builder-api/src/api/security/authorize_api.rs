@@ -210,11 +210,11 @@ impl AuthorizeApi {
             ))),
         }
     }
-    //GET: /permission/account/:account_id
+    //GET: /permission/email/:id
     //Input id - u64 as input and returns a roles
-    fn list_permission_by_account(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_account(req)?;
-        match authorize::DataStore::list_permission_by_account(&self.conn, &params) {
+    fn list_permission_by_email(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_name(req)?;
+        match authorize::DataStore::list_permission_by_email(&self.conn, &params) {
             Ok(Some(permissions_list)) => Ok(render_json_list(
                 status::Ok,
                 dispatch(req),
@@ -224,7 +224,7 @@ impl AuthorizeApi {
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(RecordsNotFound),
-                params.get_name()
+                params.get_id()
             ))),
         }
     }
@@ -265,7 +265,7 @@ impl Api for AuthorizeApi {
         let show_permissions_applied_for = move |req: &mut Request| -> AranResult<Response> { _self.show_permissions_applied_for(req) };
 
         let _self = self.clone();
-        let list_permission_by_account = move |req: &mut Request| -> AranResult<Response> { _self.list_permission_by_account(req) };
+        let list_permission_by_email = move |req: &mut Request| -> AranResult<Response> { _self.list_permission_by_email(req) };
 
         //Routes:  Authorization : Roles
         router.post(
@@ -317,9 +317,9 @@ impl Api for AuthorizeApi {
             "show_permissions_applied_for",
         );
         router.get(
-            "/permissions/account/:account_id",
-            XHandler::new(C { inner: list_permission_by_account }).before(basic.clone()),
-            "list_permission_by_account_id",
+            "/permissions/email/:name",
+            XHandler::new(C { inner: list_permission_by_email }).before(basic.clone()),
+            "list_permission_by_email",
         );
 
     }

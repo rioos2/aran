@@ -62,7 +62,6 @@ lazy_static! {
 
         map.register("GET:roles","RoleList");
         map.register("GET:permissions","PermissionList");
-        map.register("GET:permissionsaccount","PermissionList");
         map.register("GET:permissionsroles","PermissionList");
 
         map.register("POST:volumes","Volume");

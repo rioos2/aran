@@ -188,11 +188,11 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn list_permission_by_account(datastore: &DataStoreConn, get_acc: &IdGet) -> PermissionsOutputList {
+    pub fn list_permission_by_email(datastore: &DataStoreConn, get_email: &IdGet) -> PermissionsOutputList {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_permission_by_account_v1($1)",
-            &[&(get_acc.get_name().parse::<i64>().unwrap())],
+            "SELECT * FROM get_permission_by_email_v1($1)",
+            &[&(get_email.get_id() as String)],
         ).map_err(Error::PermissionsGet)?;
 
         let mut response = Vec::new();
