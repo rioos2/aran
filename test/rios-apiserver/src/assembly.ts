@@ -116,7 +116,7 @@ describe('Deployment API', function() {
       .ca(globalAny.rootCA)
         .send({"status":{"message":"","reason":"","phase": "ready","conditions": [{"message":"nodelet has sufficient disk space available", "reason":"NodeletHasSufficientDisk","status": "False",
         "last_transition_time": "2017-09-21T06:35:16Z", "last_probe_time": "2017-09-21T06:35:16Z","condition_type":"OutOfDisk","last_update_time": ""}]}})
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -138,7 +138,7 @@ describe('Deployment API', function() {
     it('returns Unauthorized error for get account based assembly', function(done) {
       request.get('/accounts/'+globalAny.account_id+'/assemblys')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
@@ -147,7 +147,7 @@ describe('Deployment API', function() {
     it('returns Unauthorized error for all assembly', function(done) {
       request.get('/assemblys')
       .ca(globalAny.rootCA)
-        .expect(401)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });

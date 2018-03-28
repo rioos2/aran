@@ -4,7 +4,7 @@ import "./settingsmap";
 import "./auth";
 // import "./origin";
 // import "./team";
-// import "./roles";
+import "./roles";
 // import "./permissions";
 import "./secrets";
 import "./serviceaccount";

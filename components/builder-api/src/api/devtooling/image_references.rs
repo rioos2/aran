@@ -44,7 +44,7 @@ pub struct ImageReferencesApi {
 /// GET:/imagereferences,
 /// GET: /imagereferences/:id,
 /// PUT: /imagereferences/:id,
-/// PUT: /imagereferences/build_configs/:id,
+/// PUT: /imagereferences/buildconfigs/:id,
 
 
 impl ImageReferencesApi {
@@ -127,7 +127,7 @@ impl ImageReferencesApi {
             ))),
         }
     }
-    ///GET: /imagereferences/build_configs/:id
+    ///GET: /imagereferences/buildconfigs/:id
     ///Returns ImageReferences
     fn show_by_build_config(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
@@ -191,7 +191,7 @@ impl Api for ImageReferencesApi {
         );
 
         router.get(
-            "/imagereferences/build_configs/:id",
+            "/imagereferences/buildconfigs/:id",
             XHandler::new(C { inner: show_by_build_config }).before(basic.clone()),
             "image_references_show_by_build_config",
         );

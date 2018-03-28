@@ -18,7 +18,6 @@ use rio_net::http::middleware::*;
 use rio_net::http::pack;
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::vulnerablity::AnchoreClient;
-use entitlement::licensor;
 use node::runtime::Runtime;
 
 use api::Api;
@@ -184,12 +183,6 @@ impl Wirer {
                     &self.config.blockchain.cache_dir,
                     *&self.config.blockchain.enabled,
                 )));
-
-                chain.link(persistent::Read::<LicensorCli>::both(
-                    licensor::Client::new(&*self.config.clone()),
-                ));
-
-                chain.link_before(EntitlementAct);
 
                 chain.link_after(pack::CompressionMiddleware);
 
