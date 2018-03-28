@@ -382,7 +382,7 @@ impl MetricFeeder for Assembly {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {
-    id: String,
+    pub id: String,
 }
 impl Secret {
     pub fn with_secrets(id: &str) -> Secret {

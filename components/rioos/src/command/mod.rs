@@ -11,3 +11,4 @@ pub mod job;
 pub mod network;
 pub mod storage;
 pub mod cluster;
+pub mod secret;

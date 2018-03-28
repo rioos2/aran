@@ -29,7 +29,7 @@ use rioos_http::ApiClient;
 use rio_net::http::rendering::ResponseList;
 use rio_net::util::errors::err_from_response;
 
-use protocol::api::{session, deploy, blueprint, job, network, node, storage, origin, scale};
+use protocol::api::{session, deploy, blueprint, job, network, node, storage, origin, scale, secret};
 use protocol::api::base::MetaFields;
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
@@ -194,6 +194,22 @@ impl Client {
 
         Ok(())
     }
+
+    pub fn create_secret(&self, secret: secret::Secret, origin: &str, token: &str, email: &str) -> Result<()> {
+        let res = self.0
+            .post(&format!("origins/{}/secrets",origin))
+            .body(Body::from(serde_json::to_string(&secret)?))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioNetError(err_from_response(res)));
+        };
+
+        Ok(())
+    }
+
 
     pub fn create_horizontal_scaling(&self, hscale: scale::HorizontalScaling, token: &str, email: &str) -> Result<()> {
         let res = self.0

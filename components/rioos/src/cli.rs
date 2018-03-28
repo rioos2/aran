@@ -182,6 +182,16 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SOURCE: +required +takes_value {file_exists} "A filepath of the cluster.yaml")
             )
         )
+        (@subcommand secret =>
+            (about: "Commands relating to Rio/OS Secret Create")
+            (aliases: &["sec"])
+            (@setting ArgRequiredElseHelp)
+            (@subcommand create =>
+                (about: "Create the Secret from file in Rio/OS")
+                (aliases: &["seccreate"])
+                (@arg SOURCE: +required +takes_value {file_exists} "A filepath of the secret.yaml")
+            )
+        )
         (@subcommand app =>
             (about: "Commands relating to Rio/OS apps and other app-specific configuration.")
             (aliases: &["ap"])
