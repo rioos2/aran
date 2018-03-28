@@ -34,7 +34,7 @@ impl InternalPart {
 
         let f = futures::lazy(move || {
             internal_tx
-                .send(InternalEvent::Shutdown)
+                .send(InternalEvent::EntitlementTimeout)
                 .map(drop)
                 .map_err(into_other)
         }).map_err(|_| panic!("Can't execute shutdown"));

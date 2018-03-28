@@ -38,12 +38,13 @@ impl RuntimeHandler {
 
     fn handle_internal_event(&mut self, event: InternalEvent) {
         match event {
-            InternalEvent::Shutdown => {
+            InternalEvent::EntitlementTimeout => {
                 match self.license.create_trial_or_verify() {
                     Ok(()) => {}
                     Err(err) => error!("License Error {:?}", err),
                 }
             }
+            InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }
     }
 }

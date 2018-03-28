@@ -100,7 +100,9 @@ impl Runtime {
             let mut core = Core::new()?;
             let handle = core.handle();
             core.run(internal_part.run(handle)).map_err(|_| {
-                other_error("An error in the `RuntimeHandler` thread occurred")
+                other_error(
+                    "An error in the `RuntimeHandler:InternalPart` thread occurred",
+                )
             })
         });
 
