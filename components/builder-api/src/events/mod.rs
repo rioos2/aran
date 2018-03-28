@@ -6,15 +6,15 @@ pub mod error;
 
 use futures::{Future, Async, Poll, Stream};
 use futures::sync::mpsc;
-
 use node::runtime::ExternalMessage;
 
 /// This kind of events is used to schedule execution in next event-loop ticks
 /// Usable to make flat logic and remove recursions.
 #[derive(Debug)]
 pub enum InternalEvent {
-    /// Dummy event.
-    Timeout,
+    /// Shutdown the node.
+    EntitlementTimeout,
+    Shutdown,
 }
 
 #[derive(Debug)]
@@ -125,6 +125,6 @@ where
     }
 }
 
-fn tobox<F: Future + 'static>(f: F) -> Box<Future<Item = (), Error = F::Error>> {
+pub fn tobox<F: Future + 'static>(f: F) -> Box<Future<Item = (), Error = F::Error>> {
     Box::new(f.map(drop))
 }

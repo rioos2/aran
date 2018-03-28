@@ -11,11 +11,13 @@ use hex;
 pub fn hash_string(data: &str) -> String {
     let hashed = &hash_sodium(data.as_bytes())[..]; //A temporary fix.
 
-    let stripped_len = { if hashed.len() > 10 { 10 } else { hashed.len() } };
-    
-    println!("==> REMOVE this after debugging [{},{:?}]\n", stripped_len, &hashed);
+    let stripped_len = {
+        if hashed.len() > 10 { 10 } else { hashed.len() }
+    };
 
-    hex::encode(String::from_utf8_lossy(&hashed[..stripped_len]).into_owned())
+    hex::encode(
+        String::from_utf8_lossy(&hashed[..stripped_len]).into_owned(),
+    )
 }
 
 

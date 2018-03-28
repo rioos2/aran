@@ -9,13 +9,16 @@ use config::Config;
 use rio_net::http::middleware::BlockchainConn;
 
 use events::{HandlerPart, InternalEvent};
+use node::internal::InternalPart;
 use events::error::{into_other, other_error};
+
 use futures::{Future, Sink};
 use futures::sync::mpsc;
 
 use tokio_core::reactor::Core;
 
 use protocol::api::audit::Envelope;
+use entitlement::licensor::Client;
 
 /// External messages.
 #[derive(Debug)]
@@ -49,6 +52,7 @@ impl RuntimeChannel {
 /// Handler
 pub struct RuntimeHandler {
     pub config: Box<BlockchainConn>,
+    pub license: Box<Client>,
 }
 
 impl fmt::Debug for RuntimeHandler {
@@ -81,13 +85,27 @@ impl Runtime {
     pub fn new(config: Arc<Config>) -> Self {
         Runtime {
             channel: RuntimeChannel::new(1024),
-            handler: RuntimeHandler { config: Box::new(BlockchainConn::new(&*config.clone())) },
+            handler: RuntimeHandler {
+                config: Box::new(BlockchainConn::new(&*config.clone())),
+                license: Box::new(Client::new(&*config.clone())),
+            },
         }
     }
     /// Launches omessages handler.
     /// This may be used if you want to customize api with the `ApiContext`.
     pub fn start(self) -> io::Result<()> {
-        let handler_part = self.into_reactor();
+        let (handler_part, internal_part) = self.into_reactor();
+
+        thread::spawn(move || {
+            let mut core = Core::new()?;
+            let handle = core.handle();
+            core.run(internal_part.run(handle)).map_err(|_| {
+                other_error(
+                    "An error in the `RuntimeHandler:InternalPart` thread occurred",
+                )
+            })
+        });
+
 
         thread::spawn(move || {
             let mut core = Core::new()?;
@@ -109,14 +127,16 @@ impl Runtime {
         ApiSender::new(self.channel.api_requests.0.clone())
     }
 
-    fn into_reactor(self) -> HandlerPart<RuntimeHandler> {
-        let (_, internal_rx) = self.channel.internal_events;
+    fn into_reactor(self) -> (HandlerPart<RuntimeHandler>, InternalPart) {
+        let (internal_tx, internal_rx) = self.channel.internal_events;
+
         let handler_part = HandlerPart {
             handler: self.handler,
             internal_rx,
             api_rx: self.channel.api_requests.1,
         };
 
-        handler_part
+        let internal_part = InternalPart { internal_tx };
+        (handler_part, internal_part)
     }
 }

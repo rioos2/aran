@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 
-use events::{Event, EventHandler};
+use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{RuntimeHandler, ExternalMessage};
 
 use api::audit::ledger;
@@ -10,7 +10,7 @@ impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
         match event {
             Event::Api(api) => self.handle_api_event(api),
-            Event::Internal(internal) => info!("skip {:?}", internal),
+            Event::Internal(internal) => self.handle_internal_event(internal),
         }
     }
 }
@@ -32,6 +32,19 @@ impl RuntimeHandler {
                     _ => println!("--> ledger load  fail."),
                 }
             }
+        }
+
+    }
+
+    fn handle_internal_event(&mut self, event: InternalEvent) {
+        match event {
+            InternalEvent::EntitlementTimeout => {
+                match self.license.create_trial_or_verify() {
+                    Ok(()) => {}
+                    Err(err) => error!("License Error {:?}", err),
+                }
+            }
+            InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }
     }
 }

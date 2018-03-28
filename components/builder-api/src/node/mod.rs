@@ -10,6 +10,7 @@ pub mod events;
 pub mod runtime;
 pub mod api_wirer;
 pub mod streamer;
+pub mod internal;
 
 use std::path::PathBuf;
 use std::sync::Arc;

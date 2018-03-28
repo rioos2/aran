@@ -56,12 +56,10 @@ impl<'a> Collector<'a> {
             })
         );
 
-        let content = self.client.pull_metrics(&data);
+        let content = self.client.pull_metrics(&data)?;
 
-        if content.is_ok() {
-            let response: PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
-            content_datas.push(response);
-        }
+        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+        content_datas.push(response);
 
         let memory_contents_data = self.set_metric_name(Ok(content_datas), "ram_total")?;
 
@@ -87,12 +85,10 @@ impl<'a> Collector<'a> {
             })
         );
 
-        let content = self.client.pull_metrics(&data);
+        let content = self.client.pull_metrics(&data)?;
 
-        if content.is_ok() {
-            let response: PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
-            content_datas.push(response);
-        }
+        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+        content_datas.push(response);
 
         let memory_contents_data = self.set_metric_name(Ok(content_datas), "disk_total")?;
 
@@ -176,12 +172,12 @@ impl<'a> Collector<'a> {
                 })
             );
 
-            let content = self.client.pull_metrics(&data);
+            let content = self.client.pull_metrics(&data)?;
 
-            if content.is_ok() {
-                let response: PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
-                content_datas.push(response);
-            }
+
+            let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+            content_datas.push(response);
+
         }
 
         Ok(content_datas)
@@ -201,12 +197,12 @@ impl<'a> Collector<'a> {
                 "sum by({}) ({})*100",
                 self.scope.avg_by_name.clone(),
                 sum
-            ));
+            ))?;
 
-            if content.is_ok() {
-                let response: PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
-                content_datas.push(response);
-            }
+
+            let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+            content_datas.push(response);
+
         }
 
         Ok(content_datas)
@@ -244,12 +240,11 @@ impl<'a> Collector<'a> {
                 })
             );
 
-            let content = self.client.pull_osusage(&data);
+            let content = self.client.pull_osusage(&data)?;
 
-            if content.is_ok() {
-                let response: PromResponse = serde_json::from_str(&content.unwrap().data).unwrap();
-                content_datas.push(response);
-            }
+            let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+            content_datas.push(response);
+
         }
 
         Ok(content_datas)
@@ -350,7 +345,7 @@ impl SumGroup for PromResponse {
             sum = Data::Vector(
                 instance_changed
                     .iter()
-                    .map(|x| {
+                    .map(|x| if x.value.1 != "0" {
                         let avg_metric_val = (
                             x.value.0,
                             (x.value.1.trim().parse::<f64>().unwrap_or(1.0).div(
@@ -358,9 +353,15 @@ impl SumGroup for PromResponse {
                                     f64,
                             )).to_string(),
                         );
+
                         InstantVecItem {
                             metric: x.metric.clone(),
                             value: avg_metric_val,
+                        }
+                    } else {
+                        InstantVecItem {
+                            metric: x.metric.clone(),
+                            value: (x.value.0, "".to_string()),
                         }
                     })
                     .collect::<Vec<_>>(),

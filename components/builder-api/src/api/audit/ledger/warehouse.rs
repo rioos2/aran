@@ -99,6 +99,11 @@ impl Ledger for Blockchain {
         };
 
         let audits: Vec<Envelope> = res.json()?;
+
+        if audits.is_empty() {
+            return Ok(None);
+        }
+
         let data = audits
             .iter()
             .map(|x| {

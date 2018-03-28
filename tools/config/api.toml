@@ -11,6 +11,9 @@ username = "dev@rio.companyadmin"
 token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 endpoint = "https://localhost:6443/api/v1"
 
+[blockchain]
+endpoint = "http://localhost:7000"
+
 [ui]
 root = "/some/path"
 
@@ -22,10 +25,18 @@ backend = "Local"
 endpoint = "https://env.envkey.com/v1/"
 token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 
-events_enabled = false
-log_dir = "/tmp"
-state_update_timeout = 10000
-listen_address = "localhost:9637"
+[licenses]
+so_file = "ShaferFilechck.so"
+activation_code = "null"
+
+[logs]
+url = "http://localhost:8086"
+prefix = "rioos_logs"
+
+[anchore]
+url = "http://localhost:8228/v1"
+username = ""
+password = ""
 
 [[targets]]
 platform = "windows"
