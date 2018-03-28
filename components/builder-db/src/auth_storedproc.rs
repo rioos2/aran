@@ -865,7 +865,20 @@ impl Migratable for AuthProcedures {
             "originsrv",
             r#"with first_insert as (
                 insert into roles(name,description)
-                values('role_rios:superuser','Superuser of RIO/OS. God given powers.  instance')
+                values('rioos:superuser','Superuser of RIO/OS. God given powers.  instance')
+                ON CONFLICT (name) DO NOTHING
+                RETURNING id
+            )
+            insert into permissions (role_id, name ,description)
+            values
+            ( (select id from first_insert), 'rioos.assembly.get','Read only access to all the users  VMs, Containers'),( (select id from first_insert), 'rioos.assembly.list','Read only access to all the users  VMs, Containers')"#,
+        )?;
+
+        migrator.migrate(
+            "originsrv",
+            r#"with first_insert as (
+                insert into roles(name,description)
+                values('rioos:universalsoldier','universal soldier of RIO/OS. God given powers.  instance')
                 ON CONFLICT (name) DO NOTHING
                 RETURNING id
             )
@@ -878,7 +891,7 @@ impl Migratable for AuthProcedures {
             "originsrv",
             r#"with second_insert as (
                 insert into roles(name,description)
-                values('role_rios:TeamAdmin','TeamOwner of RIO/OS team')
+                values('rioos:loneranger','TeamOwner of RIO/OS team')
                 ON CONFLICT (name) DO NOTHING
                 RETURNING id
             )

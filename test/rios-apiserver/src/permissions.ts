@@ -168,7 +168,7 @@ describe('User Permission API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.items.length).to.equal(5);
+          expect(res.body.items.length).to.equal(7);
           done(err);
         });
     });
@@ -180,7 +180,7 @@ describe('User Permission API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.items.length).to.equal(1);
+          expect(res.body.items.length).to.equal(2);
           done(err);
         });
     });
