@@ -21,12 +21,13 @@ impl ServiceAccountDS {
     pub fn create(datastore: &DataStoreConn, service_create: &service_account::ServiceAccount) -> ServiceAccountOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_service_account_v1($1,$2,$3,$4)",
+            "SELECT * FROM insert_service_account_v1($1,$2,$3,$4,$5)",
             &[
                 &(serde_json::to_value(&service_create.get_secrets()).unwrap()),
                 &(serde_json::to_value(&service_create.object_meta()).unwrap()),
                 &(serde_json::to_value(&service_create.type_meta()).unwrap()),
                 &(serde_json::to_value(&service_create.get_metadata()).unwrap()),
+                &(service_create.get_roles() as Vec<String>),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
         if rows.len() > 0 {
@@ -87,10 +88,7 @@ impl ServiceAccountDS {
         let query = "SELECT * FROM ".to_string() + dbprocedure + "($1,$2)";
         let rows = conn.query(
             &query,
-            &[
-                &session_create.get_email(), 
-                &session_create.get_email(),               
-            ],
+            &[&session_create.get_email(), &session_create.get_email()],
         ).map_err(Error::ServiceAccountGet)?;
         if rows.len() > 0 {
             let row = rows.get(0);
@@ -132,7 +130,6 @@ impl ServiceAccountDS {
         }
         Ok(None)
     }
-
 }
 
 fn row_to_service_account(row: &postgres::rows::Row) -> Result<service_account::ServiceAccount> {
@@ -146,6 +143,7 @@ fn row_to_service_account(row: &postgres::rows::Row) -> Result<service_account::
     service_account.set_id(id.to_string());
     service_account.set_secrets(serde_json::from_value(row.get("secrets")).unwrap());
     service_account.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
+    service_account.set_roles(row.get("roles"));
     service_account.set_created_at(created_at.to_rfc3339());
 
     Ok(service_account)

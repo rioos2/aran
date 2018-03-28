@@ -25,6 +25,8 @@ use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
 use bytes::Bytes;
 use serde_json;
+const SERVICEACCOUNTDEFAULT: &'static str = "rioos:universalsoldier";
+
 
 /// Securer api: SecurerApi provides ability to declare the node
 /// and manage them.
@@ -66,6 +68,7 @@ impl SeriveAccountApi {
 
 
         unmarshall_body.set_meta(type_meta(req), m);
+        unmarshall_body.set_roles(vec![SERVICEACCOUNTDEFAULT.to_string()]);
 
         ui::rawdumpln(
             Colour::White,
@@ -139,7 +142,7 @@ impl SeriveAccountApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-       
+
         match ServiceAccountDS::update(&self.conn, &unmarshall_body) {
             Ok(Some(serviceaccount)) => Ok(render_json(status::Ok, &serviceaccount)),
             Err(err) => Err(internal_error(&format!("{}", err))),
