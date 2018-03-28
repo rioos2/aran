@@ -163,11 +163,6 @@ impl NodeDS {
 
         let os_response_data = os_checker.overall_node_cpu()?;
 
-        println!(
-            "---------------------data--------------------------------------{:?}",
-            os_response_data
-        );
-
         let os_response = os_checker.metric_by_os_usage()?;
 
         //Generete the collected prometheus data as HealthzAllGetResponse

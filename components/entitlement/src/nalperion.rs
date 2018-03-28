@@ -48,7 +48,7 @@ impl Nalperion {
 
     // Returns the status of license verified with nalperion
     pub fn verify(&self) -> Result<()> {
-        let data = self.fascade.check_license()?;
+        self.fascade.check_license()?;
         Ok(())
     }
 }
