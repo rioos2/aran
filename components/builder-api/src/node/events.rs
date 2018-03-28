@@ -41,7 +41,16 @@ impl RuntimeHandler {
             InternalEvent::EntitlementTimeout => {
                 match self.license.create_trial_or_verify() {
                     Ok(()) => {}
-                    Err(err) => error!("License Error {:?}", err),
+                    Err(err) => {
+                        if self.license.hard_stop().is_err() {
+                            error!("License Error {:?}", err)
+                        }
+                        warn!(
+                            "{:?}, Message: {:?}",
+                            self.license.hard_stop().unwrap(),
+                            err
+                        )
+                    }
                 }
             }
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
