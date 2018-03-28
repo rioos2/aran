@@ -30,6 +30,7 @@ use protocol::api::base::MetaFields;
 use auth::rioos::AuthenticateDelegate;
 use auth::util::authenticatable::Authenticatable;
 use auth::rioos::user_account::UserAccountAuthenticate;
+const DEFAULTROLE: &'static str = "rioos:loneranger";
 
 #[derive(Clone)]
 pub struct AuthenticateApi {
@@ -93,6 +94,7 @@ impl AuthenticateApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
+        unmarshall_body.set_roles(vec![DEFAULTROLE.to_string()]);
 
         unmarshall_body.set_token(UserAccountAuthenticate::token().unwrap());
 
