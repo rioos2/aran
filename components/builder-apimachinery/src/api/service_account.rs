@@ -5,21 +5,21 @@ use std::collections::BTreeMap;
 
 // ObjectReference contains enough information to let you inspect or modify the referred object.
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct ObjectReference {   
-    kind: String,  
-    origin: String, 
-    name: String, 
-    uid: String, 
-    api_version: String, 
+pub struct ObjectReference {
+    kind: String,
+    origin: String,
+    name: String,
+    uid: String,
+    api_version: String,
     resource_version: String,
-    field_path: String 
+    field_path: String,
 }
 
 impl ObjectReference {
     pub fn new() -> ObjectReference {
         ::std::default::Default::default()
     }
-    
+
     pub fn set_kind(&mut self, v: ::std::string::String) {
         self.kind = v;
     }
@@ -87,6 +87,8 @@ pub struct ServiceAccount {
     metadata: BTreeMap<String, String>,
     secrets: Vec<ObjectReference>,
     #[serde(default)]
+    roles: Vec<String>,
+    #[serde(default)]
     created_at: String,
 }
 impl ServiceAccount {
@@ -118,9 +120,17 @@ impl ServiceAccount {
     pub fn set_secrets(&mut self, v: Vec<ObjectReference>) {
         self.secrets = v;
     }
-   
+
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
+    }
+
+    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
+        self.roles = v;
+    }
+
+    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
+        self.roles.clone()
     }
 
     pub fn get_created_at(&self) -> ::std::string::String {
@@ -156,8 +166,40 @@ impl MetaFields for ServiceAccount {
 impl Into<Session> for ServiceAccount {
     fn into(self) -> Session {
         let mut session = Session::new();
-        session.set_id(self.get_id());        
+        session.set_id(self.get_id());
         session.set_meta(self.type_meta(), self.object_meta());
         session
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use serde_json::from_str as json_decode;
+
+    use super::*;
+    #[test]
+    fn decode_sevice_account() {
+        let val = r#"{
+            "object_meta":{
+                "name":"assemblyfactory-controller",
+                "labels":{"group":"development"},
+                "annotations":{"rioos.io/serviceaccount":"job"}},
+            "metadata":{
+                "origin":"rioos_system"},
+            "secrets":[
+            {
+                "kind":"",
+                "origin":"",
+                "name":"",
+                "uid":"",
+                "api_version":"",
+                "resource_version":"",
+                "field_path":""
+            }]
+        }"#;
+        let serv_acc: ServiceAccount = json_decode(val).unwrap();
+        assert_eq!(serv_acc.secrets.len(), 1);
+        assert!(serv_acc.metadata.contains_key("origin"));
     }
 }

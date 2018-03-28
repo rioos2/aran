@@ -19,6 +19,7 @@ describe('Service account API', function() {
         expect(res.body);
         globalAny.servacc_name =res.body.object_meta.name;
         globalAny.servacc_id =res.body.id;
+        expect(res.body.roles.length).to.equal(1);
         done(err);
       });
   });
@@ -52,6 +53,28 @@ describe('Service account API', function() {
     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .set('Authorization', globalAny.bobo_bearer)
       .expect(200)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+
+  it('returns  permissions by service account name', function(done) {
+    request.get('permissions/serviceaccounts/'+globalAny.servacc_name)
+    .ca(globalAny.rootCA)
+    .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .set('Authorization', globalAny.bobo_bearer)
+      .expect(200)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+
+  it('returns  permissions by wrong service account name', function(done) {
+    request.get('permissions/serviceaccounts/assembly_servacc_name')
+    .ca(globalAny.rootCA)
+    .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .set('Authorization', globalAny.bobo_bearer)
+      .expect(404)
       .end(function(err, res) {
         done(err);
       });

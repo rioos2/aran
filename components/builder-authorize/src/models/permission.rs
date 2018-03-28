@@ -120,6 +120,24 @@ impl DataStore {
         Ok(None)
     }
 
+    pub fn list_permission_by_serviceaccount(datastore: &DataStoreConn, get_serv: &IdGet) -> PermissionsOutputList {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_permission_by_service_account_v1($1)",
+            &[&(get_serv.get_id() as String)],
+        ).map_err(Error::PermissionsGet)?;
+
+        let mut response = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_permissions(&row)?)
+            }
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+
     //Don't understand the this. ?
     // What is get_role_by_name
     pub fn get_role_by_name(datastore: &DataStoreConn, roles: &Vec<String>) -> PermissionsOutputList {
