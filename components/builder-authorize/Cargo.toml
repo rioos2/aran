@@ -1,7 +1,7 @@
 [package]
 name = "rioos_builder_authsrv"
 version = "0.0.0"
-authors = ["Rajthilak Rajamani <rajthilak.rajamani@rio.company>","Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>", "Suganya Kaliyamoorthy <suganya.kaliyamoorthy@rio.company>]
+authors = ["Rajthilak Rajamani <rajthilak.rajamani@rio.company>","Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>", "Suganya Kaliyamoorthy <suganya.kaliyamoorthy@rio.company>"]
 description = "RIO/OS Identity and Access library"
 workspace = "../../"
 
