@@ -28,7 +28,7 @@ pub struct Config {
     //  TO-DO: This will be moved to blockchain (rocksdb) as doing analytics will be easy.
     pub logs: LogsCfg,
     //  Blockchain API configuration.
-        pub blockchain: BlockchainCfg,
+    pub blockchain: BlockchainCfg,
     //  Marketplaces API configuration
     pub marketplaces: MarketplacesCfg,
     //  Security and vulnerabilty checker API

@@ -15,7 +15,7 @@ use error::Error as ReqwestError;
 pub const SUCCESS: &'static str = "Success";
 pub const FAILURE: &'static str = "Failure";
 pub const NOTFOUND: &'static str = "Not Found";
-pub const INTERNALERROR: &'static str = "Must have database, blockchain running. Is it started yet ?";
+pub const INTERNALERROR: &'static str = "Must have database, Server running. Is it started yet ?";
 pub const BADREQUEST: &'static str = "Bad Request";
 pub const MALFORMED: &'static str = "MalformedBody";
 
@@ -443,9 +443,7 @@ pub fn err_from_response(mut response: reqwest::Response) -> ReqwestError {
 
     let mut buff = String::new();
     match response.read_to_string(&mut buff) {
-        Ok(_) => {
-            ReqwestError::APIError(response.status(), buff)
-        }
+        Ok(_) => ReqwestError::APIError(response.status(), buff),
         Err(_) => {
             buff.truncate(0);
             ReqwestError::APIError(response.status(), buff)

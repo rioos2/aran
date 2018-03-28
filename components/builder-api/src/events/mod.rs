@@ -6,7 +6,6 @@ pub mod error;
 
 use futures::{Future, Async, Poll, Stream};
 use futures::sync::mpsc;
-use error::Result;
 use node::runtime::ExternalMessage;
 
 /// This kind of events is used to schedule execution in next event-loop ticks
@@ -24,7 +23,7 @@ pub enum Event {
 }
 
 pub trait EventHandler {
-    fn handle_event(&mut self, event: Event) -> Result<()>;
+    fn handle_event(&mut self, event: Event);
 }
 
 #[derive(Debug)]

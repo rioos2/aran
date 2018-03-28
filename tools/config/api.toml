@@ -4,12 +4,15 @@ port = 7443
 watch_port = 8443
 tls_pkcs12_file = "api-server.pfx"
 tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
-serviceaccount_public_key = "service-account.pub"
+serviceaccount_public_key = "asfsdgunt.pub"
 
 [marketplaces]
 username = "dev@rio.companyadmin"
 token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 endpoint = "https://localhost:6443/api/v1"
+
+[blockchain]
+endpoint = "http://localhost:7000"
 
 [ui]
 root = "/some/path"
@@ -22,10 +25,6 @@ backend = "Local"
 endpoint = "https://env.envkey.com/v1/"
 token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 
-events_enabled = false
-log_dir = "/tmp"
-state_update_timeout = 10000
-listen_address = "localhost:9637"
 
 [[targets]]
 platform = "windows"

@@ -13,13 +13,13 @@
 // limitations under the License.
 
 
-use futures::{self, Future, Sink, Stream};
+use futures::{self, Future, Sink};
 use futures::sync::mpsc;
-use tokio_core::reactor::{Handle, Timeout};
+use tokio_core::reactor::Handle;
 
 use std::io;
 
-use events::error::{into_other, other_error};
+use events::error::into_other;
 use events::{InternalEvent, tobox};
 
 #[derive(Debug)]
@@ -28,7 +28,7 @@ pub struct InternalPart {
 }
 
 impl InternalPart {
-    pub fn run(self, handle: Handle) -> Box<Future<Item = (), Error = io::Error>> {
+    pub fn run(self, _handle: Handle) -> Box<Future<Item = (), Error = io::Error>> {
 
         let internal_tx = self.internal_tx.clone();
 

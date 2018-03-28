@@ -10,7 +10,7 @@ use rio_net::http::middleware::BlockchainConn;
 
 use events::{HandlerPart, InternalEvent};
 use node::internal::InternalPart;
-use events::error::{into_other, other_error, log_error};
+use events::error::{into_other, other_error};
 
 use futures::{Future, Sink};
 use futures::sync::mpsc;
