@@ -102,6 +102,12 @@ fn start(ui: &mut UI) -> Result<()> {
                 _ => unreachable!(),
             }
         }
+        ("secret", Some(matches)) => {
+            match matches.subcommand() {
+                ("create", Some(m)) => sub_secret_create(ui, m)?,
+                _ => unreachable!(),
+            }
+        }
         ("nodes", Some(matches)) => {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_node_list(ui, m)?,
@@ -227,6 +233,17 @@ fn sub_digicloud_deploy(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 //cluster setup
 fn sub_cluster_setup(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     command::cluster::setup::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        m.value_of("SOURCE").map(|v| v.into()).unwrap(),
+        &auth_token_param_or_env(&m)?,
+        &auth_email_param_or_env(&m)?,
+    )
+}
+
+//secret create
+fn sub_secret_create(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::secret::create::start(
         ui,
         create_client(&api_server_param_or_env(&m)?)?,
         m.value_of("SOURCE").map(|v| v.into()).unwrap(),

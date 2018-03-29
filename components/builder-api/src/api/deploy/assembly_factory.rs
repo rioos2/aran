@@ -301,6 +301,10 @@ impl Validator for AssemblyFactory {
             s.push("cluster_name".to_string());
         }
 
+        if self.get_secret().id.len() <= 0 {
+            s.push("secret_id".to_string());
+        }
+
         if self.get_replicas() <= 0 {
             s.push("replicas".to_string());
         }

@@ -10,8 +10,9 @@ pub struct Secret {
     object_meta: ObjectMeta,
     #[serde(default)]
     type_meta: TypeMeta,
+    #[serde(default)]
     data: BTreeMap<String, String>,
-    metadata: BTreeMap<String, String>,
+    pub metadata: BTreeMap<String, String>,
     #[serde(default)]
     created_at: String,
 }
@@ -64,10 +65,10 @@ impl Secret {
 
     pub fn bit_size(&self) -> Option<u32> {
         *(&self.get_data()
-            .get(Self::SSH_KEY_PAIR_SIZE)
-            .unwrap_or(&Self::DEFAULT_SSH_KEY_PAIR_SIZE.to_string())
-            .parse::<u32>()
-            .ok())
+              .get(Self::SSH_KEY_PAIR_SIZE)
+              .unwrap_or(&Self::DEFAULT_SSH_KEY_PAIR_SIZE.to_string())
+              .parse::<u32>()
+              .ok())
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
