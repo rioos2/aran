@@ -87,20 +87,6 @@ pub fn get() -> App<'static, 'static> {
             (about: "Commands relating to Rio/OS digital cloud os")
             (aliases: &["d", "di", "digitalcloud"])
             (@setting ArgRequiredElseHelp)
-            (@subcommand init =>
-                (about: "Generates a blueprint for digitalcloud os with configuration files. Executing without \
-                    argument will create a `rioos` directory in your current folder for the \
-                    os. If `DIGICLOUD_NAME` is specified it will create a folder with that name. \
-                    Environment variables (those starting with 'digicloud_') that are set will be used \
-                    in the generated app")
-                (aliases: &["i", "in", "ini"])
-                (@arg DIGICLOUD_NAME: +takes_value "Name for the new digitalcloud os")
-                (@arg ORIGIN: --origin -o +takes_value "Origin for the new digitalcloud os")
-                (@arg WITH_ALL: --("with-all")
-                    "Generate a blueprint for deploying a digitalcloud with all available digitalcloud options")
-                (@arg SCAFFOLDING: --scaffolding -s +takes_value
-                    "Specify explicit Scaffolding for your digitalcloud blueprint (ex: ubuntu_16.04, centos_7.2)")
-            )
             (@subcommand deploy =>
                 (about: "Deploys the Rioblu.yaml blueprint in Rio/OS")
                 (aliases: &["digideplo"])
@@ -183,7 +169,7 @@ pub fn get() -> App<'static, 'static> {
             )
         )
         (@subcommand secret =>
-            (about: "Commands relating to Rio/OS Secret Create")
+            (about: "Commands relating to Rio/OS Security")
             (aliases: &["sec"])
             (@setting ArgRequiredElseHelp)
             (@subcommand create =>
