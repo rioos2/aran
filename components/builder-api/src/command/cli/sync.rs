@@ -27,7 +27,6 @@ lazy_static! {
     static  ref SERVER_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("client-marketplaces.cert.pem").to_str().unwrap());
 }
 
-
 pub fn start(ui: &mut UI, config: &Config) -> Result<()> {
     ui.br()?;
 
