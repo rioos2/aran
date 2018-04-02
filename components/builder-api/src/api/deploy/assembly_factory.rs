@@ -126,6 +126,7 @@ impl AssemblyFactoryApi {
     ///Input: account_id
     //Returns all the AssemblyFactorys (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
+        println!("***********************************************************88");
         let params = self.verify_account(req)?;
 
         match assemblyfactory::DataStore::new(&self.conn).list(&params) {

@@ -199,7 +199,7 @@ impl JWTAuthenticator {
     }
 
     // this function decode JWT token using public key url
-    pub fn has_correct_token_from_path(&self, key_path: &Path) -> Result<bool> {
+    pub fn has_correct_token_from_path(&self, key_path: String) -> Result<bool> {
         let mut path = PathBuf::new();
         path.push(key_path);
         let token_data = decode(&self.token.clone(), &path, Algorithm::RS256);
