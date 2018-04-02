@@ -59,7 +59,7 @@ describe('Service account API', function() {
   });
 
   it('returns  permissions by service account name', function(done) {
-    request.get('permissions/serviceaccounts/'+globalAny.servacc_name)
+    request.get('/permissions/serviceaccounts/'+globalAny.servacc_name)
     .ca(globalAny.rootCA)
     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .set('Authorization', globalAny.bobo_bearer)
@@ -70,7 +70,7 @@ describe('Service account API', function() {
   });
 
   it('returns  permissions by wrong service account name', function(done) {
-    request.get('permissions/serviceaccounts/assembly_servacc_name')
+    request.get('/permissions/serviceaccounts/assembly_servacc_name')
     .ca(globalAny.rootCA)
     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .set('Authorization', globalAny.bobo_bearer)

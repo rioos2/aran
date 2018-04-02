@@ -112,20 +112,6 @@ describe('secrets  API', function() {
       });
   });
 
-  it('returns malformed error  if no data field', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/secrets')
-    .ca(globalAny.rootCA)
-      .set('Authorization', globalAny.bobo_bearer)
-      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .send({"secret_type": "root","metadata":{"origin":"rioos_system"},"": {"username": "USERNAME","password": "PASSWORD","rsa_key": "PRIVATEKEY","rsa_pub": "PUBLICKEY","tls_key": "PRIVATEKEY", "tls_pub": "PUBLICKEY","<anykey>": "<any value>"},
-      "type_meta":{"kind":"Secret","api_version":"v1"},
-      "object_meta": {"name":"sdfg","account":globalAny.account_id}})
-      .expect(400)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
-
   it('returns 404 error for secret get by account', function(done) {
     request.get('/accounts/1234567/secrets')
     .ca(globalAny.rootCA)

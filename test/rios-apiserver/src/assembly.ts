@@ -9,6 +9,7 @@ describe('Deployment API', function() {
   describe('Assembly API', function() {
 
     it('returns the assembly by account', function(done) {
+      this.timeout(4000)
       request.get('/accounts/'+globalAny.account_id+'/assemblys')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
@@ -23,6 +24,7 @@ describe('Deployment API', function() {
     });
 
     it('returns the assembly by id', function(done) {
+      this.timeout(4000)
       request.get('/assemblys/'+ globalAny.assembly_id)
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
@@ -38,6 +40,7 @@ describe('Deployment API', function() {
     });
 
     it('returns the assembly_status_update by id', function(done) {
+      this.timeout(4000)
       request.put('/assemblys/'+globalAny.assembly_id+'/status')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
@@ -54,6 +57,7 @@ describe('Deployment API', function() {
 
 
     it('returns the assembly_update by id', function(done) {
+      this.timeout(4000)
       request.put('/assemblys/'+globalAny.assembly_id+'/status')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
@@ -123,6 +127,7 @@ describe('Deployment API', function() {
     });
 
     it('returns all assemblys', function(done) {
+      this.timeout(4000)
       request.get('/assemblys')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
