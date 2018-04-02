@@ -86,8 +86,8 @@ describe('Job  API', function() {
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.type_meta.kind).to.equal(globalAny.joblist);
-          expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          expect(res.body.kind).to.equal(globalAny.joblist);
+          expect(res.body.api_version).to.equal(globalAny.version);
           done(err);
         });
     });
