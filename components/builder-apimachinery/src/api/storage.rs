@@ -10,11 +10,11 @@ pub struct Storage {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Storage
-    host_ip: String,         //ip of the server
-    storage_type: String,    //type of the storage server
-    storage_info: Disks,     //disk detail for the storage
+    host_ip: String, //ip of the server
+    storage_type: String, //type of the storage server
+    storage_info: Disks, //disk detail for the storage
     parameters: BTreeMap<String, String>,
-    status: Status,      //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
+    status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
     node_info: NodeInfo, //Set of ids/uuids to uniquely identify the node.
     #[serde(default)]
     created_at: String,
@@ -71,10 +71,12 @@ impl Storage {
 
     //Convert it using Into or From<String>
     pub fn get_disks_str(&self) -> String {
-        self.get_storage_info()
-            .disks
-            .iter()
-            .fold("0".to_string(), |acc, ref d| format!("{}+{}", acc, d.size))
+        self.get_storage_info().disks.iter().fold(
+            "0".to_string(),
+            |acc, ref d| {
+                format!("{}+{}", acc, d.size)
+            },
+        )
     }
 
     pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {
@@ -133,10 +135,10 @@ impl Disks {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Disk {
-    disk: String,      //name of the disk
+    disk: String, //name of the disk
     disk_type: String, //type of the disk
-    point: String,     //mount path of the disk
-    size: String,      //total size of the disk
+    point: String, //mount path of the disk
+    size: String, //total size of the disk
     used_size: String, // used size of the disk
 }
 
@@ -165,14 +167,14 @@ pub struct DataCenter {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Datacenter
-    nodes: Vec<String>,      //list of nodes to the region
-    networks: Vec<String>,   //list of networks ,which network to support the datacenter
-    enabled: bool,           //used to disable the datacenter when time of may be node ar network failure
-    storage: String,         //which storage type to support the datacenter creation
+    nodes: Vec<String>, //list of nodes to the region
+    networks: Vec<String>, //list of networks ,which network to support the datacenter
+    enabled: bool, //used to disable the datacenter when time of may be node ar network failure
+    storage: String, //which storage type to support the datacenter creation
     advanced_settings: BTreeMap<String, String>, //add some additional features for the datacenter
-    flag: String,            //describe the which place that datacenter located, provide that country flag Example:india.png
-    currency: String,        //type of the currency that country support
-    status: Status,          // //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
+    flag: String, //describe the which place that datacenter located, provide that country flag Example:india.png
+    currency: String, //type of the currency that country support
+    status: Status, // //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
     #[serde(default)]
     created_at: String,
 }
@@ -288,10 +290,12 @@ pub struct StoragePool {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind:StoragePool
-    connector_id: String,    //id that refer the where is that storage pool locat
+    connector_id: String, //id that refer the where is that storage pool locat
     storage_info: Disks,
     parameters: BTreeMap<String, String>, //Parameters holds the parameters for the provisioner that should,create volumes of this storage class.
     status: Status,
+    #[serde(default)]
+    remote_storage_disks: BTreeMap<String, Vec<String>>, //collection of storage connector disks
     #[serde(default)]
     created_at: String,
 }
@@ -339,10 +343,12 @@ impl StoragePool {
     }
     //Convert it using Into or From<String>
     pub fn get_disks_str(&self) -> String {
-        self.get_storage_info()
-            .disks
-            .iter()
-            .fold("0".to_string(), |acc, ref d| format!("{}+{}", acc, d.size))
+        self.get_storage_info().disks.iter().fold(
+            "0".to_string(),
+            |acc, ref d| {
+                format!("{}+{}", acc, d.size)
+            },
+        )
     }
 
     pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {
@@ -352,6 +358,15 @@ impl StoragePool {
     pub fn get_parameters(&self) -> &BTreeMap<String, String> {
         &self.parameters
     }
+
+    pub fn set_remote_storage_disks(&mut self, v: BTreeMap<String, Vec<String>>) {
+        self.remote_storage_disks = v;
+    }
+
+    pub fn get_remote_storage_disks(&self) -> &BTreeMap<String, Vec<String>> {
+        &self.remote_storage_disks
+    }
+
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;

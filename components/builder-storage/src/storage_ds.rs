@@ -192,10 +192,11 @@ impl StorageDS {
     pub fn storage_pool_create(datastore: &DataStoreConn, storage_create: &storage::StoragePool) -> StoragePoolOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_storage_pool_v1($1,$2,$3,$4,$5,$6)",
+            "SELECT * FROM insert_storage_pool_v1($1,$2,$3,$4,$5,$6,$7)",
             &[
                 &(storage_create.get_connector_id().parse::<i64>().unwrap()),
                 &(serde_json::to_value(storage_create.get_parameters()).unwrap()),
+                &(serde_json::to_value(storage_create.get_remote_storage_disks()).unwrap()),
                 &(serde_json::to_value(storage_create.get_storage_info()).unwrap()),
                 &(serde_json::to_value(storage_create.get_status()).unwrap()),
                 &(serde_json::to_value(storage_create.object_meta()).unwrap()),
@@ -337,6 +338,9 @@ fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storage::StoragePool
     storage.set_id(id.to_string());
     storage.set_connector_id(connector_id.to_string());
     storage.set_paramaters(serde_json::from_value(row.get("parameters")).unwrap());
+    storage.set_remote_storage_disks(
+        serde_json::from_value(row.get("remote_storage_disks")).unwrap(),
+    );
     storage.set_storage_info(serde_json::from_value(row.get("storage_info")).unwrap());
     storage.set_status(serde_json::from_value(row.get("status")).unwrap());
     storage.set_created_at(created_at.to_rfc3339());
