@@ -8,6 +8,8 @@ extern crate rioos_builder_servicesrv as secret;
 extern crate rioos_builder_session as session;
 extern crate rioos_builder_servicesrv as serviceaccount;
 extern crate rioos_common as common;
+extern crate rioos_builder_authsrv as auth;
+
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
@@ -16,7 +18,7 @@ extern crate iron;
 extern crate base64;
 
 extern crate openssl;
-   
+
 #[cfg(test)]
 #[macro_use]
 extern crate serde_json;
@@ -27,3 +29,4 @@ extern crate serde_json;
 pub mod rioos;
 pub mod util;
 pub mod error;
+pub mod rbac;

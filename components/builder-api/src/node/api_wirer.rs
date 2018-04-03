@@ -197,8 +197,6 @@ impl Wirer {
                     ds.setup(ui)?.clone(),
                 ));
 
-                chain.link_before(TrustAccessed);
-
                 let conf = self.config.clone();
 
                 let thread = thread::spawn(move || {

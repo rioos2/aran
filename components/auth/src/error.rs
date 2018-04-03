@@ -24,6 +24,7 @@ pub enum Error {
     OldPassticketMustBeRemoved(String),
     CantVerifyPassticket(String),
     PassticketMismatch,
+    PermissionError(String),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -43,6 +44,7 @@ impl fmt::Display for Error {
             Error::PassticketMismatch => format!("Passticket mismatch"),
             Error::OldPassticketMustBeRemoved(ref e) => format!("{}", e),
             Error::CantVerifyPassticket(ref e) => format!("{}", e),
+            Error::PermissionError(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -63,6 +65,7 @@ impl error::Error for Error {
             Error::SignatureInvalid => "signature invalid",
             Error::JWTInvalid => "JWT token invalid",
             Error::IssuerInvalid => "JWT token issuer invalid",
+            Error::PermissionError(ref e) => e,
         }
     }
 }

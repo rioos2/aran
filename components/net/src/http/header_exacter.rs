@@ -78,10 +78,8 @@ impl HeaderExtracter for OTPHeader {
     }
 }
 
-#[derive(Debug)]
+//Decide the header to validate the header and access
 pub struct HeaderDecider {
-    req: iron::Headers,
-    token: String,
     extratable: Vec<Option<Authenticatable>>,
 }
 
@@ -107,11 +105,7 @@ impl HeaderDecider {
             OTPHeader::extract(req.clone(), token.to_string()),
         ];
 
-        Ok(HeaderDecider {
-            req: req_headers,
-            extratable: extratable,
-            token: token.to_string(),
-        })
+        Ok(HeaderDecider { extratable: extratable })
 
     }
 

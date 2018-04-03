@@ -3,7 +3,7 @@
 use std::str;
 use std::collections::BTreeMap;
 use base64;
-use std::path::{PathBuf, Path};
+use std::path::PathBuf;
 use serde_json;
 use util::jwt::{decode_segments, decode};
 use rioos;

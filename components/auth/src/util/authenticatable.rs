@@ -10,7 +10,12 @@
 //                   password: "sdkjfhkj",
 //                };
 //let auth = delegate.authenticate(&auth_enum);
-use std::path::Path;
+use rbac::authorizer::RoleType;
+
+const PERMISSION_BY_EMAIL: &'static str = "get_permission_by_email_v1";
+const PERMISSION_BY_SERVICE_ACCOUNT: &'static str = "get_permission_by_service_account_v1";
+
+
 #[derive(Debug, Clone)]
 pub enum Authenticatable {
     UserAndPass { username: String, password: String },
@@ -64,6 +69,36 @@ impl ToAuth for Authenticatable {
                 key: k.to_string(),
             },
             Authenticatable::PassTicket { token: ref t } => Authenticatable::PassTicket { token: t.to_string() },
+        }
+    }
+}
+
+//convert the Authenticatable into RoleType
+impl Into<RoleType> for Authenticatable {
+    fn into(self) -> RoleType {
+        match self {
+            Authenticatable::UserAndPass {
+                username: ref u,
+                password: ref _p,
+            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+
+            Authenticatable::ServiceAccountNameAndWebtoken {
+                name: ref u,
+                webtoken: ref _p,
+                key: ref _k,
+            } => RoleType::new(u.to_string(), PERMISSION_BY_SERVICE_ACCOUNT),
+
+            Authenticatable::UserEmailAndToken {
+                email: ref u,
+                token: ref _p,
+            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+
+            Authenticatable::UserEmailAndWebtoken {
+                email: ref u,
+                webtoken: ref _p,
+            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+
+            _ => RoleType::new("".to_string(), ""),
         }
     }
 }

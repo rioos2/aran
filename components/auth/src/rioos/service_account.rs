@@ -1,6 +1,4 @@
 // Copyright 2018 The Rio Advancement Inc
-use std::path::Path;
-
 use rioos;
 use serviceaccount::service_account_ds::ServiceAccountDS;
 use util::jwt_authenticator::JWTAuthenticator;

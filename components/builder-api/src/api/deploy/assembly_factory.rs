@@ -126,7 +126,6 @@ impl AssemblyFactoryApi {
     ///Input: account_id
     //Returns all the AssemblyFactorys (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
-        println!("***********************************************************88");
         let params = self.verify_account(req)?;
 
         match assemblyfactory::DataStore::new(&self.conn).list(&params) {
@@ -204,13 +203,17 @@ impl Api for AssemblyFactoryApi {
 
         router.post(
             "/accounts/:account_id/assemblyfactorys",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+                .before(basic.clone())
+                .before(TrustAccessed {}),
             "assembly_factorys",
         );
 
         router.get(
             "/accounts/:account_id/assemblyfactorys",
-            XHandler::new(C { inner: list }).before(basic.clone()),
+            XHandler::new(C { inner: list })
+                .before(basic.clone())
+                .before(TrustAccessed {}),
             "assemblyfactorys_list",
         );
         router.get(
@@ -220,7 +223,9 @@ impl Api for AssemblyFactoryApi {
         );
         router.get(
             "/assemblyfactorys",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank })
+                .before(basic.clone())
+                .before(TrustAccessed {}),
             "assemblys_factorys_list_blank",
         );
         router.put(

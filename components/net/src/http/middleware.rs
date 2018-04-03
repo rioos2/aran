@@ -24,7 +24,7 @@ use db::data_store::DataStoreConn;
 use session::models::session as sessions;
 use common::ui;
 use auth::rioos::AuthenticateDelegate;
-use auth::util::authenticatable::Authenticatable;
+use auth::rbac::authorizer;
 
 use util::errors::{internal_error, not_acceptable_error, bad_err};
 
@@ -290,7 +290,6 @@ pub struct TrustAccessed;
 
 impl BeforeMiddleware for TrustAccessed {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -301,15 +300,14 @@ impl BeforeMiddleware for TrustAccessed {
 
         let header = HeaderDecider::new(req.headers.clone(), None)?;
 
-        let delegate = AccessDelegate::new(broker.clone());
+        let roles: authorizer::RoleType = header.decide()?.into();
 
-        match delegate.access(&header.decide()?) {
-            Ok(_validate) => Ok(()),
-            Err(err) => {
-                let err = unauthorized_error(&format!("{}\n", err));
-                return Err(render_json_error(&bad_err(&err), err.http_code()));
-            }
+        if roles.name.get_id().is_empty() {
+            return Ok(());
         }
+
+        Ok(authorizer::Authorization::new(broker, roles).verify()?)
+
     }
 }
 
