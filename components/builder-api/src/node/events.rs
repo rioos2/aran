@@ -40,7 +40,7 @@ impl RuntimeHandler {
         match event {
             InternalEvent::EntitlementTimeout => {
                 match self.license.create_trial_or_verify() {
-                    Ok(()) => {}
+                    Ok(()) => info!{" ✓ All Good. You have a valid entitlement. !"},
                     Err(err) => {
                         let expiry_attempt = self.license.hard_stop();
                         if expiry_attempt.is_err() {

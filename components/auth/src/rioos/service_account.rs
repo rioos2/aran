@@ -1,6 +1,4 @@
 // Copyright 2018 The Rio Advancement Inc
-use std::path::Path;
-
 use rioos;
 use serviceaccount::service_account_ds::ServiceAccountDS;
 use util::jwt_authenticator::JWTAuthenticator;
@@ -11,7 +9,6 @@ use db::data_store::DataStoreConn;
 const LEGACYUSERACCOUNTISSUER: &'static str = "rioos_sh/serviceaccount";
 const SERVICEACCOUNTNAMECLAIM: &'static str = "rioos_sh/serviceaccount/service-account.name";
 const SERVICEACCOUNTUIDCLAIM: &'static str = "rioos_sh/serviceaccount/service-account.uid";
-//const SECRETUIDCLAIM: &'static str = "rioos_sh/serviceaccount/secret.uid";
 const SECRETNAMECLAIM: &'static str = "rioos_sh/serviceaccount/secret.name";
 
 #[derive(Clone, Debug)]
@@ -21,7 +18,7 @@ impl ServiceAccountAuthenticate {
     // it authenticates serviceaccount name and JWT token values
     // first it validates some static header and payload claims
     // then token is valid or not
-    pub fn from_name_and_webtoken(datastore: &DataStoreConn, name: String, webtoken: String, key: &Path) -> error::Result<bool> {
+    pub fn from_name_and_webtoken(datastore: &DataStoreConn, name: String, webtoken: String, key: String) -> error::Result<bool> {
         let jwt = try!(JWTAuthenticator::new(webtoken.clone()));
         try!(jwt.has_correct_issuer(LEGACYUSERACCOUNTISSUER));
         try!(jwt.has_correct_subject(SERVICEACCOUNTNAMECLAIM));

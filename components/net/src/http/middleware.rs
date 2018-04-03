@@ -1,7 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
-
 use iron::Handler;
 use iron::headers;
 use iron::method::Method;
@@ -17,18 +16,17 @@ use protocol::api::session::*;
 use ansi_term::Colour;
 use super::rendering::*;
 use super::super::util::errors::*;
+use super::header_exacter::HeaderDecider;
 
-use super::headers::*;
 use config;
 
 use db::data_store::DataStoreConn;
 use session::models::session as sessions;
 use common::ui;
-use auth::util::authenticatable::Authenticatable;
 use auth::rioos::AuthenticateDelegate;
-use iron::headers::{Authorization, Bearer};
+use auth::rbac::authorizer;
+
 use util::errors::{internal_error, not_acceptable_error, bad_err};
-use core::fs::rioconfig_config_path;
 
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
@@ -264,12 +262,6 @@ pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
     pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {
-        let reqheader = req.headers.clone();
-        let email = reqheader.get::<XAuthRioOSEmail>();
-        let otp = reqheader.get::<XAuthRioOSOTP>();
-        let serviceaccount = reqheader.get::<XAuthRioOSServiceAccountName>();
-        let useraccount = reqheader.get::<XAuthRioOSUserAccountEmail>();
-        let key = &rioconfig_config_path(None).join(public_key);
 
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
@@ -279,48 +271,44 @@ impl ProceedAuthenticating {
             }
         };
 
-        let token = match reqheader.get::<Authorization<Bearer>>() {
-            Some(&Authorization(Bearer { ref token })) => token,
-            _ => {
-                let err = not_acceptable_error(&format!("Authorization bearer token not found."));
-                return Err(render_json_error(&bad_err(&err), err.http_code()));
-            }
-        };
+        let header = HeaderDecider::new(req.headers.clone(), Some(public_key))?;
 
         let delegate = AuthenticateDelegate::new(broker.clone());
-        let auth_enum;
 
-        if !email.is_none() {
-            auth_enum = Authenticatable::UserEmailAndToken {
-                email: &email.unwrap().0,
-                token: token,
-            };
-        } else if !serviceaccount.is_none() {
-            auth_enum = Authenticatable::ServiceAccountNameAndWebtoken {
-                name: &serviceaccount.unwrap().0,
-                webtoken: token,
-                key: key,
-            };
-        } else if !useraccount.is_none() {
-            auth_enum = Authenticatable::UserEmailAndWebtoken {
-                email: &useraccount.unwrap().0,
-                webtoken: token,
-            };
-        } else if !otp.is_none() {
-            auth_enum = Authenticatable::PassTicket { token: &otp.unwrap().0 };
-        } else {
-            let err = not_acceptable_error(&format!(
-                "Authentication not supported. You must have headers for the supported authetication. Refer https://www.rioos.sh/admin/auth."
-            ));
-            return Err(render_json_error(&bad_err(&err), err.http_code()));
-        }
-        match delegate.authenticate(&auth_enum) {
+        match delegate.authenticate(&header.decide()?) {
             Ok(_validate) => Ok(()),
             Err(err) => {
                 let err = unauthorized_error(&format!("{}\n", err));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         }
+    }
+}
+
+
+pub struct TrustAccessed;
+
+impl BeforeMiddleware for TrustAccessed {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
+            Ok(broker) => broker,
+            Err(err) => {
+                let err = internal_error(&format!("{}\n", err));
+                return Err(render_json_error(&bad_err(&err), err.http_code()));
+            }
+        };
+
+        let header = HeaderDecider::new(req.headers.clone(), None)?;
+
+        let roles: authorizer::RoleType = header.decide()?.into();
+
+        // return Ok if the request has no header with email and serviceaccount name
+        if roles.name.get_id().is_empty() {
+            return Ok(());
+        }
+
+        Ok(authorizer::Authorization::new(broker, roles).verify()?)
+
     }
 }
 
