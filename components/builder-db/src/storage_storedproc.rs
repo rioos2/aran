@@ -206,6 +206,7 @@ impl Migratable for StorageProcedures {
              id bigint PRIMARY KEY DEFAULT next_id_v1('storages_pool_id_seq'),
              connector_id bigint REFERENCES storages(id),
              parameters jsonb,
+             remote_storage_disks jsonb,
              storage_info jsonb,
              status jsonb,
              object_meta jsonb,
@@ -223,14 +224,15 @@ impl Migratable for StorageProcedures {
             r#"CREATE OR REPLACE FUNCTION insert_storage_pool_v1 (
                 connector_id bigint,
                 parameters jsonb,
+                remote_storage_disks jsonb,
                 storage_info jsonb,
                 status jsonb,
                 object_meta jsonb,
                 type_meta jsonb
             ) RETURNS SETOF storages_pool AS $$
                                 BEGIN
-                                    RETURN QUERY INSERT INTO storages_pool(connector_id,parameters,storage_info,status, object_meta,type_meta)
-                                        VALUES (connector_id,parameters,storage_info,status,object_meta,type_meta)
+                                    RETURN QUERY INSERT INTO storages_pool(connector_id,parameters,remote_storage_disks,storage_info,status, object_meta,type_meta)
+                                        VALUES (connector_id,parameters,remote_storage_disks,storage_info,status,object_meta,type_meta)
                                         RETURNING *;
                                     RETURN;
                                 END
