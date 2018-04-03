@@ -23,6 +23,7 @@ describe('Scaling API', function() {
     });
 
     it('returns  metrics limit error', function(done) {
+      this.timeout(4000)
       request.get('/verticalscaling/scale/'+globalAny.vscale_id )
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)

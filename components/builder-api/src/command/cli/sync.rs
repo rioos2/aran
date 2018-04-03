@@ -24,9 +24,8 @@ const IMAGE_URL: &'static str = "rioos_sh_image_url";
 
 lazy_static! {
     static  ref MARKETPLACE_FILE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
-    static  ref SERVER_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("server-ca.cert.pem").to_str().unwrap());
+    static  ref SERVER_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("client-marketplaces.cert.pem").to_str().unwrap());
 }
-
 
 pub fn start(ui: &mut UI, config: &Config) -> Result<()> {
     ui.br()?;

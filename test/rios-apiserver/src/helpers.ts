@@ -8,7 +8,7 @@ const globalAny:any = global;
 
 globalAny.version = "v1"
 globalAny.account = "Account";
-globalAny.assemblys = "Assemblys";
+globalAny.assemblys = "Assembly";
 globalAny.assemblylist = "AssemblyList";
 globalAny.plan = "PlanFactory";
 globalAny.planlist = "PlanFactoryList";
