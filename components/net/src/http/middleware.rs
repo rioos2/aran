@@ -302,6 +302,7 @@ impl BeforeMiddleware for TrustAccessed {
 
         let roles: authorizer::RoleType = header.decide()?.into();
 
+        // return Ok if the request has no header with email and serviceaccount name
         if roles.name.get_id().is_empty() {
             return Ok(());
         }
