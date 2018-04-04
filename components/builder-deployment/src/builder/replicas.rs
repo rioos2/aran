@@ -4,7 +4,7 @@ use error::{Result, Error};
 
 use rio_net::http::schema::type_meta_url;
 
-use protocol::api::deploy::{Assembly, AssemblyFactory, NEW_REPLICA_INITALIZING, PENDING};
+use protocol::api::deploy::{Assembly, AssemblyFactory, NEW_REPLICA_INITALIZING_MSG, NEW_STAND_STILL_MSG, PHASE_PENDING, PHASE_STAND_STILL};
 use protocol::api::base::Status;
 use protocol::api::base::{MetaFields, ChildTypeMeta}; //To access object_meta() and children() in AssemblyFactory, Assembly
 
@@ -13,8 +13,9 @@ use models::{assembly, assemblyfactory};
 use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;
 
-pub type AssembledMap = Result<(AssemblyFactory, Vec<(String, String)>)>;
+use super::super::APPLICABLE_TO_STAND_STILL;
 
+pub type AssembledMap = Result<(AssemblyFactory, Vec<(String, String)>)>;
 
 pub struct Replicas<'a> {
     current: u32,
@@ -140,15 +141,21 @@ impl<'a> ReplicaContext<'a> {
     /// This calculates the scaleup or scale down needed for the asseblys
     /// current = 0 desired = 4, then create 1, 2,3,4.
     //  current = 5, desired = 6, then nuke 1
+    //  set the phase as "Pending"  if not `blockchain_template`
+    //  set the phase as "StandStill"  for `blockchain_template`
     fn calculate(&mut self, id: &str) {
         for x in self.current..self.desired {
-            let mut assembly = self.build_assembly(&x, id);
+            let phase_msg_tuple = Self::initialize_phase_for(self.parent.get_spec().get_plan().map_or("".to_string(), |p| {
+                        p.get_category()
+                    }));
 
+            let mut assembly = self.build_assembly(&x, id);
+                        
             assembly.set_status(Status::with_conditions(
-                PENDING,
+                &phase_msg_tuple.0,
                 &format!(
                     "{} {}",
-                    NEW_REPLICA_INITALIZING,
+                    &phase_msg_tuple.1,
                     self.namer.next(x + 1)
                 ),
                 "",
@@ -188,6 +195,7 @@ impl<'a> ReplicaContext<'a> {
         assembly
     }
 
+   
     fn add_for_deployment(&mut self, assembly_req: Assembly) {
         self.deploys.push(assembly_req);
     }
@@ -195,6 +203,16 @@ impl<'a> ReplicaContext<'a> {
     fn add_for_removal(&mut self, assembly_req: Assembly) {
         self.nukes.push(assembly_req);
     }
+
+     /// Initialize the phase and msg based on category
+    /// We will stand still if its a blockchain_template
+    fn initialize_phase_for(category: String) -> (String, String) {
+       if APPLICABLE_TO_STAND_STILL.contains(&category.as_str()) {            
+            return (PHASE_STAND_STILL.to_string(), NEW_STAND_STILL_MSG.to_string())
+        }
+        (PHASE_PENDING.to_string(), NEW_REPLICA_INITALIZING_MSG.to_string())
+    }
+
 }
 
 /// Replica namer is used to name the assembly object
