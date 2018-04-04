@@ -22,7 +22,7 @@ RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
         touch $RIOOS_SETUP_COMPLETE
     fi
 
-	if [ -f $RIOOS_MARKETPLACE_YAML ]; then
+	if [ ! -f $RIOOS_MARKETPLACE_YAML ]; then
            $RIOOS_BIN_HOME/rioos-apiserver sync
           if [ $? -ne 0 ]; then
               echo "Failed to sync the rio.marketplace with the Rio OS api server.  Rio OS api will start but will show as nothing to deploy in the UI. Try running manually rioos-apiserver sync to see the error."
