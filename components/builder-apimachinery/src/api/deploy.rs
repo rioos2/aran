@@ -10,36 +10,12 @@ use api::linker::Services;
 
 use cache::inject::{PlanFeeder, FactoryFeeder, EndPointsFeeder, VolumeFeeder, MetricFeeder, ServicesFeeder};
 
-// Deprecated status.  Dont't use them.
-// This is left here to make the compiles work for now.
+pub const PHASE_PENDING: &'static str = "Pending";
+pub const PHASE_STAND_STILL: &'static str = "StandStill";
 
-pub const NEW_REPLICA_INITALIZING: &'static str = "Initializing replica ";
-pub const ASSEMBLYS_URI: &'static str = "v1/assembly";
-pub const PENDING: &'static str = "Pending";
+pub const NEW_REPLICA_INITALIZING_MSG: &'static str = "Initializing replicas...Brew some coffee!!!";
+pub const NEW_STAND_STILL_MSG: &'static str = "I'm in sleep state. ...Wake me up!!!";
 
-// Deprecated ends.
-
-/*MetaData
-            // [UI ] when AssemblyFactory create following key value added to metadata
-            {
-            “io:rioos:orginin::name”:”rioos”,
-             “io:rioos:team::name”:”development”,
-            }
-            //  [Scheduler] when assembly assigned to specific Node the following key value will be updated
-             {
-            “io:rioos:scheduled::node”:”<node_id>”,
-            }
-            // [Nodelet] when Assembly assign VNC port / host key value will be updated
-            For VM
-            {
-            “io:rioos:vnc::port”:”5921”,
-             “io:rioos:vnc::host”:”<IP_address>/<DNS_name>”,
-            }
-            For Container
-             {
-            “io:rioos:host::port”:”10251”,
-            }
-            */
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactory {

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::fmt;
 
 use chrono::prelude::*;
-use api::deploy::PENDING;
+use api::deploy::PHASE_PENDING;
 
 
 // These are internal finalizer values for rioos-like APIs, must be qualified name
@@ -405,12 +405,16 @@ impl Status {
             conditions: conditions,
         }
     }
+    
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
+
+    // Use this to indicate an empty Phase: Pending.
+    // For more customized usage, try with_conditions()
     pub fn pending() -> Status {
         Status {
-            phase: PENDING.to_string(),
+            phase: PHASE_PENDING.to_string(),
             message: "".to_string(),
             reason: "".to_string(),
             conditions: vec![],

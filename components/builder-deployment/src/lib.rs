@@ -19,6 +19,12 @@ pub mod replicas_expander;
 
 pub use self::error::{Error, Result};
 
+//The plan category that applies to services.
+const APPLICABLE_TO: &'static [&'static str] = &["blockchain_template", "containers"];
+
+//The plan category that is eligible to be stand still
+const APPLICABLE_TO_STAND_STILL: &'static [&'static str] = &["blockchain_template"];
+
 // AssemblyFactory output
 pub type AssemblyFactoryOutput = Result<std::option::Option<protocol::api::deploy::AssemblyFactory>>;
 
