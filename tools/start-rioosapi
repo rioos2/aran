@@ -1,0 +1,26 @@
+#!/bin/bash
+
+  if [ ! -f /var/lib/rioos/config/.rioos_setup_complete ]; then
+        read Y | rioos-apiserver setup
+        if [ $? -ne 0 ]; then
+            echo "/var/lib/rioos did not setup failed to run.s validation tests, it may not start the server correctly."
+            echo "Please refer https://bit.ly/rioos_sh_admin"
+            exit 1
+        fi
+        touch /var/lib/rioos/config/.rioos_setup_complete
+    fi
+
+
+    if [ -f /var/lib/rioos/config/.rioos_setup_complete ]; then
+           rioos-apiserver sync
+          if [ $? -ne 0 ]; then
+              echo "/var/lib/rioos did not setup failed to run.s validation tests, it may not start the server correctly."
+              echo "Please refer https://bit.ly/rioos_sh_admin"
+              exit 1
+          fi
+          touch /var/lib/rioos/config/.rioos_setup_complete
+      fi
+
+
+exec /usr/share/rioos/apiserver/bin/entrypoint.sh apiserver
+
