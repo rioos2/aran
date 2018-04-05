@@ -18,6 +18,7 @@ pub const NOTFOUND: &'static str = "Not Found";
 pub const INTERNALERROR: &'static str = "Must have database, Server running. Is it started yet ?";
 pub const BADREQUEST: &'static str = "Bad Request";
 pub const MALFORMED: &'static str = "MalformedBody";
+pub const BADGATEWAY: &'static str = "BadGateway";
 
 #[derive(Serialize, Debug, Clone)]
 pub struct Bad {
@@ -400,6 +401,34 @@ impl fmt::Display for Entitlement {
 }
 
 
+pub struct BadGateway(String);
+
+impl AranError for BadGateway {
+    fn http_code(&self) -> Status {
+        Status::BadGateway
+    }
+
+    fn code(&self) -> &str {
+        "502"
+    }
+
+    fn description(&self) -> &str {
+        self.0.as_ref()
+    }
+
+    fn cause(&self) -> &str {
+        BADGATEWAY
+    }
+}
+
+impl fmt::Display for BadGateway {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+
+
 pub fn bad_request<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(BadRequest(error.to_string()))
 }
@@ -419,6 +448,10 @@ pub fn internal_error(error: &str) -> Box<AranError> {
 
 pub fn not_found_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(NotFound(error.to_string()))
+}
+
+pub fn badgateway_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(BadGateway(error.to_string()))
 }
 
 pub fn unauthorized_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {

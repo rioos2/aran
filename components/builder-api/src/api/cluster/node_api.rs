@@ -15,7 +15,7 @@ use error::Error;
 
 use rio_net::http::controller::*;
 use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use rio_net::util::errors::{bad_request, internal_error, not_found_error, badgateway_error};
 use rio_net::metrics::prometheus::PrometheusClient;
 use bytes::Bytes;
 use serde_json;
@@ -117,7 +117,7 @@ impl NodeApi {
             Ok(Some(node)) => {
                 let data = json!({
                             "type": typ,
-                            "data": node,      
+                            "data": node,
                             });
                 serde_json::to_string(&data).unwrap()
             }
@@ -131,7 +131,9 @@ impl NodeApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<NodeStatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<NodeStatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
         ui::rawdumpln(
@@ -166,7 +168,7 @@ impl NodeApi {
     fn healthz_all(&self, _req: &mut Request) -> AranResult<Response> {
         match NodeDS::healthz_all(&self.prom) {
             Ok(Some(health_all)) => Ok(render_json(status::Ok, &health_all)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
+            Err(err) => Err(badgateway_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
@@ -231,17 +233,13 @@ impl Api for NodeApi {
         );
         router.put(
             "/nodes/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "node_status_update",
         );
 
         router.get(
             "/nodes/ip",
-            XHandler::new(C {
-                inner: show_by_address,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_address }).before(basic.clone()),
             "node_show_by_address",
         );
     }
