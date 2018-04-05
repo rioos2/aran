@@ -199,12 +199,17 @@ impl NodeDS {
 
         //Statistics metric of the each node
         let mut lstatistics = vec![node::NodeStatistic::new()];
-
-        metric_response
-            .1
-            .into_iter()
-            .map(|x| { lstatistics = x.into(); })
-            .collect::<Vec<_>>();
+        if metric_response.1.len() > 0 {
+            metric_response
+                .1
+                .into_iter()
+                .map(|x| { lstatistics = x.into(); })
+                .collect::<Vec<_>>();
+        }
+        let mut node = node::NodeStatistic::new();
+        node.set_kind("Node".to_string());
+        node.set_api_version("v1".to_string());
+        lstatistics = vec![node];
 
         let mut guages = node::Guages::new();
         guages.set_title("Cumulative operations counter".to_string());
