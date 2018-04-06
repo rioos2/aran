@@ -107,6 +107,7 @@ pub struct HttpCfg {
     pub listen: IpAddr, // The listen ip address for http api/watch http2 api
     pub port: u16, // The http api server port
     pub watch_port: u16, // The http2 watch server port
+    pub websocket_port: u16, // The websocket server port
     /// This file is used by both http api/watch server.
     pub tls_pkcs12_file: Option<String>, // The tls_pkcs12 is the pfx file that is used as security to start the server.
     pub tls_pkcs12_pwd: Option<String>, // The tls_pkcs12_pwd  is the pfx file password.
@@ -119,6 +120,7 @@ impl Default for HttpCfg {
             listen: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
             port: 7443,
             watch_port: 8443,
+            websocket_port: 9443,
             tls_pkcs12_file: None,
             tls_pkcs12_pwd: None,
             serviceaccount_public_key: None,

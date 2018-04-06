@@ -11,6 +11,7 @@
 //                };
 //let auth = delegate.authenticate(&auth_enum);
 use rbac::authorizer::RoleType;
+use std::path::PathBuf;
 
 const PERMISSION_BY_EMAIL: &'static str = "get_permission_by_email_v1";
 const PERMISSION_BY_SERVICE_ACCOUNT: &'static str = "get_permission_by_service_account_v1";
@@ -24,7 +25,7 @@ pub enum Authenticatable {
     ServiceAccountNameAndWebtoken {
         name: String,
         webtoken: String,
-        key: String,
+        key: PathBuf,
     },
     PassTicket { token: String },
 }
@@ -66,7 +67,7 @@ impl ToAuth for Authenticatable {
             } => Authenticatable::ServiceAccountNameAndWebtoken {
                 name: u.to_string(),
                 webtoken: p.to_string(),
-                key: k.to_string(),
+                key: k.to_path_buf(),
             },
             Authenticatable::PassTicket { token: ref t } => Authenticatable::PassTicket { token: t.to_string() },
         }
