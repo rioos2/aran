@@ -81,6 +81,7 @@ extern crate actix_web;
 extern crate openssl;
 extern crate websocket;
 extern crate futures_cpupool;
+extern crate native_tls;
 
 #[macro_use]
 extern crate custom_derive;

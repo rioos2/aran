@@ -49,6 +49,7 @@ bytes = "0.*"
 tempdir = "*"
 postgres = { version = "0.15.1", features = ["with-chrono"] }
 hyper-native-tls = "0.2.4"
+native-tls = "0.1.5"
 
 fallible-iterator = "0.1.4"
 enum_derive = "0.1.7"

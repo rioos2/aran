@@ -54,26 +54,8 @@ impl WatchHandler {
     //start listening all psql triggers
     //when listener get the data from triggers then send it to the handler channel
     //listener notifies any datas(like secrets, jobs,...) send to the channel
-    pub fn notifier(&self, sender: Arc<Mutex<mpsc::Sender<Notification>>>) -> Result<()> {
-        let listeners = vec![
-            "secrets",
-            "networks",
-            "jobs",
-            "storagespool",
-            "storageconnectors",
-            "datacenters",
-            "horizontalscaling",
-            "verticalscaling",
-            "settingsmap",
-            "endpoints",
-            "origins",
-            "nodes",
-            "plans",
-            "services",
-            "serviceaccounts",
-            "assemblyfactorys",
-            "assemblys",
-        ];
+    pub fn notifier(&self, sender: Arc<Mutex<mpsc::Sender<Notification>>>, listeners: Vec<&str>) -> Result<()> {
+        
         let conn = self.datastore.pool.get_shard(0).unwrap();
 
         for listener in listeners {
