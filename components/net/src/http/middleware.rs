@@ -261,8 +261,7 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {
-
+    pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {       
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {

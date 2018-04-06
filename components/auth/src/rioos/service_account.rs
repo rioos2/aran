@@ -5,6 +5,7 @@ use util::jwt_authenticator::JWTAuthenticator;
 use super::super::error::{self, Result};
 use protocol::api::session::*;
 use db::data_store::DataStoreConn;
+use std::path::{PathBuf};
 
 const LEGACYUSERACCOUNTISSUER: &'static str = "rioos_sh/serviceaccount";
 const SERVICEACCOUNTNAMECLAIM: &'static str = "rioos_sh/serviceaccount/service-account.name";
@@ -18,7 +19,7 @@ impl ServiceAccountAuthenticate {
     // it authenticates serviceaccount name and JWT token values
     // first it validates some static header and payload claims
     // then token is valid or not
-    pub fn from_name_and_webtoken(datastore: &DataStoreConn, name: String, webtoken: String, key: String) -> error::Result<bool> {
+    pub fn from_name_and_webtoken(datastore: &DataStoreConn, name: String, webtoken: String, key: PathBuf) -> error::Result<bool> {
         let jwt = try!(JWTAuthenticator::new(webtoken.clone()));
         try!(jwt.has_correct_issuer(LEGACYUSERACCOUNTISSUER));
         try!(jwt.has_correct_subject(SERVICEACCOUNTNAMECLAIM));

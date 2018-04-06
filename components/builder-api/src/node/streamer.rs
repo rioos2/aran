@@ -38,6 +38,25 @@ impl Streamer {
 
     pub fn start(self, tls_pair: TLSPair) -> io::Result<()> {
         let ods = tls_pair.clone().and(DataStoreConn::new().ok());
+        let listeners = vec![
+            "secrets",
+            "networks",
+            "jobs",
+            "storagespool",
+            "storageconnectors",
+            "datacenters",
+            "horizontalscaling",
+            "verticalscaling",
+            "settingsmap",
+            "endpoints",
+            "origins",
+            "nodes",
+            "plans",
+            "services",
+            "serviceaccounts",
+            "assemblyfactorys",
+            "assemblys",
+        ];
         let streamer_thread = match ods {
             Some(ds) => {
                 let mut watchhandler = WatchHandler::new(
@@ -51,7 +70,7 @@ impl Streamer {
 
                 let send = Arc::new(Mutex::new(db_sender));
 
-                watchhandler.notifier(send.clone()).unwrap();
+                watchhandler.notifier(send.clone(), listeners).unwrap();
 
                 watchhandler.publisher(db_receiver);
 

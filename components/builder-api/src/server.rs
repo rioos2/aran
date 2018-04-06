@@ -6,7 +6,7 @@ use rio_net::server::NetIdent;
 use config::Config;
 use error::Result;
 /* mod node;  don't remove this line, for channel/watch */
-use super::node::Node;
+use super::node::{Node, Servers};
 use common::ui::UI;
 
 
@@ -27,7 +27,7 @@ impl Server {
     /// # Errors
     ///
     /// * HTTPS server could not start
-    pub fn run(&mut self, ui: &mut UI, streamer: bool) -> Result<()> {
+    pub fn run(&mut self, ui: &mut UI, server: Servers) -> Result<()> {
         let cfg1 = self.config.clone();
         ui.begin(&format!(
             "Rio/OS API listening on {}:{}",
@@ -40,7 +40,7 @@ impl Server {
 
         ui.para("Ready to serve.")?;
 
-        node.run(ui, streamer)?;
+        node.run(ui, server)?;
         Ok(())
     }
 }
@@ -49,6 +49,6 @@ impl NetIdent for Server {}
 
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.
-pub fn run(ui: &mut UI, config: Config, streamer: bool) -> Result<()> {
-    Server::new(config).run(ui, streamer)
+pub fn run(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
+    Server::new(config).run(ui, server)
 }
