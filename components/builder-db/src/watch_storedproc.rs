@@ -38,7 +38,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER assembly_factory_notify_insert AFTER INSERT ON assembly_factory FOR EACH ROW EXECUTE PROCEDURE assembly_factory_update_notify();"#,
+            r#"CREATE TRIGGER assembly_factory_notify_insert AFTER INSERT OR UPDATE OR DELETE ON assembly_factory FOR EACH ROW EXECUTE PROCEDURE assembly_factory_update_notify();"#,
         )?;
 
         ui.para("[✓] assemblyfactory watch started");
@@ -62,7 +62,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER assembly_notify_insert AFTER INSERT ON assemblys FOR EACH ROW EXECUTE PROCEDURE assembly_update_notify();"#,
+            r#"CREATE TRIGGER assembly_notify_insert AFTER INSERT OR UPDATE OR DELETE ON assemblys FOR EACH ROW EXECUTE PROCEDURE assembly_update_notify();"#,
         )?;
 
         ui.para("[✓] assemblys watch started");
@@ -86,7 +86,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER node_notify_insert AFTER INSERT ON nodes FOR EACH ROW EXECUTE PROCEDURE node_update_notify();"#,
+            r#"CREATE TRIGGER node_notify_insert AFTER INSERT OR UPDATE OR DELETE ON nodes FOR EACH ROW EXECUTE PROCEDURE node_update_notify();"#,
         )?;
 
         ui.para("[✓] nodes watch started");
@@ -110,7 +110,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER services_notify_insert AFTER INSERT ON services FOR EACH ROW EXECUTE PROCEDURE services_update_notify();"#,
+            r#"CREATE TRIGGER services_notify_insert AFTER INSERT OR UPDATE OR DELETE ON services FOR EACH ROW EXECUTE PROCEDURE services_update_notify();"#,
         )?;
 
         ui.para("[✓] services watch started");
@@ -134,7 +134,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER jobs_notify_insert AFTER INSERT ON jobs FOR EACH ROW EXECUTE PROCEDURE jobs_update_notify();"#,
+            r#"CREATE TRIGGER jobs_notify_insert AFTER INSERT OR UPDATE OR DELETE ON jobs FOR EACH ROW EXECUTE PROCEDURE jobs_update_notify();"#,
         )?;
 
         ui.para("[✓] jobs watch started");
@@ -158,7 +158,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER secrets_notify_insert AFTER INSERT ON secrets FOR EACH ROW EXECUTE PROCEDURE secrets_update_notify();"#,
+            r#"CREATE TRIGGER secrets_notify_insert AFTER INSERT OR UPDATE OR DELETE ON secrets FOR EACH ROW EXECUTE PROCEDURE secrets_update_notify();"#,
         )?;
 
         ui.para("[✓] secrets watch started");
@@ -182,7 +182,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER hs_notify_insert AFTER INSERT ON horizontal_scalings FOR EACH ROW EXECUTE PROCEDURE hs_update_notify();"#,
+            r#"CREATE TRIGGER hs_notify_insert AFTER INSERT OR UPDATE OR DELETE ON horizontal_scalings FOR EACH ROW EXECUTE PROCEDURE hs_update_notify();"#,
         )?;
 
         ui.para("[✓] Horizonl scaling watch started");
@@ -206,7 +206,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER storagespool_notify_insert AFTER INSERT ON storages_pool FOR EACH ROW EXECUTE PROCEDURE storagespool_update_notify();"#,
+            r#"CREATE TRIGGER storagespool_notify_insert AFTER INSERT OR UPDATE OR DELETE ON storages_pool FOR EACH ROW EXECUTE PROCEDURE storagespool_update_notify();"#,
         )?;
 
         ui.para("[✓] Storagespool watch started");
@@ -230,7 +230,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER storageconnectors_notify_insert AFTER INSERT ON storages FOR EACH ROW EXECUTE PROCEDURE storageconnectors_update_notify();"#,
+            r#"CREATE TRIGGER storageconnectors_notify_insert AFTER INSERT OR UPDATE OR DELETE ON storages FOR EACH ROW EXECUTE PROCEDURE storageconnectors_update_notify();"#,
         )?;
 
         ui.para("[✓] Storageconnectors watch started");
@@ -254,7 +254,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER datacenters_notify_insert AFTER INSERT ON data_centers FOR EACH ROW EXECUTE PROCEDURE datacenters_update_notify();"#,
+            r#"CREATE TRIGGER datacenters_notify_insert AFTER INSERT OR UPDATE OR DELETE ON data_centers FOR EACH ROW EXECUTE PROCEDURE datacenters_update_notify();"#,
         )?;
 
         ui.para("[✓] Datacenters watch started");
@@ -278,7 +278,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER verticalscaling_notify_insert AFTER INSERT ON vertical_scalings FOR EACH ROW EXECUTE PROCEDURE verticalscaling_update_notify();"#,
+            r#"CREATE TRIGGER verticalscaling_notify_insert AFTER INSERT OR UPDATE OR DELETE ON vertical_scalings FOR EACH ROW EXECUTE PROCEDURE verticalscaling_update_notify();"#,
         )?;
 
         ui.para("[✓] Verticalscaling watch started");
@@ -302,7 +302,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER settingsmap_notify_insert AFTER INSERT ON settings_map FOR EACH ROW EXECUTE PROCEDURE settingsmap_update_notify();"#,
+            r#"CREATE TRIGGER settingsmap_notify_insert AFTER INSERT OR UPDATE OR DELETE ON settings_map FOR EACH ROW EXECUTE PROCEDURE settingsmap_update_notify();"#,
         )?;
 
         ui.para("[✓] Settingsmap watch started");
@@ -326,7 +326,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER endpoints_notify_insert AFTER INSERT ON endpoints FOR EACH ROW EXECUTE PROCEDURE endpoints_update_notify();"#,
+            r#"CREATE TRIGGER endpoints_notify_insert AFTER INSERT OR UPDATE OR DELETE ON endpoints FOR EACH ROW EXECUTE PROCEDURE endpoints_update_notify();"#,
         )?;
 
         ui.para("[✓] Endpoints watch started");
@@ -350,7 +350,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER origins_notify_insert AFTER INSERT ON origins FOR EACH ROW EXECUTE PROCEDURE origins_update_notify();"#,
+            r#"CREATE TRIGGER origins_notify_insert AFTER INSERT OR UPDATE OR DELETE ON origins FOR EACH ROW EXECUTE PROCEDURE origins_update_notify();"#,
         )?;
 
         ui.para("[✓] Origins watch started");
@@ -374,7 +374,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER plans_notify_insert AFTER INSERT ON plan_factory FOR EACH ROW EXECUTE PROCEDURE plans_update_notify();"#,
+            r#"CREATE TRIGGER plans_notify_insert AFTER INSERT OR UPDATE OR DELETE ON plan_factory FOR EACH ROW EXECUTE PROCEDURE plans_update_notify();"#,
         )?;
 
         ui.para("[✓] plans watch started");
@@ -398,7 +398,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER networks_notify_insert AFTER INSERT ON networks FOR EACH ROW EXECUTE PROCEDURE networks_update_notify();"#,
+            r#"CREATE TRIGGER networks_notify_insert AFTER INSERT OR UPDATE OR DELETE ON networks FOR EACH ROW EXECUTE PROCEDURE networks_update_notify();"#,
         )?;
 
         ui.para("[✓] Networks watch started");
@@ -422,7 +422,7 @@ impl Migratable for WatchProcedures {
 
         migrator.migrate(
             "worksrv",
-            r#"CREATE TRIGGER serviceaccounts_notify_insert AFTER INSERT ON service_accounts FOR EACH ROW EXECUTE PROCEDURE serviceaccounts_update_notify();"#,
+            r#"CREATE TRIGGER serviceaccounts_notify_insert AFTER INSERT OR UPDATE OR DELETE ON service_accounts FOR EACH ROW EXECUTE PROCEDURE serviceaccounts_update_notify();"#,
         )?;
 
         ui.para("[✓] Service Accounts watch started");

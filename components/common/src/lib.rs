@@ -10,8 +10,11 @@ extern crate rioos_core as rcore;
 extern crate tempdir;
 extern crate term;
 extern crate toml;
+extern crate hyper;
+extern crate regex;
 
 pub use self::error::{Error, Result};
 
 pub mod error;
 pub mod ui;
+pub mod uri;

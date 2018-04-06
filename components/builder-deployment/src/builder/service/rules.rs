@@ -1,6 +1,6 @@
 //Copyright (c) 2017 Rio Advancement Inc
 
-const APPLICABLE_TO: &'static [&'static str] = &["application", "containers"];
+use super::super::super::APPLICABLE_TO;
 
 /// The service rules supported as events 
 pub enum ServiceRule {
