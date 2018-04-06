@@ -55,8 +55,8 @@ impl AuthenticateApi {
         let account = self.validate(req.get::<bodyparser::Struct<AccountGet>>()?)?;
         let delegate = AuthenticateDelegate::new(Arc::new(*self.conn.clone()));
         let auth = Authenticatable::UserAndPass {
-            username: &account.get_email(),
-            password: &account.get_password(),
+            username: account.get_email(),
+            password: account.get_password(),
         };
 
         match delegate.authenticate(&auth) {
