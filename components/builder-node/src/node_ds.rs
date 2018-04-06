@@ -6,10 +6,11 @@ use chrono::prelude::*;
 use error::{Result, Error};
 
 use protocol::api::node;
-use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
 
 use rio_net::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::collector::{Collector, CollectorScope};
+use rio_net::http::schema::type_meta_url;
 
 use serde_json;
 
@@ -207,8 +208,8 @@ impl NodeDS {
                 .collect::<Vec<_>>();
         }
         let mut node = node::NodeStatistic::new();
-        node.set_kind("Node".to_string());
-        node.set_api_version("v1".to_string());
+        let jackie = node.who_am_i();
+        node.set_type_meta(type_meta_url(jackie));
         lstatistics = vec![node];
 
         let mut guages = node::Guages::new();

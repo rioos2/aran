@@ -16,7 +16,7 @@ use error::Error;
 
 use rio_net::http::controller::*;
 use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error, badgateway_error};
+use rio_net::util::errors::{bad_request, not_found_error, badgateway_error};
 
 use super::ledger;
 use protocol::api::base::MetaFields;
