@@ -36,7 +36,7 @@ RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
 exec $RIOOS_BIN_HOME/entrypoint.sh watchserver &
 
 # Start WebSocket Server
-#exec $RIOOS_BIN_HOME/entrypoint.sh websocket &
+exec $RIOOS_BIN_HOME/entrypoint.sh websocket &
 
 # Start API Server
 exec $RIOOS_BIN_HOME/entrypoint.sh apiserver
