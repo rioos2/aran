@@ -76,6 +76,12 @@ extern crate fallible_iterator;
 extern crate tls_api;
 extern crate tls_api_openssl;
 
+extern crate actix;
+extern crate actix_web;
+extern crate openssl;
+extern crate websocket;
+extern crate futures_cpupool;
+
 #[macro_use]
 extern crate custom_derive;
 #[macro_use]

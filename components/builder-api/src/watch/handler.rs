@@ -22,6 +22,7 @@ use serde_json;
 use serde_json::Value;
 use rio_net::http::middleware::SecurerConn;
 use rand::{OsRng, Rng};
+use futures::sync::mpsc as futurempsc;
 
 pub struct MyInner {
     v: Vec<(u32, String, Arc<Mutex<mpsc::Sender<Bytes>>>)>,
@@ -98,7 +99,7 @@ impl WatchHandler {
             while true {
                 // it.next() -> Result<Option<Notification>>
                 match it.next() {
-                    Ok(Some(notification)) => {                       
+                    Ok(Some(notification)) => {                         
                         send_wrap.send(notification).unwrap();
                     }
                     Err(err) => println!("Got err {:?}", err),
@@ -144,7 +145,27 @@ impl WatchHandler {
             }
         });
     }
+
+    //publish the response to requester
+    pub fn socket_publisher(&self, recv: mpsc::Receiver<Notification>, sender: futurempsc::UnboundedSender<Bytes>) {
+        let local_self = self.inner.clone();
+
+        thread::spawn(move || {
+            loop {
+                //let msg = recv.recv().unwrap();
+                match recv.recv() {
+                    Ok(msg) => {
+                        let channel: Vec<&str> = msg.channel.split('_').collect();
+                        let data = local_self.lock().unwrap().get_data(msg.clone(), channel[0].to_string());
+                        sender.send(data);
+                    }
+                    _ => {}
+                }
+            }
+        });
+    }
 }
+
 
 pub type Peer = (String, Arc<Mutex<mpsc::Sender<Bytes>>>);
 
@@ -183,12 +204,24 @@ impl MyInner {
         let receiver = peer.2.clone();
         match receiver.lock() {
             Ok(recv) => {
-                let v: Value = serde_json::from_str(&msg.payload).unwrap();
+                let res = self.get_data(msg, name);
+                match recv.send(res) {
+                    Ok(_success) => {}
+                    Err(_err) => self.pop(peer),
+                }
+            }
+            Err(p_err) => {
+                println!("Poison Error: {}", p_err);
+            }
+        };
+    }
 
-                let idget = IdGet::with_id(v["data"].to_string());
-                let typ = v["type"].to_string();              
+    fn get_data(&self, msg: Notification, name: String) -> Bytes {
+        let v: Value = serde_json::from_str(&msg.payload).unwrap();        
+        let idget = IdGet::with_id(v["data"].to_string());
+        let typ = v["type"].to_string();              
 
-                let res = match self.uppercase_first_letter(&name).parse().unwrap() {
+        let res = match self.uppercase_first_letter(&name).parse().unwrap() {
                     Messages::Assemblys => watch::messages::handle_assembly(idget, typ, self.datastore.clone(), self.prom.clone()),
                     Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory(idget, typ, self.datastore.clone()),
                     Messages::Services => watch::messages::handle_services(idget, typ, self.datastore.clone()),
@@ -206,16 +239,8 @@ impl MyInner {
                     Messages::Origins => watch::messages::handle_origins(idget, typ, self.datastore.clone()),
                     Messages::Plans => watch::messages::handle_plans(idget, typ, self.datastore.clone()),
                     Messages::Serviceaccounts => watch::messages::handle_serviceaccounts(idget, typ, self.datastore.clone()),
-                };
-                match recv.send(res) {
-                    Ok(_success) => {}
-                    Err(_err) => self.pop(peer),
-                }
-            }
-            Err(p_err) => {
-                println!("Poison Error: {}", p_err);
-            }
         };
+        return res;
     }
 
     fn uppercase_first_letter(&self, s: &str) -> String {

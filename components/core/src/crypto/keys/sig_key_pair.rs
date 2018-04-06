@@ -324,7 +324,7 @@ fn gen_ca(privkey: &PKey) -> Result<X509> {
     x509_name.append_entry_by_text("C", RIOOS_COUNTRY)?;
     x509_name.append_entry_by_text("ST", RIOOS_STATE)?;
     x509_name.append_entry_by_text("O", RIOOS_ORGANIZATION)?;
-    x509_name.append_entry_by_text("CN", RIOOS_SIGNER)?;
+    //x509_name.append_entry_by_text("CN", RIOOS_SIGNER)?;
     let x509_name = x509_name.build();
 
     let mut cert_builder = X509::builder()?;

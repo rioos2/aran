@@ -42,7 +42,7 @@ impl HeaderExtracterWithKey for ServiceAccountHeader {
             return Some(Authenticatable::ServiceAccountNameAndWebtoken {
                 name: serviceaccount.unwrap().0.clone(),
                 webtoken: token,
-                key: format!("{:?}", &rioconfig_config_path(None).join(key)),
+                key: rioconfig_config_path(None).join(key),
             });
         }
         None

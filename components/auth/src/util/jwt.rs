@@ -54,7 +54,7 @@ pub trait ToKey {
 }
 
 impl ToKey for PathBuf {
-    fn to_key(&self) -> Result<Vec<u8>, Error> {
+    fn to_key(&self) -> Result<Vec<u8>, Error> {  
         let mut file = File::open(self)?;
         let mut buffer:Vec<u8> = Vec::new();
         file.read_to_end(&mut buffer)?;
@@ -64,7 +64,7 @@ impl ToKey for PathBuf {
 
 impl ToKey for String {
     fn to_key(&self) -> Result<Vec<u8>, Error> {
-        Ok(self.as_bytes().to_vec())
+        Ok(self.as_bytes().to_vec())       
     }
 }
 

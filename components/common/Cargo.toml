@@ -12,6 +12,8 @@ libc = "0.2.37"
 pbr = {git = "https://github.com/a8m/pb.git" } 
 term = "*"
 toml = { version = "0.4.5", default-features = false }
+hyper = "0.10"
+regex = "*"
 
 [dependencies.rioos_core]
 path = "../core"

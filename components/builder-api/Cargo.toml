@@ -30,9 +30,8 @@ serde = "1.0.27"
 serde_derive = "*"
 serde_json = "1.0.10"
 serde_yaml = "0.7"
-hyper = "0.11.21"
+hyper = "0.11"
 chrono = { version = "0.4.0", features = ["serde"] }
-
 
 typemap = "*"
 toml = { version = "0.4.5", default-features = false }
@@ -54,7 +53,11 @@ hyper-native-tls = "0.2.4"
 fallible-iterator = "0.1.4"
 enum_derive = "0.1.7"
 custom_derive = "0.1.7"
-
+websocket = "0.20.2"
+futures-cpupool = "0.1"
+actix-web = "0.4.10"
+actix = "0.5.5"
+openssl = { version="0.10.5" }
 handlebars = { version = "*", default-features = false }
 failure = { git = "https://github.com/withoutboats/failure.git" }
 
