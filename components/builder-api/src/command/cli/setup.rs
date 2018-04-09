@@ -79,7 +79,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_client_cli(ui, &client_cli, cache_path)?;
         } else {
             ui.para(&format!(
-                "You might want to create a client certificate authority with: \
+                "You might want to create a client-cli key later with: \
                  `rioos setup '"
             ))?;
         }
