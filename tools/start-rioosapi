@@ -33,10 +33,10 @@ RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
     fi
 
 # Start Watch Server
-exec $RIOOS_BIN_HOME/entrypoint.sh watchserver &
+exec $RIOOS_BIN_HOME/entrypoint.sh watchserver > /var/log/rioos_watchserver.log 2>&1 &
 
-# Start WebSocket Server
-exec $RIOOS_BIN_HOME/entrypoint.sh websocket &
+# Start uWatch Server (websocket for the UI)
+exec $RIOOS_BIN_HOME/entrypoint.sh websocket > /var/log/rioos_uwatchserver.log 2>&1 &
 
 # Start API Server
 exec $RIOOS_BIN_HOME/entrypoint.sh apiserver

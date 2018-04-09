@@ -173,7 +173,7 @@ This should show the status of the api server.
 You should see a response similar to the following:
 
 * Healthz
-`curl  http://localhost:9636/v1/healthz
+`curl  https://localhost:7443/v1/healthz
 `
 
 ```
@@ -278,4 +278,3 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
 
 To make the above *LD_LIBRARY_PATH* permanent add `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib` in `~/.bashrc`
-    

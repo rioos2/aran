@@ -30,7 +30,7 @@ impl ConfigFile for Config {
 
 impl PasswordAuth for Config {}
 
-/// This isn't needed for rio.marketplace. 
+/// This isn't needed for rio.marketplace.
 /// TO-DO : Remove later.
 impl SystemAuth for Config {
     fn serviceaccount_public_key(&self) -> Option<String> {
@@ -54,7 +54,7 @@ mod tests {
         let content = r#"
         [http]
         listen = "0:0:0:0:0:0:0:1"
-        port = 9636
+        port = 6443
 
         [ui]
         root = "/some/path"
@@ -66,7 +66,7 @@ mod tests {
 
         let config = Config::from_raw(&content).unwrap();
         assert_eq!(&format!("{}", config.http.listen), "::1");
-        assert_eq!(config.http.port, 9636);
+        assert_eq!(config.http.port, 6443);
     }
 
     #[test]

@@ -25,6 +25,9 @@ pub struct Config {
     pub auth_token: Option<String>,
     pub email: Option<String>,
     pub origin: Option<String>,
+    pub firstname: Option<String>,
+    pub lastname: Option<String>,
+    pub company: Option<String>,
 }
 
 impl ConfigFile for Config {
@@ -34,7 +37,10 @@ impl ConfigFile for Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            api_server: Some("http://localhost:9636/".to_string()),
+            api_server: Some("https://localhost:7443/".to_string()),
+            firstname: Some("Rio".to_string()),
+            lastname: Some("User".to_string()),
+            company: Some("Rio Site".to_string()),
             auth_token: None,
             email: None,
             origin: None,
