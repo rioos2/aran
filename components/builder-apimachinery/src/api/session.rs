@@ -31,6 +31,7 @@ pub struct SessionCreate {
     roles: Vec<String>, //Roles are Rio/OS role label that applies to the user
     #[serde(default)]
     suspend: bool, //user suspend or not   If true, the user is suspended. Defaults to false
+    #[serde(default)]
     registration_ip_address: String, //Registration ip address of the user
     #[serde(default)]
     trust_level: String,
