@@ -12,6 +12,9 @@ extern crate term;
 extern crate toml;
 extern crate hyper;
 extern crate regex;
+extern crate uuid;
+extern crate serde;
+extern crate serde_json;
 
 pub use self::error::{Error, Result};
 
