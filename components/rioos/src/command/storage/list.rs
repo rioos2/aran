@@ -33,7 +33,14 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
         .flat_map(|s| s)
         .collect::<Vec<_>>();
 
-    let title =row!["Id","Type","Stored At","Available Disks","Pool Id","Pool Usage"];
+    let title = row![
+        "Id",
+        "Type",
+        "Stored At",
+        "Available Disks",
+        "Pool Id",
+        "Pool Usage"
+    ];
 
     pretty_table(value.to_owned(), title);
 
