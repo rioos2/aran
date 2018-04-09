@@ -12,14 +12,18 @@ pub fn start(ui: &mut UI, rio_client: Client, cache_path: &str, token: &str, ema
     ui.br()?;
     let file = File::open(cache_path)?;
     let content: FileData = serde_yaml::from_reader(file)?;
-    rio_client.create_network(content.network, &token, &email)?;
-    rio_client.create_datacenter(
-        content.datacenter,
-        token,
-        email,
-    )?;
+    let data = create_datacenter_with_network(content);
+    rio_client.create_network(data.0, &token, &email)?;
+    rio_client.create_datacenter(data.1, token, email)?;
     ui.end("Your cluster is ready")?;
     Ok(())
+}
+
+fn create_datacenter_with_network(mut content: FileData) -> (network::Network, storage::DataCenter) {
+    content.datacenter.set_networks(
+        vec![content.network.get_id()],
+    );
+    (content.network, content.datacenter)
 }
 
 
