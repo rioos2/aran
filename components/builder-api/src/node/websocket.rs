@@ -142,16 +142,20 @@ impl Websocket {
                         let connections = connections.clone();
                         let tuple = connections.write()
                                     .unwrap()
-                                    .remove(&id)
-                                    .expect("Tried to send to invalid client id",);
-                        let ref_id = tuple.1.clone();
-                        println!("Sending message '{}' to id {}", msg, id);
-                        let f = tuple.0.send(OwnedMessage::Text(msg))
+                                    .remove(&id);
+                        match tuple {
+                            Some(t) => {
+                                let ref_id = t.1.clone();
+                                println!("Sending message '{}' to id {}", msg, id);
+                                let f = t.0.send(OwnedMessage::Text(msg))
                                     .and_then(move |sink| {
                                         connections.write().unwrap().insert(id, (sink, ref_id));
                                         Ok(())
                                      });                       
-                        remote.spawn(move |_| f.map_err(|_| ()));
+                                remote.spawn(move |_| f.map_err(|_| ()));
+                            }
+                            None => {}
+                        }                        
                         Ok(())
                     }).map_err(|_| ())
                 });
