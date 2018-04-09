@@ -34,7 +34,7 @@ impl ConfigFile for Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            api_server: Some("http://localhost:9636/".to_string()),
+            api_server: Some("https://localhost:7443/".to_string()),
             auth_token: None,
             email: None,
             origin: None,

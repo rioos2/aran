@@ -198,7 +198,7 @@ impl Wirer {
                 ));
 
                 let conf = self.config.clone();
-
+               
                 let thread = thread::spawn(move || {
                     let mut server = Iron::new(chain);
                     server.threads = HTTP_THREAD_COUNT;

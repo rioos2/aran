@@ -173,7 +173,7 @@ This should show the status of the api server.
 You should see a response similar to the following:
 
 * Healthz
-`curl  http://localhost:9636/v1/healthz
+`curl  https://localhost:7443/v1/healthz
 `
 
 ```
@@ -263,7 +263,18 @@ Locust's web:  [http://127.0.0.1:8089](http://127.0.0.1:8089)
 1. If you get the following error when starting the api-server, check to make sure you have the database setup correctly.
 `ERROR:r2d2: Error opening a connection: Error communicating with the server: Connection refused (os error 111)`
 
-1. If Postgres dies when you run `systemctl start postgresql` with an error message that
+2. If Postgres dies when you run `systemctl start postgresql` with an error message that
    says `WARNING: out of shared memory`, edit the `postgresql.conf` file in
    `/etc/etc/postgresql/10.1/main/postgresql.conf` and add
    `max_locks_per_transaction=128` to it.
+
+3. If you receive the following error after installing openssl 1.1 from source
+   `rioos-apiserver: error while loading shared libraries: libssl.so.1.1: cannot open shared object file: No such file or directory`
+   then add the following
+
+```
+echo $LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+```
+
+To make the above *LD_LIBRARY_PATH* permanent add `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib` in `~/.bashrc`

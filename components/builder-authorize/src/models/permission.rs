@@ -103,11 +103,11 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn list_permission_by_email(datastore: &DataStoreConn, get_email: &IdGet) -> PermissionsOutputList {
+    pub fn list_by_name(datastore: &DataStoreConn, name: &IdGet, procedure_name: &str) -> PermissionsOutputList {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_permission_by_email_v1($1)",
-            &[&(get_email.get_id() as String)],
+            &("SELECT * FROM ".to_string() + procedure_name + "($1)"),
+            &[&(name.get_id() as String)],
         ).map_err(Error::PermissionsGet)?;
 
         let mut response = Vec::new();
@@ -119,24 +119,6 @@ impl DataStore {
         }
         Ok(None)
     }
-
-    pub fn list_permission_by_serviceaccount(datastore: &DataStoreConn, get_serv: &IdGet) -> PermissionsOutputList {
-        let conn = datastore.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * FROM get_permission_by_service_account_v1($1)",
-            &[&(get_serv.get_id() as String)],
-        ).map_err(Error::PermissionsGet)?;
-
-        let mut response = Vec::new();
-        if rows.len() > 0 {
-            for row in rows {
-                response.push(row_to_permissions(&row)?)
-            }
-            return Ok(Some(response));
-        }
-        Ok(None)
-    }
-
 
     //Don't understand the this. ?
     // What is get_role_by_name

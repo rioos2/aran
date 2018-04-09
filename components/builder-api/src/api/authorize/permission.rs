@@ -148,43 +148,6 @@ impl PermissionApi {
             ))),
         }
     }
-    //GET: /permission/email/:name
-    //Input id - u64 as input and returns a roles
-    fn list_permission_by_email(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_name(req)?;
-        match permission::DataStore::list_permission_by_email(&self.conn, &params) {
-            Ok(Some(permissions_list)) => Ok(render_json_list(
-                status::Ok,
-                dispatch(req),
-                &permissions_list,
-            )),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
-        }
-    }
-
-    //GET: /permission/serviceaccounts/:name
-    //Input id - u64 as input and returns a roles
-    fn list_permission_by_serviceaccount(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_name(req)?;
-        match permission::DataStore::list_permission_by_serviceaccount(&self.conn, &params) {
-            Ok(Some(permissions_list)) => Ok(render_json_list(
-                status::Ok,
-                dispatch(req),
-                &permissions_list,
-            )),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
-        }
-    }
 }
 
 impl Api for PermissionApi {
@@ -206,12 +169,6 @@ impl Api for PermissionApi {
 
         let _self = self.clone();
         let show_permissions_applied_for = move |req: &mut Request| -> AranResult<Response> { _self.show_permissions_applied_for(req) };
-
-        let _self = self.clone();
-        let list_permission_by_email = move |req: &mut Request| -> AranResult<Response> { _self.list_permission_by_email(req) };
-
-        let _self = self.clone();
-        let list_permission_by_serviceaccount = move |req: &mut Request| -> AranResult<Response> { _self.list_permission_by_serviceaccount(req) };
 
         //Routes:  Authorization : Permissions
         router.post(
@@ -238,17 +195,6 @@ impl Api for PermissionApi {
             "/permissions/:id/roles/:role_id",
             XHandler::new(C { inner: show_permissions_applied_for }).before(basic.clone()),
             "show_permissions_applied_for",
-        );
-        router.get(
-            "/permissions/email/:name",
-            XHandler::new(C { inner: list_permission_by_email }).before(basic.clone()),
-            "list_permission_by_email",
-        );
-
-        router.get(
-            "/permissions/serviceaccounts/:name",
-            XHandler::new(C { inner: list_permission_by_serviceaccount }).before(basic.clone()),
-            "list_permission_by_serviceaccount",
         );
 
     }

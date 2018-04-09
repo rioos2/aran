@@ -39,9 +39,9 @@ impl VulnApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
 
-        match self.anchore
-            .check_vulnerablity(&format!("{}", &params.get_id()))
-        {
+        match self.anchore.check_vulnerablity(
+            &format!("{}", &params.get_id()),
+        ) {
             Ok(Some(image)) => Ok(render_json(status::Ok, &image)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -58,7 +58,9 @@ impl Api for VulnApi {
 
         router.get(
             "/image/:name/vulnerablity",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+                .before(basic.clone())
+                .before(TrustAccessed {}),
             "show",
         );
     }

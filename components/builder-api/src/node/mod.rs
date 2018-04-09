@@ -10,6 +10,7 @@ pub mod events;
 pub mod runtime;
 pub mod api_wirer;
 pub mod streamer;
+pub mod websocket;
 pub mod internal;
 
 use std::path::PathBuf;
@@ -24,6 +25,12 @@ use common::ui::UI;
 
 use node::streamer::TLSPair;
 
+pub enum Servers{
+    APISERVER,
+    STREAMER,
+    WEBSOCKET
+} 
+
 #[derive(Debug)]
 pub struct Node {
     config: Arc<Config>,
@@ -35,9 +42,10 @@ impl Node {
         Node { config: config.clone() }
     }
 
+
     // A generic implementation that launches a `Node`
     // for aran api handlers.
-    pub fn run(self, ui: &mut UI, streamer: bool) -> Result<()> {
+    pub fn run(self, ui: &mut UI, server: Servers) -> Result<()> {
         ui.title("Node run");
         //start the runtime guard.
         ui.begin("Runtime Guard");
@@ -46,22 +54,32 @@ impl Node {
 
         ui.end("Runtime Guard");
 
-        if streamer {
-            //start the runtime guard.
-            ui.begin("Streamer");
-            streamer::Streamer::new(self.config.http.watch_port, self.config.clone())
-                .start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
-            ui.end("Streamer");
-        } else {
-            //start the runtime guard.
-            ui.heading("Api Wirer");
-            api_wirer::Wirer::new(self.config.clone()).start(
-                ui,
-                api_sender,
-                rg,
-            )?;
-            ui.end("Api Wirer");
-        }
+        match server {
+            Servers::APISERVER => {
+                //start the runtime guard.
+                ui.heading("Api Wirer");
+                api_wirer::Wirer::new(self.config.clone()).start(
+                    ui,
+                    api_sender,
+                    rg,
+                )?;
+                ui.end("Api Wirer");
+            },
+            Servers::STREAMER => {
+                //start the runtime guard.
+                ui.begin("Streamer");
+                streamer::Streamer::new(self.config.http.watch_port, self.config.clone())
+                    .start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
+                ui.end("Streamer");
+            },
+            Servers::WEBSOCKET => {
+                //start the websocket server.
+                ui.begin("Websocket");
+                websocket::Websocket::new(self.config.http.websocket_port, self.config.clone())
+                    .start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
+                ui.end("Websocket");
+            },
+        }       
 
         Ok(())
     }

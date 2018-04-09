@@ -26,6 +26,7 @@ use rio_core::fs::rioconfig_config_path;
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 
 use api::{command, Config, Error, Result};
+use api::node::Servers;
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
@@ -61,6 +62,7 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
             (@arg port: --port +takes_value "Listen port. [default: 7443]")
             (@arg watch_port: --watch_port +takes_value "Listen watch port. [default: 8443]")
             (@arg streamer: --streamer +takes_value "Start Watch server. [default: false]")
+            (@arg websocket: --websocket +takes_value "Start websocket server. [default: false]")
 
         )
         //For now we'll use the ./tools/localup.sh script
@@ -131,11 +133,28 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
         Ok(result) => result,
         Err(e) => return Err(e),
     };
-    start(ui, config, streamer_from_args(&matches))
+
+    //set which server to be start from command args
+    let mut server = Servers::APISERVER;
+    if streamer_from_args(&matches) {
+        server = Servers::STREAMER
+    } else if websocket_from_args(&matches) {
+        server = Servers::WEBSOCKET
+    } else {
+        server = Servers::APISERVER
+    }
+    start(ui, config, server)
 }
 
 fn streamer_from_args(args: &clap::ArgMatches) -> bool {
     match args.value_of("streamer") {
+        Some(flag) => bool::from_str(flag).unwrap(),
+        None => false,
+    }
+}
+
+fn websocket_from_args(args: &clap::ArgMatches) -> bool {
+    match args.value_of("websocket") {
         Some(flag) => bool::from_str(flag).unwrap(),
         None => false,
     }
@@ -207,8 +226,8 @@ fn config_for_setup(args: &clap::ArgMatches) -> Result<Config> {
 /// Starts the aran-api server.
 /// # Failures
 /// * Fails if the postgresql dbr fails to be found - cannot bind to the port, etc.
-fn start(ui: &mut UI, config: Config, streamer: bool) -> Result<()> {
-    api::server::run(ui, config, streamer)
+fn start(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
+    api::server::run(ui, config, server)
 }
 
 fn ui() -> UI {
