@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, Condition, MetaFields};
+use api::base::{TypeMeta, ObjectMeta, Condition, MetaFields, WhoAmITypeMeta};
 use chrono::naive::NaiveDateTime;
 
 use serde_json;
@@ -89,6 +89,8 @@ impl MetaFields for Node {
         self.type_meta.clone()
     }
 }
+
+
 
 /// assembly_cidr:
 //  external_id:
@@ -440,7 +442,17 @@ impl NodeStatistic {
     pub fn set_api_version(&mut self, v: ::std::string::String) {
         self.api_version = v;
     }
+    pub fn set_type_meta(&mut self, type_meta: TypeMeta) {
+        self.kind = type_meta.kind;
+        self.api_version = type_meta.api_version;
+    }
 }
+
+impl WhoAmITypeMeta for NodeStatistic {
+    const MY_KIND: &'static str = "POST:nodes";
+}
+
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Osusages {

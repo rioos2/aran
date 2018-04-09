@@ -32,5 +32,11 @@ RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
           touch $RIOOS_MARKETPLACE_YAML
     fi
 
+# Start Watch Server
+exec $RIOOS_BIN_HOME/entrypoint.sh watchserver &
 
+# Start WebSocket Server
+exec $RIOOS_BIN_HOME/entrypoint.sh websocket &
+
+# Start API Server
 exec $RIOOS_BIN_HOME/entrypoint.sh apiserver
