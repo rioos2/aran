@@ -31,6 +31,7 @@ pub enum Error {
     VolumeUpdate(postgres::error::Error),
     Jobs(job::error::Error),
     PromoStatusGetError(rio_net::Error),
+    PlanSetStatus(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -56,6 +57,7 @@ impl fmt::Display for Error {
             Error::VolumesGet(ref e) => format!("Error geting volume, {}", e),
             Error::PromoStatusGetError(ref e) => format!("Prometheus connection refused , {}", e),
             Error::VolumeUpdate(ref e) => format!("Error updating volume, {}", e),
+            Error::PlanSetStatus(ref e) => format!("Error updating plan status, {}", e),
             Error::Jobs(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
@@ -83,6 +85,7 @@ impl error::Error for Error {
             Error::VolumesGet(ref err) => err.description(),
             Error::VolumeUpdate(ref err) => err.description(),
             Error::Jobs(ref err) => err.description(),
+            Error::PlanSetStatus(ref err) => err.description(),
             Error::PromoStatusGetError(ref err) => err.description(),
         }
     }

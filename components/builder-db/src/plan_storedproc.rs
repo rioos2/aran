@@ -97,6 +97,17 @@ impl Migratable for PlanProcedures {
                         $$ LANGUAGE plpgsql STABLE"#,
         )?;
 
+        migrator.migrate(
+            "plansrv",
+            r#"CREATE OR REPLACE FUNCTION set_plan_status_v1 (pid bigint, plan_status jsonb) RETURNS SETOF plan_factory AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE plan_factory SET status=plan_status, updated_at=now() WHERE id=pid
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
         ui.end("PlanProcedure");
 
         Ok(())

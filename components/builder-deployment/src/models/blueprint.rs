@@ -5,7 +5,7 @@ use chrono::prelude::*;
 use error::{Result, Error};
 
 use protocol::api::blueprint;
-use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 
 use postgres;
 use db::data_store::DataStoreConn;
@@ -62,8 +62,9 @@ impl DataStore {
     pub fn list_blank(db: &DataStoreConn) -> PlanOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_plans_v1()", &[])
-            .map_err(Error::PlanGet)?;
+        let rows = &conn.query("SELECT * FROM get_plans_v1()", &[]).map_err(
+            Error::PlanGet,
+        )?;
 
         let mut response = Vec::new();
 
@@ -72,6 +73,21 @@ impl DataStore {
                 response.push(row_to_plan(&row)?)
             }
             return Ok(Some(response));
+        }
+        Ok(None)
+    }
+    pub fn status_update(datastore: &DataStoreConn, plan: &StatusUpdate) -> PlanOutput {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM set_plan_status_v1($1, $2)",
+            &[
+                &(plan.get_id().parse::<i64>().unwrap()),
+                &(serde_json::to_value(plan.get_status()).unwrap()),
+            ],
+        ).map_err(Error::PlanSetStatus)?;
+        if rows.len() > 0 {
+            let plan = row_to_plan(&rows.get(0))?;
+            return Ok(Some(plan));
         }
         Ok(None)
     }
