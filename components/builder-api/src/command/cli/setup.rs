@@ -39,7 +39,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
 
     ui.para(
         "For more information on pki infrastructure and how they are used in connecting your infrastructure, \
-         please consult the docs at https://bit.ly/rioosadmin_manual",
+         please consult the docs at https://bit.ly/rioos_sh_admin_guide",
     )?;
 
     let server_ca = "server-ca";
@@ -61,7 +61,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of certificate authority, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_server_ca(ui, &server_ca)? {
@@ -73,10 +73,10 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             ))?;
         }
 
-        let client_ca = "client-ca";
+        let client_cli = "client-cli";
 
-        if ask_create_client_ca(ui, &client_ca)? {
-            create_client_ca(ui, &client_ca, cache_path)?;
+        if ask_create_client_cli(ui, &client_cli)? {
+            create_client_cli(ui, &client_cli, cache_path)?;
         } else {
             ui.para(&format!(
                 "You might want to create a client certificate authority with: \
@@ -97,7 +97,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of api key pair, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_api(ui, &api)? {
@@ -122,7 +122,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of service account key pairs, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_serviceaccount(ui, &service_account)? {
@@ -147,7 +147,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of client-controller key pair, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_controller(ui, &controller)? {
@@ -172,7 +172,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of client-nodelet key pair, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_nodelet(ui, &nodelet)? {
@@ -197,7 +197,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of client-storelet key pair, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_storelet(ui, &storelet)? {
@@ -222,7 +222,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of client-scheduler key pair, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_scheduler(ui, &scheduler)? {
@@ -248,7 +248,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of client-gulp key pair, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_gulp(ui, &gulp)? {
@@ -273,7 +273,7 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ui.para(
             "For more information on the use of client-prometheus key pair, please consult \
              the documentation at \
-             https://bit.ly/rioosadmin_manual",
+             https://bit.ly/rioos_sh_admin_guide",
         )?;
 
         if ask_create_prometheus(ui, &prometheus)? {
@@ -323,7 +323,7 @@ fn create_server_ca(ui: &mut UI, server_ca: &str, cache_path: &Path) -> Result<(
     result
 }
 
-fn ask_create_client_ca(ui: &mut UI, ca: &str) -> Result<bool> {
+fn ask_create_client_cli(ui: &mut UI, ca: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
         &format!(
             "Create a client certificate authority `{}'?",
@@ -333,8 +333,8 @@ fn ask_create_client_ca(ui: &mut UI, ca: &str) -> Result<bool> {
     )?)
 }
 
-fn create_client_ca(ui: &mut UI, client_ca: &str, cache_path: &Path) -> Result<()> {
-    command::origin::key::generate::signed(ui, &client_ca, cache_path)?;
+fn create_client_cli(ui: &mut UI, client_cli: &str, cache_path: &Path) -> Result<()> {
+    command::origin::key::generate::signed_with_x509(ui, &client_cli, cache_path)?;
     ui.br()?;
     Ok(())
 }
@@ -348,7 +348,7 @@ fn ask_create_api(ui: &mut UI, api: &str) -> Result<bool> {
 
 //redundant (create_api and create_serviceaccount)
 fn create_api(ui: &mut UI, api: &str, cache_path: &Path) -> Result<()> {
-    command::origin::key::generate::signed_with(ui, &api, cache_path)?;
+    command::origin::key::generate::signed_with_pfx(ui, &api, cache_path)?;
     ui.br()?;
     Ok(())
 }
@@ -403,7 +403,7 @@ fn ask_create_storelet(ui: &mut UI, storelet: &str) -> Result<bool> {
 fn create_storelet(ui: &mut UI, storelet: &str, cache_path: &Path, config: &Config) -> Result<()> {
     let result = command::origin::key::generate::signed(ui, &storelet, cache_path)?;
     ui.br()?;
-    create_rioconfig(&result, cache_path, "storelet.rioconfig", config)?;
+    create_rioconfig(&result, cache_path, "storlet.rioconfig", config)?;
     Ok(())
 }
 
@@ -453,7 +453,7 @@ fn ask_create_prometheus(ui: &mut UI, prometheus: &str) -> Result<bool> {
 
 //redundant (create_api and create_serviceaccount)
 fn create_prometheus(ui: &mut UI, prometheus: &str, cache_path: &Path) -> Result<()> {
-    command::origin::key::generate::start(ui, &prometheus, cache_path)?;
+    command::origin::key::generate::signed_with_x509(ui, &prometheus, cache_path)?;
     ui.br()?;
     Ok(())
 }
