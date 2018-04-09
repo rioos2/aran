@@ -64,7 +64,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
 
     ui.para(
         "For more information on datacenter: \
-         https://www.rioos.sh/docs/reference/datacenters/",
+         https://bit.ly/rioos_sh_usersguide",
     )?;
 
     Ok(())

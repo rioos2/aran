@@ -18,7 +18,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
 
     ui.para(
         "For more information on Digitalcloud datacenter: \
-         https://www.rioos.sh/docs/reference/deployment/",
+         https://bit.ly/rioos_sh_usersguide",
     )?;
 
     ui.end(
