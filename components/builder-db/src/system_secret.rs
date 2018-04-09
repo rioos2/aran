@@ -72,7 +72,7 @@ impl SystemSecret {
 
             append(
                 &NODELET_CONFIG_FILE,
-                &("\nsecret-name: ".to_string() + AGENT_SECRET),
+                &("\nsecret_name: ".to_string() + AGENT_SECRET),
             )?;
         }
         Ok(())

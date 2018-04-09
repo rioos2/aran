@@ -140,6 +140,40 @@ describe('Plan Factory API', function() {
           done(err);
         });
     });
+    it('update plan status', function(done) {
+      request.put('/plans/'+globalAny.plan_id+'/status' )
+      .ca(globalAny.rootCA)
+        .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .send({"status":{"phase":"ready","message":"","reason":"","conditions":[{"condition_type":"","message":"","reason":"","status":"ready","last_update_time":"","last_transition_time":"","last_probe_time":""}]}})
+        .expect(200)
+        .end(function(err, res) {
+          done(err);
+        });
+    });
+    it('update plan status invalid id', function(done) {
+      request.put('/plans/9876543213456/status' )
+      .ca(globalAny.rootCA)
+        .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .send({"status":{"phase":"ready","message":"","reason":"","conditions":[{"condition_type":"","message":"","reason":"","status":"ready","last_update_time":"","last_transition_time":"","last_probe_time":""}]}})
+        .expect(404)
+        .end(function(err, res) {
+          done(err);
+        });
+    });
+    it('update plan status missing phase', function(done) {
+      request.put('/plans/'+globalAny.plan_id+'/status' )
+      .ca(globalAny.rootCA)
+        .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .send({"status":{"phase":"","message":"","reason":"","conditions":[{"condition_type":"","message":"","reason":"","status":"ready","last_update_time":"","last_transition_time":"","last_probe_time":""}]}})
+        .expect(400)
+        .end(function(err, res) {
+          done(err);
+        });
+    });
+
 
   });
   });
