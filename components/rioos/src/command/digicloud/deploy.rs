@@ -48,7 +48,7 @@ pub fn start(ui: &mut UI, rio_client: Client, cache_path: &str, token: &str, ema
     ui.br()?;
     ui.para(
         "For more information on connecting to your digital cloud: \
-        https://www.rioos.sh/docs/reference/digitalcloud/",
+        https://bit.ly/rioos_sh_usersguide",
     )?;
     Ok(())
 }

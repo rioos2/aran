@@ -561,7 +561,7 @@ impl Client {
     }
     pub fn get_storagepool_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<storage::StoragePool>> {
         let mut res = self.0
-            .get(&format!("/storagespool/{}", id))
+            .get(&format!("/storageconnectors/{}/storagespool", id))
             .headers(self.add_authz(token, email))
             .send()
             .map_err(Error::ReqwestError)?;
