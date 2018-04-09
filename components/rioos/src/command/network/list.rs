@@ -10,7 +10,16 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
 
     let results = rio_client.list_network(&token, &email)?;
 
-    let title =row!["Id","Name","Type","Subnet IP","Netmask","Gateway","Status","Hrs Ago"];
+    let title = row![
+        "Id",
+        "Name",
+        "Type",
+        "Subnet IP",
+        "Netmask",
+        "Gateway",
+        "Status",
+        "Hrs Ago"
+    ];
 
     pretty_table(results.to_owned(), title);
 
@@ -18,7 +27,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
 
     ui.para(
         "For more information on Digitalcloud networks: \
-         https://www.rioos.sh/docs/reference/deployment/",
+         https://bit.ly/rioos_sh_usersguide",
     )?;
 
     ui.end(
