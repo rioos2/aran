@@ -213,6 +213,33 @@ impl Client {
     }
 
 
+    pub fn list_secret(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        let mut res = self.0
+            .get(&format!("secrets"))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioNetError(err_from_response(res)));
+        };
+        let mut secret: ResponseList<Vec<secret::Secret>> = res.json()?;
+        Ok(
+            secret
+                .items
+                .iter_mut()
+                .map(|i| {
+                    vec![
+                i.get_id(),
+                i.object_meta().name,
+                i.get_secret_type(),
+                i.get_created_at(),
+            ]
+                })
+                .collect(),
+        )
+    }
+
     pub fn create_horizontal_scaling(&self, hscale: scale::HorizontalScaling, token: &str, email: &str) -> Result<()> {
         let res = self.0
             .post(&format!("horizontalscaling"))
