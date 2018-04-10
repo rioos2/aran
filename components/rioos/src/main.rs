@@ -112,6 +112,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("secret", Some(matches)) => {
             match matches.subcommand() {
                 ("create", Some(m)) => sub_secret_create(ui, m)?,
+                ("list", Some(m)) => sub_secret_list(ui, m)?,
                 _ => unreachable!(),
             }
         }
@@ -277,6 +278,15 @@ fn sub_secret_create(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         m.value_of("SOURCE").map(|v| v.into()).unwrap(),
         &auth_token_param_or_env(&m)?,
         &auth_email_param_or_env(&m)?,
+    )
+}
+
+fn sub_secret_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::secret::list::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
     )
 }
 
