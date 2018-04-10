@@ -99,6 +99,13 @@ fn start(ui: &mut UI) -> Result<()> {
         ("cluster", Some(matches)) => {
             match matches.subcommand() {
                 ("setup", Some(m)) => sub_cluster_setup(ui, m)?,
+                ("edit", Some(matches)) => {
+                    match matches.subcommand() {
+                        ("network", Some(m)) => sub_cluster_edit_network(ui, m)?,
+                        ("datacenter", Some(m)) => sub_cluster_edit_datacenter(ui, m)?,
+                        _ => unreachable!(),
+                    }
+                }
                 _ => unreachable!(),
             }
         }
@@ -240,6 +247,27 @@ fn sub_cluster_setup(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         &auth_email_param_or_env(&m)?,
     )
 }
+
+fn sub_cluster_edit_network(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::cluster::edit::edit_network(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        m.value_of("NETWORK_IDENT").map(|v| v.into()).unwrap(),
+        &auth_token_param_or_env(&m)?,
+        &auth_email_param_or_env(&m)?,
+    )
+}
+
+fn sub_cluster_edit_datacenter(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::cluster::edit::edit_datacenter(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        m.value_of("DATACENTER_IDENT").map(|v| v.into()).unwrap(),
+        &auth_token_param_or_env(&m)?,
+        &auth_email_param_or_env(&m)?,
+    )
+}
+
 
 //secret create
 fn sub_secret_create(ui: &mut UI, m: &ArgMatches) -> Result<()> {
