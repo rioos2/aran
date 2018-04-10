@@ -31,23 +31,28 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     account.set_phone(ui.prompt_ask("phone", None)?);
     account.set_company_name(prompt_company(ui)?);
 
-    let auth_token = signup(ui, client, account.clone())?;
+    let account: session::Session = signup(ui, client, account.clone())?;
 
-    write_cli_config_auth_token(&auth_token, &account.get_email())?;
+    write_cli_config_auth_token(
+        &account.get_token(),
+        &account.get_email(),
+        &account.get_id(),
+    )?;
 
     ui.heading("Create new account in rioos and Logged in.")?;
     ui.para("That's all for now. Thanks for using Rio/OS!")?;
     Ok(())
 }
 
-fn write_cli_config_auth_token(auth_token: &str, email: &str) -> Result<()> {
+fn write_cli_config_auth_token(auth_token: &str, email: &str, account: &str) -> Result<()> {
     let mut config = config::load()?;
     config.auth_token = Some(auth_token.to_string());
     config.email = Some(email.to_string());
+    config.account = Some(account.to_string());
     config::save(&config)
 }
 
-fn signup(ui: &mut UI, rio_client: Client, account: session::SessionCreate) -> Result<String> {
+fn signup(ui: &mut UI, rio_client: Client, account: session::SessionCreate) -> Result<session::Session> {
     ui.br()?;
     Ok(rio_client.signup(account)?)
 }

@@ -54,7 +54,7 @@ impl Client {
         ))
     }
 
-    pub fn signup(&self, body: session::SessionCreate) -> Result<(String)> {
+    pub fn signup(&self, body: session::SessionCreate) -> Result<session::Session> {
         let mut res = self.0
             .post(&format!("accounts"))
             .body(Body::from(serde_json::to_string(&body)?))
@@ -68,10 +68,10 @@ impl Client {
         };
 
         let data: session::Session = res.json()?;
-        Ok(data.get_token())
+        Ok(data)
     }
 
-    pub fn login(&self, userid: &str, password: &str) -> Result<(String)> {
+    pub fn login(&self, userid: &str, password: &str) -> Result<session::Session> {
         let body = json!({
             "email": format!("{}", userid),
             "password": format!("{}", password)
@@ -89,7 +89,7 @@ impl Client {
         };
 
         let data: session::Session = res.json()?;
-        Ok(data.get_token())
+        Ok(data)
     }
 
     pub fn logout(&self, token: &str) -> Result<(String)> {
