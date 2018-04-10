@@ -167,8 +167,8 @@ impl Client {
 
 
 
-    pub fn create_network(&self, network: network::Network, token: &str, email: &str) -> Result<()> {
-        let res = self.0
+    pub fn create_network(&self, network: network::Network, token: &str, email: &str) -> Result<network::Network> {
+        let mut res = self.0
             .post(&format!("networks"))
             .body(Body::from(serde_json::to_string(&network)?))
             .headers(self.add_authz(token, email))
@@ -177,7 +177,9 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioNetError(err_from_response(res)));
         };
-        Ok(())
+
+        let network: network::Network = res.json()?;
+        Ok(network)
     }
 
     pub fn create_datacenter(&self, storage: storage::DataCenter, token: &str, email: &str) -> Result<()> {
