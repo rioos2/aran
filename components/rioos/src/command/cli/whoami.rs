@@ -11,7 +11,11 @@ pub fn start(ui: &mut UI) -> Result<()> {
     let config = config::load()?;
     ui.br()?;
     ui.para(&format!(
+<<<<<<< HEAD
         "Currently logged in as {} with {} in {}",
+=======
+        "Currently logged in as {}({}) @ {}",
+>>>>>>> origin/2-0-stable
         &config.email.unwrap(),
         &config.account.unwrap(),
         &config.api_server.unwrap()
