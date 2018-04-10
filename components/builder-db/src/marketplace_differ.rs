@@ -4,6 +4,7 @@ use std::fs::File;
 use error::Result;
 use serde_json;
 use serde_yaml;
+use chrono::prelude::*;
 
 use data_store::DataStoreConn;
 
@@ -41,6 +42,10 @@ impl MarketPlaceDiffer {
 
         let file = File::open(&MARKETPLACE_CACHE_FILE.as_path())?;
         let u: MarketPlaceDownload = serde_yaml::from_reader(file)?;
+        println!("timestamp{:?}", u.time_stamp);
+        println!("now:{:?}", Utc::now().to_rfc3339());
+        println!("now:{:?}", signed_duration_since(u.time_stamp));
+
         u.items
             .iter()
             .map(|x| {

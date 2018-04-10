@@ -71,6 +71,7 @@ extern crate lazy_static;
 
 extern crate threadpool;
 extern crate time;
+extern crate chrono;
 
 pub mod config;
 pub mod error;
