@@ -206,11 +206,12 @@ impl NodeDS {
                 .into_iter()
                 .map(|x| { lstatistics = x.into(); })
                 .collect::<Vec<_>>();
+        } else {
+            let mut node = node::NodeStatistic::new();
+            let jackie = node.who_am_i();
+            node.set_type_meta(type_meta_url(jackie));
+            lstatistics = vec![node];
         }
-        let mut node = node::NodeStatistic::new();
-        let jackie = node.who_am_i();
-        node.set_type_meta(type_meta_url(jackie));
-        lstatistics = vec![node];
 
         let mut guages = node::Guages::new();
         guages.set_title("Cumulative operations counter".to_string());

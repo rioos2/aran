@@ -6,6 +6,7 @@ use std::fmt;
 use std::result;
 use std::str;
 use std::string;
+use std::env;
 
 use toml;
 
@@ -28,22 +29,30 @@ pub enum Error {
     StringFromUtf8Error(string::FromUtf8Error),
     TomlSerializeError(toml::ser::Error),
     WireDecode(String),
+    EditStatus,
+    EditorEnv(env::VarError),
     PackageNotFound,
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
-            Error::ArtifactIdentMismatch((ref a, ref ai, ref i)) => format!(
-                "Artifact ident {} for `{}' does not match expected ident {}",
-                ai, a, i
-            ),
+            Error::ArtifactIdentMismatch((ref a, ref ai, ref i)) => {
+                format!(
+                    "Artifact ident {} for `{}' does not match expected ident {}",
+                    ai,
+                    a,
+                    i
+                )
+            }
             Error::CantUploadGossipToml => format!("Can't upload gossip.toml, it's a reserved file name"),
             Error::CryptoKeyError(ref s) => format!("Missing or invalid key: {}", s),
-            Error::GossipFileRelativePath(ref s) => format!(
-                "Path for gossip file cannot have relative components (eg: ..): {}",
-                s
-            ),
+            Error::GossipFileRelativePath(ref s) => {
+                format!(
+                    "Path for gossip file cannot have relative components (eg: ..): {}",
+                    s
+                )
+            }
             Error::FileNameError => format!("Failed to extract a filename"),
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::IO(ref err) => format!("{}", err),
@@ -53,6 +62,8 @@ impl fmt::Display for Error {
             Error::TomlSerializeError(ref e) => format!("Can't serialize TOML: {}", e),
             Error::WireDecode(ref m) => format!("Failed to decode wire message: {}", m),
             Error::PackageNotFound => format!("Package not found"),
+            Error::EditStatus => format!("Failed edit text command"),
+            Error::EditorEnv(ref e) => format!("Missing EDITOR environment variable: {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -73,6 +84,8 @@ impl error::Error for Error {
             Error::StringFromUtf8Error(_) => "Failed to convert a string as UTF-8",
             Error::TomlSerializeError(_) => "Can't serialize TOML",
             Error::WireDecode(_) => "Failed to decode wire message",
+            Error::EditorEnv(_) => "Missing EDITOR environment variable",
+            Error::EditStatus => "Failed edit text command",
             Error::PackageNotFound => "Package not found",
         }
     }

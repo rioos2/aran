@@ -167,6 +167,21 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["digisetup"])
                 (@arg SOURCE: +required +takes_value {file_exists} "A filepath of the cluster.yaml")
             )
+            (@subcommand edit =>
+                (about: "Edit the Cluster from file in Rio/OS")
+                (aliases: &["digiedit"])
+                (@setting ArgRequiredElseHelp)
+                (@subcommand network =>
+                    (about: "Edit the Cluster Network from file in Rio/OS")
+                    (aliases: &["digieditnet"])
+                    (@arg NETWORK_IDENT: +required +takes_value "A digital cloud network identifier (ex: 1, 2)")
+                )
+                (@subcommand datacenter =>
+                    (about: "Edit the Cluster Datacenter from file in Rio/OS")
+                    (aliases: &["digieditdc"])
+                    (@arg DATACENTER_IDENT: +required +takes_value"A digital cloud datacenter identifier (ex: 1, 2)")
+                )
+            )
         )
         (@subcommand secret =>
             (about: "Commands relating to Rio/OS Security")

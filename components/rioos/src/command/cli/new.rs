@@ -6,7 +6,9 @@ use common::ui::UI;
 
 use api_client::Client;
 use config;
+use rioos_core::env;
 use protocol::api::session;
+use AUTH_TOKEN_ENVVAR;
 
 pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     ui.br()?;
@@ -22,13 +24,12 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     ui.para("Enter your credentials.")?;
 
     let mut account = session::SessionCreate::new();
-    account.set_first_name(ui.prompt_ask("First Name", None)?);
-    account.set_last_name(ui.prompt_ask("Last Name", None)?);
+    account.set_first_name(prompt_firstname(ui)?);
+    account.set_last_name(prompt_lastname(ui)?);
     account.set_email(ui.prompt_ask("Userid", None)?);
     account.set_password(ui.prompt_ask("Password", None)?);
     account.set_phone(ui.prompt_ask("phone", None)?);
-    account.set_company_name(ui.prompt_ask("Company", None)?);
-    account.set_registration_ip_address(ui.prompt_ask("Registration IP", None)?);
+    account.set_company_name(prompt_company(ui)?);
 
     let auth_token = signup(ui, client, account.clone())?;
 
@@ -49,4 +50,31 @@ fn write_cli_config_auth_token(auth_token: &str, email: &str) -> Result<()> {
 fn signup(ui: &mut UI, rio_client: Client, account: session::SessionCreate) -> Result<String> {
     ui.br()?;
     Ok(rio_client.signup(account)?)
+}
+
+fn prompt_firstname(ui: &mut UI) -> Result<String> {
+    let config = config::load()?;
+    let default = match config.firstname {
+        Some(o) => Some(o),
+        None => env::var(AUTH_TOKEN_ENVVAR).ok(),
+    };
+    Ok(ui.prompt_ask("First Name", default.as_ref().map(|x| &**x))?)
+}
+
+fn prompt_lastname(ui: &mut UI) -> Result<String> {
+    let config = config::load()?;
+    let default = match config.lastname {
+        Some(o) => Some(o),
+        None => env::var(AUTH_TOKEN_ENVVAR).ok(),
+    };
+    Ok(ui.prompt_ask("Last Name", default.as_ref().map(|x| &**x))?)
+}
+
+fn prompt_company(ui: &mut UI) -> Result<String> {
+    let config = config::load()?;
+    let default = match config.company {
+        Some(o) => Some(o),
+        None => env::var(AUTH_TOKEN_ENVVAR).ok(),
+    };
+    Ok(ui.prompt_ask("Company", default.as_ref().map(|x| &**x))?)
 }

@@ -28,12 +28,19 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
                         })
                         .collect::<Vec<_>>()
                 })
-                .unwrap()
+                .unwrap_or([].to_vec())
         })
         .flat_map(|s| s)
         .collect::<Vec<_>>();
 
-    let title =row!["Id","Type","Stored At","Available Disks","Pool Id","Pool Usage"];
+    let title = row![
+        "Id",
+        "Type",
+        "Stored At",
+        "Available Disks",
+        "Pool Id",
+        "Pool Usage"
+    ];
 
     pretty_table(value.to_owned(), title);
 
@@ -41,7 +48,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
 
     ui.para(
         "For more information on storages: \
-         https://www.rioos.sh/docs/reference/storages/",
+         https://bit.ly/rioos_sh_usersguide",
     )?;
 
     ui.end(

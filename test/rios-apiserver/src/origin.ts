@@ -1,9 +1,9 @@
 
 import { expect } from 'chai';
 import supertest = require('supertest');
-
 const globalAny:any = global;
-const request = supertest('http://localhost:9636/api/v1');
+
+const request = supertest.agent(globalAny.apiServer);
 
 describe('Origin API', function() {
 
