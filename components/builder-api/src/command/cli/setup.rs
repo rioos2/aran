@@ -334,7 +334,7 @@ fn ask_create_client_cli(ui: &mut UI, ca: &str) -> Result<bool> {
 }
 
 fn create_client_cli(ui: &mut UI, client_cli: &str, cache_path: &Path) -> Result<()> {
-    command::origin::key::generate::signed_with_x509(ui, &client_cli, cache_path)?;
+    command::origin::key::generate::signed_with_pfx(ui, &client_cli, cache_path)?;
     ui.br()?;
     Ok(())
 }

@@ -28,6 +28,7 @@ pub struct Config {
     pub firstname: Option<String>,
     pub lastname: Option<String>,
     pub company: Option<String>,
+    pub account: Option<String>,
 }
 
 impl ConfigFile for Config {
@@ -44,6 +45,7 @@ impl Default for Config {
             auth_token: None,
             email: None,
             origin: None,
+            account: None,
         }
     }
 }
