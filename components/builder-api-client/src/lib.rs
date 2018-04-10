@@ -68,7 +68,6 @@ impl Client {
         };
 
         let data: session::Session = res.json()?;
-        println!("{:?}", data);
         Ok(data)
     }
 
