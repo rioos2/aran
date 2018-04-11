@@ -4,7 +4,7 @@
 use std::path::Path;
 use std::result;
 
-use clap::{App, AppSettings, Arg};
+use clap::{App, AppSettings};
 
 pub fn get() -> App<'static, 'static> {
     let alias_login = sub_auth_login()
@@ -15,25 +15,21 @@ pub fn get() -> App<'static, 'static> {
         .about("Alias for 'auth logout'")
         .aliases(&["logo", "logou"])
         .setting(AppSettings::Hidden);
-    let alias_init = sub_cli_init()
-        .about("Alias for 'cli init'")
-        .aliases(&["in", "ini"])
-        .setting(AppSettings::Hidden);
     let alias_new = sub_cli_new()
         .about("Alias for 'cli new'")
         .aliases(&["n", "ne", "new"])
         .setting(AppSettings::Hidden);
     let alias_list = sub_cli_list()
         .about("Alias for 'cli list'")
-        .aliases(&["l", "li", "lis"])
+        .aliases(&["l", "li", "lis", "list"])
         .setting(AppSettings::Hidden);
-    let alias_deploy = sub_digicloud_deploy()
+    let alias_init = sub_cli_init()
         .about("Alias for 'digitalcloud deploy'")
         .aliases(&["d", "de", "dep", "deplo"])
         .setting(AppSettings::Hidden);
-    let alias_deployapp = sub_app_deploy()
-        .about("Alias for 'app deploy'")
-        .aliases(&["deploya", "deployap"])
+    let alias_whoami = sub_cli_whoami()
+        .about("Alias for 'cli whoami'")
+        .aliases(&["who", "whoam", "whoami"])
         .setting(AppSettings::Hidden);
 
     clap_app!(rioos =>
@@ -46,9 +42,8 @@ pub fn get() -> App<'static, 'static> {
             (about: "Commands relating to Rio/OS init/setup")
             (aliases: &["cl"])
             (@setting ArgRequiredElseHelp)
-            (subcommand: sub_cli_init().aliases(&["i", "in", "ini"]))
+            (subcommand: sub_cli_init().aliases(&["i", "in", "int"]))
             (subcommand: sub_cli_list().aliases(&["l", "li", "lis"]))
-            (subcommand: sub_cli_completers().aliases(&["c", "co", "com", "comp"]))
             (subcommand: sub_cli_new().aliases(&["n", "ne", "new"]))
             (subcommand: sub_cli_whoami().aliases(&["who", "whoam", "whoami"]))
 
@@ -60,28 +55,6 @@ pub fn get() -> App<'static, 'static> {
             (subcommand: sub_auth_login().aliases(&["l", "lo", "log", "logi"]))
             (subcommand: sub_auth_logout().aliases(&["logo", "logou"]))
             (subcommand: sub_auth_listproviders().aliases(&["listp", "listpr", "listpro", "listprov","listprovi"]))
-        )
-        (@subcommand origin =>
-            (about: "Commands relating to Rio/OS origins")
-            (aliases: &["o", "or", "ori", "orig", "origi"])
-            (@setting ArgRequiredElseHelp)
-            (@subcommand create =>
-                (about: "Creates an origin for the user")
-                (aliases: &["createorigi"])
-                (@arg ORG_IDENT: +required +takes_value
-                    "An origin identifier (ex: riouser/myorigin1, riouser/itdevbox)")
-            )
-            (@subcommand get =>
-                (about: "Displays the origin details for an user")
-                (aliases: &["getorigi"])
-                (@arg ORG_IDENT: +required +takes_value
-                    "An origin identifier (ex: riouser/myorigin1, riouser/itdevbox)")
-            )
-            (@subcommand list =>
-                (about: "Displays all the origins for an user")
-                (aliases: &["listorigi"])
-                (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
-            )
         )
         (@subcommand digitalcloud =>
             (about: "Commands relating to Rio/OS digital cloud os")
@@ -107,17 +80,6 @@ pub fn get() -> App<'static, 'static> {
                 (about: "Display the detailed state of digital cloud os")
                 (aliases: &["digidescribe"])
                 (@arg DIGICLOUD_NAME: +required +takes_value "Name for the new digitalcloud os")
-            )
-            (@subcommand backup =>
-                (about: "Displays all the backups of digitalcloud os")
-                (aliases: &["digiback", "digibacku"])
-                (@arg DIGICLOUD_IDENT: +required +takes_value
-                    "A digital cloud identifier (ex: 1, 2)")
-            )
-            (@subcommand snapshot =>
-                (about: "Displays all the snapshots of digitalcloud os")
-                (@arg DIGICLOUD_IDENT: +required +takes_value
-                    "A digital cloud identifier (ex: 1, 2)")
             )
             (@subcommand volumes =>
                 (about: "Displays all the volumes of digitalcloud os")
@@ -167,21 +129,6 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["digisetup"])
                 (@arg SOURCE: +required +takes_value {file_exists} "A filepath of the cluster.yaml")
             )
-            (@subcommand edit =>
-                (about: "Edit the Cluster from file in Rio/OS")
-                (aliases: &["digiedit"])
-                (@setting ArgRequiredElseHelp)
-                (@subcommand network =>
-                    (about: "Edit the Cluster Network from file in Rio/OS")
-                    (aliases: &["digieditnet"])
-                    (@arg NETWORK_IDENT: +required +takes_value "A digital cloud network identifier (ex: 1, 2)")
-                )
-                (@subcommand datacenter =>
-                    (about: "Edit the Cluster Datacenter from file in Rio/OS")
-                    (aliases: &["digieditdc"])
-                    (@arg DATACENTER_IDENT: +required +takes_value"A digital cloud datacenter identifier (ex: 1, 2)")
-                )
-            )
         )
         (@subcommand secret =>
             (about: "Commands relating to Rio/OS Security")
@@ -196,85 +143,6 @@ pub fn get() -> App<'static, 'static> {
                 (about: "Displays all the secrets ")
                 (aliases: &["listsecret"])
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
-            )
-        )
-        (@subcommand app =>
-            (about: "Commands relating to Rio/OS apps and other app-specific configuration.")
-            (aliases: &["ap"])
-            (@setting ArgRequiredElseHelp)
-            (@subcommand init =>
-                (about: "Generates common app specific configuration files. Executing without \
-                    argument will create a `rioos` directory in your current folder for the \
-                    app. If `APP_NAME` is specified it will create a folder with that name. \
-                    Environment variables (those starting with 'app_') that are set will be used \
-                    in the generated app")
-                (aliases: &["initapp"])
-                (@arg APP_NAME: +takes_value "Name for the new app")
-                (@arg ORIGIN: --origin -o +takes_value "Origin for the new app")
-                (@arg WITH_ALL: --("with-all")
-                    "Generate app blu with all available app options")
-                (@arg SCAFFOLDING: --scaffolding -s +takes_value
-                    "Specify explicit Scaffolding for your app (ex: node, ruby)")
-            )
-            (@subcommand deploy =>
-                (about: "Deploys the Rioblu.yaml blueprint in Rio/OS")
-                (aliases: &["appdeplo"])
-                (@arg SOURCE: +takes_value {file_exists} "A filepath of the rioblu.yaml")
-            )
-            (@subcommand edit =>
-                (about: "Edit and update the definition of resources on the server by using default editor")
-                (aliases: &["appedi"])
-                (@arg APP_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
-                )
-            (@subcommand describe =>
-                (about: "Display the detailed state of digital cloud os")
-                (aliases: &["appdescribe"])
-                (@arg APP_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
-            )
-            (@subcommand backup =>
-                (about: "Displays all the backups of app")
-                (aliases: &["appback", "appbacku"])
-                (@arg APP_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
-            )
-            (@subcommand snapshot =>
-                (about: "Displays all the snapshots of app")
-                (@arg APP_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
-            )
-            (@subcommand volumes =>
-                (about: "Displays all the volumes of app")
-                (@arg APP_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
-            )
-            (@subcommand start =>
-                (about: "Starts the app, if it can be started")
-                (@arg APP_IDENT: +required +takes_value
-                    "An app cloud identifier (ex: 1, 2)")
-            )
-            (@subcommand stop =>
-                (about: "Stops the app, if it can be stopped")
-                (@arg APP_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
-            )
-            (@subcommand reboot =>
-                (about: "Reboots the app, if it can be rebooted")
-                (@arg APP_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
-            )
-            (@subcommand ssh =>
-                (about: "Securely shell connect to app")
-                (aliases: &["appssh"])
-                (@arg APP_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
-            )
-            (@subcommand watch =>
-                (about: "Watch the logs for the deployed app")
-                (aliases: &["appwatch"])
-                (@arg DIGICLOUD_IDENT: +required +takes_value
-                    "An app identifier (ex: 1, 2)")
             )
         )
         (@subcommand images =>
@@ -297,24 +165,6 @@ pub fn get() -> App<'static, 'static> {
             (about: "Commands relating to Rio/OS infrastructure")
             (aliases: &["n", "no", "nod","node", "nodes"])
             (@setting ArgRequiredElseHelp)
-            (@subcommand init =>
-                (about: "Create node for the stoarge")
-                (aliases: &["i", "in", "ini"])
-                (@arg NODE_NAME: +takes_value "Name for the new node")
-
-            )
-            (@subcommand healthz =>
-                (about: "Commands relating to node health")
-                (aliases: &["nodeheal", "nodehealth"])
-                (@setting ArgRequiredElseHelp)
-                (@subcommand ping =>
-                    (about: "Pings a nodes")
-                    (aliases: &["nodeping"])
-                    (@arg NODE_IDENT: +required +takes_value
-                        "A node identifier (ex: 1, 2)")
-                )
-
-            )
             (@subcommand register =>
                 (about: "Manually register a node. Nodes are autodiscovered by nodelet.\
                     this is used for development testing only.")
@@ -327,7 +177,7 @@ pub fn get() -> App<'static, 'static> {
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
             )
             (@subcommand describe =>
-                (about: "Display the detailed state of datacenter")
+                (about: "Display the detailed state of node")
                 (aliases: &["nodescribe"])
                 (@arg NODE_ID: +required +takes_value "Id for the node")
             )
@@ -351,17 +201,6 @@ pub fn get() -> App<'static, 'static> {
             (about: "Commands relating to Rio/OS Datacenters(Locations)")
             (aliases: &["datacent", "locations"])
             (@setting ArgRequiredElseHelp)
-            (@subcommand create =>
-                (about: "Create new datacenter/location in Rio/OS.")
-                (aliases: &["dccreate", "loccreate"])
-                (@arg APP_NAME: +takes_value "Name for the new datacenter/location")
-                (@arg NODES_IDENT: +required +multiple
-                    "One or more node identifiers (ex: 1, 2) to be grouped as a cluster")
-                (@arg NETWORKS_IDENT: +required +multiple
-                    "One or more network identifiers (ex: 1, 2) to be used by the clustered nodes")
-                (@arg STORAGES_IDENT: +required +takes_value
-                    "One or more storage identifiers (ex: 1, 2) to be used by the clustered nodes")
-            )
             (@subcommand list =>
                 (about: "Display all the datacenters/locations registered in Rio/OS.")
                 (aliases: &["listdcs", "listlocations"])
@@ -377,6 +216,11 @@ pub fn get() -> App<'static, 'static> {
                 (about: "Display the detailed state of datacenter")
                 (aliases: &["datacendescribe"])
                 (@arg DATACENTER_ID: +required +takes_value "Id for the Datacenter")
+            )
+            (@subcommand edit =>
+                (about: "Edit the Cluster Datacenter from file in Rio/OS")
+                (aliases: &["digieditdc"])
+                (@arg DATACENTER_IDENT: +required +takes_value"A digital cloud datacenter identifier (ex: 1, 2)")
             )
         )
         (@subcommand jobs =>
@@ -411,37 +255,40 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["listnetwork"])
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
             )
+            (@subcommand edit =>
+                (about: "Edit the Cluster Network from file in Rio/OS")
+                (aliases: &["digieditnet"])
+                (@arg NETWORK_IDENT: +required +takes_value "A digital cloud network identifier (ex: 1, 2)")
+            )
         )
+        (subcommand: alias_new)
+        (subcommand: alias_whoami)
         (subcommand: alias_login)
         (subcommand: alias_logout)
-        (subcommand: alias_new)
-        (subcommand: alias_init)
         (subcommand: alias_list)
-        (subcommand: alias_deploy)
-        (subcommand: alias_deployapp)
+        (subcommand: alias_init)
         (after_help: "\nALIASES:\
+            \n    new        Alias for: 'cli new'\
+            \n    whoami     Alias for: 'cli whoami'\
             \n    login      Alias for: 'auth login'\
             \n    logout     Alias for: 'auth logout'\
-            \n    new        Alias for: 'cli new'\
             \n    init       Alias for: 'cli init'\
             \n    list       Alias for: 'cli list'\
-            \n    deploy     Alias for: 'digitialcloud deploy'\
-            \n    deployapp  Alias for: 'app deploy'\
-            \n    get        Alias for: 'node get'\
             \n"
         )
     )
 }
 
-fn sub_cli_init() -> App<'static, 'static> {
-    clap_app!(@subcommand setup =>
-        (about: "Generates a blueprint for deployment with reasonable defaults.")
+fn sub_cli_list() -> App<'static, 'static> {
+    clap_app!(@subcommand list =>
+        (about: "List the blueprints deployed.")
     )
 }
 
-fn sub_cli_list() -> App<'static, 'static> {
-    clap_app!(@subcommand setup =>
-        (about: "List the blueprints deployed.")
+fn sub_cli_init() -> App<'static, 'static> {
+    clap_app!(@subcommand init =>
+        (about: "Deploys the Rioblu.yaml digitalcloud os blueprint in Rio/OS")
+        (@arg SOURCE: +required +takes_value {file_exists} "A filepath of the riobluhscale.yaml")
     )
 }
 
@@ -453,30 +300,6 @@ fn sub_cli_new() -> App<'static, 'static> {
 fn sub_cli_whoami() -> App<'static, 'static> {
     clap_app!(@subcommand whoami =>
         (about: "Dispaly the current User.")
-    )
-}
-
-fn sub_cli_completers() -> App<'static, 'static> {
-    let sub = clap_app!(@subcommand completers =>
-        (about: "Creates command-line completers for your shell."));
-
-    let supported_shells = ["bash", "fish", "zsh", "powershell"];
-
-    // The clap_app! macro above is great but does not support the ability to specify a range of
-    // possible values. We wanted to fail here with an unsupported shell instead of pushing off a
-    // bad value to clap.
-
-    sub.arg(
-        Arg::with_name("SHELL")
-            .help(
-                "The name of the shell you want to generate the command-completion. Supported \
-                 Shells: bash, fish, zsh, powershell",
-            )
-            .short("s")
-            .long("shell")
-            .required(true)
-            .takes_value(true)
-            .possible_values(&supported_shells),
     )
 }
 
@@ -504,17 +327,6 @@ fn sub_digitalcloud_list() -> App<'static, 'static> {
     )
 }
 
-fn sub_digicloud_deploy() -> App<'static, 'static> {
-    clap_app!(@subcommand deploy =>
-        (about: "Deploys the Rioblu.yaml digitalcloud os blueprint in Rio/OS")
-    )
-}
-
-fn sub_app_deploy() -> App<'static, 'static> {
-    clap_app!(@subcommand deploy =>
-        (about: "Deploys the Rioblu.yaml app blueprint in Rio/OS")
-    )
-}
 
 fn file_exists(val: String) -> result::Result<(), String> {
     if Path::new(&val).is_file() {
