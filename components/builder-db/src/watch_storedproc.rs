@@ -30,7 +30,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('assemblyfactorys_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('assemblyfactorys_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -54,7 +54,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('assemblys_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('assemblys_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -78,7 +78,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('nodes_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('nodes_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -102,7 +102,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('services_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('services_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -126,7 +126,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('jobs_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('jobs_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -150,7 +150,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('secrets_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('secrets_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -174,7 +174,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('horizontalscaling_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('horizontalscaling_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -198,7 +198,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('storagespool_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('storagespool_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -222,7 +222,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('storageconnectors_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('storageconnectors_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -246,7 +246,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('datacenters_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('datacenters_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -270,7 +270,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('verticalscaling_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('verticalscaling_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -294,7 +294,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('settingsmap_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('settingsmap_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -318,7 +318,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('endpoints_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('endpoints_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -342,7 +342,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('origins_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('origins_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -366,7 +366,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('plans_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('plans_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -390,7 +390,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('networks_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('networks_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
@@ -414,7 +414,7 @@ impl Migratable for WatchProcedures {
                     ELSE
                         id = OLD.id;
                     END IF;
-                    PERFORM pg_notify('serviceaccounts_trigger', json_build_object('table', TG_TABLE_NAME, 'data', NEW.id, 'type', TG_OP)::text);
+                    PERFORM pg_notify('serviceaccounts_trigger', json_build_object('table', TG_TABLE_NAME, 'data', id, 'type', TG_OP)::text);
                     RETURN NEW;
                 END;
                 $$ LANGUAGE plpgsql"#,
