@@ -518,6 +518,35 @@ impl Client {
         Ok(data)
     }
 
+    pub fn network_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<network::Network> {
+        let mut res = self.0
+            .get(&format!("/networks/{}", id))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioNetError(err_from_response(res)));
+        };
+
+        let net: network::Network = res.json()?;
+        Ok(net)
+    }
+    pub fn network_update(&self, token: &str, email: &str, net: network::Network) -> Result<()> {
+        let res = self.0
+            .put(&format!("networks/{}",net.get_id()))
+            .body(Body::from(serde_json::to_string(&net)?))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioNetError(err_from_response(res)));
+        };
+
+        Ok(())
+    }
+
     pub fn describe_datacenter(&self, token: &str, email: &str, id: &str) -> Result<storage::DataCenter> {
         let mut res = self.0
             .get(&format!("/datacenters/{}", id))
