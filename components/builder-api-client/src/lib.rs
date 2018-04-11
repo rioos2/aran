@@ -54,7 +54,7 @@ impl Client {
         ))
     }
 
-    pub fn signup(&self, body: session::SessionCreate) -> Result<(String)> {
+    pub fn signup(&self, body: session::SessionCreate) -> Result<session::Session> {
         let mut res = self.0
             .post(&format!("accounts"))
             .body(Body::from(serde_json::to_string(&body)?))
@@ -68,10 +68,10 @@ impl Client {
         };
 
         let data: session::Session = res.json()?;
-        Ok(data.get_token())
+        Ok(data)
     }
 
-    pub fn login(&self, userid: &str, password: &str) -> Result<(String)> {
+    pub fn login(&self, userid: &str, password: &str) -> Result<session::Session> {
         let body = json!({
             "email": format!("{}", userid),
             "password": format!("{}", password)
@@ -89,7 +89,7 @@ impl Client {
         };
 
         let data: session::Session = res.json()?;
-        Ok(data.get_token())
+        Ok(data)
     }
 
     pub fn logout(&self, token: &str) -> Result<(String)> {
@@ -167,8 +167,8 @@ impl Client {
 
 
 
-    pub fn create_network(&self, network: network::Network, token: &str, email: &str) -> Result<()> {
-        let res = self.0
+    pub fn create_network(&self, network: network::Network, token: &str, email: &str) -> Result<network::Network> {
+        let mut res = self.0
             .post(&format!("networks"))
             .body(Body::from(serde_json::to_string(&network)?))
             .headers(self.add_authz(token, email))
@@ -177,7 +177,9 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioNetError(err_from_response(res)));
         };
-        Ok(())
+
+        let network: network::Network = res.json()?;
+        Ok(network)
     }
 
     pub fn create_datacenter(&self, storage: storage::DataCenter, token: &str, email: &str) -> Result<()> {
@@ -210,6 +212,33 @@ impl Client {
         Ok(())
     }
 
+
+    pub fn list_secret(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+        let mut res = self.0
+            .get(&format!("secrets"))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioNetError(err_from_response(res)));
+        };
+        let mut secret: ResponseList<Vec<secret::Secret>> = res.json()?;
+        Ok(
+            secret
+                .items
+                .iter_mut()
+                .map(|i| {
+                    vec![
+                i.get_id(),
+                i.object_meta().name,
+                i.get_secret_type(),
+                i.get_created_at(),
+            ]
+                })
+                .collect(),
+        )
+    }
 
     pub fn create_horizontal_scaling(&self, hscale: scale::HorizontalScaling, token: &str, email: &str) -> Result<()> {
         let res = self.0

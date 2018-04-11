@@ -7,6 +7,8 @@ use rioos_core::env;
 use api_client::Client;
 use AUTH_TOKEN_ENVVAR;
 use config;
+use protocol::api::session::Session;
+
 
 pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     ui.br()?;
@@ -23,23 +25,28 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     let userid = prompt_userid(ui)?;
     let password = prompt_password(ui)?;
 
-    let auth_token = login(ui, client, &userid, &password)?;
+    let account: Session = login(ui, client, &userid, &password)?;
 
-    write_cli_config_auth_token(&auth_token, &userid)?;
+    write_cli_config_auth_token(
+        &account.get_token(),
+        &account.get_email(),
+        &account.get_id(),
+    )?;
 
     ui.heading("Logged in.")?;
     ui.para("That's all for now. Thanks for using Rio/OS!")?;
     Ok(())
 }
 
-fn write_cli_config_auth_token(auth_token: &str, email: &str) -> Result<()> {
+fn write_cli_config_auth_token(auth_token: &str, email: &str, account: &str) -> Result<()> {
     let mut config = config::load()?;
     config.auth_token = Some(auth_token.to_string());
     config.email = Some(email.to_string());
+    config.account = Some(account.to_string());
     config::save(&config)
 }
 
-fn login(ui: &mut UI, rio_client: Client, userid: &str, password: &str) -> Result<String> {
+fn login(ui: &mut UI, rio_client: Client, userid: &str, password: &str) -> Result<Session> {
 
     ui.br()?;
 

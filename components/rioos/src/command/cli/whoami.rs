@@ -11,8 +11,9 @@ pub fn start(ui: &mut UI) -> Result<()> {
     let config = config::load()?;
     ui.br()?;
     ui.para(&format!(
-        "Currently logged in as {} @ {}",
+        "Currently logged in as {} with {} in {}",
         &config.email.unwrap(),
+        &config.account.unwrap(),
         &config.api_server.unwrap()
     ))?;
     Ok(())
