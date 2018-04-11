@@ -59,6 +59,8 @@ extern crate rioos_common as common;
 extern crate rioos_core as rcore;
 extern crate serde;
 extern crate base64;
+extern crate chrono;
+
 
 #[macro_use]
 extern crate serde_derive;
