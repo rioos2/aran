@@ -10,6 +10,7 @@ use data_store::DataStoreConn;
 
 use protocol::api::blueprint;
 use protocol::api::base::MetaFields;
+const SYNC_ELAPSED_SECONDS: i64 = 180;
 
 use rcore::crypto::default_rioconfig_key_path;
 
@@ -42,7 +43,7 @@ impl MarketPlaceDiffer {
 
         let file = File::open(&MARKETPLACE_CACHE_FILE.as_path())?;
         let u: MarketPlaceDownload = serde_yaml::from_reader(file)?;
-        marketplace_resync(u.time_stamp);
+        elapsed_or_return(u.time_stamp);
         u.items
             .iter()
             .map(|x| {
@@ -69,11 +70,12 @@ impl MarketPlaceDiffer {
     }
 }
 
-fn marketplace_resync(time: String) -> () {
+fn elapsed_or_return(time: String) -> () {
     let now_time = DateTime::parse_from_rfc3339(&Utc::now().to_rfc3339().to_string()).unwrap();
     let time_stamp = DateTime::parse_from_rfc3339(&time.to_string()).unwrap();
     let diff = now_time.timestamp() - time_stamp.timestamp();
-    if diff < 180 {
+
+    if diff < SYNC_ELAPSED_SECONDS {
         return;
     }
 }
