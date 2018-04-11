@@ -37,7 +37,7 @@ pub const PRODUCT: &'static str = "rioos";
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 lazy_static! {
-    static  ref SERVER_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("server-ca.cert.pem").to_str().unwrap());
+    static  ref CLIENT_CLI_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("client-cli.cert.pem").to_str().unwrap());
 }
 
 
@@ -72,9 +72,8 @@ fn start(ui: &mut UI) -> Result<()> {
     match app_matches.subcommand() {
         ("cli", Some(matches)) => {
             match matches.subcommand() {
-                ("init", Some(m)) => sub_cli_login(ui, m)?,
-                ("list", Some(m)) => sub_cli_login(ui, m)?,
-                // ("completers", Some(m)) => sub_cli_completers(m)?,
+                ("init", Some(m)) => sub_digicloud_deploy(ui, m)?,
+                ("list", Some(m)) => sub_digicloud_list(ui, m)?,
                 ("new", Some(m)) => sub_cli_new(ui, m)?,
                 ("whoami", Some(_)) => sub_cli_whoami(ui)?,
                 _ => unreachable!(),
@@ -84,6 +83,7 @@ fn start(ui: &mut UI) -> Result<()> {
             match matches.subcommand() {
                 ("login", Some(m)) => sub_cli_login(ui, m)?,
                 ("logout", Some(_)) => sub_cli_logout(ui)?,
+                ("list", Some(_)) => no_command(ui)?,
                 _ => unreachable!(),
             }
         }
@@ -92,6 +92,14 @@ fn start(ui: &mut UI) -> Result<()> {
                 ("deploy", Some(m)) => sub_digicloud_deploy(ui, m)?,
                 ("list", Some(m)) => sub_digicloud_list(ui, m)?,
                 ("describe", Some(m)) => sub_digicloud_decribe(ui, m)?,
+                ("edit", Some(_)) => no_command(ui)?,
+                ("get", Some(_)) => no_command(ui)?,
+                ("reboot", Some(_)) => no_command(ui)?,
+                ("ssh", Some(_)) => no_command(ui)?,
+                ("start", Some(_)) => no_command(ui)?,
+                ("stop", Some(_)) => no_command(ui)?,
+                ("volumes", Some(_)) => no_command(ui)?,
+                ("watch", Some(_)) => no_command(ui)?,
                 _ => unreachable!(),
             }
         }
@@ -99,13 +107,6 @@ fn start(ui: &mut UI) -> Result<()> {
         ("cluster", Some(matches)) => {
             match matches.subcommand() {
                 ("setup", Some(m)) => sub_cluster_setup(ui, m)?,
-                ("edit", Some(matches)) => {
-                    match matches.subcommand() {
-                        ("network", Some(m)) => sub_cluster_edit_network(ui, m)?,
-                        ("datacenter", Some(m)) => sub_cluster_edit_datacenter(ui, m)?,
-                        _ => unreachable!(),
-                    }
-                }
                 _ => unreachable!(),
             }
         }
@@ -120,11 +121,13 @@ fn start(ui: &mut UI) -> Result<()> {
             match matches.subcommand() {
                 ("list", Some(m)) => sub_node_list(ui, m)?,
                 ("describe", Some(m)) => sub_node_describe(ui, m)?,
+                ("register", Some(_)) => no_command(ui)?,
                 _ => unreachable!(),
             }
         }
         ("images", Some(matches)) => {
             match matches.subcommand() {
+                ("get", Some(_)) => no_command(ui)?,
                 ("list", Some(m)) => sub_images_list(ui, m)?,
                 _ => unreachable!(),
             }
@@ -134,6 +137,7 @@ fn start(ui: &mut UI) -> Result<()> {
                 ("list", Some(m)) => sub_datacenters_list(ui, m)?,
                 ("get", Some(m)) => sub_datacenters_get(ui, m)?,
                 ("describe", Some(m)) => sub_datacenters_decribe(ui, m)?,
+                ("edit", Some(m)) => sub_cluster_edit_datacenter(ui, m)?,
                 _ => unreachable!(),
             }
         }
@@ -145,31 +149,27 @@ fn start(ui: &mut UI) -> Result<()> {
             }
         }
 
-        ("origin", Some(matches)) => {
-            match matches.subcommand() {
-                ("list", Some(m)) => sub_origin_list(ui, m)?,
-                ("get", Some(m)) => sub_origin_get(ui, m)?,
-                _ => unreachable!(),
-            }
-        }
-
         ("jobs", Some(matches)) => {
             match matches.subcommand() {
+                ("get", Some(_)) => no_command(ui)?,
                 ("list", Some(m)) => sub_job_list(ui, m)?,
                 _ => unreachable!(),
             }
         }
         ("networks", Some(matches)) => {
             match matches.subcommand() {
+                ("get", Some(_)) => no_command(ui)?,
                 ("list", Some(m)) => sub_network_list(ui, m)?,
+                ("edit", Some(m)) => sub_cluster_edit_network(ui, m)?,
                 _ => unreachable!(),
             }
         }
         ("login", Some(m)) => sub_cli_login(ui, m)?,
         ("logout", Some(_)) => sub_cli_logout(ui)?,
         ("new", Some(m)) => sub_cli_new(ui, m)?,
-        ("init", Some(m)) => sub_cli_login(ui, m)?,
-        ("list", Some(m)) => sub_cli_login(ui, m)?,
+        ("init", Some(m)) => sub_digicloud_deploy(ui, m)?,
+        ("list", Some(m)) => sub_digicloud_list(ui, m)?,
+        ("whoami", Some(_)) => sub_cli_whoami(ui)?,
         _ => unreachable!(),
     };
     Ok(())
@@ -193,18 +193,14 @@ fn sub_cli_new(ui: &mut UI, m: &ArgMatches) -> Result<()> {
 
 fn sub_cli_whoami(ui: &mut UI) -> Result<()> {
     init();
-
     command::cli::whoami::start(ui)
 }
 
-// fn sub_cli_completers(m: &ArgMatches) -> Result<()> {
-//     let shell = m.value_of("SHELL").expect(
-//         "Missing Shell; A shell is required",
-//     );
-//     cli::get().gen_completions_to("rioos", shell.parse::<Shell>().unwrap(), &mut io::stdout());
-//     Ok(())
-// }
-//
+fn no_command(ui: &mut UI) -> Result<()> {
+    init();
+    Ok(ui.end(&format!("Command currently not implemetened"))?)
+}
+
 
 //digitalcloud informations
 
@@ -369,26 +365,6 @@ fn sub_storage_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     )
 }
 
-//origin information
-fn sub_origin_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    command::origin::list::start(
-        ui,
-        create_client(&api_server_param_or_env(&m)?)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-    )
-}
-
-fn sub_origin_get(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    command::origin::get::start(
-        ui,
-        create_client(&api_server_param_or_env(&m)?)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-        m.value_of("ORG_IDENT").map(|v| v.into()).unwrap(),
-    )
-}
-
 //job information
 fn sub_job_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     command::job::list::start(
@@ -519,6 +495,6 @@ fn create_client(url: &str) -> Result<Client> {
         url,
         PRODUCT,
         VERSION,
-        Some(&SERVER_CERTIFICATE),
+        Some(&CLIENT_CLI_CERTIFICATE),
     )?)
 }
