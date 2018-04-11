@@ -73,16 +73,6 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             ))?;
         }
 
-        let client_cli = "client-cli";
-
-        if ask_create_client_cli(ui, &client_cli)? {
-            create_client_cli(ui, &client_cli, cache_path)?;
-        } else {
-            ui.para(&format!(
-                "You might want to create a client-cli key later with: \
-                 `rioos setup '"
-            ))?;
-        }
 
         let api = "api-server";
 
@@ -323,21 +313,6 @@ fn create_server_ca(ui: &mut UI, server_ca: &str, cache_path: &Path) -> Result<(
     result
 }
 
-fn ask_create_client_cli(ui: &mut UI, ca: &str) -> Result<bool> {
-    Ok(ui.prompt_yes_no(
-        &format!(
-            "Create a client certificate authority `{}'?",
-            ca
-        ),
-        Some(true),
-    )?)
-}
-
-fn create_client_cli(ui: &mut UI, client_cli: &str, cache_path: &Path) -> Result<()> {
-    command::origin::key::generate::signed_with_pfx(ui, &client_cli, cache_path)?;
-    ui.br()?;
-    Ok(())
-}
 
 fn ask_create_api(ui: &mut UI, api: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(

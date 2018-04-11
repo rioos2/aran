@@ -53,7 +53,7 @@ macro_rules! define_event_log {
 macro_rules! log_event {
     ($req:ident, $evt:expr) => {{
         use persistent;
-        let ad = format!("{:?}", ($req).remote_addr);
+        let ad = format!("{}", ($req).remote_addr);
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
         el.record_event($evt, (($evt).get_account(), ad))
     }};
