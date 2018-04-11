@@ -29,11 +29,31 @@ impl Server {
     /// * HTTPS server could not start
     pub fn run(&mut self, ui: &mut UI, server: Servers) -> Result<()> {
         let cfg1 = self.config.clone();
-        ui.begin(&format!(
-            "Rio/OS API listening on {}:{}",
-            self.config.http.listen,
-            self.config.http.port
-        ))?;
+
+        match server {
+            Servers::APISERVER => {
+                ui.begin(&format!(
+                    "Rio/OS API listening on {}:{}",
+                        self.config.http.listen,
+                        self.config.http.port
+                ))?;
+            }
+            Servers::STREAMER => { 
+                ui.begin(&format!(
+                    "Rio/OS Watch server listening on {}:{}",
+                        self.config.http.listen,
+                        self.config.http.watch_port
+                ))?;
+            }
+            Servers::WEBSOCKET => { 
+                ui.begin(&format!(
+                    "Rio/OS Websocket server listening on {}:{}",
+                        self.config.http.listen,
+                        self.config.http.websocket_port
+                ))?;
+            }
+        }
+        
         ui.heading("Ready to go.")?;
 
         let node = Node::new(cfg1);
