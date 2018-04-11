@@ -192,6 +192,11 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["seccreate"])
                 (@arg SOURCE: +required +takes_value {file_exists} "A filepath of the secret.yaml")
             )
+            (@subcommand list =>
+                (about: "Displays all the secrets ")
+                (aliases: &["listsecret"])
+                (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
+            )
         )
         (@subcommand app =>
             (about: "Commands relating to Rio/OS apps and other app-specific configuration.")
