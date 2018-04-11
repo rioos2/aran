@@ -37,7 +37,7 @@ pub const PRODUCT: &'static str = "rioos";
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 lazy_static! {
-    static  ref SERVER_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("server-ca.cert.pem").to_str().unwrap());
+    static  ref SERVER_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("client-cli.cert.pem").to_str().unwrap());
 }
 
 
