@@ -410,7 +410,8 @@ impl UI {
         tmp_file.read_to_string(&mut out)?;
 
         fs::remove_file(tmp_file_path)?;
-
+        println!("{:?}", out);
+        // println!("{:?}", p);
         Ok(out)
     }
 
@@ -642,7 +643,6 @@ impl Write for OutputStream {
         }
     }
 }
-
 pub enum WriteStream {
     NoColor(Box<Write + Send>),
     Color(Box<Terminal<Output = Box<Write + Send>> + Send>),
