@@ -38,9 +38,19 @@ pub fn handle_assembly(idget: IdGet, typ: String, datastore: Box<DataStoreConn>,
     assembly.watch(idget, typ)
 }
 
+pub fn handle_assembly_list(idget: IdGet, datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Option<String> {
+    let assembly = deploy::assembly::AssemblyApi::new(datastore, prom);
+    assembly.list_by_account_direct(idget, "GET:accountsassemblys".to_string())
+}
+
 pub fn handle_assemblyfactory(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
     let mut assembly_factory = deploy::assembly_factory::AssemblyFactoryApi::new(datastore);
     assembly_factory.watch(idget, typ)
+}
+
+pub fn handle_assemblyfactory_list(idget: IdGet, datastore: Box<DataStoreConn>) -> Option<String> {
+    let assembly_factory = deploy::assembly_factory::AssemblyFactoryApi::new(datastore);
+    assembly_factory.list_by_account_direct(idget, "GET:accountsassemblyfactorys".to_string())
 }
 
 pub fn handle_services(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
@@ -56,6 +66,11 @@ pub fn handle_nodes(idget: IdGet, typ: String, datastore: Box<DataStoreConn>, pr
 pub fn handle_secrets(idget: IdGet, typ: String, datastore: Box<DataStoreConn>, securer: Box<SecurerConn>) -> Bytes {
     let mut secret = security::secret_api::SecretApi::new(datastore, securer);
     secret.watch(idget, typ)
+}
+
+pub fn handle_secrets_list(idget: IdGet, datastore: Box<DataStoreConn>, securer: Box<SecurerConn>) -> Option<String> {
+    let secret = security::secret_api::SecretApi::new(datastore, securer);
+    secret.list_by_account_direct(idget, "GET:accountssecrets".to_string())
 }
 
 pub fn handle_jobs(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {

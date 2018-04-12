@@ -94,6 +94,8 @@ impl API {
             // open the nsl library and initialize the lib
             let open_fn = lib.get::<fn(&[u8]) -> i32>(NALP_LIB_OPEN.as_bytes())?;
             let ret_val = open_fn(shaferchk_xml_as_bytes(secret_offset.1)?.as_bytes());
+            debug!("=> open_lib: {:?}", ret_val);
+
             if ret_val < 0 {
                 return NalperionResult::from_err(NALP_LIB_OPEN);
             }
@@ -103,6 +105,8 @@ impl API {
                 NALP_VALIDATE_LIBRARY.as_bytes(),
             )?;
             let response = validate_fn(CUSTOMER_ID, PRODUCT_ID);
+            debug!("=> validate_lib: {:?}", response);
+
             if response - secret_offset.0 as i32 != 0 {
                 return NalperionResult::from_err(NALP_VALIDATE_LIBRARY);
             }
@@ -111,6 +115,8 @@ impl API {
             let get_license_fn = lib.get::<fn(Option<String>, *mut i32, Option<String>) -> i32>(NALP_GET_LIBRARY.as_bytes())?;
             let x: &mut i32 = &mut 0;
             let ret_val = get_license_fn(activation_code, x, None);
+            debug!("=> get_license_status: {:?}", ret_val);
+            debug!("=> offset: {:?}", secret_offset);
             if ret_val - secret_offset.0 as i32 != 0 {
                 return NalperionResult::from_err(NALP_GET_LIBRARY);
             }
@@ -121,6 +127,7 @@ impl API {
             // lib must be close (if not close `core dump` error occurs)
             let free_fn = lib.get::<fn() -> i32>(NALP_CLOSED_LIBRARY.as_bytes())?;
             let ret_val = free_fn();
+            debug!("=> free_lib: {:?}", ret_val);
             if ret_val < 0 {
                 return NalperionResult::from_err(NALP_CLOSED_LIBRARY);
             }

@@ -121,7 +121,6 @@ impl NodeDS {
                 "node_memory_MemTotal".to_string(),
                 "node_memory_MemFree".to_string(),
                 "node_memory_Buffers".to_string(),
-                "node_memory_Cached".to_string(),
             ],
             vec![node::NODE_JOBS.to_string()],
             "",

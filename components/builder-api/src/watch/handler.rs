@@ -24,6 +24,7 @@ use rio_net::http::middleware::SecurerConn;
 use rand::{OsRng, Rng};
 use futures::sync::mpsc as futurempsc;
 
+#[derive(Clone)]
 pub struct MyInner {
     v: Vec<(u32, String, Arc<Mutex<mpsc::Sender<Bytes>>>)>,
     datastore: Box<DataStoreConn>,
@@ -31,22 +32,26 @@ pub struct MyInner {
     securer: Box<SecurerConn>,
 }
 
+#[derive(Clone)]
 pub struct WatchHandler {
     pub datastore: Box<DataStoreConn>,
     inner: Arc<Mutex<MyInner>>,
+    outer: MyInner,
 }
 
 impl WatchHandler {
     pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>, securer: Box<SecurerConn>) -> Self {
         let vec = Vec::<(u32, String, Arc<Mutex<mpsc::Sender<Bytes>>>)>::new();
-        WatchHandler {
-            inner: Arc::new(Mutex::new(MyInner {
+        let inner = MyInner {
                 v: vec,
                 datastore: datastore.clone(),
                 prom: prom.clone(),
                 securer: securer.clone(),
-            })),
+            };
+        WatchHandler {
+            inner: Arc::new(Mutex::new(inner.clone())),
             datastore: datastore.clone(),
+            outer: inner.clone(),
         }
     }
 
@@ -146,6 +151,11 @@ impl WatchHandler {
             }
         });
     }
+
+    //get list data for particular account
+    pub fn load_list_data(&self, typ: &str, act_id: String) -> Option<String> {
+        self.outer.list_data(typ, act_id)
+    }
 }
 
 
@@ -196,6 +206,30 @@ impl MyInner {
                 println!("Poison Error: {}", p_err);
             }
         };
+    }
+
+    fn list_data(&self, typ: &str, act_id: String) -> Option<String> {
+        let idget = IdGet::with_account(act_id);
+        let res = match self.uppercase_first_letter(typ).parse().unwrap() {
+            Messages::Assemblys => watch::messages::handle_assembly_list(idget, self.datastore.clone(), self.prom.clone()),
+            Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory_list(idget, self.datastore.clone()),
+            Messages::Secrets => watch::messages::handle_secrets_list(idget, self.datastore.clone(), self.securer.clone()),               
+            Messages::Services => None,
+            Messages::Nodes => None,
+            Messages::Jobs => None,
+            Messages::Horizontalscaling => None,
+            Messages::Networks => None,
+            Messages::Storagespool => None,
+            Messages::Storageconnectors => None,
+            Messages::Datacenters => None,
+            Messages::Verticalscaling => None,
+            Messages::Settingsmap => None,
+            Messages::Endpoints => None,
+            Messages::Origins => None,
+            Messages::Plans => None,
+            Messages::Serviceaccounts => None,
+        };
+        res
     }
 
     fn get_data(&self, msg: Notification, name: String) -> Bytes {

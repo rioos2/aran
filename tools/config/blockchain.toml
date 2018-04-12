@@ -98,7 +98,7 @@ state_update_timeout = 10000
 ## Acceptable values:
 ##   - an IP/port pair, e.g. 0.0.0.0:7000
 
-public_api_address = 0.0.0.0:7000
+public_api_address = "0.0.0.0:7000"
 
 ##
 ## Listen address for private API endpoints
