@@ -101,11 +101,10 @@ impl fmt::Display for Operators {
                     .map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}"))
                     .collect::<Vec<_>>();
                 format!(
-                    "({}-{}-{}-{})/{}({}) *100",
+                    "({}-{}-{})/{}({}) *100",
                     r[0],
                     r[1],
                     r[2],
-                    r[3],
                     i.total,
                     i.metric[0]
                 )
