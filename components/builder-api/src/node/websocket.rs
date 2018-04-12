@@ -4,6 +4,8 @@
 //! Streamer that does the watch for the api
 //!
 use std::io;
+use std::thread;
+use std::time::Duration;
 use std::sync::{mpsc, Arc, Mutex, RwLock};
 
 use watch::handler::WatchHandler;
@@ -53,11 +55,12 @@ impl Websocket {
         }
     }
 
+    //now websocket only watch assembly table
     pub fn start(self, tls_pair: TLSPair) -> io::Result<()> {
         let ods = tls_pair.clone().and(DataStoreConn::new().ok());
         let listeners = vec![
-            "services",
-            "assemblyfactorys",
+            //"services",
+            //"assemblyfactorys",
             "assemblys",
         ];
         
@@ -80,7 +83,7 @@ impl Websocket {
 
                 let send = Arc::new(Mutex::new(db_sender));
 
-                watchhandler.notifier(send.clone(), listeners).unwrap();
+                watchhandler.notifier(send.clone(), listeners.clone()).unwrap();
 
                 watchhandler.socket_publisher(db_receiver, data_send);
 
@@ -101,12 +104,18 @@ impl Websocket {
 
                 let conn_id = Rc::new(RefCell::new(Counter::new()));
                 let connections_inner = connections.clone();
+                let remote_inner = remote.clone();
+                let send_channel_inner = send_channel_out.clone();
                 // Handle new connection
                 let connection_handler = server.incoming()
                         // we don't wanna save the stream if it drops
                         .map_err(|InvalidConnection { error, .. }| error)
                         .for_each(move |(upgrade, addr)| {
                             let connections_inner = connections_inner.clone();
+                            let watchhandler = watchhandler.clone();
+                            let listeners = listeners.clone();
+                            let remote = remote_inner.clone();
+                            let send_channel = send_channel_inner.clone();
                             println!("Got a connection from: {}", addr);
 
                             //parse account id from requested websocket url
@@ -124,7 +133,19 @@ impl Websocket {
                                             .expect("maximum amount of ids reached");
                                         let (sink, _) = framed.split();                                     
                                         
-                                        connections_inner.write().unwrap().insert(id, (sink,ref_id));
+                                        connections_inner.write().unwrap().insert(id, (sink,ref_id.clone()));
+                                        for listener in listeners.clone() {
+                                            thread::sleep(Duration::from_millis(1000)); 
+                                            //when got new websocket connection, then server load list data
+                                            //from database and send to it.                                           
+                                            match watchhandler.load_list_data(listener, ref_id.clone()) {
+                                                Some(res) => {                                                  
+                                                    update_list(id, send_channel.clone(), &remote, res);
+                                                }
+                                                None => {}
+                                            }
+                                        }
+
                                         Ok(())
                                     });
                             spawn_future(f, "Handle new connection", &handle);
@@ -215,6 +236,20 @@ fn update(
                         spawn_future(f, "Send message to write handler", handle);
                     }  
                 }
+                Ok(())
+    });
+}
+
+//send list data (for particuler account) to response channel
+fn update_list(
+    id: Id,
+    channel: futurempsc::UnboundedSender<(Id, String)>,
+    remote: &Remote,
+    msg: String,
+) {
+    remote.spawn(move |handle| {
+                let f = channel.clone().send((id, msg));
+                spawn_future(f, "Send message to write handler", handle);
                 Ok(())
     });
 }

@@ -204,7 +204,7 @@ impl DispatchTable {
 }
 
 /// A private helper function for finding the requests url ApiSchema
-fn dispatch_url(group: String) -> ApiSchema {
+pub fn dispatch_url(group: String) -> ApiSchema {
     match SchemaRegistry::current().dispatch_table().get(&group) {
         Some(kind) => ApiSchema {
             version: "v1".to_string(), //Todo  later
