@@ -121,9 +121,9 @@ impl Client {
     }
 
 
-    pub fn list_deploy(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+    pub fn list_deploy(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
-            .get(&format!("assemblyfactorys"))
+            .get(&format!("accounts/{}/assemblyfactorys",account))
             .headers(self.add_authz(token, email))
             .send()
             .map_err(Error::ReqwestError)?;

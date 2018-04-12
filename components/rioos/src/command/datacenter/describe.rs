@@ -27,11 +27,6 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         &email,
         &result.get_storage(),
     )?;
-    let storagepool = rio_client.get_storagepool_by_scid(
-        &token,
-        &email,
-        &storageconn.get_id(),
-    )?;
 
     ui.br()?;
     ui.heading("StoragesConnector:")?;
@@ -50,6 +45,12 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
     ))?;
     ui.para(
         &format!("Hrs ago: {}", storageconn.get_created_at()),
+    )?;
+
+    let storagepool = rio_client.get_storagepool_by_scid(
+        &token,
+        &email,
+        &storageconn.get_id(),
     )?;
 
     ui.heading("StoragesPool list:")?;
