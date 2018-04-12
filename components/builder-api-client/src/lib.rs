@@ -213,9 +213,9 @@ impl Client {
     }
 
 
-    pub fn list_secret(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
+    pub fn list_secret(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
-            .get(&format!("secrets"))
+            .get(&format!("accounts/{}/secrets",account))
             .headers(self.add_authz(token, email))
             .send()
             .map_err(Error::ReqwestError)?;
@@ -494,7 +494,7 @@ impl Client {
         ];
         Ok(data)
     }
-    pub fn datacenter_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
+    pub fn datacenter_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<storage::DataCenter> {
         let mut res = self.0
             .get(&format!("/datacenters/{}", id))
             .headers(self.add_authz(token, email))
@@ -506,16 +506,7 @@ impl Client {
         };
 
         let dc: storage::DataCenter = res.json()?;
-        let data = vec![
-            vec![
-                dc.get_id(),
-                dc.object_meta().name,
-                dc.get_enabled().to_string(),
-                dc.get_status().get_phase(),
-                dc.get_created_at(),
-            ],
-        ];
-        Ok(data)
+        Ok(dc)
     }
 
     pub fn network_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<network::Network> {
@@ -546,6 +537,22 @@ impl Client {
 
         Ok(())
     }
+
+    pub fn datacenter_update(&self, token: &str, email: &str, dc: storage::DataCenter) -> Result<()> {
+        let res = self.0
+            .put(&format!("datacenters/{}",dc.get_id()))
+            .body(Body::from(serde_json::to_string(&dc)?))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioNetError(err_from_response(res)));
+        };
+
+        Ok(())
+    }
+
 
     pub fn describe_datacenter(&self, token: &str, email: &str, id: &str) -> Result<storage::DataCenter> {
         let mut res = self.0

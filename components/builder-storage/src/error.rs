@@ -19,6 +19,7 @@ pub enum Error {
     StoragePoolCreate(postgres::error::Error),
     StoragePoolGetResponse(postgres::error::Error),
     StoragePoolSetStatus(postgres::error::Error),
+    DatacenterUpdate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -36,6 +37,8 @@ impl fmt::Display for Error {
             Error::StoragePoolCreate(ref e) => format!("Database error creating a storage pool, {}", e),
             Error::StoragePoolGetResponse(ref e) => format!("Database error list storages pool, {}", e),
             Error::StoragePoolSetStatus(ref e) => format!("Database error for storages pool status update, {}", e),
+            Error::DatacenterUpdate(ref e) => format!("Database error for datacenter update, {}", e),
+
         };
         write!(f, "{}", msg)
     }
@@ -54,6 +57,7 @@ impl error::Error for Error {
             Error::StoragePoolCreate(ref err) => err.description(),
             Error::StoragePoolGetResponse(ref err) => err.description(),
             Error::StoragePoolSetStatus(ref err) => err.description(),
+            Error::DatacenterUpdate(ref err) => err.description(),
         }
     }
 }

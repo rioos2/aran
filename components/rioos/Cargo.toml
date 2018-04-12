@@ -25,6 +25,8 @@ prettytable-rs = "*"
 human-size = "0.2.0"
 serde_yaml = "0.7"
 rioos_builder_apimachinery = { path = "../builder-apimachinery" }
+serde_json = "1.0.10"
+
 
 [dependencies.clap]
 version = "*"
