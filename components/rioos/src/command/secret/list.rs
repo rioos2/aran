@@ -9,7 +9,6 @@ use super::super::common::pretty_table;
 pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> Result<()> {
     ui.begin("Constructing a list of secret for you...")?;
     ui.br()?;
-    println!("account{}", get_account().to_string());
     let results = rio_client.list_secret(
         &token,
         &email,
