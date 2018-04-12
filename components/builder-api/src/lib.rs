@@ -69,7 +69,6 @@ extern crate url;
 extern crate futures;
 extern crate tokio_core;
 extern crate tokio_io;
-#[cfg(any(test, feature = "long_benchmarks"))]
 extern crate tokio_timer;
 
 extern crate fallible_iterator;
