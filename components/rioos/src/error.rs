@@ -14,6 +14,7 @@ use rioos_core;
 use handlebars;
 use toml;
 use serde_yaml;
+use serde_json;
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -37,6 +38,7 @@ pub enum Error {
     TomlSerializeError(toml::ser::Error),
     Utf8Error(String),
     Yaml(serde_yaml::Error),
+    Json(serde_json::Error),
 }
 
 impl fmt::Display for Error {
@@ -64,6 +66,7 @@ impl fmt::Display for Error {
             Error::TomlSerializeError(ref e) => format!("Can't serialize TOML: {}", e),
             Error::Utf8Error(ref e) => format!("Error processing a string as UTF-8: {}", e),
             Error::Yaml(ref e) => format!("{}", e),
+            Error::Json(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -89,6 +92,7 @@ impl error::Error for Error {
             Error::TomlSerializeError(_) => "Can't serialize TOML",
             Error::Utf8Error(_) => "Error processing string as UTF-8",
             Error::Yaml(ref err) => err.description(),
+            Error::Json(ref err) => err.description(),
         }
     }
 }
@@ -149,5 +153,11 @@ impl From<env::JoinPathsError> for Error {
 impl From<serde_yaml::Error> for Error {
     fn from(err: serde_yaml::Error) -> Error {
         Error::Yaml(err)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Error {
+        Error::Json(err)
     }
 }

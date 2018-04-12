@@ -197,6 +197,27 @@ impl Migratable for StorageProcedures {
 
         migrator.migrate(
             "storagesrv",
+            r#"CREATE OR REPLACE FUNCTION update_datacenter_by_v1(
+            dc_id bigint,
+            dc_nodes text[],
+            dc_networks text[],
+            dc_enabled bool,
+            dc_storage text,
+            dc_advanced_settings jsonb,
+            dc_flag text,
+            dc_currency text,
+            dc_status jsonb,
+            dc_object_meta jsonb) RETURNS SETOF data_centers AS $$
+                            BEGIN
+                                RETURN QUERY UPDATE data_centers SET nodes=dc_nodes,networks=dc_networks,enabled=dc_enabled,storage=dc_storage,advanced_settings= dc_advanced_settings,flag=dc_flag,currency=dc_currency,status=dc_status,object_meta=dc_object_meta,updated_at=now() WHERE id=dc_id
+                                RETURNING *;
+                                RETURN;
+                            END
+                         $$ LANGUAGE plpgsql VOLATILE"#,
+        )?;
+
+        migrator.migrate(
+            "storagesrv",
             r#"CREATE SEQUENCE IF NOT EXISTS storages_pool_id_seq;"#,
         )?;
 

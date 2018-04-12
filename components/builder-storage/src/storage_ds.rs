@@ -189,6 +189,31 @@ impl StorageDS {
         Ok(None)
     }
 
+
+    pub fn datacenter_update(datastore: &DataStoreConn, dc: &storage::DataCenter) -> DatacenterOutput {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM update_datacenter_by_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+            &[
+                &(dc.get_id().parse::<i64>().unwrap()),
+                &(dc.get_nodes() as Vec<String>),
+                &(dc.get_networks() as Vec<String>),
+                &(dc.get_enabled() as bool),
+                &(dc.get_storage() as String),
+                &(serde_json::to_value(dc.get_advanced_settings()).unwrap()),
+                &(dc.get_flag() as String),
+                &(dc.get_currency() as String),
+                &(serde_json::to_value(dc.get_status()).unwrap()),
+                &(serde_json::to_value(dc.object_meta()).unwrap()),
+            ],
+        ).map_err(Error::DatacenterUpdate)?;
+        if rows.len() > 0 {
+            let dc = row_to_dc(&rows.get(0))?;
+            return Ok(Some(dc));
+        }
+        Ok(None)
+    }
+
     pub fn storage_pool_create(datastore: &DataStoreConn, storage_create: &storage::StoragePool) -> StoragePoolOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(

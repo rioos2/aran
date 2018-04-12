@@ -214,6 +214,25 @@ impl StorageApi {
         }
     }
 
+    // PUT : /datacenters/:id
+    //Update datacenter data
+    fn datacenter_update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<DataCenter>>()?)?;
+        unmarshall_body.set_id(params.get_id());
+
+        match StorageDS::datacenter_update(&self.conn, &unmarshall_body) {
+            Ok(Some(update)) => Ok(render_json(status::Ok, &update)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
+        }
+    }
+
     //GET: /datacenters/:id
     //Input id - u64 as input
     //Returns an datacenters
@@ -398,6 +417,9 @@ impl Api for StorageApi {
         let _self = self.clone();
         let data_center_show = move |req: &mut Request| -> AranResult<Response> { _self.data_center_show(req) };
 
+        let _self = self.clone();
+        let datacenter_update = move |req: &mut Request| -> AranResult<Response> { _self.datacenter_update(req) };
+
         router.post(
             "/storageconnectors",
             XHandler::new(C { inner: create }).before(basic.clone()),
@@ -468,6 +490,12 @@ impl Api for StorageApi {
             "/datacenters/:id",
             XHandler::new(C { inner: data_center_show }).before(basic.clone()),
             "data_center_show",
+        );
+
+        router.put(
+            "/datacenters/:id",
+            XHandler::new(C { inner: datacenter_update }).before(basic.clone()),
+            "data_center_update",
         );
     }
 }

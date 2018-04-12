@@ -25,6 +25,8 @@ extern crate serde_derive;
 extern crate toml;
 extern crate url;
 extern crate serde_yaml;
+extern crate serde_json;
+
 
 #[macro_use]
 extern crate lazy_static;
