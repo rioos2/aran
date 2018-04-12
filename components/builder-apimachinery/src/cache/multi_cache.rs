@@ -33,7 +33,8 @@ impl<K, V> fmt::Debug for MultiCacheParts<K, V> {
         write!(
             f,
             "{{ {} totalsize, {} maxsize }}",
-            self.totalsize, self.maxsize
+            self.totalsize,
+            self.maxsize
         )
     }
 }
@@ -75,9 +76,10 @@ impl<K, V> MultiCache<K, V> {
                 }
             }
         }
-        (*mparts)
-            .hash
-            .insert(key, MultiCacheItem::new(value, bytes));
+        (*mparts).hash.insert(
+            key,
+            MultiCacheItem::new(value, bytes),
+        );
         mparts.totalsize += bytes;
     }
 
