@@ -349,42 +349,9 @@ impl UI {
         }
     }
 
-    // pub fn edit<T: AsRef<str>>(&mut self, contents: &[T]) -> Result<String> {
-    //     let editor = env::var("EDITOR").map_err(|e| Error::EditorEnv(e))?;
-    //     let mut tmp_file_path = env::temp_dir();
-    //     tmp_file_path.push(format!("_rioos_{}.tmp", Uuid::new_v4()));
-    //
-    //     let mut tmp_file = File::create(&tmp_file_path)?;
-    //     if contents.len() > 0 {
-    //         for line in contents {
-    //             write!(tmp_file, "{}", line.as_ref())?;
-    //         }
-    //         tmp_file.sync_all()?;
-    //     }
-    //
-    //
-    //     let mut cmd = Command::new(editor);
-    //     cmd.arg(tmp_file_path.display().to_string());
-    //
-    //     let status = cmd.spawn()?.wait()?;
-    //
-    //     if !status.success() {
-    //         debug!("Failed edit with status: {:?}", status);
-    //         return Err(Error::EditStatus);
-    //     }
-    //
-    //     let mut out = String::new();
-    //     tmp_file = File::open(&tmp_file_path)?;
-    //     tmp_file.read_to_string(&mut out)?;
-    //
-    //     fs::remove_file(tmp_file_path)?;
-    //
-    //     Ok(out)
-    // }
-
 
     pub fn edit<T: Serialize>(&mut self, contents: &T) -> Result<String> {
-        let encoded = serde_json::to_string(contents).unwrap();
+        let encoded = serde_json::to_string_pretty(contents).unwrap();
         let editor = env::var("EDITOR").map_err(|e| Error::EditorEnv(e))?;
         let mut tmp_file_path = env::temp_dir();
         tmp_file_path.push(format!("_rioos_{}.tmp", Uuid::new_v4()));
@@ -410,8 +377,6 @@ impl UI {
         tmp_file.read_to_string(&mut out)?;
 
         fs::remove_file(tmp_file_path)?;
-        println!("{:?}", out);
-        // println!("{:?}", p);
         Ok(out)
     }
 

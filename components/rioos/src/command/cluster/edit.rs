@@ -19,6 +19,6 @@ pub fn edit_network(ui: &mut UI, rio_client: Client, id: &str, token: &str, emai
     let data = ui.edit(&result)?;
     let p: network::Network = serde_json::from_str(&data.to_string()).unwrap();
     rio_client.network_update(&token, &email, p)?;
-    ui.end("Your cluster network successfully updated!")?;
+    ui.end("Your network successfully updated!")?;
     Ok(())
 }
