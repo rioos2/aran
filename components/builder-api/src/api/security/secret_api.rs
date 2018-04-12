@@ -8,7 +8,7 @@ use router::Router;
 
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use rio_net::http::schema::{dispatch, type_meta, dispatch_url};
 use config::Config;
 use error::Error;
 
@@ -181,6 +181,31 @@ impl SecretApi {
                 params.get_id()
             ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
+        }
+    }
+
+    //GET: /accounts/:account_id/secrets
+    //Input origin_name Returns all the secrets (fpr that namespaces)
+    //Every user will be able to list their own origin.
+    //Will need roles/permission to access others origin.
+    pub fn list_by_account_direct(&self, params: IdGet, dispatch: String) -> Option<String> {
+
+        let data = match securer::from_config(&self.secret, Box::new(*self.conn.clone())) {
+            Ok(result) => result,
+            Err(_err) => return None,
+        };
+        let ident = dispatch_url(dispatch);
+        match data.retrieve_by(&params) {
+            Ok(Some(secret)) => {
+                let res = json!({
+                                "api_version": ident.version,
+                                "kind": ident.kind,
+                                "items": secret,
+                });
+                Some(serde_json::to_string(&res).unwrap())
+            }
+            Ok(None) => None,
+            Err(_err) => None,
         }
     }
 

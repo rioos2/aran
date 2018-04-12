@@ -11,7 +11,7 @@ use router::Router;
 
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier, ExpanderSender};
-use rio_net::http::schema::{dispatch, type_meta};
+use rio_net::http::schema::{dispatch, type_meta, dispatch_url};
 use config::Config;
 use error::Error;
 
@@ -136,6 +136,27 @@ impl AssemblyApi {
                 &params.get_id()
             ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
+        }
+    }
+
+    ///Every user will be able to list their own account_id.
+    ///Will need roles/permission to access others account_id.
+    ///GET: /accounts/:account_id/assemblys/list
+    ///Input account_id
+    ///Returns all the Assemblys (for that account)
+    pub fn list_by_account_direct(&self, params: IdGet, dispatch: String) -> Option<String> {
+        let ident = dispatch_url(dispatch);
+        match assembly::DataStore::new(&self.conn).list(&params) {
+            Ok(Some(assemblys)) => {
+                let data = json!({
+                                "api_version": ident.version,
+                                "kind": ident.kind,
+                                "items": assemblys,
+                });
+                Some(serde_json::to_string(&data).unwrap())
+            }
+            Ok(None) => None,
+            Err(_err) => None,
         }
     }
 
