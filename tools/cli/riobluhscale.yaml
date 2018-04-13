@@ -1,0 +1,58 @@
+# ================================================================
+# Deploy Information
+# ================================================================
+---
+assembly_factory:
+  object_meta:
+    name: king.megam.io
+    account: '923614490522558464'
+    cluster_name: newyork
+    labels:
+      rioos_category: machine #for container "rioos_category: container"
+  replicas: 2
+  resources:
+    compute_type: cpu
+    storage_type: hdd
+    cpu: '1'
+    memory: 1 GiB
+    storage: 3 GiB
+    private_ipv4: 'true'
+  secret:
+    id: '922303941599854592'
+  plan: '926517208534753280'
+  status:
+    phase: ready
+# ================================================================
+# Horizontal scaling Information
+# ================================================================
+horizontal_scaling:
+  scale_type: AUTOHS
+  state: ABLETOSCALE
+  spec:
+    min_replicas: 2
+    max_replicas: 3
+    scale_up_wait_time: 5m
+    scale_down_wait_time: 5m
+    metrics:
+    - metric_type: Resource
+      object:
+        target: hits_as_per_second
+        target_value: 1000
+        metric_time_spec:
+          scale_up_by: '1'
+          scale_down_by: '1'
+      resource:
+        name: cpu
+        min_target_value: '20'
+        max_target_value: '60'
+        metric_time_spec:
+          scale_up_by: '1'
+          scale_down_by: '1'
+  status:
+    last_scale_time: ''
+    current_replicas: 2
+    desired_replicas: 3
+  object_meta:
+    name: hscale
+    account: '933004880560267264'
+    cluster_name: 'newyork'

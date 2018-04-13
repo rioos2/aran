@@ -1,0 +1,55 @@
+[package]
+name = "rioos_net"
+version = "0.0.0"
+authors = ["Rajthilak Rajamani <rajthilak.rajamani@rio.company>","Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
+workspace = "../../"
+
+[dependencies]
+chrono = { version = "0.4.0", features = ["serde"] }
+ansi_term = "*"
+log= "0.4.1"
+rand = "*" # Or a newer version
+rust-crypto = "*"
+libflate = "*"
+brotli = "1.1.2"
+rioos_builder_apimachinery = { path = "../builder-apimachinery" }
+rioos_core = { path = "../core" }
+iron = "0.6.0"
+iron-test = "*"
+reqwest = "0.8.5"
+url = "1.7.0"
+mount = "0.4.0"
+serde = "1.0.27"
+serde_derive = "*"
+serde_json = "1.0.10"
+time = "*"
+router = "0.6.0"
+unicase = "1.4.2"
+lazy_static = "*"
+persistent = "0.4.0"
+bodyparser = "0.8.0"
+base64 = "*"
+
+[dependencies.rioos_common]
+path = "../common"
+
+[dependencies.rioos_builder_db]
+path = "../builder-db"
+
+[dependencies.rioos_builder_session]
+path = "../builder-session"
+
+[dependencies.rioos_builder_servicesrv]
+path = "../builder-securer"
+
+[dependencies.rioos_builder_authsrv]
+path = "../builder-authorize"
+
+[dependencies.rioos_entitlement]
+path = "../entitlement"
+
+[dependencies.rioos_auth]
+path = "../auth"
+
+[features]
+functional = []

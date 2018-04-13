@@ -1,0 +1,50 @@
+[package]
+name = "rioos"
+version = "0.0.0"
+authors = ["Suganya Kaliyamoorthy <suganya.kaliyamoorthy@rio.company>", "Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
+description = "RIO/OS CLI"
+build = "../build-rioos.rs"
+workspace = "../../"
+
+[[bin]]
+name = "rioos"
+doc = false
+
+[dependencies]
+clippy = {version = "*", optional = true}
+env_logger = "0.5.3"
+handlebars = { version = "*", default-features = false }
+lazy_static = "*"
+libc = "*"
+log = "0.4.1"
+serde = "1.0.27"
+serde_derive = "*"
+toml = { version = "*", default-features = false }
+url = "1.7.0"
+prettytable-rs = "*"
+human-size = "0.2.0"
+serde_yaml = "0.7"
+rioos_builder_apimachinery = { path = "../builder-apimachinery" }
+serde_json = "1.0.10"
+
+
+[dependencies.clap]
+version = "*"
+features = [ "suggestions", "color", "unstable" ]
+
+[dependencies.rioos_core]
+path = "../core"
+
+[dependencies.rioos_common]
+path = "../common"
+
+[dependencies.rioos_api_client]
+path = "../builder-api-client"
+
+
+[dependencies.rioos_net]
+path = "../net"
+
+[features]
+default = []
+functional = []

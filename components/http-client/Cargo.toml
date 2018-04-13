@@ -1,0 +1,22 @@
+[package]
+name = "rioos_http_client"
+version = "0.0.0"
+authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
+build = "build.rs"
+workspace = "../../"
+
+[dependencies]
+log= "0.4.1"
+base64 = "*"
+hyper = "0.11.21"
+serde = "1.0.27"
+serde_derive = "*"
+serde_json = "1.0.10"
+url = "1.7.0"
+reqwest = "0.8.5"
+
+[dependencies.rioos_core]
+path = "../core"
+
+[features]
+functional = []

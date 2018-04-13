@@ -1,0 +1,43 @@
+[http]
+listen = "0.0.0.0"
+port = 7443
+watch_port = 8443
+tls_pkcs12_file = "api-server.pfx"
+tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
+serviceaccount_public_key = "service-account.pub"
+
+[marketplaces]
+username = "dev@rio.companyadmin"
+token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+endpoint = "https://localhost:6443/api/v1"
+
+[blockchain]
+endpoint = "http://localhost:7000"
+
+[ui]
+root = "/some/path"
+
+[prometheus]
+url = "http://192.168.1.8:9090/api/v1"
+
+[vaults]
+backend = "Local"
+endpoint = "https://env.envkey.com/v1/"
+token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+
+[licenses]
+so_file = "ShaferFilechck.so"
+activation_code = "null"
+
+[logs]
+url = "http://localhost:8086"
+prefix = "rioos_logs"
+
+[anchore]
+url = "http://localhost:8228/v1"
+username = ""
+password = ""
+
+[[targets]]
+platform = "windows"
+architecture = "x86_64"

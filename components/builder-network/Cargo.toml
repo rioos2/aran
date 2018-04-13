@@ -1,0 +1,21 @@
+[package]
+name = "rioos_builder_netsrv"
+version = "0.0.0"
+authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>", "Suganya K <suganyakaliyamoorthy@megam.io>"]
+description = "RIO/OS Deployment library"
+workspace = "../../"
+
+[dependencies]
+postgres = { version = "0.15.1", features = ["with-chrono"] }
+chrono = { version = "0.4.0", features = ["serde"] }
+serde_json = "1.0.10"
+
+[dependencies.rioos_builder_apimachinery]
+path = "../builder-apimachinery"
+
+[dependencies.rioos_builder_db]
+path = "../builder-db"
+
+
+[features]
+functional = []

@@ -1,0 +1,18 @@
+image: rust:latest
+variables:
+ COMPONENTS: bin
+ LD_LIBRARY_PATH: "$LD_LIBRARY_PATH"
+ LIBRARY_PATH: "$LIBRARY_PATH"
+ RIOOS_HOME: "$CI_PROJECT_DIR/rioos"
+services:
+- postgres:latest
+stages:
+- test
+before_script:
+- ./support/ci/install_packages.sh
+- ./support/ci/install_rustfmt.sh
+cargo_test:
+  stage: test
+  script:
+  - ./support/ci/rust_tests.sh
+  # - ./support/ci/lint.sh
