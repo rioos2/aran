@@ -10,6 +10,7 @@ pub mod events;
 pub mod runtime;
 pub mod api_wirer;
 pub mod streamer;
+#[cfg(feature = "ssl")]
 pub mod websocket;
 pub mod internal;
 
@@ -22,7 +23,6 @@ use rio_core::crypto::keys::read_key_in_bytes;
 
 use config::Config;
 use common::ui::UI;
-
 use node::streamer::TLSPair;
 
 pub enum Servers{
@@ -32,10 +32,12 @@ pub enum Servers{
 } 
 
 #[derive(Debug)]
+#[cfg(feature = "ssl")]
 pub struct Node {
     config: Arc<Config>,
 }
 
+#[cfg(feature = "ssl")]
 impl Node {
     // Creates node for the given api and node configuration.
     pub fn new(config: Arc<Config>) -> Self {

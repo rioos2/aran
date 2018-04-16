@@ -5,6 +5,9 @@
 extern crate clap;
 extern crate env_logger;
 
+#[cfg(feature = "ssl")]
+extern crate openssl;
+
 extern crate rioos_aran_api as api;
 extern crate rioos_common as common;
 extern crate rioos_core as rio_core;
@@ -38,6 +41,7 @@ lazy_static! {
     static  ref MARKETPLACE_CACHE_FILE: PathBuf =  PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
 }
 
+#[cfg(feature = "ssl")]
 fn main() {
     env_logger::init();
     let mut ui = ui();
@@ -77,6 +81,7 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
     )
 }
 
+#[cfg(feature = "ssl")]
 fn exec_subcommand_if_called(ui: &mut UI, app_matches: &clap::ArgMatches) -> Result<()> {
     debug!("CLI matches: {:?}", app_matches);
 
@@ -111,6 +116,7 @@ fn sub_cli_sync(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     command::cli::sync::start(ui, &config)
 }
 
+#[cfg(feature = "ssl")]
 fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     if File::open(&SETUP_COMPLETE_FILE.as_path()).is_err() {
         return Err(Error::SetupNotDone);
@@ -248,6 +254,7 @@ fn config_for_setup(args: &clap::ArgMatches) -> Result<Config> {
 /// Starts the aran-api server.
 /// # Failures
 /// * Fails if the postgresql dbr fails to be found - cannot bind to the port, etc.
+#[cfg(feature = "ssl")]
 fn start(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
     api::server::run(ui, config, server)
 }
