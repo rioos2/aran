@@ -277,28 +277,27 @@ impl Client {
                 .map(|i| {
                     let ip_addr;
                     let port;
-                    if i.get_spec().get_endpoints().is_none() {
-                        ip_addr = "".to_string();
-                        port = "".to_string();
-                    } else {
-                        ip_addr = i.get_spec()
-                            .get_endpoints()
-                            .unwrap()
-                            .get_subsets()
-                            .get_addresses()
-                            .clone()
-                            .iter_mut()
-                            .map(|x| x.ip.to_owned())
-                            .collect();
-                        port = i.get_spec()
-                            .get_endpoints()
-                            .unwrap()
-                            .get_subsets()
-                            .get_ports()
-                            .clone()
-                            .iter_mut()
-                            .map(|x| x.port.to_owned())
-                            .collect();
+                    match i.get_spec().get_endpoints() {
+                        None => {
+                            ip_addr = "".to_string();
+                            port = "".to_string();
+                        }
+                        Some(endpoint) => {
+                            ip_addr = endpoint
+                                .get_subsets()
+                                .get_addresses()
+                                .clone()
+                                .iter_mut()
+                                .map(|x| x.ip.to_owned())
+                                .collect();
+                            port = endpoint
+                                .get_subsets()
+                                .get_ports()
+                                .clone()
+                                .iter_mut()
+                                .map(|x| x.port.to_owned())
+                                .collect();
+                        }
                     }
 
                     vec![
