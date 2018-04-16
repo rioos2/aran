@@ -35,7 +35,7 @@ impl Authorization {
         }
     }
     pub fn verify(&self) -> IronResult<()> {
-        Roles::per_type(self.role_type.clone(), &self.ds);
+        let _data = Roles::per_type(self.role_type.clone(), &self.ds);
         Ok(())
     }
 }

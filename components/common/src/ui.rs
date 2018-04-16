@@ -2,7 +2,7 @@
 //
 
 use std::fmt;
-use std::io::{self, BufRead, BufReader, BufWriter, Read, Stdout, Write};
+use std::io::{self, BufRead, BufReader, Read, Stdout, Write};
 use std::env;
 use uuid::Uuid;
 use std::fs::{self, File};
