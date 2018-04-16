@@ -275,10 +275,38 @@ impl Client {
                 .items
                 .iter_mut()
                 .map(|i| {
+                    let ip_addr;
+                    let port;
+                    if i.get_spec().get_endpoints().is_none() {
+                        ip_addr = "".to_string();
+                        port = "".to_string();
+                    } else {
+                        ip_addr = i.get_spec()
+                            .get_endpoints()
+                            .unwrap()
+                            .get_subsets()
+                            .get_addresses()
+                            .clone()
+                            .iter_mut()
+                            .map(|x| x.ip.to_owned())
+                            .collect();
+                        port = i.get_spec()
+                            .get_endpoints()
+                            .unwrap()
+                            .get_subsets()
+                            .get_ports()
+                            .clone()
+                            .iter_mut()
+                            .map(|x| x.port.to_owned())
+                            .collect();
+                    }
+
                     vec![
                     i.get_id(),
                     i.object_meta().name,
                     i.object_meta().account,
+                    ip_addr,
+                    port,
                     i.get_status().get_phase(),
                     i.get_created_at(),
                 ]
