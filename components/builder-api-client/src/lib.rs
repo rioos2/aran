@@ -312,12 +312,11 @@ impl Client {
                                          }
                                      }).unwrap_or(([].to_vec(), [].to_vec()));
 
-                    vec![
+                    vec![               i.get_id(),
                                         i.object_meta().name,
                                         i.object_meta().account,
                                         ips_ports.0.into_iter().collect(),
                                         ips_ports.1.into_iter().collect(),
-                                        i.get_status().get_phase(),
                                         i.get_created_at()]
                 })
                 .collect(),
