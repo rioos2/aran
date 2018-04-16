@@ -17,8 +17,8 @@ const DOCKERCFG_JSON: &'static str = "rioos_sh/dockerconfigjson";
 const KRYPTONITE: &'static str = "rioos_sh/kryptonite";
 
 /// SSH keys
-const SSH_AUTH_PRIVATE_KEY: &'static str = "rioos_sh/ssh_privatekey";
-const SSH_AUTH_PUBLIC_KEY: &'static str = "rioos_sh/ssh_pubkey";
+pub const SSH_AUTH_PRIVATE_KEY: &'static str = "rioos_sh/ssh_privatekey";
+pub const SSH_AUTH_PUBLIC_KEY: &'static str = "rioos_sh/ssh_pubkey";
 
 #[derive(Debug, Eq, PartialEq)]
 enum SecretType {

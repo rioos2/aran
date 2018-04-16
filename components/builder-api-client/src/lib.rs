@@ -240,6 +240,22 @@ impl Client {
         )
     }
 
+
+    pub fn describe_secret(&self, token: &str, email: &str, id: &str) -> Result<secret::Secret> {
+        let mut res = self.0
+            .get(&format!("secrets/{}", id))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioNetError(err_from_response(res)));
+        };
+
+        let secret: secret::Secret = res.json()?;
+        Ok(secret)
+    }
+
     pub fn create_horizontal_scaling(&self, hscale: scale::HorizontalScaling, token: &str, email: &str) -> Result<()> {
         let res = self.0
             .post(&format!("horizontalscaling"))

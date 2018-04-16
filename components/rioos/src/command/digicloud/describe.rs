@@ -112,8 +112,8 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name
         "Id",
         "Name",
         "owner",
-        "IP Address",
-        "Port",
+        "IP Addresses",
+        "Ports",
         "Status",
         "Hrs ago"
     ];
