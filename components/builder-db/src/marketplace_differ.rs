@@ -10,12 +10,14 @@ use data_store::DataStoreConn;
 
 use protocol::api::blueprint;
 use protocol::api::base::MetaFields;
+use rio_core::fs::open_from;
+
 const SYNC_ELAPSED_SECONDS: i64 = 180;
 
 use rcore::crypto::default_rioconfig_key_path;
 
 lazy_static! {
-    static  ref MARKETPLACE_CACHE_FILE: PathBuf =  PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
+    static ref MARKETPLACE_CACHE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
 }
 
 #[derive(Debug, Deserialize)]
@@ -41,7 +43,7 @@ impl MarketPlaceDiffer {
     fn diff_and_create(&self) -> Result<()> {
         let conn = self.conn.pool.get_shard(0)?;
 
-        let file = File::open(&MARKETPLACE_CACHE_FILE.as_path())?;
+        let file = open_from(&MARKETPLACE_CACHE_FILE.as_path())?;
         let u: MarketPlaceDownload = serde_yaml::from_reader(file)?;
         elapsed_or_return(u.time_stamp);
         u.items

@@ -61,8 +61,9 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
                 "Filepath to configuration file. [default: /var/lib/rioos/config/api.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 7443]")
             (@arg watch_port: --watch_port +takes_value "Listen watch port. [default: 8443]")
-            (@arg streamer: --streamer +takes_value "Start Watch server. [default: false]")
-            (@arg websocket: --websocket +takes_value "Start websocket server. [default: false]")
+            (@arg uiwatch_port: --watch_port +takes_value "Listen uiwatch port. [default: 9443]")
+            (@arg watcher: --watcher +takes_value "Start Watch server. [default: false]")
+            (@arg uiwatcher: --uiwatcher +takes_value "Start UIWatch server. [default: false]")
 
         )
         //For now we'll use the ./tools/localup.sh script
@@ -71,7 +72,7 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
         )
 
         (@subcommand sync =>
-            (about: "Sync Marketplaces items with apiserver")
+            (about: "Sync Rio.Marketplaces with api server")
         )
 
     )
@@ -128,30 +129,31 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 
     //set which server to be start from command args
     let mut server = Servers::APISERVER;
-    if streamer_from_args(&matches) {
+    
+    if watcher_from_args(&matches) {
         ui.begin(
         r#"
-    ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗    ███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗███████╗██████╗ 
-    ██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║██╔════╝██╔══██╗
-    ██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║█████╗  ██████╔╝
-    ██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║██╔══╝  ██╔══██╗
-    ██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ███████║   ██║   ██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
-    ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═                                                                                                        
+██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗    ██╗    ██╗ █████╗ ████████╗ ██████╗██╗  ██╗███████╗██████╗ 
+██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██║    ██║██╔══██╗╚══██╔══╝██╔════╝██║  ██║██╔════╝██╔══██╗
+██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ██║ █╗ ██║███████║   ██║   ██║     ███████║█████╗  ██████╔╝
+██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ██║███╗██║██╔══██║   ██║   ██║     ██╔══██║██╔══╝  ██╔══██╗
+██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ╚███╔███╔╝██║  ██║   ██║   ╚██████╗██║  ██║███████╗██║  ██║
+╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝     ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝                                                                                                                 
     "#,
     )?;
-        server = Servers::STREAMER
-    } else if websocket_from_args(&matches) {
+        server = Servers::WATCHER
+    } else if uiwatcher_from_args(&matches) {
         ui.begin(
         r#"
-    ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗    ██╗    ██╗███████╗██████╗ ███████╗ ██████╗  ██████╗██╗  ██╗███████╗████████╗
-    ██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██║    ██║██╔════╝██╔══██╗██╔════╝██╔═══██╗██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝
-    ██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ██║ █╗ ██║█████╗  ██████╔╝███████╗██║   ██║██║     █████╔╝ █████╗     ██║   
-    ██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ██║███╗██║██╔══╝  ██╔══██╗╚════██║██║   ██║██║     ██╔═██╗ ██╔══╝     ██║   
-    ██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ╚███╔███╔╝███████╗██████╔╝███████║╚██████╔╝╚██████╗██║  ██╗███████╗   ██║   
-    ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝     ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝                                                                                                       
-    "#,
+██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗    ██╗   ██╗██╗██╗    ██╗ █████╗ ████████╗ ██████╗██╗  ██╗███████╗██████╗ 
+██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██║   ██║██║██║    ██║██╔══██╗╚══██╔══╝██╔════╝██║  ██║██╔════╝██╔══██╗
+██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ██║   ██║██║██║ █╗ ██║███████║   ██║   ██║     ███████║█████╗  ██████╔╝
+██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ██║   ██║██║██║███╗██║██╔══██║   ██║   ██║     ██╔══██║██╔══╝  ██╔══██╗
+██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ╚██████╔╝██║╚███╔███╔╝██║  ██║   ██║   ╚██████╗██║  ██║███████╗██║  ██║
+╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝     ╚═════╝ ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝                                                                                                             
+   "#,
     )?;
-        server = Servers::WEBSOCKET
+        server = Servers::UIWATCHER
     } else {
         ui.begin(
         r#"
@@ -168,15 +170,15 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     start(ui, config, server)
 }
 
-fn streamer_from_args(args: &clap::ArgMatches) -> bool {
-    match args.value_of("streamer") {
+fn watcher_from_args(args: &clap::ArgMatches) -> bool {
+    match args.value_of("watcher") {
         Some(flag) => bool::from_str(flag).unwrap(),
         None => false,
     }
 }
 
-fn websocket_from_args(args: &clap::ArgMatches) -> bool {
-    match args.value_of("websocket") {
+fn uiwatcher_from_args(args: &clap::ArgMatches) -> bool {
+    match args.value_of("uiwatcher") {
         Some(flag) => bool::from_str(flag).unwrap(),
         None => false,
     }
@@ -228,6 +230,15 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
             .is_err()
         {
             return Err(Error::BadPort(watch_port.to_string()));
+        }
+    }
+
+    if let Some(uiwatch_port) = args.value_of("uiwatch_port") {
+        if u16::from_str(iowatch_port)
+            .map(|p| config.http.uiwatch_port = p)
+            .is_err()
+        {
+            return Err(Error::BadPort(uiwatch_port.to_string()));
         }
     }
 

@@ -27,8 +27,10 @@ use node::streamer::TLSPair;
 
 pub enum Servers{
     APISERVER,
-    STREAMER,
-    WEBSOCKET
+    // The http2 port used by controlmanager, scheduler
+    WATCHER,
+    // The websocket port used by UI
+    UIWATCHER
 } 
 
 #[derive(Debug)]
@@ -56,7 +58,6 @@ impl Node {
 
         match server {
             Servers::APISERVER => {
-                //start the runtime guard.
                 ui.heading("Api Wirer");
                 api_wirer::Wirer::new(self.config.clone()).start(
                     ui,
@@ -66,19 +67,18 @@ impl Node {
                 ui.end("Api Wirer");
             },
             Servers::STREAMER => {
-                //start the runtime guard.
-                ui.begin("Streamer");
+                ui.begin("Watcher");
                 streamer::Streamer::new(self.config.http.watch_port, self.config.clone())
                     .start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
-                ui.end("Streamer");
+                ui.end("Watcher");
             },
-            Servers::WEBSOCKET => {
-                //start the websocket server.
-                ui.begin("Websocket");
-                websocket::Websocket::new(self.config.http.websocket_port, self.config.clone())
+            Servers::UIWATCHER => {
+                //start the uiwatcher(websocket) server.
+                ui.begin("UIWatcher");
+                websocket::Websocket::new(self.config.http.uiwatch_port, self.config.clone())
                     .start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
-                ui.end("Websocket");
-            },
+                ui.end("UIWatcher");
+            }
         }       
 
         Ok(())

@@ -38,18 +38,18 @@ impl Server {
                         self.config.http.port
                 ))?;
             }
-            Servers::STREAMER => { 
+            Servers::WATCHER => { 
                 ui.begin(&format!(
-                    "Rio/OS Watch server listening on {}:{}",
+                    "Rio/OS WATCH listening on {}:{}",
                         self.config.http.listen,
                         self.config.http.watch_port
                 ))?;
             }
-            Servers::WEBSOCKET => { 
+            Servers::UIWATCHER => { 
                 ui.begin(&format!(
-                    "Rio/OS Websocket server listening on {}:{}",
+                    "Rio/OS UIWATCH listening on {}:{}",
                         self.config.http.listen,
-                        self.config.http.websocket_port
+                        self.config.http.uiwatch_port
                 ))?;
             }
         }

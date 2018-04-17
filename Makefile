@@ -15,7 +15,7 @@ endef
 
 define NOT_SET_RIOOS_HOME
 FATAL: you must set RIOOS_HOME, 'mkdir ~/code/rioos/home; export RIOOS_HOME=~/code/rioos/home'.
-	   Don't forget to set the variable in the bash file
+	   Export the variable in ~/.bashrc file
 endef
 
 ifndef RIOOS_HOME
@@ -40,16 +40,22 @@ VERSION := $(shell cat VERSION)
 .DEFAULT_GOAL := buildbin
 
 setup:
+	@echo "» $(RIOOS_HOME)"
+ifeq ("$(wildcard $(RIOOS_HOME)/config/pullcache)",)
+	mkdir -p $(RIOOS_HOME)/config/pullcache  > /dev/null
+endif
+	@echo "✔ mkdir $(RIOOS_HOME)/config/pullcache"
 ifeq ("$(wildcard $(RIOOS_HOME)/config/template)","")
-	mkdir -p $(RIOOS_HOME)/config/template
-	cp -R -f $(CONFIG_TEMPLATE_PATH)/* $(RIOOS_HOME)/config/template
+	mkdir -p $(RIOOS_HOME)/config/template > /dev/null
+	cp -R -f $(CONFIG_TEMPLATE_PATH)/* $(RIOOS_HOME)/config/template  > /dev/null
 endif
-
+	@echo "✔ mkdir $(RIOOS_HOME)/config/template && cp -R"
 ifeq ("$(wildcard $(RIOOS_HOME)/license)","")
-	mkdir -p $(RIOOS_HOME)/license
-	cp -R -f $(LICENSE_SO_PATH) $(RIOOS_HOME)
+	mkdir -p $(RIOOS_HOME)/license > /dev/null
+	cp -R -f $(LICENSE_SO_PATH) $(RIOOS_HOME) > /dev/null
 endif
-
+	@echo "✔ mkdir $(RIOOS_HOME)/license && cp -R"
+	@echo "« $(RIOOS_HOME)"
 
 initialize: setup
 
