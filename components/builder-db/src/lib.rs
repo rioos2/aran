@@ -87,3 +87,4 @@ pub mod migration;
 pub mod data_store;
 pub mod marketplace_differ;
 pub mod system_secret;
+pub mod mkt_data_store;

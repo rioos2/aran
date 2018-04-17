@@ -1,5 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
-embed_migrations!("api/migrations");
+embed_migrations!("marketplace/migrations");
 
 use std::io;
 use error::Result;
