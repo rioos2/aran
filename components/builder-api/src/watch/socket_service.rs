@@ -122,7 +122,6 @@ impl ws::Handler for Data {
     //send it to response. then start watch database, if any changes made into database, 
     //then server collect that data and send it.
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
-        println!("Path ================> {:?}", self.path);
         let re = Regex::new("/(\\w+)/watch").expect("regex");
         let captures = re.captures(&self.path).expect("captures");
         let id: String = captures.get(1).expect("1").as_str().parse().expect("parse");
