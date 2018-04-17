@@ -16,6 +16,12 @@ use watch::handler::LISTENERS;
 use std::rc::Rc;
 use openssl::ssl::{SslAcceptor, SslStream};
 use mio::tcp::TcpStream;
+use iron::status;
+use nodesrv::node_ds::NodeDS;
+use rio_net::http::controller::render_json;
+
+use time;
+use schedule_recv;
 
 /// WebSocket server using trait objects to route
 /// to an infinitely extensible number of handlers
@@ -39,7 +45,7 @@ impl ws::Handler for Router {
         // Clone the sender so that we can move it into the child handler
         let out = self.sender.clone();
         let db = self.datastore.clone();
-        let reg = self.register.clone();
+        let reg = self.register.clone();        
 
         let re = Regex::new("/api/v1/accounts/(\\w+)/watch").unwrap();        
         if re.is_match(req.resource()) {
@@ -52,15 +58,22 @@ impl ws::Handler for Router {
                 })
         } else {
             //TODO - use it for other websocket urls
-            /*match req.resource() {
+            match req.resource() {
                 // Route to a data handler
-                "/api/v1/logs" => {                
+                "/api/v1/healthz/overall" => {      
+                    self.inner = Box::new(Metrics {
+                        ws: out,
+                        path: req.resource().to_string(),
+                        datastore: db,
+                        register: reg,
+                        watchhandler: self.watchhandler.clone(),
+                })          
                 }  
                 // Use the default child handler, NotFound
                 _ => {
                     ()
                 },
-            }*/
+            }
             ()
         }
 
@@ -186,4 +199,43 @@ impl ws::Handler for Data {
         Ok(())
     }
    
+}
+
+
+// This handler sends some data to the client and then terminates the connection on the first
+struct Metrics {
+    ws: ws::Sender,
+    watchhandler: WatchHandler,
+    path: String,
+    datastore: Box<DataStoreConn>,
+    register: Arc<Mutex<mpsc::SyncSender<(String, Arc<Mutex<mpsc::Sender<Bytes>>>)>>>,
+}
+
+impl ws::Handler for Metrics {
+    // when handler got a new connection, to collect overall metrics data from prometheus in time period 
+    // scheduling time - 10s
+    fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> { 
+        let sender = self.ws.clone();
+        let prom = self.watchhandler.prom_client();
+
+        let tick = schedule_recv::periodic_ms(10000);
+        thread::spawn(move || {
+            loop {            
+                match NodeDS::healthz_all(&prom) {
+                    Ok(Some(health_all)) => {
+                        let res = serde_json::to_string(&health_all).unwrap();
+                        match sender.send(res) {
+                            Ok(_success) => {}
+                            Err(_err) => {break;}
+                        }
+                    }
+                    Err(_err) => {break;},
+                    Ok(None) => (),
+                }
+                tick.recv().unwrap();
+            }
+        });
+        Ok(())
+    }
+
 }
