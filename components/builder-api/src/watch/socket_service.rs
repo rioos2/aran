@@ -1,5 +1,4 @@
 
-#[cfg(feature="ssl")] 
 use ws;
 use std::sync::Arc;
 use std::sync::mpsc;
@@ -13,21 +12,14 @@ use serde_json;
 use serde_json::Value;
 use watch::handler::WatchHandler;
 use watch::handler::LISTENERS;
-#[cfg(feature = "ssl")]
-use openssl::pkcs12::Pkcs12;
 
-#[cfg(feature = "ssl")]
 use std::rc::Rc;
-#[cfg(feature = "ssl")]
-use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslMethod, SslStream};
-
-#[cfg(feature = "ssl")]
-use ws::util::TcpStream;
+use openssl::ssl::{SslAcceptor, SslStream};
+use mio::tcp::TcpStream;
 
 /// WebSocket server using trait objects to route
 /// to an infinitely extensible number of handlers
 // A WebSocket handler that routes connections to different boxed handlers by resource
-#[cfg(feature="ssl")]
 pub struct Router {
     pub watchhandler: WatchHandler,
     pub sender: ws::Sender,
@@ -37,11 +29,10 @@ pub struct Router {
     pub ssl: Rc<SslAcceptor>,
 }
 
-#[cfg(feature="ssl")] 
 impl ws::Handler for Router {
 
     fn upgrade_ssl_server(&mut self, sock: TcpStream) -> ws::Result<SslStream<TcpStream>> {
-        self.ssl.accept(sock)
+        self.ssl.accept(sock).map_err(From::from)
     }
 
     fn on_request(&mut self, req: &ws::Request) -> ws::Result<(ws::Response)> {
@@ -104,10 +95,8 @@ impl ws::Handler for Router {
 }
 
 // This handler returns a 404 response to all handshake requests
-#[cfg(feature="ssl")] 
 pub struct NotFound;
 
-#[cfg(feature="ssl")] 
 impl ws::Handler for NotFound {
     fn on_request(&mut self, req: &ws::Request) -> ws::Result<(ws::Response)> {
         // This handler responds to all requests with a 404
@@ -120,7 +109,6 @@ impl ws::Handler for NotFound {
 
 // This handler sends some data to the client and then terminates the connection on the first
 // message received, presumably confirming receipt of the data
-#[cfg(feature="ssl")] 
 struct Data {
     ws: ws::Sender,
     watchhandler: WatchHandler,
@@ -129,8 +117,10 @@ struct Data {
     register: Arc<Mutex<mpsc::SyncSender<(String, Arc<Mutex<mpsc::Sender<Bytes>>>)>>>,
 }
 
-#[cfg(feature="ssl")] 
 impl ws::Handler for Data {
+    //when open a new socket connection first server collects all account specific data from database and 
+    //send it to response. then start watch database, if any changes made into database, 
+    //then server collect that data and send it.
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
         println!("Path ================> {:?}", self.path);
         let re = Regex::new("/(\\w+)/watch").expect("regex");
@@ -153,13 +143,12 @@ impl ws::Handler for Data {
             thread::sleep(Duration::from_millis(1000)); 
             send_wrap.send((listener.to_string(), res_sender.clone())).unwrap();
             //when got new websocket connection, then server load list data
-            //from database and send to it.   
-                                                
+            //from database and send to it.                                                   
             match watchhandler.load_list_data(&listener, id.clone()) {
                 Some(res) => {     
                     match sender.send(res) {
                         Ok(_success) => {}
-                        Err(err) => {
+                        Err(_err) => {
                             break;
                         }
                     }
@@ -173,15 +162,16 @@ impl ws::Handler for Data {
             loop {
                 match ry.recv() {
                     Ok(msg) => {
-                        //when client disconnect their watch request then this "is_disconnected()" method returns true
-                        //then we break the thread   
+                        //send data to response channel for particular accountant
+                        //check response account id and request account id, if equal it could send response to channel
+                        //otherwise skip it
                         let s = String::from_utf8(msg.to_vec()).expect("Found invalid UTF-8");  
                         let v: Value = serde_json::from_str(&s).unwrap();
                    
                         if v["data"]["object_meta"]["account"] == id.to_string() {
                             match sender.send(s) {
                                 Ok(_success) => {}
-                                Err(err) => {
+                                Err(_err) => {
                                     break;
                                 }
                             }

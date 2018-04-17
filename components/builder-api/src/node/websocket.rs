@@ -5,9 +5,7 @@
 //!
 use std;
 use std::io;
-use std::thread;
-use std::time::Duration;
-use std::sync::{mpsc, Arc, Mutex, RwLock};
+use std::sync::{mpsc, Arc, Mutex};
 
 use watch::handler::LISTENERS;
 use watch::handler::WatchHandler;
@@ -15,33 +13,23 @@ use rio_net::metrics::prometheus::PrometheusClient;
 use db::data_store::DataStoreConn;
 use rio_net::http::middleware::SecurerConn;
 use config::Config;
-#[cfg(feature = "ssl")]
 use watch::socket_service::{Router, NotFound};
-#[cfg(feature = "ssl")]
 use ws;
-#[cfg(feature = "ssl")]
 use openssl::pkcs12::Pkcs12;
 
-#[cfg(feature = "ssl")]
 use std::rc::Rc;
-#[cfg(feature = "ssl")]
-use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslMethod, SslStream};
+use openssl::ssl::{SslAcceptorBuilder, SslMethod};
 
-#[cfg(feature = "ssl")]
-use openssl::x509::{X509, X509Ref};
-
+use openssl::x509::X509Ref;
 
 pub type TLSPair = Option<(String, Vec<u8>, String)>;
-type Id = u32;
 
 #[derive(Debug)]
-#[cfg(feature = "ssl")]
 pub struct Websocket {
     port: u16,
     config: Arc<Config>,
 }
 
-#[cfg(feature = "ssl")]
 impl Websocket {
     pub fn new(port: u16, config: Arc<Config>) -> Self {
         Websocket {
@@ -97,7 +85,8 @@ impl Websocket {
 
                 ws::Builder::new()
                     .with_settings(ws::Settings {
-                        encrypt_server: true,
+                        //TODO: when we use wss scheme then change it to "true"
+                        encrypt_server: false,
                         ..ws::Settings::default()
                     })
                     .build(|out: ws::Sender| Router {

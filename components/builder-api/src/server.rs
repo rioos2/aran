@@ -6,18 +6,15 @@ use rio_net::server::NetIdent;
 use config::Config;
 use error::Result;
 /* mod node;  don't remove this line, for channel/watch */
-#[cfg(feature = "ssl")]
 use super::node::{Node, Servers};
 use common::ui::UI;
 
 
 /// The main server for the Builder-API application. This should be run on the main thread.
-#[cfg(feature = "ssl")]
 pub struct Server {
     pub config: Arc<Config>,
 }
 
-#[cfg(feature = "ssl")]
 impl Server {
     /// Create a new `Server`
     pub fn new(config: Config) -> Self {
@@ -68,12 +65,10 @@ impl Server {
     }
 }
 
-#[cfg(feature = "ssl")]
 impl NetIdent for Server {}
 
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.
-#[cfg(feature = "ssl")]
 pub fn run(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
     Server::new(config).run(ui, server)
 }
