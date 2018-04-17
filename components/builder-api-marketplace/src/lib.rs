@@ -37,6 +37,7 @@ pub mod error;
 pub mod api;
 pub mod server;
 pub mod node;
+pub mod command;
 
 pub use self::config::Config;
 pub use self::error::{Error, Result};

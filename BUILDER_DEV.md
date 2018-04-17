@@ -145,7 +145,7 @@ Now, modify the `Procfile` (located in your aran repo in the `support` folder) t
 ```
 api: target/debug/rioos-api-server  --config /home/your_alias/rioos/api.toml
 ```
-# Managing migrations for Builder services
+# Managing migrations for Rio/OS
 
 All builder migrations are run with [Diesel](http://diesel.rs). This document describes how to create and manage those migrations.
 
@@ -157,11 +157,11 @@ cargo install diesel_cli --no-default-features --features postgres
 
 ## Generating new migrations
 
-Every time you need to make a change to the Builder schema you will be required to generate a new migration
+Every time you need to make a change to the Rio/OS schema you will be required to generate a new migration
 
-For the service `builder-SERVICE` you will need to run:
+For the service `builder-db` you will need to run:
 
-* `cd components/builder-SERVICE/src`
+* `cd components/builder-db/src`
 * `diesel migration generate <your migration name>`
 
 The migration name should describe what you are doing. Ex:
