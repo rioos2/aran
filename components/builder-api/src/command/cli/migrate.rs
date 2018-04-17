@@ -3,8 +3,8 @@ use common::ui::UI;
 use error::Result;
 
 pub fn start(ui: &mut UI) -> Result<()> {
-    ui.title("Rio/OS DB Migration")?;
-    ui.para("DB is Migrating")?;
+    ui.title("Rio/OS Migration for database")?;
+    ui.para("Start migration of database")?;
     let ds = data_store::DataStoreConn::new()?;
     ds.setup()?;
     system_secret::SystemSecret::new(ds.clone()).setup()?;

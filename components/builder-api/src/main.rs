@@ -75,7 +75,7 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
         )
 
         (@subcommand migrate =>
-            (about: "Setup the Postgres db")
+            (about: "Run migration on database - rioosdb")
         )
 
     )
