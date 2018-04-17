@@ -47,6 +47,7 @@ extern crate rioos_net as rio_net;
 extern crate rioos_builder_devtooling as devtooling;
 extern crate rioos_entitlement as entitlement;
 extern crate rioos_auth as auth;
+extern crate rioos_ws as ws;
 
 extern crate iron;
 extern crate mount;
@@ -60,6 +61,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_json;
 extern crate serde_yaml;
+extern crate mio;
 
 extern crate toml;
 extern crate typemap;
@@ -75,11 +77,7 @@ extern crate fallible_iterator;
 extern crate tls_api;
 extern crate tls_api_openssl;
 
-extern crate actix;
-extern crate actix_web;
 extern crate openssl;
-extern crate websocket;
-extern crate futures_cpupool;
 extern crate native_tls;
 
 #[macro_use]

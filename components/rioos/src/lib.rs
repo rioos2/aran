@@ -26,6 +26,8 @@ extern crate toml;
 extern crate url;
 extern crate serde_yaml;
 extern crate serde_json;
+extern crate base64;
+
 
 
 #[macro_use]
