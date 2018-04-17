@@ -193,12 +193,10 @@ impl Wirer {
 
                 chain.link_after(Cors);
 
-                chain.link(persistent::Read::<DataStoreBroker>::both(
-                    ds.setup(ui)?.clone(),
-                ));
+                chain.link(persistent::Read::<DataStoreBroker>::both(ds));
 
                 let conf = self.config.clone();
-               
+
                 let thread = thread::spawn(move || {
                     let mut server = Iron::new(chain);
                     server.threads = HTTP_THREAD_COUNT;
