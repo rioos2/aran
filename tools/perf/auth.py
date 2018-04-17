@@ -16,17 +16,12 @@ class AuthBrowsingUser(TaskSet):
                         						cert= ("/home/suganya/nilavu_config/config/config/server-ca.cert.pem", "/home/suganya/nilavu_config/config/config/server-ca.key","/home/suganya/nilavu_config/config/config/client-ca.pub","/home/suganya/nilavu_config/config/config/client-ca.key")
                         						)
         	l.tok = resp.json()['token']
+
     @task(2)
-    def assemblyfactorys(l):
-		l.client.verify = False
-		respon = l.client.get('/api/v1/assemblyfactorys',
-                                                headers={'Authorization': 'Bearer Ih31LKdpba1mzQtdR0', 'X-AUTH-RIOOS-EMAIL': 'info@riocorp.io'}
-                                                )
-    @task(3)
     def page404(l):
         l.client.get('/does_not_exist')
 
-    @task(4)
+    @task(3)
     def frontpage(l):
         response = l.client.get('/', name='ARAN Version')
 

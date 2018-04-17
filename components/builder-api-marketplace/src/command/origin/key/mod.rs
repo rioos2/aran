@@ -1,4 +1,4 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-pub mod origin;
+pub mod generate;

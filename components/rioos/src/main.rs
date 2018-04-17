@@ -114,7 +114,6 @@ fn start(ui: &mut UI) -> Result<()> {
             match matches.subcommand() {
                 ("create", Some(m)) => sub_secret_create(ui, m)?,
                 ("list", Some(m)) => sub_secret_list(ui, m)?,
-                ("describe", Some(m)) => sub_secret_decribe(ui, m)?,
                 _ => unreachable!(),
             }
         }
@@ -286,18 +285,6 @@ fn sub_secret_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {
         auth_email_param_or_env(&m)?,
     )
 }
-
-fn sub_secret_decribe(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    command::secret::describe::start(
-        ui,
-        create_client(&api_server_param_or_env(&m)?)?,
-        auth_token_param_or_env(&m)?,
-        auth_email_param_or_env(&m)?,
-        m.value_of("SECRET_ID").map(|v| v.into()).unwrap(),
-    )
-}
-
-
 
 // nodes information
 fn sub_node_list(ui: &mut UI, m: &ArgMatches) -> Result<()> {

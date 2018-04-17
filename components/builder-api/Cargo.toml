@@ -50,12 +50,15 @@ tempdir = "*"
 postgres = { version = "0.15.1", features = ["with-chrono"] }
 hyper-native-tls = "0.2.4"
 native-tls = "0.1.5"
-openssl = "0.9"
-mio = "0.6.*"
 
 fallible-iterator = "0.1.4"
 enum_derive = "0.1.7"
 custom_derive = "0.1.7"
+websocket = "0.20.2"
+futures-cpupool = "0.1"
+actix-web = "0.4.10"
+actix = "0.5.5"
+openssl = { version="0.10.5" }
 handlebars = { version = "*", default-features = false }
 failure = { git = "https://github.com/withoutboats/failure.git" }
 
@@ -77,9 +80,6 @@ path = "../net"
 
 [dependencies.rioos_http2]
 path = "../http2"
-
-[dependencies.rioos_ws]
-path = "../ws-rs"
 
 [dependencies.rioos_builder_asmsrv]
 path = "../builder-deployment"

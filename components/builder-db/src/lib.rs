@@ -60,17 +60,13 @@ extern crate rioos_core as rcore;
 extern crate serde;
 extern crate base64;
 extern crate chrono;
-extern crate diesel;
-extern crate r2d2_diesel;
-#[macro_use]
-extern crate diesel_migrations;
+
 
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 extern crate serde_yaml;
-extern crate url;
 
 #[macro_use]
 extern crate lazy_static;
@@ -82,8 +78,37 @@ pub mod config;
 pub mod error;
 pub mod pool;
 pub mod test;
-pub mod diesel_pool;
-pub mod migration;
+#[allow(unused_must_use)]
 pub mod data_store;
-pub mod marketplace_differ;
+#[allow(unused_must_use)]
+pub mod auth_storedproc;
+#[allow(unused_must_use)]
+pub mod node_storedproc;
+#[allow(unused_must_use)]
+pub mod deploy_storedproc;
+#[allow(unused_must_use)]
+pub mod plan_storedproc;
+#[allow(unused_must_use)]
+pub mod scale_storedproc;
+#[allow(unused_must_use)]
+pub mod service_account_storedproc;
+#[allow(unused_must_use)]
+pub mod network_storedproc;
+#[allow(unused_must_use)]
+pub mod storage_storedproc;
+pub mod migration;
+#[allow(unused_must_use)]
+pub mod job_storedproc;
+#[allow(unused_must_use)]
+pub mod volume_storedproc;
+#[allow(unused_must_use)]
+pub mod watch_storedproc;
+pub mod package_storedproc;
+#[allow(unused_must_use)]
+pub mod marketplace_storedproc;
+#[allow(unused_must_use)]
+pub mod devtooling_storedproc;
+#[allow(unused_must_use)]
 pub mod system_secret;
+#[allow(unused_must_use)]
+pub mod marketplace_differ;

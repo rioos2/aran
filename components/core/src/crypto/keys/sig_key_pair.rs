@@ -27,7 +27,6 @@ pub type SigKeyPair = KeyPair<Vec<u8>, Vec<u8>>;
 const X509_VERSION3: i32 = 2;
 
 ///
-
 const RIOOS_WITH_SIGNED: &'static str = "wi_rioos";
 
 const RIOOS_COUNTRY: &'static str = "US";

@@ -22,8 +22,7 @@ use serde_json;
 use serde_json::Value;
 use rio_net::http::middleware::SecurerConn;
 use rand::{OsRng, Rng};
-
-pub const LISTENERS: [&'static str; 2] = ["assemblyfactorys", "assemblys"];
+use futures::sync::mpsc as futurempsc;
 
 #[derive(Clone)]
 pub struct MyInner {
@@ -132,7 +131,26 @@ impl WatchHandler {
                 }
             }
         });
-    }   
+    }
+
+    //publish the response to requester
+    pub fn socket_publisher(&self, recv: mpsc::Receiver<Notification>, sender: futurempsc::UnboundedSender<Bytes>) {
+        let local_self = self.inner.clone();
+
+        thread::spawn(move || {
+            loop {
+                //let msg = recv.recv().unwrap();
+                match recv.recv() {
+                    Ok(msg) => {
+                        let channel: Vec<&str> = msg.channel.split('_').collect();
+                        let data = local_self.lock().unwrap().get_data(msg.clone(), channel[0].to_string());
+                        sender.send(data);
+                    }
+                    _ => {}
+                }
+            }
+        });
+    }
 
     //get list data for particular account
     pub fn load_list_data(&self, typ: &str, act_id: String) -> Option<String> {

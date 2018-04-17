@@ -24,7 +24,7 @@ use rio_core::env as renv;
 use rio_core::fs::rioconfig_config_path;
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
 
-use api::{command, Config, Error, Result};
+use api::{Config, Error, Result};
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
@@ -56,10 +56,8 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
                 "Filepath to configuration file. [default: /var/lib/rioos/config/marketplaces.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 6443]")
 
-        )
-        (@subcommand migrate =>
-            (about: "Run migration on database - rioosdb")
-        )
+        )        
+
     )
 }
 
@@ -68,7 +66,6 @@ fn exec_subcommand_if_called(ui: &mut UI, app_matches: &clap::ArgMatches) -> Res
 
     match app_matches.subcommand() {
         ("start", Some(m)) => sub_start_server(ui, m)?,
-        ("migrate", Some(_)) => sub_cli_migrate(ui)?,
         _ => unreachable!(),
     };
     Ok(())
@@ -95,10 +92,6 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     start(ui, config)
 }
 
-fn sub_cli_migrate(ui: &mut UI) -> Result<()> {
-    command::cli::migrate::start(ui)
-}
-
 ///
 ///
 fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
@@ -121,7 +114,7 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
         if u16::from_str(port).map(|p| config.http.port = p).is_err() {
             return Err(Error::BadPort(port.to_string()));
         }
-    }
+    }  
 
     Ok(config)
 }
@@ -131,8 +124,6 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
 fn start(ui: &mut UI, config: Config) -> Result<()> {
     api::server::run(ui, config)
 }
-
-
 
 fn ui() -> UI {
     let isatty = if renv::var(NONINTERACTIVE_ENVVAR)

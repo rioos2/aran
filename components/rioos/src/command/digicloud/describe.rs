@@ -108,15 +108,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name
     )?;
 
     ui.heading("Replicas")?;
-    let title = row![
-        "Id",
-        "Name",
-        "owner",
-        "IP Addresses",
-        "Ports",
-        "Status",
-        "Hrs ago"
-    ];
+    let title = row!["Id", "Name", "owner", "Status", "Hrs ago"];
 
     pretty_table(replicas.to_owned(), title);
 

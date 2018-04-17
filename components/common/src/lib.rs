@@ -20,3 +20,4 @@ pub use self::error::{Error, Result};
 
 pub mod error;
 pub mod ui;
+pub mod uri;

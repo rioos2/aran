@@ -76,19 +76,13 @@ impl Subsets {
     pub fn is_empty(&self) -> bool {
         return self.addresses.is_empty() && self.unready_addresses.is_empty() && self.ports.is_empty();
     }
-    pub fn get_addresses(&self) -> &Vec<Addesses> {
-        &self.addresses
-    }
-    pub fn get_ports(&self) -> &Vec<Ports> {
-        &self.ports
-    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Addesses {
     name: String, //The must bea network service name (private_ipv4, public_ip4, private_ipv6, public_ipv6) for the addresses.
     protocol_version: String, //Protocol for port. Must be UDP or TCP or HTTP.
-    pub ip: String, //What IP to bind the external port to.
+    ip: String, //What IP to bind the external port to.
     mac_address: String, //mac address of the endpoint
 }
 
@@ -105,7 +99,7 @@ impl Addesses {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Ports {
     name: String,
-    pub port: String,
+    port: String,
     protocol: String,
 }
 

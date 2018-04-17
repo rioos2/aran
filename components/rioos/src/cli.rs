@@ -144,11 +144,6 @@ pub fn get() -> App<'static, 'static> {
                 (aliases: &["listsecret"])
                 (@arg SEARCH_TERM: +takes_value "Search term (ex: riouser.*)")
             )
-            (@subcommand describe =>
-                (about: "Display the detailed state of secret")
-                (aliases: &["secretdescribe"])
-                (@arg SECRET_ID: +required +takes_value "Id for the Secret")
-            )
         )
         (@subcommand images =>
             (about: "Commands relating to Rio/OS image management")
