@@ -19,3 +19,4 @@ test/**/node_modules/
 test/**/built/
 *.log
 tags
+*.pyc

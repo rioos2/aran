@@ -240,6 +240,22 @@ impl Client {
         )
     }
 
+
+    pub fn describe_secret(&self, token: &str, email: &str, id: &str) -> Result<secret::Secret> {
+        let mut res = self.0
+            .get(&format!("secrets/{}", id))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioNetError(err_from_response(res)));
+        };
+
+        let secret: secret::Secret = res.json()?;
+        Ok(secret)
+    }
+
     pub fn create_horizontal_scaling(&self, hscale: scale::HorizontalScaling, token: &str, email: &str) -> Result<()> {
         let res = self.0
             .post(&format!("horizontalscaling"))
@@ -275,13 +291,33 @@ impl Client {
                 .items
                 .iter_mut()
                 .map(|i| {
-                    vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.object_meta().account,
-                    i.get_status().get_phase(),
-                    i.get_created_at(),
-                ]
+                    let ips_ports = (match i.get_spec().get_endpoints() {
+                                         None => None,
+                                         Some(endpoint) => {
+                                             let subsets = endpoint.get_subsets();
+                                             Some((
+                            subsets
+                                .get_addresses()
+                                .clone()
+                                .iter_mut()
+                                .map(|x| x.ip.to_owned())
+                                .collect::<Vec<_>>(),
+                            subsets
+                                .get_ports()
+                                .clone()
+                                .iter_mut()
+                                .map(|x| x.port.to_owned())
+                                .collect::<Vec<_>>(),
+                        ))
+                                         }
+                                     }).unwrap_or(([].to_vec(), [].to_vec()));
+
+                    vec![               i.get_id(),
+                                        i.object_meta().name,
+                                        i.object_meta().account,
+                                        ips_ports.0.into_iter().collect(),
+                                        ips_ports.1.into_iter().collect(),
+                                        i.get_created_at()]
                 })
                 .collect(),
         )
