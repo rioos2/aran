@@ -78,9 +78,7 @@ impl Node {
 
                 chain.link_after(Cors);
 
-                chain.link(persistent::Read::<DataStoreBroker>::both(
-                    ds.setup_marketplace(ui)?.clone(),
-                ));
+                chain.link(persistent::Read::<DataStoreBroker>::both(ds));
 
                 let conf = self.config.clone();
 
