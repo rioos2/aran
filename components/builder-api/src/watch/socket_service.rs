@@ -16,11 +16,8 @@ use watch::handler::LISTENERS;
 use std::rc::Rc;
 use openssl::ssl::{SslAcceptor, SslStream};
 use mio::tcp::TcpStream;
-use iron::status;
 use nodesrv::node_ds::NodeDS;
-use rio_net::http::controller::render_json;
 
-use time;
 use schedule_recv;
 
 /// WebSocket server using trait objects to route
@@ -63,9 +60,7 @@ impl ws::Handler for Router {
                 "/api/v1/healthz/overall" => {      
                     self.inner = Box::new(Metrics {
                         ws: out,
-                        path: req.resource().to_string(),
                         datastore: db,
-                        register: reg,
                         watchhandler: self.watchhandler.clone(),
                 })          
                 }  
@@ -206,9 +201,7 @@ impl ws::Handler for Data {
 struct Metrics {
     ws: ws::Sender,
     watchhandler: WatchHandler,
-    path: String,
     datastore: Box<DataStoreConn>,
-    register: Arc<Mutex<mpsc::SyncSender<(String, Arc<Mutex<mpsc::Sender<Bytes>>>)>>>,
 }
 
 impl ws::Handler for Metrics {

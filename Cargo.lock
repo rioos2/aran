@@ -1681,6 +1681,7 @@ dependencies = [
 name = "rioos"
 version = "0.0.0"
 dependencies = [
+ "base64 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.30.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clippy 0.0.187 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1777,7 +1778,6 @@ dependencies = [
  "serde_json 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_yaml 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempdir 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "time 0.1.39 (registry+https://github.com/rust-lang/crates.io-index)",
  "tls-api 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "tls-api-openssl 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-core 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",

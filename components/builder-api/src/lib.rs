@@ -80,7 +80,6 @@ extern crate tls_api_openssl;
 extern crate openssl;
 extern crate native_tls;
 
-extern crate time;
 extern crate schedule_recv;
 
 #[macro_use]
