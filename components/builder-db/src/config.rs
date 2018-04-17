@@ -1,9 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use std::error::Error;
+use std::fmt;
 use std::net::{Ipv4Addr, IpAddr};
 
 use num_cpus;
+use url::percent_encoding::{utf8_percent_encode, PATH_SEGMENT_ENCODE_SET};
 use postgres::params::{ConnectParams, Host, IntoConnectParams};
 
 #[derive(Debug, Deserialize)]
@@ -47,5 +49,21 @@ impl<'a> IntoConnectParams for &'a DataStore {
         builder.user(&self.user, self.password.as_ref().map(|p| &**p));
         builder.database(&self.database);
         Ok(builder.build(Host::Tcp(self.host.to_string())))
+    }
+}
+
+impl fmt::Display for DataStore {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut connect = format!("postgres://{}", self.user);
+        connect = match self.password {
+            Some(ref p) => {
+                // We can potentially get non-url friendly chars here so we need to encode them
+                let encoded_password = utf8_percent_encode(p, PATH_SEGMENT_ENCODE_SET).to_string();
+                format!("{}:{}", connect, encoded_password)
+            }
+            None => connect,
+        };
+        connect = format!("{}@{}:{}/{}", connect, self.host, self.port, self.database);
+        write!(f, "{}", connect)
     }
 }
