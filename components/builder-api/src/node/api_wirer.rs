@@ -16,7 +16,7 @@ use persistent;
 
 use rio_net::http::middleware::*;
 use rio_net::http::pack;
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 use rio_net::metrics::vulnerablity::AnchoreClient;
 use node::runtime::Runtime;
 

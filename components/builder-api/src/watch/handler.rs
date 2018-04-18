@@ -10,7 +10,7 @@ use fallible_iterator::FallibleIterator;
 use db::error::Error as DbError;
 use db::data_store::DataStoreConn;
 use protocol::api::base::IdGet;
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 use std::sync::Mutex;
 use std::sync::Arc;
@@ -44,11 +44,11 @@ impl WatchHandler {
     pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>, securer: Box<SecurerConn>) -> Self {
         let vec = Vec::<(u32, String, Arc<Mutex<mpsc::Sender<Bytes>>>)>::new();
         let inner = MyInner {
-                v: vec,
-                datastore: datastore.clone(),
-                prom: prom.clone(),
-                securer: securer.clone(),
-            };
+            v: vec,
+            datastore: datastore.clone(),
+            prom: prom.clone(),
+            securer: securer.clone(),
+        };
         WatchHandler {
             inner: Arc::new(Mutex::new(inner.clone())),
             datastore: datastore.clone(),
@@ -61,7 +61,7 @@ impl WatchHandler {
     //when listener get the data from triggers then send it to the handler channel
     //listener notifies any datas(like secrets, jobs,...) send to the channel
     pub fn notifier(&self, sender: Arc<Mutex<mpsc::Sender<Notification>>>, listeners: Vec<&str>) -> Result<()> {
-        
+
         let conn = self.datastore.pool.get_shard(0).unwrap();
 
         for listener in listeners {
@@ -70,8 +70,9 @@ impl WatchHandler {
             owned_string.push_str(&listener);
             owned_string.push_str(&another_owned_string);
 
-            &conn.query(&owned_string, &[])
-                .map_err(DbError::AsyncFunctionCheck);
+            &conn.query(&owned_string, &[]).map_err(
+                DbError::AsyncFunctionCheck,
+            );
         }
 
         thread::spawn(move || {
@@ -87,7 +88,7 @@ impl WatchHandler {
             while true {
                 // it.next() -> Result<Option<Notification>>
                 match it.next() {
-                    Ok(Some(notification)) => {                         
+                    Ok(Some(notification)) => {
                         send_wrap.send(notification).unwrap();
                     }
                     Err(err) => println!("Got err {:?}", err),
@@ -132,7 +133,7 @@ impl WatchHandler {
                 }
             }
         });
-    }   
+    }
 
     //get list data for particular account
     pub fn load_list_data(&self, typ: &str, act_id: String) -> Option<String> {
@@ -195,7 +196,7 @@ impl MyInner {
         let res = match self.uppercase_first_letter(typ).parse().unwrap() {
             Messages::Assemblys => watch::messages::handle_assembly_list(idget, self.datastore.clone(), self.prom.clone()),
             Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory_list(idget, self.datastore.clone()),
-            Messages::Secrets => watch::messages::handle_secrets_list(idget, self.datastore.clone(), self.securer.clone()),               
+            Messages::Secrets => watch::messages::handle_secrets_list(idget, self.datastore.clone(), self.securer.clone()),
             Messages::Services => None,
             Messages::Nodes => None,
             Messages::Jobs => None,
@@ -215,28 +216,28 @@ impl MyInner {
     }
 
     fn get_data(&self, msg: Notification, name: String) -> Bytes {
-        let v: Value = serde_json::from_str(&msg.payload).unwrap();        
+        let v: Value = serde_json::from_str(&msg.payload).unwrap();
         let idget = IdGet::with_id(v["data"].to_string());
-        let typ = v["type"].to_string();              
+        let typ = v["type"].to_string();
 
         let res = match self.uppercase_first_letter(&name).parse().unwrap() {
-                    Messages::Assemblys => watch::messages::handle_assembly(idget, typ, self.datastore.clone(), self.prom.clone()),
-                    Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory(idget, typ, self.datastore.clone()),
-                    Messages::Services => watch::messages::handle_services(idget, typ, self.datastore.clone()),
-                    Messages::Nodes => watch::messages::handle_nodes(idget, typ, self.datastore.clone(), self.prom.clone()),
-                    Messages::Secrets => watch::messages::handle_secrets(idget, typ, self.datastore.clone(), self.securer.clone()),
-                    Messages::Jobs => watch::messages::handle_jobs(idget, typ, self.datastore.clone()),
-                    Messages::Horizontalscaling => watch::messages::handle_horizontalscaling(idget, typ, self.datastore.clone(), self.prom.clone()),
-                    Messages::Networks => watch::messages::handle_networks(idget, typ, self.datastore.clone()),
-                    Messages::Storagespool => watch::messages::handle_storagespool(idget, typ, self.datastore.clone()),
-                    Messages::Storageconnectors => watch::messages::handle_storageconnectors(idget, typ, self.datastore.clone()),
-                    Messages::Datacenters => watch::messages::handle_datacenters(idget, typ, self.datastore.clone()),
-                    Messages::Verticalscaling => watch::messages::handle_verticalscaling(idget, typ, self.datastore.clone(), self.prom.clone()),
-                    Messages::Settingsmap => watch::messages::handle_settingsmap(idget, typ, self.datastore.clone()),
-                    Messages::Endpoints => watch::messages::handle_endpoints(idget, typ, self.datastore.clone()),
-                    Messages::Origins => watch::messages::handle_origins(idget, typ, self.datastore.clone()),
-                    Messages::Plans => watch::messages::handle_plans(idget, typ, self.datastore.clone()),
-                    Messages::Serviceaccounts => watch::messages::handle_serviceaccounts(idget, typ, self.datastore.clone()),
+            Messages::Assemblys => watch::messages::handle_assembly(idget, typ, self.datastore.clone(), self.prom.clone()),
+            Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory(idget, typ, self.datastore.clone()),
+            Messages::Services => watch::messages::handle_services(idget, typ, self.datastore.clone()),
+            Messages::Nodes => watch::messages::handle_nodes(idget, typ, self.datastore.clone(), self.prom.clone()),
+            Messages::Secrets => watch::messages::handle_secrets(idget, typ, self.datastore.clone(), self.securer.clone()),
+            Messages::Jobs => watch::messages::handle_jobs(idget, typ, self.datastore.clone()),
+            Messages::Horizontalscaling => watch::messages::handle_horizontalscaling(idget, typ, self.datastore.clone(), self.prom.clone()),
+            Messages::Networks => watch::messages::handle_networks(idget, typ, self.datastore.clone()),
+            Messages::Storagespool => watch::messages::handle_storagespool(idget, typ, self.datastore.clone()),
+            Messages::Storageconnectors => watch::messages::handle_storageconnectors(idget, typ, self.datastore.clone()),
+            Messages::Datacenters => watch::messages::handle_datacenters(idget, typ, self.datastore.clone()),
+            Messages::Verticalscaling => watch::messages::handle_verticalscaling(idget, typ, self.datastore.clone(), self.prom.clone()),
+            Messages::Settingsmap => watch::messages::handle_settingsmap(idget, typ, self.datastore.clone()),
+            Messages::Endpoints => watch::messages::handle_endpoints(idget, typ, self.datastore.clone()),
+            Messages::Origins => watch::messages::handle_origins(idget, typ, self.datastore.clone()),
+            Messages::Plans => watch::messages::handle_plans(idget, typ, self.datastore.clone()),
+            Messages::Serviceaccounts => watch::messages::handle_serviceaccounts(idget, typ, self.datastore.clone()),
         };
         return res;
     }

@@ -22,7 +22,7 @@ pub struct PrometheusClient {
 }
 
 impl PrometheusClient {
-    pub fn new<T: config::Prometheus>(config: &T) -> Self {
+    pub fn new<T: config::Telemetry>(config: &T) -> Self {
         PrometheusClient { url: config.endpoint().to_string() }
     }
 

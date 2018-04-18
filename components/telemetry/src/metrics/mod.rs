@@ -2,5 +2,7 @@
 
 //! A module containing the metrics http clients
 
-pub mod vulnerablity;
+pub mod prometheus;
+pub mod collector;
+pub mod expression;
 pub mod reqwest_client;

@@ -19,7 +19,7 @@ use error::Error;
 use rio_net::http::controller::*;
 use rio_net::util::errors::{AranResult, AranValidResult};
 use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 use deploy::assembler::{ServicesConfig, Assembler};
 use deploy::models::{assemblyfactory, blueprint, service};
 use protocol::cache::{CACHE_PREFIX_PLAN, NewCacheServiceFn, CACHE_PREFIX_SERVICE};

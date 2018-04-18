@@ -6,8 +6,6 @@ use std::net::ToSocketAddrs;
 use std::io;
 use std::option::IntoIter;
 
-/// host url  to get the audit of the client
-pub const DEFAULT_PROMETHEUS_URL: &'static str = "http://localhost:9090/api/v1";
 ///host url to check the vulnerability of the container
 pub const DEFAULT_ANCHORE_URL: &'static str = "http://localhost:8228/v1";
 /// host url  to get the audits
@@ -65,21 +63,6 @@ pub trait SystemAuth {
 }
 
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(default)]
-pub struct PrometheusCfg {
-    pub url: String,
-}
-
-impl Default for PrometheusCfg {
-    fn default() -> Self {
-        PrometheusCfg { url: DEFAULT_PROMETHEUS_URL.to_string() }
-    }
-}
-
-pub trait Prometheus {
-    fn endpoint(&self) -> &str;
-}
 
 ///// Configuration for Logs
 

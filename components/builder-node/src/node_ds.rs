@@ -8,8 +8,8 @@ use error::{Result, Error};
 use protocol::api::node;
 use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
 
-use rio_net::metrics::prometheus::PrometheusClient;
-use rio_net::metrics::collector::{Collector, CollectorScope};
+use telemetry::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::collector::{Collector, CollectorScope};
 use rio_net::http::schema::type_meta_url;
 
 use serde_json;
@@ -159,6 +159,25 @@ impl NodeDS {
             "rioos_os_name",
         );
 
+        //collect the network_metric for node
+        let network_scope = collect_scope(
+            vec![
+                "node_network_transmit_bytes_total".to_string(),
+                "node_network_receive_bytes_total".to_string(),
+                "node_network_receive_errs_total".to_string(),
+                "node_network_transmit_errs_total".to_string(),
+            ],
+            vec![],
+            METRIC_DEFAULT_LAST_X_MINUTE,
+            "",
+        );
+
+        let network_metric = Collector::new(client, network_scope);
+
+        let data = network_metric.network_metric()?;
+
+        println!("------------------------------------------\n{:?}", data);
+
         let mut os_checker = Collector::new(client, os_scope);
 
         let os_response_data = os_checker.overall_node_cpu()?;
@@ -199,6 +218,7 @@ impl NodeDS {
 
         //Statistics metric of the each node
         let mut lstatistics = vec![node::NodeStatistic::new()];
+
         if metric_response.1.len() > 0 {
             metric_response
                 .1

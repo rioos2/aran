@@ -126,5 +126,8 @@ path = "../entitlement"
 [dependencies.rioos_auth]
 path = "../auth"
 
+[dependencies.rioos_telemetry]
+path = "../telemetry"
+
 [features]
 functional = []

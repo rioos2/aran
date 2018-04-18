@@ -10,13 +10,11 @@ use url;
 use reqwest;
 use serde_json;
 
-//use auth;
-use auth::rioos::AuthErr;
 
 #[derive(Debug)]
 pub enum Error {
     APIError(reqwest::StatusCode, String),
-    Auth(AuthErr),
+    PrometheusAPI(reqwest::StatusCode, HashMap<String, String>),
     AnchotreAPI(reqwest::StatusCode, HashMap<String, String>),
     IO(io::Error),
     ReqwestError(reqwest::Error),
@@ -34,7 +32,7 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::APIError(ref c, ref m) if m.len() > 0 => format!("[{}] {}", c, m),
             Error::APIError(ref c, _) => format!("[{}]", c),
-            Error::Auth(ref e) => format!("Rio/OS authorization error, {}", e),
+            Error::PrometheusAPI(ref c, ref m) => format!("[{}] {:?}", c, m),
             Error::AnchotreAPI(ref c, ref m) => format!("[{}] {:?}", c, m),
             Error::ReqwestError(ref err) => format!("{}", err),
             Error::IO(ref e) => format!("{}", e),
@@ -52,7 +50,7 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::APIError(_, _) => "Received a non-2XX response code from API",
-            Error::Auth(_) => "Rio/OS authorization error.",
+            Error::PrometheusAPI(_, _) => "Prometheus API error.",
             Error::AnchotreAPI(_, _) => "Anchore API error.",
             Error::IO(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
@@ -68,12 +66,6 @@ impl error::Error for Error {
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {
         Error::IO(err)
-    }
-}
-
-impl From<AuthErr> for Error {
-    fn from(err: AuthErr) -> Self {
-        Error::Auth(err)
     }
 }
 
