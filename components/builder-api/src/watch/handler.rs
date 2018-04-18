@@ -22,7 +22,8 @@ use serde_json;
 use serde_json::Value;
 use rio_net::http::middleware::SecurerConn;
 use rand::{OsRng, Rng};
-use futures::sync::mpsc as futurempsc;
+
+pub const LISTENERS: [&'static str; 2] = ["assemblyfactorys", "assemblys"];
 
 #[derive(Clone)]
 pub struct MyInner {
@@ -37,6 +38,7 @@ pub struct WatchHandler {
     pub datastore: Box<DataStoreConn>,
     inner: Arc<Mutex<MyInner>>,
     outer: MyInner,
+    prom: Box<PrometheusClient>,
 }
 
 impl WatchHandler {
@@ -52,9 +54,13 @@ impl WatchHandler {
             inner: Arc::new(Mutex::new(inner.clone())),
             datastore: datastore.clone(),
             outer: inner.clone(),
+            prom: prom.clone(),
         }
     }
 
+    pub fn prom_client(&self) -> Box<PrometheusClient> {
+        self.prom.clone()
+    }
 
     //start listening all psql triggers
     //when listener get the data from triggers then send it to the handler channel
@@ -131,26 +137,7 @@ impl WatchHandler {
                 }
             }
         });
-    }
-
-    //publish the response to requester
-    pub fn socket_publisher(&self, recv: mpsc::Receiver<Notification>, sender: futurempsc::UnboundedSender<Bytes>) {
-        let local_self = self.inner.clone();
-
-        thread::spawn(move || {
-            loop {
-                //let msg = recv.recv().unwrap();
-                match recv.recv() {
-                    Ok(msg) => {
-                        let channel: Vec<&str> = msg.channel.split('_').collect();
-                        let data = local_self.lock().unwrap().get_data(msg.clone(), channel[0].to_string());
-                        sender.send(data);
-                    }
-                    _ => {}
-                }
-            }
-        });
-    }
+    }   
 
     //get list data for particular account
     pub fn load_list_data(&self, typ: &str, act_id: String) -> Option<String> {
