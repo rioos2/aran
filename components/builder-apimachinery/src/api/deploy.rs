@@ -28,6 +28,7 @@ pub struct AssemblyFactory {
     resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
     secret: Secret, //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
     plan: String, // A Plan is meta-data that provides a description of the artifacts that make up an application, the services that are required to execute or utilize those artifacts, and the relationship of the artifacts to those services. Plans are expressed as json under a /plans resource.    Here we provide the identifier as pointed to /plans
+    #[serde(default)]
     status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
     #[serde(default)]
     spec: AssemblyFactorySpec,

@@ -26,7 +26,7 @@ use deploy::models::{assemblyfactory, blueprint, service};
 
 use protocol::cache::{CACHE_PREFIX_PLAN, NewCacheServiceFn, CACHE_PREFIX_SERVICE};
 use protocol::api::deploy::AssemblyFactory;
-use protocol::api::base::{StatusUpdate, MetaFields};
+use protocol::api::base::{StatusUpdate, MetaFields, Status};
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -67,6 +67,7 @@ impl AssemblyFactoryApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
+        unmarshall_body.set_status(Status::pending());
 
         ui::rawdumpln(
             Colour::White,

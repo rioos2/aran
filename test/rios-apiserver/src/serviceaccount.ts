@@ -58,27 +58,6 @@ describe('Service account API', function() {
       });
   });
 
-  it('returns  permissions by service account name', function(done) {
-    request.get('/permissions/serviceaccounts/'+globalAny.servacc_name)
-    .ca(globalAny.rootCA)
-    .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .set('Authorization', globalAny.bobo_bearer)
-      .expect(200)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
-
-  it('returns  permissions by wrong service account name', function(done) {
-    request.get('/permissions/serviceaccounts/assembly_servacc_name')
-    .ca(globalAny.rootCA)
-    .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .set('Authorization', globalAny.bobo_bearer)
-      .expect(404)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
 
   it('returns the updated serviceaccounts', function(done) {
     request.put('/origins/'+globalAny.origin_id+'/serviceaccounts/'+globalAny.servacc_name)

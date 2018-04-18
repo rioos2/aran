@@ -11,7 +11,10 @@ const request = supertest.agent(globalAny.apiServer);
         .ca(globalAny.rootCA)
           .set('Authorization', globalAny.bobo_bearer)
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-          .send({"connector_id": globalAny.st_id,"parameters":{},"storage_info": {"disks": [{"disk": "/dev/sdb","used_size":"10GB","disk_type": "/dev/sdb1","point": "/home","size": "50GB"},{"disk": "/dev/sdb1","disk_type": "/dev/sdb2","point": "/home/suganya","size": "500GB","used_size":"10GB"}]},"status":{"message":"","reason":"","phase": "pending","conditions": [{"message":"nodelet has sufficient disk space available","reason":"NodeletHasSufficientDisk","status":"False","last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z","condition_type":"OutOfDisk","last_update_time": ""}] }, "object_meta":{"name":"chennai", "account":"","labels":{},"annotations":{}, "owner_references":[{"kind":"","api_version":"", "name":"","uid":"","block_owner_deletion":false}], "created_at":"","deleted_at":"","deletion_grace_period_seconds":0,  "finalizers":[], "cluster_name":"" }})
+          .send({"connector_id": globalAny.st_id,"storage_info": {"disks": [{"disk": "/dev/sdb","used_size":"10GB","disk_type": "/dev/sdb1","point": "/home","size": "50GB"},{"disk": "/dev/sdb1","disk_type": "/dev/sdb2","point": "/home/suganya",
+          "size": "500GB","used_size":"10GB"}]},"status":{"message":"","reason":"","phase": "pending","conditions": [{"message":"nodelet has sufficient disk space available","reason":"NodeletHasSufficientDisk","status":"False","last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z",
+          "condition_type":"OutOfDisk","last_update_time": ""}] }, "object_meta":{"name":"chennai", "account":"","labels":{},"annotations":{}, "owner_references":[{"kind":"","api_version":"", "name":"","uid":"","block_owner_deletion":false}],
+           "created_at":"","deleted_at":"","deletion_grace_period_seconds":0,  "finalizers":[], "cluster_name":"" }})
           .expect(200)
           .end(function(err, res) {
             expect(res.body);
