@@ -43,7 +43,7 @@ impl ws::Handler for Router {
         let out = self.sender.clone();
         let db = self.datastore.clone();
         let reg = self.register.clone();        
-
+       
         let re = Regex::new("/api/v1/accounts/(\\w+)/watch").unwrap();        
         if re.is_match(req.resource()) {
             self.inner = Box::new(Data {
@@ -164,7 +164,6 @@ impl ws::Handler for Data {
             }
         }
 
-
         thread::spawn(move || {
             loop {
                 match ry.recv() {
@@ -182,8 +181,7 @@ impl ws::Handler for Data {
                                     break;
                                 }
                             }
-                        }                   
-                        
+                        }                  
                     }
                     _ => {
                         break;

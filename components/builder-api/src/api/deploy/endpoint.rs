@@ -115,7 +115,6 @@ impl EndpointApi {
     //Will need roles/permission to access others origin
     pub fn show_by_assembly(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-
         match endpoint::DataStore::show_by_assembly(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
             Ok(None) => Err(not_found_error(&format!(
