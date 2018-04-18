@@ -115,152 +115,16 @@ impl NodeDS {
     }
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<node::HealthzAllGetResponse>> {
-        // collect the overall usage of memory mteric of the all node
-        let memory_scope = collect_scope(
-            vec![
-                "node_memory_MemTotal".to_string(),
-                "node_memory_MemFree".to_string(),
-                "node_memory_Buffers".to_string(),
-            ],
-            vec![node::NODE_JOBS.to_string()],
-            "",
-            "",
-        );
-        let memory_response = Collector::new(client, memory_scope).average_memory()?;
-
-        // collect the overall usage of memory mteric of the all node
-        let disk_scope = collect_scope(
-            vec![
-                "node_filesystem_size".to_string(),
-                "node_filesystem_free".to_string(),
-            ],
-            vec![node::NODE_JOBS.to_string()],
-            "",
-            "",
-        );
-        let disk_response = Collector::new(client, disk_scope).average_disk()?;
-
-        //collect the average node cpu and statistic of each node
-        let node_scope = collect_scope(
-            vec!["node_cpu".to_string()],
-            vec![node::NODE_JOBS.to_string(), node::IDLEMODE.to_string()],
-            METRIC_DEFAULT_LAST_X_MINUTE,
-            "instance",
-        );
-
-        let mut health_checker = Collector::new(client, node_scope);
-        let metric_response = health_checker.overall_node_cpu()?;
-
-        //collect the average node cpu  of  os
-        let os_scope = collect_scope(
-            vec!["node_cpu".to_string()],
-            vec![node::ASSEMBLY_JOBS.to_string(), node::IDLEMODE.to_string()],
-            METRIC_DEFAULT_LAST_X_MINUTE,
-            "rioos_os_name",
-        );
-
-        //collect the network_metric for node
-        let network_scope = collect_scope(
-            vec![
-                "node_network_transmit_bytes_total".to_string(),
-                "node_network_receive_bytes_total".to_string(),
-                "node_network_receive_errs_total".to_string(),
-                "node_network_transmit_errs_total".to_string(),
-            ],
-            vec![],
-            METRIC_DEFAULT_LAST_X_MINUTE,
-            "",
-        );
-
-        let network_metric = Collector::new(client, network_scope);
-
-        let data = network_metric.network_metric()?;
-
-        println!("------------------------------------------\n{:?}", data);
-
-        let mut os_checker = Collector::new(client, os_scope);
-
-        let os_response_data = os_checker.overall_node_cpu()?;
-
-        let os_response = os_checker.metric_by_os_usage()?;
-
-        //Generete the collected prometheus data as HealthzAllGetResponse
-
-        let mut coun_collection = Vec::new();
-
-        // memory count
-        memory_response
-            .into_iter()
-            .map(|x| {
-                let g1: node::Counters = x.into();
-                coun_collection.push(g1);
-            })
-            .collect::<Vec<_>>();
-
-        // cpu count
-        metric_response
-            .0
-            .into_iter()
-            .map(|x| {
-                let g2: node::Counters = x.into();
-                coun_collection.push(g2);
-            })
-            .collect::<Vec<_>>();
-
-        // disk count
-        disk_response
-            .into_iter()
-            .map(|x| {
-                let g3: node::Counters = x.into();
-                coun_collection.push(g3);
-            })
-            .collect::<Vec<_>>();
-
-        //Statistics metric of the each node
-        let mut lstatistics = vec![node::NodeStatistic::new()];
-
-        if metric_response.1.len() > 0 {
-            metric_response
-                .1
-                .into_iter()
-                .map(|x| { lstatistics = x.into(); })
-                .collect::<Vec<_>>();
-        } else {
-            let mut node = node::NodeStatistic::new();
-            let jackie = node.who_am_i();
-            node.set_type_meta(type_meta_url(jackie));
-            lstatistics = vec![node];
-        }
 
         let mut guages = node::Guages::new();
         guages.set_title("Cumulative operations counter".to_string());
-        guages.set_counters(coun_collection);
+        guages.set_counters(get_guages(client)?);
 
         let mut statistics = node::Statistics::new();
         statistics.set_title("Statistics".to_string());
-        statistics.set_nodes(lstatistics);
+        statistics.set_nodes(get_statistics(client)?);
 
         let mut metrics = node::Osusages::new();
-
-        let all_items = os_response
-            .into_iter()
-            .map(|p| {
-                let p1: node::Osusages = p.into();
-                p1.get_items()
-            })
-            .collect::<Vec<_>>();
-
-        let mut os_collection = Vec::new();
-
-        os_response_data
-            .0
-            .into_iter()
-            .map(|x| {
-                let g2: node::Counters = x.into();
-                os_collection.push(g2);
-            })
-            .collect::<Vec<_>>();
-
         metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
         metrics.set_title("Scale metrics ".to_owned());
         metrics.set_cumulative(os_collection[0].clone());
@@ -275,6 +139,162 @@ impl NodeDS {
 
         Ok(Some(response))
     }
+}
+
+
+fn get_guages(client: &PrometheusClient) -> Result<Vec<node::Counters>> {
+    //Generete the collected prometheus data as HealthzAllGetResponse
+
+    let mut coun_collection = Vec::new();
+    // memory count
+    memory_response(client)?
+        .into_iter()
+        .map(|x| {
+            let g1: node::Counters = x.into();
+            coun_collection.push(g1);
+        })
+        .collect::<Vec<_>>();
+
+    // cpu count
+    node_response
+        .0
+        .into_iter()
+        .map(|x| {
+            let g2: node::Counters = x.into();
+            coun_collection.push(g2);
+        })
+        .collect::<Vec<_>>();
+
+    // disk count
+    disk_response(client)?
+        .into_iter()
+        .map(|x| {
+            let g3: node::Counters = x.into();
+            coun_collection.push(g3);
+        })
+        .collect::<Vec<_>>();
+    Ok(coun_collection)
+}
+
+fn get_statistics() -> Result<Vec<node::NodeStatistic>> {
+    let node_response = node_response(client)?;
+    //Statistics metric of the each node
+    let mut lstatistics = vec![node::NodeStatistic::new()];
+
+    if node_response.1.len() > 0 {
+        node_response
+            .1
+            .into_iter()
+            .map(|x| { lstatistics = x.into(); })
+            .collect::<Vec<_>>();
+    } else {
+        let mut node = node::NodeStatistic::new();
+        let jackie = node.who_am_i();
+        node.set_type_meta(type_meta_url(jackie));
+        lstatistics = vec![node];
+    }
+    Ok(lstatistics)
+}
+
+fn get_os_statistics() -> Result<(node::Osusages, node::Counters)> {
+    let os_response = os_response(client)?;
+
+    let all_items = os_response
+        .1
+        .into_iter()
+        .map(|p| {
+            let p1: node::Osusages = p.into();
+            p1.get_items()
+        })
+        .collect::<Vec<_>>();
+
+    let mut os_collection = Vec::new();
+
+    os_response
+        .0
+        .into_iter()
+        .map(|x| {
+            let g2: node::Counters = x.into();
+            os_collection.push(g2);
+        })
+        .collect::<Vec<_>>();
+
+    Ok(all_items, os_collection)
+}
+
+fn memory_response(client: &PrometheusClient) -> Result<Vec<node::PromResponse>> {
+    // collect the overall usage of memory mteric of the all node
+    let memory_scope = collect_scope(
+        vec![
+            "node_memory_MemTotal".to_string(),
+            "node_memory_MemFree".to_string(),
+            "node_memory_Buffers".to_string(),
+        ],
+        vec![node::NODE_JOBS.to_string()],
+        "",
+        "",
+    );
+    Ok(Collector::new(client, memory_scope).average_memory()?)
+
+}
+
+fn disk_response(client: &PrometheusClient) -> Result<Vec<node::PromResponse>> {
+    // collect the overall usage of memory mteric of the all node
+    let disk_scope = collect_scope(
+        vec![
+            "node_filesystem_size".to_string(),
+            "node_filesystem_free".to_string(),
+        ],
+        vec![node::NODE_JOBS.to_string()],
+        "",
+        "",
+    );
+    Ok(Collector::new(client, disk_scope).average_disk()?)
+
+}
+
+fn node_response(client: &PrometheusClient) -> Result<(Vec<node::PromResponse>, Vec<node::PromResponse>)> {
+    //collect the average node cpu and statistic of each node
+    let node_scope = collect_scope(
+        vec!["node_cpu".to_string()],
+        vec![node::NODE_JOBS.to_string(), node::IDLEMODE.to_string()],
+        METRIC_DEFAULT_LAST_X_MINUTE,
+        "instance",
+    );
+
+    Ok(Collector::new(client, node_scope).overall_node_cpu()?)
+
+}
+
+fn network_response(client: &PrometheusClient) -> Result<Vec<node::PromResponse>> {
+    //collect the network_metric for node
+    let network_scope = collect_scope(
+        vec![
+            "node_network_transmit_bytes_total".to_string(),
+            "node_network_receive_bytes_total".to_string(),
+            "node_network_receive_errs_total".to_string(),
+            "node_network_transmit_errs_total".to_string(),
+        ],
+        vec![],
+        METRIC_DEFAULT_LAST_X_MINUTE,
+        "",
+    );
+
+    Ok(Collector::new(client, network_scope).network_metric()?)
+
+}
+
+fn os_response(client: &PrometheusClient) -> Result<(Vec<node::PromResponse>, Vec<node::PromResponse>)> {
+
+    //collect the average node cpu  of  os
+    let os_scope = collect_scope(
+        vec!["node_cpu".to_string()],
+        vec![node::ASSEMBLY_JOBS.to_string(), node::IDLEMODE.to_string()],
+        METRIC_DEFAULT_LAST_X_MINUTE,
+        "rioos_os_name",
+    );
+
+    Ok(Collector::new(client, os_scope).metric_by_os_usage()?)
 }
 
 fn collect_scope(metric_scope: Vec<String>, labels: Vec<String>, duration: &str, avg_by: &str) -> CollectorScope {

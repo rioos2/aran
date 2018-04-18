@@ -126,10 +126,17 @@ impl<'a> Collector<'a> {
     }
 
     //os usage metric of the assemblys
-    pub fn metric_by_os_usage(&mut self) -> Result<Vec<PromResponse>> {
-        let content_datas = self.os_avg_collect()?;
-        Ok(content_datas)
+    pub fn metric_by_os_usage(&mut self) -> Result<(Vec<PromResponse>, Vec<PromResponse>)> {
+        let content_datas = self.avg_collect()?;
+        let node_contents_data = self.set_metric_name(Ok(content_datas), "cpu_total")?;
+        let gauges = self.set_gauges(Ok(node_contents_data.clone()));
+
+        let content = self.os_avg_collect()?;
+
+        Ok((gauges.unwrap(), content))
     }
+
+
 
     //metric for general
     pub fn metric_by_avg(&mut self) -> Result<BTreeMap<String, String>> {
