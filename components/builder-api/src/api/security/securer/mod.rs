@@ -6,8 +6,8 @@
 //! As deployments are running, their secret is stored in a storge.
 
 pub mod local;
-pub mod vault;
 pub mod parse;
+pub mod vault;
 
 use db::data_store::DataStoreConn;
 use error::Result;

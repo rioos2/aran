@@ -55,11 +55,7 @@ impl VolumeApi {
     pub fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Volumes>>()?)?;
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
         match volume::DataStore::create(&self.conn, &unmarshall_body) {
@@ -87,11 +83,7 @@ impl VolumeApi {
 
         match volume::DataStore::show(&self.conn, &params) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -107,11 +99,7 @@ impl VolumeApi {
         match volume::DataStore::status_update(&self.conn, &unmarshall_body) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 
@@ -127,11 +115,7 @@ impl VolumeApi {
         match volume::DataStore::update(&self.conn, &unmarshall_body) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 }
@@ -156,35 +140,11 @@ impl Api for VolumeApi {
         let show_by_assembly = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
 
         //volumes
-        router.post(
-            "/volumes",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "volumes",
-        );
-        router.get(
-            "/volumes/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
-            "volumes_show",
-        );
-        router.put(
-            "/volumes/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
-            "volumes_update",
-        );
-        router.put(
-            "/volumes/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
-            "volumes_status_update",
-        );
-        router.get(
-            "/assemblys/:id/volumes",
-            XHandler::new(C {
-                inner: show_by_assembly,
-            }).before(basic.clone()),
-            "volumes_show_by_assembly",
-        );
+        router.post("/volumes", XHandler::new(C { inner: create }).before(basic.clone()), "volumes");
+        router.get("/volumes/:id", XHandler::new(C { inner: show }).before(basic.clone()), "volumes_show");
+        router.put("/volumes/:id", XHandler::new(C { inner: update }).before(basic.clone()), "volumes_update");
+        router.put("/volumes/:id/status", XHandler::new(C { inner: status_update }).before(basic.clone()), "volumes_status_update");
+        router.get("/assemblys/:id/volumes", XHandler::new(C { inner: show_by_assembly }).before(basic.clone()), "volumes_show_by_assembly");
     }
 }
 

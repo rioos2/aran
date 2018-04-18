@@ -52,19 +52,11 @@ impl JobApi {
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Jobs>>()?)?;
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match JobDS::create(&self.conn, &unmarshall_body) {
             Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
@@ -100,22 +92,15 @@ impl JobApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<StatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match JobDS::status_update(&self.conn, &unmarshall_body) {
             Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
-
 
     //GET: /jobs/:id
     //Input id - u64 as input
@@ -126,7 +111,7 @@ impl JobApi {
                 let data = json!({
                             "type": typ,
                             "data": job,
-                            });                
+                            });
                 serde_json::to_string(&data).unwrap()
             }
             _ => "".to_string(),
@@ -155,32 +140,12 @@ impl Api for JobApi {
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
-        router.post(
-            "/jobs",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "jobs",
-        );
+        router.post("/jobs", XHandler::new(C { inner: create }).before(basic.clone()), "jobs");
 
-        router.post(
-            "serviceaccounts/:service_name/jobs",
-            XHandler::new(C { inner: service_account_based_create }).before(basic.clone()),
-            "jobs_create",
-        );
-        router.put(
-            "/jobs/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
-            "job_status_update",
-        );
-        router.get(
-            "/jobs/node",
-            XHandler::new(C { inner: show_by_node }).before(basic.clone()),
-            "job_show_by_node",
-        );
-        router.get(
-            "/jobs",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
-            "job_list_blank",
-        );
+        router.post("serviceaccounts/:service_name/jobs", XHandler::new(C { inner: service_account_based_create }).before(basic.clone()), "jobs_create");
+        router.put("/jobs/:id/status", XHandler::new(C { inner: status_update }).before(basic.clone()), "job_status_update");
+        router.get("/jobs/node", XHandler::new(C { inner: show_by_node }).before(basic.clone()), "job_show_by_node");
+        router.get("/jobs", XHandler::new(C { inner: list_blank }).before(basic.clone()), "job_list_blank");
     }
 }
 

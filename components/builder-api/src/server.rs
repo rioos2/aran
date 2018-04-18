@@ -2,13 +2,11 @@
 
 //! Contains core functionality for the Application's main server.
 use std::sync::Arc;
-use rio_net::server::NetIdent;
 use config::Config;
 use error::Result;
-/* mod node;  don't remove this line, for channel/watch */
+
 use super::node::{Node, Servers};
 use common::ui::UI;
-
 
 /// The main server for the Builder-API application. This should be run on the main thread.
 pub struct Server {
@@ -32,28 +30,49 @@ impl Server {
 
         match server {
             Servers::APISERVER => {
-                ui.begin(&format!(
-                    "Rio/OS API listening on {}:{}",
-                        self.config.http.listen,
-                        self.config.http.port
-                ))?;
+                ui.begin(
+        r#"
+    ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗     █████╗ ██████╗  █████╗ ███╗   ██╗     █████╗ ██████╗ ██╗
+    ██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔══██╗██╔══██╗██╔══██╗████╗  ██║    ██╔══██╗██╔══██╗██║
+    ██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ███████║██████╔╝███████║██╔██╗ ██║    ███████║██████╔╝██║
+    ██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ██╔══██║██╔══██╗██╔══██║██║╚██╗██║    ██╔══██║██╔═══╝ ██║
+    ██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ██║  ██║██║  ██║██║  ██║██║ ╚████║    ██║  ██║██║     ██║
+    ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝╚═╝     ╚═╝                                                                                                        
+    "#,
+    )?;
+                ui.begin(&format!("Rio/OS API listening on {}:{}", self.config.http.listen, self.config.http.port))?;
             }
-            Servers::WATCHER => { 
-                ui.begin(&format!(
-                    "Rio/OS WATCH listening on {}:{}",
-                        self.config.http.listen,
-                        self.config.http.watch_port
-                ))?;
+            Servers::STREAMER => {
+                ui.begin(
+                    r#"
+                                                                                                                    
+██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗    ███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗███████╗██████╗ 
+██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║██╔════╝██╔══██╗
+██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║█████╗  ██████╔╝
+██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║██╔══╝  ██╔══██╗
+██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ███████║   ██║   ██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
+╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
+   "#,
+                )?;
+                ui.begin(&format!("Rio/OS STREAMER listening on {}:{}", self.config.http.listen, self.config.http.watch_port))?;
             }
-            Servers::UIWATCHER => { 
-                ui.begin(&format!(
-                    "Rio/OS UIWATCH listening on {}:{}",
-                        self.config.http.listen,
-                        self.config.http.uiwatch_port
-                ))?;
+            Servers::UISTREAMER => {
+                ui.begin(
+        r#"
+                                                                                                                                
+██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗    ██╗   ██╗██╗███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗███████╗██████╗ 
+██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██║   ██║██║██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║██╔════╝██╔══██╗
+██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ██║   ██║██║███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║█████╗  ██████╔╝
+██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ██║   ██║██║╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║██╔══╝  ██╔══██╗
+██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ╚██████╔╝██║███████║   ██║   ██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
+╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝     ╚═════╝ ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ 
+"#,
+    )?;
+
+                ui.begin(&format!("Rio/OS UISTREAMER listening on {}:{}", self.config.http.listen, self.config.http.uiwatch_port))?;
             }
         }
-        
+
         ui.heading("Ready to go.")?;
 
         let node = Node::new(cfg1);
@@ -64,8 +83,6 @@ impl Server {
         Ok(())
     }
 }
-
-impl NetIdent for Server {}
 
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.

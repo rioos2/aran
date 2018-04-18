@@ -66,10 +66,7 @@ impl Wirer {
                 let mut network = cluster::network_api::NetworkApi::new(Box::new(ds.clone()));
                 network.wire(self.config.clone(), &mut router);
 
-                let mut node = cluster::node_api::NodeApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*self.config.clone())),
-                );
+                let mut node = cluster::node_api::NodeApi::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())));
                 node.wire(self.config.clone(), &mut router);
 
                 let mut storage = cluster::storage_api::StorageApi::new(Box::new(ds.clone()));
@@ -85,10 +82,7 @@ impl Wirer {
                 plan.wire(self.config.clone(), &mut router);
 
                 //deployment apis
-                let mut assembly = deploy::assembly::AssemblyApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*self.config.clone())),
-                );
+                let mut assembly = deploy::assembly::AssemblyApi::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())));
                 assembly.wire(self.config.clone(), &mut router);
 
                 let mut assembly_factory = deploy::assembly_factory::AssemblyFactoryApi::new(Box::new(ds.clone()));
@@ -101,10 +95,7 @@ impl Wirer {
                 let mut passticket = security::passticket_api::PassTicketApi::new(Box::new(ds.clone()));
                 passticket.wire(self.config.clone(), &mut router);
 
-                let mut secret = security::secret_api::SecretApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(SecurerConn::new(&*self.config.clone())),
-                );
+                let mut secret = security::secret_api::SecretApi::new(Box::new(ds.clone()), Box::new(SecurerConn::new(&*self.config.clone())));
                 secret.wire(self.config.clone(), &mut router);
 
                 let mut service_account = security::service_account_api::SeriveAccountApi::new(Box::new(ds.clone()));
@@ -118,16 +109,10 @@ impl Wirer {
                 volume.wire(self.config.clone(), &mut router);
 
                 //scaling apis
-                let mut hscale = deploy::horizontalscaling::HorizontalScalingApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*self.config.clone())),
-                );
+                let mut hscale = deploy::horizontalscaling::HorizontalScalingApi::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())));
                 hscale.wire(self.config.clone(), &mut router);
 
-                let mut vscale = deploy::vertical_scaling::VerticalScalingApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*self.config.clone())),
-                );
+                let mut vscale = deploy::vertical_scaling::VerticalScalingApi::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())));
                 vscale.wire(self.config.clone(), &mut router);
 
                 //origin
@@ -146,16 +131,10 @@ impl Wirer {
                 let mut settings = security::settings_map_api::SettingsMapApi::new(Box::new(ds.clone()));
                 settings.wire(self.config.clone(), &mut router);
 
-                let mut log = audit::log_api::LogApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(InfluxClientConn::new(&*self.config.clone())),
-                );
+                let mut log = audit::log_api::LogApi::new(Box::new(ds.clone()), Box::new(InfluxClientConn::new(&*self.config.clone())));
                 log.wire(self.config.clone(), &mut router);
 
-                let mut vuln = audit::vuln_api::VulnApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(AnchoreClient::new(&*self.config.clone())),
-                );
+                let mut vuln = audit::vuln_api::VulnApi::new(Box::new(ds.clone()), Box::new(AnchoreClient::new(&*self.config.clone())));
                 vuln.wire(self.config.clone(), &mut router);
 
                 let mut build_config = devtooling::build_config::BuildConfigApi::new(Box::new(ds.clone()));
@@ -170,22 +149,14 @@ impl Wirer {
                 let mut image_marks = devtooling::image_marks::ImageMarksApi::new(Box::new(ds.clone()));
                 image_marks.wire(self.config.clone(), &mut router);
 
-
-                let mut block_chain = audit::blockchain_api::BlockChainApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(BlockchainConn::new(&*self.config.clone())),
-                );
+                let mut block_chain = audit::blockchain_api::BlockChainApi::new(Box::new(ds.clone()), Box::new(BlockchainConn::new(&*self.config.clone())));
                 block_chain.wire(self.config.clone(), &mut router);
 
                 mount.mount("/api/v1", router);
 
                 let mut chain = Chain::new(mount);
 
-                chain.link(persistent::Read::<EventLog>::both(EventLogger::new(
-                    api_sender,
-                    &self.config.blockchain.cache_dir,
-                    *&self.config.blockchain.enabled,
-                )));
+                chain.link(persistent::Read::<EventLog>::both(EventLogger::new(api_sender, &self.config.blockchain.cache_dir, *&self.config.blockchain.enabled)));
 
                 chain.link_after(pack::CompressionMiddleware);
 
@@ -193,27 +164,17 @@ impl Wirer {
 
                 chain.link_after(Cors);
 
-                chain.link(persistent::Read::<DataStoreBroker>::both(
-                    ds.setup(ui)?.clone(),
-                ));
+                chain.link(persistent::Read::<DataStoreBroker>::both(ds.setup(ui)?.clone()));
 
                 let conf = self.config.clone();
-               
+
                 let thread = thread::spawn(move || {
                     let mut server = Iron::new(chain);
                     server.threads = HTTP_THREAD_COUNT;
 
                     match conf.http.tls_pkcs12_file {
                         Some(ref tls_location) => {
-                            let tls = NativeTlsServer::new(
-                                PathBuf::from(&*rioconfig_config_path(None).join(tls_location.clone())),
-                                &self.config
-                                    .http
-                                    .tls_pkcs12_pwd
-                                    .clone()
-                                    .unwrap_or("".to_string())
-                                    .to_string(),
-                            ).unwrap();
+                            let tls = NativeTlsServer::new(PathBuf::from(&*rioconfig_config_path(None).join(tls_location.clone())), &self.config.http.tls_pkcs12_pwd.clone().unwrap_or("".to_string()).to_string()).unwrap();
                             server.https(&conf.http, tls).unwrap()
                         }
                         None => Err(Error::MissingTLS("api server pfx".to_string())).unwrap(),

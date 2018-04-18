@@ -32,10 +32,7 @@ pub struct Websocket {
 
 impl Websocket {
     pub fn new(port: u16, config: Arc<Config>) -> Self {
-        Websocket {
-            port: port.clone(),
-            config: config.clone(),
-        }
+        Websocket { port: port.clone(), config: config.clone() }
     }
 
     //start websocket server
@@ -46,12 +43,7 @@ impl Websocket {
 
         match ods {
             Some(ds) => {
-
-                let mut watchhandler = WatchHandler::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*self.config.clone())),
-                    Box::new(SecurerConn::new(&*self.config.clone())),
-                );
+                let mut watchhandler = WatchHandler::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())), Box::new(SecurerConn::new(&*self.config.clone())));
 
                 let (db_sender, db_receiver) = mpsc::channel();
                 let (reg_sender, reg_receiver) = mpsc::sync_channel(1);
@@ -70,15 +62,7 @@ impl Websocket {
                 let pkcs12 = Pkcs12::from_der(&tls_tuple.1).unwrap();
                 let parsed = pkcs12.parse(&tls_tuple.2).unwrap();
 
-                let acceptor = Rc::new(
-                        SslAcceptorBuilder::mozilla_intermediate(
-                            SslMethod::tls(),
-                            &parsed.pkey,
-                            &parsed.cert,
-                            std::iter::empty::<X509Ref>(),
-                        ).unwrap()
-                    .build(),
-                );               
+                let acceptor = Rc::new(SslAcceptorBuilder::mozilla_intermediate(SslMethod::tls(), &parsed.pkey, &parsed.cert, std::iter::empty::<X509Ref>()).unwrap().build());
 
                 let address = format!("{}:{}", self.config.http.listen.to_string(), self.port.to_string());
                 // Listen on an address and call the closure for each connection
@@ -101,15 +85,12 @@ impl Websocket {
                     })
                     .unwrap()
                     .listen(address)
-                    .unwrap();                
+                    .unwrap();
             }
             None => {
                 return Ok(());
-            },
+            }
         }
         Ok(())
     }
-
 }
-
-

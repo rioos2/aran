@@ -5,7 +5,6 @@ pub mod prelude;
 
 use std::net::IpAddr;
 
-use hab_net::app::config::RouterAddr;
 use num_cpus;
 
 pub trait GatewayCfg {
@@ -22,7 +21,4 @@ pub trait GatewayCfg {
     fn listen_addr(&self) -> &IpAddr;
 
     fn listen_port(&self) -> u16;
-
-    /// Return a list of router addresses
-    fn route_addrs(&self) -> &[RouterAddr];
 }

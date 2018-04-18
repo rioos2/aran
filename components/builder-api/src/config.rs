@@ -1,23 +1,31 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! Configuration for a Rio/OS API service
+//! Configuration for a Rio/OS API server
 
-use rio_net::config::{Anchore, AuditBackend, Blockchain, Influx, Marketplaces, PasswordAuth, Prometheus, SecureBackend, SecurerAuth, SystemAuth};
-use rio_net::config::{AnchoreCfg, BlockchainCfg, HttpCfg, LogsCfg, MarketplacesCfg, PrometheusCfg, SecurerCfg};
+use api::audit::config::{Anchore, AnchoreCfg, Logs, LogsCfg, AuditBackend};
+use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg};
+use api::deploy::config::ServicesCfg;
+
+use watch::config::{Streamer, StreamerCfg};
 use entitlement::config::{License, LicensesCfg};
 
-use rio_core::config::ConfigFile;
+// TO-DO: use metrics::config::{Telemetry, TelemetryCfg};
 
 use error::Error;
+
+use http_gateway::config::prelude::*;
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct Config {
+    //  The base listener configuration for https
     pub http: HttpCfg,
-    //  Console user interface
+    //  The streamer (http2, websocker) configuration
+    pub streamer: StreamerCfg,
+    //  The serving directory for files shown in browser.
     pub ui: UiCfg,
     //  Where to pull and record metrics
-    pub prometheus: PrometheusCfg,
+    pub telemetry: TelemetryCfg,
     //  Where to store the hidden treasures
     pub vaults: SecurerCfg,
     //  What information to use for creating services
@@ -32,7 +40,7 @@ pub struct Config {
     //  Marketplaces API configuration
     pub marketplaces: MarketplacesCfg,
     //  Security and vulnerabilty checker API
-    pub anchore: AnchoreCfg,
+    pub vulnerability: VulnerabilityCfg,
 }
 
 impl Default for Config {
@@ -40,14 +48,14 @@ impl Default for Config {
         Config {
             http: HttpCfg::default(),
             ui: UiCfg::default(),
-            prometheus: PrometheusCfg::default(),
+            telemetry: TelemetryCfg::default(),
             vaults: SecurerCfg::default(),
             services: ServicesCfg::default(),
             licenses: LicensesCfg::default(),
             logs: LogsCfg::default(),
             blockchain: BlockchainCfg::default(),
             marketplaces: MarketplacesCfg::default(),
-            anchore: AnchoreCfg::default(),
+            vulnerability: VulnerabilityCfg::default(),
         }
     }
 }
@@ -57,17 +65,17 @@ impl ConfigFile for Config {
     type Error = Error;
 }
 
-/// Path to UI files to host over HTTP. If not set the UI will be disabled.
-#[derive(Debug, Default, Deserialize)]
-#[serde(default)]
-pub struct UiCfg {
-    pub root: Option<String>,
+/// GatewayCfg for HttpGateway
+impl GatewayCfg for HttpCfg {
+    fn listen_addr(&self) -> &IpAddr {}
+
+    fn listen_port(&self) -> u16 {}
 }
 
 //A delegate, that returns the metrics (prometheus) config from the loaded prometheus config
-impl Prometheus for Config {
+impl Telemetry for Config {
     fn endpoint(&self) -> &str {
-        &self.prometheus.url
+        &self.telemetry.endpoint
     }
 }
 
@@ -81,29 +89,6 @@ impl SecurerAuth for Config {
     }
     fn token(&self) -> &str {
         &self.vaults.token
-    }
-}
-
-//Returns the stub services config
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(default)]
-pub struct ServicesCfg {
-    pub loadbalancer_imagein: String,
-    pub loadbalancer_imagename: String,
-    pub loadbalancer_cpu: String,
-    pub loadbalancer_mem: String,
-    pub loadbalancer_disk: String,
-}
-
-impl Default for ServicesCfg {
-    fn default() -> Self {
-        ServicesCfg {
-            loadbalancer_imagein: "container".to_string(),
-            loadbalancer_imagename: "registry.rioos.xyz:5000/rioos/loadbalancer".to_string(),
-            loadbalancer_cpu: "1".to_string(),
-            loadbalancer_mem: "1024 MiB".to_string(),
-            loadbalancer_disk: "1 GiB".to_string(),
-        }
     }
 }
 
@@ -145,25 +130,26 @@ impl Marketplaces for Config {
 }
 
 //A delegate, that returns the influx config from the loaded influx config
-impl Influx for Config {
+impl Logs for Config {
     fn endpoint(&self) -> &str {
-        &self.logs.url
+        &self.logs.endpont
     }
     fn prefix(&self) -> &str {
         &self.logs.prefix
     }
 }
 
-//A delegate, that returns the anchore config from the loaded anchore config
-impl Anchore for Config {
-    fn endpoint(&self) -> &str {
-        &self.anchore.url
+//A delegate, that returns the vulnerability provider
+// Supported providers are anchore
+impl Vulnerable for Config {
+    fn anchoer_endpoint(&self) -> &str {
+        &self.vulnerability.anchore_endpoint
     }
-    fn username(&self) -> &str {
-        &self.anchore.username
+    fn anchoer_username(&self) -> &str {
+        &self.vulnerability.anchore_username
     }
-    fn password(&self) -> &str {
-        &self.anchore.password
+    fn anchore_password(&self) -> &str {
+        &self.vulnerability.anchore_password
     }
 }
 
@@ -177,21 +163,11 @@ impl License for Config {
     }
 }
 
-///// Authentication delegate configuration.
-
-impl PasswordAuth for Config {}
-
-impl SystemAuth for Config {
-    fn serviceaccount_public_key(&self) -> Option<String> {
-        self.http.serviceaccount_public_key.clone()
-    }
-}
-
 /*// Memory pool configuration parameters.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MemoryPoolConfig {
     /// Maximum number of uncommited transactions.
-    pub tx_pool_capacity: usize,
+    pub     tx_pool_capacity: usize,
     /// Sets the maximum number of messages that can be buffered on the event loop's
     /// notification channel before a send will fail.
     pub events_pool_capacity: EventsPoolCapacity,
@@ -213,21 +189,78 @@ mod tests {
     #[test]
     fn config_from_file() {
         let content = r#"
+        
         [http]
-        listen = "0:0:0:0:0:0:0:1"
-        port = 7443
+        listen = "0.0.0.0"
+        port = 7443        
+        tls_pkcs12_file = "api-server.pfx"
+        tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
+        serviceaccount_public_key = "service-account.pub"
+
+        [streamer]
+        http2_port = 8443
+        websocket_port = 9443
+
+        [marketplaces]
+        username = "rioosdolphin@rio.company"
+        token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
+
+        [blockchain]
+        endpoint = "http://localhost:7000"
 
         [ui]
-        root = "/some/path"
+        root = "/public"
 
-        [[targets]]
-        platform = "windows"
-        architecture = "x86_64"
+        [telemetry]
+        endpoint = "http://localhost:9090/api/v1"
+
+        [vaults]
+        backend = "Local"
+
+        [licenses]
+        so_file = "ShaferFilechck.so"
+        activation_code = ""
+
+        [logs]
+        endpoint = "http://localhost:8086"
+        prefix = "rioos_logs"
+
+        [vulnerability]
+        anchore_endpoint = "http://localhost:8228/v1"
+        anchore_username = ""
+        anchore_password = ""       
         "#;
 
         let config = Config::from_raw(&content).unwrap();
         assert_eq!(&format!("{}", config.http.listen), "::1");
         assert_eq!(config.http.port, 7443);
+
+        assert_eq!(config.http.tls_pkcs12_file, "api-server.pfx");
+        assert_eq!(config.http.tls_pkcs12_pwd, "TEAMRIOADVANCEMENT123");
+        assert_eq!(config.http.serviceaccount_public_key, "serviceaccount_public_key");
+
+        assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
+        assert_eq!(config.marketplaces.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
+        assert_eq!(config.marketplaces.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
+
+        assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
+
+        assert_eq!(config.ui.root, "/public");
+
+        assert_eq!(config.telemetry.endpoint, "http://localhost:9090/api/v1");
+
+        assert_eq!(config.vaults.backend, "Local");
+
+        assert_eq!(config.licenses.so_file, "ShaferFilechck.so");
+        assert_eq!(config.licenses.activation_code, "");
+
+        assert_eq!(config.logs.endpoint, "http://localhost:8086");
+        assert_eq!(config.logs.prefix, "rioos_logs");
+
+        assert_eq!(config.vulnerability.anchore_endpoint, "http://localhost:8086");
+        assert_eq!(config.vulnerability.anchore_username, "");
+        assert_eq!(config.vulnerability.anchore_password, "");
     }
 
     #[test]
@@ -239,5 +272,7 @@ mod tests {
 
         let config = Config::from_raw(&content).unwrap();
         assert_eq!(config.http.port, 9000);
+        assert_eq!(config.streamer.http2_port, 8443);
+        assert_eq!(config.streamer.websocket_port, 9443);
     }
 }

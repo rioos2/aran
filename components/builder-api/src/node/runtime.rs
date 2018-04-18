@@ -70,9 +70,7 @@ impl ApiSender {
     /// Add peer to peer list
     pub fn peer_add(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PeerAdd(envl);
-        self.0.clone().send(msg).wait().map(drop).map_err(
-            into_other,
-        )
+        self.0.clone().send(msg).wait().map(drop).map_err(into_other)
     }
 }
 
@@ -99,19 +97,12 @@ impl Runtime {
         thread::spawn(move || {
             let mut core = Core::new()?;
             let handle = core.handle();
-            core.run(internal_part.run(handle)).map_err(|_| {
-                other_error(
-                    "An error in the `RuntimeHandler:InternalPart` thread occurred",
-                )
-            })
+            core.run(internal_part.run(handle)).map_err(|_| other_error("An error in the `RuntimeHandler:InternalPart` thread occurred"))
         });
-
 
         thread::spawn(move || {
             let mut core = Core::new()?;
-            core.run(handler_part.run()).map_err(|_| {
-                other_error("An error in the `RuntimeHandler` thread occurred")
-            })
+            core.run(handler_part.run()).map_err(|_| other_error("An error in the `RuntimeHandler` thread occurred"))
         });
 
         Ok(())

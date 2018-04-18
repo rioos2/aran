@@ -95,19 +95,8 @@ impl fmt::Display for Operators {
                         format!("{}={}{}{}{}", data[0], '"', data[1], '"', ",")
                     })
                     .collect();
-                let r: Vec<String> = i.metric
-                    .clone()
-                    .into_iter()
-                    .map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}"))
-                    .collect::<Vec<_>>();
-                format!(
-                    "({}-{}-{})/{}({}) *100",
-                    r[0],
-                    r[1],
-                    r[2],
-                    i.total,
-                    i.metric[0]
-                )
+                let r: Vec<String> = i.metric.clone().into_iter().map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}")).collect::<Vec<_>>();
+                format!("({}-{}-{})/{}({}) *100", r[0], r[1], r[2], i.total, i.metric[0])
             }
             //generate the query to get usage of node memory
             Operators::SumDisk(ref i) => {
@@ -120,11 +109,7 @@ impl fmt::Display for Operators {
                     })
                     .collect();
 
-                let r: Vec<String> = i.metric
-                    .clone()
-                    .into_iter()
-                    .map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}"))
-                    .collect::<Vec<_>>();
+                let r: Vec<String> = i.metric.clone().into_iter().map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}")).collect::<Vec<_>>();
                 format!("({} - {})/ {}({}) *100", r[0], r[1], i.total, i.metric[0],)
             }
             Operators::NoOp(ref i) => {

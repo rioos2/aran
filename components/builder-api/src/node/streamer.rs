@@ -30,10 +30,7 @@ pub struct Streamer {
 
 impl Streamer {
     pub fn new(watch_port: u16, config: Arc<Config>) -> Self {
-        Streamer {
-            watch_port: watch_port.clone(),
-            config: config.clone(),
-        }
+        Streamer { watch_port: watch_port.clone(), config: config.clone() }
     }
 
     pub fn start(self, tls_pair: TLSPair) -> io::Result<()> {
@@ -59,11 +56,7 @@ impl Streamer {
         ];
         let streamer_thread = match ods {
             Some(ds) => {
-                let mut watchhandler = WatchHandler::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*self.config.clone())),
-                    Box::new(SecurerConn::new(&*self.config.clone())),
-                );
+                let mut watchhandler = WatchHandler::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())), Box::new(SecurerConn::new(&*self.config.clone())));
 
                 let (db_sender, db_receiver) = mpsc::channel();
                 let (reg_sender, reg_receiver) = mpsc::sync_channel(1);
@@ -84,9 +77,7 @@ impl Streamer {
 
                     let mut tls_acceptor = tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(&tls_tuple.1, &tls_tuple.2).expect("acceptor builder");
 
-                    tls_acceptor
-                        .set_alpn_protocols(&[b"h2"])
-                        .expect("set_alpn_protocols");
+                    tls_acceptor.set_alpn_protocols(&[b"h2"]).expect("set_alpn_protocols");
 
                     let mut server = httpbis::ServerBuilder::new();
                     println!("watch streamer running on port {} ", self.watch_port);
@@ -105,10 +96,7 @@ impl Streamer {
                     let running = server.build().expect("server");
 
                     info!("watch streamer started");
-                    info!(
-                        "watch streamer running: https://localhost:{}/",
-                        running.local_addr().port().unwrap()
-                    );
+                    info!("watch streamer running: https://localhost:{}/", running.local_addr().port().unwrap());
                     loop {
                         thread::park();
                     }

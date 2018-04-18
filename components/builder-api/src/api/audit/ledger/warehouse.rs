@@ -42,9 +42,7 @@ impl ExonumClient {
         let url = url.into_url()?;
         Ok(ExonumClient {
             _token: token.to_string(),
-            _inner: ReqwestClient::new(url, "rioos", "v1", None).map_err(
-                Error::RioHttpClient,
-            )?,
+            _inner: ReqwestClient::new(url, "rioos", "v1", None).map_err(Error::RioHttpClient)?,
         })
     }
 }
@@ -56,9 +54,7 @@ impl Blockchain {
     pub fn new(config: &BlockchainConn) -> Result<Self> {
         let token = "";
 
-        Ok(Blockchain {
-            _client: ExonumClient::new(&config.url, token)?,
-        })
+        Ok(Blockchain { _client: ExonumClient::new(&config.url, token)? })
     }
 }
 
@@ -67,14 +63,7 @@ impl Ledger for Blockchain {
         let url = format!("api/services/habitat/v1/audits");
         let sbody = serde_json::to_string(&envl_req).unwrap();
 
-        let res = self._client
-            ._inner
-            .post(&url)
-            .body(Body::from(sbody))
-            .header(Accept::json())
-            .header(ContentType::json())
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self._client._inner.post(&url).body(Body::from(sbody)).header(Accept::json()).header(ContentType::json()).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             debug!("Failed to signup, status: {:?}", res.status());
@@ -85,13 +74,7 @@ impl Ledger for Blockchain {
 
     fn retrieve_by(&self, id: &IdGet) -> EnvelopeOutputList {
         let url = format!("api/services/habitat/v1/accounts/{}/audits", id.get_id());
-        let mut res = self._client
-            ._inner
-            .get(&url)
-            .header(Accept::json())
-            .header(ContentType::json())
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self._client._inner.get(&url).header(Accept::json()).header(ContentType::json()).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             debug!("Failed to get audits, status: {:?}", res.status());
@@ -104,12 +87,7 @@ impl Ledger for Blockchain {
             return Ok(None);
         }
 
-        let data = audits
-            .iter()
-            .map(|x| {
-                EnvelopeResponse::with(x.event.type_meta(), x.event.object_meta(), x.clone())
-            })
-            .collect::<Vec<_>>();
+        let data = audits.iter().map(|x| EnvelopeResponse::with(x.event.type_meta(), x.event.object_meta(), x.clone())).collect::<Vec<_>>();
         Ok(Some(data))
     }
 }

@@ -1,66 +1,96 @@
-// Copyright (c) 2018 Rio Advancement Inc
-//
+// Copyright 2018 The Rio Advancement Inc
 
-use std::ops::Deref;
-
-use base64;
-use bldr_core;
-use core::env;
-use hab_net::{ErrCode, NetError};
-use hab_net::privilege::FeatureFlags;
+//! A module containing the middleware of the HTTP server
 use iron::Handler;
-use iron::headers::{self, Authorization, Bearer};
+use iron::headers;
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
-use iron::status::Status;
+use iron::status::NotFound;
 use iron::typemap::Key;
+use router::NoRoute;
 use persistent;
-use protocol::message;
-use protocol::net::NetOk;
-use protocol::sessionsrv::*;
-use serde_json;
-use std::path::PathBuf;
-use unicase::UniCase;
 
-use super::net_err_to_http;
-use conn::RouteBroker;
+use unicase::UniCase;
+use protocol::api::session::*;
+use ansi_term::Colour;
+use super::rendering::*;
+use super::super::util::errors::*;
+use super::header_exacter::HeaderDecider;
+
+use config;
+
+use db::data_store::DataStoreConn;
+use session::models::session as sessions;
+use common::ui;
+use auth::rioos::AuthenticateDelegate;
+use auth::rbac::authorizer;
+
+use util::errors::{internal_error, not_acceptable_error, bad_err};
+
+/// Wrapper around the standard `handler functions` to assist in formatting errors or success
+// Can't Copy or Debug the fn.
+#[allow(missing_debug_implementations, missing_copy_implementations)]
+pub struct C<T>
+where
+    T: Send + Sync + 'static + Fn(&mut Request) -> AranResult<Response>,
+{
+    pub inner: T,
+}
+
+impl<T> C<T>
+where
+    T: Send + Sync + 'static + Fn(&mut Request) -> AranResult<Response>,
+{
+    pub fn new(t: T) -> Self {
+        C { inner: t }
+    }
+}
+
+impl<T> Handler for C<T>
+where
+    T: Send + Sync + 'static + Fn(&mut Request) -> AranResult<Response>,
+{
+    fn handle(&self, req: &mut Request) -> Result<Response, IronError> {
+        match (&self.inner)(req) {
+            Ok(resp) => Ok(resp),
+            Err(e) => match e.response() {
+                Some(response) => {
+                    println!("\n----------------\nOutput response: \n{}\n", response);
+                    Ok(response)
+                }
+                None => {
+                    let err = internal_error(&format!("BUG! Report to development http://bit.ly/rioosbug"));
+                    Err(render_json_error(&bad_err(&err), err.http_code()))
+                }
+            },
+        }
+    }
+}
 
 /// Wrapper around the standard `iron::Chain` to assist in adding middleware on a per-handler basis
 pub struct XHandler(Chain);
 
 impl XHandler {
     /// Create a new XHandler
-    pub fn new<H>(handler: H) -> Self
-    where
-        H: Handler,
-    {
+    pub fn new<H: Handler>(handler: H) -> Self {
         XHandler(Chain::new(handler))
     }
 
     /// Add one or more before-middleware to the handler's chain
-    pub fn before<M>(mut self, middleware: M) -> Self
-    where
-        M: BeforeMiddleware,
-    {
+    pub fn before<M: BeforeMiddleware>(mut self, middleware: M) -> Self {
         self.0.link_before(middleware);
         self
     }
 
     /// Add one or more after-middleware to the handler's chain
-    pub fn after<M>(mut self, middleware: M) -> Self
-    where
-        M: AfterMiddleware,
-    {
+    pub fn after<M: AfterMiddleware>(mut self, middleware: M) -> Self {
         self.0.link_after(middleware);
         self
     }
 
     /// Ad one or more around-middleware to the handler's chain
-    pub fn around<M>(mut self, middleware: M) -> Self
-    where
-        M: AroundMiddleware,
-    {
+    pub fn around<M: AroundMiddleware>(mut self, middleware: M) -> Self {
         self.0.link_around(middleware);
         self
     }
@@ -68,169 +98,193 @@ impl XHandler {
 
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
+        ///// Maybe move this Request to a seperate method.
+        ui::rawdumpln(Colour::Green, '→', "------------------------------------------------------------------------------------");
+        ui::rawdumpln(Colour::Cyan, ' ', format!("======= {}:{}:{}", req.version, req.method, req.url));
+        ui::rawdumpln(Colour::Blue, ' ', "Headers:");
+        ui::rawdumpln(Colour::White, ' ', "========");
+
+        for hv in req.headers.iter() {
+            ui::rawdump(Colour::Purple, ' ', hv);
+        }
+        ui::rawdumpln(Colour::Blue, ' ', "Body");
+        ui::rawdumpln(Colour::White, ' ', "========");
+        ui::rawdumpln(Colour::Purple, ' ', "»");
+
+        //// dump ends.
+
         self.0.handle(req)
     }
 }
 
-pub struct GitHubCli;
+pub struct DataStoreBroker;
 
-impl Key for GitHubCli {
-    type Value = GitHubClient;
+impl Key for DataStoreBroker {
+    type Value = DataStoreConn;
 }
 
-pub struct SegmentCli;
-
-impl Key for SegmentCli {
-    type Value = SegmentClient;
+#[derive(Clone)]
+pub struct SecurerConn {
+    pub backend: config::SecureBackend,
+    pub endpoint: String,
+    pub token: String,
 }
 
-pub struct BitbucketCli;
-
-impl Key for BitbucketCli {
-    type Value = BitbucketClient;
-}
-
-pub struct OAuthWrapper(Box<OAuthClient + Send>);
-
-impl OAuthWrapper {
-    pub fn new(client: Box<OAuthClient + Send>) -> Self {
-        OAuthWrapper(client)
+#[allow(unused_variables)]
+impl SecurerConn {
+    pub fn new<T: config::SecurerAuth>(config: &T) -> Self {
+        SecurerConn {
+            backend: config.backend(),
+            endpoint: config.endpoint().to_string(),
+            token: config.token().to_string(),
+        }
     }
 }
 
-impl Deref for OAuthWrapper {
-    type Target = Box<OAuthClient + Send>;
+#[derive(Clone, Debug)]
+pub struct BlockchainConn {
+    pub backend: config::AuditBackend,
+    pub url: String,
+}
 
-    fn deref(&self) -> &Self::Target {
-        &self.0
+#[allow(unused_variables)]
+impl BlockchainConn {
+    pub fn new<T: config::Blockchain>(config: &T) -> Self {
+        BlockchainConn { backend: config.backend(), url: config.endpoint().to_string() }
     }
 }
 
-pub struct OAuthCli;
-
-impl Key for OAuthCli {
-    type Value = OAuthWrapper;
+#[derive(Clone)]
+pub struct InfluxClientConn {
+    pub url: String,
+    pub prefix: String,
 }
 
-pub struct XRouteClient;
+#[allow(unused_variables)]
+impl InfluxClientConn {
+    pub fn new<T: config::Influx>(config: &T) -> Self {
+        InfluxClientConn {
+            url: config.endpoint().to_string(),
+            prefix: config.prefix().to_string(),
+        }
+    }
+    pub fn db(&self) -> String {
+        self.prefix.clone() + "db"
+    }
 
-impl Key for XRouteClient {
-    type Value = RouteClient;
-}
+    pub fn table(&self) -> String {
+        self.prefix.clone()
+    }
 
-impl BeforeMiddleware for XRouteClient {
-    fn before(&self, req: &mut Request) -> IronResult<()> {
-        let conn = RouteBroker::connect().unwrap();
-        req.extensions.insert::<XRouteClient>(conn);
-        Ok(())
+    pub fn path(&self) -> String {
+        self.prefix.clone() + "Path"
     }
 }
 
 #[derive(Clone)]
 pub struct Authenticated {
-    oauth: Box<OAuthClient>,
-    features: FeatureFlags,
-    key_dir: PathBuf,
-    optional: bool,
+    pub serviceaccount_public_key: Option<String>,
 }
 
 impl Authenticated {
-    pub fn new<T>(client: T, key_dir: PathBuf) -> Authenticated
-    where
-        T: OAuthClient,
-    {
-        Authenticated {
-            oauth: client.box_clone(),
-            features: FeatureFlags::empty(),
-            key_dir: key_dir,
-            optional: false,
-        }
+    pub fn new<T: config::SystemAuth>(config: &T) -> Self {
+        Authenticated { serviceaccount_public_key: config.serviceaccount_public_key() }
     }
 
-    pub fn require(mut self, flag: FeatureFlags) -> Self {
-        self.features.insert(flag);
-        self
+    /// The readiness check will be done for
+    /// 1. system auth =  which is the presence of service account key.
+    /// We should have a Readier trait that is registered for the Autheticated
+    /// Every readier will inform they are ready() or not ()
+    fn ready(&self) -> Result<String, IronError> {
+        self.serviceaccount_public_key.clone().ok_or(self.not_ready())
     }
 
-    pub fn optional(mut self) -> Self {
-        self.optional = true;
-        self
-    }
-
-    fn authenticate(&self, req: &mut Request, token: &str) -> IronResult<Session> {
-        // Test hook - always create a valid session
-        if env::var_os("HAB_FUNC_TEST").is_some() {
-            debug!(
-                "HAB_FUNC_TEST: {:?}; calling session_create_short_circuit",
-                env::var_os("HAB_FUNC_TEST")
-            );
-            return session_create_short_circuit(req, token);
-        };
-
-        // Check for a valid personal access token
-        if bldr_core::access_token::is_access_token(token) {
-            match bldr_core::access_token::validate_access_token(&self.key_dir, token) {
-                Ok(session) => {
-                    if !revocation_check(req, session.get_id(), token) {
-                        let err = NetError::new(ErrCode::BAD_TOKEN, "net:auth:revoked-token");
-                        return Err(IronError::new(err, Status::Forbidden));
-                    } else {
-                        return Ok(session);
-                    }
-                }
-                Err(bldr_core::Error::TokenExpired) => {
-                    let err = NetError::new(ErrCode::BAD_TOKEN, "net:auth:expired-token");
-                    return Err(IronError::new(err, Status::Forbidden));
-                }
-                Err(e) => {
-                    warn!("Unable to validate access token, err={:?}", e);
-                    let err = NetError::new(ErrCode::BAD_TOKEN, "net:auth:bad-token");
-                    return Err(IronError::new(err, Status::Forbidden));
-                }
-            }
-        };
-
-        // Check for internal sessionsrv token
-        let decoded_token = match base64::decode(token) {
-            Ok(decoded_token) => decoded_token,
-            Err(e) => {
-                warn!("Failed to base64 decode token, err={:?}", e);
-                let err = NetError::new(ErrCode::BAD_TOKEN, "net:auth:decode");
-                return Err(IronError::new(err, Status::Forbidden));
-            }
-        };
-
-        if let Ok(session_token) = message::decode(&decoded_token) {
-            session_validate(req, self.features, session_token)
-        } else {
-            // TBD: Deprecate github personal token support and remove this
-            // We are temporarily falling back to github personal access token
-            session_create_oauth(req, token)
-        }
+    fn not_ready(&self) -> IronError {
+        let err = not_acceptable_error(&format!("You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`."));
+        return render_json_error(&bad_err(&err), err.http_code());
     }
 }
 
-impl Key for Authenticated {
-    type Value = Session;
-}
-
+/// When an api request needs to be authenticated we will check for the following
+/// email + bearer token (or) email + apikey
+/// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        let token = match req.headers.get::<Authorization<Bearer>>() {
-            Some(&Authorization(Bearer { ref token })) => token.to_owned(),
-            _ => {
-                if self.optional {
-                    return Ok(());
-                } else {
-                    let err = NetError::new(ErrCode::ACCESS_DENIED, "net:auth:no-token");
-                    return Err(IronError::new(err, Status::Unauthorized));
-                }
+        ui::rawdumpln(Colour::Yellow, '☛', format!("======= {}:{}:{}:{}", req.version, req.method, req.url, req.headers));
+
+        self.ready().and_then(|public_key| ProceedAuthenticating::proceed(req, public_key.clone()))
+    }
+}
+
+/// ProceedAuthenticating starts by decoding the header.
+/// We support the following delegates.
+/// 1 user email and bearer Token (Headers needed are ?)
+/// 2 user email and jsonwebtoken
+/// 3 service account name and jsonwebtoken
+///
+/// first it collects all header fields and
+/// create authenticatable enum and pass to authentication delegate function
+#[derive(Clone, Debug)]
+pub struct ProceedAuthenticating {}
+
+impl ProceedAuthenticating {
+    pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {
+        let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
+            Ok(broker) => broker,
+            Err(err) => {
+                let err = internal_error(&format!("{}\n", err));
+                return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         };
 
-        let session = self.authenticate(req, &token)?;
-        req.extensions.insert::<Self>(session);
-        Ok(())
+        let header = HeaderDecider::new(req.headers.clone(), Some(public_key))?;
+
+        let delegate = AuthenticateDelegate::new(broker.clone());
+
+        match delegate.authenticate(&header.decide()?) {
+            Ok(_validate) => Ok(()),
+            Err(err) => {
+                let err = unauthorized_error(&format!("{}\n", err));
+                return Err(render_json_error(&bad_err(&err), err.http_code()));
+            }
+        }
+    }
+}
+
+pub struct TrustAccessed;
+
+impl BeforeMiddleware for TrustAccessed {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
+            Ok(broker) => broker,
+            Err(err) => {
+                let err = internal_error(&format!("{}\n", err));
+                return Err(render_json_error(&bad_err(&err), err.http_code()));
+            }
+        };
+
+        let header = HeaderDecider::new(req.headers.clone(), None)?;
+
+        let roles: authorizer::RoleType = header.decide()?.into();
+
+        // return Ok if the request has no header with email and serviceaccount name
+        if roles.name.get_id().is_empty() {
+            return Ok(());
+        }
+
+        Ok(authorizer::Authorization::new(broker, roles).verify()?)
+    }
+}
+
+pub struct Custom404;
+
+impl AfterMiddleware for Custom404 {
+    fn catch(&self, req: &mut Request, err: IronError) -> IronResult<Response> {
+        if err.error.is::<NoRoute>() {
+            Ok(Response::with((NotFound, format!("404: {:?}", req.url.path()))))
+        } else {
+            Err(err)
+        }
     }
 }
 
@@ -239,148 +293,22 @@ pub struct Cors;
 impl AfterMiddleware for Cors {
     fn after(&self, _req: &mut Request, mut res: Response) -> IronResult<Response> {
         res.headers.set(headers::AccessControlAllowOrigin::Any);
-        res.headers.set(headers::AccessControlAllowHeaders(vec![
-            UniCase("authorization".to_string()),
-            UniCase("range".to_string()),
-        ]));
-        res.headers.set(headers::AccessControlAllowMethods(
-            vec![Method::Put, Method::Delete, Method::Patch],
-        ));
-        res.headers.set(headers::AccessControlExposeHeaders(
-            vec![UniCase("content-disposition".to_string())],
-        ));
+        res.headers.set(headers::AccessControlAllowHeaders(vec![UniCase("authorization".to_string()), UniCase("range".to_string())]));
+        res.headers.set(headers::AccessControlAllowMethods(vec![Method::Put, Method::Delete]));
+
+        ui::rawdumpln(Colour::Green, ' ', format!("Response {}:{}:{}", _req.version, _req.method, _req.url));
+        ui::rawdumpln(Colour::White, ' ', "========");
+        ui::rawdumpln(Colour::Purple, ' ', res.to_string());
+        ui::rawdumpln(Colour::Cyan, '✓', "------------------------------------------------------------------------------------");
+
         Ok(res)
     }
 }
 
-pub fn revocation_check(req: &mut Request, account_id: u64, token: &str) -> bool {
-    let mut request = AccountTokenValidate::new();
-    request.set_account_id(account_id);
-    request.set_token(token.to_owned());
-    let conn = req.extensions.get_mut::<XRouteClient>().unwrap();
-    match conn.route::<AccountTokenValidate, NetOk>(&request) {
-        Ok(_) => true,
-        Err(e) => {
-            warn!("Unable to validate token (possibly revoked): {:?}", e);
-            false
-        }
-    }
-}
-
-pub fn session_validate(
-    req: &mut Request,
-    features: FeatureFlags,
-    token: SessionToken,
-) -> IronResult<Session> {
-    let mut request = SessionGet::new();
-    request.set_token(token);
-    let conn = req.extensions.get_mut::<XRouteClient>().unwrap();
-    match conn.route::<SessionGet, Session>(&request) {
-        Ok(session) => {
-            let flags = FeatureFlags::from_bits(session.get_flags()).unwrap();
-            if !flags.contains(features) {
-                let err = NetError::new(ErrCode::ACCESS_DENIED, "net:auth:feature-flags");
-                return Err(IronError::new(err, Status::Forbidden));
-            }
-            Ok(session)
-        }
-        Err(err) => {
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            Err(IronError::new(err, (body, status)))
-        }
-    }
-}
-
-pub fn session_create_oauth(req: &mut Request, token: &str) -> IronResult<Session> {
-    let oauth = req.get::<persistent::Read<OAuthCli>>().unwrap();
-    let conn = req.extensions.get_mut::<XRouteClient>().expect(
-        "no XRouteClient extension in request",
-    );
-    debug!(
-        "OAUTH-CALL builder_http-gateway::middleware::session_create_oauth: Checking user with access token",
-    );
-    match oauth.user(&OAuthUserToken::new(token.to_string())) {
-        Ok(user) => {
-            let mut request = SessionCreate::new();
-            request.set_session_type(SessionType::User);
-            request.set_token(token.to_owned());
-            request.set_extern_id(user.id.to_string());
-            request.set_name(user.username);
-
-            match oauth.provider().parse::<OAuthProvider>() {
-                Ok(p) => request.set_provider(p),
-                Err(e) => {
-                    debug!("Error parsing oauth provider: {:?}", e);
-                    request.set_provider(OAuthProvider::None);
-                }
-            }
-
-            if let Some(email) = user.email {
-                request.set_email(email);
-            }
-
-            match conn.route::<SessionCreate, Session>(&request) {
-                Ok(session) => Ok(session),
-                Err(err) => {
-                    let body = itry!(serde_json::to_string(&err));
-                    let status = net_err_to_http(err.get_code());
-                    Err(IronError::new(err, (body, status)))
-                }
-            }
-        }
-        Err(e) => {
-            let desc = format!("{}", &e);
-            Err(IronError::new(e, (desc, Status::Unauthorized)))
-        }
-    }
-}
-
-pub fn session_create_short_circuit(req: &mut Request, token: &str) -> IronResult<Session> {
-    let conn = req.extensions.get_mut::<XRouteClient>().expect(
-        "no XRouteClient extension in request",
-    );
-    let request = match token.as_ref() {
-        "bobo" => {
-            let mut request = SessionCreate::new();
-            request.set_session_type(SessionType::User);
-            request.set_extern_id("0".to_string());
-            request.set_email("bobo@example.com".to_string());
-            request.set_name("bobo".to_string());
-            request.set_provider(OAuthProvider::GitHub);
-            request
-        }
-        "mystique" => {
-            let mut request = SessionCreate::new();
-            request.set_session_type(SessionType::User);
-            request.set_extern_id("1".to_string());
-            request.set_email("mystique@example.com".to_string());
-            request.set_name("mystique".to_string());
-            request.set_provider(OAuthProvider::GitHub);
-            request
-        }
-        "hank" => {
-            let mut request = SessionCreate::new();
-            request.set_extern_id("2".to_string());
-            request.set_email("hank@example.com".to_string());
-            request.set_name("hank".to_string());
-            request.set_provider(OAuthProvider::GitHub);
-            request
-        }
-        user => {
-            error!("Unexpected short circuit token {:?}", user);
-            let err = NetError::new(ErrCode::BUG, "net:session-short-circuit:unknown-token");
-            let status = net_err_to_http(err.get_code());
-            let body = itry!(serde_json::to_string(&err));
-            return Err(IronError::new(err, (body, status)));
-        }
-    };
-    match conn.route::<SessionCreate, Session>(&request) {
+pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> AranResult<Session> {
+    //wrong name, use another fascade method session_create
+    match sessions::DataStore::find_account(&conn, &request) {
         Ok(session) => return Ok(session),
-        Err(err) => {
-            let body = itry!(serde_json::to_string(&err));
-            let status = net_err_to_http(err.get_code());
-            return Err(IronError::new(err, (body, status)));
-        }
+        Err(e) => Err(not_found_error(&format!("{}: Couldn not create session for the account.", e.to_string()))),
     }
 }

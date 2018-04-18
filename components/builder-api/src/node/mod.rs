@@ -6,12 +6,12 @@
 
 #![allow(unused_must_use)]
 
-pub mod events;
-pub mod runtime;
 pub mod api_wirer;
+pub mod events;
+pub mod internal;
+pub mod runtime;
 pub mod streamer;
 pub mod websocket;
-pub mod internal;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -24,13 +24,13 @@ use config::Config;
 use common::ui::UI;
 use node::streamer::TLSPair;
 
-pub enum Servers{
+pub enum Servers {
     APISERVER,
     // The http2 port used by controlmanager, scheduler
-    WATCHER,
+    STREAMER,
     // The websocket port used by UI
-    UIWATCHER
-} 
+    UISTREAMER,
+}
 
 #[derive(Debug)]
 pub struct Node {
@@ -42,7 +42,6 @@ impl Node {
     pub fn new(config: Arc<Config>) -> Self {
         Node { config: config.clone() }
     }
-
 
     // A generic implementation that launches a `Node`
     // for aran api handlers.
@@ -58,27 +57,21 @@ impl Node {
         match server {
             Servers::APISERVER => {
                 ui.heading("Api Wirer");
-                api_wirer::Wirer::new(self.config.clone()).start(
-                    ui,
-                    api_sender,
-                    rg,
-                )?;
+                api_wirer::Wirer::new(self.config.clone()).start(ui, api_sender, rg)?;
                 ui.end("Api Wirer");
-            },
+            }
             Servers::STREAMER => {
                 ui.begin("Watcher");
-                streamer::Streamer::new(self.config.http.watch_port, self.config.clone())
-                    .start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
+                streamer::Streamer::new(self.config.http.watch_port, self.config.clone()).start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
                 ui.end("Watcher");
-            },
+            }
             Servers::UIWATCHER => {
                 //start the uiwatcher(websocket) server.
                 ui.begin("UIWatcher");
-                websocket::Websocket::new(self.config.http.uiwatch_port, self.config.clone())
-                    .start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
+                websocket::Websocket::new(self.config.http.uiwatch_port, self.config.clone()).start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
                 ui.end("UIWatcher");
             }
-        }       
+        }
 
         Ok(())
     }
@@ -87,19 +80,6 @@ impl Node {
     /// Option<(tls file location, bytes loaded from the name in the config toml file,
     ///        tls password if present or empty string)>
     fn tls_as_option(&self, tls_file: Option<String>) -> TLSPair {
-        tls_file.clone().and_then(|t| {
-            read_key_in_bytes(&PathBuf::from(
-                &*rioconfig_config_path(None).join(t.clone()),
-            )).map(|p| {
-                (
-                    t.clone(),
-                    p,
-                    self.config.http.tls_pkcs12_pwd.clone().unwrap_or(
-                        "".to_string(),
-                    ),
-                )
-            })
-                .ok()
-        })
+        tls_file.clone().and_then(|t| read_key_in_bytes(&PathBuf::from(&*rioconfig_config_path(None).join(t.clone()))).map(|p| (t.clone(), p, self.config.http.tls_pkcs12_pwd.clone().unwrap_or("".to_string()))).ok())
     }
 }

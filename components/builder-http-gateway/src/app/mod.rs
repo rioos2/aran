@@ -136,21 +136,13 @@ where
     let cfg = Arc::new(cfg);
     let mut chain = Chain::new(T::router(cfg.clone()));
     T::add_middleware(cfg.clone(), &mut chain);
-    chain.link_before(XRouteClient);
     chain.link_after(Cors);
     let mount = T::mount(cfg.clone(), chain);
     let mut server = Iron::new(mount);
     server.threads = cfg.handler_count();
     let http_listen_addr = (cfg.listen_addr().clone(), cfg.listen_port());
-    thread::Builder::new()
-        .name("http-handler".to_string())
-        .spawn(move || server.http(http_listen_addr))
-        .unwrap();
-    info!(
-        "HTTP Gateway listening on {}:{}",
-        cfg.listen_addr(),
-        cfg.listen_port()
-    );
+    thread::Builder::new().name("http-handler".to_string()).spawn(move || server.http(http_listen_addr)).unwrap();
+    info!("HTTP Gateway listening on {}:{}", cfg.listen_addr(), cfg.listen_port());
     info!("{} is ready to go.", T::APP_NAME);
     Ok(())
 }

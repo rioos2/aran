@@ -13,7 +13,6 @@ use protocol::api::base::IdGet;
 use rio_net::http::middleware::BlockchainConn;
 use rio_net::config::AuditBackend;
 
-
 /// Envelope list
 pub type EnvelopeOutputList = Result<Option<Vec<EnvelopeResponse>>>;
 

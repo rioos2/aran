@@ -54,23 +54,13 @@ pub fn parse_key(secret: &Secret) -> Result<Secret> {
 fn generate_ssh(secret: &Secret) -> Result<Secret> {
     let mut _secret = secret.clone();
 
-    let pairs = SigKeyPair::mk_signed(
-        &_secret.object_meta().name,
-        PairConf::with_save(false, _secret.bit_size(), PairSaverExtn::PemX509),
-        &default_rioconfig_key_path(None),
-    )?;
+    let pairs = SigKeyPair::mk_signed(&_secret.object_meta().name, PairConf::with_save(false, _secret.bit_size(), PairSaverExtn::PemX509), &default_rioconfig_key_path(None))?;
 
     let mut data = _secret.get_data().clone();
 
-    &data.insert(
-        SSH_AUTH_PUBLIC_KEY.to_string(),
-        base64::encode(&pairs.public()?),
-    );
+    &data.insert(SSH_AUTH_PUBLIC_KEY.to_string(), base64::encode(&pairs.public()?));
 
-    &data.insert(
-        SSH_AUTH_PRIVATE_KEY.to_string(),
-        base64::encode(&pairs.secret()?),
-    );
+    &data.insert(SSH_AUTH_PRIVATE_KEY.to_string(), base64::encode(&pairs.secret()?));
 
     _secret.set_data(data);
 

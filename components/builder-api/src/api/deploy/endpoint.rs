@@ -55,19 +55,11 @@ impl EndpointApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<EndPoints>>()?)?;
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match endpoint::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(Some(endpoints)) => Ok(render_json(status::Ok, &endpoints)),
@@ -83,11 +75,7 @@ impl EndpointApi {
 
         match endpoint::DataStore::show(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -118,11 +106,7 @@ impl EndpointApi {
 
         match endpoint::DataStore::show_by_assembly(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -156,26 +140,10 @@ impl Api for EndpointApi {
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
-        router.post(
-            "/endpoints",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "endpoints",
-        );
-        router.get(
-            "/endpoints/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
-            "endpoint_show",
-        );
-        router.get(
-            "/endpoints/assembly/:id",
-            XHandler::new(C { inner: show_by_assembly }).before(basic.clone()),
-            "endpoint_show_by_assembly",
-        );
-        router.get(
-            "/endpoints",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
-            "endpoint_list_blank",
-        );
+        router.post("/endpoints", XHandler::new(C { inner: create }).before(basic.clone()), "endpoints");
+        router.get("/endpoints/:id", XHandler::new(C { inner: show }).before(basic.clone()), "endpoint_show");
+        router.get("/endpoints/assembly/:id", XHandler::new(C { inner: show_by_assembly }).before(basic.clone()), "endpoint_show_by_assembly");
+        router.get("/endpoints", XHandler::new(C { inner: list_blank }).before(basic.clone()), "endpoint_list_blank");
     }
 }
 
@@ -197,8 +165,10 @@ impl Validator for EndPoints {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }

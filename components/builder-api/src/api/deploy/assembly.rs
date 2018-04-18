@@ -52,10 +52,7 @@ pub struct AssemblyApi {
 /// GET: /assemblys  --> list all assemblys.
 impl AssemblyApi {
     pub fn new(datastore: Box<DataStoreConn>, promconn: Box<PrometheusClient>) -> Self {
-        AssemblyApi {
-            conn: datastore,
-            prom: promconn,
-        }
+        AssemblyApi { conn: datastore, prom: promconn }
     }
 
     //POST: /accounts/:account_id/assemblys
@@ -64,19 +61,11 @@ impl AssemblyApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate::<Assembly>(req.get::<bodyparser::Struct<Assembly>>()?)?;
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            self.verify_account(req)?.get_name(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), self.verify_account(req)?.get_name());
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match assembly::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
@@ -94,11 +83,7 @@ impl AssemblyApi {
 
         match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&params) {
             Ok(Some(factory)) => Ok(render_json_list(status::Ok, dispatch(req), &factory)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
@@ -112,11 +97,7 @@ impl AssemblyApi {
         match assembly::DataStore::new(&self.conn).show(&params) {
             Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 
@@ -130,11 +111,7 @@ impl AssemblyApi {
 
         match assembly::DataStore::new(&self.conn).list(&params) {
             Ok(Some(assemblys)) => Ok(render_json_list(status::Ok, dispatch(req), &assemblys)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for account {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for account {}", Error::Db(RecordsNotFound), &params.get_id()))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -166,22 +143,14 @@ impl AssemblyApi {
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Assembly>>()?)?;
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
-       
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+
         unmarshall_body.set_meta(type_meta(req), m);
         unmarshall_body.set_id(params.get_id());
         match assembly::DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 
@@ -197,11 +166,7 @@ impl AssemblyApi {
         match assembly::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 
@@ -266,49 +231,22 @@ impl Api for AssemblyApi {
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         //routes: assemblys
-        router.post(
-            "/accounts/:account_id/assemblys",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "assemblys",
-        );
-        router.get(
-            "/accounts/:account_id/assemblys",
-            XHandler::new(C { inner: list }).before(basic.clone()),
-            "assembly_list",
-        );
-        router.get(
-            "/assemblys/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
-            "assembly_show",
-        );
+        router.post("/accounts/:account_id/assemblys", XHandler::new(C { inner: create }).before(basic.clone()), "assemblys");
+        router.get("/accounts/:account_id/assemblys", XHandler::new(C { inner: list }).before(basic.clone()), "assembly_list");
+        router.get("/assemblys/:id", XHandler::new(C { inner: show }).before(basic.clone()), "assembly_show");
         //Special move here from assemblyfactory code. We have  moved it here since
         //the expanders for endpoints, volume are missing assembly factory,
-        router.get(
-            "/assemblyfactorys/:id/describe",
-            XHandler::new(C { inner: describe }).before(basic.clone()),
-            "assemblyfactorys_describe",
-        );
-        router.get(
-            "/assemblys",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
-            "assembly_list_blank",
-        );
+        router.get("/assemblyfactorys/:id/describe", XHandler::new(C { inner: describe }).before(basic.clone()), "assemblyfactorys_describe");
+        router.get("/assemblys", XHandler::new(C { inner: list_blank }).before(basic.clone()), "assembly_list_blank");
 
-        router.put(
-            "/assemblys/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
-            "assembly_status",
-        );
-        router.put(
-            "/assemblys/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
-            "assembly_update",
-        );
+        router.put("/assemblys/:id/status", XHandler::new(C { inner: status_update }).before(basic.clone()), "assembly_status");
+        router.put("/assemblys/:id", XHandler::new(C { inner: update }).before(basic.clone()), "assembly_update");
     }
 }
 
+///Setup the cache sender for this api.
+///Essentially hookup all the computation intensive strategry
+///that will reload the cache using closures.
 ///Setup the cache sender for this api.
 ///Essentially hookup all the computation intensive strategry
 ///that will reload the cache using closures.
@@ -318,60 +256,26 @@ use serde_json;
 impl ExpanderSender for AssemblyApi {
     fn with_cache(&mut self) {
         let _conn = self.conn.clone();
-        let plan_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_PLAN.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                blueprint::DataStore::show(&_conn, &id)
-                    .ok()
-                    .and_then(|p| serde_json::to_string(&p).ok())
-            }),
-        ));
+        let plan_service = Box::new(NewCacheServiceFn::new(CACHE_PREFIX_PLAN.to_string(), Box::new(move |id: IdGet| -> Option<String> { blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| serde_json::to_string(&p).ok()) })));
 
         let mut _conn = self.conn.clone();
         _conn.expander.with(plan_service);
 
-        let factory_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_FACTORY.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                assemblyfactory::DataStore::new(&_conn)
-                    .show(&id)
-                    .ok()
-                    .and_then(|f| serde_json::to_string(&f).ok())
-            }),
-        ));
+        let factory_service = Box::new(NewCacheServiceFn::new(CACHE_PREFIX_FACTORY.to_string(), Box::new(move |id: IdGet| -> Option<String> { assemblyfactory::DataStore::new(&_conn).show(&id).ok().and_then(|f| serde_json::to_string(&f).ok()) })));
 
         let _conn = self.conn.clone();
 
-        let endpoint_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_ENDPOINT.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                endpoint::DataStore::show_by_assembly(&_conn, &id)
-                    .ok()
-                    .and_then(|e| serde_json::to_string(&e).ok())
-            }),
-        ));
+        let endpoint_service = Box::new(NewCacheServiceFn::new(CACHE_PREFIX_ENDPOINT.to_string(), Box::new(move |id: IdGet| -> Option<String> { endpoint::DataStore::show_by_assembly(&_conn, &id).ok().and_then(|e| serde_json::to_string(&e).ok()) })));
 
         let _conn = self.conn.clone();
 
-        let volume_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_VOLUME.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                volume::DataStore::show_by_assembly(&_conn, &id)
-                    .ok()
-                    .and_then(|v| serde_json::to_string(&v).ok())
-            }),
-        ));
+        let volume_service = Box::new(NewCacheServiceFn::new(CACHE_PREFIX_VOLUME.to_string(), Box::new(move |id: IdGet| -> Option<String> { volume::DataStore::show_by_assembly(&_conn, &id).ok().and_then(|v| serde_json::to_string(&v).ok()) })));
         let _conn = self.conn.clone();
         let _prom = self.prom.clone();
 
         let metric_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_METRIC.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                assembly::DataStore::new(&_conn)
-                    .show_metrics(&id, &_prom)
-                    .ok()
-                    .and_then(|m| serde_json::to_string(&m).ok())
-            }),
+            Box::new(move |id: IdGet| -> Option<String> { assembly::DataStore::new(&_conn).show_metrics(&id, &_prom).ok().and_then(|m| serde_json::to_string(&m).ok()) }),
         ));
 
         &self.conn.expander.with(factory_service);

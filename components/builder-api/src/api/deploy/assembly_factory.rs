@@ -56,23 +56,13 @@ impl AssemblyFactoryApi {
     //Input: Body of structure deploy::AssemblyFactory
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn create(&self, req: &mut Request, _cfg: &ServicesConfig) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<AssemblyFactory>(
-            req.get::<bodyparser::Struct<AssemblyFactory>>()?,
-        )?;
+        let mut unmarshall_body = self.validate::<AssemblyFactory>(req.get::<bodyparser::Struct<AssemblyFactory>>()?)?;
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            self.verify_account(req)?.get_name(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), self.verify_account(req)?.get_name());
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match Assembler::new(&self.conn, _cfg).assemble(&unmarshall_body) {
             Ok(factory) => Ok(render_json(status::Ok, &factory)),
@@ -89,15 +79,9 @@ impl AssemblyFactoryApi {
         match assemblyfactory::DataStore::new(&self.conn).show(&params) {
             Ok(Some(factory)) => Ok(render_json(status::Ok, &factory)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
-
-
 
     ///PUT: /assemblyfactory/status
     ///Input: Status with conditions
@@ -105,19 +89,13 @@ impl AssemblyFactoryApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<StatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match assemblyfactory::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(factory)) => Ok(render_json(status::Ok, &factory)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 
@@ -130,11 +108,7 @@ impl AssemblyFactoryApi {
 
         match assemblyfactory::DataStore::new(&self.conn).list(&params) {
             Ok(Some(factorys)) => Ok(render_json_list(status::Ok, dispatch(req), &factorys)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for account {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for account {}", Error::Db(RecordsNotFound), params.get_id()))),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
@@ -164,11 +138,7 @@ impl AssemblyFactoryApi {
     //Returns all the AssemblyFactorys (irrespective of accounts, origins)
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match assemblyfactory::DataStore::new(&self.conn).list_blank() {
-            Ok(Some(assembly_factorys)) => Ok(render_json_list(
-                status::Ok,
-                dispatch(_req),
-                &assembly_factorys,
-            )),
+            Ok(Some(assembly_factorys)) => Ok(render_json_list(status::Ok, dispatch(_req), &assembly_factorys)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
@@ -221,42 +191,18 @@ impl Api for AssemblyFactoryApi {
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
-        router.post(
-            "/accounts/:account_id/assemblyfactorys",
-            XHandler::new(C { inner: create })
-                .before(basic.clone())
-                .before(TrustAccessed {}),
-            "assembly_factorys",
-        );
+        router.post("/accounts/:account_id/assemblyfactorys", XHandler::new(C { inner: create }).before(basic.clone()).before(TrustAccessed {}), "assembly_factorys");
 
-        router.get(
-            "/accounts/:account_id/assemblyfactorys",
-            XHandler::new(C { inner: list })
-                .before(basic.clone())
-                .before(TrustAccessed {}),
-            "assemblyfactorys_list",
-        );
-        router.get(
-            "/assemblyfactorys/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
-            "assembly_factorys_show",
-        );
-        router.get(
-            "/assemblyfactorys",
-            XHandler::new(C { inner: list_blank })
-                .before(basic.clone())
-                .before(TrustAccessed {}),
-            "assemblys_factorys_list_blank",
-        );
-        router.put(
-            "/assemblyfactorys/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
-            "assembly_factory_status_update",
-        );
-
+        router.get("/accounts/:account_id/assemblyfactorys", XHandler::new(C { inner: list }).before(basic.clone()).before(TrustAccessed {}), "assemblyfactorys_list");
+        router.get("/assemblyfactorys/:id", XHandler::new(C { inner: show }).before(basic.clone()), "assembly_factorys_show");
+        router.get("/assemblyfactorys", XHandler::new(C { inner: list_blank }).before(basic.clone()).before(TrustAccessed {}), "assemblys_factorys_list_blank");
+        router.put("/assemblyfactorys/:id/status", XHandler::new(C { inner: status_update }).before(basic.clone()), "assembly_factory_status_update");
     }
 }
 
+///Setup the cache sender for this api.
+///Essentially hookup all the computation intensive strategry
+///that will reload the cache using closures.
 ///Setup the cache sender for this api.
 ///Essentially hookup all the computation intensive strategry
 ///that will reload the cache using closures.
@@ -267,24 +213,13 @@ impl ExpanderSender for AssemblyFactoryApi {
     fn with_cache(&mut self) {
         let _conn = self.conn.clone();
 
-        let plan_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_PLAN.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
-                    serde_json::to_string(&p).ok()
-                })
-            }),
-        ));
+        let plan_service = Box::new(NewCacheServiceFn::new(CACHE_PREFIX_PLAN.to_string(), Box::new(move |id: IdGet| -> Option<String> { blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| serde_json::to_string(&p).ok()) })));
 
         let _conn = self.conn.clone();
 
         let services = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_SERVICE.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                service::DataStore::list_by_assembly_factory(&_conn, &id)
-                    .ok()
-                    .and_then(|v| serde_json::to_string(&v).ok())
-            }),
+            Box::new(move |id: IdGet| -> Option<String> { service::DataStore::list_by_assembly_factory(&_conn, &id).ok().and_then(|v| serde_json::to_string(&v).ok()) }),
         ));
 
         &self.conn.expander.with(plan_service);
@@ -349,9 +284,6 @@ impl Validator for AssemblyFactory {
             return Ok(Box::new(self));
         }
 
-        Err(bad_request(&MissingParameter(format!(
-            "{:?} -> {}",
-            s, "must have => "
-        ))))
+        Err(bad_request(&MissingParameter(format!("{:?} -> {}", s, "must have => "))))
     }
 }

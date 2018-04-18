@@ -37,7 +37,6 @@ impl PassTicketApi {
     //- passticket: random number
     //- created_at
     fn create(&self, _req: &mut Request) -> AranResult<Response> {
-
         match passticket::DataStore::create_passticket(&self.conn, &rand::random::<u64>().to_string()) {
             Ok(Some(passticket)) => Ok(render_json(status::Ok, &passticket)),
             Err(err) => Err(internal_error(&format!("{}", err))),
@@ -54,12 +53,7 @@ impl Api for PassTicketApi {
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
-
         //PassTicket API
-        router.get(
-            "/passticket",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "passtickets",
-        );
+        router.get("/passticket", XHandler::new(C { inner: create }).before(basic.clone()), "passtickets");
     }
 }
