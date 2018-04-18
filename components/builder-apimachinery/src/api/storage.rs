@@ -292,6 +292,7 @@ pub struct StoragePool {
     type_meta: TypeMeta, //standard type metadata: kind:StoragePool
     connector_id: String, //id that refer the where is that storage pool locat
     storage_info: Disks,
+    #[serde(default)]
     parameters: BTreeMap<String, String>, //Parameters holds the parameters for the provisioner that should,create volumes of this storage class.
     status: Status,
     #[serde(default)]
