@@ -12,13 +12,15 @@ CREATE TABLE IF NOT EXISTS jobs (id bigint PRIMARY KEY DEFAULT next_id_v1('job_i
                                                                                                  created_at timestamptz DEFAULT now());
 
 
-CREATE OR REPLACE FUNCTION get_jobs_v1() RETURNS
+CREATE OR REPLACE FUNCTION insert_jobs_v1 (spec JSONB, status JSONB, object_meta JSONB, type_meta JSONB) RETURNS
 SETOF jobs AS $$
-BEGIN
-RETURN QUERY SELECT * FROM jobs;
-RETURN;
-END
-$$ LANGUAGE PLPGSQL STABLE;
+                          BEGIN
+                              RETURN QUERY INSERT INTO jobs(spec,status,object_meta,type_meta )
+                                  VALUES (spec,status,object_meta,type_meta)
+                                  RETURNING *;
+                              RETURN;
+                          END
+                      $$ LANGUAGE PLPGSQL VOLATILE;
 
 
 CREATE OR REPLACE FUNCTION get_jobs_v1() RETURNS

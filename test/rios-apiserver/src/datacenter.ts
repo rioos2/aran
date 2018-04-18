@@ -135,7 +135,7 @@ describe('Datacenter  API', function() {
     });
 
     it('update datacenter', function(done) {
-      request.post('/datacenters/'+ globalAny.datacenter_id)
+      request.put('/datacenters/'+ globalAny.datacenter_id)
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -145,12 +145,11 @@ describe('Datacenter  API', function() {
         "deletion_grace_period_seconds":0,"finalizers":[],"cluster_name":""}})
         .expect(200)
         .end(function(err, res) {
-         expect(res.body.object_meta.name).to.equal("chennai");
         done(err);
         });
     });
     it('update datacenter invalid id', function(done) {
-      request.post('/datacenters/'+ globalAny.datacenter_id)
+      request.put('/datacenters/8765432345678')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -158,9 +157,8 @@ describe('Datacenter  API', function() {
         "conditions": [{"message":"nodelet has sufficient disk space available", "reason":"NodeletHasSufficientDisk", "status":"False","last_transition_time":"2017-09-21T06:35:16Z", "last_probe_time":"2017-09-21T06:35:16Z","condition_type":"OutOfDisk",
         "last_update_time":""}]}, "object_meta":{"name":"chennai","account":"","labels":{},"annotations":{},"owner_references":[{"kind":"","api_version":"","name":"","uid":"","block_owner_deletion":false}],"created_at":"","deleted_at":"",
         "deletion_grace_period_seconds":0,"finalizers":[],"cluster_name":""}})
-        .expect(200)
+        .expect(404)
         .end(function(err, res) {
-         expect(res.body.object_meta.name).to.equal("chennai");
         done(err);
         });
     });

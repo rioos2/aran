@@ -38,6 +38,7 @@ pub struct WatchHandler {
     pub datastore: Box<DataStoreConn>,
     inner: Arc<Mutex<MyInner>>,
     outer: MyInner,
+    prom: Box<PrometheusClient>,
 }
 
 impl WatchHandler {
@@ -53,9 +54,13 @@ impl WatchHandler {
             inner: Arc::new(Mutex::new(inner.clone())),
             datastore: datastore.clone(),
             outer: inner.clone(),
+            prom: prom.clone(),
         }
     }
 
+    pub fn prom_client(&self) -> Box<PrometheusClient> {
+        self.prom.clone()
+    }
 
     //start listening all psql triggers
     //when listener get the data from triggers then send it to the handler channel
