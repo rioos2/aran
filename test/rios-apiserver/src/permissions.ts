@@ -173,26 +173,4 @@ describe('User Permission API', function() {
         });
     });
 
-    it('returns the all the  permission for the specfic user', function(done) {
-      request.get('/permissions/email/' + globalAny.email)
-      .ca(globalAny.rootCA)
-        .set('Authorization', globalAny.bobo_bearer)
-        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(200)
-        .end(function(err, res) {
-          done(err);
-        });
-    });
-
-    it('returns the all the  permission for the user in wrong user id', function(done) {
-      request.get('/permissions/email/info@rio.io')
-      .ca(globalAny.rootCA)
-        .set('Authorization', globalAny.bobo_bearer)
-        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(404)
-        .end(function(err, res) {
-          done(err);
-        });
-    });
-
   });

@@ -21,3 +21,4 @@ globalAny.apiServer = 'https://localhost:7443/api/v1';
 globalAny.joblist ="JobList";
 globalAny.permissionlist= "PermissionList";
 globalAny.rolelist= "RoleList";
+globalAny.pending= "Pending";
