@@ -299,7 +299,9 @@ impl Api for SecretApi {
         //secret API
         router.post(
             "/accounts/:account_id/secrets",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.post".to_string())),
             "secrets",
         );
         
@@ -324,12 +326,16 @@ impl Api for SecretApi {
         );
         router.get(
             "/secrets/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.get".to_string())),
             "secret_show",
         );
         router.get(
             "/accounts/:account_id/secrets",
-            XHandler::new(C { inner: list }).before(basic.clone()),
+            XHandler::new(C { inner: list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.get".to_string())),
             "secret_show_by_account",
         );
        

@@ -157,28 +157,38 @@ impl Api for JobApi {
 
         router.post(
             "/jobs",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.post".to_string())),
             "jobs",
         );
 
         router.post(
             "serviceaccounts/:service_name/jobs",
-            XHandler::new(C { inner: service_account_based_create }).before(basic.clone()),
+            XHandler::new(C { inner: service_account_based_create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.post".to_string())),
             "jobs_create",
         );
         router.put(
             "/jobs/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C { inner: status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.put".to_string())),
             "job_status_update",
         );
         router.get(
             "/jobs/node",
-            XHandler::new(C { inner: show_by_node }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_node })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.get".to_string())),
             "job_show_by_node",
         );
         router.get(
             "/jobs",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.get".to_string())),
             "job_list_blank",
         );
     }

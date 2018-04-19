@@ -237,34 +237,46 @@ impl Api for VerticalScalingApi {
 
         router.post(
             "/verticalscaling",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.verticalscaling.post".to_string())),
             "verticalscalings",
         );
 
         router.put(
             "/verticalscaling/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C { inner: status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string())),
             "vertical_scaling_status_update",
         );
         router.put(
             "/verticalscaling/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string())),
             "vertical_scaling_update",
         );
         router.get(
             "/verticalscaling",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
             "vertical_scaling_list_blank",
         );
 
         router.get(
             "/verticalscaling/scale/:id",
-            XHandler::new(C { inner: scale }).before(basic.clone()),
+            XHandler::new(C { inner: scale })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
             "verticalscaling_scale",
         );
         router.get(
             "/verticalscaling/:id/metrics",
-            XHandler::new(C { inner: metrics }).before(basic.clone()),
+            XHandler::new(C { inner: metrics })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
             "vertical_scaling_metrics",
         );
     }

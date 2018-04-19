@@ -226,7 +226,7 @@ impl Api for AssemblyFactoryApi {
             "/accounts/:account_id/assemblyfactorys",
             XHandler::new(C { inner: create })
                 .before(basic.clone())
-                .before(TrustAccessed {}),
+                .before(TrustAccessed::new("rioos.assemblyfactory.post".to_string())),
             "assembly_factorys",
         );
 
@@ -234,24 +234,28 @@ impl Api for AssemblyFactoryApi {
             "/accounts/:account_id/assemblyfactorys",
             XHandler::new(C { inner: list })
                 .before(basic.clone())
-                .before(TrustAccessed {}),
+                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string())),
             "assemblyfactorys_list",
         );
         router.get(
             "/assemblyfactorys/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string())),
             "assembly_factorys_show",
         );
         router.get(
             "/assemblyfactorys",
             XHandler::new(C { inner: list_blank })
                 .before(basic.clone())
-                .before(TrustAccessed {}),
+                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string())),
             "assemblys_factorys_list_blank",
         );
         router.put(
             "/assemblyfactorys/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C { inner: status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assemblyfactory.put".to_string())),
             "assembly_factory_status_update",
         );
 

@@ -1,9 +1,11 @@
 use std::sync::Arc;
-use iron::prelude::*;
+//use iron::prelude::*;
 
 use protocol::api::base::IdGet;
 use db::data_store::DataStoreConn;
 use super::roles::Roles;
+use rbac::roles::TrustAccess;
+use super::super::error::{Result, Error};
 
 // role type to get the permission from database
 #[derive(Clone)]
@@ -34,8 +36,14 @@ impl Authorization {
             ds: ds,
         }
     }
-    pub fn verify(&self) -> IronResult<()> {
-        let _data = Roles::per_type(self.role_type.clone(), &self.ds);
-        Ok(())
+    pub fn verify(&self, trusted: String) -> Result<bool> {
+        match Roles::per_type(self.role_type.clone(), &self.ds) {
+            Ok(data) => {
+                let access = TrustAccess::new(trusted);       
+                access.is_allowed(data)
+            }
+            Err(err) => Err(Error::PermissionError(format!("{}", err))),
+        }        
     }
 }
+
