@@ -15,6 +15,7 @@ extern crate regex;
 extern crate uuid;
 extern crate serde;
 extern crate serde_json;
+extern crate rpassword;
 
 pub use self::error::{Error, Result};
 

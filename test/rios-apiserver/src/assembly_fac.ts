@@ -25,13 +25,14 @@ describe('Assembly_factory API', function() {
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .send({"object_meta": {"name": "levi.megam.io","account": globalAny.account_id,"cluster_name": "chennai","labels": {"rioos_category": "machine"}},  "replicas": 1,"resources": {"compute_type": "cpu","storage_type": "hdd","cpu": "1",
-      "memory": "1 GiB","storage": "3 GiB","private_ipv4": "true"},"secret": {"id": globalAny.secrets_id},"plan": globalAny.plan_id,"status": {"phase": "ready"}})
+      "memory": "1 GiB","storage": "3 GiB","private_ipv4": "true"},"secret": {"id": globalAny.secrets_id},"plan": globalAny.plan_id})
       .expect(200)
       .end(function(err, res) {
         globalAny.asm_fac_id =res.body.id;
         globalAny.replicas = res.body.replicas;
         expect(res.body.type_meta.kind).to.equal(globalAny.assemblyfactory);
         expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+        expect(res.body.status.phase).to.equal(globalAny.pending);
         done(err);
       });
   });

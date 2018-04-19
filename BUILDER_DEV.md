@@ -57,6 +57,13 @@ postgres=# create user rioos with password 'rioos';
 CREATE ROLE
 ```
 
+### To grant all access to user `rioos`
+
+```
+postgres=# ALTER USER rioos WITH SUPERUSER;
+ACCESS GRANTED
+```
+
 ### To create new database  `rioosdb`
 ```
 postgres=# create database rioosdb;
@@ -123,12 +130,11 @@ Refer to [BUILDING.md](./BUILDING.md) doc for the detailed steps.
 
 ## Create configuration files *optional*
 
-Some capabilities (such as configuring database, turning on bioshield.
+Some capabilities (such as configuring database, turning on features.
 
-Create the following files somewhere on your local filesystem)
 
-`/var/lib/rioos/api.toml`
-```toml
+```
+cp  ./tools/config/api.toml $RIOOS_HOME/config
 
 ```
 ### Procfile *optional*
@@ -138,6 +144,47 @@ Now, modify the `Procfile` (located in your aran repo in the `support` folder) t
 ```
 api: target/debug/rioos-api-server  --config /home/your_alias/rioos/api.toml
 ```
+# Managing migrations for Rio/OS
+
+All builder migrations are run with [Diesel](http://diesel.rs). This document describes how to create and manage those migrations.
+
+## Install the Diesel client
+
+```
+cargo install diesel_cli --no-default-features --features postgres
+```
+
+## Generating new migrations
+
+Every time you need to make a change to the Rio/OS schema you will be required to generate a new migration
+
+For the service `builder-db` you will need to run:
+
+* `cd components/builder-db/src`
+* `diesel migration generate <your migration name>`
+
+The migration name should describe what you are doing. Ex:
+
+* create-posts
+* add-user-select-v4
+* remove-user-select-43
+
+This will generate something like
+
+```
+Creating migrations/20160815133237_create_posts/up.sql
+Creating migrations/20160815133237_create_posts/down.sql
+```
+
+You can then edit `up.sql` to create your migration steps.
+
+You should ignore, but not delete, `down.sql` as we don't use it since we rely on transactions for our rollback logic.
+
+## Testing your changes
+
+You will need to compile your service and restart it to test your changes. You should see:
+
+`Running Migration <your-migration-name>`
 
 ## Run a build
 
@@ -153,7 +200,9 @@ make buildaud
 # Builds the marketplace server only
 make buildmkt
 ```
-Builds for release - used during production.
+
+## Builds for release - used during production.
+
 For release builds append `r` to the above targets
 
 ```
@@ -161,7 +210,8 @@ make rbuildapi
 
 ```
 
-Clean build, cleans everythings and does a build.
+## Clean build, cleans everythings and does a build.
+
 ```
 make clean
 ```
@@ -173,7 +223,7 @@ This should show the status of the api server.
 You should see a response similar to the following:
 
 * Healthz
-`curl  https://localhost:7443/v1/healthz
+`curl  https://localhost:7443/v1/status
 `
 
 ```
@@ -185,7 +235,8 @@ HTTP/1.1 201 Created
     "state": "alliswell"
 }
 ```
-To verify pfx
+
+## To verify pfx
 
 * The pfx password `TEAMRIOADVANCEMENT123`
 
@@ -193,7 +244,8 @@ To verify pfx
 openssl pkcs12 -info -in serving-rioos-apiserver.pfx
 
 ```
-To verify pub/key
+
+## To verify pub/key
 
 ```
 openssl verify -CAfile server-ca.crt serving-rioos-apiserver.crt
@@ -207,9 +259,33 @@ openssl verify -CAfile server-ca.crt serving-rioos-apiserver.crt
 
 ```
 export RIOOS_HOME=$HOME/home
-```
 
 ```
+
+You must have a valid $RIOOS_HOME/config directory.
+
+
+
+| Description | Location | Type |
+|-------------|----------|------|
+| Configuration for API | $RIOOS_HOME/config/api.toml | File |
+| Template for generating yaml configuration (nodelet, storlet, controller, scheduler)  | $RIOOS_HOME/config/template/rioconfig.hbs | File |
+| Template for generating xml in licensing check  | $RIOOS_HOME/config/template/shafer_filechk.xml | File |
+| Configuration templates | $RIOOS_HOME/config/template/rioconfig.hbs | File |
+| Directory to cache of pulls| $RIOOS_HOME/config/pullcache | Dir |
+| License so | $RIOOS_HOME/license/ShaferFilechck.so | File |
+
+
+
+
+```
+
+./rioos_apiserver setup
+
+./rioos_apiserver migrate
+
+# Use the marketplaces.rioos.xyz (userid/pw)
+./rioos_apiserver sync
 
 ./rioos_apiserver start
 
@@ -231,6 +307,13 @@ export SNAPPY_LIB_DIR=/usr/lib/x86_64-linux-gnu
 ArchLinux
 ```
 yaourt rocksdb
+
+```
+
+FreeBSD
+
+```
+pkg install rocksdb-lite-5.11.3_1
 
 ```
 
@@ -278,3 +361,20 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
 
 To make the above *LD_LIBRARY_PATH* permanent add `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib` in `~/.bashrc`
+
+4. If get the following error
+
+```
+Compiling migrations_macros v1.2.0
+error: linking with `cc` failed: exit code: 1
+  |
+  = note: "cc" "-Wl,--as-needed" "-Wl,-z,noexecstack" "-m64" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros0.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros1.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros10.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros11.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros12.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros13.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros14.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros15.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros2.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros3.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros4.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros5.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros6.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros7.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros8.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros9.rcgu.o" "-o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libmigrations_macros-9bb400830b2371ff.so" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.crate.metadata.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.crate.allocator.rcgu.o" "-Wl,--gc-sections" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-L" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-Wl,-Bstatic" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libsyn-e21de1e71d53587a.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libsynom-ac93423e9047e7c8.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libunicode_xid-155fd845ac784c02.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libquote-304777cb3696ca3c.rlib" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-Wl,-Bdynamic" "-l" "proc_macro-7d531857c463fdf1" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "syntax-a0f8084e7d2e8f23" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "rustc_errors-0442a147c1fbea3f" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "syntax_pos-a3c77f19bf623ee8" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "rustc_data_structures-6c5726675bdb8f04" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "term-74d3aea795746522" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "serialize-df58869bc5612287" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "rustc_cratesio_shim-f858a3ee752a9bb9" "-Wl,-Bstatic" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libmigrations_internals-af748bb30310c744.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libdiesel-c6f9187c0064765c.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libpq_sys-917183de6852f6fc.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libbyteorder-04a4459d454f1cde.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libbitflags-2247395e388e5ef5.rlib" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-Wl,-Bdynamic" "-l" "std-c10c01f750e28d27" "-Wl,-Bstatic" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-4e85b1507e729192.rlib" "-Wl,-Bdynamic" "-l" "util" "-l" "util" "-l" "pq" "-l" "dl" "-l" "rt" "-l" "pthread" "-l" "pthread" "-l" "gcc_s" "-l" "c" "-l" "m" "-l" "rt" "-l" "pthread" "-l" "util" "-l" "util" "-shared"
+  = note: /usr/bin/ld: cannot find -lpq
+```  
+As migrations are handled by diesel-cli, install libpqdev
+
+Ubuntu
+```
+sudo apt-get install libpq-dev
+
+```

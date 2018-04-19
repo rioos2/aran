@@ -8,6 +8,8 @@ use api::deploy::config::ServicesCfg;
 
 use watch::config::{Streamer, StreamerCfg};
 use entitlement::config::{License, LicensesCfg};
+use telemetry::config::{Telemetry, TelemetryCfg};
+use audit::config::{Anchore, AnchoreCfg, Influx, LogsCfg};
 
 // TO-DO: use metrics::config::{Telemetry, TelemetryCfg};
 

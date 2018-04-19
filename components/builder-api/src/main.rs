@@ -75,6 +75,10 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
             (about: "Sync Rio.Marketplaces with api server")
         )
 
+        (@subcommand migrate =>
+            (about: "Run migration on database - rioosdb")
+        )
+
     )
 }
 
@@ -85,7 +89,7 @@ fn exec_subcommand_if_called(ui: &mut UI, app_matches: &clap::ArgMatches) -> Res
         ("start", Some(m)) => sub_start_server(ui, m)?,
         ("setup", Some(m)) => sub_cli_setup(ui, m)?,
         ("sync", Some(m)) => sub_cli_sync(ui, m)?,
-
+        ("migrate", Some(_)) => sub_cli_migrate(ui)?,
         _ => unreachable!(),
     };
     Ok(())
@@ -110,6 +114,11 @@ fn sub_cli_sync(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     };
 
     command::cli::sync::start(ui, &config)
+}
+
+fn sub_cli_migrate(ui: &mut UI) -> Result<()> {
+    init();
+    command::cli::migrate::start(ui)
 }
 
 fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {

@@ -48,6 +48,7 @@ extern crate rioos_builder_devtooling as devtooling;
 extern crate rioos_entitlement as entitlement;
 extern crate rioos_auth as auth;
 extern crate rioos_ws as ws;
+extern crate rioos_telemetry as telemetry;
 
 extern crate iron;
 extern crate mount;
@@ -79,6 +80,8 @@ extern crate tls_api_openssl;
 
 extern crate openssl;
 extern crate native_tls;
+
+extern crate schedule_recv;
 
 #[macro_use]
 extern crate custom_derive;

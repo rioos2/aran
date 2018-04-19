@@ -52,6 +52,7 @@ hyper-native-tls = "0.2.4"
 native-tls = "0.1.5"
 openssl = "0.9"
 mio = "0.6.*"
+schedule_recv = "0.1.0"
 
 fallible-iterator = "0.1.4"
 enum_derive = "0.1.7"
@@ -125,6 +126,9 @@ path = "../entitlement"
 
 [dependencies.rioos_auth]
 path = "../auth"
+
+[dependencies.rioos_telemetry]
+path = "../telemetry"
 
 [features]
 functional = []

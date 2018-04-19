@@ -17,7 +17,7 @@
 use rioos_http::ApiClient as ReqwestClient;
 
 use rio_net::http::middleware::BlockchainConn;
-use rio_net::util::errors::err_from_response;
+use rioos_http::api_client::err_from_response;
 
 use error::{Result, Error};
 use serde_json;
@@ -67,7 +67,7 @@ impl Ledger for Blockchain {
 
         if res.status() != StatusCode::Ok {
             debug!("Failed to signup, status: {:?}", res.status());
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
         Ok(())
     }
@@ -78,7 +78,7 @@ impl Ledger for Blockchain {
 
         if res.status() != StatusCode::Ok {
             debug!("Failed to get audits, status: {:?}", res.status());
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let audits: Vec<Envelope> = res.json()?;

@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use error::Result;
 
-use rio_net::metrics::prometheus::PrometheusClient;
-use rio_net::metrics::collector::{Collector, CollectorScope};
+use telemetry::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::collector::{Collector, CollectorScope};
 
 use protocol::api::{scale, node};
 use protocol::api::base::QueryInput;

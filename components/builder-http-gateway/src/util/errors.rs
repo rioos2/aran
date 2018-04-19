@@ -1,19 +1,13 @@
 #[warn(dead_code)]
-#[warn(dead_code)]
-#[warn(dead_code)]
-#[warn(dead_code)]
 use std::any::Any;
 use std::error::Error;
 use std::fmt;
-use std::io::Read;
 
 use iron::prelude::*;
 use bodyparser::BodyError;
 use bodyparser::BodyErrorCause::JsonError;
-use reqwest;
 use iron::status::Status;
 use http::rendering::render_json;
-use error::Error as ReqwestError;
 
 pub const SUCCESS: &'static str = "Success";
 pub const FAILURE: &'static str = "Failure";
@@ -165,6 +159,7 @@ pub type AranResult<T> = Result<T, Box<AranError>>;
 
 pub type AranValidResult<T> = Result<Box<T>, Box<AranError>>;
 
+
 // =============================================================================
 // Error impls
 impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
@@ -172,7 +167,10 @@ impl<E: Any + Error + Send + 'static> From<E> for Box<AranError> {
         if let Some(err) = Any::downcast_ref::<BodyError>(&err) {
             {
                 if let JsonError(ref err1) = err.cause {
-                    return Box::new(MalformedBody(format!("{}", err.detail), format!("{}", err1)));
+                    return Box::new(MalformedBody(
+                        format!("{}", err.detail),
+                        format!("{}", err1),
+                    ));
                 }
             }
         }
@@ -372,6 +370,7 @@ impl fmt::Display for MalformedBody {
     }
 }
 
+
 pub struct Entitlement(String);
 
 impl AranError for Entitlement {
@@ -398,6 +397,7 @@ impl fmt::Display for Entitlement {
     }
 }
 
+
 pub struct BadGateway(String);
 
 impl AranError for BadGateway {
@@ -423,6 +423,8 @@ impl fmt::Display for BadGateway {
         self.0.fmt(f)
     }
 }
+
+
 
 pub fn bad_request<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(BadRequest(error.to_string()))
@@ -459,19 +461,4 @@ pub fn not_acceptable_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
 
 pub fn entitlement_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(Entitlement(error.to_string()))
-}
-
-pub fn err_from_response(mut response: reqwest::Response) -> ReqwestError {
-    if response.status() == reqwest::StatusCode::Unauthorized {
-        return ReqwestError::APIError(response.status(), "Your token mismatch and requires permissions.".to_string());
-    }
-
-    let mut buff = String::new();
-    match response.read_to_string(&mut buff) {
-        Ok(_) => ReqwestError::APIError(response.status(), buff),
-        Err(_) => {
-            buff.truncate(0);
-            ReqwestError::APIError(response.status(), buff)
-        }
-    }
 }

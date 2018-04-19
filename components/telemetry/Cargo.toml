@@ -1,0 +1,19 @@
+[package]
+name = "rioos_telemetry"
+version = "0.0.0"
+authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>"]
+description = "RIO/OS authentication library"
+workspace = "../../"
+
+[dependencies]
+chrono = { version = "0.4.0", features = ["serde"] }
+serde = "1.0.27"
+serde_derive = "*"
+serde_json = "1.0.10"
+rioos_builder_apimachinery = { path = "../builder-apimachinery" }
+
+[dependencies.rioos_http_client]
+path = "../http-client"
+
+[features]
+functional = []

@@ -9,7 +9,7 @@ use std::sync::{mpsc, Arc, Mutex};
 
 use watch::handler::LISTENERS;
 use watch::handler::WatchHandler;
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 use db::data_store::DataStoreConn;
 use rio_net::http::middleware::SecurerConn;
 use config::Config;
@@ -73,15 +73,17 @@ impl Websocket {
                         encrypt_server: false,
                         ..ws::Settings::default()
                     })
-                    .build(|out: ws::Sender| Router {
-                        watchhandler: watchhandler.clone(),
-                        sender: out,
-                        // Default to returning a 404 when the route doesn't match.
-                        // You could default to any handler here.
-                        inner: Box::new(NotFound),
-                        datastore: Box::new(ds.clone()),
-                        register: register.clone(),
-                        ssl: acceptor.clone(),
+                    .build(|out: ws::Sender| {
+                        Router {
+                            watchhandler: watchhandler.clone(),
+                            sender: out,
+                            // Default to returning a 404 when the route doesn't match.
+                            // You could default to any handler here.
+                            inner: Box::new(NotFound),
+                            datastore: Box::new(ds.clone()),
+                            register: register.clone(),
+                            ssl: acceptor.clone(),
+                        }
                     })
                     .unwrap()
                     .listen(address)
