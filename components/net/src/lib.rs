@@ -27,7 +27,6 @@ extern crate libflate;
 extern crate log;
 extern crate mount;
 extern crate rand;
-extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -42,7 +41,6 @@ extern crate router;
 pub mod config;
 pub mod error;
 pub mod http;
-pub mod metrics;
 pub mod util;
 pub mod server;
 use std::process::Command;

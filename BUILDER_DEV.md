@@ -201,7 +201,7 @@ make buildaud
 make buildmkt
 ```
 
-## Builds for release - used during production. 
+## Builds for release - used during production.
 
 For release builds append `r` to the above targets
 
@@ -216,7 +216,7 @@ make rbuildapi
 make clean
 ```
 
-## Testing 
+## Testing
 
 This should show the status of the api server.
 
@@ -260,7 +260,7 @@ openssl verify -CAfile server-ca.crt serving-rioos-apiserver.crt
 ```
 export RIOOS_HOME=$HOME/home
 
-``` 
+```
 
 You must have a valid $RIOOS_HOME/config directory.
 
@@ -268,7 +268,7 @@ You must have a valid $RIOOS_HOME/config directory.
 
 | Description | Location | Type |
 |-------------|----------|------|
-| Configuration for API | $RIOOS_HOME/config/api.toml | File | 
+| Configuration for API | $RIOOS_HOME/config/api.toml | File |
 | Template for generating yaml configuration (nodelet, storlet, controller, scheduler)  | $RIOOS_HOME/config/template/rioconfig.hbs | File |
 | Template for generating xml in licensing check  | $RIOOS_HOME/config/template/shafer_filechk.xml | File |
 | Configuration templates | $RIOOS_HOME/config/template/rioconfig.hbs | File |
@@ -284,8 +284,8 @@ You must have a valid $RIOOS_HOME/config directory.
 
 ./rioos_apiserver migrate
 
-# Use the marketplaces.rioos.xyz (userid/pw) 
-./rioos_apiserver sync 
+# Use the marketplaces.rioos.xyz (userid/pw)
+./rioos_apiserver sync
 
 ./rioos_apiserver start
 
@@ -371,10 +371,10 @@ error: linking with `cc` failed: exit code: 1
   = note: "cc" "-Wl,--as-needed" "-Wl,-z,noexecstack" "-m64" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros0.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros1.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros10.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros11.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros12.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros13.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros14.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros15.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros2.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros3.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros4.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros5.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros6.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros7.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros8.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.migrations_macros9.rcgu.o" "-o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libmigrations_macros-9bb400830b2371ff.so" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.crate.metadata.rcgu.o" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/migrations_macros-9bb400830b2371ff.crate.allocator.rcgu.o" "-Wl,--gc-sections" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-L" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-Wl,-Bstatic" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libsyn-e21de1e71d53587a.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libsynom-ac93423e9047e7c8.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libunicode_xid-155fd845ac784c02.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libquote-304777cb3696ca3c.rlib" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-Wl,-Bdynamic" "-l" "proc_macro-7d531857c463fdf1" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "syntax-a0f8084e7d2e8f23" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "rustc_errors-0442a147c1fbea3f" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "syntax_pos-a3c77f19bf623ee8" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "rustc_data_structures-6c5726675bdb8f04" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "term-74d3aea795746522" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "serialize-df58869bc5612287" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-l" "rustc_cratesio_shim-f858a3ee752a9bb9" "-Wl,-Bstatic" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libmigrations_internals-af748bb30310c744.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libdiesel-c6f9187c0064765c.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libpq_sys-917183de6852f6fc.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libbyteorder-04a4459d454f1cde.rlib" "/home/suganya/code/megam/workspace/go/src/gitlab.com/rioos/aran/target/debug/deps/libbitflags-2247395e388e5ef5.rlib" "-L" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-Wl,-Bdynamic" "-l" "std-c10c01f750e28d27" "-Wl,-Bstatic" "/home/suganya/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-4e85b1507e729192.rlib" "-Wl,-Bdynamic" "-l" "util" "-l" "util" "-l" "pq" "-l" "dl" "-l" "rt" "-l" "pthread" "-l" "pthread" "-l" "gcc_s" "-l" "c" "-l" "m" "-l" "rt" "-l" "pthread" "-l" "util" "-l" "util" "-shared"
   = note: /usr/bin/ld: cannot find -lpq
 ```  
-As migrations are handled by diesel-cli, install libpqdev 
+As migrations are handled by diesel-cli, install libpqdev
 
 Ubuntu
 ```
-sudo apt-get install libpq-dev 
+sudo apt-get install libpq-dev
 
 ```

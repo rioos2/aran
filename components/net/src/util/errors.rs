@@ -2,15 +2,12 @@
 use std::any::Any;
 use std::error::Error;
 use std::fmt;
-use std::io::Read;
 
 use iron::prelude::*;
 use bodyparser::BodyError;
 use bodyparser::BodyErrorCause::JsonError;
-use reqwest;
 use iron::status::Status;
 use http::rendering::render_json;
-use error::Error as ReqwestError;
 
 pub const SUCCESS: &'static str = "Success";
 pub const FAILURE: &'static str = "Failure";
@@ -464,22 +461,4 @@ pub fn not_acceptable_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
 
 pub fn entitlement_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(Entitlement(error.to_string()))
-}
-
-pub fn err_from_response(mut response: reqwest::Response) -> ReqwestError {
-    if response.status() == reqwest::StatusCode::Unauthorized {
-        return ReqwestError::APIError(
-            response.status(),
-            "Your token mismatch and requires permissions.".to_string(),
-        );
-    }
-
-    let mut buff = String::new();
-    match response.read_to_string(&mut buff) {
-        Ok(_) => ReqwestError::APIError(response.status(), buff),
-        Err(_) => {
-            buff.truncate(0);
-            ReqwestError::APIError(response.status(), buff)
-        }
-    }
 }

@@ -27,7 +27,7 @@ use reqwest::header::{ContentType, Accept, Authorization, Bearer, Headers};
 
 use rioos_http::ApiClient;
 use rio_net::http::rendering::ResponseList;
-use rio_net::util::errors::err_from_response;
+use rioos_http::api_client::err_from_response;
 
 use protocol::api::{session, deploy, blueprint, job, network, node, storage, origin, scale, secret};
 use protocol::api::base::MetaFields;
@@ -64,7 +64,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let data: session::Session = res.json()?;
@@ -85,7 +85,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let data: session::Session = res.json()?;
@@ -98,7 +98,7 @@ impl Client {
         )?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         Ok("".to_string())
@@ -114,7 +114,7 @@ impl Client {
             .send()
             .map_err(Error::ReqwestError)?;
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let assembly_fat: deploy::AssemblyFactory = res.json()?;
         Ok(assembly_fat)
@@ -128,7 +128,7 @@ impl Client {
             .send()
             .map_err(Error::ReqwestError)?;
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let mut assemblyfactory: ResponseList<Vec<deploy::AssemblyFactory>> = res.json()?;
@@ -158,7 +158,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let assembly: deploy::AssemblyFactory = res.json()?;
@@ -175,7 +175,7 @@ impl Client {
             .send()
             .map_err(Error::ReqwestError)?;
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let network: network::Network = res.json()?;
@@ -191,7 +191,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         Ok(())
@@ -206,7 +206,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         Ok(())
@@ -221,7 +221,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut secret: ResponseList<Vec<secret::Secret>> = res.json()?;
         Ok(
@@ -249,7 +249,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let secret: secret::Secret = res.json()?;
@@ -265,7 +265,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         Ok(())
@@ -281,7 +281,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let mut assembly: ResponseList<Vec<deploy::Assembly>> = res.json()?;
@@ -330,7 +330,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut node: ResponseList<Vec<node::Node>> = res.json()?;
         Ok(
@@ -357,7 +357,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let node: node::Node = res.json()?;
@@ -371,7 +371,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let mut plan: ResponseList<Vec<blueprint::Plan>> = res.json()?;
@@ -400,7 +400,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let mut datacenter: ResponseList<Vec<storage::DataCenter>> = res.json()?;
@@ -430,7 +430,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let mut origin: ResponseList<Vec<origin::Origin>> = res.json()?;
@@ -457,7 +457,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let mut job: ResponseList<Vec<job::Jobs>> = res.json()?;
@@ -484,7 +484,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let mut network: ResponseList<Vec<network::Network>> = res.json()?;
@@ -516,7 +516,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let result: origin::Origin = res.json()?;
@@ -538,7 +538,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let dc: storage::DataCenter = res.json()?;
@@ -553,7 +553,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let net: network::Network = res.json()?;
@@ -568,7 +568,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         Ok(())
@@ -583,7 +583,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         Ok(())
@@ -598,7 +598,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let datacenter: storage::DataCenter = res.json()?;
@@ -613,7 +613,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let strcon: storage::Storage = res.json()?;
@@ -627,7 +627,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let strcon: ResponseList<Vec<storage::Storage>> = res.json()?;
@@ -642,7 +642,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut strpool: ResponseList<Vec<storage::StoragePool>> = res.json()?;
         Ok(
@@ -668,7 +668,7 @@ impl Client {
             .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
-            return Err(Error::RioNetError(err_from_response(res)));
+            return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
         let strpool: ResponseList<Vec<storage::StoragePool>> = res.json()?;
