@@ -42,7 +42,6 @@ extern crate router;
 pub mod config;
 pub mod error;
 pub mod http;
-pub mod metrics;
 pub mod util;
 pub mod server;
 use std::process::Command;

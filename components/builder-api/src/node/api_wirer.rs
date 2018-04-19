@@ -17,7 +17,8 @@ use persistent;
 use rio_net::http::middleware::*;
 use rio_net::http::pack;
 use telemetry::metrics::prometheus::PrometheusClient;
-use rio_net::metrics::vulnerablity::AnchoreClient;
+use audit::vulnerable::vulnerablity::AnchoreClient;
+use audit::config::InfluxClientConn;
 use node::runtime::Runtime;
 
 use api::Api;

@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::io::Read;
 use reqwest::Url;
 use reqwest::StatusCode;
-use metrics::reqwest_client::http_basic_get;
+use vulnerable::reqwest_client::http_basic_get;
 
 use serde_json;
 use protocol::api::imagevuln::Vulnerable;

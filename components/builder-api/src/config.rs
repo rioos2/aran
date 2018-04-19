@@ -2,10 +2,12 @@
 
 //! Configuration for a Rio/OS API service
 
-use rio_net::config::{Anchore, AuditBackend, Blockchain, Influx, Marketplaces, PasswordAuth, SecureBackend, SecurerAuth, SystemAuth};
-use rio_net::config::{AnchoreCfg, BlockchainCfg, HttpCfg, LogsCfg, MarketplacesCfg, SecurerCfg};
+use rio_net::config::{AuditBackend, Blockchain, Marketplaces, PasswordAuth, SecureBackend, SecurerAuth, SystemAuth};
+use rio_net::config::{BlockchainCfg, HttpCfg, MarketplacesCfg, SecurerCfg};
+
 use entitlement::config::{License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
+use audit::config::{Anchore, AnchoreCfg, Influx, LogsCfg};
 
 use rio_core::config::ConfigFile;
 

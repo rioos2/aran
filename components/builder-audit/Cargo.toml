@@ -8,9 +8,10 @@ workspace = "../../"
 [dependencies]
 influx_db_client = "0.3.1"
 serde_json = "1.0.10"
-
-[dependencies.rioos_net]
-path = "../net"
+reqwest = "0.8.5"
+serde = "1.0.27"
+serde_derive = "*"
+url = "1.7.0"
 
 [dependencies.rioos_builder_apimachinery]
 path = "../builder-apimachinery"

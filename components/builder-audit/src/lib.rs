@@ -2,14 +2,20 @@
 
 //! Libraries  module used by builder node
 
-extern crate rioos_net as rio_net;
 extern crate rioos_builder_apimachinery as protocol;
 
 extern crate influx_db_client;
 extern crate serde_json;
+extern crate url;
+extern crate reqwest;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 pub mod models;
 pub mod error;
+pub mod vulnerable;
+pub mod config;
 
 pub use self::error::Result;
 

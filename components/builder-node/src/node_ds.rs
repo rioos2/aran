@@ -116,18 +116,21 @@ impl NodeDS {
 
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<node::HealthzAllGetResponse>> {
 
+        let metrics = get_guages(client)?;
         let mut guages = node::Guages::new();
         guages.set_title("Cumulative operations counter".to_string());
-        guages.set_counters(get_guages(client)?);
+        guages.set_counters(metrics.0);
 
         let mut statistics = node::Statistics::new();
         statistics.set_title("Statistics".to_string());
-        statistics.set_nodes(get_statistics(client)?);
+        statistics.set_nodes(get_statistics(metrics.1)?);
+
+        let os_statistics = get_os_statistics(client)?;
 
         let mut metrics = node::Osusages::new();
-        metrics.set_items(all_items.iter().flat_map(|s| (*s).clone()).collect());
+        metrics.set_items(os_statistics.0.iter().flat_map(|s| (*s).clone()).collect());
         metrics.set_title("Scale metrics ".to_owned());
-        metrics.set_cumulative(os_collection[0].clone());
+        metrics.set_cumulative(os_statistics.1[0].clone());
 
         let mut res = node::HealthzAllGet::new();
         res.set_title("Command center operations".to_string());
@@ -142,7 +145,7 @@ impl NodeDS {
 }
 
 
-fn get_guages(client: &PrometheusClient) -> Result<Vec<node::Counters>> {
+fn get_guages(client: &PrometheusClient) -> Result<(Vec<node::Counters>, Vec<node::PromResponse>)> {
     //Generete the collected prometheus data as HealthzAllGetResponse
 
     let mut coun_collection = Vec::new();
@@ -154,6 +157,8 @@ fn get_guages(client: &PrometheusClient) -> Result<Vec<node::Counters>> {
             coun_collection.push(g1);
         })
         .collect::<Vec<_>>();
+
+    let node_response = node_response(client)?;
 
     // cpu count
     node_response
@@ -173,17 +178,16 @@ fn get_guages(client: &PrometheusClient) -> Result<Vec<node::Counters>> {
             coun_collection.push(g3);
         })
         .collect::<Vec<_>>();
-    Ok(coun_collection)
+    Ok((coun_collection, node_response.1))
 }
 
-fn get_statistics() -> Result<Vec<node::NodeStatistic>> {
-    let node_response = node_response(client)?;
+fn get_statistics(node_response: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
+
     //Statistics metric of the each node
     let mut lstatistics = vec![node::NodeStatistic::new()];
 
-    if node_response.1.len() > 0 {
+    if node_response.len() > 0 {
         node_response
-            .1
             .into_iter()
             .map(|x| { lstatistics = x.into(); })
             .collect::<Vec<_>>();
@@ -196,7 +200,7 @@ fn get_statistics() -> Result<Vec<node::NodeStatistic>> {
     Ok(lstatistics)
 }
 
-fn get_os_statistics() -> Result<(node::Osusages, node::Counters)> {
+fn get_os_statistics(client: &PrometheusClient) -> Result<(Vec<Vec<node::Item>>, Vec<node::Counters>)> {
     let os_response = os_response(client)?;
 
     let all_items = os_response
@@ -219,7 +223,7 @@ fn get_os_statistics() -> Result<(node::Osusages, node::Counters)> {
         })
         .collect::<Vec<_>>();
 
-    Ok(all_items, os_collection)
+    Ok((all_items, os_collection))
 }
 
 fn memory_response(client: &PrometheusClient) -> Result<Vec<node::PromResponse>> {
