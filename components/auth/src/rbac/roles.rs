@@ -57,7 +57,7 @@ impl TrustAccess {
 
 impl PartialEq for TrustAccess {
     fn eq(&self, other: &TrustAccess) -> bool {
-        self.0 == other.0
+        self.0 == other.0 && self.1 == other.1
     }
 }
 
@@ -72,7 +72,7 @@ enum TrustResource {
 }
 
 //TrustLevel access for the user
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 enum TrustLevel {
     ResourceGet,
     ResourcePost,

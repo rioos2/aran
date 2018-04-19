@@ -75,7 +75,6 @@ static REGULAR_KEY_PERMISSIONS: u32 = 0o400;
 
 pub use self::keys::sig_key_pair::SigKeyPair;
 
-pub mod hash;
 pub mod keys;
 
 pub fn default_rioconfig_key_path(fs_root_path: Option<&Path>) -> PathBuf {
