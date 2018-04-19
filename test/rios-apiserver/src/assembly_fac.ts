@@ -32,6 +32,7 @@ describe('Assembly_factory API', function() {
         globalAny.replicas = res.body.replicas;
         expect(res.body.type_meta.kind).to.equal(globalAny.assemblyfactory);
         expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+        expect(res.body.status.phase).to.equal(globalAny.pending);
         done(err);
       });
   });
