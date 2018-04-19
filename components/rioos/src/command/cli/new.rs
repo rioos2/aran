@@ -27,7 +27,7 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     account.set_first_name(prompt_firstname(ui)?);
     account.set_last_name(prompt_lastname(ui)?);
     account.set_email(ui.prompt_ask("Userid", None)?);
-    account.set_password(ui.prompt_ask("Password", None)?);
+    account.set_password(ui.prompt_ask("password", None)?);
     account.set_phone(ui.prompt_ask("phone", None)?);
     account.set_company_name(prompt_company(ui)?);
 
