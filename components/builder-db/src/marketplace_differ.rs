@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::fs::File;
 
 use error::Result;
 use serde_json;
@@ -10,11 +9,11 @@ use data_store::DataStoreConn;
 
 use protocol::api::blueprint;
 use protocol::api::base::MetaFields;
-use rio_core::fs::open_from;
+
 
 const SYNC_ELAPSED_SECONDS: i64 = 180;
 
-use rcore::crypto::default_rioconfig_key_path;
+use rcore::{fs::open_from, crypto::default_rioconfig_key_path};
 
 lazy_static! {
     static ref MARKETPLACE_CACHE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());

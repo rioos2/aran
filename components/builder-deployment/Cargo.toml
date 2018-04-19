@@ -20,9 +20,6 @@ path = "../builder-db"
 [dependencies.rioos_telemetry]
 path = "../telemetry"
 
-[dependencies.rioos_net]
-path = "../net"
-
 [dependencies.rioos_builder_jobsrv]
 path = "../builder-job"
 

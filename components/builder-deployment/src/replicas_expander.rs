@@ -1,9 +1,8 @@
 ///replicas expander
 
+use protocol::api::schema::type_meta_url;
 use protocol::api::{deploy, node, job, scale};
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
-
-use rio_net::http::schema::type_meta_url;
 
 use job::{JobOutput, job_ds, error};
 

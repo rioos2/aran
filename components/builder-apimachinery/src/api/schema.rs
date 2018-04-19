@@ -2,7 +2,8 @@ use std::fmt;
 use std::collections::HashMap;
 use std::str::FromStr;
 use iron::prelude::*;
-use protocol::api::base::TypeMeta;
+
+use api::base::TypeMeta;
 
 use error::{self, Result};
 

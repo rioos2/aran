@@ -30,3 +30,4 @@ pub mod rioos;
 pub mod util;
 pub mod error;
 pub mod rbac;
+pub mod config;

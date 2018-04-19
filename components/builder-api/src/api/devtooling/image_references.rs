@@ -13,7 +13,7 @@ use common::ui;
 use config::Config;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 
 use error::Error;
 use error::ErrorMessage::MissingParameter;

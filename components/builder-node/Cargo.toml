@@ -19,9 +19,5 @@ path = "../builder-db"
 [dependencies.rioos_telemetry]
 path = "../telemetry"
 
-[dependencies.rioos_net]
-path = "../net"
-
-
 [features]
 functional = []

@@ -5,11 +5,12 @@ use serde_yaml;
 use common::ui::UI;
 use error::Result;
 use api_client::Client;
+
+use protocol::api::schema::type_meta_url;
+use protocol::api::base::MetaFields;
 use protocol::api::{deploy, scale};
 
 use rcore::fs::open_from;
-use rio_net::http::schema::type_meta_url;
-use protocol::api::base::MetaFields;
 
 pub fn start(ui: &mut UI, rio_client: Client, cache_path: &str, token: &str, email: &str) -> Result<()> {
     ui.br()?;

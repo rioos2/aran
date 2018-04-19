@@ -3,9 +3,12 @@
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate lazy_static;
+
 extern crate chrono;
 extern crate regex;
-
+extern crate iron;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

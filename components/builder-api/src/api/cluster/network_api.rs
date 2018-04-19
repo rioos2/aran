@@ -12,7 +12,7 @@ use ansi_term::Colour;
 use common::ui;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
 use error::Error;

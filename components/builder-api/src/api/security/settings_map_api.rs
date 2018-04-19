@@ -8,7 +8,7 @@ use router::Router;
 
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::type_meta;
+use protocol::api::schema::type_meta;
 use config::Config;
 use error::Error;
 

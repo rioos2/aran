@@ -18,7 +18,6 @@ use std::collections::BTreeMap;
 #[macro_use]
 pub mod events;
 
-pub mod config;
 pub mod audit;
 pub mod cluster;
 pub mod deploy;

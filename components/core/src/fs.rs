@@ -143,12 +143,12 @@ pub fn am_i_root() -> bool {
 pub fn open_from(path: &Path) -> Result<File> {
     match File::open(path) {
         Ok(f) => Ok(f),
-        Err(e) => Err(Error::FileNotFound(format!("{}\n{:?}", e.description, path))),
+        Err(e) => Err(Error::FileNotFound(format!("{}\n{:?}", format!("{}",e), path))),
     }
 }
 
 pub fn read_from_file(cache_path: &Path) -> Result<String> {
-    let mut file = Self::open_from(cache_path)?;
+    let mut file = self::open_from(cache_path)?;
     let mut content = String::new();
     file.read_to_string(&mut content)?;
     Ok(content)

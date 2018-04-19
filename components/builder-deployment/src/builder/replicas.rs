@@ -2,8 +2,7 @@
 
 use error::{Result, Error};
 
-use rio_net::http::schema::type_meta_url;
-
+use protocol::api::schema::type_meta_url;
 use protocol::api::deploy::{Assembly, AssemblyFactory, NEW_REPLICA_INITALIZING_MSG, NEW_STAND_STILL_MSG, PHASE_PENDING, PHASE_STAND_STILL};
 use protocol::api::base::Status;
 use protocol::api::base::{MetaFields, ChildTypeMeta}; //To access object_meta() and children() in AssemblyFactory, Assembly

@@ -3,7 +3,6 @@
 //! A module containing the config file loader
 
 use std::error::Error as StdError;
-use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
@@ -19,7 +18,7 @@ pub trait ConfigFile: DeserializeOwned + Sized {
     fn from_file<T: AsRef<Path>>(filepath: T) -> Result<Self, Self::Error> {
         let mut file = match open_from(filepath.as_ref()) {
             Ok(f) => f,
-            Err(e) => return Err(Self::Error::from(Error::ConfigFileIO(filepath.as_ref().to_path_buf(), e))),
+            Err(e) => return Err(Self::Error::from(e)),
         };
         let mut raw = String::new();
         match file.read_to_string(&mut raw) {

@@ -5,12 +5,12 @@
 use chrono::prelude::*;
 use error::{Result, Error};
 
+use protocol::api::schema::type_meta_url;
 use protocol::api::node;
 use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
 
 use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::collector::{Collector, CollectorScope};
-use rio_net::http::schema::type_meta_url;
 
 use serde_json;
 

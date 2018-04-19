@@ -38,10 +38,7 @@ extern crate url;
 
 extern crate router;
 
-pub mod config;
 pub mod error;
-pub mod http;
-pub mod util;
 use std::process::Command;
 
 pub use self::error::{Error, Result};
