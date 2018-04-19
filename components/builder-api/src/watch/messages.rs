@@ -4,7 +4,7 @@
 use bytes::Bytes;
 use protocol::api::base::IdGet;
 use db::data_store::DataStoreConn;
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 use api::{cluster, security, deploy};
 use rio_net::http::middleware::SecurerConn;
 

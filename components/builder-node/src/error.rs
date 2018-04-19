@@ -6,7 +6,7 @@ use std::error;
 use std::fmt;
 use std::result;
 use db;
-use rio_net;
+use telemetry;
 
 #[derive(Debug)]
 pub enum Error {
@@ -15,7 +15,7 @@ pub enum Error {
     NodeList(postgres::error::Error),
     NodeSetStatus(postgres::error::Error),
     NodeGet(postgres::error::Error),
-    PromoStatusGetError(rio_net::Error),
+    PromoStatusGetError(telemetry::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -52,8 +52,8 @@ impl From<db::error::Error> for Error {
         Error::Db(err)
     }
 }
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
+impl From<telemetry::error::Error> for Error {
+    fn from(err: telemetry::error::Error) -> Error {
         Error::PromoStatusGetError(err)
     }
 }

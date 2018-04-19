@@ -6,7 +6,7 @@ use std::error;
 use std::fmt;
 use std::result;
 use db;
-use rio_net;
+use telemetry;
 
 
 #[derive(Debug)]
@@ -20,7 +20,7 @@ pub enum Error {
     VSGet(postgres::error::Error),
     VSSetStatus(postgres::error::Error),
     VSUpdate(postgres::error::Error),
-    RioNetError(rio_net::Error),
+    RioNetError(telemetry::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -66,8 +66,8 @@ impl From<db::error::Error> for Error {
     }
 }
 
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
+impl From<telemetry::error::Error> for Error {
+    fn from(err: telemetry::error::Error) -> Error {
         Error::RioNetError(err)
     }
 }

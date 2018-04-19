@@ -19,6 +19,7 @@ use rio_net::util::errors::{internal_error, not_found_error};
 
 use deploy::models::assembly;
 use audit::models::log;
+use audit::config::InfluxClientConn;
 
 use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;
@@ -60,9 +61,10 @@ impl LogApi {
         let mut query_pairs = self.optional_validate(req)?;
         match assembly::DataStore::new(&self.conn).show(&params) {
             Ok(Some(assembly)) => {
-                query_pairs
-                    .labels
-                    .insert("name".to_string(), assembly.object_meta().name);
+                query_pairs.labels.insert(
+                    "name".to_string(),
+                    assembly.object_meta().name,
+                );
                 match log::DataStore::list(&self.logconn, &LogQueryBuilder::with(query_pairs)) {
                     Ok(Some(log_list)) => Ok(render_json_list(status::Ok, dispatch(req), &log_list)),
                     Err(err) => Err(internal_error(&format!("{}\n", err))),

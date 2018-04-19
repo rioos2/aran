@@ -10,7 +10,7 @@ use reqwest::StatusCode;
 
 use rioos_http::ApiClient as ReqwestClient;
 use rio_net::http::rendering::ResponseList;
-use rio_net::util::errors::err_from_response;
+use rioos_http::api_client::err_from_response;
 
 use rio_core::fs::{write_to_file, rioconfig_config_path, append};
 
@@ -56,7 +56,7 @@ pub fn start(ui: &mut UI, config: &Config) -> Result<()> {
         .map_err(Error::ReqwestError)?;
 
     if res.status() != StatusCode::Ok {
-        return Err(Error::RioNetError(err_from_response(res)));
+        return Err(Error::RioHttpClient(err_from_response(res)));
     };
 
     let market: ResponseList<Vec<marketplace::MarketPlace>> = res.json()?;

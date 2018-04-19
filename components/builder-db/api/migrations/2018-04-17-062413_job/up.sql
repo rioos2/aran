@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS jobs (id bigint PRIMARY KEY DEFAULT next_id_v1('job_i
                                                                                        type_meta JSONB,
                                                                                                  updated_at timestamptz,
                                                                                                  created_at timestamptz DEFAULT now());
+
+
 CREATE OR REPLACE FUNCTION insert_jobs_v1 (spec JSONB, status JSONB, object_meta JSONB, type_meta JSONB) RETURNS
 SETOF jobs AS $$
                           BEGIN

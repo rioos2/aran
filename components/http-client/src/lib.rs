@@ -15,6 +15,7 @@ extern crate url;
 pub mod api_client;
 pub mod error;
 pub mod proxy;
+pub mod reqwest_client;
 
 pub use api_client::ApiClient;
 pub use error::{Error, Result};

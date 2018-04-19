@@ -8,7 +8,7 @@ use std::result;
 use job;
 use postgres;
 use db;
-use rio_net;
+use telemetry;
 
 #[derive(Debug)]
 pub enum Error {
@@ -30,7 +30,7 @@ pub enum Error {
     VolumesGet(postgres::error::Error),
     VolumeUpdate(postgres::error::Error),
     Jobs(job::error::Error),
-    PromoStatusGetError(rio_net::Error),
+    PromoStatusGetError(telemetry::error::Error),
     PlanSetStatus(postgres::error::Error),
 }
 
@@ -103,8 +103,8 @@ impl From<job::error::Error> for Error {
     }
 }
 
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
+impl From<telemetry::error::Error> for Error {
+    fn from(err: telemetry::error::Error) -> Error {
         Error::PromoStatusGetError(err)
     }
 }

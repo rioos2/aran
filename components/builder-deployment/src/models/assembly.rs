@@ -10,8 +10,8 @@ use protocol::api::base::{IdGet, StatusUpdate, MetaFields};
 
 use protocol::cache::{PULL_DIRECTLY, PULL_INVALDATED, PullFromCache, InMemoryExpander};
 
-use rio_net::metrics::collector::{CollectorScope, Collector};
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::collector::{CollectorScope, Collector};
+use telemetry::metrics::prometheus::PrometheusClient;
 use super::super::{AssemblyOutput, AssemblyOutputList};
 
 use serde_json;
