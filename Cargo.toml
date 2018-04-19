@@ -23,4 +23,5 @@ members = [
   "components/net",
   "components/rioos",
   "components/builder-api-marketplace",
+  "components/telemetry",
 ]

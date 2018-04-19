@@ -2,9 +2,12 @@
 
 //! Configuration for a Rio/OS API service
 
-use rio_net::config::{Anchore, AuditBackend, Blockchain, Influx, Marketplaces, PasswordAuth, Prometheus, SecureBackend, SecurerAuth, SystemAuth};
-use rio_net::config::{AnchoreCfg, BlockchainCfg, HttpCfg, LogsCfg, MarketplacesCfg, PrometheusCfg, SecurerCfg};
+use rio_net::config::{AuditBackend, Blockchain, Marketplaces, PasswordAuth, SecureBackend, SecurerAuth, SystemAuth};
+use rio_net::config::{BlockchainCfg, HttpCfg, MarketplacesCfg, SecurerCfg};
+
 use entitlement::config::{License, LicensesCfg};
+use telemetry::config::{Telemetry, TelemetryCfg};
+use audit::config::{Anchore, AnchoreCfg, Influx, LogsCfg};
 
 use rio_core::config::ConfigFile;
 
@@ -17,7 +20,7 @@ pub struct Config {
     //  Console user interface
     pub ui: UiCfg,
     //  Where to pull and record metrics
-    pub prometheus: PrometheusCfg,
+    pub prometheus: TelemetryCfg,
     //  Where to store the hidden treasures
     pub vaults: SecurerCfg,
     //  What information to use for creating services
@@ -40,7 +43,7 @@ impl Default for Config {
         Config {
             http: HttpCfg::default(),
             ui: UiCfg::default(),
-            prometheus: PrometheusCfg::default(),
+            prometheus: TelemetryCfg::default(),
             vaults: SecurerCfg::default(),
             services: ServicesCfg::default(),
             licenses: LicensesCfg::default(),
@@ -65,7 +68,7 @@ pub struct UiCfg {
 }
 
 //A delegate, that returns the metrics (prometheus) config from the loaded prometheus config
-impl Prometheus for Config {
+impl Telemetry for Config {
     fn endpoint(&self) -> &str {
         &self.prometheus.url
     }

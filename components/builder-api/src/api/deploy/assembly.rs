@@ -18,7 +18,7 @@ use error::Error;
 use rio_net::http::controller::*;
 use rio_net::util::errors::{AranResult, AranValidResult};
 use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 use deploy::models::{assembly, assemblyfactory, endpoint, volume, blueprint};
 
@@ -62,7 +62,9 @@ impl AssemblyApi {
     //Input: Body of structure deploy::Assembly
     //Returns an updated Assembly with id, ObjectMeta. created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<Assembly>(req.get::<bodyparser::Struct<Assembly>>()?)?;
+        let mut unmarshall_body = self.validate::<Assembly>(
+            req.get::<bodyparser::Struct<Assembly>>()?,
+        )?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -171,7 +173,7 @@ impl AssemblyApi {
             unmarshall_body.get_name(),
             unmarshall_body.get_account(),
         );
-       
+
         unmarshall_body.set_meta(type_meta(req), m);
         unmarshall_body.set_id(params.get_id());
         match assembly::DataStore::new(&self.conn).update(&unmarshall_body) {
@@ -191,7 +193,9 @@ impl AssemblyApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
         match assembly::DataStore::new(&self.conn).status_update(&unmarshall_body) {
@@ -225,7 +229,7 @@ impl AssemblyApi {
             Ok(Some(assembly)) => {
                 let data = json!({
                             "type": typ,
-                            "data": assembly,      
+                            "data": assembly,
                             });
                 serde_json::to_string(&data).unwrap()
             }
@@ -296,9 +300,7 @@ impl Api for AssemblyApi {
 
         router.put(
             "/assemblys/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "assembly_status",
         );
         router.put(
@@ -321,9 +323,9 @@ impl ExpanderSender for AssemblyApi {
         let plan_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PLAN.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                blueprint::DataStore::show(&_conn, &id)
-                    .ok()
-                    .and_then(|p| serde_json::to_string(&p).ok())
+                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
+                    serde_json::to_string(&p).ok()
+                })
             }),
         ));
 

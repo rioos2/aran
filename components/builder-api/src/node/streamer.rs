@@ -9,7 +9,7 @@ use std::thread;
 
 use watch::handler::WatchHandler;
 use watch::service::ServiceImpl;
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 use config::Config;
 
 use tls_api::TlsAcceptorBuilder as tls_api_TlsAcceptorBuilder;
@@ -84,9 +84,9 @@ impl Streamer {
 
                     let mut tls_acceptor = tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(&tls_tuple.1, &tls_tuple.2).expect("acceptor builder");
 
-                    tls_acceptor
-                        .set_alpn_protocols(&[b"h2"])
-                        .expect("set_alpn_protocols");
+                    tls_acceptor.set_alpn_protocols(&[b"h2"]).expect(
+                        "set_alpn_protocols",
+                    );
 
                     let mut server = httpbis::ServerBuilder::new();
                     println!("watch streamer running on port {} ", self.watch_port);
