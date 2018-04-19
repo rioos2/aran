@@ -123,7 +123,7 @@ impl NodeDS {
 
         let mut statistics = node::Statistics::new();
         statistics.set_title("Statistics".to_string());
-        statistics.set_nodes(get_statistics(metrics.1)?);
+        statistics.set_nodes(get_statistics(client, metrics.1)?);
 
         let os_statistics = get_os_statistics(client)?;
 
@@ -181,23 +181,24 @@ fn get_guages(client: &PrometheusClient) -> Result<(Vec<node::Counters>, Vec<nod
     Ok((coun_collection, node_response.1))
 }
 
-fn get_statistics(node_response: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
-
+fn get_statistics(client: &PrometheusClient, node_response: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
     //Statistics metric of the each node
-    let mut lstatistics = vec![node::NodeStatistic::new()];
-
-    if node_response.len() > 0 {
-        node_response
-            .into_iter()
-            .map(|x| { lstatistics = x.into(); })
-            .collect::<Vec<_>>();
-    } else {
+    if node_response.len() == 0 {
         let mut node = node::NodeStatistic::new();
         let jackie = node.who_am_i();
         node.set_type_meta(type_meta_url(jackie));
-        lstatistics = vec![node];
+        return Ok(vec![node]);
+
     }
-    Ok(lstatistics)
+
+    let mut lstatistics = vec![node::NodeStatistic::new()];
+
+    node_response
+        .into_iter()
+        .map(|x| { lstatistics = x.into(); })
+        .collect::<Vec<_>>();
+
+    Ok(node_with_network(lstatistics, network_response(client)?)?)
 }
 
 fn get_os_statistics(client: &PrometheusClient) -> Result<(Vec<Vec<node::Item>>, Vec<node::Counters>)> {
@@ -299,6 +300,31 @@ fn os_response(client: &PrometheusClient) -> Result<(Vec<node::PromResponse>, Ve
     );
 
     Ok(Collector::new(client, os_scope).metric_by_os_usage()?)
+}
+
+fn node_with_network(nodes: Vec<node::NodeStatistic>, mut networks: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
+    Ok(
+        nodes
+            .into_iter()
+            .map(|mut x| if let node::Data::Matrix(ref mut instancevec) =
+                networks[0].clone().data
+            {
+                let mut net_collection = Vec::new();
+                instancevec
+                    .iter()
+                    .map(|y| if x.get_name() ==
+                        y.metric.get("instance").unwrap().to_string()
+                    {
+                        net_collection.push(y.clone())
+                    })
+                    .collect::<Vec<_>>();
+                x.set_network(net_collection);
+                x
+            } else {
+                return x;
+            })
+            .collect::<Vec<_>>(),
+    )
 }
 
 fn collect_scope(metric_scope: Vec<String>, labels: Vec<String>, duration: &str, avg_by: &str) -> CollectorScope {

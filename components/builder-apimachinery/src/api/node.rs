@@ -408,6 +408,7 @@ pub struct NodeStatistic {
     counter: String,
     cost_of_consumption: String,
     health: String,
+    network: Vec<MatrixItem>,
 }
 impl NodeStatistic {
     pub fn new() -> NodeStatistic {
@@ -421,6 +422,11 @@ impl NodeStatistic {
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
     pub fn set_description(&mut self, v: ::std::string::String) {
         self.description = v;
     }
@@ -445,6 +451,10 @@ impl NodeStatistic {
     pub fn set_type_meta(&mut self, type_meta: TypeMeta) {
         self.kind = type_meta.kind;
         self.api_version = type_meta.api_version;
+    }
+
+    pub fn set_network(&mut self, v: Vec<MatrixItem>) {
+        self.network = v;
     }
 }
 
