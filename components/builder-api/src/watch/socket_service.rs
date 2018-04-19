@@ -43,11 +43,7 @@ impl ws::Handler for Router {
         let out = self.sender.clone();
         let db = self.datastore.clone();
         let reg = self.register.clone();        
-<<<<<<< HEAD
-       
-=======
 
->>>>>>> origin/2-0-stable
         let re = Regex::new("/api/v1/accounts/(\\w+)/watch").unwrap();        
         if re.is_match(req.resource()) {
             self.inner = Box::new(Data {
