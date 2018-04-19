@@ -6,7 +6,7 @@ use std::io::{self, BufRead, BufReader, Read, Stdout, Write};
 use std::env;
 use uuid::Uuid;
 use std::fs::{self, File};
-
+use rpassword::read_password;
 use std::process::{self, Command};
 
 use ansi_term::Colour;
@@ -335,10 +335,13 @@ impl UI {
             }
             try!(stream.flush());
             let mut response = String::new();
-            {
+            if question == "Password".to_string() {
+                response = read_password().unwrap();
+            } else {
                 let reference = self.shell.input.by_ref();
                 try!(BufReader::new(reference).read_line(&mut response));
             }
+
             if response.trim().is_empty() {
                 match default {
                     Some(d) => return Ok(d.to_string()),
