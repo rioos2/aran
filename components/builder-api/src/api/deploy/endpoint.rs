@@ -103,7 +103,6 @@ impl EndpointApi {
     //Will need roles/permission to access others origin
     pub fn show_by_assembly(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-
         match endpoint::DataStore::show_by_assembly(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
             Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
@@ -140,10 +139,34 @@ impl Api for EndpointApi {
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
-        router.post("/endpoints", XHandler::new(C { inner: create }).before(basic.clone()), "endpoints");
-        router.get("/endpoints/:id", XHandler::new(C { inner: show }).before(basic.clone()), "endpoint_show");
-        router.get("/endpoints/assembly/:id", XHandler::new(C { inner: show_by_assembly }).before(basic.clone()), "endpoint_show_by_assembly");
-        router.get("/endpoints", XHandler::new(C { inner: list_blank }).before(basic.clone()), "endpoint_list_blank");
+        router.post(
+            "/endpoints",
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.endpoint.post".to_string())),
+            "endpoints",
+        );
+        router.get(
+            "/endpoints/:id",
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.endpoint.get".to_string())),
+            "endpoint_show",
+        );
+        router.get(
+            "/endpoints/assembly/:id",
+            XHandler::new(C { inner: show_by_assembly })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.endpoint.get".to_string())),
+            "endpoint_show_by_assembly",
+        );
+        router.get(
+            "/endpoints",
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.endpoint.get".to_string())),
+            "endpoint_list_blank",
+        );
     }
 }
 

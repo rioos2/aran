@@ -218,13 +218,43 @@ impl Api for HorizontalScalingApi {
         let _self = self.clone();
         let scale = move |req: &mut Request| -> AranResult<Response> { _self.scale(req, &_service_cfg) };
 
-        router.post("/horizontalscaling", XHandler::new(C { inner: create }).before(basic.clone()), "horizontal_scalings");
+        router.post(
+            "/horizontalscaling",
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.post".to_string())),
+            "horizontal_scalings",
+        );
 
-        router.put("/horizontalscaling/:id/status", XHandler::new(C { inner: status_update }).before(basic.clone()), "horizontal_scaling_status_update");
-        router.put("/horizontalscaling/:id", XHandler::new(C { inner: update }).before(basic.clone()), "horizontal_scaling_update");
-        router.get("/horizontalscaling/:id/metrics", XHandler::new(C { inner: metrics }).before(basic.clone()), "horizontal_scaling_metrics");
+        router.put(
+            "/horizontalscaling/:id/status",
+            XHandler::new(C { inner: status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string())),
+            "horizontal_scaling_status_update",
+        );
+        router.put(
+            "/horizontalscaling/:id",
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string())),
+            "horizontal_scaling_update",
+        );
+        router.get(
+            "/horizontalscaling/:id/metrics",
+            XHandler::new(C { inner: metrics })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            "horizontal_scaling_metrics",
+        );
 
-        router.get("/horizontalscaling/:id/scale", XHandler::new(C { inner: scale }).before(basic.clone()), "horizontal_scaling");
+        router.get(
+            "/horizontalscaling/:id/scale",
+            XHandler::new(C { inner: scale })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            "horizontal_scaling",
+        );
 
         /*router.get(
             "/horizontalscaling/assemblyfactory/:id",
@@ -232,7 +262,13 @@ impl Api for HorizontalScalingApi {
             "horizontal_scaling_show_by_assembly_factory",
         );*/
 
-        router.get("/horizontalscaling", XHandler::new(C { inner: list_blank }).before(basic.clone()), "horizontal_scaling_list_blank");
+        router.get(
+            "/horizontalscaling",
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            "horizontal_scaling_list_blank",
+        );
     }
 }
 

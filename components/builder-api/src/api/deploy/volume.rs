@@ -140,11 +140,44 @@ impl Api for VolumeApi {
         let show_by_assembly = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
 
         //volumes
-        router.post("/volumes", XHandler::new(C { inner: create }).before(basic.clone()), "volumes");
-        router.get("/volumes/:id", XHandler::new(C { inner: show }).before(basic.clone()), "volumes_show");
-        router.put("/volumes/:id", XHandler::new(C { inner: update }).before(basic.clone()), "volumes_update");
-        router.put("/volumes/:id/status", XHandler::new(C { inner: status_update }).before(basic.clone()), "volumes_status_update");
-        router.get("/assemblys/:id/volumes", XHandler::new(C { inner: show_by_assembly }).before(basic.clone()), "volumes_show_by_assembly");
+        router.post(
+            "/volumes",
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.post".to_string())),
+            "volumes",
+        );
+        router.get(
+            "/volumes/:id",
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.get".to_string())),
+            "volumes_show",
+        );
+        router.put(
+            "/volumes/:id",
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.put".to_string())),
+            "volumes_update",
+        );
+        router.put(
+            "/volumes/:id/status",
+            XHandler::new(C {
+                inner: status_update,
+            })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.put".to_string())),
+            "volumes_status_update",
+        );
+        router.get(
+            "/assemblys/:id/volumes",
+            XHandler::new(C {
+                inner: show_by_assembly,
+            }).before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.get".to_string())),
+            "volumes_show_by_assembly",
+        );
     }
 }
 

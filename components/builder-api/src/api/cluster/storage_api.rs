@@ -422,54 +422,74 @@ impl Api for StorageApi {
 
         router.post(
             "/storageconnectors",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storageconnector.post".to_string())),
             "storages",
         );
         router.get(
             "/storageconnectors",
-            XHandler::new(C { inner: list }).before(basic.clone()),
+            XHandler::new(C { inner: list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storageconnector.get".to_string())),
             "storages_list",
         );
         router.get(
             "/storageconnectors/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storageconnector.get".to_string())),
             "storages_show",
         );
         router.put(
             "storageconnectors/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C { inner: status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storageconnector.put".to_string())),
             "storages_status_update",
         );
         router.put(
             "storageconnectors/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storageconnector.put".to_string())),
             "storages_update",
         );
 
         //StoragePool API
         router.post(
             "/storagespool",
-            XHandler::new(C { inner: storage_pool_create }).before(basic.clone()),
+            XHandler::new(C { inner: storage_pool_create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storagepool.post".to_string())),
             "storages_pool",
         );
         router.get(
             "/storageconnectors/:id/storagespool",
-            XHandler::new(C { inner: storage_pool_by_connector }).before(basic.clone()),
+            XHandler::new(C { inner: storage_pool_by_connector })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storagepool.get".to_string())),
             "storages_pool_show_by_connector",
         );
         router.get(
             "/storagespool",
-            XHandler::new(C { inner: storage_pool_list }).before(basic.clone()),
+            XHandler::new(C { inner: storage_pool_list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storagepool.get".to_string())),
             "storages_pool_list",
         );
         router.put(
             "/storagespool/:id/status",
-            XHandler::new(C { inner: storage_pool_status_update }).before(basic.clone()),
+            XHandler::new(C { inner: storage_pool_status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storagepool.put".to_string())),
             "storages_pool_status_update",
         );
         router.get(
             "/storagespool/:id",
-            XHandler::new(C { inner: storagepool_show }).before(basic.clone()),
+            XHandler::new(C { inner: storagepool_show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.storagepool.get".to_string())),
             "storagepool_show",
         );
 
@@ -478,23 +498,31 @@ impl Api for StorageApi {
         //DataCenter API
         router.post(
             "/datacenters",
-            XHandler::new(C { inner: data_center_create }).before(basic.clone()),
+            XHandler::new(C { inner: data_center_create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.datacenter.post".to_string())),
             "data_center",
         );
         router.get(
             "/datacenters",
-            XHandler::new(C { inner: data_center_list }).before(basic.clone()),
+            XHandler::new(C { inner: data_center_list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.datacenter.get".to_string())),
             "data_center_list",
         );
         router.get(
             "/datacenters/:id",
-            XHandler::new(C { inner: data_center_show }).before(basic.clone()),
+            XHandler::new(C { inner: data_center_show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.datacenter.get".to_string())),
             "data_center_show",
         );
 
         router.put(
             "/datacenters/:id",
-            XHandler::new(C { inner: datacenter_update }).before(basic.clone()),
+            XHandler::new(C { inner: datacenter_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.datacenter.put".to_string())),
             "data_center_update",
         );
     }

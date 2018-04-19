@@ -249,8 +249,14 @@ impl Api for SecretApi {
         let show_by_org_and_name = move |req: &mut Request| -> AranResult<Response> { _self.show_by_origin_and_name(req) };
 
         //secret API
-        router.post("/accounts/:account_id/secrets", XHandler::new(C { inner: create }).before(basic.clone()), "secrets");
-
+        router.post(
+            "/accounts/:account_id/secrets",
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.post".to_string())),
+            "secrets",
+        );
+        
         //MEGAM
         //without authentication
         router.post("/origins/:origin_id/secrets", XHandler::new(C { inner: create_by_origin }), "secrets_by_origins");
@@ -259,12 +265,28 @@ impl Api for SecretApi {
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "secrets_list",
         );*/
-        //TODO
-        //without authentication
-        router.get("/secrets", XHandler::new(C { inner: list_blank }), "secrets_list");
-        router.get("/secrets/:id", XHandler::new(C { inner: show }).before(basic.clone()), "secret_show");
-        router.get("/accounts/:account_id/secrets", XHandler::new(C { inner: list }).before(basic.clone()), "secret_show_by_account");
-
+        //TODO 
+        //without authentication 
+        router.get(
+            "/secrets",
+            XHandler::new(C { inner: list_blank }),
+            "secrets_list",
+        );
+        router.get(
+            "/secrets/:id",
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.get".to_string())),
+            "secret_show",
+        );
+        router.get(
+            "/accounts/:account_id/secrets",
+            XHandler::new(C { inner: list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.get".to_string())),
+            "secret_show_by_account",
+        );
+       
         //MEGAM
         //without authentication
         router.get("/origins/:origin_id/secrets", C { inner: list_by_origin }, "secret_show_by_origin");

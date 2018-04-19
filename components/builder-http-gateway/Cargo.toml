@@ -1,7 +1,7 @@
 [package]
 name = "builder-http-gateway"
 version = "0.0.0"
-authors = ["Kishorekumar Neelamegam <kishore.neelamegam@rio.company"]
+authors = ["Kishorekumar Neelamegam <kishore.neelamegam@rio.company", "Rajthilak Rajamani <rajthilak.rajamani@rio.company>", "vinothini.veerasundaram@rio.company"]
 description = "A library for implementing API HTTP Gateways"
 workspace = "../../"
 
@@ -9,9 +9,6 @@ workspace = "../../"
 base64 = "*"
 bodyparser = "*"
 env_logger = "*"
-habitat-builder-protocol = { path = "../builder-protocol" }
-builder_core = { path = "../builder-core" }
-habitat_net = { path = "../net" }
 hyper = "0.10"
 iron = "*"
 log = "*"
@@ -32,6 +29,4 @@ unicase = "1"
 # which leverages the latest version of bodyparser
 urlencoded = { version = "*", git = "https://github.com/iron/urlencoded" }
 
-[dependencies.habitat_core]
-git = "https://github.com/habitat-sh/core.git"
 

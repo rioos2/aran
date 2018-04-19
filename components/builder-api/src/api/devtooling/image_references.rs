@@ -168,31 +168,41 @@ impl Api for ImageReferencesApi {
 
         router.post(
             "/imagereferences",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagereference.post".to_string())),
             "image_ref",
         );
 
         router.get(
             "/imagereferences/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
             "image_ref_show",
         );
 
         router.get(
             "/imagereferences",
-            XHandler::new(C { inner: list }).before(basic.clone()),
+            XHandler::new(C { inner: list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
             "image_references_list",
         );
 
         router.put(
             "/imagereferences/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagereference.put".to_string())),
             "image_references_update",
         );
 
         router.get(
             "/imagereferences/buildconfigs/:id",
-            XHandler::new(C { inner: show_by_build_config }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_build_config })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
             "image_references_show_by_build_config",
         );
     }

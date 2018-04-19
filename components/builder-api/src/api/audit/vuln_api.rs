@@ -51,7 +51,13 @@ impl Api for VulnApi {
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
-        router.get("/image/:name/vulnerablity", XHandler::new(C { inner: show }).before(basic.clone()).before(TrustAccessed {}), "show");
+        router.get(
+            "/image/:name/vulnerablity",
+            XHandler::new(C { inner: show })
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.vuln.get".to_string())),
+            "show",
+        );
     }
 }
 

@@ -161,25 +161,33 @@ impl Api for NetworkApi {
 
         router.post(
             "/networks",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.network.post".to_string())),
             "networks",
         );
 
         router.get(
             "/networks",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.network.get".to_string())),
             "networks_list_blank",
         );
 
         router.get(
             "/networks/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.network.get".to_string())),
             "networks_get",
         );
 
         router.put(
             "/networks/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.network.put".to_string())),
             "networks_update",
         );
     }

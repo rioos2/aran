@@ -140,12 +140,42 @@ impl Api for JobApi {
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
-        router.post("/jobs", XHandler::new(C { inner: create }).before(basic.clone()), "jobs");
+        router.post(
+            "/jobs",
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.post".to_string())),
+            "jobs",
+        );
 
-        router.post("serviceaccounts/:service_name/jobs", XHandler::new(C { inner: service_account_based_create }).before(basic.clone()), "jobs_create");
-        router.put("/jobs/:id/status", XHandler::new(C { inner: status_update }).before(basic.clone()), "job_status_update");
-        router.get("/jobs/node", XHandler::new(C { inner: show_by_node }).before(basic.clone()), "job_show_by_node");
-        router.get("/jobs", XHandler::new(C { inner: list_blank }).before(basic.clone()), "job_list_blank");
+        router.post(
+            "serviceaccounts/:service_name/jobs",
+            XHandler::new(C { inner: service_account_based_create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.post".to_string())),
+            "jobs_create",
+        );
+        router.put(
+            "/jobs/:id/status",
+            XHandler::new(C { inner: status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.put".to_string())),
+            "job_status_update",
+        );
+        router.get(
+            "/jobs/node",
+            XHandler::new(C { inner: show_by_node })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.get".to_string())),
+            "job_show_by_node",
+        );
+        router.get(
+            "/jobs",
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.job.get".to_string())),
+            "job_list_blank",
+        );
     }
 }
 

@@ -303,13 +303,37 @@ impl Api for AuthenticateApi {
         let _self = self.clone();
         let openid_list_blank = move |req: &mut Request| -> AranResult<Response> { _self.openid_list_blank(req) };
 
-        router.post("/accounts", XHandler::new(C { inner: account_create }), "account_create:signup");
-        router.get("/accounts/:id", XHandler::new(C { inner: account_show }).before(basic.clone()), "account_show");
+        router.post(
+            "/accounts",
+            XHandler::new(C { inner: account_create }),
+            "account_create:signup",
+        );
+        router.get(
+            "/accounts/:id",
+            XHandler::new(C { inner: account_show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.account.get".to_string())),
+            "account_show",
+        );
 
-        router.get("/accounts/name/:name", XHandler::new(C { inner: account_show_by_name }).before(basic.clone()), "account_show_by_name");
+        router.get(
+            "/accounts/name/:name",
+            XHandler::new(C { inner: account_show_by_name })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.account.get".to_string())),
+            "account_show_by_name",
+        );
 
-        router.post("/authenticate", XHandler::new(C { inner: authenticate }), "authenticate");
-        router.post("/authenticate/ldap/:code", XHandler::new(C { inner: authenticate_ldap }), "authenticate_ldap");
+        router.post(
+            "/authenticate",
+            XHandler::new(C { inner: authenticate }),
+            "authenticate",
+        );
+        router.post(
+            "/authenticate/ldap/:code",
+            XHandler::new(C { inner: authenticate_ldap }),
+            "authenticate_ldap",
+        );
 
         router.post("/ldap/config", C { inner: config_ldap }, "config_ldap");
         router.post("/ldap/config/:id/test", C { inner: test_ldap }, "test_ldap");
