@@ -16,7 +16,6 @@ rioos_builder_apimachinery = { path = "../builder-apimachinery" }
 rioos_core = { path = "../core" }
 iron = "0.6.0"
 iron-test = "*"
-reqwest = "0.8.5"
 url = "1.7.0"
 mount = "0.4.0"
 serde = "1.0.27"

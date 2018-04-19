@@ -10,9 +10,10 @@ chrono = { version = "0.4.0", features = ["serde"] }
 serde = "1.0.27"
 serde_derive = "*"
 serde_json = "1.0.10"
-reqwest = "0.8.5"
-url = "1.7.0"
 rioos_builder_apimachinery = { path = "../builder-apimachinery" }
+
+[dependencies.rioos_http_client]
+path = "../http-client"
 
 [features]
 functional = []

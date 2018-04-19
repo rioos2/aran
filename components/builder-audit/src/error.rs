@@ -4,41 +4,36 @@
 use std::result;
 use influx_db_client;
 
-use std::collections::HashMap;
 use std::error;
 use std::fmt;
 use std::io;
+use http_client;
 
-use reqwest;
 use serde_json;
-use url;
 
 pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
-    AnchotreAPI(reqwest::StatusCode, HashMap<String, String>),
     IO(io::Error),
-    ReqwestError(reqwest::Error),
     Json(serde_json::Error),
     RequiredConfigField(String),
     CryptoError(String),
     InfluxError(influx_db_client::error::Error),
-    UrlParseError(url::ParseError),
+    RioHttpClient(http_client::Error),
 }
 
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
-            Error::AnchotreAPI(ref c, ref m) => format!("[{}] {:?}", c, m),
-            Error::ReqwestError(ref err) => format!("{}", err),
             Error::IO(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
             Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
-            Error::UrlParseError(ref e) => format!("{}", e),
             Error::InfluxError(ref e) => format!("{}", e),
+            Error::RioHttpClient(ref e) => format!("{}", e),
+
         };
         write!(f, "{}", msg)
     }
@@ -47,14 +42,12 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::AnchotreAPI(_, _) => "Anchore API error.",
             Error::IO(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
             Error::CryptoError(_) => "Crypto error",
-            Error::ReqwestError(ref err) => err.description(),
             Error::RequiredConfigField(_) => "Missing required field in configuration.",
-            Error::UrlParseError(ref err) => err.description(),
             Error::InfluxError(_) => "InfluxError",
+            Error::RioHttpClient(ref err) => err.description(),
 
         }
     }
@@ -78,14 +71,8 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-impl From<reqwest::Error> for Error {
-    fn from(err: reqwest::Error) -> Error {
-        Error::ReqwestError(err)
-    }
-}
-
-impl From<url::ParseError> for Error {
-    fn from(err: url::ParseError) -> Error {
-        Error::UrlParseError(err)
+impl From<http_client::Error> for Error {
+    fn from(err: http_client::Error) -> Error {
+        Error::RioHttpClient(err)
     }
 }

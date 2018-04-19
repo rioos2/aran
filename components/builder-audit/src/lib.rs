@@ -3,11 +3,9 @@
 //! Libraries  module used by builder node
 
 extern crate rioos_builder_apimachinery as protocol;
-
+extern crate rioos_http_client as http_client;
 extern crate influx_db_client;
 extern crate serde_json;
-extern crate url;
-extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

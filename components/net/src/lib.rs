@@ -27,7 +27,6 @@ extern crate libflate;
 extern crate log;
 extern crate mount;
 extern crate rand;
-extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

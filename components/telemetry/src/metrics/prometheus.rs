@@ -2,14 +2,11 @@
 
 //! A module containing the middleware of the HTTP server
 
-use super::super::error::{self, Result};
+use super::super::error::Result;
 
-use std::collections::HashMap;
 use std::io::Read;
-use reqwest::Url;
-use reqwest::StatusCode;
-use metrics::reqwest_client::http_bearer_get;
-use serde_json;
+
+use http_client::reqwest_client::http_bearer_get;
 use chrono::prelude::*;
 
 use config;
@@ -38,15 +35,10 @@ impl PrometheusClient {
     ///       label_name  = group (first label)
     ///       label_value = nodes (first labels value)
     pub fn pull_metrics(&self, path: &str) -> Result<Contents> {
-        let url = Url::parse(&format!("{}/query?query={}", self.url, path))?;
-        let mut rep = http_bearer_get(url, path)?;
+        let url = format!("{}/query?query={}", self.url, path);
+        let mut rep = http_bearer_get(&url, path)?;
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
-
-        if rep.status() != StatusCode::Ok {
-            let err: HashMap<String, String> = serde_json::from_str(&body)?;
-            return Err(error::Error::PrometheusAPI(rep.status(), err));
-        }
 
         let contents: Contents = Contents { data: body };
 
@@ -57,22 +49,19 @@ impl PrometheusClient {
     ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
     pub fn pull_osusage(&self, path: &str) -> Result<Contents> {
         let utc: DateTime<Utc> = Utc::now();
-        let url = Url::parse(&format!(
+        let url =
+            format!(
             "{}/query_range?query={}&start={}&end={}&step=15s",
             self.url,
             path,
             utc.timestamp() - 180,
             utc.timestamp(),
-        )).unwrap();
+        );
 
-        let mut rep = http_bearer_get(url, path)?;
+        let mut rep = http_bearer_get(&url, path)?;
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
 
-        if rep.status() != StatusCode::Ok {
-            let err: HashMap<String, String> = serde_json::from_str(&body)?;
-            return Err(error::Error::PrometheusAPI(rep.status(), err));
-        }
 
         let contents: Contents = Contents { data: body };
 
