@@ -44,6 +44,7 @@ pub struct AuthenticateApi {
 /// POST: /authenticate,
 /// GET: /account/id
 /// Record the other apis here.
+
 impl AuthenticateApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
         AuthenticateApi { conn: datastore }
