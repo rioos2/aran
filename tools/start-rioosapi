@@ -21,6 +21,7 @@ RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
         fi
         touch $RIOOS_SETUP_COMPLETE
     fi
+	$RIOOS_BIN_HOME/rioos-apiserver migrate
 
 	if [ ! -f $RIOOS_MARKETPLACE_YAML ]; then
            $RIOOS_BIN_HOME/rioos-apiserver sync
