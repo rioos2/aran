@@ -141,27 +141,6 @@ impl AssemblyApi {
         }
     }
 
-    ///Every user will be able to list their own account_id.
-    ///Will need roles/permission to access others account_id.
-    ///GET: /accounts/:account_id/assemblys/list
-    ///Input account_id
-    ///Returns all the Assemblys (for that account)
-    pub fn list_by_account_direct(&self, params: IdGet, dispatch: String) -> Option<String> {
-        let ident = dispatch_url(dispatch);
-        match assembly::DataStore::new(&self.conn).list(&params) {
-            Ok(Some(assemblys)) => {
-                let data = json!({
-                                "api_version": ident.version,
-                                "kind": ident.kind,
-                                "items": assemblys,
-                });
-                Some(serde_json::to_string(&data).unwrap())
-            }
-            Ok(None) => None,
-            Err(_err) => None,
-        }
-    }
-
     ///PUT: /assembly/:id
     ///Input assembly id
     ///Returns updated assemblyfactory
@@ -236,6 +215,28 @@ impl AssemblyApi {
             _ => "".to_string(),
         };
         Bytes::from(res)
+    }
+
+    ///Every user will be able to list their own account_id.
+    ///Will need roles/permission to access others account_id.
+    ///GET: /accounts/:account_id/assemblys/list
+    ///Input account_id
+    ///Returns all the Assemblys (for that account)
+    pub fn watch_list_by_account(&mut self, params: IdGet, dispatch: String) -> Option<String> {
+        self.with_cache();
+        let ident = dispatch_url(dispatch);
+        match assembly::DataStore::new(&self.conn).list(&params) {
+            Ok(Some(assemblys)) => {
+                let data = json!({
+                                "api_version": ident.version,
+                                "kind": ident.kind,
+                                "items": assemblys,
+                });
+                Some(serde_json::to_string(&data).unwrap())
+            }
+            Ok(None) => None,
+            Err(_err) => None,
+        }
     }
 }
 
@@ -339,6 +340,7 @@ impl ExpanderSender for AssemblyApi {
         let plan_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PLAN.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Planfactory live load for ≈ {}", id);
                 blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
                     serde_json::to_string(&p).ok()
                 })
@@ -351,6 +353,7 @@ impl ExpanderSender for AssemblyApi {
         let factory_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_FACTORY.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Assemblyfactory live load for ≈ {}", id);
                 assemblyfactory::DataStore::new(&_conn)
                     .show(&id)
                     .ok()
@@ -363,6 +366,7 @@ impl ExpanderSender for AssemblyApi {
         let endpoint_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_ENDPOINT.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Endpoint live load for ≈ {}", id);
                 endpoint::DataStore::show_by_assembly(&_conn, &id)
                     .ok()
                     .and_then(|e| serde_json::to_string(&e).ok())
@@ -374,6 +378,7 @@ impl ExpanderSender for AssemblyApi {
         let volume_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_VOLUME.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Volume live load for ≈ {}", id);
                 volume::DataStore::show_by_assembly(&_conn, &id)
                     .ok()
                     .and_then(|v| serde_json::to_string(&v).ok())

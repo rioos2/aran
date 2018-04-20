@@ -96,8 +96,8 @@ impl TrustAccess {
 //when requested account resource is wild(*) permission then return true
 //otherwise it will check resource and level permissions
 impl PartialEq for TrustAccess {
-    fn eq(&self, other: &TrustAccess) -> bool {
-        match other.1 {
+    fn eq(&self, other: &TrustAccess) -> bool {        
+        match self.1 {
             TrustLevel::ResourceWild => self.0 == other.0,
             _ => self.0 == other.0 && self.1 == other.1
         }
