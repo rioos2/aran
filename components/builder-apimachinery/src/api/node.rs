@@ -11,6 +11,9 @@ pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
 pub const NODE_JOBS: &'static str = "job=rioos_sh_nodes";
 pub const IDLEMODE: &'static str = "mode=idle";
 
+pub type NetworkType = (f64, String, String);
+
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
     #[serde(default)]
@@ -408,7 +411,7 @@ pub struct NodeStatistic {
     counter: String,
     cost_of_consumption: String,
     health: String,
-    network: Vec<MatrixItem>,
+    network: Vec<NetworkGroup>,
 }
 impl NodeStatistic {
     pub fn new() -> NodeStatistic {
@@ -453,16 +456,58 @@ impl NodeStatistic {
         self.api_version = type_meta.api_version;
     }
 
-    pub fn set_network(&mut self, v: Vec<MatrixItem>) {
+    pub fn set_network(&mut self, v: Vec<NetworkGroup>) {
         self.network = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct NetworkGroup {
+    name: String,
+    error: Vec<NetworkType>,
+    throughput: Vec<NetworkType>,
+}
+
+impl NetworkGroup {
+    pub fn new() -> NetworkGroup {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_throughput(&mut self, v: Vec<NetworkType>) {
+        self.throughput = v;
+    }
+    pub fn set_error(&mut self, v: Vec<NetworkType>) {
+        self.error = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct NetworkData {
+    pub name: String,
+    pub error: Vec<MatrixItem>,
+    pub throughput: Vec<MatrixItem>,
+}
+
+impl NetworkData {
+    pub fn new() -> NetworkData {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_throughput(&mut self, v: Vec<MatrixItem>) {
+        self.throughput = v;
+    }
+    pub fn set_error(&mut self, v: Vec<MatrixItem>) {
+        self.error = v;
     }
 }
 
 impl WhoAmITypeMeta for NodeStatistic {
     const MY_KIND: &'static str = "POST:nodes";
 }
-
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Osusages {

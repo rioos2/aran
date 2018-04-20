@@ -4,6 +4,7 @@
 
 use chrono::prelude::*;
 use error::{Result, Error};
+use itertools::Itertools;
 
 use protocol::api::node;
 use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
@@ -20,6 +21,7 @@ use db::data_store::DataStoreConn;
 use super::{NodeOutput, NodeOutputList};
 
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
+
 
 pub struct NodeDS;
 
@@ -318,13 +320,84 @@ fn node_with_network(nodes: Vec<node::NodeStatistic>, mut networks: Vec<node::Pr
                         net_collection.push(y.clone())
                     })
                     .collect::<Vec<_>>();
-                x.set_network(net_collection);
+                x.set_network(group_network(&net_collection));
                 x
             } else {
                 return x;
             })
             .collect::<Vec<_>>(),
     )
+}
+
+fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkGroup> {
+    let merged = network
+        .iter()
+        .flat_map(|s| s.metric.get("device"))
+        .collect::<Vec<_>>()
+        .into_iter()
+        .unique()
+        .collect::<Vec<_>>();
+
+    let data = merged
+        .into_iter()
+        .map(|x| {
+            let mut net = node::NetworkData::new();
+            let mut a = Vec::new();
+            let mut b = Vec::new();
+            network
+                .into_iter()
+                .map(|y| if x == y.metric.get("device").unwrap() {
+                    if y.metric.get("__name__").unwrap() == "node_network_receive_bytes_total" || y.metric.get("__name__").unwrap() == "node_network_transmit_bytes_total" {
+                        a.push(y.clone())
+                    } else {
+                        b.push(y.clone())
+                    }
+                })
+                .collect::<Vec<_>>();
+            net.set_name(x.to_string());
+            net.set_throughput(a);
+            net.set_error(b);
+            net
+        })
+        .collect::<Vec<_>>();
+
+    data.iter()
+        .map(|x| {
+            let mut group = node::NetworkGroup::new();
+            let mut throughput: Vec<node::NetworkType> = vec![];
+            let mut error: Vec<node::NetworkType> = vec![];
+            x.throughput[0]
+                .values
+                .iter()
+                .map(|y| {
+                    x.throughput[1]
+                        .values
+                        .iter()
+                        .map(|z| if y.0 == z.0 {
+                            throughput.push((y.0, y.1.clone(), z.1.clone()));
+                        })
+                        .collect::<Vec<_>>();
+                })
+                .collect::<Vec<_>>();
+            x.error[0]
+                .values
+                .iter()
+                .map(|y| {
+                    x.error[1]
+                        .values
+                        .iter()
+                        .map(|z| if y.0 == z.0 {
+                            error.push((y.0, y.1.clone(), z.1.clone()));
+                        })
+                        .collect::<Vec<_>>();
+                })
+                .collect::<Vec<_>>();
+            group.set_name(x.name.clone());
+            group.set_throughput(throughput);
+            group.set_error(error);
+            group
+        })
+        .collect::<Vec<_>>()
 }
 
 fn collect_scope(metric_scope: Vec<String>, labels: Vec<String>, duration: &str, avg_by: &str) -> CollectorScope {
