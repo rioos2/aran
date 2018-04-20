@@ -144,12 +144,13 @@ impl fmt::Display for Operators {
 
             Operators::Network(ref i) => {
                 format!(
-                    "{}__name__=~{}{}|{}|{}{}{}{}",
+                    "{}__name__=~{}{}|{}|{}|{}{}{}{}",
                     "{",
                     '"',
                     i.metric[0],
                     i.metric[1],
                     i.metric[2],
+                    i.metric[3],
                     '"',
                     "}",
                     i.total
