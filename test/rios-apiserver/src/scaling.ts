@@ -12,7 +12,7 @@ describe('Scaling API', function() {
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .send({"object_meta":{"name": "hzscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"","api_version":"","name":"","uid":globalAny.asm_fac_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"",
-        "deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1}, "scale_type":"AUTOHS","state":"data", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,
+        "deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1}, "scale_type":"AUTOHS","state":"data", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,
         "metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},
         "resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
         .expect(200)
@@ -28,7 +28,7 @@ describe('Scaling API', function() {
           .set('Authorization', globalAny.bobo_bearer)
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"object_meta":{"name": "", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi.megam.io","uid":globalAny.asm_fac_id,"block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1},
-          "scale_type":"AUTOHS","state":"ABLETOSCALE", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
+          "scale_type":"AUTOHS","state":"ABLETOSCALE", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(400)
           .end(function(err, res) {
             done(err);
@@ -41,7 +41,7 @@ describe('Scaling API', function() {
           .set('Authorization', globalAny.bobo_bearer)
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"object_meta":{"name": "hzscaling", "account":"", "labels":{},"annotations":{}, "owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi.megam.io","uid":globalAny.asm_fac_id,"block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1},
-          "scale_type":"AUTOHS","state":"ABLETOSCALE", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
+          "scale_type":"AUTOHS","state":"ABLETOSCALE", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(400)
           .end(function(err, res) {
             done(err);
@@ -55,7 +55,7 @@ describe('Scaling API', function() {
           .set('Authorization', globalAny.bobo_bearer)
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"object_meta":{"name": "hzscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi.megam.io","uid":"","block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1},
-          "scale_type":"AUTOHS","state":"ABLETOSCALE", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
+          "scale_type":"AUTOHS","state":"ABLETOSCALE", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(400)
           .end(function(err, res) {
             done(err);
@@ -68,7 +68,7 @@ describe('Scaling API', function() {
           .set('Authorization', globalAny.bobo_bearer)
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"object_meta":{"name": "hzscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi.megam.io","uid":globalAny.asm_fac_id,"block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1},
-          "scale_type":"AUTOHS","state":"", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
+          "scale_type":"AUTOHS","state":"", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(400)
           .end(function(err, res) {
             done(err);
@@ -81,7 +81,7 @@ describe('Scaling API', function() {
           .set('Authorization', globalAny.bobo_bearer)
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"object_meta":{"name": "hzscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi.megam.io","uid":globalAny.asm_fac_id,"block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1},
-          "scale_type":"","state":"ABLETOSCALE", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m","scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
+          "scale_type":"","state":"ABLETOSCALE", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m","scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(400)
           .end(function(err, res) {
             done(err);
@@ -163,7 +163,7 @@ describe('Scaling API', function() {
           .set('Authorization', globalAny.bobo_bearer)
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"object_meta":{"name": "hzscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"lev.megam.io","uid":globalAny.asm_fac_id,"block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1},
-          "scale_type":"AUTOHS","state":"data", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
+          "scale_type":"AUTOHS","state":"data", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m", "scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(200)
           .end(function(err, res) {
             done(err);
@@ -177,7 +177,7 @@ describe('Scaling API', function() {
           .set('Authorization', globalAny.bobo_bearer)
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"object_meta":{"name": "hzscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"lev.megam.io","uid":globalAny.asm_fac_id,"block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_replicas":1, "desired_replicas":1},
-          "scale_type":"AUTOHS","state":"data", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m","scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
+          "scale_type":"AUTOHS","state":"data", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":{"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by": "5m","scale_down_by" :"5m"}},"resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(404)
           .end(function(err, res) {
             done(err);

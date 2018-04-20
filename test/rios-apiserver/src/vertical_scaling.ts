@@ -13,7 +13,7 @@ describe('Scaling API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .send({"update_policy":{"mode":"auto"},"object_meta":{"name": "hzscaling", "account":"098765432", "labels":{},"annotations":{}, "owner_references":[{"kind":"","api_version":"","name":"","uid":globalAny.asm_fac_id,
         "block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_resource":{ "cpu":"2","ram":"1000"},
-        "desired_resource":{ "cpu":"3","ram":"2000"}},"scale_type":"AUTOHS","state":"data", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_resource":{},"max_resource":{},
+        "desired_resource":{ "cpu":"3","ram":"2000"}},"scale_type":"AUTOHS","state":"data", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_resource":{},"max_resource":{},
         "metrics":[{"metric_type": "Resource","resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
         .expect(200)
         .end(function(err, res) {
@@ -51,7 +51,7 @@ describe('Scaling API', function() {
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"update_policy":{"mode":"auto"},"object_meta":{"name": "", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"Assembly","api_version":"v1","name":"lev1.megam.io","uid":globalAny.assembly_id,
           "block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_resource":{"cpu":"2","ram":"1000 GiB"},
-          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
+          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
           "metrics":[{"metric_type": "Resource","resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
             .expect(400)
           .end(function(err, res) {
@@ -66,7 +66,7 @@ describe('Scaling API', function() {
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"update_policy":{"mode":"auto"},"object_meta":{"name": "vscaling", "account":"", "labels":{},"annotations":{}, "owner_references":[{"kind":"Assembly","api_version":"v1","name":"lev1.megam.io","uid":globalAny.assembly_id,
           "block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_resource":{"cpu":"2","ram":"1000 GiB"},
-          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
+          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
           "metrics":[{"metric_type": "Resource","resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
             .expect(400)
           .end(function(err, res) {
@@ -82,7 +82,7 @@ describe('Scaling API', function() {
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"update_policy":{"mode":"auto"},"object_meta":{"name": "vscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"Assembly","api_version":"v1","name":"lev1.megam.io","uid":"",
           "block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_resource":{"cpu":"2","ram":"1000 GiB"},
-          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
+          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
           "metrics":[{"metric_type": "Resource","resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(400)
           .end(function(err, res) {
@@ -97,7 +97,7 @@ describe('Scaling API', function() {
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"update_policy":{"mode":"auto"},"object_meta":{"name": "vscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"Assembly","api_version":"v1","name":"lev1.megam.io","uid":globalAny.assembly_id,
           "block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_resource":{"cpu":"2","ram":"1000 GiB"},
-          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
+          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
           "metrics":[{"metric_type": "Resource","resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(400)
           .end(function(err, res) {
@@ -112,7 +112,7 @@ describe('Scaling API', function() {
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"update_policy":{"mode":"auto"},"object_meta":{"name": "vscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"Assembly","api_version":"v1","name":"lev1.megam.io","uid":globalAny.assembly_id,
           "block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_resource":{"cpu":"2","ram":"1000 GiB"},
-          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"","state":"active", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
+          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"","state":"active", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
           "metrics":[{"metric_type": "Resource","resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
             .expect(400)
           .end(function(err, res) {
@@ -196,7 +196,7 @@ describe('Scaling API', function() {
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"update_policy":{"mode":"auto"},"object_meta":{"name": "vscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"Assembly","api_version":"v1","name":"lev1.megam.io","uid":globalAny.assembly_id,
           "block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_resource":{"cpu":"2","ram":"1000 GiB"},
-          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
+          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
           "metrics":[{"metric_type": "Resource","resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
             .expect(200)
           .end(function(err, res) {
@@ -212,7 +212,7 @@ describe('Scaling API', function() {
           .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
           .send({"update_policy":{"mode":"auto"},"object_meta":{"name": "vscaling", "account":globalAny.account_id, "labels":{},"annotations":{}, "owner_references":[{"kind":"Assembly","api_version":"v1","name":"lev1.megam.io","uid":globalAny.assembly_id,
           "block_owner_deletion":true}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}, "status": {"last_scale_time": "", "current_resource":{"cpu":"2","ram":"1000 GiB"},
-          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
+          "desired_resource":{"cpu":"3","ram":"2000 GiB"}}, "scale_type":"AUTOVS","state":"active", "metadata":{},"spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_resource":{"cpu":"2","ram":"1000 MiB"},"max_resource":{"cpu":"4",  "ram":"4000 MiB"},
           "metrics":[{"metric_type": "Resource","resource":{"name": "memory", "min_target_value":"2", "max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}})
           .expect(404)
           .end(function(err, res) {
