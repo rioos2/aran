@@ -6,6 +6,7 @@ const request = supertest.agent(globalAny.apiServer);
 
 describe('Settings Map  API', function() {
     it('returns the created settings map', function(done) {
+      this.timeout(4000)
       request.post('/settingsmap')
       .ca(globalAny.rootCA)
         .send({"metadata":{"origin":"rioos_system"},"data":{},"object_meta":{"name": "cluster_info", "account":"", "labels":{},"annotations":{}, "owner_references":[{"kind":"","api_version":"","name":"","uid":"","block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}})
