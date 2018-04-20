@@ -164,7 +164,6 @@ impl ws::Handler for Data {
             }
         }
 
-
         thread::spawn(move || {
             loop {
                 match ry.recv() {
@@ -182,8 +181,7 @@ impl ws::Handler for Data {
                                     break;
                                 }
                             }
-                        }                   
-                        
+                        }                  
                     }
                     _ => {
                         break;

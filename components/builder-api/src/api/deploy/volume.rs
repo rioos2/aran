@@ -158,31 +158,40 @@ impl Api for VolumeApi {
         //volumes
         router.post(
             "/volumes",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.post".to_string())),
             "volumes",
         );
         router.get(
             "/volumes/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.get".to_string())),
             "volumes_show",
         );
         router.put(
             "/volumes/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.put".to_string())),
             "volumes_update",
         );
         router.put(
             "/volumes/:id/status",
             XHandler::new(C {
                 inner: status_update,
-            }).before(basic.clone()),
+            })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.put".to_string())),
             "volumes_status_update",
         );
         router.get(
             "/assemblys/:id/volumes",
             XHandler::new(C {
                 inner: show_by_assembly,
-            }).before(basic.clone()),
+            }).before(basic.clone())
+            .before(TrustAccessed::new("rioos.volume.get".to_string())),
             "volumes_show_by_assembly",
         );
     }
