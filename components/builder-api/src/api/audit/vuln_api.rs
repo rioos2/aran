@@ -15,7 +15,7 @@ use rio_net::util::errors::{internal_error, not_found_error};
 
 use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;
-use rio_net::metrics::vulnerablity::AnchoreClient;
+use audit::vulnerable::vulnerablity::AnchoreClient;
 
 #[derive(Clone)]
 pub struct VulnApi {
@@ -60,7 +60,7 @@ impl Api for VulnApi {
             "/image/:name/vulnerablity",
             XHandler::new(C { inner: show })
                 .before(basic.clone())
-                .before(TrustAccessed {}),
+                .before(TrustAccessed::new("rioos.vuln.get".to_string())),
             "show",
         );
     }

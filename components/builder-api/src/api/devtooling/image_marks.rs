@@ -166,30 +166,40 @@ impl Api for ImageMarksApi {
 
         router.post(
             "/imagemarks",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagemark.post".to_string())),
             "image_marks",
         );
 
         router.get(
             "/imagemarks/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagemark.get".to_string())),
             "image_marks_show",
         );
         router.get(
             "/imagemarks",
-            XHandler::new(C { inner: list }).before(basic.clone()),
+            XHandler::new(C { inner: list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagemark.get".to_string())),
             "image_marks_list",
         );
 
         router.put(
             "/imagemarks/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagemark.put".to_string())),
             "image_marks_update",
         );
 
         router.get(
             "/imagemarks/builds/:id",
-            XHandler::new(C { inner: list_by_build }).before(basic.clone()),
+            XHandler::new(C { inner: list_by_build })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.imagemark.get".to_string())),
             "image_marks_list_by_build",
         );
     }

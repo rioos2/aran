@@ -12,6 +12,7 @@ pub enum Functions {
     Avg(AvgInfo),
     Sum(AvgInfo),
     SumDisk(AvgInfo),
+    Network(AvgInfo),
 }
 
 pub enum Operators {
@@ -19,6 +20,7 @@ pub enum Operators {
     IRate(IRateInfo),
     Sum(SumInfo),
     SumDisk(SumInfo),
+    Network(SumInfo),
 }
 
 pub struct AvgInfo {
@@ -65,6 +67,7 @@ impl fmt::Display for Functions {
             Functions::Avg(ref a) => format!("({})", a.operator),
             Functions::Sum(ref a) => format!("{}", a.operator),
             Functions::SumDisk(ref a) => format!("{}", a.operator),
+            Functions::Network(ref a) => format!("{}", a.operator),
         };
         write!(f, "{}", msg)
     }
@@ -137,6 +140,20 @@ impl fmt::Display for Operators {
                     })
                     .collect();
                 format!("{}{}{}{}{}", i.metric, "{", s, "}", i.last_x_minutes,)
+            }
+
+            Operators::Network(ref i) => {
+                format!(
+                    "{}__name__=~{}{}|{}|{}{}{}{}",
+                    "{",
+                    '"',
+                    i.metric[0],
+                    i.metric[1],
+                    i.metric[2],
+                    '"',
+                    "}",
+                    i.total
+                )
             }
         };
         write!(f, "{}", msg)

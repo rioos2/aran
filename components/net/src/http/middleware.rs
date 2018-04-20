@@ -171,33 +171,6 @@ impl BlockchainConn {
 }
 
 #[derive(Clone)]
-pub struct InfluxClientConn {
-    pub url: String,
-    pub prefix: String,
-}
-
-#[allow(unused_variables)]
-impl InfluxClientConn {
-    pub fn new<T: config::Influx>(config: &T) -> Self {
-        InfluxClientConn {
-            url: config.endpoint().to_string(),
-            prefix: config.prefix().to_string(),
-        }
-    }
-    pub fn db(&self) -> String {
-        self.prefix.clone() + "db"
-    }
-
-    pub fn table(&self) -> String {
-        self.prefix.clone()
-    }
-
-    pub fn path(&self) -> String {
-        self.prefix.clone() + "Path"
-    }
-}
-
-#[derive(Clone)]
 pub struct Authenticated {
     pub serviceaccount_public_key: Option<String>,
 }
@@ -261,7 +234,7 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {       
+    pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -285,7 +258,20 @@ impl ProceedAuthenticating {
 }
 
 
-pub struct TrustAccessed;
+#[derive(Clone)]
+pub struct TrustAccessed {
+    pub trusted: String,
+}
+
+impl TrustAccessed {
+    pub fn new(trusted: String) -> Self {
+        TrustAccessed { trusted: trusted }
+    }
+   
+    fn get(&self) -> String {
+        self.trusted.clone()
+    }
+}
 
 impl BeforeMiddleware for TrustAccessed {
     fn before(&self, req: &mut Request) -> IronResult<()> {
@@ -300,14 +286,18 @@ impl BeforeMiddleware for TrustAccessed {
         let header = HeaderDecider::new(req.headers.clone(), None)?;
 
         let roles: authorizer::RoleType = header.decide()?.into();
-
         // return Ok if the request has no header with email and serviceaccount name
         if roles.name.get_id().is_empty() {
             return Ok(());
         }
-
-        Ok(authorizer::Authorization::new(broker, roles).verify()?)
-
+        
+        match authorizer::Authorization::new(broker, roles).verify(self.get()) {
+            Ok(_validate) => Ok(()),
+            Err(err) => {
+                let err = unauthorized_error(&format!("{}\n", err));
+                return Err(render_json_error(&bad_err(&err), err.http_code()));
+            }
+        }
     }
 }
 

@@ -19,7 +19,7 @@ use error::Error;
 use rio_net::http::controller::*;
 use rio_net::util::errors::{AranResult, AranValidResult};
 use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 use deploy::assembler::{ServicesConfig, Assembler};
 use deploy::models::{assemblyfactory, blueprint, service};
 use protocol::cache::{CACHE_PREFIX_PLAN, NewCacheServiceFn, CACHE_PREFIX_SERVICE};
@@ -267,29 +267,39 @@ impl Api for HorizontalScalingApi {
 
         router.post(
             "/horizontalscaling",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.post".to_string())),
             "horizontal_scalings",
         );
 
         router.put(
             "/horizontalscaling/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C { inner: status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string())),
             "horizontal_scaling_status_update",
         );
         router.put(
             "/horizontalscaling/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string())),
             "horizontal_scaling_update",
         );
         router.get(
             "/horizontalscaling/:id/metrics",
-            XHandler::new(C { inner: metrics }).before(basic.clone()),
+            XHandler::new(C { inner: metrics })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
             "horizontal_scaling_metrics",
         );
 
         router.get(
             "/horizontalscaling/:id/scale",
-            XHandler::new(C { inner: scale }).before(basic.clone()),
+            XHandler::new(C { inner: scale })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
             "horizontal_scaling",
         );
 
@@ -301,7 +311,9 @@ impl Api for HorizontalScalingApi {
 
         router.get(
             "/horizontalscaling",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
             "horizontal_scaling_list_blank",
         );
     }

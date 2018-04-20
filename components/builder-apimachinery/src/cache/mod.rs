@@ -95,7 +95,8 @@ impl CacheService for NewCacheServiceFn {
         self.key.clone()
     }
 
-    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {
+    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {   
+    info!("✔ apply cache ≈ {}", id);    
         self.cache().insert(
             lru,
             self.cache_id(id.clone()).clone(),
@@ -120,6 +121,7 @@ impl CacheService for NewCacheServiceFn {
     }
 
     fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
+        info!("✔ get: invalidate ≈ {}", id);
         self.apply(id.clone(), lru);
         self.cache().get(lru, self.cache_id(id).clone())
     }
@@ -193,8 +195,9 @@ impl InMemoryExpander {
     /// Does an apply for the id and fetches that data from the cache,
     /// This will be the latest value of the id at any particular instant.
     fn cached_invalidate_for(&self, key: String, id: api::base::IdGet) -> Option<String> {
-        let mut _lru = &self.lru;
-
+        let mut _lru = &self.lru;        
+        debug!("» Cache Invalidate key: {:?}", key.clone());
+        debug!("» Cache Invalidate id: {:?}", id);
         match self.cache_service_for(key.clone()) {
             Some(cachefn) => {
                 cachefn.invalidate(id, _lru).map(|a| {
@@ -214,10 +217,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
+                    debug!("» Plan Invalidate fn for ≈ {}", pid);
                     self.cached_invalidate_for(CACHE_PREFIX_PLAN.to_string(), pid.clone())
                         .clone()
                 },
                 |_v| {
+                     debug!("» Plan cache get fn for ≈ {}", pid);
                     self.cached_value_for(CACHE_PREFIX_PLAN.to_string(), pid.clone())
                         .clone()
                 },
@@ -236,15 +241,16 @@ impl InMemoryExpander {
     /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
     /// If force is None, then it invalidates the cache and loads a fresh copy
     pub fn with_factory<F: FactoryFeeder>(&self, f: &mut F, force: Option<bool>) {
-        let fid = f.fget_id();
-
+        let fid = f.fget_id();       
         let opt_found_as_str = {
             force.map_or_else(
                 || {
+                    debug!("» Assemblyfactory Invalidate fn for ≈ {}", fid);
                     self.cached_invalidate_for(CACHE_PREFIX_FACTORY.to_string(), fid.clone())
                         .clone()
                 },
                 |_v| {
+                    debug!("» Assemblyfactory cache fn for ≈ {}", fid);
                     self.cached_value_for(CACHE_PREFIX_FACTORY.to_string(), fid.clone())
                         .clone()
                 },
@@ -263,15 +269,16 @@ impl InMemoryExpander {
     /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
     /// If force is None, then it invalidates the cache and loads a fresh copy
     pub fn with_endpoints<E: EndPointsFeeder>(&self, e: &mut E, force: Option<bool>) {
-        let eid = e.eget_id();
-
+        let eid = e.eget_id();       
         let opt_found_as_str = {
             force.map_or_else(
                 || {
+                    debug!("» Endpoints Invalidate fn for ≈ {}", eid);
                     self.cached_invalidate_for(CACHE_PREFIX_ENDPOINT.to_string(), eid.clone())
                         .clone()
                 },
                 |_v| {
+                    debug!("» Endpoints cache fn for ≈ {}", eid);
                     self.cached_value_for(CACHE_PREFIX_ENDPOINT.to_string(), eid.clone())
                         .clone()
                 },
@@ -318,15 +325,16 @@ impl InMemoryExpander {
     /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
     /// If force is None, then it invalidates the cache and loads a fresh copy
     pub fn with_volumes<V: VolumeFeeder>(&self, v: &mut V, force: Option<bool>) {
-        let vid = v.vget_id();
-
+        let vid = v.vget_id();       
         let opt_found_as_str = {
             force.map_or_else(
                 || {
+                    debug!("» Volumes Invalidate fn for ≈ {}", vid);
                     self.cached_invalidate_for(CACHE_PREFIX_VOLUME.to_string(), vid.clone())
                         .clone()
                 },
                 |_v| {
+                    debug!("» Volumes cache fn for ≈ {}", vid);
                     self.cached_value_for(CACHE_PREFIX_VOLUME.to_string(), vid.clone())
                         .clone()
                 },

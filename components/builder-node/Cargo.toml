@@ -16,6 +16,9 @@ path = "../builder-apimachinery"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
+[dependencies.rioos_telemetry]
+path = "../telemetry"
+
 [dependencies.rioos_net]
 path = "../net"
 

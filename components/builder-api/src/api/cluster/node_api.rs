@@ -16,7 +16,7 @@ use error::Error;
 use rio_net::http::controller::*;
 use rio_net::util::errors::{AranResult, AranValidResult};
 use rio_net::util::errors::{bad_request, internal_error, not_found_error, badgateway_error};
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 use bytes::Bytes;
 use serde_json;
 
@@ -210,7 +210,9 @@ impl Api for NodeApi {
 
         router.get(
             "/healthz/overall",
-            XHandler::new(C { inner: healthz_all }).before(basic.clone()),
+            XHandler::new(C { inner: healthz_all })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.healthz.get".to_string())),
             "healthz_all",
         );
 
@@ -218,28 +220,38 @@ impl Api for NodeApi {
 
         router.post(
             "/nodes",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.node.post".to_string())),
             "nodes",
         );
         router.get(
             "/nodes",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.node.get".to_string())),
             "nodes_list",
         );
         router.get(
             "/nodes/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.node.get".to_string())),
             "node_show",
         );
         router.put(
             "/nodes/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C { inner: status_update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.node.put".to_string())),
             "node_status_update",
         );
 
         router.get(
             "/nodes/ip",
-            XHandler::new(C { inner: show_by_address }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_address })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.node.get".to_string())),
             "node_show_by_address",
         );
     }

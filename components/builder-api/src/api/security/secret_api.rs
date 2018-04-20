@@ -188,8 +188,8 @@ impl SecretApi {
     //Input origin_name Returns all the secrets (fpr that namespaces)
     //Every user will be able to list their own origin.
     //Will need roles/permission to access others origin.
-    pub fn list_by_account_direct(&self, params: IdGet, dispatch: String) -> Option<String> {
-
+    pub fn watch_list_by_account(&self, params: IdGet, dispatch: String) -> Option<String> {
+        
         let data = match securer::from_config(&self.secret, Box::new(*self.conn.clone())) {
             Ok(result) => result,
             Err(_err) => return None,
@@ -299,7 +299,9 @@ impl Api for SecretApi {
         //secret API
         router.post(
             "/accounts/:account_id/secrets",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.post".to_string())),
             "secrets",
         );
         
@@ -324,12 +326,16 @@ impl Api for SecretApi {
         );
         router.get(
             "/secrets/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.get".to_string())),
             "secret_show",
         );
         router.get(
             "/accounts/:account_id/secrets",
-            XHandler::new(C { inner: list }).before(basic.clone()),
+            XHandler::new(C { inner: list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.secret.get".to_string())),
             "secret_show_by_account",
         );
        

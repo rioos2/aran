@@ -154,24 +154,32 @@ impl Api for ServiceApi {
 
         router.post(
             "/services",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.service.post".to_string())),
             "services",
         );
 
         router.get(
             "/services/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.service.get".to_string())),
             "service_show",
         );
         router.get(
             "/services",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.service.get".to_string())),
             "service_list_blank",
         );
 
         router.put(
             "/services/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.service.put".to_string())),
             "service_update",
         );
     }

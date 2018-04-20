@@ -9,7 +9,7 @@ use std::sync::{mpsc, Arc, Mutex};
 
 use watch::handler::LISTENERS;
 use watch::handler::WatchHandler;
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 use db::data_store::DataStoreConn;
 use rio_net::http::middleware::SecurerConn;
 use config::Config;
@@ -59,7 +59,9 @@ impl Websocket {
                 let send = Arc::new(Mutex::new(db_sender));
                 let register = Arc::new(Mutex::new(reg_sender));
 
-                watchhandler.notifier(send.clone(), LISTENERS.to_vec()).unwrap();
+                watchhandler
+                    .notifier(send.clone(), LISTENERS.to_vec())
+                    .unwrap();
 
                 watchhandler.publisher(db_receiver);
 
@@ -71,16 +73,20 @@ impl Websocket {
                 let parsed = pkcs12.parse(&tls_tuple.2).unwrap();
 
                 let acceptor = Rc::new(
-                        SslAcceptorBuilder::mozilla_intermediate(
-                            SslMethod::tls(),
-                            &parsed.pkey,
-                            &parsed.cert,
-                            std::iter::empty::<X509Ref>(),
-                        ).unwrap()
-                    .build(),
-                );               
+                    SslAcceptorBuilder::mozilla_intermediate(
+                        SslMethod::tls(),
+                        &parsed.pkey,
+                        &parsed.cert,
+                        std::iter::empty::<X509Ref>(),
+                    ).unwrap()
+                        .build(),
+                );
 
-                let address = format!("{}:{}", self.config.http.listen.to_string(), self.port.to_string());
+                let address = format!(
+                    "{}:{}",
+                    self.config.http.listen.to_string(),
+                    self.port.to_string()
+                );
                 // Listen on an address and call the closure for each connection
 
                 ws::Builder::new()
@@ -89,27 +95,26 @@ impl Websocket {
                         encrypt_server: false,
                         ..ws::Settings::default()
                     })
-                    .build(|out: ws::Sender| Router {
-                        watchhandler: watchhandler.clone(),
-                        sender: out,
-                        // Default to returning a 404 when the route doesn't match.
-                        // You could default to any handler here.
-                        inner: Box::new(NotFound),
-                        datastore: Box::new(ds.clone()),
-                        register: register.clone(),
-                        ssl: acceptor.clone(),
+                    .build(|out: ws::Sender| {
+                        Router {
+                            watchhandler: watchhandler.clone(),
+                            sender: out,
+                            // Default to returning a 404 when the route doesn't match.
+                            // You could default to any handler here.
+                            inner: Box::new(NotFound),
+                            datastore: Box::new(ds.clone()),
+                            register: register.clone(),
+                            ssl: acceptor.clone(),
+                        }
                     })
                     .unwrap()
                     .listen(address)
-                    .unwrap();                
+                    .unwrap();
             }
             None => {
                 return Ok(());
-            },
+            }
         }
         Ok(())
     }
-
 }
-
-

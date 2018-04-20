@@ -18,7 +18,7 @@ use error::Error;
 use rio_net::http::controller::*;
 use rio_net::util::errors::{AranResult, AranValidResult};
 use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-use rio_net::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 use deploy::models::{assembly, assemblyfactory, endpoint, volume, blueprint};
 
@@ -62,7 +62,9 @@ impl AssemblyApi {
     //Input: Body of structure deploy::Assembly
     //Returns an updated Assembly with id, ObjectMeta. created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<Assembly>(req.get::<bodyparser::Struct<Assembly>>()?)?;
+        let mut unmarshall_body = self.validate::<Assembly>(
+            req.get::<bodyparser::Struct<Assembly>>()?,
+        )?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -139,27 +141,6 @@ impl AssemblyApi {
         }
     }
 
-    ///Every user will be able to list their own account_id.
-    ///Will need roles/permission to access others account_id.
-    ///GET: /accounts/:account_id/assemblys/list
-    ///Input account_id
-    ///Returns all the Assemblys (for that account)
-    pub fn list_by_account_direct(&self, params: IdGet, dispatch: String) -> Option<String> {
-        let ident = dispatch_url(dispatch);
-        match assembly::DataStore::new(&self.conn).list(&params) {
-            Ok(Some(assemblys)) => {
-                let data = json!({
-                                "api_version": ident.version,
-                                "kind": ident.kind,
-                                "items": assemblys,
-                });
-                Some(serde_json::to_string(&data).unwrap())
-            }
-            Ok(None) => None,
-            Err(_err) => None,
-        }
-    }
-
     ///PUT: /assembly/:id
     ///Input assembly id
     ///Returns updated assemblyfactory
@@ -171,7 +152,7 @@ impl AssemblyApi {
             unmarshall_body.get_name(),
             unmarshall_body.get_account(),
         );
-       
+
         unmarshall_body.set_meta(type_meta(req), m);
         unmarshall_body.set_id(params.get_id());
         match assembly::DataStore::new(&self.conn).update(&unmarshall_body) {
@@ -191,7 +172,9 @@ impl AssemblyApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
         match assembly::DataStore::new(&self.conn).status_update(&unmarshall_body) {
@@ -225,13 +208,35 @@ impl AssemblyApi {
             Ok(Some(assembly)) => {
                 let data = json!({
                             "type": typ,
-                            "data": assembly,      
+                            "data": assembly,
                             });
                 serde_json::to_string(&data).unwrap()
             }
             _ => "".to_string(),
         };
         Bytes::from(res)
+    }
+
+    ///Every user will be able to list their own account_id.
+    ///Will need roles/permission to access others account_id.
+    ///GET: /accounts/:account_id/assemblys/list
+    ///Input account_id
+    ///Returns all the Assemblys (for that account)
+    pub fn watch_list_by_account(&mut self, params: IdGet, dispatch: String) -> Option<String> {
+        self.with_cache();
+        let ident = dispatch_url(dispatch);
+        match assembly::DataStore::new(&self.conn).list(&params) {
+            Ok(Some(assemblys)) => {
+                let data = json!({
+                                "api_version": ident.version,
+                                "kind": ident.kind,
+                                "items": assemblys,
+                });
+                Some(serde_json::to_string(&data).unwrap())
+            }
+            Ok(None) => None,
+            Err(_err) => None,
+        }
     }
 }
 
@@ -268,29 +273,39 @@ impl Api for AssemblyApi {
         //routes: assemblys
         router.post(
             "/accounts/:account_id/assemblys",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assembly.post".to_string())),
             "assemblys",
         );
         router.get(
             "/accounts/:account_id/assemblys",
-            XHandler::new(C { inner: list }).before(basic.clone()),
+            XHandler::new(C { inner: list })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assembly.get".to_string())),
             "assembly_list",
         );
         router.get(
             "/assemblys/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
+            XHandler::new(C { inner: show })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assembly.get".to_string())),
             "assembly_show",
         );
         //Special move here from assemblyfactory code. We have  moved it here since
         //the expanders for endpoints, volume are missing assembly factory,
         router.get(
             "/assemblyfactorys/:id/describe",
-            XHandler::new(C { inner: describe }).before(basic.clone()),
+            XHandler::new(C { inner: describe })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assembly.get".to_string())),
             "assemblyfactorys_describe",
         );
         router.get(
             "/assemblys",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assembly.get".to_string())),
             "assembly_list_blank",
         );
 
@@ -298,12 +313,16 @@ impl Api for AssemblyApi {
             "/assemblys/:id/status",
             XHandler::new(C {
                 inner: status_update,
-            }).before(basic.clone()),
+            })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assembly.put".to_string())),
             "assembly_status",
         );
         router.put(
             "/assemblys/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
+            XHandler::new(C { inner: update })
+            .before(basic.clone())
+            .before(TrustAccessed::new("rioos.assembly.put".to_string())),
             "assembly_update",
         );
     }
@@ -321,9 +340,10 @@ impl ExpanderSender for AssemblyApi {
         let plan_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PLAN.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                blueprint::DataStore::show(&_conn, &id)
-                    .ok()
-                    .and_then(|p| serde_json::to_string(&p).ok())
+                debug!("» Planfactory live load for ≈ {}", id);
+                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
+                    serde_json::to_string(&p).ok()
+                })
             }),
         ));
 
@@ -333,6 +353,7 @@ impl ExpanderSender for AssemblyApi {
         let factory_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_FACTORY.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Assemblyfactory live load for ≈ {}", id);
                 assemblyfactory::DataStore::new(&_conn)
                     .show(&id)
                     .ok()
@@ -345,6 +366,7 @@ impl ExpanderSender for AssemblyApi {
         let endpoint_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_ENDPOINT.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Endpoint live load for ≈ {}", id);
                 endpoint::DataStore::show_by_assembly(&_conn, &id)
                     .ok()
                     .and_then(|e| serde_json::to_string(&e).ok())
@@ -356,6 +378,7 @@ impl ExpanderSender for AssemblyApi {
         let volume_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_VOLUME.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Volume live load for ≈ {}", id);
                 volume::DataStore::show_by_assembly(&_conn, &id)
                     .ok()
                     .and_then(|v| serde_json::to_string(&v).ok())

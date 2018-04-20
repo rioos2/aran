@@ -105,6 +105,55 @@ impl<'a> Collector<'a> {
         Ok((gauges.unwrap(), statistics.unwrap()))
     }
 
+    pub fn network_metric(&self) -> Result<Vec<PromResponse>> {
+        let mut content_datas = vec![];
+
+        let network_query = Functions::Network(AvgInfo {
+            operator: Operators::Network(SumInfo {
+                labels: self.scope.labels.clone(),
+                metric: self.scope.metric_names.clone(),
+                total: self.scope.last_x_minutes.clone(),
+            }),
+        });
+
+        let content = self.client.pull_metrics(&format!("{}", network_query))?;
+
+        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+
+        content_datas.push(response);
+
+        Ok(content_datas)
+    }
+
+    //os usage metric of the assemblys
+    pub fn metric_by_os_usage(&mut self) -> Result<(Vec<PromResponse>, Vec<PromResponse>)> {
+        let content_datas = self.avg_collect()?;
+        let node_contents_data = self.set_metric_name(Ok(content_datas), "cpu_total")?;
+        let gauges = self.set_gauges(Ok(node_contents_data.clone()));
+
+        let content = self.os_avg_collect()?;
+
+        Ok((gauges.unwrap(), content))
+    }
+
+
+
+    //metric for general
+    pub fn metric_by_avg(&mut self) -> Result<BTreeMap<String, String>> {
+        let content_datas = self.avg_collect()?;
+
+        let metrics = self.set_metrics_average(Ok(content_datas.clone()));
+        Ok(metrics.unwrap())
+    }
+    //metrics for container
+    pub fn metric_by_avg_for_containers(&mut self) -> Result<BTreeMap<String, String>> {
+        let content_datas = self.avg_collect_for_containers()?;
+
+        let metrics = self.set_metrics_average(Ok(content_datas.clone()));
+        Ok(metrics.unwrap())
+    }
+
+
     fn set_metric_name(&self, response: Result<Vec<PromResponse>>, name: &str) -> Result<Vec<PromResponse>> {
         match response {
             Ok(proms) => {
@@ -129,30 +178,6 @@ impl<'a> Collector<'a> {
         }
     }
 
-
-
-    //os usage metric of the assemblys
-    pub fn metric_by_os_usage(&mut self) -> Result<Vec<PromResponse>> {
-        let content_datas = self.os_avg_collect()?;
-        Ok(content_datas)
-    }
-
-    //collect the metric data for total ram and cpu and os usage(query is format is different)
-    pub fn do_collect(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-        for scope in self.scope.metric_names.iter() {
-            let query = Operators::NoOp(IRateInfo {
-                labels: self.scope.labels.clone(),
-                metric: scope.to_string(),
-                last_x_minutes: self.scope.last_x_minutes.clone(),
-            });
-            let content = self.client.pull_metrics(&format!("{}", query))?;
-
-            let response: PromResponse = serde_json::from_str(&content.data)?;
-            content_datas.push(response);
-        }
-        Ok(content_datas)
-    }
     // collect the average data for the cpu usage from prometheus
     fn avg_collect(&self) -> Result<Vec<PromResponse>> {
         let mut content_datas = vec![];
@@ -207,20 +232,7 @@ impl<'a> Collector<'a> {
 
         Ok(content_datas)
     }
-    //metric for general
-    pub fn metric_by_avg(&mut self) -> Result<BTreeMap<String, String>> {
-        let content_datas = self.avg_collect()?;
 
-        let metrics = self.set_metrics_average(Ok(content_datas.clone()));
-        Ok(metrics.unwrap())
-    }
-    //metrics for container
-    pub fn metric_by_avg_for_containers(&mut self) -> Result<BTreeMap<String, String>> {
-        let content_datas = self.avg_collect_for_containers()?;
-
-        let metrics = self.set_metrics_average(Ok(content_datas.clone()));
-        Ok(metrics.unwrap())
-    }
     // collect the average data for the cpu usage from prometheus
     fn os_avg_collect(&self) -> Result<Vec<PromResponse>> {
         let mut content_datas = vec![];
