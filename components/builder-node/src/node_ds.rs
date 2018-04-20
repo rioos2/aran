@@ -5,6 +5,7 @@
 use chrono::prelude::*;
 use error::{Result, Error};
 use itertools::Itertools;
+use std::ops::Div;
 
 use protocol::api::node;
 use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
@@ -21,6 +22,9 @@ use db::data_store::DataStoreConn;
 use super::{NodeOutput, NodeOutputList};
 
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
+
+const NETWORK_DEFAULT_LAST_X_MINUTE: &'static str = "[1m]";
+
 
 
 pub struct NodeDS;
@@ -273,7 +277,7 @@ fn collect_network(client: &PrometheusClient) -> Result<Vec<node::PromResponse>>
             "node_network_transmit_errs_total".to_string(),
         ],
         vec![],
-        METRIC_DEFAULT_LAST_X_MINUTE,
+        NETWORK_DEFAULT_LAST_X_MINUTE,
         "",
     );
     Ok(Collector::new(client, network_scope).network_metric()?)
@@ -362,10 +366,11 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
                         .map(|z| if y.0 == z.0 {
                             throughput.push((
                                 NaiveDateTime::from_timestamp(y.0.round() as i64, 0)
+                                    .format("%H:%M:%S")
                                     .to_string()
                                     .to_owned(),
-                                y.1.clone().parse::<i32>().unwrap(),
-                                z.1.clone().parse::<i32>().unwrap(),
+                                y.1.clone().parse::<i32>().unwrap().div(1024).div(1024),
+                                z.1.clone().parse::<i32>().unwrap().div(1024).div(1024),
                             ));
                         })
                         .collect::<Vec<_>>();
@@ -381,10 +386,11 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
                         .map(|z| if y.0 == z.0 {
                             error.push((
                                 NaiveDateTime::from_timestamp(y.0.round() as i64, 0)
+                                    .format("%H:%M:%S")
                                     .to_string()
                                     .to_owned(),
-                                y.1.clone().parse::<i32>().unwrap(),
-                                z.1.clone().parse::<i32>().unwrap(),
+                                y.1.clone().parse::<i32>().unwrap().div(1024).div(1024),
+                                z.1.clone().parse::<i32>().unwrap().div(1024).div(1024),
                             ));
                         })
                         .collect::<Vec<_>>();
