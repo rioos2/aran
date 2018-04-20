@@ -340,16 +340,16 @@ impl Api for AuthenticateApi {
         router.get(
             "/accounts/:id",
             XHandler::new(C { inner: account_show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.account.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.account.get".to_string())),
             "account_show",
         );
 
         router.get(
             "/accounts/name/:name",
             XHandler::new(C { inner: account_show_by_name })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.account.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.account.get".to_string())),
             "account_show_by_name",
         );
 
