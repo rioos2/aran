@@ -11,7 +11,7 @@ pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
 pub const NODE_JOBS: &'static str = "job=rioos_sh_nodes";
 pub const IDLEMODE: &'static str = "mode=idle";
 
-pub type NetworkType = (f64, String, String);
+pub type NetworkType = (String, String, String);
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]

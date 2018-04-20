@@ -374,7 +374,13 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkGroup> {
                         .values
                         .iter()
                         .map(|z| if y.0 == z.0 {
-                            throughput.push((y.0, y.1.clone(), z.1.clone()));
+                            throughput.push((
+                                NaiveDateTime::from_timestamp(y.0.round() as i64, 0)
+                                    .to_string()
+                                    .to_owned(),
+                                y.1.clone(),
+                                z.1.clone(),
+                            ));
                         })
                         .collect::<Vec<_>>();
                 })
@@ -387,7 +393,13 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkGroup> {
                         .values
                         .iter()
                         .map(|z| if y.0 == z.0 {
-                            error.push((y.0, y.1.clone(), z.1.clone()));
+                            error.push((
+                                NaiveDateTime::from_timestamp(y.0.round() as i64, 0)
+                                    .to_string()
+                                    .to_owned(),
+                                y.1.clone(),
+                                z.1.clone(),
+                            ));
                         })
                         .collect::<Vec<_>>();
                 })
