@@ -11,7 +11,7 @@ pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
 pub const NODE_JOBS: &'static str = "job=rioos_sh_nodes";
 pub const IDLEMODE: &'static str = "mode=idle";
 
-pub type NetworkType = (String, String, String);
+pub type SpeedSummary = (String, i32, i32);
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -301,7 +301,7 @@ pub struct HealthzAllGet {
     title: String,
     guages: Guages, //average of the cpu ram disk values get from PromResponse
     statistics: Statistics, //ovarall cpu usage of the each node
-    osusages: Osusages, //overall cpu usage of the each os
+    osusages: OSUsages, //overall cpu usage of the each os
     from_date: String,
     to_date: String,
 }
@@ -323,7 +323,7 @@ impl HealthzAllGet {
     pub fn set_statistics(&mut self, v: Statistics) {
         self.statistics = v;
     }
-    pub fn set_osusages(&mut self, v: Osusages) {
+    pub fn set_osusages(&mut self, v: OSUsages) {
         self.osusages = v;
     }
     pub fn set_from_date(&mut self, v: ::std::string::String) {
@@ -411,7 +411,7 @@ pub struct NodeStatistic {
     counter: String,
     cost_of_consumption: String,
     health: String,
-    network: Vec<NetworkGroup>,
+    network: Vec<NetworkSpeed>,
 }
 impl NodeStatistic {
     pub fn new() -> NodeStatistic {
@@ -456,42 +456,42 @@ impl NodeStatistic {
         self.api_version = type_meta.api_version;
     }
 
-    pub fn set_network(&mut self, v: Vec<NetworkGroup>) {
+    pub fn set_network_speed(&mut self, v: Vec<NetworkSpeed>) {
         self.network = v;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct NetworkGroup {
+pub struct NetworkSpeed {
     name: String,
-    error: Vec<NetworkType>,
-    throughput: Vec<NetworkType>,
+    error: Vec<SpeedSummary>,
+    throughput: Vec<SpeedSummary>,
 }
 
-impl NetworkGroup {
-    pub fn new() -> NetworkGroup {
+impl NetworkSpeed {
+    pub fn new() -> NetworkSpeed {
         ::std::default::Default::default()
     }
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
-    pub fn set_throughput(&mut self, v: Vec<NetworkType>) {
+    pub fn set_throughput(&mut self, v: Vec<SpeedSummary>) {
         self.throughput = v;
     }
-    pub fn set_error(&mut self, v: Vec<NetworkType>) {
+    pub fn set_error(&mut self, v: Vec<SpeedSummary>) {
         self.error = v;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct NetworkData {
+pub struct NetworkDevice {
     pub name: String,
     pub error: Vec<MatrixItem>,
     pub throughput: Vec<MatrixItem>,
 }
 
-impl NetworkData {
-    pub fn new() -> NetworkData {
+impl NetworkDevice {
+    pub fn new() -> NetworkDevice {
         ::std::default::Default::default()
     }
     pub fn set_name(&mut self, v: ::std::string::String) {
@@ -510,15 +510,15 @@ impl WhoAmITypeMeta for NodeStatistic {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Osusages {
+pub struct OSUsages {
     title: String,
     from_date: String,
     to_date: String,
     cumulative: Counters,
     items: Vec<Item>,
 }
-impl Osusages {
-    pub fn new() -> Osusages {
+impl OSUsages {
+    pub fn new() -> OSUsages {
         ::std::default::Default::default()
     }
     pub fn get_items(&self) -> Vec<Item> {
@@ -716,10 +716,10 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
         collections
     }
 }
-//convert the PromResponse into Osusages value
-impl Into<Osusages> for PromResponse {
-    fn into(mut self) -> Osusages {
-        let mut osusage = Osusages::new();
+//convert the PromResponse into OSUsages value
+impl Into<OSUsages> for PromResponse {
+    fn into(mut self) -> OSUsages {
+        let mut osusage = OSUsages::new();
         if let Data::Matrix(ref mut instancevec) = self.data {
             let item_collection = instancevec
                 .into_iter()

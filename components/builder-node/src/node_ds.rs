@@ -131,7 +131,7 @@ impl NodeDS {
         statistics.set_nodes(get_statistics(client, gauges_collected.1)?);
         //Collect the overall utilization of os in all machines
         let os_statistics = get_os_statistics(client)?;
-        let mut metrics = node::Osusages::new();
+        let mut metrics = node::OSUsages::new();
         metrics.set_items(os_statistics.0.iter().flat_map(|s| (*s).clone()).collect());
         metrics.set_title("OS Usages".to_owned());
         metrics.set_cumulative(os_statistics.1[0].clone());
@@ -205,7 +205,7 @@ fn get_os_statistics(client: &PrometheusClient) -> Result<(Vec<Vec<node::Item>>,
         .1
         .into_iter()
         .map(|p| {
-            let p1: node::Osusages = p.into();
+            let p1: node::OSUsages = p.into();
             p1.get_items()
         })
         .collect::<Vec<_>>();
@@ -260,7 +260,6 @@ fn collect_cpu(client: &PrometheusClient) -> Result<(Vec<node::PromResponse>, Ve
         METRIC_DEFAULT_LAST_X_MINUTE,
         "instance",
     );
-
     Ok(Collector::new(client, node_scope).overall_node_cpu()?)
 }
 
@@ -307,7 +306,7 @@ fn append_network_speed(nodes: Vec<node::NodeStatistic>, mut networks: Vec<node:
                         net_collection.push(y.clone())
                     })
                     .collect::<Vec<_>>();
-                x.set_network(group_network(&net_collection));
+                x.set_network_speed(group_network(&net_collection));
                 x
             } else {
                 return x;
@@ -316,7 +315,7 @@ fn append_network_speed(nodes: Vec<node::NodeStatistic>, mut networks: Vec<node:
     )
 }
 
-fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkGroup> {
+fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
     let merged = network
         .iter()
         .flat_map(|s| s.metric.get("device"))
@@ -328,7 +327,7 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkGroup> {
     let data = merged
         .into_iter()
         .map(|x| {
-            let mut net = node::NetworkData::new();
+            let mut net = node::NetworkDevice::new();
             let mut a = Vec::new();
             let mut b = Vec::new();
             network
@@ -350,9 +349,9 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkGroup> {
 
     data.iter()
         .map(|x| {
-            let mut group = node::NetworkGroup::new();
-            let mut throughput: Vec<node::NetworkType> = vec![];
-            let mut error: Vec<node::NetworkType> = vec![];
+            let mut group = node::NetworkSpeed::new();
+            let mut throughput: Vec<node::SpeedSummary> = vec![];
+            let mut error: Vec<node::SpeedSummary> = vec![];
             x.throughput[0]
                 .values
                 .iter()
@@ -365,8 +364,8 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkGroup> {
                                 NaiveDateTime::from_timestamp(y.0.round() as i64, 0)
                                     .to_string()
                                     .to_owned(),
-                                y.1.clone(),
-                                z.1.clone(),
+                                y.1.clone().parse::<i32>().unwrap(),
+                                z.1.clone().parse::<i32>().unwrap(),
                             ));
                         })
                         .collect::<Vec<_>>();
@@ -384,8 +383,8 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkGroup> {
                                 NaiveDateTime::from_timestamp(y.0.round() as i64, 0)
                                     .to_string()
                                     .to_owned(),
-                                y.1.clone(),
-                                z.1.clone(),
+                                y.1.clone().parse::<i32>().unwrap(),
+                                z.1.clone().parse::<i32>().unwrap(),
                             ));
                         })
                         .collect::<Vec<_>>();
