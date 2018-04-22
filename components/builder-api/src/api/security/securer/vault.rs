@@ -16,7 +16,7 @@
 
 use rioos_http::ApiClient as ReqwestClient;
 
-use rio_net::http::middleware::SecurerConn;
+use api::security::config::SecurerConn;
 use error::{Result, Error};
 
 use reqwest::IntoUrl;

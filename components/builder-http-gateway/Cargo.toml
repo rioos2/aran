@@ -44,17 +44,8 @@ path = "../common"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
-[dependencies.rioos_builder_session]
-path = "../builder-session"
-
-[dependencies.rioos_builder_servicesrv]
-path = "../builder-securer"
-
 [dependencies.rioos_builder_authsrv]
 path = "../builder-authorize"
-
-[dependencies.rioos_entitlement]
-path = "../entitlement"
 
 [dependencies.rioos_auth]
 path = "../auth"

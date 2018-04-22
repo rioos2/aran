@@ -9,11 +9,11 @@ use rand;
 use config::Config;
 use error::Error;
 
-use rio_net::util::errors::{internal_error, not_found_error};
-use rio_net::http::controller::*;
+use http_gateway::util::errors::{internal_error, not_found_error};
+use http_gateway::http::controller::*;
 use db::error::Error::RecordsNotFound;
 
-use rio_net::util::errors::AranResult;
+use http_gateway::util::errors::AranResult;
 use db::data_store::DataStoreConn;
 
 /// PassTicketApi : PassTicketApi provides ability to get passticket

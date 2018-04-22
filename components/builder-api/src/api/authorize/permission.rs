@@ -10,16 +10,16 @@ use iron::status;
 use router::Router;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::dispatch;
+use protocol::api::schema::dispatch;
 use config::Config;
 use error::Error;
 use common::ui;
 use ansi_term::Colour;
 
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 /// TO_DO: Should be named  (authorize::models::roles, authorize::models::permission)
 use authorize::models::permission;

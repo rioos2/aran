@@ -5,17 +5,17 @@ use iron::status;
 use router::Router;
 
 use api::{Api, ParmsVerifier, QueryValidator};
-use rio_net::http::schema::dispatch;
 
+use protocol::api::schema::dispatch;
 use protocol::api::base::MetaFields;
 use protocol::api::log::LogQueryBuilder;
 
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::AranResult;
+use http_gateway::util::errors::{internal_error, not_found_error};
 
 use deploy::models::assembly;
 use audit::models::log;

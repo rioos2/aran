@@ -5,9 +5,10 @@ use iron::prelude::*;
 use iron::status;
 use util::errors::Bad;
 
-use protocol::api::schema::ApiSchema;
 use serde::Serialize;
 use serde_json;
+
+use protocol::api::schema::ApiSchema;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ResponseList<T> {

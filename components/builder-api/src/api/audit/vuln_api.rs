@@ -9,9 +9,9 @@ use api::{Api, ParmsVerifier, QueryValidator};
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::AranResult;
+use http_gateway::util::errors::{internal_error, not_found_error};
 
 use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;

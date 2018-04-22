@@ -11,7 +11,7 @@ use watch::handler::LISTENERS;
 use watch::handler::WatchHandler;
 use telemetry::metrics::prometheus::PrometheusClient;
 use db::data_store::DataStoreConn;
-use rio_net::http::middleware::SecurerConn;
+use api::security::config::SecurerConn;
 use config::Config;
 use watch::socket_service::{Router, NotFound};
 use ws;

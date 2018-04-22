@@ -17,7 +17,7 @@ use tls_api_openssl;
 
 use httpbis;
 
-use rio_net::http::middleware::SecurerConn;
+use api::security::config::SecurerConn;
 use db::data_store::DataStoreConn;
 
 pub type TLSPair = Option<(String, Vec<u8>, String)>;

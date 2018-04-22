@@ -28,8 +28,8 @@ pub mod authorize;
 mod helpers;
 use protocol::api::base::{IdGet, StatusUpdate, QueryInput};
 
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, malformed_body};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, malformed_body};
 use error::ErrorMessage::{MissingParameter, MissingBody, MustBeNumeric, MissingQueryParameter};
 use api::helpers::extract_query_value;
 

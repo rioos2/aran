@@ -1,5 +1,9 @@
+use std::env;
+
 ///host url to check the vulnerability of the container
 pub const DEFAULT_ANCHORE_URL: &'static str = "http://localhost:8228/v1";
+/// host url  to get the audits
+pub const DEFAULT_BLOCK_CHAIN_URL: &'static str = "http://localhost:7000";
 /// Default Influx Host url to access the log of virtual machine and container
 pub const DEFAULT_LOGS_URL: &'static str = "http://localhost:8086";
 /// host url  to get the rio marketplace
@@ -29,7 +33,7 @@ impl Default for LogsCfg {
     }
 }
 
-pub trait Influx {
+pub trait Logs {
     /// URL to Influx API
     fn endpoint(&self) -> &str;
     /// Includes the prefix of the database,table,path in influx
@@ -106,26 +110,26 @@ pub trait Marketplaces {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
-pub struct AnchoreCfg {
+pub struct VulnerabilityCfg {
     pub url: String,
     pub username: String,
     pub password: String,
 }
 
-impl Default for AnchoreCfg {
+impl Default for VulnerabilityCfg {
     fn default() -> Self {
-        AnchoreCfg {
-            url: DEFAULT_ANCHORE_URL.to_string(),
-            username: DEFAULT_USERNAME_ADMIN.to_string(),
-            password: DEFAULT_USERNAME_ADMIN.to_string(),
+        VulnerabilityCfg {
+            anchore_endpoint: DEFAULT_ANCHORE_URL.to_string(),
+            anchore_username: DEFAULT_USERNAME_ADMIN.to_string(),
+            anchore_password: DEFAULT_USERNAME_ADMIN.to_string(),
         }
     }
 }
 
-pub trait Anchore {
-    fn endpoint(&self) -> &str;
-    fn username(&self) -> &str;
-    fn password(&self) -> &str;
+pub trait Vulnerability {
+    fn anchore_endpoint(&self) -> &str;
+    fn anchore_username(&self) -> &str;
+    fn anchore_password(&self) -> &str;
 }
 
 

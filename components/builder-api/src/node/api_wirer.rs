@@ -14,8 +14,8 @@ use error::{Result, Error};
 
 use persistent;
 
-use rio_net::http::middleware::*;
-use rio_net::http::pack;
+use http_gateway::http::middleware::*;
+use http_gateway::http::pack;
 use telemetry::metrics::prometheus::PrometheusClient;
 use audit::vulnerable::vulnerablity::AnchoreClient;
 use audit::config::InfluxClientConn;
@@ -23,6 +23,8 @@ use node::runtime::Runtime;
 
 use api::Api;
 use api::events::EventLogger;
+use api::audit::config::BlockchainConn;
+use api::security::config::SecurerConn;
 use config::Config;
 use common::ui::UI;
 

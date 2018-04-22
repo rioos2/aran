@@ -15,8 +15,6 @@
 //! must be available in $RIOOS_HOME/config/blockchain.toml
 
 use rioos_http::ApiClient as ReqwestClient;
-
-use rio_net::http::middleware::BlockchainConn;
 use rioos_http::api_client::err_from_response;
 
 use error::{Result, Error};
@@ -28,6 +26,8 @@ use reqwest::{StatusCode, Body};
 use super::Ledger;
 use protocol::api::audit::{Envelope, EnvelopeResponse};
 use protocol::api::base::{IdGet, MetaFields};
+
+use api::audit::config::BlockchainConn;
 use api::audit::ledger::EnvelopeOutputList;
 
 pub struct ExonumClient {

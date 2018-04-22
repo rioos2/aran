@@ -2,8 +2,9 @@
 
 //! Configuration for a Rio/OS API server
 
-use api::audit::config::{Anchore, AnchoreCfg, AuditBackend, Logs, LogsCfg};
+use api::audit::config::{Vulnerability, VulnerabilityCfg, AuditBackend, Logs, LogsCfg};
 use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg};
+use api::security::config::{SecurerAuth, SecurerCfg, SecureBackend};
 use api::deploy::config::ServicesCfg;
 
 use auth::config::{Identity, IdentityCfg};
@@ -27,7 +28,7 @@ pub struct Config {
     //  Where to pull and record metrics
     pub telemetry: TelemetryCfg,
     //  The type of security to use. service_account to use.
-    pub security: SecurityCfg,
+    pub identity: IdentityCfg,
     //  Where to store the hidden treasures
     pub vaults: SecurerCfg,
     //  What information to use for creating services
@@ -187,11 +188,11 @@ impl Logs for Config {
 
 //A delegate, that returns the vulnerability provider
 // Supported providers are anchore
-impl Vulnerable for Config {
-    fn anchoer_endpoint(&self) -> &str {
+impl Vulnerability for Config {
+    fn anchore_endpoint(&self) -> &str {
         &self.vulnerability.anchore_endpoint
     }
-    fn anchoer_username(&self) -> &str {
+    fn anchore_username(&self) -> &str {
         &self.vulnerability.anchore_username
     }
     fn anchore_password(&self) -> &str {

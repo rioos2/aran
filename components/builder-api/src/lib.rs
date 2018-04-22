@@ -28,7 +28,7 @@ extern crate ansi_term;
 extern crate bodyparser;
 extern crate urlencoded;
 
-extern crate rioos_builder_http_gateway as http_gateway;
+extern crate rioos_builder_httpgateway as http_gateway;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_asmsrv as deploy;
 extern crate rioos_builder_audit as audit;

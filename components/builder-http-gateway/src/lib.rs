@@ -6,8 +6,6 @@
 
 extern crate base64;
 extern crate ansi_term;
-extern crate rioos_builder_servicesrv as serviceaccount;
-extern crate rioos_builder_servicesrv as secret;
 
 extern crate chrono;
 extern crate crypto;
@@ -18,10 +16,10 @@ extern crate bodyparser;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_authsrv as authorize;
 extern crate rioos_builder_db as db;
-extern crate rioos_builder_session as session;
 extern crate rioos_common as common;
 extern crate rioos_core as core;
 extern crate rioos_auth as auth;
+
 extern crate brotli;
 extern crate iron;
 extern crate libflate;

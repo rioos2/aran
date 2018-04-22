@@ -2,6 +2,7 @@
 //
 
 //! Security part of the Rioos rest api.
+pub mod config;
 pub mod auth_api;
 pub mod passticket_api;
 pub mod secret_api;

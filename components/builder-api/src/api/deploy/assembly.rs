@@ -11,13 +11,13 @@ use router::Router;
 
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier, ExpanderSender};
-use rio_net::http::schema::{dispatch, type_meta, dispatch_url};
+use protocol::api::schema::{dispatch, type_meta, dispatch_url};
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use telemetry::metrics::prometheus::PrometheusClient;
 
 use deploy::models::{assembly, assemblyfactory, endpoint, volume, blueprint};

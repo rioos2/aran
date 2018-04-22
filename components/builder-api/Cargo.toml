@@ -64,10 +64,6 @@ failure = { git = "https://github.com/withoutboats/failure.git" }
 version = "*"
 features = [ "suggestions", "color", "unstable" ]
 
-[dependencies.rioos_builder_httpgateway]
-path = "../builder-http-gateway"
-
-
 [dependencies.rioos_core]
 path = "../core"
 
@@ -76,6 +72,9 @@ path = "../common"
 
 [dependencies.rioos_builder_apimachinery]
 path = "../builder-apimachinery"
+
+[dependencies.rioos_builder_httpgateway]
+path = "../builder-http-gateway"
 
 [dependencies.rioos_net]
 path = "../net"

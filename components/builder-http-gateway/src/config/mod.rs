@@ -20,4 +20,8 @@ pub trait GatewayCfg {
     fn listen_addr(&self) -> &IpAddr;
 
     fn listen_port(&self) -> u16;
+
+    fn tls(&self) -> Option<String>;
+    
+    fn tls_password(&self) -> Option<String>;
 }

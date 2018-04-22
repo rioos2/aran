@@ -20,7 +20,7 @@ use bytes::Bytes;
 use regex::Regex;
 use serde_json;
 use serde_json::Value;
-use rio_net::http::middleware::SecurerConn;
+use api::security::config::SecurerConn;
 use rand::{OsRng, Rng};
 
 pub const LISTENERS: [&'static str; 2] = ["assemblyfactorys", "assemblys"];

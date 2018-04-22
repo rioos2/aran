@@ -6,7 +6,9 @@ use std::io;
 use std::thread;
 
 use config::Config;
-use rio_net::http::middleware::BlockchainConn;
+use api::audit::config::BlockchainConn;
+use protocol::api::audit::Envelope;
+use entitlement::licensor::Client;
 
 use events::{HandlerPart, InternalEvent};
 use node::internal::InternalPart;
@@ -17,8 +19,6 @@ use futures::sync::mpsc;
 
 use tokio_core::reactor::Core;
 
-use protocol::api::audit::Envelope;
-use entitlement::licensor::Client;
 
 /// External messages.
 #[derive(Debug)]
