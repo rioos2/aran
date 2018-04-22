@@ -127,3 +127,21 @@ pub trait Anchore {
     fn username(&self) -> &str;
     fn password(&self) -> &str;
 }
+
+
+
+#[derive(Clone, Debug)]
+pub struct BlockchainConn {
+    pub backend: AuditBackend,
+    pub url: String,
+}
+
+#[allow(unused_variables)]
+impl BlockchainConn {
+    pub fn new<T: Blockchain>(config: &T) -> Self {
+        BlockchainConn {
+            backend: config.backend(),
+            url: config.endpoint().to_string(),
+        }
+    }
+}

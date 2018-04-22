@@ -38,3 +38,21 @@ pub trait PasswordAuth {}
 pub trait SystemAuth {
     fn serviceaccount_public_key(&self) -> Option<String>;
 }
+
+#[derive(Clone)]
+pub struct SecurerConn {
+    pub backend: SecureBackend,
+    pub endpoint: String,
+    pub token: String,
+}
+
+#[allow(unused_variables)]
+impl SecurerConn {
+    pub fn new<T: SecurerAuth>(config: &T) -> Self {
+        SecurerConn {
+            backend: config.backend(),
+            endpoint: config.endpoint().to_string(),
+            token: config.token().to_string(),
+        }
+    }
+}

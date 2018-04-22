@@ -1,6 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
 //
-use std::env;
 use std::net::{IpAddr, Ipv4Addr};
 
 /// Public listening net address for HTTP requests, Watch requests.
@@ -18,8 +17,8 @@ impl Default for HttpCfg {
         HttpCfg {
             listen: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
             port: 7443,
-            tls: Some("api-server.pfx"),
-            tls_password: ("TEAMRIOADVANCEMENT123"),         
+            tls: Some("api-server.pfx".to_string()),
+            tls_password: (Some("TEAMRIOADVANCEMENT123".to_string())),         
         }
     }
 }

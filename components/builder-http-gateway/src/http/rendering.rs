@@ -5,7 +5,7 @@ use iron::prelude::*;
 use iron::status;
 use util::errors::Bad;
 
-use http::schema::ApiSchema;
+use protocol::api::schema::ApiSchema;
 use serde::Serialize;
 use serde_json;
 

@@ -1,10 +1,9 @@
 // Copyright (c) 2018 Rio Advancement Inc
 //
-
+pub mod base;
 pub mod prelude;
 
 use std::net::IpAddr;
-
 use num_cpus;
 
 pub trait GatewayCfg {

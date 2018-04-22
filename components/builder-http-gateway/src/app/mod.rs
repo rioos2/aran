@@ -91,7 +91,6 @@ pub mod prelude;
 use std::sync::Arc;
 use std::thread;
 
-use hab_net::socket;
 use iron;
 use iron::prelude::*;
 use mount::Mount;
@@ -99,7 +98,7 @@ use router::Router;
 
 use self::error::AppResult;
 use config::GatewayCfg;
-use http::middleware::{Cors, XRouteClient};
+use http::middleware::Cors;
 
 /// Apply to a networked application which will act as a Gateway connecting to a RouteSrv.
 pub trait HttpGateway {

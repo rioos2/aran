@@ -1,6 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
+use std::collections::BTreeMap;
+
 use iron::Handler;
 use iron::headers;
 use iron::method::Method;
@@ -12,21 +14,18 @@ use router::NoRoute;
 use persistent;
 
 use unicase::UniCase;
-use protocol::api::session::*;
 use ansi_term::Colour;
 use super::rendering::*;
 use super::super::util::errors::*;
-use super::header_exacter::HeaderDecider;
-
-use config;
+use super::header_extracter::HeaderDecider;
 
 use db::data_store::DataStoreConn;
-use session::models::session as sessions;
 use common::ui;
+
 use auth::rioos::AuthenticateDelegate;
 use auth::rbac::authorizer;
 
-use util::errors::{internal_error, not_acceptable_error, bad_err};
+use util::errors::{bad_err, internal_error};
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
@@ -60,7 +59,9 @@ where
                     Ok(response)
                 }
                 None => {
-                    let err = internal_error(&format!("BUG! Report to development http://bit.ly/rioosbug"));
+                    let err = internal_error(&format!(
+                        "BUG! Report to development http://bit.ly/rioosbug"
+                    ));
                     Err(render_json_error(&bad_err(&err), err.http_code()))
                 }
             },
@@ -99,8 +100,16 @@ impl XHandler {
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
         ///// Maybe move this Request to a seperate method.
-        ui::rawdumpln(Colour::Green, '→', "------------------------------------------------------------------------------------");
-        ui::rawdumpln(Colour::Cyan, ' ', format!("======= {}:{}:{}", req.version, req.method, req.url));
+        ui::rawdumpln(
+            Colour::Green,
+            '→',
+            "------------------------------------------------------------------------------------",
+        );
+        ui::rawdumpln(
+            Colour::Cyan,
+            ' ',
+            format!("======= {}:{}:{}", req.version, req.method, req.url),
+        );
         ui::rawdumpln(Colour::Blue, ' ', "Headers:");
         ui::rawdumpln(Colour::White, ' ', "========");
 
@@ -123,58 +132,68 @@ impl Key for DataStoreBroker {
     type Value = DataStoreConn;
 }
 
-#[derive(Clone)]
-pub struct SecurerConn {
-    pub backend: config::SecureBackend,
-    pub endpoint: String,
-    pub token: String,
-}
+/// Setup authenticate flows and validate them.
+pub trait AuthFlow {
+    const AUTH_FLOW_NAME: &'static str;
+    //flow: F; type of flow
 
-#[allow(unused_variables)]
-impl SecurerConn {
-    pub fn new<T: config::SecurerAuth>(config: &T) -> Self {
-        SecurerConn {
-            backend: config.backend(),
-            endpoint: config.endpoint().to_string(),
-            token: config.token().to_string(),
-        }
+    //Get the value as set in the Flow.
+    fn get(&self) -> Option<String>;
+
+    //Say if the flow is valid or not.
+    /// The readiness check will be done for
+    /// 1. system auth =  which is the presence of service account key.
+    /// We should have a Readier trait that is registered for the Autheticated
+    /// Every readier will inform they are ready() or not ()
+    fn valid(&self) -> Option<String> {
+        //self.get().and_then(self.reason())
+        None
+    }
+
+    //Tell the reason the auth flow is invalid
+    fn reason(&self) -> Option<String> {
+        Some("You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`.".to_string())
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct BlockchainConn {
-    pub backend: config::AuditBackend,
-    pub url: String,
+/// A trait
+pub trait AuthenticationFlowCfg {
+    //
+    fn modes(&self) -> Vec<(String, String)>;
+
+    fn ready(&self) -> bool;
+
+    fn unready_message(&self) -> Option<String>;
 }
 
-#[allow(unused_variables)]
-impl BlockchainConn {
-    pub fn new<T: config::Blockchain>(config: &T) -> Self {
-        BlockchainConn { backend: config.backend(), url: config.endpoint().to_string() }
+struct DefaultAuthenticated {}
+
+impl AuthenticationFlowCfg for DefaultAuthenticated {
+    // The default modes are
+    // Email and Token
+    fn modes(&self) -> Vec<(String, String)> {
+        vec![]
+    }
+
+    fn ready(&self) -> bool {
+        false
+    }
+
+    fn unready_message(&self) -> Option<String> {
+        None
     }
 }
 
 #[derive(Clone)]
 pub struct Authenticated {
-    pub serviceaccount_public_key: Option<String>,
+    pub config_map: BTreeMap<String, String>,
 }
 
 impl Authenticated {
-    pub fn new<T: config::SystemAuth>(config: &T) -> Self {
-        Authenticated { serviceaccount_public_key: config.serviceaccount_public_key() }
-    }
-
-    /// The readiness check will be done for
-    /// 1. system auth =  which is the presence of service account key.
-    /// We should have a Readier trait that is registered for the Autheticated
-    /// Every readier will inform they are ready() or not ()
-    fn ready(&self) -> Result<String, IronError> {
-        self.serviceaccount_public_key.clone().ok_or(self.not_ready())
-    }
-
-    fn not_ready(&self) -> IronError {
-        let err = not_acceptable_error(&format!("You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`."));
-        return render_json_error(&bad_err(&err), err.http_code());
+    pub fn new<T: AuthenticationFlowCfg>(config: &T) -> Self {
+        Authenticated {
+            config_map: config.modes().into_iter().collect::<BTreeMap<_, String>>(),
+        }
     }
 }
 
@@ -183,9 +202,16 @@ impl Authenticated {
 /// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        ui::rawdumpln(Colour::Yellow, '☛', format!("======= {}:{}:{}:{}", req.version, req.method, req.url, req.headers));
+        ui::rawdumpln(
+            Colour::Yellow,
+            '☛',
+            format!(
+                "======= {}:{}:{}:{}",
+                req.version, req.method, req.url, req.headers
+            ),
+        );
 
-        self.ready().and_then(|public_key| ProceedAuthenticating::proceed(req, public_key.clone()))
+        ProceedAuthenticating::proceed(req, self.config_map.clone())
     }
 }
 
@@ -201,7 +227,7 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {
+    pub fn proceed(req: &mut Request, config_map: BTreeMap<String, String>) -> IronResult<()> {
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -210,7 +236,7 @@ impl ProceedAuthenticating {
             }
         };
 
-        let header = HeaderDecider::new(req.headers.clone(), Some(public_key))?;
+        let header = HeaderDecider::new(req.headers.clone(), config_map.clone())?;
 
         let delegate = AuthenticateDelegate::new(broker.clone());
 
@@ -224,7 +250,6 @@ impl ProceedAuthenticating {
     }
 }
 
-
 #[derive(Clone)]
 pub struct TrustAccessed {
     pub trusted: String,
@@ -234,7 +259,7 @@ impl TrustAccessed {
     pub fn new(trusted: String) -> Self {
         TrustAccessed { trusted: trusted }
     }
-   
+
     fn get(&self) -> String {
         self.trusted.clone()
     }
@@ -250,14 +275,14 @@ impl BeforeMiddleware for TrustAccessed {
             }
         };
 
-        let header = HeaderDecider::new(req.headers.clone(), None)?;
+        let header = HeaderDecider::new(req.headers.clone(), BTreeMap::new())?;
 
         let roles: authorizer::RoleType = header.decide()?.into();
         // return Ok if the request has no header with email and serviceaccount name
         if roles.name.get_id().is_empty() {
             return Ok(());
         }
-        
+
         match authorizer::Authorization::new(broker, roles).verify(self.get()) {
             Ok(_validate) => Ok(()),
             Err(err) => {
@@ -273,7 +298,10 @@ pub struct Custom404;
 impl AfterMiddleware for Custom404 {
     fn catch(&self, req: &mut Request, err: IronError) -> IronResult<Response> {
         if err.error.is::<NoRoute>() {
-            Ok(Response::with((NotFound, format!("404: {:?}", req.url.path()))))
+            Ok(Response::with((
+                NotFound,
+                format!("404: {:?}", req.url.path()),
+            )))
         } else {
             Err(err)
         }
@@ -285,22 +313,39 @@ pub struct Cors;
 impl AfterMiddleware for Cors {
     fn after(&self, _req: &mut Request, mut res: Response) -> IronResult<Response> {
         res.headers.set(headers::AccessControlAllowOrigin::Any);
-        res.headers.set(headers::AccessControlAllowHeaders(vec![UniCase("authorization".to_string()), UniCase("range".to_string())]));
-        res.headers.set(headers::AccessControlAllowMethods(vec![Method::Put, Method::Delete]));
+        res.headers.set(headers::AccessControlAllowHeaders(vec![
+            UniCase("authorization".to_string()),
+            UniCase("range".to_string()),
+        ]));
+        res.headers.set(headers::AccessControlAllowMethods(vec![
+            Method::Put,
+            Method::Delete,
+        ]));
 
-        ui::rawdumpln(Colour::Green, ' ', format!("Response {}:{}:{}", _req.version, _req.method, _req.url));
+        ui::rawdumpln(
+            Colour::Green,
+            ' ',
+            format!("Response {}:{}:{}", _req.version, _req.method, _req.url),
+        );
         ui::rawdumpln(Colour::White, ' ', "========");
         ui::rawdumpln(Colour::Purple, ' ', res.to_string());
-        ui::rawdumpln(Colour::Cyan, '✓', "------------------------------------------------------------------------------------");
+        ui::rawdumpln(
+            Colour::Cyan,
+            '✓',
+            "------------------------------------------------------------------------------------",
+        );
 
         Ok(res)
     }
 }
 
-pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> AranResult<Session> {
+/*pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> AranResult<Session> {
     //wrong name, use another fascade method session_create
     match sessions::DataStore::find_account(&conn, &request) {
         Ok(session) => return Ok(session),
-        Err(e) => Err(not_found_error(&format!("{}: Couldn not create session for the account.", e.to_string()))),
+        Err(e) => Err(not_found_error(&format!(
+            "{}: Couldn not create session for the account.",
+            e.to_string()
+        ))),
     }
-}
+}*/
