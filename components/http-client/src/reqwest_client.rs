@@ -14,9 +14,9 @@ use reqwest::header::{Authorization, Bearer, UserAgent};
 const USER_AGENT: &'static str = "Rio/OS Aran";
 const HTTP_TIMEOUT: u64 = 3_000;
 
-lazy_static! {
-    static  ref CLIENT_PROM_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("client-prometheus.cert.pem").to_str().unwrap());
-}
+// lazy_static! {
+//     static  ref CLIENT_PROM_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("client-prometheus.cert.pem").to_str().unwrap());
+// }
 
 fn reqwest_client(fs_root_path: Option<&Path>) -> Result<reqwest::Client> {
     let mut buf = Vec::new();
@@ -34,7 +34,7 @@ fn reqwest_client(fs_root_path: Option<&Path>) -> Result<reqwest::Client> {
 
 pub fn http_bearer_get(path: &str, token: &str) -> Result<reqwest::Response> {
     let url = Url::parse(path)?;
-    let res = reqwest_client(Some(&CLIENT_PROM_CERTIFICATE))?
+    let res = reqwest_client(None)?
         .get(url)
         .header(Authorization(Bearer { token: token.to_owned() }))
         .header(UserAgent::new(USER_AGENT.to_string()))
