@@ -17,9 +17,10 @@ use http_gateway::http::controller::*;
 use http_gateway::util::errors::AranResult;
 use http_gateway::util::errors::{internal_error, not_found_error};
 
+use audit::config::InfluxClientConn;
 use deploy::models::assembly;
 use audit::models::log;
-use audit::config::InfluxClientConn;
+
 
 use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;

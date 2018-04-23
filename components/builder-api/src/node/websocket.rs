@@ -64,7 +64,7 @@ impl Websocket {
 
                 let acceptor = Rc::new(SslAcceptorBuilder::mozilla_intermediate(SslMethod::tls(), &parsed.pkey, &parsed.cert, std::iter::empty::<X509Ref>()).unwrap().build());
 
-                let address = format!("{}:{}", self.config.http.listen.to_string(), self.port.to_string());
+                let address = format!("{}:{}", self.config.http2.listener.to_string(), self.port.to_string());
                 // Listen on an address and call the closure for each connection
 
                 ws::Builder::new()

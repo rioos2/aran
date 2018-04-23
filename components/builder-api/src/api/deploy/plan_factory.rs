@@ -13,7 +13,7 @@ use iron::status;
 use router::Router;
 
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
@@ -62,11 +62,19 @@ impl PlanFactory {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Plan>>()?)?;
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
 
         match blueprint::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(Some(plan)) => Ok(render_json(status::Ok, &plan)),
@@ -94,7 +102,11 @@ impl PlanFactory {
         match blueprint::DataStore::show(&self.conn, &params) {
             Ok(Some(plan_factory)) => Ok(render_json(status::Ok, &plan_factory)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
     }
 
@@ -109,7 +121,11 @@ impl PlanFactory {
         match blueprint::DataStore::status_update(&self.conn, &unmarshall_body) {
             Ok(Some(plan)) => Ok(render_json(status::Ok, &plan)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
         }
     }
 
@@ -149,36 +165,35 @@ impl Api for PlanFactory {
         let _self = self.clone();
         let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
-        router.post("/plans", XHandler::new(C { inner: create }).before(basic.clone()), "plans");
-
         router.post(
             "/plans",
             XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.plan.post".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.plan.post".to_string())),
             "plans",
         );
 
         router.get(
             "/plans",
             XHandler::new(C { inner: list_blank })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.plan.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.plan.get".to_string())),
             "plan_list",
         );
 
         router.get(
             "/plans/:id",
             XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.plan.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.plan.get".to_string())),
             "plan_show",
         );
         router.put(
             "/plans/:id/status",
-            XHandler::new(C { inner: status_update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.plan.put".to_string())),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone())
+                .before(TrustAccessed::new("rioos.plan.put".to_string())),
             "plan_status_update",
         );
     }

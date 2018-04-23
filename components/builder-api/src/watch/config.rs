@@ -2,11 +2,13 @@
 
 //! Configuration for a Rio/OS Streamer server
 
+use std::net::{IpAddr, Ipv4Addr};
 use error::Error;
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct StreamerCfg {
+    pub listener: IpAddr,
     //  The base listener configuration for https
     pub port: u16,
     //  The streamer (http2, websocker) configuration
@@ -20,10 +22,11 @@ pub struct StreamerCfg {
 impl Default for StreamerCfg {
     fn default() -> Self {
         StreamerCfg {
+            listener: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
             port: 8443,
             websocket: 9443,
-            tls: Some("api-server.pfx"),
-            tls_password: Some("TEAMRIOADVANCEMENT123"),
+            tls: Some("api-server.pfx".to_string()),
+            tls_password: Some("TEAMRIOADVANCEMENT123".to_string()),
         }
     }
 }

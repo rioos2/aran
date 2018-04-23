@@ -2,15 +2,18 @@
 
 //! Configuration for a Rio/OS API server
 
-use api::audit::config::{Vulnerability, VulnerabilityCfg, AuditBackend, Logs, LogsCfg};
+use api::audit::config::AuditBackend;
+use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
+
 use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg};
-use api::security::config::{SecurerAuth, SecurerCfg, SecureBackend};
+use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
 use api::deploy::config::ServicesCfg;
 
 use auth::config::{Identity, IdentityCfg};
 use watch::config::{Streamer, StreamerCfg};
 use entitlement::config::{License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
+use http_gateway::config::base::AuthenticationFlowCfg;
 
 use error::Error;
 
@@ -65,6 +68,22 @@ impl Default for Config {
     }
 }
 
+/// A trait
+impl AuthenticationFlowCfg for Config {
+    //
+    fn modes(&self) -> Vec<(String, String)> {
+        vec![]
+    }
+
+    fn ready(&self) -> bool {
+        false
+    }
+
+    fn unready_message(&self) -> Option<String> {
+        None
+    }
+}
+
 /// ConfigFile loader
 impl ConfigFile for Config {
     type Error = Error;
@@ -72,10 +91,6 @@ impl ConfigFile for Config {
 
 /// GatewayCfg for HttpGateway
 impl GatewayCfg for Config {
-    fn handler_count(&self) -> usize {
-        self.https.handler_count
-    }
-
     fn listen_addr(&self) -> &IpAddr {
         &self.https.listen
     }
@@ -85,16 +100,16 @@ impl GatewayCfg for Config {
     }
 
     fn tls(&self) -> Option<String> {
-        self.https.tls
+        self.https.tls.clone()
     }
 
     fn tls_password(&self) -> Option<String> {
-        self.https.tls_password
+        self.https.tls_password.clone()
     }
 }
 
 /// Streamer configuration for Watcher
-impl Streamer for StreamerCfg {
+impl Streamer for Config {
     fn http2_port(&self) -> u16 {
         self.http2.port
     }
@@ -104,11 +119,11 @@ impl Streamer for StreamerCfg {
     }
 
     fn tls(&self) -> Option<String> {
-        self.http2.tls
+        self.http2.tls.clone()
     }
 
     fn tls_password(&self) -> Option<String> {
-        self.http2.tls_password
+        self.http2.tls_password.clone()
     }
 }
 
@@ -122,7 +137,7 @@ impl Telemetry for Config {
 //A delegate, that returns the identity the loaded identity config
 impl Identity for Config {
     fn service_account(&self) -> Option<String> {
-        self.identity.service_account
+        self.identity.service_account.clone()
     }
 }
 
@@ -178,11 +193,11 @@ impl Marketplaces for Config {
 
 //A delegate, that returns the influx config from the loaded influx config
 impl Logs for Config {
-    fn endpoint(&self) -> &str {
-        &self.logs.endpont
+    fn influx_endpoint(&self) -> &str {
+        &self.logs.influx_endpoint
     }
-    fn prefix(&self) -> &str {
-        &self.logs.prefix
+    fn influx_prefix(&self) -> &str {
+        &self.logs.influx_prefix
     }
 }
 
@@ -206,7 +221,7 @@ impl License for Config {
         &self.licenses.so_file
     }
     fn activation_code(&self) -> Option<String> {
-        self.licenses.activation_code
+        self.licenses.activation_code.clone()
     }
 }
 

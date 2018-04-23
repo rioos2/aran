@@ -21,13 +21,12 @@ use std::fs::File;
 
 use rio_core::config::ConfigFile;
 use rio_core::env as renv;
-use rio_core::crypto::{init, default_rioconfig_key_path};
+use rio_core::crypto::{default_rioconfig_key_path, init};
 use rio_core::fs::rioconfig_config_path;
-use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
+use common::ui::{Coloring, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR, UI};
 
 use api::{command, Config, Error, Result};
 use api::node::Servers;
-
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
@@ -133,23 +132,21 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     let config = match config_from_args(&matches) {
         Ok(result) => result,
         Err(e) => return Err(e),
-    };    
+    };
 
     start(ui, config, servertype_from_args(&matches))
 }
 
 fn servertype_from_args(args: &clap::ArgMatches) -> Servers {
-    match args.value_of("streamer") {
-        Some(flag) => return Servers::STREAMER,
-        _ => ,
+    if args.value_of("streamer").is_some() {
+        return Servers::STREAMER;
     }
 
     match args.value_of("uistreamer") {
-        Some(flag) => return Servers::UISTREAMER,
+        Some(_flag) => return Servers::UISTREAMER,
         None => return Servers::APISERVER,
     }
 }
-
 
 ///
 ///
@@ -161,15 +158,17 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
 
             if let Some(identity_pkcs12_file) = SERVING_TLS_PFX.to_str() {
                 if SERVING_TLS_PFX.exists() {
-                    default_config.http.port = 7443;
-                    default_config.http.watch_port = 8443;
-                    default_config.http.tls_pkcs12_file = Some(identity_pkcs12_file.to_string());
+                    default_config.https.port = 7443;
+                    default_config.https.tls = Some(identity_pkcs12_file.to_string());
+                    default_config.http2.port = 8443;
+                    default_config.http2.websocket = 9443;
+                    default_config.http2.tls = Some(identity_pkcs12_file.to_string());
                 }
             };
 
             if let Some(serviceaccount_public_key) = SERVICEACCOUNT_PUBLIC_KEY.to_str() {
                 if SERVICEACCOUNT_PUBLIC_KEY.exists() {
-                    default_config.http.serviceaccount_public_key = Some(serviceaccount_public_key.to_string());
+                    default_config.identity.service_account = Some(serviceaccount_public_key.to_string());
                 }
             }
 
@@ -177,28 +176,34 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
         }
     };
 
-    if config.http.serviceaccount_public_key.is_none() {
-        return Err(Error::MissingTLS(SERVICEACCOUNT_PUBLIC_KEY.to_str()));
+    if config.identity.service_account.is_none() {
+        return Err(Error::MissingTLS(SERVICEACCOUNT_PUBLIC_KEY.to_str().unwrap_or("").to_string()));
     }
 
-    if config.http.tls_pkcs12_file.is_none() {
-        return Err(Error::MissingTLS(SERVING_TLS_PFX.to_str()));
+    if config.https.tls.is_none() {
+        return Err(Error::MissingTLS(SERVING_TLS_PFX.to_str().unwrap_or("").to_string()));
     }
 
     if let Some(port) = args.value_of("port") {
-        if u16::from_str(port).map(|p| config.http.port = p).is_err() {
+        if u16::from_str(port).map(|p| config.https.port = p).is_err() {
             return Err(Error::BadPort(port.to_string()));
         }
     }
 
     if let Some(streamer_port) = args.value_of("streamer_port") {
-        if u16::from_str(streamer_port).map(|p| config.http.streamer_port = p).is_err() {
+        if u16::from_str(streamer_port)
+            .map(|p| config.http2.port = p)
+            .is_err()
+        {
             return Err(Error::BadPort(streamer_port.to_string()));
         }
     }
 
     if let Some(uistreamer_port) = args.value_of("uistreamer_port") {
-        if u16::from_str(uistreamer_port).map(|p| config.http.uistreamer_port = p).is_err() {
+        if u16::from_str(uistreamer_port)
+            .map(|p| config.http2.websocket = p)
+            .is_err()
+        {
             return Err(Error::BadPort(uistreamer_port.to_string()));
         }
     }
@@ -225,7 +230,21 @@ fn start(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
 }
 
 fn ui() -> UI {
-    let isatty = if renv::var(NONINTERACTIVE_ENVVAR).map(|val| val == "true").unwrap_or(false) { Some(false) } else { None };
-    let coloring = if renv::var(NOCOLORING_ENVVAR).map(|val| val == "true").unwrap_or(false) { Coloring::Never } else { Coloring::Auto };
+    let isatty = if renv::var(NONINTERACTIVE_ENVVAR)
+        .map(|val| val == "true")
+        .unwrap_or(false)
+    {
+        Some(false)
+    } else {
+        None
+    };
+    let coloring = if renv::var(NOCOLORING_ENVVAR)
+        .map(|val| val == "true")
+        .unwrap_or(false)
+    {
+        Coloring::Never
+    } else {
+        Coloring::Auto
+    };
     UI::default_with(coloring, isatty)
 }

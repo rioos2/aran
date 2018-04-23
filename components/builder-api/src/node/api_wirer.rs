@@ -175,10 +175,10 @@ impl Wirer {
                     let mut server = Iron::new(chain);
                     server.threads = HTTP_THREAD_COUNT;
 
-                    match conf.http.tls_pkcs12_file {
+                    match conf.https.tls {
                         Some(ref tls_location) => {
-                            let tls = NativeTlsServer::new(PathBuf::from(&*rioconfig_config_path(None).join(tls_location.clone())), &self.config.http.tls_pkcs12_pwd.clone().unwrap_or("".to_string()).to_string()).unwrap();
-                            server.https(&conf.http, tls).unwrap()
+                            let tls_server = NativeTlsServer::new(PathBuf::from(&*rioconfig_config_path(None).join(tls_location.clone())), &self.config.https.tls_password.clone().unwrap_or("".to_string()).to_string()).unwrap();
+                            server.https(&conf.https, tls_server).unwrap()
                         }
                         None => Err(Error::MissingTLS("api server pfx".to_string())).unwrap(),
                     };

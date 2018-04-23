@@ -65,7 +65,7 @@ impl AuthenticateApi {
 
                 session_data.set_token(UserAccountAuthenticate::token().unwrap());
 
-                let session = try!(session_create(&self.conn, session_data));
+                let session = try!(sessions::DataStore::find_account(&self.conn, &session_data));
 
                 Ok(render_json(status::Ok, &session))
             }

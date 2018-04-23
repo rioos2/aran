@@ -40,7 +40,9 @@ pub struct Node {
 impl Node {
     // Creates node for the given api and node configuration.
     pub fn new(config: Arc<Config>) -> Self {
-        Node { config: config.clone() }
+        Node {
+            config: config.clone(),
+        }
     }
 
     // A generic implementation that launches a `Node`
@@ -61,15 +63,21 @@ impl Node {
                 ui.end("Api Wirer");
             }
             Servers::STREAMER => {
-                ui.begin("Watcher");
-                streamer::Streamer::new(self.config.http.watch_port, self.config.clone()).start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
-                ui.end("Watcher");
+                ui.begin("Streamer");
+                streamer::Streamer::new(self.config.http2.port, self.config.clone()).start(self.read_tls_as_bytes(
+                    self.config.http2.tls.clone(),
+                    self.config.http2.tls_password.clone(),
+                ))?;
+                ui.end("Streamer");
             }
-            Servers::UIWATCHER => {
+            Servers::UISTREAMER => {
                 //start the uiwatcher(websocket) server.
-                ui.begin("UIWatcher");
-                websocket::Websocket::new(self.config.http.uiwatch_port, self.config.clone()).start(self.tls_as_option(self.config.http.tls_pkcs12_file.clone()))?;
-                ui.end("UIWatcher");
+                ui.begin("UIStreamer");
+                websocket::Websocket::new(self.config.http2.websocket, self.config.clone()).start(self.read_tls_as_bytes(
+                    self.config.http2.tls.clone(),
+                    self.config.http2.tls_password.clone(),
+                ))?;
+                ui.end("UIStreamer");
             }
         }
 
@@ -79,7 +87,11 @@ impl Node {
     /// Returns the a tuple for tls usage with
     /// Option<(tls file location, bytes loaded from the name in the config toml file,
     ///        tls password if present or empty string)>
-    fn tls_as_option(&self, tls_file: Option<String>) -> TLSPair {
-        tls_file.clone().and_then(|t| read_key_in_bytes(&PathBuf::from(&*rioconfig_config_path(None).join(t.clone()))).map(|p| (t.clone(), p, self.config.http.tls_pkcs12_pwd.clone().unwrap_or("".to_string()))).ok())
+    fn read_tls_as_bytes(&self, tls: Option<String>, tls_password: Option<String>) -> TLSPair {
+        tls.clone().and_then(|t| {
+            read_key_in_bytes(&PathBuf::from(&*rioconfig_config_path(None).join(t.clone())))
+                .map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string())))
+                .ok()
+        })
     }
 }

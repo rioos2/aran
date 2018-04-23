@@ -10,10 +10,11 @@ use iron::status;
 use router::Router;
 
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier, ExpanderSender};
-use protocol::api::schema::{dispatch, type_meta, dispatch_url};
+use api::{Api, ApiValidator, ExpanderSender, ParmsVerifier, Validator};
+use protocol::api::schema::{dispatch, dispatch_url, type_meta};
 
-use config::{Config, ServicesCfg};
+use config::Config;
+use api::deploy::config::ServicesCfg;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
@@ -21,12 +22,12 @@ use http_gateway::http::controller::*;
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
-use deploy::assembler::{ServicesConfig, Assembler};
+use deploy::assembler::{Assembler, ServicesConfig};
 use deploy::models::{assemblyfactory, blueprint, service};
 
-use protocol::cache::{CACHE_PREFIX_PLAN, NewCacheServiceFn, CACHE_PREFIX_SERVICE};
+use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
 use protocol::api::deploy::AssemblyFactory;
-use protocol::api::base::{StatusUpdate, MetaFields, Status};
+use protocol::api::base::{MetaFields, Status, StatusUpdate};
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -58,12 +59,20 @@ impl AssemblyFactoryApi {
     fn create(&self, req: &mut Request, _cfg: &ServicesConfig) -> AranResult<Response> {
         let mut unmarshall_body = self.validate::<AssemblyFactory>(req.get::<bodyparser::Struct<AssemblyFactory>>()?)?;
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), self.verify_account(req)?.get_name());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            self.verify_account(req)?.get_name(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
         unmarshall_body.set_status(Status::pending());
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
 
         match Assembler::new(&self.conn, _cfg).assemble(&unmarshall_body) {
             Ok(factory) => Ok(render_json(status::Ok, &factory)),
@@ -80,7 +89,11 @@ impl AssemblyFactoryApi {
         match assemblyfactory::DataStore::new(&self.conn).show(&params) {
             Ok(Some(factory)) => Ok(render_json(status::Ok, &factory)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
     }
 
@@ -96,7 +109,11 @@ impl AssemblyFactoryApi {
         match assemblyfactory::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(factory)) => Ok(render_json(status::Ok, &factory)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
     }
 
@@ -109,7 +126,11 @@ impl AssemblyFactoryApi {
 
         match assemblyfactory::DataStore::new(&self.conn).list(&params) {
             Ok(Some(factorys)) => Ok(render_json_list(status::Ok, dispatch(req), &factorys)),
-            Ok(None) => Err(not_found_error(&format!("{} for account {}", Error::Db(RecordsNotFound), params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for account {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
@@ -139,7 +160,11 @@ impl AssemblyFactoryApi {
     //Returns all the AssemblyFactorys (irrespective of accounts, origins)
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match assemblyfactory::DataStore::new(&self.conn).list_blank() {
-            Ok(Some(assembly_factorys)) => Ok(render_json_list(status::Ok, dispatch(_req), &assembly_factorys)),
+            Ok(Some(assembly_factorys)) => Ok(render_json_list(
+                status::Ok,
+                dispatch(_req),
+                &assembly_factorys,
+            )),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
@@ -210,8 +235,8 @@ impl Api for AssemblyFactoryApi {
         router.get(
             "/assemblyfactorys/:id",
             XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string())),
             "assembly_factorys_show",
         );
         router.get(
@@ -223,16 +248,12 @@ impl Api for AssemblyFactoryApi {
         );
         router.put(
             "/assemblyfactorys/:id/status",
-            XHandler::new(C { inner: status_update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assemblyfactory.put".to_string())),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone())
+                .before(TrustAccessed::new("rioos.assemblyfactory.put".to_string())),
             "assembly_factory_status_update",
         );
-
-        router.get("/accounts/:account_id/assemblyfactorys", XHandler::new(C { inner: list }).before(basic.clone()).before(TrustAccessed {}), "assemblyfactorys_list");
-        router.get("/assemblyfactorys/:id", XHandler::new(C { inner: show }).before(basic.clone()), "assembly_factorys_show");
-        router.get("/assemblyfactorys", XHandler::new(C { inner: list_blank }).before(basic.clone()).before(TrustAccessed {}), "assemblys_factorys_list_blank");
-        router.put("/assemblyfactorys/:id/status", XHandler::new(C { inner: status_update }).before(basic.clone()), "assembly_factory_status_update");
     }
 }
 
@@ -249,13 +270,24 @@ impl ExpanderSender for AssemblyFactoryApi {
     fn with_cache(&mut self) {
         let _conn = self.conn.clone();
 
-        let plan_service = Box::new(NewCacheServiceFn::new(CACHE_PREFIX_PLAN.to_string(), Box::new(move |id: IdGet| -> Option<String> { blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| serde_json::to_string(&p).ok()) })));
+        let plan_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_PLAN.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                blueprint::DataStore::show(&_conn, &id)
+                    .ok()
+                    .and_then(|p| serde_json::to_string(&p).ok())
+            }),
+        ));
 
         let _conn = self.conn.clone();
 
         let services = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_SERVICE.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> { service::DataStore::list_by_assembly_factory(&_conn, &id).ok().and_then(|v| serde_json::to_string(&v).ok()) }),
+            Box::new(move |id: IdGet| -> Option<String> {
+                service::DataStore::list_by_assembly_factory(&_conn, &id)
+                    .ok()
+                    .and_then(|v| serde_json::to_string(&v).ok())
+            }),
         ));
 
         &self.conn.expander.with(plan_service);
@@ -320,6 +352,9 @@ impl Validator for AssemblyFactory {
             return Ok(Box::new(self));
         }
 
-        Err(bad_request(&MissingParameter(format!("{:?} -> {}", s, "must have => "))))
+        Err(bad_request(&MissingParameter(format!(
+            "{:?} -> {}",
+            s, "must have => "
+        ))))
     }
 }

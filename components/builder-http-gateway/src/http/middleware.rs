@@ -24,6 +24,7 @@ use common::ui;
 
 use auth::rioos::AuthenticateDelegate;
 use auth::rbac::authorizer;
+use config::base::AuthenticationFlowCfg;
 
 use util::errors::{bad_err, internal_error};
 
@@ -153,34 +154,6 @@ pub trait AuthFlow {
     //Tell the reason the auth flow is invalid
     fn reason(&self) -> Option<String> {
         Some("You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`.".to_string())
-    }
-}
-
-/// A trait
-pub trait AuthenticationFlowCfg {
-    //
-    fn modes(&self) -> Vec<(String, String)>;
-
-    fn ready(&self) -> bool;
-
-    fn unready_message(&self) -> Option<String>;
-}
-
-struct DefaultAuthenticated {}
-
-impl AuthenticationFlowCfg for DefaultAuthenticated {
-    // The default modes are
-    // Email and Token
-    fn modes(&self) -> Vec<(String, String)> {
-        vec![]
-    }
-
-    fn ready(&self) -> bool {
-        false
-    }
-
-    fn unready_message(&self) -> Option<String> {
-        None
     }
 }
 

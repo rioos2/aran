@@ -40,7 +40,7 @@ impl Server {
     ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝╚═╝     ╚═╝                                                                                                        
     "#,
     )?;
-                ui.begin(&format!("Rio/OS API listening on {}:{}", self.config.http.listen, self.config.http.port))?;
+                ui.begin(&format!("Rio/OS API listening on {}:{}", self.config.https.listen, self.config.https.port))?;
             }
             Servers::STREAMER => {
                 ui.begin(
@@ -54,7 +54,7 @@ impl Server {
 ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
    "#,
                 )?;
-                ui.begin(&format!("Rio/OS STREAMER listening on {}:{}", self.config.http.listen, self.config.http.watch_port))?;
+                ui.begin(&format!("Rio/OS STREAMER listening on {}:{}", self.config.http2.listener, self.config.http2.port))?;
             }
             Servers::UISTREAMER => {
                 ui.begin(
@@ -69,7 +69,7 @@ impl Server {
 "#,
     )?;
 
-                ui.begin(&format!("Rio/OS UISTREAMER listening on {}:{}", self.config.http.listen, self.config.http.uiwatch_port))?;
+                ui.begin(&format!("Rio/OS UISTREAMER listening on {}:{}", self.config.http2.listener, self.config.http2.websocket))?;
             }
         }
 

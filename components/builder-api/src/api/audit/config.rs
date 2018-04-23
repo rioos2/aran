@@ -1,7 +1,5 @@
 use std::env;
 
-///host url to check the vulnerability of the container
-pub const DEFAULT_ANCHORE_URL: &'static str = "http://localhost:8228/v1";
 /// host url  to get the audits
 pub const DEFAULT_BLOCK_CHAIN_URL: &'static str = "http://localhost:7000";
 /// Default Influx Host url to access the log of virtual machine and container
@@ -12,33 +10,6 @@ pub const DEFAULT_RIO_MARKETPLACES_URL: &'static str = "https://localhost:6443/a
 pub const DEV_RIO_COMPANY: &'static str = "dev@rio.companyadmin";
 /// a default token for the marketplace
 pub const TOKEN: &'static str = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R";
-/// a default username for anchore or anybody else who wish to use the name admin
-pub const DEFAULT_USERNAME_ADMIN: &'static str = "admin";
-
-///// Configuration for Logs
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(default)]
-pub struct LogsCfg {
-    pub url: String,
-    pub prefix: String,
-}
-
-impl Default for LogsCfg {
-    fn default() -> Self {
-        LogsCfg {
-            url: DEFAULT_LOGS_URL.to_string(),
-            prefix: "rioos_logs".to_string(),
-        }
-    }
-}
-
-pub trait Logs {
-    /// URL to Influx API
-    fn endpoint(&self) -> &str;
-    /// Includes the prefix of the database,table,path in influx
-    fn prefix(&self) -> &str;
-}
 
 ///// Configuration for Audits (blockchain)
 
@@ -106,33 +77,7 @@ pub trait Marketplaces {
     fn cache_dir(&self) -> &str;
 }
 
-///// Configuration for security vulnerability
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(default)]
-pub struct VulnerabilityCfg {
-    pub url: String,
-    pub username: String,
-    pub password: String,
-}
-
-impl Default for VulnerabilityCfg {
-    fn default() -> Self {
-        VulnerabilityCfg {
-            anchore_endpoint: DEFAULT_ANCHORE_URL.to_string(),
-            anchore_username: DEFAULT_USERNAME_ADMIN.to_string(),
-            anchore_password: DEFAULT_USERNAME_ADMIN.to_string(),
-        }
-    }
-}
-
-pub trait Vulnerability {
-    fn anchore_endpoint(&self) -> &str;
-    fn anchore_username(&self) -> &str;
-    fn anchore_password(&self) -> &str;
-}
-
-
+///// Configuration for audits blockchain
 
 #[derive(Clone, Debug)]
 pub struct BlockchainConn {

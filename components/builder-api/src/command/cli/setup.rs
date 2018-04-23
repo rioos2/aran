@@ -457,8 +457,8 @@ fn create_rioconfig(result: &SigKeyPair, cache_path: &Path, name: &str, config: 
         "key":  base64::encode(&result.secret()?),
         "cert": base64::encode(&result.public()?),
         "server_ca": base64::encode(&server_ca.public()?),
-        "ip":config.http.listen,
-        "port": config.http.port,
+        "ip":config.https.listen,
+        "port": config.https.port,
     });
     let r = Handlebars::new()
         .render_template(&read_from_file(&RIOCONFIG_TEMPLATE)?, &json)

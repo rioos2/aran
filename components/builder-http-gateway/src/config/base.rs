@@ -1,6 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 //
-use std::net::{IpAddr, Ipv4Addr};
+use std::io;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
+use std::option::IntoIter;
 
 /// Public listening net address for HTTP requests, Watch requests.
 #[derive(Debug, Deserialize)]
@@ -23,9 +25,30 @@ impl Default for HttpsCfg {
     }
 }
 
+impl ToSocketAddrs for HttpsCfg {
+    type Iter = IntoIter<SocketAddr>;
+
+    fn to_socket_addrs(&self) -> io::Result<IntoIter<SocketAddr>> {
+        match self.listen {
+            IpAddr::V4(ref a) => (*a, self.port).to_socket_addrs(),
+            IpAddr::V6(ref a) => (*a, self.port).to_socket_addrs(),
+        }
+    }
+}
+
 /// Path to UI files to host over HTTP. If not set the UI will be disabled.
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 pub struct UiCfg {
     pub root: Option<String>,
+}
+
+/// A trait
+pub trait AuthenticationFlowCfg {
+    //
+    fn modes(&self) -> Vec<(String, String)>;
+
+    fn ready(&self) -> bool;
+
+    fn unready_message(&self) -> Option<String>;
 }
