@@ -95,7 +95,9 @@ impl AuthenticateApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        unmarshall_body.set_roles(vec![DEFAULTROLE.to_string()]);
+        if unmarshall_body.get_roles().is_empty() {
+            unmarshall_body.set_roles(vec![DEFAULTROLE.to_string()]);
+        }
 
         unmarshall_body.set_token(UserAccountAuthenticate::token().unwrap());
 
