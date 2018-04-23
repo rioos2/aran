@@ -18,7 +18,7 @@ SETOF plan_factory AS $$
               BEGIN
                   SELECT  * INTO existing_plan FROM plan_factory WHERE object_meta ->> 'name' = pname;
                  IF FOUND THEN
-                    RETURN QUERY UPDATE plan_factory SET type_meta=ptype_meta,object_meta=pobject_meta,category=pcategory,characteristics=pcharacteristics,icon=picon,status=pstatus,
+                    RETURN QUERY UPDATE plan_factory SET type_meta=ptype_meta,object_meta=pobject_meta,category=pcategory,characteristics=pcharacteristics,icon=picon,
                     description=pdescription,ports=pports,envs=penvs,lifecycle=plifecycle,updated_at=now() WHERE  object_meta ->> 'name' = pname RETURNING *;
                  ELSE
                  RETURN QUERY  INSERT INTO plan_factory(type_meta, object_meta, category,version, characteristics, icon,description,ports,envs,lifecycle,status)
