@@ -1595,7 +1595,7 @@ paths:
           required: true
           schema:
             type: string
-      responses:  
+      responses:
         '200':
           description: successful operation
           content:
@@ -4209,7 +4209,7 @@ components:
             labels:
               type: object
               description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
-              
+
             annotations:
               type: object
               description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
@@ -5475,8 +5475,8 @@ components:
         created_at:
           type: string
           example: "2017-12-11T11:29:50.547529+00:00"
-        
-        
+
+
     AssemblyFactoryGet:
       type: object
       properties:
@@ -6025,13 +6025,13 @@ components:
               description: "Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less than minReplicas"
               example: 5
             scale_up_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale up"
-              example: "5"
+              example: 5
             scale_down_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale down"
-              example: "5"
+              example: 5
             metrics:
               type: array
               items:
@@ -6222,13 +6222,13 @@ components:
               description: "Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less than minReplicas"
               example: 5
             scale_up_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale up"
-              example: "5"
+              example: 5
             scale_down_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale down"
-              example: "5"
+              example: 5
             metrics:
               type: array
               items:
@@ -6396,13 +6396,13 @@ components:
               description: "Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less than minReplicas"
               example: 5
             scale_up_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale up"
-              example: "5"
+              example: 5
             scale_down_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale down"
-              example: "5"
+              example: 5
             metrics:
               type: array
               items:
@@ -9846,13 +9846,13 @@ components:
           type: object
           properties:
             scale_up_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale up"
-              example: "5"
+              example: 5
             scale_down_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale down"
-              example: "5"
+              example: 5
             min_resource:
               type: object
               description: "Min_resource is the lower limit for the number of resource to which the vertical scaler can scale down"
@@ -10031,13 +10031,13 @@ components:
           type: object
           properties:
             scale_up_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale up"
-              example: "5"
+              example: 5
             scale_down_wait_time:
-              type: string
+              type: integer
               description: " wait minutes for the after last scale action for scale down"
-              example: "5"
+              example: 5
             min_resource:
               type: object
               description: "Min_resource is the lower limit for the number of resource to which the vertical scaler can scale down"

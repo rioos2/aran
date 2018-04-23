@@ -2059,6 +2059,7 @@ name = "rioos_builder_nodesrv"
 version = "0.0.0"
 dependencies = [
  "chrono 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "itertools 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rioos_builder_apimachinery 0.0.0",
  "rioos_builder_db 0.0.0",

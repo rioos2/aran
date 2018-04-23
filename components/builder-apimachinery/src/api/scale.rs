@@ -117,8 +117,8 @@ impl MetaFields for HorizontalScaling {
 pub struct Spec {
     min_replicas: u32, //Min_replicas is the lower limit for the number of replicas to which the horizontalscaler can scale down
     max_replicas: u32, //Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less that minReplicas
-    scale_up_wait_time: String,
-    scale_down_wait_time: String,
+    scale_up_wait_time: u32,
+    scale_down_wait_time: u32,
     metrics: Vec<Metrics>,
 }
 
@@ -148,17 +148,16 @@ impl Spec {
     pub fn get_metrics(&self) -> Vec<Metrics> {
         self.metrics.clone()
     }
-
-    pub fn set_scale_down_wait_time(&mut self, v: ::std::string::String) {
+    pub fn set_scale_down_wait_time(&mut self, v: u32) {
         self.scale_down_wait_time = v;
     }
-    pub fn set_scale_up_wait_time(&mut self, v: ::std::string::String) {
+    pub fn set_scale_up_wait_time(&mut self, v: u32) {
         self.scale_up_wait_time = v;
     }
-    pub fn get_scale_up_wait_time(&self) -> ::std::string::String {
+    pub fn get_scale_up_wait_time(&self) -> u32 {
         self.scale_up_wait_time.clone()
     }
-    pub fn get_scale_down_wait_time(&self) -> ::std::string::String {
+    pub fn get_scale_down_wait_time(&self) -> u32 {
         self.scale_down_wait_time.clone()
     }
 }
@@ -488,8 +487,8 @@ impl UpdatePolicy {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct VerticalScalingSpec {
-    scale_up_wait_time: String,
-    scale_down_wait_time: String,
+    scale_up_wait_time: u32,
+    scale_down_wait_time: u32,
     min_resource: BTreeMap<String, String>, //Min_resource is the lower limit for the number of resource to which the vertical scaler can scale down
     max_resource: BTreeMap<String, String>, //Max resource is the upper limit for the number of resource to which the verticalscaler can scale up.
     /*eg:
@@ -545,16 +544,16 @@ impl VerticalScalingSpec {
         self.metrics.clone()
     }
 
-    pub fn set_scale_down_wait_time(&mut self, v: ::std::string::String) {
+    pub fn set_scale_down_wait_time(&mut self, v: u32) {
         self.scale_down_wait_time = v;
     }
-    pub fn set_scale_up_wait_time(&mut self, v: ::std::string::String) {
+    pub fn set_scale_up_wait_time(&mut self, v: u32) {
         self.scale_up_wait_time = v;
     }
-    pub fn get_scale_up_wait_time(&self) -> ::std::string::String {
+    pub fn get_scale_up_wait_time(&self) -> u32 {
         self.scale_up_wait_time.clone()
     }
-    pub fn get_scale_down_wait_time(&self) -> ::std::string::String {
+    pub fn get_scale_down_wait_time(&self) -> u32 {
         self.scale_down_wait_time.clone()
     }
 }
@@ -695,7 +694,7 @@ mod test {
             "scale_type":"AUTOHS",
             "state":"data",
             "metadata":{},
-            "spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":
+            "spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":
             {"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}},
             "resource":{"name": "memory","min_target_value":"2","max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}
     }"#;
@@ -708,8 +707,8 @@ mod test {
     fn decode_scale_spec() {
         let val = r#"
         {
-        "scale_up_wait_time":"5m",
-        "scale_down_wait_time":"5m",
+        "scale_up_wait_time":5,
+        "scale_down_wait_time":5,
         "min_replicas": 4,
         "max_replicas": 5,
         "metrics": [{
@@ -735,8 +734,8 @@ mod test {
                     }]
         }"#;
         let spec: Spec = json_decode(val).unwrap();
-        assert_eq!(spec.scale_up_wait_time, "5m");
-        assert_eq!(spec.scale_down_wait_time, "5m");
+        assert_eq!(spec.scale_up_wait_time, 5);
+        assert_eq!(spec.scale_down_wait_time, 5);
         assert_eq!(spec.min_replicas, 4);
         assert_eq!(spec.max_replicas, 5);
         assert_eq!(spec.metrics.len(), 1);
@@ -800,8 +799,7 @@ mod test {
         {
         "last_scale_time": "",
         "current_replicas": 1,
-        "desired_replicas": 1,
-        "scale_down_wait_time": "5m"
+        "desired_replicas": 1
         }"#;
         let status: Status = json_decode(val).unwrap();
         assert_eq!(status.last_scale_time, "");
@@ -854,8 +852,8 @@ mod test {
             "metadata":{},
             "spec":
                     {
-                        "scale_up_wait_time":"5m",
-                        "scale_down_wait_time":"5m",
+                        "scale_up_wait_time":5,
+                        "scale_down_wait_time":5,
                         "min_resource":
                                 {
                                     "cpu":"2",
@@ -877,9 +875,7 @@ mod test {
                                             "metric_time_spec":
                                                 {
                                                     "scale_up_by":"5m",
-                                                    "scale_up_wait_time":"5m",
-                                                    "scale_down_by":"5m",
-                                                    "scale_down_wait_time":"5m"
+                                                    "scale_down_by":"5m"
                                                 }
                                             }
                                 }
