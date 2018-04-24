@@ -365,8 +365,8 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
                                     .format("%H:%M:%S")
                                     .to_string()
                                     .to_owned(),
-                                y.1.clone().parse::<i32>().unwrap().div(1024).div(1024),
-                                z.1.clone().parse::<i32>().unwrap().div(1024).div(1024),
+                                y.1.clone().parse::<i32>().unwrap_or(0).div(1024).div(1024),
+                                z.1.clone().parse::<i32>().unwrap_or(0).div(1024).div(1024),
                             ));
                         })
                         .collect::<Vec<_>>();
@@ -385,8 +385,8 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
                                     .format("%H:%M:%S")
                                     .to_string()
                                     .to_owned(),
-                                y.1.clone().parse::<i32>().unwrap().div(1024).div(1024),
-                                z.1.clone().parse::<i32>().unwrap().div(1024).div(1024),
+                                y.1.clone().parse::<i32>().unwrap_or(0).div(1024).div(1024),
+                                z.1.clone().parse::<i32>().unwrap_or(0).div(1024).div(1024),
                             ));
                         })
                         .collect::<Vec<_>>();
