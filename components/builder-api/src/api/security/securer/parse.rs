@@ -8,7 +8,7 @@ use protocol::api::base::MetaFields;
 
 /// Security types
 const OPAQUE: &'static str = "opaque";
-const SSH_AUTH: &'static str = "rioos_sh/ssh-rsa";
+const SSH_AUTH: &'static str = "rioos_sh/ssh-auth";
 const SERVICE_ACCOUNT: &'static str = "rioos_sh/service-account-token";
 const TOKEN: &'static str = "rioos_sh/token";
 const TLS: &'static str = "rioos_sh/tls";
@@ -16,7 +16,7 @@ const DOCKERCFG: &'static str = "rioos_sh/dockercfg";
 const DOCKERCFG_JSON: &'static str = "rioos_sh/dockerconfigjson";
 const KRYPTONITE: &'static str = "rioos_sh/kryptonite";
 const SSH_DSA: &'static str = "rioos_sh/ssh-dsa";
-const SSH_ED: &'static str = "rioos_sh/ssh-ed";
+const SSH_ED25512: &'static str = "rioos_sh/ssh-ed25512";
 
 
 /// SSH keys
@@ -27,7 +27,7 @@ const SSH_AUTH_PUBLIC_KEY: &'static str = "rioos_sh/ssh_pubkey";
 enum SecretType {
     SSH,
     DSA,
-    ED,
+    ED25512,
     COMMON,
     UNKNOWN,
 }
@@ -41,7 +41,7 @@ impl SecretType {
             TOKEN => SecretType::COMMON,
             TLS => SecretType::COMMON,
             SSH_DSA => SecretType::DSA,
-            SSH_ED => SecretType::ED,
+            SSH_ED25512 => SecretType::ED25512,
             DOCKERCFG => SecretType::COMMON,
             DOCKERCFG_JSON => SecretType::COMMON,
             KRYPTONITE => SecretType::COMMON,
@@ -55,7 +55,7 @@ pub fn parse_key(secret: &Secret) -> Result<Secret> {
         SecretType::SSH => generate_ssh(secret),
         SecretType::COMMON => Ok(secret.clone()),
         SecretType::DSA => generate_dsa(secret),
-        SecretType::ED => Ok(secret.clone()),
+        SecretType::ED25512 => Ok(secret.clone()),
         SecretType::UNKNOWN => Err(Error::UNKNOWSECRET),
     }
 }
