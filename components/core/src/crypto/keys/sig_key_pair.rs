@@ -13,14 +13,14 @@ use openssl::x509::extension::{AuthorityKeyIdentifier, BasicConstraints, KeyUsag
 use openssl::rsa::Rsa;
 use openssl::dsa::Dsa;
 use openssl::pkcs12::Pkcs12;
-
+use sodiumoxide::crypto::sign::ed25519;
 use crypto::keys::{PairConf, PairSaverExtn};
 
 use error::{Error, Result};
 use error::Error::X509Error;
 
 use super::{mk_key_filename, read_key_bytes, write_keypair_files, write_key_file, KeyPair};
-use super::super::{ROOT_CA, PUBLIC_KEY_SUFFIX, SECRET_SIG_KEY_SUFFIX, PUBLIC_RSA_SUFFIX, PUBLIC_PFX_SUFFIX, PUBLIC_DSA_SUFFIX};
+use super::super::{ROOT_CA, PUBLIC_KEY_SUFFIX, SECRET_SIG_KEY_SUFFIX, PUBLIC_RSA_SUFFIX, PUBLIC_PFX_SUFFIX, PUBLIC_DSA_SUFFIX, PUBLIC_ED_SUFFIX};
 
 pub type SigKeyPair = KeyPair<Vec<u8>, Vec<u8>>;
 
@@ -102,6 +102,7 @@ impl SigKeyPair {
     //  -in api-server.cert.pem
     pub fn mk_signed<P: AsRef<Path> + ?Sized>(name: &str, conf: PairConf, cache_key_path: &P) -> Result<Self> {
         debug!("new signed key name = {}", &name);
+
         let (public, secret) = try!(Self::gen_ca_signed_pair(
             &name,
             conf,
@@ -122,6 +123,13 @@ impl SigKeyPair {
                 PairSaverExtn::PemX509 => gen_key_rsa(conf.bit_len())?,
                 PairSaverExtn::PfxPKCS12 => gen_key_rsa(conf.bit_len())?,
                 PairSaverExtn::DSA => gen_key_dsa(conf.bit_len())?,
+                _ => {
+                    let msg = format!(
+                        "Private key not generated for this extension {}",
+                        conf.save_as_extn()
+                    );
+                    return Err(Error::CryptoError(msg));
+                }
             }
         };
 
@@ -164,6 +172,10 @@ impl SigKeyPair {
                         public: public_pem,
                         multi: None,
                     },
+                    _ => {
+                        let msg = format!("File not saved for this extension {}", conf.save_as_extn());
+                        return Err(Error::CryptoError(msg));
+                    }
                 }
             };
 
@@ -336,6 +348,11 @@ fn gen_key_dsa(bit_len: u32) -> Result<PKey> {
     let rsa = Dsa::generate(bit_len)?;
     let key = PKey::from_dsa(rsa)?;
     Ok(key)
+}
+
+/// Generates a new PKey
+fn gen_key_ed25519() -> (ed25519::PublicKey, ed25519::SecretKey) {
+    ed25519::gen_keypair()
 }
 
 /// An helper to generate a selfsigned certificate authority

@@ -26,6 +26,7 @@ pub enum PairSaverExtn {
     PemX509,
     PfxPKCS12,
     DSA,
+    ED25519,
 }
 
 impl fmt::Display for PairSaverExtn {
@@ -35,6 +36,7 @@ impl fmt::Display for PairSaverExtn {
             PairSaverExtn::PemX509 => write!(f, "x509"),
             PairSaverExtn::PfxPKCS12 => write!(f, "pkcs12"),
             PairSaverExtn::DSA => write!(f, "dsa"),
+            PairSaverExtn::ED25519 => write!(f, "ed25519"),
         }
     }
 }
