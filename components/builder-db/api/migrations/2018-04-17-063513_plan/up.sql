@@ -16,10 +16,10 @@ SETOF plan_factory AS $$
           DECLARE
            existing_plan plan_factory%rowtype;
               BEGIN
-                  SELECT  * INTO existing_plan FROM plan_factory WHERE object_meta ->> 'name' = pname;
+                  SELECT  * INTO existing_plan FROM plan_factory WHERE object_meta ->> 'name' = pname AND version =pversion;
                  IF FOUND THEN
-                    RETURN QUERY UPDATE plan_factory SET type_meta=ptype_meta,object_meta=pobject_meta,category=pcategory,characteristics=pcharacteristics,icon=picon,status=pstatus,
-                    description=pdescription,ports=pports,envs=penvs,lifecycle=plifecycle,updated_at=now() WHERE  object_meta ->> 'name' = pname RETURNING *;
+                    RETURN QUERY UPDATE plan_factory SET type_meta=ptype_meta,object_meta=pobject_meta,category=pcategory,characteristics=pcharacteristics,icon=picon,
+                    description=pdescription,ports=pports,envs=penvs,lifecycle=plifecycle,updated_at=now() WHERE  object_meta ->> 'name' = pname AND version=pversion RETURNING *;
                  ELSE
                  RETURN QUERY  INSERT INTO plan_factory(type_meta, object_meta, category,version, characteristics, icon,description,ports,envs,lifecycle,status)
                  VALUES (ptype_meta, pobject_meta, pcategory,pversion, pcharacteristics, picon,pdescription,pports,penvs,plifecycle,pstatus) ON CONFLICT DO NOTHING RETURNING *;
