@@ -8,11 +8,10 @@ use itertools::Itertools;
 use std::ops::Div;
 
 use protocol::api::node;
-use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
+use protocol::api::base::{IdGet, MetaFields};
 
 use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::collector::{Collector, CollectorScope};
-use rio_net::http::schema::type_meta_url;
 
 use serde_json;
 

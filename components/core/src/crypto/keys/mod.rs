@@ -25,6 +25,7 @@ pub enum PairSaverExtn {
     PubRSA,
     PemX509,
     PfxPKCS12,
+    DSA,
 }
 
 impl fmt::Display for PairSaverExtn {
@@ -33,6 +34,7 @@ impl fmt::Display for PairSaverExtn {
             PairSaverExtn::PubRSA => write!(f, "rsa"),
             PairSaverExtn::PemX509 => write!(f, "x509"),
             PairSaverExtn::PfxPKCS12 => write!(f, "pkcs12"),
+            PairSaverExtn::DSA => write!(f, "dsa"),
         }
     }
 }
@@ -120,10 +122,9 @@ impl FromStr for PairType {
             "public" => Ok(PairType::Public),
             "secret" => Ok(PairType::Secret),
             _ => {
-                return Err(Error::CryptoError(format!(
-                    "Invalid PairType conversion from {}",
-                    value
-                )))
+                return Err(Error::CryptoError(
+                    format!("Invalid PairType conversion from {}", value),
+                ))
             }
         }
     }
@@ -182,8 +183,11 @@ where
     S1: AsRef<str>,
     S2: AsRef<str>,
 {
-    path.as_ref()
-        .join(format!("{}.{}", keyname.as_ref(), suffix.as_ref()))
+    path.as_ref().join(format!(
+        "{}.{}",
+        keyname.as_ref(),
+        suffix.as_ref()
+    ))
 }
 
 fn read_key_bytes(keyfile: &Path) -> Result<Vec<u8>> {

@@ -58,6 +58,9 @@ pub static SECRET_SIG_KEY_SUFFIX: &'static str = "key";
 /// The suffix on the end of a public RSA key file
 pub static PUBLIC_RSA_SUFFIX: &'static str = "pub";
 
+/// The suffix on the end of a public DSA key file
+pub static PUBLIC_DSA_SUFFIX: &'static str = "dsa";
+
 /// The suffix on the end of a pkcs12 bundled public + private key file
 /// Both the X509 public and private RSA key combined into a pkcs12 pfx file
 pub static PUBLIC_PFX_SUFFIX: &'static str = "pfx";

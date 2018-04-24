@@ -16,6 +16,7 @@ use common::ui::UI;
 
 use rio_core::crypto::{ROOT_CA, SigKeyPair};
 use rio_core::fs::{write_to_file, read_from_file, rioconfig_config_path};
+use rio_core::crypto::keys::{PairConf, PairSaverExtn};
 
 use command;
 use error::Result;
@@ -340,7 +341,12 @@ fn ask_create_controller(ui: &mut UI, controller: &str) -> Result<bool> {
 
 //redundant (create_api and create_serviceaccount)
 fn create_controller(ui: &mut UI, controller: &str, cache_path: &Path, config: &Config) -> Result<()> {
-    let result = command::origin::key::generate::signed(ui, &controller, cache_path)?;
+    let result = command::origin::key::generate::signed_with_rsa(
+        ui,
+        &controller,
+        cache_path,
+        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+    )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "controller.rioconfig", config)?;
     Ok(())
@@ -358,7 +364,12 @@ fn ask_create_nodelet(ui: &mut UI, nodelet: &str) -> Result<bool> {
 
 //redundant (create_api and create_serviceaccount)
 fn create_nodelet(ui: &mut UI, nodelet: &str, cache_path: &Path, config: &Config) -> Result<()> {
-    let result = command::origin::key::generate::signed(ui, &nodelet, cache_path)?;
+    let result = command::origin::key::generate::signed_with_rsa(
+        ui,
+        &nodelet,
+        cache_path,
+        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+    )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "nodelet.rioconfig", config)?;
     Ok(())
@@ -376,7 +387,12 @@ fn ask_create_storelet(ui: &mut UI, storelet: &str) -> Result<bool> {
 
 //redundant (create_api and create_serviceaccount)
 fn create_storelet(ui: &mut UI, storelet: &str, cache_path: &Path, config: &Config) -> Result<()> {
-    let result = command::origin::key::generate::signed(ui, &storelet, cache_path)?;
+    let result = command::origin::key::generate::signed_with_rsa(
+        ui,
+        &storelet,
+        cache_path,
+        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+    )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "storlet.rioconfig", config)?;
     Ok(())
@@ -394,7 +410,12 @@ fn ask_create_scheduler(ui: &mut UI, scheduler: &str) -> Result<bool> {
 
 //redundant (create_api and create_serviceaccount)
 fn create_scheduler(ui: &mut UI, scheduler: &str, cache_path: &Path, config: &Config) -> Result<()> {
-    let result = command::origin::key::generate::signed(ui, &scheduler, cache_path)?;
+    let result = command::origin::key::generate::signed_with_rsa(
+        ui,
+        &scheduler,
+        cache_path,
+        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+    )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "scheduler.rioconfig", config)?;
     Ok(())
@@ -409,7 +430,12 @@ fn ask_create_gulp(ui: &mut UI, gulp: &str) -> Result<bool> {
 
 //redundant (create_api and create_serviceaccount)
 fn create_gulp(ui: &mut UI, gulp: &str, cache_path: &Path, config: &Config) -> Result<()> {
-    let result = command::origin::key::generate::signed(ui, &gulp, cache_path)?;
+    let result = command::origin::key::generate::signed_with_rsa(
+        ui,
+        &gulp,
+        cache_path,
+        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+    )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "gulp.rioconfig", config)?;
     Ok(())
@@ -445,7 +471,7 @@ fn ask_create_serviceaccount(ui: &mut UI, service_account: &str) -> Result<bool>
 }
 
 fn create_serviceaccount(ui: &mut UI, service_account: &str, cache_path: &Path) -> Result<()> {
-    command::origin::key::generate::signed(ui, &service_account, cache_path)?;
+    command::origin::key::generate::signed_with_rsa(ui, &service_account, cache_path, PairConf::new())?;
     ui.br()?;
     Ok(())
 }

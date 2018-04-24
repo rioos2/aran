@@ -11,6 +11,7 @@ use openssl::x509::{X509, X509NameBuilder, X509Req, X509ReqBuilder};
 use openssl::x509::extension::{AuthorityKeyIdentifier, BasicConstraints, KeyUsage, SubjectAlternativeName, SubjectKeyIdentifier};
 
 use openssl::rsa::Rsa;
+use openssl::dsa::Dsa;
 use openssl::pkcs12::Pkcs12;
 
 use crypto::keys::{PairConf, PairSaverExtn};
@@ -19,7 +20,7 @@ use error::{Error, Result};
 use error::Error::X509Error;
 
 use super::{mk_key_filename, read_key_bytes, write_keypair_files, write_key_file, KeyPair};
-use super::super::{ROOT_CA, PUBLIC_KEY_SUFFIX, SECRET_SIG_KEY_SUFFIX, PUBLIC_RSA_SUFFIX, PUBLIC_PFX_SUFFIX};
+use super::super::{ROOT_CA, PUBLIC_KEY_SUFFIX, SECRET_SIG_KEY_SUFFIX, PUBLIC_RSA_SUFFIX, PUBLIC_PFX_SUFFIX, PUBLIC_DSA_SUFFIX};
 
 pub type SigKeyPair = KeyPair<Vec<u8>, Vec<u8>>;
 
@@ -71,7 +72,7 @@ impl SigKeyPair {
     }
 
     fn gen_ca_pair(name_with_rev: &str, conf: PairConf, cache_key_path: &Path) -> Result<(Vec<u8>, Vec<u8>)> {
-        let key = gen_key(conf.bit_len())?;
+        let key = gen_key_rsa(conf.bit_len())?;
 
         let cert = gen_ca(&key)?;
 
@@ -101,7 +102,6 @@ impl SigKeyPair {
     //  -in api-server.cert.pem
     pub fn mk_signed<P: AsRef<Path> + ?Sized>(name: &str, conf: PairConf, cache_key_path: &P) -> Result<Self> {
         debug!("new signed key name = {}", &name);
-
         let (public, secret) = try!(Self::gen_ca_signed_pair(
             &name,
             conf,
@@ -111,11 +111,19 @@ impl SigKeyPair {
         Ok(Self::new(name.to_string(), Some(public), Some(secret)))
     }
 
+
     /// Signs certificate.
     ///
     /// CSR and PKey will be generated if it doesn't set or loaded first.
     fn gen_ca_signed_pair(name_with_rev: &str, conf: PairConf, cache_key_path: &Path) -> Result<(Vec<u8>, Vec<u8>)> {
-        let privkey = gen_key(conf.bit_len())?;
+        let privkey = {
+            match conf.save_as_extn() {
+                PairSaverExtn::PubRSA => gen_key_rsa(conf.bit_len())?,
+                PairSaverExtn::PemX509 => gen_key_rsa(conf.bit_len())?,
+                PairSaverExtn::PfxPKCS12 => gen_key_rsa(conf.bit_len())?,
+                PairSaverExtn::DSA => gen_key_dsa(conf.bit_len())?,
+            }
+        };
 
         let ca = Self::get_pair_for(ROOT_CA, cache_key_path)?;
 
@@ -149,6 +157,11 @@ impl SigKeyPair {
                     PairSaverExtn::PfxPKCS12 => PairSavingData {
                         public_keyfile: mk_key_filename(cache_key_path, name_with_rev, PUBLIC_PFX_SUFFIX),
                         public: pfx,
+                        multi: None,
+                    },
+                    PairSaverExtn::DSA => PairSavingData {
+                        public_keyfile: mk_key_filename(cache_key_path, name_with_rev, PUBLIC_DSA_SUFFIX),
+                        public: public_pem,
                         multi: None,
                     },
                 }
@@ -312,9 +325,16 @@ fn mk_pkcs12_pfx(name_with_rev: &str, cert: &X509, privkey: &PKey) -> Result<Vec
 }
 
 /// Generates a new PKey
-fn gen_key(bit_len: u32) -> Result<PKey> {
+fn gen_key_rsa(bit_len: u32) -> Result<PKey> {
     let rsa = Rsa::generate(bit_len)?;
     let key = PKey::from_rsa(rsa)?;
+    Ok(key)
+}
+
+/// Generates a new PKey
+fn gen_key_dsa(bit_len: u32) -> Result<PKey> {
+    let rsa = Dsa::generate(bit_len)?;
+    let key = PKey::from_dsa(rsa)?;
     Ok(key)
 }
 

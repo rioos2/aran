@@ -27,12 +27,12 @@ pub fn start(ui: &mut UI, ca: &str, cache: &Path) -> Result<()> {
 //server-ca.
 //The PairConf dictates the type of extension being generated.
 //The  default is PUB_RSA
-pub fn signed(ui: &mut UI, name: &str, cache: &Path) -> Result<SigKeyPair> {
+pub fn signed_with_rsa(ui: &mut UI, name: &str, cache: &Path, pair: PairConf) -> Result<SigKeyPair> {
     match is_valid_cert_name(name) {
         false => Err(Error::from(InvalidCertificateName(name.to_string()))),
         true => {
             ui.begin(format!("Generating key for {}", &name))?;
-            let pair = SigKeyPair::mk_signed(name, PairConf::new(), cache)?;
+            let pair = SigKeyPair::mk_signed(name, pair, cache)?;
             ui.end(format!("Generated key pair {}.", &pair.name))?;
             Ok(pair)
         }
