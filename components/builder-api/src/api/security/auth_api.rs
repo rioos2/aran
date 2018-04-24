@@ -44,6 +44,7 @@ pub struct AuthenticateApi {
 /// POST: /authenticate,
 /// GET: /account/id
 /// Record the other apis here.
+
 impl AuthenticateApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
         AuthenticateApi { conn: datastore }
@@ -85,7 +86,9 @@ impl AuthenticateApi {
         let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_email(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
-        unmarshall_body.set_roles(vec![DEFAULTROLE.to_string()]);
+        if unmarshall_body.get_roles().is_empty() {
+            unmarshall_body.set_roles(vec![DEFAULTROLE.to_string()]);
+        }
 
         unmarshall_body.set_token(UserAccountAuthenticate::token().unwrap());
 
@@ -311,16 +314,16 @@ impl Api for AuthenticateApi {
         router.get(
             "/accounts/:id",
             XHandler::new(C { inner: account_show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.account.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.account.get".to_string())),
             "account_show",
         );
 
         router.get(
             "/accounts/name/:name",
             XHandler::new(C { inner: account_show_by_name })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.account.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.account.get".to_string())),
             "account_show_by_name",
         );
 

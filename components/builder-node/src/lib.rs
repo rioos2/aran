@@ -6,7 +6,7 @@ extern crate chrono;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
 extern crate rioos_telemetry as telemetry;
-
+extern crate itertools;
 
 extern crate postgres;
 extern crate serde_json;

@@ -157,7 +157,8 @@ impl SecretApi {
     //Input origin_name Returns all the secrets (fpr that namespaces)
     //Every user will be able to list their own origin.
     //Will need roles/permission to access others origin.
-    pub fn list_by_account_direct(&self, params: IdGet, dispatch: String) -> Option<String> {
+    pub fn watch_list_by_account(&self, params: IdGet, dispatch: String) -> Option<String> {
+        
         let data = match securer::from_config(&self.secret, Box::new(*self.conn.clone())) {
             Ok(result) => result,
             Err(_err) => return None,

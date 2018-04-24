@@ -26,6 +26,8 @@ pub enum PairSaverExtn {
     PubRSA,
     PemX509,
     PfxPKCS12,
+    DSA,
+    ED25519,
 }
 
 impl fmt::Display for PairSaverExtn {
@@ -34,6 +36,8 @@ impl fmt::Display for PairSaverExtn {
             PairSaverExtn::PubRSA => write!(f, "rsa"),
             PairSaverExtn::PemX509 => write!(f, "x509"),
             PairSaverExtn::PfxPKCS12 => write!(f, "pkcs12"),
+            PairSaverExtn::DSA => write!(f, "dsa"),
+            PairSaverExtn::ED25519 => write!(f, "ed25519"),
         }
     }
 }
@@ -56,21 +60,33 @@ impl PairConf {
     //generates pair with default bit length and
     //save extn is PEM_RSA.
     pub fn new() -> Self {
-        PairConf { save: true, bit_len: None, save_as_extn: PairSaverExtn::PubRSA }
+        PairConf {
+            save: true,
+            bit_len: None,
+            save_as_extn: PairSaverExtn::PubRSA,
+        }
     }
 
     //Pair configuration which allows to change the saved extn.
     //generates pair with default bit length and
     //save extn is as per input
     pub fn with_extn(extn: PairSaverExtn) -> Self {
-        PairConf { save: true, bit_len: None, save_as_extn: extn }
+        PairConf {
+            save: true,
+            bit_len: None,
+            save_as_extn: extn,
+        }
     }
 
     //Pair configuration which allows to change the saved extn, save, and the save as extn.
     //generates pair with input bit length, saved in a file (or) not,
     //and a save extn as per input
     pub fn with_save(save: bool, bit_len: Option<u32>, extn: PairSaverExtn) -> Self {
-        PairConf { save: save, bit_len: bit_len, save_as_extn: extn }
+        PairConf {
+            save: save,
+            bit_len: bit_len,
+            save_as_extn: extn,
+        }
     }
 
     fn save(&self) -> bool {
@@ -108,7 +124,12 @@ impl FromStr for PairType {
         match value {
             "public" => Ok(PairType::Public),
             "secret" => Ok(PairType::Secret),
-            _ => return Err(Error::CryptoError(format!("Invalid PairType conversion from {}", value))),
+            _ => {
+                return Err(Error::CryptoError(format!(
+                    "Invalid PairType conversion from {}",
+                    value
+                )))
+            }
         }
     }
 }
@@ -132,7 +153,11 @@ pub struct KeyPair<P, S> {
 impl<P, S> KeyPair<P, S> {
     /// Creates a new `KeyPair`.
     pub fn new(name: String, p: Option<P>, s: Option<S>) -> KeyPair<P, S> {
-        KeyPair { name: name, public: p, secret: s }
+        KeyPair {
+            name: name,
+            public: p,
+            secret: s,
+        }
     }
 
     pub fn public(&self) -> Result<&P> {
@@ -162,7 +187,8 @@ where
     S1: AsRef<str>,
     S2: AsRef<str>,
 {
-    path.as_ref().join(format!("{}.{}", keyname.as_ref(), suffix.as_ref()))
+    path.as_ref()
+        .join(format!("{}.{}", keyname.as_ref(), suffix.as_ref()))
 }
 
 fn read_key_bytes(keyfile: &Path) -> Result<Vec<u8>> {
@@ -197,7 +223,9 @@ fn write_key_file(regular_keyfile: Option<&Path>, regular_content: Option<&[u8]>
         if let Some(pk_dir) = regular_keyfile.parent() {
             try!(fs::create_dir_all(pk_dir));
         } else {
-            return Err(Error::BadKeyPath(regular_keyfile.to_string_lossy().into_owned()));
+            return Err(Error::BadKeyPath(
+                regular_keyfile.to_string_lossy().into_owned(),
+            ));
         }
 
         if regular_keyfile.exists() {
@@ -211,7 +239,10 @@ fn write_key_file(regular_keyfile: Option<&Path>, regular_content: Option<&[u8]>
         let regular_file = try!(File::create(regular_keyfile));
         let mut regular_writer = BufWriter::new(&regular_file);
         try!(regular_writer.write_all(regular_content));
-        try!(perm::set_permissions(regular_keyfile, REGULAR_KEY_PERMISSIONS,));
+        try!(perm::set_permissions(
+            regular_keyfile,
+            REGULAR_KEY_PERMISSIONS,
+        ));
     }
 
     Ok(())

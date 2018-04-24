@@ -76,9 +76,6 @@ path = "../builder-apimachinery"
 [dependencies.rioos_builder_httpgateway]
 path = "../builder-http-gateway"
 
-[dependencies.rioos_net]
-path = "../net"
-
 [dependencies.rioos_http2]
 path = "../http2"
 

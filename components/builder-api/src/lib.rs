@@ -44,7 +44,6 @@ extern crate rioos_builder_storagesrv as storage;
 extern crate rioos_common as common;
 extern crate rioos_core as rio_core;
 extern crate rioos_http2 as httpbis;
-extern crate rioos_net as rio_net;
 extern crate rioos_builder_devtooling as devtooling;
 extern crate rioos_entitlement as entitlement;
 extern crate rioos_auth as auth;

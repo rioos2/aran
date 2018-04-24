@@ -32,6 +32,8 @@ RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
           touch $RIOOS_MARKETPLACE_YAML
     fi
 
+		$RIOOS_BIN_HOME/rioos-apiserver migrate
+
 # Start Watch Server
 exec $RIOOS_BIN_HOME/entrypoint.sh watchserver > /var/log/rioos_watchserver.log 2>&1 &
 

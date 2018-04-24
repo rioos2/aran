@@ -18,7 +18,6 @@ use reqwest;
 use db;
 use service;
 use bodyparser;
-use rio_net;
 use serde_yaml;
 
 const MISSING_PARAMETER: &'static str = "Missing parameters: ";
@@ -60,7 +59,6 @@ pub enum Error {
     SetupNotDone,
     SyncNotDone,
     RioosAranCore(rio_core::Error),
-    RioNetError(rio_net::Error),
     RioosBodyError(bodyparser::BodyError),
     RioHttpClient(rioos_http::Error),
     RioosAranCommon(common::Error),
@@ -84,7 +82,6 @@ impl fmt::Display for Error {
             Error::Secret(ref e) => format!("{}", e),
             Error::WatchServer(ref e) => format!("{}", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
-            Error::RioNetError(ref e) => format!("{}", e),
             Error::RioosBodyError(ref e) => format!("{:?}, {:?}", e.detail, e.cause),
             Error::RioHttpClient(ref e) => format!("{}", e),
             Error::RioosAranCommon(ref e) => format!("{}", e),
@@ -113,7 +110,6 @@ impl error::Error for Error {
             Error::WatchServer(ref err) => err.description(),
             Error::RioHttpClient(ref err) => err.description(),
             Error::RioosAranCore(ref err) => err.description(),
-            Error::RioNetError(ref err) => err.description(),
             Error::RioosBodyError(ref err) => err.description(),
             Error::RioosAranCommon(ref err) => err.description(),
             Error::ReqwestError(ref err) => err.description(),
@@ -164,12 +160,6 @@ impl From<io::Error> for Error {
 impl From<url::ParseError> for Error {
     fn from(err: url::ParseError) -> Error {
         Error::UrlParseError(err)
-    }
-}
-
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
-        Error::RioNetError(err)
     }
 }
 

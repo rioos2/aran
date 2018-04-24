@@ -1,7 +1,6 @@
 use super::super::error::{Result, Error};
 use db::data_store::DataStoreConn;
 use rbac::authorizer::RoleType;
-use iron::prelude::IronResult;
 use auth::models::permission::DataStore;
 use protocol::api::authorize::Permissions;
 
@@ -34,7 +33,6 @@ const AUDIT: &'static str = "audit";
 const LOG: &'static str = "log";
 const HEALTHZ: &'static str = "healthz";
 
-const RESOURCE_ALL: &'static str = "*";
 const RESOURCE_GET: &'static str = "get";
 const RESOURCE_POST: &'static str = "post";
 const RESOURCE_PUT: &'static str = "put";
@@ -67,29 +65,30 @@ impl TrustAccess {
         TrustAccess(TrustResource::Wild, TrustLevel::ResourceWild)
     }
 
-    //this function return true only for super user 
+    //this function return true only for super user
     //when requested account resource and level is wild(*) then it is return true
     //otherwise return false(it means requested account is not a super user)
     pub fn is_all_wild(&self, perms: TrustedAccessList) -> bool {
         perms[0].0 == TrustResource::Wild && perms[0].1 == TrustLevel::ResourceWild
     }
 
-    pub fn is_allowed(&self, perms: TrustedAccessList) -> Result<bool> {      
+    pub fn is_allowed(&self, perms: TrustedAccessList) -> Result<bool> {
         let mut flag = false;
         if perms.len() < 2 && self.is_all_wild(perms.clone()) {
             return Ok(true);
-        } 
+        }
         for p in perms.iter() {
-            if p == self {                
+            if p == self {
                 flag = true;
             }
         }
         match flag {
             true => Ok(flag),
-            false => Err(Error::PermissionError(format!("User doesn't have permission for this operation."))),
+            false => Err(Error::PermissionError(
+                format!("User doesn't have permission for this operation."),
+            )),
         }
     }
-
 }
 
 //PartialEq for TrustAccess enumeration
@@ -97,9 +96,9 @@ impl TrustAccess {
 //otherwise it will check resource and level permissions
 impl PartialEq for TrustAccess {
     fn eq(&self, other: &TrustAccess) -> bool {
-        match other.1 {
+        match self.1 {
             TrustLevel::ResourceWild => self.0 == other.0,
-            _ => self.0 == other.0 && self.1 == other.1
+            _ => self.0 == other.0 && self.1 == other.1,
         }
     }
 }
@@ -109,7 +108,7 @@ impl PartialEq for TrustAccess {
 enum TrustResource {
     Assembly,
     AssemblyFactory,
-   // ServiceAccount
+    // ServiceAccount
     HorizontalScaling,
     VerticalScaling,
     Secret,
@@ -163,10 +162,10 @@ impl Into<TrustAccess> for Permissions {
 impl TrustResource {
     pub fn from_str(value: &str) -> TrustResource {
         match &value[..] {
-            ALL => TrustResource::Wild,           
+            ALL => TrustResource::Wild,
             ASSEMBLY => TrustResource::Assembly,
             ASSEMBLYFACTORY => TrustResource::AssemblyFactory,
-           // SERVICEACCOUNT => TrustResource::ServiceAccount
+            // SERVICEACCOUNT => TrustResource::ServiceAccount
             HORIZONTALSCALING => TrustResource::HorizontalScaling,
             VERTICALSCALING => TrustResource::VerticalScaling,
             SECRET => TrustResource::Secret,
@@ -174,10 +173,10 @@ impl TrustResource {
             JOB => TrustResource::Job,
             SERVICE => TrustResource::Service,
             VOLUME => TrustResource::Volume,
-            NODE =>  TrustResource::Node,
+            NODE => TrustResource::Node,
             STORAGECONNECTOR => TrustResource::StorageConnector,
             STORAGEPOOL => TrustResource::Storagepool,
-           // SETTINGSMAP => TrustResource::Settingsmap
+            // SETTINGSMAP => TrustResource::Settingsmap
             IMAGEREFERENCE => TrustResource::Imagereference,
             IMAGEMARK => TrustResource::Imagemark,
             BUILD => TrustResource::Build,
