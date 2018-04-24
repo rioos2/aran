@@ -20,6 +20,9 @@ extern crate rioos_common as common;
 extern crate rioos_core as core;
 extern crate rioos_auth as auth;
 
+#[macro_use]
+extern crate horrorshow;
+
 extern crate brotli;
 extern crate iron;
 extern crate libflate;

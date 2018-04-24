@@ -1,5 +1,6 @@
-use std::sync::Arc;
+// Copyright 2018 The Rio Advancement Inc
 
+use std::sync::Arc;
 use iron::prelude::*;
 use bodyparser;
 use iron::status;

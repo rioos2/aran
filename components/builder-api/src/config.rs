@@ -64,6 +64,7 @@ impl ConfigFile for Config {
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 pub struct UiCfg {
+    pub url: Option<String>,
     pub root: Option<String>,
 }
 
