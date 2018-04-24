@@ -294,13 +294,6 @@ fn user_agent(product: &str, version: &str) -> Result<UserAgent> {
 }
 
 pub fn err_from_response(mut response: reqwest::Response) -> Error {
-    if response.status() == reqwest::StatusCode::Unauthorized {
-        return Error::APIError(
-            response.status(),
-            "Your token mismatch and requires permissions.".to_string(),
-        );
-    }
-
     let mut buff = String::new();
     match response.read_to_string(&mut buff) {
         Ok(_) => Error::APIError(response.status(), buff),
