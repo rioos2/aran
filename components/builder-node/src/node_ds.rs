@@ -186,10 +186,7 @@ fn get_gauges(client: &PrometheusClient) -> Result<(Vec<node::Counters>, Vec<nod
 fn get_statistics(client: &PrometheusClient, cpu_nodes_collected: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
     //Statistics metric of the each node
     if cpu_nodes_collected.len() == 0 {
-        let mut node = node::NodeStatistic::new();
-        let jackie = node.who_am_i();
-        node.set_type_meta(type_meta_url(jackie));
-        return Ok(vec![node]);
+        return Ok(vec![]);
     }
 
     let mut node_statistics = vec![node::NodeStatistic::new()];
