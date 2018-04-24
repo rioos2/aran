@@ -99,6 +99,7 @@ pub mod server;
 pub mod node;
 pub mod events;
 pub mod watch;
+pub mod validator;
 
 pub use self::config::Config;
 pub use self::error::{Error, Result};

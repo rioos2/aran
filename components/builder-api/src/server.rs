@@ -16,7 +16,9 @@ pub struct Server {
 impl Server {
     /// Create a new `Server`
     pub fn new(config: Config) -> Self {
-        Server { config: Arc::new(config) }
+        Server {
+            config: Arc::new(config),
+        }
     }
 
     /// Runs the main server and starts and manages all supporting threads. This function will
@@ -40,7 +42,10 @@ impl Server {
     ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝╚═╝     ╚═╝                                                                                                        
     "#,
     )?;
-                ui.begin(&format!("Rio/OS API listening on {}:{}", self.config.https.listen, self.config.https.port))?;
+                ui.begin(&format!(
+                    "Rio/OS API listening on {}:{}",
+                    self.config.https.listen, self.config.https.port
+                ))?;
             }
             Servers::STREAMER => {
                 ui.begin(
@@ -54,7 +59,10 @@ impl Server {
 ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
    "#,
                 )?;
-                ui.begin(&format!("Rio/OS STREAMER listening on {}:{}", self.config.http2.listener, self.config.http2.port))?;
+                ui.begin(&format!(
+                    "Rio/OS STREAMER listening on {}:{}",
+                    self.config.http2.listener, self.config.http2.port
+                ))?;
             }
             Servers::UISTREAMER => {
                 ui.begin(
@@ -69,11 +77,16 @@ impl Server {
 "#,
     )?;
 
-                ui.begin(&format!("Rio/OS UISTREAMER listening on {}:{}", self.config.http2.listener, self.config.http2.websocket))?;
+                ui.begin(&format!(
+                    "Rio/OS UISTREAMER listening on {}:{}",
+                    self.config.http2.listener, self.config.http2.websocket
+                ))?;
             }
         }
 
         ui.heading("Ready to go.")?;
+        //dump config
+        cfg1.dump(ui)?;
 
         let node = Node::new(cfg1);
 

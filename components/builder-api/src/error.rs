@@ -54,7 +54,7 @@ pub enum Error {
     Db(db::error::Error),
     Secret(service::Error),
     BadPort(String),
-    MissingTLS(String),
+    MissingConfiguration(String),
     WatchServer(httpbis::Error),
     UNKNOWSECRET,
     SetupNotDone,
@@ -80,10 +80,7 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
-            Error::MissingTLS(ref e) => format!(
-                "TLS certificate missing - [{}], Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start",
-                e
-            ),
+            Error::MissingConfiguration(ref e) => format!("{},", e),
             Error::Secret(ref e) => format!("{}", e),
             Error::WatchServer(ref e) => format!("{}", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
@@ -111,7 +108,7 @@ impl error::Error for Error {
         match *self {
             Error::Db(ref err) => err.description(),
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
-            Error::MissingTLS(ref err) => err,
+            Error::MissingConfiguration(ref err) => err,
             Error::Secret(ref err) => err.description(),
             Error::WatchServer(ref err) => err.description(),
             Error::RioHttpClient(ref err) => err.description(),

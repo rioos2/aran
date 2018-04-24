@@ -1,6 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! Configuration for a Rio/OS API server
+use std::collections::HashMap;
 
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
@@ -13,9 +14,12 @@ use auth::config::{Identity, IdentityCfg};
 use watch::config::{Streamer, StreamerCfg};
 use entitlement::config::{License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
-use http_gateway::config::base::AuthenticationFlowCfg;
 
-use error::Error;
+use http_gateway::config::base::AuthenticationFlowCfg;
+use validator::ConfigValidator;
+use common::ui::UI;
+
+use error::{Error, Result};
 
 use http_gateway::config::prelude::*;
 
@@ -48,6 +52,56 @@ pub struct Config {
     pub vulnerability: VulnerabilityCfg,
 }
 
+/// dump the configuration
+impl Config {
+    pub fn dump(&self, ui: &mut UI) -> Result<()> {
+        ui.begin("Configuration")?;
+        ui.heading("[https]")?;
+        ui.para(&format!("{}:{}", self.https.listen, self.https.port))?;
+        ui.para(&format!(
+            "{:?} {:?}",
+            self.https.tls, self.https.tls_password
+        ))?;
+        ui.heading("[http2]")?;
+        ui.para(&format!("{}:{}", self.http2.listener, self.http2.port))?;
+        ui.para(&format!(
+            "{:?} {:?}",
+            self.http2.tls, self.http2.tls_password
+        ))?;
+        ui.heading("[telemetry]")?;
+        ui.para(&self.telemetry.endpoint)?;
+        ui.heading("[identity]")?;
+        //ui.para(&format!("{:?}", &self.identity.enabled.into_iter().collect()))?;
+        //ui.para(&format!("{:?}", &self.identity.params.into_iter().collect()))?;
+        ui.heading("[vaults]")?;
+        ui.para(&format!("{:?}", &self.vaults.backend))?;
+        ui.heading("[services]")?;
+        ui.para(&self.services.loadbalancer_imagein)?;
+        ui.para(&self.services.loadbalancer_imagename)?;
+        ui.para(&self.services.loadbalancer_cpu)?;
+        ui.para(&self.services.loadbalancer_mem)?;
+        ui.para(&self.services.loadbalancer_disk)?;
+        ui.heading("[licenses]")?;
+        ui.para(&self.licenses.so_file)?;
+        ui.heading("[logs]")?;
+        ui.para(&self.logs.influx_endpoint)?;
+        ui.para(&self.logs.influx_prefix)?;
+        ui.heading("[blockchain]")?;
+        ui.para(&self.blockchain.endpoint)?;
+        ui.heading("[marketplaces]")?;
+        ui.para(&self.marketplaces.endpoint)?;
+        ui.para(&self.marketplaces.username)?;
+        ui.para(&self.marketplaces.token)?;
+        ui.heading("[vulnerability]")?;
+        ui.para(&self.vulnerability.anchore_endpoint)?;
+        ui.para(&self.vulnerability.anchore_username)?;
+        ui.para(&self.vulnerability.anchore_password)?;
+        ui.end("Loaded.")?;
+
+        Ok(())
+    }
+}
+
 // Set all the defaults fo the config
 impl Default for Config {
     fn default() -> Self {
@@ -72,15 +126,43 @@ impl Default for Config {
 impl AuthenticationFlowCfg for Config {
     //
     fn modes(&self) -> Vec<(String, String)> {
-        vec![]
+        //self.identity.enabled
+        vec![("service_account".to_string(), "testing.pub".to_string())]
     }
 
     fn ready(&self) -> bool {
-        false
+        self.identity.valid().is_ok()
     }
+}
 
-    fn unready_message(&self) -> Option<String> {
-        None
+impl ConfigValidator for Config {
+    fn valid(&self) -> Result<()> {
+        vec![
+            self.https.valid(),
+            self.http2.valid(),
+            self.telemetry.valid(),
+            self.identity.valid(),
+            self.vaults.valid(),
+            self.licenses.valid(),
+            self.logs.valid(),
+            self.blockchain.valid(),
+            self.marketplaces.valid(),
+        ].iter()
+            .fold(Ok(()), |acc, x| {
+                match x {
+                    &Ok(()) => return acc,
+                    &Err(ref e) => {
+                        if acc.is_ok() {
+                            return acc;
+                        }
+                        Err(Error::MissingConfiguration(format!(
+                            "{}\n{}",
+                            e,
+                            acc.unwrap_err()
+                        )))
+                    }
+                }
+            })
     }
 }
 
@@ -136,8 +218,12 @@ impl Telemetry for Config {
 
 //A delegate, that returns the identity the loaded identity config
 impl Identity for Config {
-    fn service_account(&self) -> Option<String> {
-        self.identity.service_account.clone()
+    fn enabled(&self) -> Vec<String> {
+        self.identity.enabled.clone()
+    }
+
+    fn params(&self) -> HashMap<String, String> {
+        self.identity.params.clone()
     }
 }
 
@@ -269,12 +355,13 @@ mod tests {
         tls_password = "TEAMRIOADVANCEMENT123"
 
         [identity]
-        service_account = "service-account.pub"
-
+        enabled = ["password", "token", "service_account", "passticket"]
+        params = { service_account = "service_account.pub" }
+        
         [marketplaces]
+        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
         username = "rioosdolphin@rio.company"
         token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
 
         [blockchain]
         endpoint = "http://localhost:7000"
@@ -293,8 +380,8 @@ mod tests {
         activation_code = ""
 
         [logs]
-        endpoint = "http://localhost:8086"
-        prefix = "rioos_logs"
+        influx_endpoint = "http://localhost:8086"
+        influx_prefix = "rioos_logs"
 
         [vulnerability]
         anchore_endpoint = "http://localhost:8228/v1"
@@ -328,15 +415,15 @@ mod tests {
 
         assert_eq!(config.telemetry.endpoint, "http://localhost:9090/api/v1");
 
-        assert_eq!(config.identity.serviceaccount, "service-account.pub");
+        assert_eq!(config.identity.enabled, vec!["password", "token"]);
 
         assert_eq!(config.vaults.backend, "Local");
 
         assert_eq!(config.licenses.so_file, "ShaferFilechck.so");
         assert_eq!(config.licenses.activation_code, "");
 
-        assert_eq!(config.logs.endpoint, "http://localhost:8086");
-        assert_eq!(config.logs.prefix, "rioos_logs");
+        assert_eq!(config.logs.influx_endpoint, "http://localhost:8086");
+        assert_eq!(config.logs.influx_prefix, "rioos_logs");
 
         assert_eq!(
             config.vulnerability.anchore_endpoint,
@@ -387,7 +474,7 @@ mod tests {
 
         assert_eq!(config.telemetry.endpoint, "http://localhost:9090/api/v1");
 
-        assert_eq!(config.identity.service_account, "service-account.pub");
+        assert_eq!(config.identity.enabled, vec!["password", "token"]);
 
         assert_eq!(config.vaults.backend, "Local");
 

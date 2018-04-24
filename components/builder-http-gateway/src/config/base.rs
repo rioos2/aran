@@ -45,10 +45,12 @@ pub struct UiCfg {
 
 /// A trait
 pub trait AuthenticationFlowCfg {
-    //
+    //The set of modes and their input.
+    //At the moment we support just string input for any of the authentication modes.
+    //example: service_account: service_account.pub
     fn modes(&self) -> Vec<(String, String)>;
 
+    //Are all the authentication modes configured and ready.
     fn ready(&self) -> bool;
 
-    fn unready_message(&self) -> Option<String>;
 }

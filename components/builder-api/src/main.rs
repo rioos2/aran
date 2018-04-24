@@ -25,15 +25,15 @@ use rio_core::crypto::{default_rioconfig_key_path, init};
 use rio_core::fs::rioconfig_config_path;
 use common::ui::{Coloring, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR, UI};
 
-use api::{command, Config, Error, Result};
+use api::Config;
+use api::validator::ConfigValidator;
+use api::{command, Error, Result};
 use api::node::Servers;
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 lazy_static! {
     static ref CFG_DEFAULT_FILE: PathBuf = PathBuf::from(&*rioconfig_config_path(None).join("api.toml").to_str().unwrap());
-    static ref SERVING_TLS_PFX: PathBuf = PathBuf::from(&*rioconfig_config_path(None).join("api-server.pfx").to_str().unwrap());
-    static ref SERVICEACCOUNT_PUBLIC_KEY: PathBuf = PathBuf::from(&*rioconfig_config_path(None).join("service-account.pub").to_str().unwrap());
     static ref SETUP_COMPLETE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join(".rioos_setup_complete").to_str().unwrap());
     static ref MARKETPLACE_CACHE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
 }
@@ -156,33 +156,9 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
         None => {
             let mut default_config = Config::default();
 
-            if let Some(identity_pkcs12_file) = SERVING_TLS_PFX.to_str() {
-                if SERVING_TLS_PFX.exists() {
-                    default_config.https.port = 7443;
-                    default_config.https.tls = Some(identity_pkcs12_file.to_string());
-                    default_config.http2.port = 8443;
-                    default_config.http2.websocket = 9443;
-                    default_config.http2.tls = Some(identity_pkcs12_file.to_string());
-                }
-            };
-
-            if let Some(serviceaccount_public_key) = SERVICEACCOUNT_PUBLIC_KEY.to_str() {
-                if SERVICEACCOUNT_PUBLIC_KEY.exists() {
-                    default_config.identity.service_account = Some(serviceaccount_public_key.to_string());
-                }
-            }
-
             Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(default_config)
         }
     };
-
-    if config.identity.service_account.is_none() {
-        return Err(Error::MissingTLS(SERVICEACCOUNT_PUBLIC_KEY.to_str().unwrap_or("").to_string()));
-    }
-
-    if config.https.tls.is_none() {
-        return Err(Error::MissingTLS(SERVING_TLS_PFX.to_str().unwrap_or("").to_string()));
-    }
 
     if let Some(port) = args.value_of("port") {
         if u16::from_str(port).map(|p| config.https.port = p).is_err() {
@@ -207,6 +183,8 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
             return Err(Error::BadPort(uistreamer_port.to_string()));
         }
     }
+
+    config.valid()?;
 
     Ok(config)
 }

@@ -29,7 +29,7 @@ struct EmailHeader {}
 impl HeaderExtracter for EmailHeader {
     const AUTH_CONF_NAME: &'static str = "email";
 
-    fn extract(req: iron::Headers, token: String, config_value: Option<&String>) -> Option<Authenticatable> {
+    fn extract(req: iron::Headers, token: String, _config_value: Option<&String>) -> Option<Authenticatable> {
         let email = req.get::<XAuthRioOSEmail>();
 
         if !email.is_none() {
@@ -65,7 +65,7 @@ struct EmailWithJWTTokenHeader {}
 impl HeaderExtracter for EmailWithJWTTokenHeader {
     const AUTH_CONF_NAME: &'static str = "email_jwt";
 
-    fn extract(req: iron::Headers, token: String, config_value: Option<&String>) -> Option<Authenticatable> {
+    fn extract(req: iron::Headers, token: String, _config_value: Option<&String>) -> Option<Authenticatable> {
         let useraccount = req.get::<XAuthRioOSUserAccountEmail>();
         if !useraccount.is_none() {
             return Some(Authenticatable::UserEmailAndWebtoken {
@@ -82,7 +82,7 @@ struct PassTicketHeader {}
 impl HeaderExtracter for PassTicketHeader {
     const AUTH_CONF_NAME: &'static str = "passticket";
 
-    fn extract(req: iron::Headers, _token: String, config_value: Option<&String>) -> Option<Authenticatable> {
+    fn extract(req: iron::Headers, _token: String, _config_value: Option<&String>) -> Option<Authenticatable> {
         let otp = req.get::<XAuthRioOSOTP>();
         if !otp.is_none() {
             return Some(Authenticatable::PassTicket {
@@ -108,7 +108,7 @@ impl HeaderDecider {
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         };
-    
+
         let extractables = vec![
             EmailHeader::extract(
                 req.clone(),
@@ -150,9 +150,8 @@ impl HeaderDecider {
     }
 }
 
-fn valid_header(extractable_res: &Vec<Option<Authenticatable>>) -> Option<Authenticatable> {
-    let validated = extractable_res
+fn valid_header(authenticatables: &Vec<Option<Authenticatable>>) -> Option<Authenticatable> {
+    authenticatables
         .iter()
-        .fold(None, |acc, x| acc.or(x.clone()).clone());
-    validated
+        .fold(None, |acc, x| acc.or(x.clone()).clone())
 }

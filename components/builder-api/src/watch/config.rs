@@ -3,7 +3,6 @@
 //! Configuration for a Rio/OS Streamer server
 
 use std::net::{IpAddr, Ipv4Addr};
-use error::Error;
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]

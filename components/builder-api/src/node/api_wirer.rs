@@ -180,7 +180,7 @@ impl Wirer {
                             let tls_server = NativeTlsServer::new(PathBuf::from(&*rioconfig_config_path(None).join(tls_location.clone())), &self.config.https.tls_password.clone().unwrap_or("".to_string()).to_string()).unwrap();
                             server.https(&conf.https, tls_server).unwrap()
                         }
-                        None => Err(Error::MissingTLS("api server pfx".to_string())).unwrap(),
+                        None => Err(Error::MissingConfiguration("api server pfx".to_string())).unwrap(),
                     };
                 });
                 ui.end("Router ").unwrap();

@@ -1,0 +1,174 @@
+use error::{Error, Result};
+
+use audit::config::LogsCfg;
+use watch::config::StreamerCfg;
+
+use api::audit::config::{BlockchainCfg, MarketplacesCfg};
+use api::deploy::config::ServicesCfg;
+use api::security::config::SecurerCfg;
+
+use auth::config::IdentityCfg;
+
+use entitlement::config::LicensesCfg;
+use telemetry::config::TelemetryCfg;
+
+use http_gateway::config::prelude::*;
+
+pub trait ConfigValidator {
+    fn valid(&self) -> Result<()>;
+}
+
+/// Validate the presence of listener, port, and tls
+impl ConfigValidator for HttpsCfg {
+    fn valid(&self) -> Result<()> {
+        if self.tls.is_none() {
+            return Err(Error::MissingConfiguration("[https] → tls".to_string()));
+        }
+
+        Ok(())
+    }
+}
+
+/// Validate the presence of listener, port, and tls
+impl ConfigValidator for StreamerCfg {
+    fn valid(&self) -> Result<()> {
+        if self.tls.is_none() {
+            return Err(Error::MissingConfiguration("[http2] → tls".to_string()));
+        }
+        Ok(())
+    }
+}
+
+/// Validate the presence of telemetry endpoint
+impl ConfigValidator for TelemetryCfg {
+    fn valid(&self) -> Result<()> {
+        if self.endpoint.is_empty() {
+            return Err(Error::MissingConfiguration(
+                "[telemetry] → endpoint".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+}
+
+/// Validate the presence of backend
+///  This is an enum, ideally we need to check it up using match.
+impl ConfigValidator for SecurerCfg {
+    fn valid(&self) -> Result<()> {
+        Ok(())
+    }
+}
+
+/// Validate the presence of modes altleast (password, token)
+/// If service_account is enabled, then `pub` must exist
+impl ConfigValidator for IdentityCfg {
+    fn valid(&self) -> Result<()> {
+        /*if self.identity.modes.is_empty() {
+            return Err(Error::MissingConfiguration(
+                SERVICEACCOUNT_PUBLIC_KEY.to_str().unwrap_or("").to_string(),
+            ));
+        }*/
+        Ok(())
+    }
+}
+
+/// Validate the presence of all the loadbalancer fields
+impl ConfigValidator for ServicesCfg {
+    fn valid(&self) -> Result<()> {
+        let mut s: Vec<&str> = vec![];
+
+        if self.loadbalancer_imagein.is_empty() {
+            s.push("loadbalancer_imagein");
+        }
+        if self.loadbalancer_imagename.is_empty() {
+            s.push("loadbalancer_imagename");
+        }
+        if self.loadbalancer_cpu.is_empty() {
+            s.push("loadbalancer_cpu");
+        }
+
+        if self.loadbalancer_mem.is_empty() {
+            s.push("loadbalancer_mem");
+        }
+
+        if self.loadbalancer_mem.is_empty() {
+            s.push("loadbalancer_mem");
+        }
+
+        if self.loadbalancer_disk.is_empty() {
+            s.push("loadbalancer_disk");
+        }
+
+        if s.is_empty() {
+            return Ok(());
+        }
+
+        Err(Error::MissingConfiguration(format!(
+            "[services] → {:?}",
+            s
+        )))
+    }
+}
+
+/// Validate the presence of so_file alteast
+impl ConfigValidator for LicensesCfg {
+    fn valid(&self) -> Result<()> {
+        if self.so_file.is_empty() {
+            return Err(Error::MissingConfiguration(
+                "[licenses] → so_file".to_string(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// Validate the presence of influx endpoint
+impl ConfigValidator for LogsCfg {
+    fn valid(&self) -> Result<()> {
+        if self.influx_endpoint.is_empty() {
+            return Err(Error::MissingConfiguration(
+                "[logs] → influx_endpoint".to_string(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// Validate the presence of blockchain endpoint
+impl ConfigValidator for BlockchainCfg {
+    fn valid(&self) -> Result<()> {
+        if self.endpoint.is_empty() {
+            return Err(Error::MissingConfiguration(
+                "[blockchain] → endpoint".to_string(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// Validate the presence of marketplace endpoint, email, token
+impl ConfigValidator for MarketplacesCfg {
+    fn valid(&self) -> Result<()> {
+        let mut s: Vec<&str> = vec![];
+
+        if self.endpoint.is_empty() {
+            s.push("endpoint");
+        }
+        if self.token.is_empty() {
+            s.push("token");
+        }
+        if self.username.is_empty() {
+            s.push("username");
+        }
+
+        if s.is_empty() {
+            return Ok(());
+        }
+
+        Err(Error::MissingConfiguration(format!(
+            "[marketplaces] → {:?}",
+            s
+        )))
+    }
+}
