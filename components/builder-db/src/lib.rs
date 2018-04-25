@@ -55,7 +55,6 @@ extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate rand;
 extern crate rioos_builder_apimachinery as protocol;
-extern crate rioos_common as common;
 extern crate rioos_core as rcore;
 extern crate serde;
 extern crate base64;
@@ -75,7 +74,6 @@ extern crate url;
 #[macro_use]
 extern crate lazy_static;
 
-extern crate threadpool;
 extern crate time;
 
 pub mod config;

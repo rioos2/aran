@@ -44,8 +44,6 @@
 
 use std::path::{Path, PathBuf};
 
-use sodiumoxide::init as nacl_init;
-
 use env as renv;
 use fs::rioconfig_key_path;
 
@@ -93,9 +91,6 @@ pub fn default_rioconfig_key_path(fs_root_path: Option<&Path>) -> PathBuf {
     }
 }
 
-pub fn init() {
-    nacl_init();
-}
 
 #[cfg(test)]
 pub mod test_support {

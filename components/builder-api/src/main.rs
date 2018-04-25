@@ -21,7 +21,7 @@ use std::fs::File;
 
 use rio_core::config::ConfigFile;
 use rio_core::env as renv;
-use rio_core::crypto::{default_rioconfig_key_path, init};
+use rio_core::crypto::default_rioconfig_key_path;
 use rio_core::fs::rioconfig_config_path;
 use common::ui::{Coloring, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR, UI};
 
@@ -95,7 +95,6 @@ fn exec_subcommand_if_called(ui: &mut UI, app_matches: &clap::ArgMatches) -> Res
 }
 
 fn sub_cli_setup(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
-    init();
     let config = match config_for_setup(&matches) {
         Ok(result) => result,
         Err(e) => return Err(e),
@@ -105,7 +104,6 @@ fn sub_cli_setup(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 }
 
 fn sub_cli_sync(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
-    init();
 
     let config = match config_for_setup(&matches) {
         Ok(result) => result,
@@ -116,18 +114,17 @@ fn sub_cli_sync(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 }
 
 fn sub_cli_migrate(ui: &mut UI) -> Result<()> {
-    init();
     command::cli::migrate::start(ui)
 }
 
 fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
-    if File::open(&SETUP_COMPLETE_FILE.as_path()).is_err() {
+    /*if File::open(&SETUP_COMPLETE_FILE.as_path()).is_err() {
         return Err(Error::SetupNotDone);
     }
 
     if File::open(&MARKETPLACE_CACHE_FILE.as_path()).is_err() {
         return Err(Error::SyncNotDone);
-    }
+    }*/
 
     let config = match config_from_args(&matches) {
         Ok(result) => result,

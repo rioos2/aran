@@ -7,7 +7,6 @@ extern crate log;
 extern crate lazy_static;
 
 extern crate chrono;
-extern crate regex;
 extern crate iron;
 extern crate serde;
 #[macro_use]

@@ -4,4 +4,3 @@ pub use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 
 pub use super::GatewayCfg;
 pub use config::base::{HttpsCfg, UiCfg};
-pub use core::config::ConfigFile;

@@ -15,6 +15,7 @@ const TLS: &'static str = "rioos_sh/tls";
 const DOCKERCFG: &'static str = "rioos_sh/dockercfg";
 const DOCKERCFG_JSON: &'static str = "rioos_sh/dockerconfigjson";
 const KRYPTONITE: &'static str = "rioos_sh/kryptonite";
+
 const SSH_DSA: &'static str = "rioos_sh/ssh-dsa";
 const SSH_ED25519: &'static str = "rioos_sh/ssh-ed25519";
 

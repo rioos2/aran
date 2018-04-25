@@ -13,14 +13,13 @@ use openssl::x509::extension::{AuthorityKeyIdentifier, BasicConstraints, KeyUsag
 use openssl::rsa::Rsa;
 use openssl::dsa::Dsa;
 use openssl::pkcs12::Pkcs12;
-use sodiumoxide::crypto::sign::ed25519;
 use crypto::keys::{PairConf, PairSaverExtn};
 
 use error::{Error, Result};
 use error::Error::X509Error;
 
-use super::{mk_key_filename, read_key_bytes, write_keypair_files, write_key_file, KeyPair};
-use super::super::{ROOT_CA, PUBLIC_KEY_SUFFIX, SECRET_SIG_KEY_SUFFIX, PUBLIC_RSA_SUFFIX, PUBLIC_PFX_SUFFIX, PUBLIC_DSA_SUFFIX};
+use super::{mk_key_filename, read_key_bytes, write_key_file, write_keypair_files, KeyPair};
+use super::super::{PUBLIC_DSA_SUFFIX, PUBLIC_KEY_SUFFIX, PUBLIC_PFX_SUFFIX, PUBLIC_RSA_SUFFIX, ROOT_CA, SECRET_SIG_KEY_SUFFIX};
 
 pub type SigKeyPair = KeyPair<Vec<u8>, Vec<u8>>;
 
@@ -34,7 +33,16 @@ const RIOOS_WITH_SIGNED: &'static str = "wi_rioos";
 const RIOOS_COUNTRY: &'static str = "US";
 const RIOOS_STATE: &'static str = "FL";
 const RIOOS_ORGANIZATION: &'static str = "Rio Advancement Inc";
-const RIOOS_CERT_DOMAINS: &'static [&'static str] = &["*.rioos.svc.local", "*.rioos.xyz", "*.rioos.sh", "localhost", "rioos.default", "rioos.default.svc", "rioos.default.svc.local", "rioos.default.cluster.local"];
+const RIOOS_CERT_DOMAINS: &'static [&'static str] = &[
+    "*.rioos.svc.local",
+    "*.rioos.xyz",
+    "*.rioos.sh",
+    "localhost",
+    "rioos.default",
+    "rioos.default.svc",
+    "rioos.default.svc.local",
+    "rioos.default.cluster.local",
+];
 
 const RIOOS_CERT_IPS: &'static [&'static str] = &["127.0.0.1"];
 const RIOOS_CERT_EXPIRES_IN_DAYS: &'static u32 = &365;
@@ -76,7 +84,12 @@ impl SigKeyPair {
             debug!("public keyfile = {}", public_keyfile.display());
             debug!("secret keyfile = {}", secret_keyfile.display());
 
-            try!(write_keypair_files(Some(&public_keyfile), Some(&public[..]), Some(&secret_keyfile), Some(&secret[..]),));
+            try!(write_keypair_files(
+                Some(&public_keyfile),
+                Some(&public[..]),
+                Some(&secret_keyfile),
+                Some(&secret[..]),
+            ));
         }
 
         Ok((public, secret))
@@ -89,11 +102,14 @@ impl SigKeyPair {
     pub fn mk_signed<P: AsRef<Path> + ?Sized>(name: &str, conf: PairConf, cache_key_path: &P) -> Result<Self> {
         debug!("new signed key name = {}", &name);
 
-        let (public, secret) = try!(Self::gen_ca_signed_pair(&name, conf, cache_key_path.as_ref(),));
+        let (public, secret) = try!(Self::gen_ca_signed_pair(
+            &name,
+            conf,
+            cache_key_path.as_ref(),
+        ));
 
         Ok(Self::new(name.to_string(), Some(public), Some(secret)))
     }
-
 
     /// Signs certificate.
     ///
@@ -117,7 +133,11 @@ impl SigKeyPair {
 
         let ca = Self::get_pair_for(ROOT_CA, cache_key_path)?;
 
-        let cert = gen_signed(&X509::from_pem(ca.public()?)?, PKey::private_key_from_pem(ca.secret()?)?.as_ref(), &privkey)?;
+        let cert = gen_signed(
+            &X509::from_pem(ca.public()?)?,
+            PKey::private_key_from_pem(ca.secret()?)?.as_ref(),
+            &privkey,
+        )?;
 
         let (public, secret) = (cert.to_pem()?, privkey.private_key_to_pem()?);
 
@@ -160,7 +180,12 @@ impl SigKeyPair {
             debug!("secret keyfile = {}", &secret_keyfile.display());
 
             if p.multi.is_some() {
-                try!(write_keypair_files(Some(&p.public_keyfile), Some(&p.public[..]), Some(&secret_keyfile), Some(&secret[..]),));
+                try!(write_keypair_files(
+                    Some(&p.public_keyfile),
+                    Some(&p.public[..]),
+                    Some(&secret_keyfile),
+                    Some(&secret[..]),
+                ));
             } else {
                 try!(write_key_file(Some(&p.public_keyfile), Some(&p.public[..])));
             }
@@ -174,7 +199,10 @@ impl SigKeyPair {
             Ok(k) => Some(k),
             Err(e) => {
                 // Not an error, just continue
-                debug!("Can't find public key for name_with_rev {}: {}", name_with_rev, e);
+                debug!(
+                    "Can't find public key for name_with_rev {}: {}",
+                    name_with_rev, e
+                );
                 None
             }
         };
@@ -183,13 +211,19 @@ impl SigKeyPair {
             Ok(k) => Some(k),
             Err(e) => {
                 // Not an error, just continue
-                debug!("Can't find secret key for name_with_rev {}: {}", name_with_rev, e);
+                debug!(
+                    "Can't find secret key for name_with_rev {}: {}",
+                    name_with_rev, e
+                );
                 None
             }
         };
 
         if pk == None && sk == None {
-            let msg = format!("No public or secret keys found for name_with_rev {}", name_with_rev);
+            let msg = format!(
+                "No public or secret keys found for name_with_rev {}",
+                name_with_rev
+            );
             return Err(Error::CryptoError(msg));
         }
         Ok(SigKeyPair::new(name_with_rev.to_string(), pk, sk))
@@ -199,7 +233,10 @@ impl SigKeyPair {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, PUBLIC_KEY_SUFFIX);
 
         if !path.is_file() {
-            return Err(Error::CryptoError(format!("No public key found at {}", path.display())));
+            return Err(Error::CryptoError(format!(
+                "No public key found at {}",
+                path.display()
+            )));
         }
         Ok(path)
     }
@@ -208,7 +245,10 @@ impl SigKeyPair {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, SECRET_SIG_KEY_SUFFIX);
 
         if !path.is_file() {
-            return Err(Error::CryptoError(format!("No secret key found at {}", path.display())));
+            return Err(Error::CryptoError(format!(
+                "No secret key found at {}",
+                path.display()
+            )));
         }
         Ok(path)
     }
@@ -220,7 +260,12 @@ impl SigKeyPair {
 
         match X509::from_pem(&bytes) {
             Ok(sk) => Ok(sk.to_pem().unwrap()),
-            Err(e) => return Err(Error::CryptoError(format!("Can't read sig public key for {}\n: {}", key_with_rev, e))),
+            Err(e) => {
+                return Err(Error::CryptoError(format!(
+                    "Can't read sig public key for {}\n: {}",
+                    key_with_rev, e
+                )))
+            }
         }
     }
 
@@ -231,7 +276,12 @@ impl SigKeyPair {
 
         match PKey::public_key_from_pem(&bytes) {
             Ok(pk) => Ok(pk.public_key_to_pem().unwrap()),
-            Err(e) => return Err(Error::CryptoError(format!("Can't read rsa public key for {}\n: {}", key_with_rev, e))),
+            Err(e) => {
+                return Err(Error::CryptoError(format!(
+                    "Can't read rsa public key for {}\n: {}",
+                    key_with_rev, e
+                )))
+            }
         }
     }
 
@@ -241,7 +291,12 @@ impl SigKeyPair {
 
         match PKey::private_key_from_pem(&bytes) {
             Ok(sk) => Ok(sk.private_key_to_pem().unwrap()),
-            Err(e) => return Err(Error::CryptoError(format!("Can't read sig secret key for {}: {}", key_with_rev, e))),
+            Err(e) => {
+                return Err(Error::CryptoError(format!(
+                    "Can't read sig secret key for {}: {}",
+                    key_with_rev, e
+                )))
+            }
         }
     }
 }
@@ -268,7 +323,9 @@ fn mk_request(privkey: &PKey) -> Result<X509Req> {
 fn mk_pkcs12_pfx(name_with_rev: &str, cert: &X509, privkey: &PKey) -> Result<Vec<u8>> {
     let pkcs12_builder = Pkcs12::builder();
 
-    let pkcs12 = pkcs12_builder.build(RIOOS_PFX_PASSWORD, &name_with_rev, &privkey, &cert).unwrap();
+    let pkcs12 = pkcs12_builder
+        .build(RIOOS_PFX_PASSWORD, &name_with_rev, &privkey, &cert)
+        .unwrap();
 
     pkcs12.to_der().map_err(X509Error)
 }
@@ -285,11 +342,6 @@ fn gen_key_dsa(bit_len: u32) -> Result<PKey> {
     let rsa = Dsa::generate(bit_len)?;
     let key = PKey::from_dsa(rsa)?;
     Ok(key)
-}
-
-/// Generates a new PKey
-fn gen_key_ed25519() -> (ed25519::PublicKey, ed25519::SecretKey) {
-    ed25519::gen_keypair()
 }
 
 /// An helper to generate a selfsigned certificate authority
@@ -317,7 +369,13 @@ fn gen_ca(privkey: &PKey) -> Result<X509> {
 
     cert_builder.append_extension(BasicConstraints::new().critical().ca().build()?)?;
 
-    cert_builder.append_extension(KeyUsage::new().critical().digital_signature().key_encipherment().key_cert_sign().crl_sign().build()?)?;
+    cert_builder.append_extension(KeyUsage::new()
+        .critical()
+        .digital_signature()
+        .key_encipherment()
+        .key_cert_sign()
+        .crl_sign()
+        .build()?)?;
 
     let subject_key_identifier = SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(None, None))?;
     cert_builder.append_extension(subject_key_identifier)?;
@@ -352,12 +410,20 @@ fn gen_signed(ca_cert: &X509, ca_privkey: &PKeyRef, privkey: &PKey) -> Result<X5
 
     cert_builder.append_extension(BasicConstraints::new().build()?)?;
 
-    cert_builder.append_extension(KeyUsage::new().critical().non_repudiation().digital_signature().key_encipherment().build()?)?;
+    cert_builder.append_extension(KeyUsage::new()
+        .critical()
+        .non_repudiation()
+        .digital_signature()
+        .key_encipherment()
+        .build()?)?;
 
     let subject_key_identifier = SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(Some(ca_cert), None))?;
     cert_builder.append_extension(subject_key_identifier)?;
 
-    let auth_key_identifier = AuthorityKeyIdentifier::new().keyid(false).issuer(false).build(&cert_builder.x509v3_context(Some(ca_cert), None))?;
+    let auth_key_identifier = AuthorityKeyIdentifier::new()
+        .keyid(false)
+        .issuer(false)
+        .build(&cert_builder.x509v3_context(Some(ca_cert), None))?;
     cert_builder.append_extension(auth_key_identifier)?;
 
     let domains = RIOOS_CERT_DOMAINS;
@@ -442,7 +508,10 @@ mod test {
     #[test]
     fn get_public_key_path() {
         let cache = TempDir::new("key_cache").unwrap();
-        fs::copy(fixture(&format!("keys/{}", VALID_PUB)), cache.path().join(VALID_PUB)).unwrap();
+        fs::copy(
+            fixture(&format!("keys/{}", VALID_PUB)),
+            cache.path().join(VALID_PUB),
+        ).unwrap();
 
         let result = SigKeyPair::get_public_key_path(VALID_NAME_WITH_REV, cache.path()).unwrap();
         assert_eq!(result, cache.path().join(VALID_PUB));
@@ -458,7 +527,10 @@ mod test {
     #[test]
     fn get_secret_key_path() {
         let cache = TempDir::new("key_cache").unwrap();
-        fs::copy(fixture(&format!("keys/{}", VALID_KEY)), cache.path().join(VALID_KEY)).unwrap();
+        fs::copy(
+            fixture(&format!("keys/{}", VALID_KEY)),
+            cache.path().join(VALID_KEY),
+        ).unwrap();
 
         let result = SigKeyPair::get_secret_key_path(VALID_NAME_WITH_REV, cache.path()).unwrap();
         assert_eq!(result, cache.path().join(VALID_KEY));

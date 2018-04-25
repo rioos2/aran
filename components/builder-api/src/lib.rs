@@ -66,7 +66,6 @@ extern crate mio;
 
 extern crate toml;
 extern crate typemap;
-extern crate unicase;
 extern crate url;
 
 extern crate futures;

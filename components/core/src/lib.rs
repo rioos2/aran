@@ -4,7 +4,6 @@
 extern crate errno;
 extern crate hex;
 
-extern crate exonum_sodiumoxide as sodiumoxide;
 #[macro_use]
 extern crate lazy_static;
 extern crate libc;

@@ -15,6 +15,8 @@ use watch::config::{Streamer, StreamerCfg};
 use entitlement::config::{License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
 
+use rio_core::config::ConfigFile;
+
 use http_gateway::config::base::AuthenticationFlowCfg;
 use validator::ConfigValidator;
 use common::ui::UI;

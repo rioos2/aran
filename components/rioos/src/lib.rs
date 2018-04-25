@@ -10,7 +10,6 @@ extern crate rioos_api_client as api_client;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_common as common;
 extern crate rioos_core;
-extern crate rioos_net as rio_net;
 
 #[macro_use]
 extern crate clap;

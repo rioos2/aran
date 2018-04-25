@@ -4,7 +4,7 @@
 //! # Example HttpGateway
 //!
 //! ```rust,no_run
-//! extern crate habitat_builder_protocol as protocol;
+//! extern crate rioos_builder_protocol as protocol;
 //! extern crate builder_http_gateway as http_gateway;
 //! #[macro_use]
 //! extern crate log;
