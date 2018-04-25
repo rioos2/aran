@@ -2,14 +2,11 @@
 //
 
 
-use futures::{self, Future, Sink};
+use futures::{Future, Sink};
 use futures::sync::mpsc;
-use tokio_core::reactor::Handle;
-
-use std::io;
 
 use events::error::into_other;
-use events::{InternalEvent, tobox};
+use events::InternalEvent;
 
 #[derive(Debug, Clone)]
 pub struct InternalPart {

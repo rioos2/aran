@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::fmt;
 use std::io;
 use std::thread;
-use std::time::*;
+use std::time::Duration;
 
 use config::Config;
 use rio_net::http::middleware::BlockchainConn;
@@ -17,12 +17,13 @@ use futures::{Future, Sink, Stream};
 use futures::sync::mpsc;
 
 use tokio_core::reactor::Core;
+use tokio_timer;
 
 use protocol::api::audit::Envelope;
 use entitlement::licensor::Client;
-use std::time::Duration;
-use tokio_timer;
-use tokio_timer::*;
+
+
+
 /// External messages.
 #[derive(Debug)]
 pub enum ExternalMessage {

@@ -3,13 +3,9 @@
 
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{RuntimeHandler, ExternalMessage};
-use futures::Stream;
-use std::sync::Arc;
-use tokio_core::reactor::Core;
 
 use api::audit::ledger;
-use tokio_timer;
-use std::time::Duration;
+
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
