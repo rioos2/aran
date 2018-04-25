@@ -85,7 +85,11 @@ impl UserAccountAuthenticate {
             }
             Ok(None) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
-                    error: format!("Couldn't find {} or {} in session.", email, token),
+                    error: format!(
+                        "Couldn't find {} or {} token expired in session.",
+                        email,
+                        token
+                    ),
                     error_description: "unauthorised".to_string(),
                 }));
             }

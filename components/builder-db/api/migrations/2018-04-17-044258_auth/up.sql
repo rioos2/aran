@@ -89,12 +89,13 @@ RETURN QUERY INSERT INTO account_sessions (account_id, token, provider, is_admin
                                                                                         $$ LANGUAGE PLPGSQL VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION get_account_session_v1 (account_email text, account_token text) RETURNS TABLE(id bigint, email text, token text, api_key text) AS $$
+CREATE OR REPLACE FUNCTION get_account_session_v1 (account_email text, account_token text) RETURNS TABLE(id bigint, email text, api_key text,token text) AS $$
       DECLARE
       this_account accounts%rowtype;
       BEGIN
       SELECT * FROM accounts WHERE accounts.email = account_email LIMIT 1 INTO this_account;
       IF FOUND THEN
+      DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token AND expires_at < now();
       RETURN QUERY
       SELECT accounts.id, accounts.email, accounts.api_key, account_sessions.token
       FROM accounts
