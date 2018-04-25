@@ -4,6 +4,7 @@ use std::sync::Arc;
 use std::fmt;
 use std::io;
 use std::thread;
+use std::time::*;
 
 use config::Config;
 use rio_net::http::middleware::BlockchainConn;
@@ -12,14 +13,16 @@ use events::{HandlerPart, InternalEvent};
 use node::internal::InternalPart;
 use events::error::{into_other, other_error};
 
-use futures::{Future, Sink};
+use futures::{Future, Sink, Stream};
 use futures::sync::mpsc;
 
 use tokio_core::reactor::Core;
 
 use protocol::api::audit::Envelope;
 use entitlement::licensor::Client;
-
+use std::time::Duration;
+use tokio_timer;
+use tokio_timer::*;
 /// External messages.
 #[derive(Debug)]
 pub enum ExternalMessage {
@@ -97,15 +100,17 @@ impl Runtime {
         let (handler_part, internal_part) = self.into_reactor();
 
         thread::spawn(move || {
-            let mut core = Core::new()?;
-            let handle = core.handle();
-            core.run(internal_part.run(handle)).map_err(|_| {
-                other_error(
-                    "An error in the `RuntimeHandler:InternalPart` thread occurred",
-                )
-            })
+            let mut core = Core::new().unwrap();
+            let tx = Arc::new(internal_part);
+            let duration = Duration::new(3600, 0); // 10 minutes
+            let builder = tokio_timer::wheel().max_timeout(duration);
+            let wakeups = builder.build().interval(duration);
+            let task = wakeups.for_each(|_| {
+                &(*tx).clone().run();
+                Ok(())
+            });
+            core.run(task).unwrap();
         });
-
 
         thread::spawn(move || {
             let mut core = Core::new()?;
