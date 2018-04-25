@@ -3,30 +3,16 @@
 
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{RuntimeHandler, ExternalMessage};
-use futures::Stream;
-use std::sync::Arc;
-use tokio_core::reactor::Core;
 
 use api::audit::ledger;
-use tokio_timer;
-use std::time::Duration;
+
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
         match event {
             Event::Api(api) => self.handle_api_event(api),
             Event::Internal(internal) => {
-                let mut core = Core::new().unwrap();
-                let rx = Arc::new(internal);
-                let rx = &*rx.clone();
-                let duration = Duration::new(3600, 0); // 10 minutes
-                let builder = tokio_timer::wheel().max_timeout(duration);
-                let wakeups = builder.build().interval(duration);
-                let task = wakeups.for_each(|_| {
-                    self.handle_internal_event(rx);
-                    Ok(())
-                });
-                core.run(task).unwrap();
+                self.handle_internal_event(&internal);
             }
         }
     }
