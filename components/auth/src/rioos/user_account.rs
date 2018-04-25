@@ -90,12 +90,12 @@ impl UserAccountAuthenticate {
                         email,
                         token
                     ),
-                    error_description: "unauthorised".to_string(),
+                    error_description: "Unauthorized".to_string(),
                 }));
             }
             Err(err) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
-                    error: format!("Error while getting session data"),
+                    error: format!("Error occurred during session verification"),
                     error_description: format!("{}", err),
                 }))
             }
