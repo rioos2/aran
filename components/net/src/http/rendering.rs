@@ -4,12 +4,13 @@ use iron::modifiers::Header;
 use iron::prelude::*;
 use iron::status;
 use util::errors::Bad;
-use horrorshow::{Raw, RenderBox, Template};
+use horrorshow::{Raw, Template};
 
 use http::schema::ApiSchema;
 use serde::Serialize;
 use serde_json;
 use serde_json::Value;
+use serde_json::Value::Array;
 use std::str;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -40,10 +41,18 @@ pub fn render_json<T: Serialize>(status: status::Status, response: &T) -> Respon
     Response::with((status, encoded, headers))
 }
 
-pub fn render_html<T: Serialize>(status: status::Status, response: &T, title: String) -> Response {
+pub fn render_html<T: Serialize>(_status: status::Status, response: &T, title: String) -> Response {
     let data = serde_json::to_value(response).unwrap();
-    let obj = data.as_object().unwrap();
-    
+    let master_obj = data["master"].as_object().unwrap();
+    let external_obj = data["external"].as_object().unwrap();
+    let support_obj = data["support"].as_object().unwrap();
+    let v = Vec::new();
+    let nodes = match data["master"]["nodes"] {
+        Array(ref x) => x,
+        _ => {            
+            &v
+        },
+    };    
     let markup = (html! {
         : Raw("<!DOCTYPE html>");
         html {
@@ -67,23 +76,92 @@ pub fn render_html<T: Serialize>(status: status::Status, response: &T, title: St
                             background-color: #fff;
                         }            
                 </style>"); 
-                h2(style = labels_sep_by!(";"; "color:DodgerBlue" => true, "font-weight: bold", "text-align: center")) :  "Rioos Packages status";
-                h3(style = labels_sep_by!(";"; "color:MediumSeaGreen" => true, "font-weight: bold")) : "Master Packages Status"; 
-                table {
-                    tr {
-                        th : "Package Name";
-                        th : "Status";
-                    }
-                    @ for (key, value) in obj.iter() {
+                h2(style = labels_sep_by!(";"; "color:DodgerBlue" => true, "font-weight: bold", "text-align: center")) :  "Rioos Product status";
+                div(style = labels_sep_by!(";"; "width: 25%", "float:left")) {
+                    h3(style = labels_sep_by!(";"; "color:MediumSeaGreen" => true, "font-weight: bold")) : "Master Packages Status"; 
+                    table {
                         tr {
-                            td : key;
-                            td : format!("{}", match *value {
+                            th : "Package Name";
+                            th : "Status";
+                        }
+                        @ for (key, value) in master_obj.iter() {
+                            @ if key != "nodes" {
+                                tr {
+                                    td : key;
+                                    td : format!("{}", match *value {
+                                        Value::String(ref v) => format!("{}", v),
+                                        _ => format!("")
+                                    });
+                                }    
+                            }                                                
+                        }                    
+                    }
+                }     
+                div(style = labels_sep_by!(";"; "width: 25%", "float:left")) {
+                    h3(style = labels_sep_by!(";"; "color:MediumSeaGreen" => true, "font-weight: bold")) : "Supporting Packages Status"; 
+                    table {
+                        tr {
+                            th : "Package Name";
+                            th : "Status";
+                        }
+                        @ for (key, value) in support_obj.iter() {
+                            @ if key != "nodes" {
+                                tr {
+                                    td : key;
+                                    td : format!("{}", match *value {
+                                        Value::String(ref v) => format!("{}", v),
+                                        _ => format!("")
+                                    });
+                                }    
+                            }                                                
+                        }                    
+                    }
+                }     
+                div(style = labels_sep_by!(";"; "width: 25%", "float:right")) {    
+                    h3(style = labels_sep_by!(";"; "color:MediumSeaGreen" => true, "font-weight: bold")) : "Nodes(hosts) Status"; 
+                    table {
+                        tr {
+                            th : "Node IP";
+                            th : "Status";
+                        }
+                        @ if nodes.len() > 0 {
+                            @ for node in nodes.iter() {
+                                tr {
+                                    td : format!("{}", match node["ip"] {
+                                        Value::String(ref v) => format!("{}", v),
+                                        _ => format!("")
+                                    });
+                                    td : format!("{}", match node["status"] {
+                                        Value::String(ref v) => format!("{}", v),
+                                        _ => format!("")
+                                    });
+                                }    
+                            }
+                        } else {
+                            tr {
+                                td(style = labels_sep_by!(";"; "color:red" => true, "font-weight: bold")) : "There are no node(host) systems connected."; 
+                            }
+                        }                                    
+                    }
+                }    
+                div(style = labels_sep_by!(";"; "width: 25%", "float:right")) {
+                    h3(style = labels_sep_by!(";"; "color:MediumSeaGreen" => true, "font-weight: bold")) : "External Packages Status"; 
+                    table {
+                        tr {
+                            th : "Package Name";
+                            th : "Status";
+                        }
+                        @ for (key, value) in external_obj.iter() {
+                            tr {
+                                td : key;
+                                td : format!("{}", match *value {
                                     Value::String(ref v) => format!("{}", v),
                                     _ => format!("")
-                            });
-                        }                            
-                    }                    
-                }
+                                });
+                            }    
+                        }                    
+                    }
+                }           
             }
         }
     }).into_string()

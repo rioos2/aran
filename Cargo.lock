@@ -2034,6 +2034,7 @@ dependencies = [
  "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rioos_builder_apimachinery 0.0.0",
  "rioos_builder_db 0.0.0",
+ "rioos_builder_nodesrv 0.0.0",
  "rioos_http_client 0.0.0",
  "rioos_net 0.0.0",
  "rioos_telemetry 0.0.0",

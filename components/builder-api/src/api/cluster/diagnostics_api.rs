@@ -7,8 +7,9 @@ use router::Router;
 use api::Api;
 use iron::status;
 use config::Config;
+use serde_json;
 use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
+use rio_net::util::errors::AranResult;
 use db::data_store::DataStoreConn;
 use telemetry::metrics::prometheus::PrometheusClient;
 use diagnostics::diagnostics_ds::DiagnosticsDS;
@@ -43,15 +44,16 @@ impl DiagnosticsApi {
 
     fn ping(&self, req: &mut Request) -> AranResult<Response> {       
         let mut flag = false;
+        let conf = serde_json::to_value(&*self.config).unwrap();
         match req.headers.get_raw("Accept") {
             Some(res) => {
                 let s = match str::from_utf8(&res[0]) {
                             Ok(v) => v,
-                            Err(e) => "",
+                            Err(_e) => "",
                 };              
                 let splitted: Vec<&str> = s.split(",").collect();
                 match splitted.iter().find(|&&x| x == "text/html") {
-                    Some(res) => {
+                    Some(_res) => {
                         flag = true;
                     }
                     None => {}
@@ -59,8 +61,8 @@ impl DiagnosticsApi {
             }
             None => {}
         }       
-        match DiagnosticsDS::status(&self.conn, &self.prom) {
-            Some(node) => {
+        match DiagnosticsDS::status(&self.conn, &self.prom, conf) {
+            Some(node) => {                
                 if flag {
                     Ok(render_html(status::Ok, &node, "Status".to_string()))
                 } else {
@@ -74,7 +76,7 @@ impl DiagnosticsApi {
 }
 
 impl Api for DiagnosticsApi {
-    fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
+    fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
 
         let _self = self.clone();
         let ping = move |req: &mut Request| -> AranResult<Response> { _self.ping(req) };

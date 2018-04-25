@@ -13,7 +13,7 @@ use rio_core::config::ConfigFile;
 
 use error::Error;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct Config {
     pub http: HttpCfg,
@@ -36,6 +36,12 @@ pub struct Config {
     pub marketplaces: MarketplacesCfg,
     //  Security and vulnerabilty checker API
     pub anchore: AnchoreCfg,
+    // Controller configuration
+    pub controller: ControllerCfg,
+    // Scheduler configuration
+    pub scheduler: SchedulerCfg,
+    // Vnc Server configuration
+    pub vnc: VNCCfg,
 }
 
 impl Default for Config {
@@ -51,6 +57,9 @@ impl Default for Config {
             blockchain: BlockchainCfg::default(),
             marketplaces: MarketplacesCfg::default(),
             anchore: AnchoreCfg::default(),
+            controller: ControllerCfg::default(),
+            scheduler: SchedulerCfg::default(),
+            vnc: VNCCfg::default(),
         }
     }
 }
@@ -61,11 +70,29 @@ impl ConfigFile for Config {
 }
 
 /// Path to UI files to host over HTTP. If not set the UI will be disabled.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub struct UiCfg {
     pub url: Option<String>,
     pub root: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct ControllerCfg {
+    pub url: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct SchedulerCfg {
+    pub url: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct VNCCfg {
+    pub url: Option<String>,
 }
 
 //A delegate, that returns the metrics (prometheus) config from the loaded prometheus config

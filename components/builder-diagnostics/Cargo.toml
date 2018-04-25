@@ -28,5 +28,8 @@ path = "../telemetry"
 [dependencies.rioos_net]
 path = "../net"
 
+[dependencies.rioos_builder_nodesrv]
+path = "../builder-node"
+
 [features]
 functional = []
