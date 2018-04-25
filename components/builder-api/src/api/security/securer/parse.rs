@@ -15,6 +15,9 @@ const TLS: &'static str = "rioos_sh/tls";
 const DOCKERCFG: &'static str = "rioos_sh/dockercfg";
 const DOCKERCFG_JSON: &'static str = "rioos_sh/dockerconfigjson";
 const KRYPTONITE: &'static str = "rioos_sh/kryptonite";
+const SSH_DSA: &'static str = "rioos_sh/ssh-dsa";
+const SSH_ED25519: &'static str = "rioos_sh/ssh-ed25519";
+
 
 /// SSH keys
 const SSH_AUTH_PRIVATE_KEY: &'static str = "rioos_sh/ssh_privatekey";
@@ -23,6 +26,8 @@ const SSH_AUTH_PUBLIC_KEY: &'static str = "rioos_sh/ssh_pubkey";
 #[derive(Debug, Eq, PartialEq)]
 enum SecretType {
     SSH,
+    DSA,
+    ED25519,
     COMMON,
     UNKNOWN,
 }
@@ -35,6 +40,8 @@ impl SecretType {
             SERVICE_ACCOUNT => SecretType::COMMON,
             TOKEN => SecretType::COMMON,
             TLS => SecretType::COMMON,
+            SSH_DSA => SecretType::DSA,
+            SSH_ED25519 => SecretType::ED25519,
             DOCKERCFG => SecretType::COMMON,
             DOCKERCFG_JSON => SecretType::COMMON,
             KRYPTONITE => SecretType::COMMON,
@@ -45,18 +52,20 @@ impl SecretType {
 
 pub fn parse_key(secret: &Secret) -> Result<Secret> {
     match SecretType::from_str(secret.get_secret_type()) {
-        SecretType::SSH => generate_ssh(secret),
+        SecretType::SSH => generate_ssh(secret, secret.bit_size(), PairSaverExtn::PemX509),
         SecretType::COMMON => Ok(secret.clone()),
+        SecretType::DSA => generate_ssh(secret, secret.bit_size(), PairSaverExtn::DSA),
+        SecretType::ED25519 => generate_ssh(secret, None, PairSaverExtn::ED25519),
         SecretType::UNKNOWN => Err(Error::UNKNOWSECRET),
     }
 }
 
-fn generate_ssh(secret: &Secret) -> Result<Secret> {
+fn generate_ssh(secret: &Secret, bit_len: Option<u32>, extn: PairSaverExtn) -> Result<Secret> {
     let mut _secret = secret.clone();
 
     let pairs = SigKeyPair::mk_signed(
         &_secret.object_meta().name,
-        PairConf::with_save(false, _secret.bit_size(), PairSaverExtn::PemX509),
+        PairConf::with_save(false, bit_len, extn),
         &default_rioconfig_key_path(None),
     )?;
 

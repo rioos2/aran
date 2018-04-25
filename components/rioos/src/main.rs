@@ -29,7 +29,8 @@ use rcore::env as henv;
 
 use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, API_SERVER_ENVVAR};
 use rioos::error::{Error, Result};
-use rcore::fs::rioconfig_config_path;
+use rcore::fs::rioconfig_etc_path;
+use rcore::fs::am_i_root;
 
 use api_client::Client;
 
@@ -37,8 +38,11 @@ pub const PRODUCT: &'static str = "rioos";
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 lazy_static! {
-    static  ref CLIENT_CLI_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("client-cli.cert.pem").to_str().unwrap());
+    static  ref CLIENT_CLI_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_etc_path(None).join("client-cli.cert.pem").to_str().unwrap());
 }
+
+//eg: If the user is not root. eg: /home/rajthilak/.rioos/etc/cli.toml
+const CLIENT_CLI_PATH: &'static str = "rioos/etc/client-cli.cert.pem";
 
 
 fn main() {
@@ -503,11 +507,21 @@ fn api_server_param_or_env(m: &ArgMatches) -> Result<String> {
     }
 }
 
+
+fn cli_certificate_path() -> PathBuf {
+    if !am_i_root() {
+        if let Some(home) = env::home_dir() {
+            return home.join(format!(".{}", CLIENT_CLI_PATH));
+        }
+    }
+    PathBuf::from(CLIENT_CLI_CERTIFICATE.to_str().unwrap())
+}
+
 fn create_client(url: &str) -> Result<Client> {
     Ok(Client::new(
         url,
         PRODUCT,
         VERSION,
-        Some(&CLIENT_CLI_CERTIFICATE),
+        Some(&cli_certificate_path()),
     )?)
 }

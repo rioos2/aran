@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 
@@ -8,7 +8,6 @@ use super::error::{Error, Result};
 use reqwest;
 use std::time::Duration;
 use api_client::err_from_response;
-use rio_core::fs::rioconfig_config_path;
 
 use reqwest::header::{Authorization, Bearer, UserAgent};
 const USER_AGENT: &'static str = "Rio/OS Aran";
