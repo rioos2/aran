@@ -10,82 +10,76 @@ use StatusOutput;
 
 const UP: &str = "up";
 const DOWN: &str = "down";
-
-#[derive(Serialize)]
-pub struct Node {
-    //Name: String,
-    ip: String,
-    status: String,
-}
-
-#[derive(Serialize)]
-pub struct MasterSystems {
-    apiserver: String,
-    controller: String,
-    scheduler: String,
-    nodes: Vec<Node>,  
-    postgres: String,
-}
-
-#[derive(Serialize)]
-pub struct SupportSystems {   
-    blockchainserver: String,
-    logserver: String,
-    metricsserver: String,
-    vncserver: String,
-}
-
-#[derive(Serialize)]
-pub struct ExternalSystems {
-    marketplaceserver: String,
-    vault: String,
-    anchore: String,
-}
+const PROBLEM: &str = "problem";
+const DESCRIPTION: &str = "Service is operating normally";
+const ERRDESCRIPTION: &str = "Service is currently down";
 
 #[derive(Serialize)]
 pub struct Status {
-	master: MasterSystems,
-	support: SupportSystems,
-	external: ExternalSystems,
+	name: String,
+	status: String,
+	description: String,
+}
+
+#[derive(Serialize)]
+pub struct Services {
+	master: Vec<Status>,
+	nodes: Vec<Status>,
 }
 
 pub struct DiagnosticsDS;
 
 impl DiagnosticsDS {
-    pub fn status(datastore: &DataStoreConn, _prom: &PrometheusClient, config: Value) -> StatusOutput {
-       let mstatus = Status {
-       		master: MasterSystems {
-        			apiserver: UP.to_string(),
-        			controller: get_status("controller".to_string(), "url".to_string(), config.clone()),
-        			scheduler: get_status("scheduler".to_string(), "url".to_string(), config.clone()),        			
-        			nodes: nodes_status(datastore),
-        			postgres: UP.to_string(),
-       		},
-       		support: SupportSystems {        			
-        			blockchainserver: get_status("blockchain".to_string(), "endpoint".to_string(), config.clone()),
-        			logserver: get_status("logs".to_string(), "url".to_string(), config.clone()),
-        			metricsserver: get_status("prometheus".to_string(), "url".to_string(), config.clone()),
-        			vncserver: get_status("vnc".to_string(), "url".to_string(), config.clone()),
-       		},
-       		external: ExternalSystems {
-       				marketplaceserver: get_status("marketplaces".to_string(), "endpoint".to_string(), config.clone()),
-       				vault: get_status("vaults".to_string(), "endpoint".to_string(), config.clone()),
-       				anchore: get_status("anchore".to_string(), "url".to_string(), config.clone()),
-       		},
-       	};
-       Some(mstatus)
+	//collect service status and node status then return it.
+    pub fn status(datastore: &DataStoreConn, _prom: &PrometheusClient, config: Value) -> StatusOutput {       
+       	let mut mstatus = Vec::new();
+       	mstatus.push(Status{
+        		name: "API Server".to_string(),
+        		status: UP.to_string(),
+        		description: DESCRIPTION.to_string(),
+        	});
+       	mstatus.push(Status{
+        		name: uppercase_first_letter("postgres"),
+        		status: UP.to_string(),
+        		description: DESCRIPTION.to_string(),
+        	});
+       	mstatus.push(get_status("controller", "url".to_string(), config.clone(), "Controller".to_string()));
+       	mstatus.push(get_status("scheduler", "url".to_string(), config.clone(), "Scheduler".to_string()));
+       	mstatus.push(get_status("blockchain", "endpoint".to_string(), config.clone(), "Blockchain".to_string()));
+        mstatus.push(get_status("logs", "url".to_string(), config.clone(), "Logs".to_string()));
+        mstatus.push(get_status("prometheus", "url".to_string(), config.clone(), "Telemetry".to_string()));
+        mstatus.push(get_status("vnc", "url".to_string(), config.clone(), "VNC Console".to_string()));
+        mstatus.push(get_status("marketplaces", "endpoint".to_string(), config.clone(), "Rio.Marketplace".to_string()));
+       	mstatus.push(get_status("vaults", "endpoint".to_string(), config.clone(), "Vaults".to_string()));
+       	mstatus.push(get_status("anchore", "url".to_string(), config.clone(), "Anchore".to_string()));
+       	let nodes = nodes_status(datastore);
+
+       Some(Services {
+       		master: mstatus,
+       		nodes: nodes,
+       	})
     }   
 }
 
-fn nodes_status(datastore: &DataStoreConn) -> Vec<Node> {
+//first get all nodes from database 
+//then generate node status structure and return it
+fn nodes_status(datastore: &DataStoreConn) -> Vec<Status> {
 	let mut vec = Vec::new();
 	match NodeDS::list_blank(datastore) {
         Ok(Some(node_list)) => {
         	for n in &node_list {
-    			let data = Node {
-                    ip: n.get_node_ip(),
-                    status: n.get_status().get_phase(),
-                };
+    			let mut data = Status{
+        			name: n.get_node_ip(),
+        			status: UP.to_string(),
+        			description: DESCRIPTION.to_string(),
+        		};
+        		if n.get_status().get_phase().to_lowercase() != "running".to_string() {
+        			data = Status{
+        				name: n.get_node_ip(),
+        				status: DOWN.to_string(),
+        				description: ERRDESCRIPTION.to_string(),
+        			}
+        		}
                 vec.push(data);
 			}
 			vec
@@ -98,19 +92,41 @@ fn nodes_status(datastore: &DataStoreConn) -> Vec<Node> {
     }
 }
 
-fn get_status(name: String, search: String, config: Value) -> String {
-   match config[name.clone()][search].as_str() {
-		Some(url) => {
+// In this function got arguments name, search and config values
+// get service information from config using name (like controller, scheduler) field 
+// then build client and request to service and build status struct from response
+fn get_status(name: &str, search: String, config: Value, print: String) -> Status {
+   match config[name][search.clone()].as_str() {
+		Some(url) => {			
 			let client = ApiClient::new(url, "", "v1", None).unwrap();
     		let mut res = client.get("").send();     
     		match res {
-        		Ok(_s) => UP.to_string(),
-        		Err(_err) => DOWN.to_string()
+        		Ok(_s) => Status{
+        			name: print,
+        			status: UP.to_string(),
+        			description: DESCRIPTION.to_string(),
+        		},
+        		Err(_err) => Status{
+        			name: print,
+        			status: DOWN.to_string(),
+        			description: ERRDESCRIPTION.to_string(),
+        		}
     		}
 		}
-		None => return format!("{} doesn't configure api.toml file.", name.clone())
+		None => return Status{
+        			name: print,
+        			status: PROBLEM.to_string(),
+        			description: format!("Not configured (api.toml)"),
+        		}
 	}	
 }
 
+fn uppercase_first_letter(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().chain(c).collect(),
+    }
+}
 
 

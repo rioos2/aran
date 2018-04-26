@@ -16,8 +16,9 @@ extern crate iron;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-
 pub mod diagnostics_ds;
 
-pub type StatusOutput = Option<diagnostics_ds::Status>;
+use diagnostics_ds::Services;
+
+pub type StatusOutput = Option<Services>;
 

@@ -28,7 +28,7 @@ lazy_static = "*"
 persistent = "0.4.0"
 bodyparser = "0.8.0"
 base64 = "*"
-horrorshow = "0.6.3"
+handlebars = { version = "1.0.0-beta.1", default-features = false }
 
 [dependencies.rioos_common]
 path = "../common"
