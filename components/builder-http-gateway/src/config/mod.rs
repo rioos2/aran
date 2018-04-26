@@ -6,6 +6,8 @@ pub mod prelude;
 use std::net::IpAddr;
 use num_cpus;
 
+use self::prelude::TLSPair;
+
 pub trait GatewayCfg {
     /// Default number of worker threads to simultaneously handle HTTP requests.
     fn default_handler_count() -> usize {
@@ -21,7 +23,9 @@ pub trait GatewayCfg {
 
     fn listen_port(&self) -> u16;
 
+    fn tls_pair(&self) -> TLSPair;
+
     fn tls(&self) -> Option<String>;
-    
+
     fn tls_password(&self) -> Option<String>;
 }

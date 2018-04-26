@@ -2,6 +2,7 @@
 
 //! Configuration for a Rio/OS API server
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
@@ -16,6 +17,8 @@ use entitlement::config::{License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
 
 use rio_core::config::ConfigFile;
+use rio_core::crypto::keys::read_key_in_bytes;
+use rio_core::fs::rioconfig_config_path;
 
 use http_gateway::config::base::AuthenticationFlowCfg;
 use validator::ConfigValidator;
@@ -102,6 +105,17 @@ impl Config {
 
         Ok(())
     }
+
+    /// Returns the a tuple for tls usage with
+    /// Option<(tls file location, bytes loaded from the name in the config toml file,
+    ///        tls password if present or empty string)>
+    fn tlspair_as_bytes(tls: Option<String>, tls_password: Option<String>) -> TLSPair {
+        tls.clone().and_then(|t| {
+            read_key_in_bytes(&PathBuf::from(t.clone()))
+                .map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string())))
+                .ok()
+        })
+    }
 }
 
 // Set all the defaults fo the config
@@ -150,19 +164,17 @@ impl ConfigValidator for Config {
             self.blockchain.valid(),
             self.marketplaces.valid(),
         ].iter()
-            .fold(Ok(()), |acc, x| {
-                match x {
-                    &Ok(()) => return acc,
-                    &Err(ref e) => {
-                        if acc.is_ok() {
-                            return acc;
-                        }
-                        Err(Error::MissingConfiguration(format!(
-                            "{}\n{}",
-                            e,
-                            acc.unwrap_err()
-                        )))
+            .fold(Ok(()), |acc, x| match x {
+                &Ok(()) => return acc,
+                &Err(ref e) => {
+                    if acc.is_ok() {
+                        return acc;
                     }
+                    Err(Error::MissingConfiguration(format!(
+                        "{}\n{}",
+                        e,
+                        acc.unwrap_err()
+                    )))
                 }
             })
     }
@@ -183,8 +195,15 @@ impl GatewayCfg for Config {
         self.https.port
     }
 
+    fn tls_pair(&self) -> TLSPair {
+        Config::tlspair_as_bytes(self.tls(), self.tls_password())
+    }
+
     fn tls(&self) -> Option<String> {
-        self.https.tls.clone()
+        self.https
+            .tls
+            .clone()
+            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
     }
 
     fn tls_password(&self) -> Option<String> {
@@ -202,11 +221,18 @@ impl Streamer for Config {
         self.http2.websocket
     }
 
-    fn tls(&self) -> Option<String> {
-        self.http2.tls.clone()
+    fn http2_tls_pair(&self) -> TLSPair {
+        Config::tlspair_as_bytes(self.http2_tls(), self.http2_tls_password())
+    }
+    
+    fn http2_tls(&self) -> Option<String> {
+        self.http2
+            .tls
+            .clone()
+            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
     }
 
-    fn tls_password(&self) -> Option<String> {
+    fn http2_tls_password(&self) -> Option<String> {
         self.http2.tls_password.clone()
     }
 }

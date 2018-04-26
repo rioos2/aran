@@ -30,8 +30,8 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate staticfile;
 extern crate unicase;   
+extern crate hyper_native_tls;
 
 pub mod app;
 pub mod config;

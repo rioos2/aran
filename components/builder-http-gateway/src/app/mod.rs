@@ -88,17 +88,22 @@
 pub mod error;
 pub mod prelude;
 
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::thread;
 
 use iron;
 use iron::prelude::*;
+
 use mount::Mount;
 use router::Router;
 
 use self::error::AppResult;
+
 use config::GatewayCfg;
 use http::middleware::Cors;
+
+use hyper_native_tls::NativeTlsServer;
 
 /// Apply to a networked application which will act as a Gateway connecting to a RouteSrv.
 pub trait HttpGateway {
@@ -128,20 +133,41 @@ pub trait HttpGateway {
 /// # Errors
 ///
 /// * HTTP server could not start
-pub fn start<T>(cfg: T::Config) -> AppResult<()>
+pub fn start<T, B, A>(persister_event: (B, A), cfg: Arc<T::Config>) -> AppResult<()>
 where
     T: HttpGateway,
+    B: iron::BeforeMiddleware,
+    A: iron::AfterMiddleware,
 {
-    let cfg = Arc::new(cfg);
     let mut chain = Chain::new(T::router(cfg.clone()));
     T::add_middleware(cfg.clone(), &mut chain);
     chain.link_after(Cors);
+
+    chain.link(persister_event);
+
+    //chain.link(persister_.atabase_connection;
+
     let mount = T::mount(cfg.clone(), chain);
     let mut server = Iron::new(mount);
     server.threads = cfg.handler_count();
-    let http_listen_addr = (cfg.listen_addr().clone(), cfg.listen_port());
-    thread::Builder::new().name("http-handler".to_string()).spawn(move || server.http(http_listen_addr)).unwrap();
-    info!("HTTP Gateway listening on {}:{}", cfg.listen_addr(), cfg.listen_port());
+    let https_listen_addr = (cfg.listen_addr().clone(), cfg.listen_port());
+
+    let tls_tuple = cfg.tls_pair()
+        .unwrap_or(("api-server.pfx".to_string(), vec![], "".to_string()));
+
+    thread::Builder::new()
+        .name("http-handler".to_string())
+        .spawn(move || {
+            let tls_server = NativeTlsServer::new(PathBuf::from(&tls_tuple.0.clone()), &tls_tuple.2.clone()).unwrap();
+            server.https(https_listen_addr, tls_server)
+        })
+        .unwrap();
+
+    info!(
+        "HTTP Gateway listening on {}:{}",
+        cfg.listen_addr(),
+        cfg.listen_port()
+    );
     info!("{} is ready to go.", T::APP_NAME);
     Ok(())
 }

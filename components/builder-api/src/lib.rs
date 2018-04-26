@@ -3,7 +3,6 @@
 //! Libraries  module used by builder api
 extern crate clap;
 extern crate env_logger;
-extern crate hyper_native_tls;
 #[macro_use]
 extern crate log;
 #[macro_use]
@@ -74,11 +73,10 @@ extern crate tokio_io;
 extern crate tokio_timer;
 
 extern crate fallible_iterator;
-extern crate tls_api;
-extern crate tls_api_openssl;
 
 extern crate openssl;
-extern crate native_tls;
+extern crate tls_api;
+extern crate tls_api_openssl;
 
 extern crate schedule_recv;
 

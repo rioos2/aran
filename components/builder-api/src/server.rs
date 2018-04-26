@@ -2,11 +2,21 @@
 
 //! Contains core functionality for the Application's main server.
 use std::sync::Arc;
+use std::fs::File;
+use std::path::PathBuf;
+
 use config::Config;
-use error::Result;
+use error::{Error, Result};
 
 use super::node::{Node, Servers};
 use common::ui::UI;
+use rio_core::crypto::default_rioconfig_key_path;
+use validator::ConfigValidator;
+
+lazy_static! {
+    static ref SETUP_COMPLETE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join(".rioos_setup_complete").to_str().unwrap());
+    static ref MARKETPLACE_CACHE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
+}
 
 /// The main server for the Builder-API application. This should be run on the main thread.
 pub struct Server {
@@ -85,8 +95,6 @@ impl Server {
         }
 
         ui.heading("Ready to go.")?;
-        //dump config
-        cfg1.dump(ui)?;
 
         let node = Node::new(cfg1);
 
@@ -100,5 +108,17 @@ impl Server {
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.
 pub fn run(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
+    config.valid()?;
+
+    config.dump(ui)?;
+
+    if File::open(&SETUP_COMPLETE_FILE.as_path()).is_err() {
+        return Err(Error::SetupNotDone);
+    }
+
+    if File::open(&MARKETPLACE_CACHE_FILE.as_path()).is_err() {
+        return Err(Error::SyncNotDone);
+    }
+
     Server::new(config).run(ui, server)
 }

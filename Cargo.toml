@@ -1,6 +1,6 @@
 [profile.debug]
 incremental = true 
-codegen-units = 16
+codegen-units = 1
 
 [profile.release]
 opt-level = 3

@@ -4,6 +4,8 @@
 
 use std::net::{IpAddr, Ipv4Addr};
 
+use http_gateway::config::prelude::TLSPair;
+
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct StreamerCfg {
@@ -35,7 +37,9 @@ pub trait Streamer {
 
     fn websocket_port(&self) -> u16;
 
-    fn tls(&self) -> Option<String>;
+    fn http2_tls_pair(&self) -> TLSPair;
 
-    fn tls_password(&self) -> Option<String>;
+    fn http2_tls(&self) -> Option<String>;
+
+    fn http2_tls_password(&self) -> Option<String>;
 }

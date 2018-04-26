@@ -3,26 +3,27 @@
 
 //! Streamer that does the watch for the api
 //!
-use std;
+use std::iter;
 use std::io;
 use std::sync::{mpsc, Arc, Mutex};
+use std::rc::Rc;
 
 use watch::handler::LISTENERS;
 use watch::handler::WatchHandler;
 use telemetry::metrics::prometheus::PrometheusClient;
+
 use db::data_store::DataStoreConn;
 use api::security::config::SecurerConn;
+
 use config::Config;
-use watch::socket_service::{Router, NotFound};
+use watch::socket_service::{NotFound, Router};
 use ws;
+
+use openssl::ssl::{SslAcceptorBuilder, SslMethod};
+use openssl::x509::X509Ref;
 use openssl::pkcs12::Pkcs12;
 
-use std::rc::Rc;
-use openssl::ssl::{SslAcceptorBuilder, SslMethod};
-
-use openssl::x509::X509Ref;
-
-pub type TLSPair = Option<(String, Vec<u8>, String)>;
+use http_gateway::config::prelude::TLSPair;
 
 #[derive(Debug)]
 pub struct Websocket {
@@ -32,7 +33,10 @@ pub struct Websocket {
 
 impl Websocket {
     pub fn new(port: u16, config: Arc<Config>) -> Self {
-        Websocket { port: port.clone(), config: config.clone() }
+        Websocket {
+            port: port.clone(),
+            config: config.clone(),
+        }
     }
 
     //start websocket server
@@ -43,7 +47,11 @@ impl Websocket {
 
         match ods {
             Some(ds) => {
-                let mut watchhandler = WatchHandler::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())), Box::new(SecurerConn::new(&*self.config.clone())));
+                let mut watchhandler = WatchHandler::new(
+                    Box::new(ds.clone()),
+                    Box::new(PrometheusClient::new(&*self.config.clone())),
+                    Box::new(SecurerConn::new(&*self.config.clone())),
+                );
 
                 let (db_sender, db_receiver) = mpsc::channel();
                 let (reg_sender, reg_receiver) = mpsc::sync_channel(1);
@@ -51,7 +59,9 @@ impl Websocket {
                 let send = Arc::new(Mutex::new(db_sender));
                 let register = Arc::new(Mutex::new(reg_sender));
 
-                watchhandler.notifier(send.clone(), LISTENERS.to_vec()).unwrap();
+                watchhandler
+                    .notifier(send.clone(), LISTENERS.to_vec())
+                    .unwrap();
 
                 watchhandler.publisher(db_receiver);
 
@@ -62,9 +72,21 @@ impl Websocket {
                 let pkcs12 = Pkcs12::from_der(&tls_tuple.1).unwrap();
                 let parsed = pkcs12.parse(&tls_tuple.2).unwrap();
 
-                let acceptor = Rc::new(SslAcceptorBuilder::mozilla_intermediate(SslMethod::tls(), &parsed.pkey, &parsed.cert, std::iter::empty::<X509Ref>()).unwrap().build());
+                let acceptor = Rc::new(
+                    SslAcceptorBuilder::mozilla_intermediate(
+                        SslMethod::tls(),
+                        &parsed.pkey,
+                        &parsed.cert,
+                        iter::empty::<X509Ref>(),
+                    ).unwrap()
+                        .build(),
+                );
 
-                let address = format!("{}:{}", self.config.http2.listener.to_string(), self.port.to_string());
+                let address = format!(
+                    "{}:{}",
+                    self.config.http2.listener.to_string(),
+                    self.port.to_string()
+                );
                 // Listen on an address and call the closure for each connection
 
                 ws::Builder::new()

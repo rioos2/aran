@@ -5,199 +5,244 @@
 //!
 
 use std::sync::Arc;
-use std::thread;
 
 use router::Router;
 use mount::Mount;
-use iron::{Chain, Iron};
-use error::{Result, Error};
+use iron;
+use error::Result;
 
 use persistent;
 
-use http_gateway::http::middleware::*;
+use http_gateway;
 use http_gateway::http::pack;
+use http_gateway::app::prelude::*;
+
 use telemetry::metrics::prometheus::PrometheusClient;
+
 use audit::vulnerable::vulnerablity::AnchoreClient;
 use audit::config::InfluxClientConn;
-use node::runtime::Runtime;
 
 use api::Api;
 use api::events::EventLogger;
 use api::audit::config::BlockchainConn;
 use api::security::config::SecurerConn;
 use config::Config;
-use common::ui::UI;
 
-use api::{cluster, security, deploy, audit, devtooling, authorize};
+use api::{audit, authorize, cluster, deploy, devtooling, security};
 use node::runtime::ApiSender;
 
 use db::data_store::*;
-use hyper_native_tls::NativeTlsServer;
-use rio_core::fs::rioconfig_config_path;
-use std::path::PathBuf;
 use api::audit::blockchain_api::EventLog;
 
-// Iron defaults to a threadpool of size `8 * num_cpus`.
-// See: http://172.16.2.131:9633/iron/prelude/struct.Iron.html#method.http
-const HTTP_THREAD_COUNT: usize = 128;
-
-// Node that contains `NodeApiConfig`.
+// ApiSrv using GatewayCfg.
 #[derive(Clone, Debug)]
-pub struct Wirer {
+pub struct ApiSrv {
     config: Arc<Config>,
 }
 
-impl Wirer {
+/*impl<P: Key> HtpRequestPersister for ApiSrv<P> where P::Value: Send + Sync {
+    fn event_logger(&self) ->  (persistent::Read<P>, persistent::Read<P>) {
+        persistent::Read::<EventLog>::both(EventLogger::new(
+            api_sender,
+            &self.config.blockchain.cache_dir,
+            *&self.config.blockchain.enabled,
+        ))
+    }
+
+    fn database_connection(&self) ->  (persistent::Read<P>, persistent::Read<P>) {
+        ///TO-DO: 2 problems.
+        //1. A separate connectionis created here.
+        //I guesss its ok.
+        let ods = DataStoreConn::new().ok();
+
+        //2. unwrap is performed.
+        //Change it to handle panic.
+        persistent::Read::<DataStoreBroker>::both(Arc::new(ods.unwrap()))
+    }
+}*/
+
+impl ApiSrv {
     pub fn new(config: Arc<Config>) -> Self {
-        Wirer { config: config.clone() }
+        ApiSrv {
+            config: config.clone(),
+        }
     }
 
     // A generic implementation that launches `Node` and optionally creates threads
     // for aran api handlers.
     // Aran api v1 prefix is `/api/v1`
-    pub fn start(self, ui: &mut UI, api_sender: ApiSender, rg: Runtime) -> Result<()> {
+    pub fn start(self, api_sender: ApiSender) -> Result<()> {
         let ods = DataStoreConn::new().ok();
 
-        let api_wired_thread = match ods {
-            Some(ds) => {
-                ui.begin("Router");
-
-                let mut mount = Mount::new();
-                let mut router = Router::new();
-
-                //cluster apis
-                let mut network = cluster::network_api::NetworkApi::new(Box::new(ds.clone()));
-                network.wire(self.config.clone(), &mut router);
-
-                let mut node = cluster::node_api::NodeApi::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())));
-                node.wire(self.config.clone(), &mut router);
-
-                let mut storage = cluster::storage_api::StorageApi::new(Box::new(ds.clone()));
-                storage.wire(self.config.clone(), &mut router);
-
-                let mut service = deploy::service::ServiceApi::new(Box::new(ds.clone()));
-                service.wire(self.config.clone(), &mut router);
-
-                let mut endpoints = deploy::endpoint::EndpointApi::new(Box::new(ds.clone()));
-                endpoints.wire(self.config.clone(), &mut router);
-
-                let mut plan = deploy::plan_factory::PlanFactory::new(Box::new(ds.clone()));
-                plan.wire(self.config.clone(), &mut router);
-
-                //deployment apis
-                let mut assembly = deploy::assembly::AssemblyApi::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())));
-                assembly.wire(self.config.clone(), &mut router);
-
-                let mut assembly_factory = deploy::assembly_factory::AssemblyFactoryApi::new(Box::new(ds.clone()));
-                assembly_factory.wire(self.config.clone(), &mut router);
-
-                //securer apis
-                let mut securer = security::auth_api::AuthenticateApi::new(Box::new(ds.clone()));
-                securer.wire(self.config.clone(), &mut router);
-
-                let mut passticket = security::passticket_api::PassTicketApi::new(Box::new(ds.clone()));
-                passticket.wire(self.config.clone(), &mut router);
-
-                let mut secret = security::secret_api::SecretApi::new(Box::new(ds.clone()), Box::new(SecurerConn::new(&*self.config.clone())));
-                secret.wire(self.config.clone(), &mut router);
-
-                let mut service_account = security::service_account_api::SeriveAccountApi::new(Box::new(ds.clone()));
-                service_account.wire(self.config.clone(), &mut router);
-
-                //job apis
-                let mut job = deploy::job::JobApi::new(Box::new(ds.clone()));
-                job.wire(self.config.clone(), &mut router);
-
-                let mut volume = deploy::volume::VolumeApi::new(Box::new(ds.clone()));
-                volume.wire(self.config.clone(), &mut router);
-
-                //scaling apis
-                let mut hscale = deploy::horizontalscaling::HorizontalScalingApi::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())));
-                hscale.wire(self.config.clone(), &mut router);
-
-                let mut vscale = deploy::vertical_scaling::VerticalScalingApi::new(Box::new(ds.clone()), Box::new(PrometheusClient::new(&*self.config.clone())));
-                vscale.wire(self.config.clone(), &mut router);
-
-                //origin
-                let mut origin = deploy::origin::OriginApi::new(Box::new(ds.clone()));
-                origin.wire(self.config.clone(), &mut router);
-
-                let mut team = deploy::team::TeamApi::new(Box::new(ds.clone()));
-                team.wire(self.config.clone(), &mut router);
-
-                let mut role = authorize::role::RoleApi::new(Box::new(ds.clone()));
-                role.wire(self.config.clone(), &mut router);
-
-                let mut permission = authorize::permission::PermissionApi::new(Box::new(ds.clone()));
-                permission.wire(self.config.clone(), &mut router);
-
-                let mut settings = security::settings_map_api::SettingsMapApi::new(Box::new(ds.clone()));
-                settings.wire(self.config.clone(), &mut router);
-
-                let mut log = audit::log_api::LogApi::new(Box::new(ds.clone()), Box::new(InfluxClientConn::new(&*self.config.clone())));
-                log.wire(self.config.clone(), &mut router);
-
-                let mut vuln = audit::vuln_api::VulnApi::new(Box::new(ds.clone()), Box::new(AnchoreClient::new(&*self.config.clone())));
-                vuln.wire(self.config.clone(), &mut router);
-
-                let mut build_config = devtooling::build_config::BuildConfigApi::new(Box::new(ds.clone()));
-                build_config.wire(self.config.clone(), &mut router);
-
-                let mut build = devtooling::build::BuildApi::new(Box::new(ds.clone()));
-                build.wire(self.config.clone(), &mut router);
-
-                let mut image_references = devtooling::image_references::ImageReferencesApi::new(Box::new(ds.clone()));
-                image_references.wire(self.config.clone(), &mut router);
-
-                let mut image_marks = devtooling::image_marks::ImageMarksApi::new(Box::new(ds.clone()));
-                image_marks.wire(self.config.clone(), &mut router);
-
-                let mut block_chain = audit::blockchain_api::BlockChainApi::new(Box::new(ds.clone()), Box::new(BlockchainConn::new(&*self.config.clone())));
-                block_chain.wire(self.config.clone(), &mut router);
-
-                mount.mount("/api/v1", router);
-
-                let mut chain = Chain::new(mount);
-
-                chain.link(persistent::Read::<EventLog>::both(EventLogger::new(api_sender, &self.config.blockchain.cache_dir, *&self.config.blockchain.enabled)));
-
-                chain.link_after(pack::CompressionMiddleware);
-
-                chain.link_after(Custom404);
-
-                chain.link_after(Cors);
-
-                chain.link(persistent::Read::<DataStoreBroker>::both(ds));
-
-                let conf = self.config.clone();
-
-                let thread = thread::spawn(move || {
-                    let mut server = Iron::new(chain);
-                    server.threads = HTTP_THREAD_COUNT;
-
-                    match conf.https.tls {
-                        Some(ref tls_location) => {
-                            let tls_server = NativeTlsServer::new(PathBuf::from(&*rioconfig_config_path(None).join(tls_location.clone())), &self.config.https.tls_password.clone().unwrap_or("".to_string()).to_string()).unwrap();
-                            server.https(&conf.https, tls_server).unwrap()
-                        }
-                        None => Err(Error::MissingConfiguration("api server pfx".to_string())).unwrap(),
-                    };
-                });
-                ui.end("Router ").unwrap();
-
-                Some(thread)
+        match ods {
+            Some(_ds) => {
+                //You are free to add move evs of type
+                // persistent::Read::<EventLog>
+                // However we won't be having it.
+                let ev = persistent::Read::<EventLog>::both(EventLogger::new(
+                    api_sender,
+                    &self.config.blockchain.cache_dir,
+                    self.config.blockchain.enabled.clone(),
+                ));
+                http_gateway::app::start::<Wirer, _, _>(ev, self.config.clone());
             }
             None => {
-                // error!("failed to wire the api, \ndatabase isn't ready. {:?}", ods);
-                None
+                error!("Failed to wire the api, \ndatabase isn't ready.");
             }
         };
 
-        &rg.start()?;
-
-        if let Some(api_wired_thread) = api_wired_thread {
-            api_wired_thread.join().unwrap();
-        }
         Ok(())
+    }
+}
+
+struct Wirer;
+
+impl HttpGateway for Wirer {
+    const APP_NAME: &'static str = "rioos-api";
+
+    type Config = Config;
+
+    fn add_middleware(_config: Arc<Self::Config>, chain: &mut iron::Chain) {
+        //
+        //chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(ds)));
+
+        chain.link_after(pack::CompressionMiddleware);
+
+        chain.link_after(Custom404);
+
+        chain.link_after(Cors);
+    }
+
+    fn mount(_config: Arc<Self::Config>, chain: iron::Chain) -> Mount {
+        let mut mount = Mount::new();
+
+        mount.mount("/api/v1", chain);
+
+        mount
+    }
+
+    fn router(config: Arc<Self::Config>) -> Router {
+        let mut router = Router::new();
+
+        let ods = DataStoreConn::new().ok();
+
+        //TO-DO: Just for compiling now. Change it with match.
+        let ds = ods.unwrap();
+
+        //cluster apis
+        let mut network = cluster::network_api::NetworkApi::new(Box::new(ds.clone()));
+        network.wire(config.clone(), &mut router);
+
+        let mut node = cluster::node_api::NodeApi::new(
+            Box::new(ds.clone()),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        node.wire(config.clone(), &mut router);
+
+        let mut storage = cluster::storage_api::StorageApi::new(Box::new(ds.clone()));
+        storage.wire(config.clone(), &mut router);
+
+        let mut service = deploy::service::ServiceApi::new(Box::new(ds.clone()));
+        service.wire(config.clone(), &mut router);
+
+        let mut endpoints = deploy::endpoint::EndpointApi::new(Box::new(ds.clone()));
+        endpoints.wire(config.clone(), &mut router);
+
+        let mut plan = deploy::plan_factory::PlanFactory::new(Box::new(ds.clone()));
+        plan.wire(config.clone(), &mut router);
+
+        //deployment apis
+        let mut assembly = deploy::assembly::AssemblyApi::new(
+            Box::new(ds.clone()),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        assembly.wire(config.clone(), &mut router);
+
+        let mut assembly_factory = deploy::assembly_factory::AssemblyFactoryApi::new(Box::new(ds.clone()));
+        assembly_factory.wire(config.clone(), &mut router);
+
+        //securer apis
+        let mut securer = security::auth_api::AuthenticateApi::new(Box::new(ds.clone()));
+        securer.wire(config.clone(), &mut router);
+
+        let mut passticket = security::passticket_api::PassTicketApi::new(Box::new(ds.clone()));
+        passticket.wire(config.clone(), &mut router);
+
+        let mut secret = security::secret_api::SecretApi::new(
+            Box::new(ds.clone()),
+            Box::new(SecurerConn::new(&*config.clone())),
+        );
+        secret.wire(config.clone(), &mut router);
+
+        let mut service_account = security::service_account_api::SeriveAccountApi::new(Box::new(ds.clone()));
+        service_account.wire(config.clone(), &mut router);
+
+        //job apis
+        let mut job = deploy::job::JobApi::new(Box::new(ds.clone()));
+        job.wire(config.clone(), &mut router);
+
+        let mut volume = deploy::volume::VolumeApi::new(Box::new(ds.clone()));
+        volume.wire(config.clone(), &mut router);
+
+        //scaling apis
+        let mut hscale = deploy::horizontalscaling::HorizontalScalingApi::new(
+            Box::new(ds.clone()),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        hscale.wire(config.clone(), &mut router);
+
+        let mut vscale = deploy::vertical_scaling::VerticalScalingApi::new(
+            Box::new(ds.clone()),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        vscale.wire(config.clone(), &mut router);
+
+        //origin
+        let mut origin = deploy::origin::OriginApi::new(Box::new(ds.clone()));
+        origin.wire(config.clone(), &mut router);
+
+        let mut team = deploy::team::TeamApi::new(Box::new(ds.clone()));
+        team.wire(config.clone(), &mut router);
+
+        let mut role = authorize::role::RoleApi::new(Box::new(ds.clone()));
+        role.wire(config.clone(), &mut router);
+
+        let mut permission = authorize::permission::PermissionApi::new(Box::new(ds.clone()));
+        permission.wire(config.clone(), &mut router);
+
+        let mut settings = security::settings_map_api::SettingsMapApi::new(Box::new(ds.clone()));
+        settings.wire(config.clone(), &mut router);
+
+        let mut log = audit::log_api::LogApi::new(
+            Box::new(ds.clone()),
+            Box::new(InfluxClientConn::new(&*config.clone())),
+        );
+        log.wire(config.clone(), &mut router);
+
+        let mut vuln = audit::vuln_api::VulnApi::new(
+            Box::new(ds.clone()),
+            Box::new(AnchoreClient::new(&*config.clone())),
+        );
+        vuln.wire(config.clone(), &mut router);
+
+        let mut build_config = devtooling::build_config::BuildConfigApi::new(Box::new(ds.clone()));
+        build_config.wire(config.clone(), &mut router);
+
+        let mut build = devtooling::build::BuildApi::new(Box::new(ds.clone()));
+        build.wire(config.clone(), &mut router);
+
+        let mut image_references = devtooling::image_references::ImageReferencesApi::new(Box::new(ds.clone()));
+        image_references.wire(config.clone(), &mut router);
+
+        let mut image_marks = devtooling::image_marks::ImageMarksApi::new(Box::new(ds.clone()));
+        image_marks.wire(config.clone(), &mut router);
+
+        let mut block_chain = audit::blockchain_api::BlockChainApi::new(
+            Box::new(ds.clone()),
+            Box::new(BlockchainConn::new(&*config.clone())),
+        );
+        block_chain.wire(config.clone(), &mut router);
+
+        router
     }
 }

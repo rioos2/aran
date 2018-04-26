@@ -12,7 +12,7 @@ doc = false
 
 [dependencies]
 clippy = {version = "*", optional = true}
-env_logger = "0.5.3"
+ env_logger = "0.5.9"
 handlebars = { version = "*", default-features = false }
 lazy_static = "*"
 libc = "*"

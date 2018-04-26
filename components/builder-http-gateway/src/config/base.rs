@@ -20,7 +20,7 @@ impl Default for HttpsCfg {
             listen: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
             port: 7443,
             tls: Some("api-server.pfx".to_string()),
-            tls_password: (Some("TEAMRIOADVANCEMENT123".to_string())),         
+            tls_password: (Some("TEAMRIOADVANCEMENT123".to_string())),
         }
     }
 }
@@ -52,5 +52,4 @@ pub trait AuthenticationFlowCfg {
 
     //Are all the authentication modes configured and ready.
     fn ready(&self) -> bool;
-
 }
