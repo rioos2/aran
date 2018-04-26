@@ -61,7 +61,7 @@ pub trait SystemAuth {
 
 
 /// Public listening net address for HTTP requests, Watch requests.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct HttpCfg {
     pub listen: IpAddr, // The listen ip address for http api/watch http2 api

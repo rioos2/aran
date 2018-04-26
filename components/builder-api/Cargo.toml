@@ -130,5 +130,8 @@ path = "../auth"
 [dependencies.rioos_telemetry]
 path = "../telemetry"
 
+[dependencies.rioos_builder_diagnostics]
+path = "../builder-diagnostics"
+
 [features]
 functional = []
