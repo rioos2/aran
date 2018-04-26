@@ -134,8 +134,9 @@ impl AfterMiddleware for CompressionMiddleware {
 
         if res.body.is_some() {
             if let Some(compression) = which_compression(&req, &res, &default_priorities) {
-                res.headers
-                    .set(ContentEncoding(vec![get_header(&compression)]));
+                res.headers.set(
+                    ContentEncoding(vec![get_header(&compression)]),
+                );
                 res.headers.remove::<ContentLength>();
                 res.body = Some(get_body(&compression, res.body.take().unwrap()));
             }
@@ -339,18 +340,18 @@ mod brotli_tests {
         let chain = build_compressed_echo_chain(false);
         let res = post_data_with_accept_encoding(
             &value,
-            Some(AcceptEncoding(vec![
-                qitem(Encoding::EncodingExt(String::from("br"))),
-            ])),
+            Some(AcceptEncoding(
+                vec![qitem(Encoding::EncodingExt(String::from("br")))],
+            )),
             &chain,
         );
 
         assert_eq!(res.headers.get::<ContentLength>(), None);
         assert_eq!(
             res.headers.get::<ContentEncoding>(),
-            Some(&ContentEncoding(vec![
-                Encoding::EncodingExt(String::from("br")),
-            ]))
+            Some(&ContentEncoding(
+                vec![Encoding::EncodingExt(String::from("br"))],
+            ))
         );
 
         let compressed_bytes = response::extract_body_to_bytes(res);
@@ -452,9 +453,9 @@ mod priority_tests {
 
         assert_eq!(
             res.headers.get::<ContentEncoding>(),
-            Some(&ContentEncoding(vec![
-                Encoding::EncodingExt(String::from("br")),
-            ]))
+            Some(&ContentEncoding(
+                vec![Encoding::EncodingExt(String::from("br"))],
+            ))
         );
     }
 
@@ -483,10 +484,9 @@ mod priority_tests {
         let chain = build_compressed_echo_chain(false);
         let res = post_data_with_accept_encoding(
             &value,
-            Some(AcceptEncoding(vec![
-                qitem(Encoding::Deflate),
-                qitem(Encoding::Gzip),
-            ])),
+            Some(AcceptEncoding(
+                vec![qitem(Encoding::Deflate), qitem(Encoding::Gzip)],
+            )),
             &chain,
         );
 
