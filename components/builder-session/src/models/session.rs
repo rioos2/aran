@@ -164,7 +164,6 @@ impl DataStore {
 
     pub fn get_session(datastore: &DataStoreConn, session_get: &session::SessionGet) -> Result<Option<session::Session>> {
         let conn = datastore.pool.get_shard(0)?;
-
         let rows = conn.query(
             "SELECT * FROM get_account_session_v1($1, $2)",
             &[&session_get.get_email(), &session_get.get_token()],
