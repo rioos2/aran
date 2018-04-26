@@ -80,18 +80,22 @@ impl UserAccountAuthenticate {
         let request: SessionGet = tk_target.into();
 
         match sessions::DataStore::get_session(datastore, &request) {
-            Ok(Some(_session)) => Ok(true),
-            Ok(None) => {
-                let mut session_tk: SessionCreate = SessionCreate::new();
-                session_tk.set_email(email.to_string());
-                session_tk.set_token(token.to_string());
-
-                let _session = try!(session_create(datastore, session_tk));
+            Ok(Some(_session)) => {
                 return Ok(true);
+            }
+            Ok(None) => {
+                return Err(error::Error::Auth(rioos::AuthErr {
+                    error: format!(
+                        "Couldn't find {} or {} token expired in session.",
+                        email,
+                        token
+                    ),
+                    error_description: "Unauthorized".to_string(),
+                }));
             }
             Err(err) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
-                    error: format!("Couldn't find {} in session.", email),
+                    error: format!("Error occurred during session verification"),
                     error_description: format!("{}", err),
                 }))
             }

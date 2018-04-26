@@ -5,7 +5,7 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
 /// Public listening net address for HTTP requests, Watch requests.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct HttpsCfg {
     pub listen: IpAddr,               // The listen ip address for [https api, http2 streamer, wss websocket]

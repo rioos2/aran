@@ -1,0 +1,32 @@
+[package]
+name = "rioos_builder_diagnostics"
+version = "0.0.0"
+authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
+description = "RIO/OS Jobs library"
+workspace = "../../"
+
+[dependencies]
+postgres = { version = "0.15.1", features = ["with-chrono","with-serde_json"] }
+chrono = { version = "0.4.0", features = ["serde"] }
+serde_json = "1.0.10"
+iron = "0.6.0"
+serde = "1.0.27"
+serde_derive = "*"
+
+[dependencies.rioos_builder_apimachinery]
+path = "../builder-apimachinery"
+
+[dependencies.rioos_builder_db]
+path = "../builder-db"
+
+[dependencies.rioos_http_client]
+path = "../http-client"
+
+[dependencies.rioos_telemetry]
+path = "../telemetry"
+
+[dependencies.rioos_builder_nodesrv]
+path = "../builder-node"
+
+[features]
+functional = []

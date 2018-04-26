@@ -48,6 +48,7 @@ extern crate rioos_entitlement as entitlement;
 extern crate rioos_auth as auth;
 extern crate rioos_ws as ws;
 extern crate rioos_telemetry as telemetry;
+extern crate rioos_builder_diagnostics as diagnostics;
 
 extern crate iron;
 extern crate mount;

@@ -7,6 +7,15 @@ tls_pkcs12_file = "api-server.pfx"
 tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
 serviceaccount_public_key = "service-account.pub"
 
+[controller]
+url = "http://localhost:10252/"
+
+[scheduler]
+url = "http://localhost:10251"
+
+[vnc]
+url = "http://localhost:8005"
+
 [marketplaces]
 username = "rioosdolphin@rio.company"
 token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"

@@ -82,7 +82,11 @@ fn get_header(encoding: &CompressionEncoding) -> Encoding {
 }
 
 fn which_compression<'a, 'b>(req: &'b Request, res: &'b Response, priority: &Vec<CompressionEncoding>) -> Option<CompressionEncoding> {
-    return match (res.headers.get::<iron::headers::ContentEncoding>(), res.headers.get::<ContentLength>(), req.headers.get::<AcceptEncoding>()) {
+    return match (
+        res.headers.get::<iron::headers::ContentEncoding>(),
+        res.headers.get::<ContentLength>(),
+        req.headers.get::<AcceptEncoding>(),
+    ) {
         (None, Some(content_length), Some(&AcceptEncoding(ref quality_items))) => {
             if (content_length as &u64) < &DEFAULT_MIN_BYTES_FOR_COMPRESSION {
                 return None;
@@ -91,9 +95,21 @@ fn which_compression<'a, 'b>(req: &'b Request, res: &'b Response, priority: &Vec
             let max_quality = quality_items.iter().map(|qi| qi.quality).max();
 
             if let Some(max_quality) = max_quality {
-                let quality_items: Vec<&QualityItem<Encoding>> = quality_items.iter().filter(|qi| qi.quality != Quality(0) && qi.quality == max_quality).collect();
+                let quality_items: Vec<&QualityItem<Encoding>> = quality_items
+                    .iter()
+                    .filter(|qi| qi.quality != Quality(0) && qi.quality == max_quality)
+                    .collect();
 
-                return priority.iter().filter(|ce| quality_items.iter().find(|qi| encoding_matches_header(ce, &qi.item)).is_some()).nth(0).map(|ce| ce.clone());
+                return priority
+                    .iter()
+                    .filter(|ce| {
+                        quality_items
+                            .iter()
+                            .find(|qi| encoding_matches_header(ce, &qi.item))
+                            .is_some()
+                    })
+                    .nth(0)
+                    .map(|ce| ce.clone());
             }
             None
         }
@@ -118,7 +134,8 @@ impl AfterMiddleware for CompressionMiddleware {
 
         if res.body.is_some() {
             if let Some(compression) = which_compression(&req, &res, &default_priorities) {
-                res.headers.set(ContentEncoding(vec![get_header(&compression)]));
+                res.headers
+                    .set(ContentEncoding(vec![get_header(&compression)]));
                 res.headers.remove::<ContentLength>();
                 res.body = Some(get_body(&compression, res.body.take().unwrap()));
             }
@@ -135,7 +152,7 @@ mod test_common {
     use std::io::Read;
     use iron::prelude::*;
     use iron::headers::*;
-    use iron::{Chain, status};
+    use iron::{status, Chain};
     use iron::modifiers::Header;
     use self::iron_test::request;
 
@@ -149,7 +166,11 @@ mod test_common {
             if !with_encoding {
                 Ok(Response::with((status::Ok, body)))
             } else {
-                Ok(Response::with((status::Ok, Header(ContentEncoding(vec![Encoding::Chunked])), body)))
+                Ok(Response::with((
+                    status::Ok,
+                    Header(ContentEncoding(vec![Encoding::Chunked])),
+                    body,
+                )))
             }
         });
         chain.link_after(CompressionMiddleware);
@@ -189,7 +210,11 @@ mod uncompressable_tests {
     fn it_should_not_compress_response_when_client_does_not_send_supported_encoding() {
         let chain = build_compressed_echo_chain(false);
         let value = "a".repeat(1000);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::Chunked)])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![qitem(Encoding::Chunked)])),
+            &chain,
+        );
 
         assert_eq!(res.headers.get::<ContentEncoding>(), None);
         assert_eq!(response::extract_body_to_bytes(res), value.into_bytes());
@@ -199,7 +224,11 @@ mod uncompressable_tests {
     fn it_should_not_compress_small_response() {
         let value = "a".repeat(10);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::Gzip)])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![qitem(Encoding::Gzip)])),
+            &chain,
+        );
 
         assert_eq!(res.headers.get::<ContentEncoding>(), None);
         assert_eq!(response::extract_body_to_bytes(res), value.into_bytes());
@@ -209,9 +238,16 @@ mod uncompressable_tests {
     fn it_should_not_compress_already_encoded_response() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(true);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::Gzip)])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![qitem(Encoding::Gzip)])),
+            &chain,
+        );
 
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::Chunked])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![Encoding::Chunked]))
+        );
         assert_eq!(response::extract_body_to_bytes(res), value.into_bytes());
     }
 }
@@ -231,10 +267,17 @@ mod gzip_tests {
     fn it_should_compress_response_body_correctly_using_gzip_and_set_header() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::Gzip)])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![qitem(Encoding::Gzip)])),
+            &chain,
+        );
 
         assert_eq!(res.headers.get::<ContentLength>(), None);
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::Gzip])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![Encoding::Gzip]))
+        );
 
         let compressed_bytes = response::extract_body_to_bytes(res);
         let mut decoder = gzip::Decoder::new(&compressed_bytes[..]).unwrap();
@@ -259,10 +302,17 @@ mod deflate_tests {
     fn it_should_compress_response_body_correctly_using_deflate_and_set_header() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::Deflate)])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![qitem(Encoding::Deflate)])),
+            &chain,
+        );
 
         assert_eq!(res.headers.get::<ContentLength>(), None);
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::Deflate])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![Encoding::Deflate]))
+        );
 
         let compressed_bytes = response::extract_body_to_bytes(res);
         let mut decoder = deflate::Decoder::new(&compressed_bytes[..]);
@@ -287,10 +337,21 @@ mod brotli_tests {
     fn it_should_compress_response_body_correctly_using_brotli_and_set_header() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::EncodingExt(String::from("br")))])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![
+                qitem(Encoding::EncodingExt(String::from("br"))),
+            ])),
+            &chain,
+        );
 
         assert_eq!(res.headers.get::<ContentLength>(), None);
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::EncodingExt(String::from("br"))])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![
+                Encoding::EncodingExt(String::from("br")),
+            ],))
+        );
 
         let compressed_bytes = response::extract_body_to_bytes(res);
         let mut decoder = brotli::Decompressor::new(&compressed_bytes[..], 4096);
@@ -310,25 +371,66 @@ mod priority_tests {
     fn it_should_use_the_more_prior_compression_based_on_quality_for_gzip() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![QualityItem { item: Encoding::Gzip, quality: q(0.5) }, QualityItem { item: Encoding::Deflate, quality: q(1.0) }])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![
+                QualityItem {
+                    item: Encoding::Gzip,
+                    quality: q(0.5),
+                },
+                QualityItem {
+                    item: Encoding::Deflate,
+                    quality: q(1.0),
+                },
+            ])),
+            &chain,
+        );
 
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::Deflate])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![Encoding::Deflate]))
+        );
     }
 
     #[test]
     fn it_should_use_the_more_prior_compression_based_on_quality_for_deflate() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![QualityItem { item: Encoding::Deflate, quality: q(1.0) }, QualityItem { item: Encoding::Gzip, quality: q(0.5) }])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![
+                QualityItem {
+                    item: Encoding::Deflate,
+                    quality: q(1.0),
+                },
+                QualityItem {
+                    item: Encoding::Gzip,
+                    quality: q(0.5),
+                },
+            ])),
+            &chain,
+        );
 
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::Deflate])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![Encoding::Deflate]))
+        );
     }
 
     #[test]
     fn it_should_not_use_a_compression_with_quality_0() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![QualityItem { item: Encoding::Gzip, quality: q(0.0) }])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![
+                QualityItem {
+                    item: Encoding::Gzip,
+                    quality: q(0.0),
+                },
+            ])),
+            &chain,
+        );
 
         assert_eq!(res.headers.get::<ContentEncoding>(), None);
     }
@@ -337,27 +439,61 @@ mod priority_tests {
     fn it_should_use_the_brotli_compression_preferably_when_explicitly_sent() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::EncodingExt(String::from("*"))), qitem(Encoding::Gzip), qitem(Encoding::EncodingExt(String::from("br"))), qitem(Encoding::Deflate)])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![
+                qitem(Encoding::EncodingExt(String::from("*"))),
+                qitem(Encoding::Gzip),
+                qitem(Encoding::EncodingExt(String::from("br"))),
+                qitem(Encoding::Deflate),
+            ])),
+            &chain,
+        );
 
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::EncodingExt(String::from("br"))])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![
+                Encoding::EncodingExt(String::from("br")),
+            ],))
+        );
     }
 
     #[test]
     fn it_should_use_the_gzip_compression_if_the_any_encoding_is_sent() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::EncodingExt(String::from("*"))), qitem(Encoding::Deflate)])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![
+                qitem(Encoding::EncodingExt(String::from("*"))),
+                qitem(Encoding::Deflate),
+            ])),
+            &chain,
+        );
 
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::Gzip])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![Encoding::Gzip]))
+        );
     }
 
     #[test]
     fn it_should_use_the_gzip_compression_as_second_preference() {
         let value = "a".repeat(1000);
         let chain = build_compressed_echo_chain(false);
-        let res = post_data_with_accept_encoding(&value, Some(AcceptEncoding(vec![qitem(Encoding::Deflate), qitem(Encoding::Gzip)])), &chain);
+        let res = post_data_with_accept_encoding(
+            &value,
+            Some(AcceptEncoding(vec![
+                qitem(Encoding::Deflate),
+                qitem(Encoding::Gzip),
+            ])),
+            &chain,
+        );
 
-        assert_eq!(res.headers.get::<ContentEncoding>(), Some(&ContentEncoding(vec![Encoding::Gzip])));
+        assert_eq!(
+            res.headers.get::<ContentEncoding>(),
+            Some(&ContentEncoding(vec![Encoding::Gzip]))
+        );
     }
 }
 

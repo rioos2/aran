@@ -28,7 +28,7 @@ use error::{Error, Result};
 
 use http_gateway::config::prelude::*;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct Config {
     //  The base listener configuration for https
@@ -55,6 +55,12 @@ pub struct Config {
     pub marketplaces: MarketplacesCfg,
     //  Security and vulnerabilty checker API
     pub vulnerability: VulnerabilityCfg,
+    // Controller configuration
+    pub controller: ControllerCfg,
+    // Scheduler configuration
+    pub scheduler: SchedulerCfg,
+    // Vnc Server configuration
+    pub vnc: VNCCfg,
 }
 
 /// dump the configuration
@@ -133,7 +139,14 @@ impl Default for Config {
             logs: LogsCfg::default(),
             blockchain: BlockchainCfg::default(),
             marketplaces: MarketplacesCfg::default(),
+<<<<<<< HEAD
             vulnerability: VulnerabilityCfg::default(),
+=======
+            anchore: AnchoreCfg::default(),
+            controller: ControllerCfg::default(),
+            scheduler: SchedulerCfg::default(),
+            vnc: VNCCfg::default(),
+>>>>>>> origin/2-0-stable
         }
     }
 }
@@ -235,6 +248,24 @@ impl Streamer for Config {
     fn http2_tls_password(&self) -> Option<String> {
         self.http2.tls_password.clone()
     }
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct ControllerCfg {
+    pub url: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct SchedulerCfg {
+    pub url: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct VNCCfg {
+    pub url: Option<String>,
 }
 
 //A delegate, that returns the metrics (prometheus) config from the loaded prometheus config
