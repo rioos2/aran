@@ -12,7 +12,7 @@ use rio_net::http::controller::*;
 use rio_net::util::errors::AranResult;
 use db::data_store::DataStoreConn;
 use telemetry::metrics::prometheus::PrometheusClient;
-use diagnostics::diagnostics_ds::DiagnosticsDS;
+use diagnostics::models::diagnostics_ds::DiagnosticsDS;
 use rio_net::util::errors::internal_error;
 use rio_net::http::rendering::render_html;
 
