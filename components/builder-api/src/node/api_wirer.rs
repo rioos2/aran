@@ -73,6 +73,13 @@ impl Wirer {
                 );
                 node.wire(self.config.clone(), &mut router);
 
+                let mut diagnostics = cluster::diagnostics_api::DiagnosticsApi::new(
+                    Box::new(ds.clone()),
+                    Box::new(PrometheusClient::new(&*self.config.clone())),
+                    self.config.clone()
+                );
+                diagnostics.wire(self.config.clone(), &mut router);
+
                 let mut storage = cluster::storage_api::StorageApi::new(Box::new(ds.clone()));
                 storage.wire(self.config.clone(), &mut router);
 
