@@ -7,8 +7,8 @@ use iron::status;
 use router::Router;
 
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta, dispatch_url};
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use protocol::api::schema::{dispatch, dispatch_url, type_meta};
 use config::Config;
 use error::Error;
 
@@ -19,7 +19,7 @@ use api::security::config::SecurerConn;
 
 use super::securer;
 use protocol::api::secret::Secret;
-use protocol::api::base::{MetaFields, IdGet};
+use protocol::api::base::{IdGet, MetaFields};
 use service::secret_ds::SecretDS;
 
 use db::data_store::DataStoreConn;
@@ -44,7 +44,10 @@ pub struct SecretApi {
 
 impl SecretApi {
     pub fn new(datastore: Box<DataStoreConn>, secret: Box<SecurerConn>) -> Self {
-        SecretApi { conn: datastore, secret: secret }
+        SecretApi {
+            conn: datastore,
+            secret: secret,
+        }
     }
     //POST: /accounts/:account_id/secrets
     //The body has the input cluster::secrets
@@ -55,9 +58,17 @@ impl SecretApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), self.verify_account(req)?.get_name());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            self.verify_account(req)?.get_name(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
 
@@ -79,9 +90,17 @@ impl SecretApi {
     fn create_by_origin(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
 
@@ -102,7 +121,11 @@ impl SecretApi {
         match SecretDS::show(&self.conn, &params) {
             Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
     }
 
@@ -148,7 +171,11 @@ impl SecretApi {
 
         match data.retrieve_by(&params) {
             Ok(Some(secret)) => Ok(render_json_list(status::Ok, dispatch(req), &secret)),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -158,7 +185,6 @@ impl SecretApi {
     //Every user will be able to list their own origin.
     //Will need roles/permission to access others origin.
     pub fn watch_list_by_account(&self, params: IdGet, dispatch: String) -> Option<String> {
-        
         let data = match securer::from_config(&self.secret, Box::new(*self.conn.clone())) {
             Ok(result) => result,
             Err(_err) => return None,
@@ -190,13 +216,21 @@ impl SecretApi {
             (org_name, ser_name)
         };
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?}{} ", org, name));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?}{} ", org, name),
+        );
         let mut params = IdGet::with_id(org.clone().to_string());
         params.set_name(name.clone().to_string());
 
         match SecretDS::list_by_origin(&self.conn, &params) {
             Ok(Some(secrets)) => Ok(render_json_list(status::Ok, dispatch(req), &secrets)),
-            Ok(None) => Err(not_found_error(&format!("{} for account {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for account {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -211,14 +245,22 @@ impl SecretApi {
             (org_name, set_name)
         };
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?}{} ", org, name));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?}{} ", org, name),
+        );
         let mut params = IdGet::with_id(name.clone().to_string());
         params.set_name(org.clone().to_string());
 
         match SecretDS::show_by_origin_and_name(&self.conn, &params) {
             Ok(Some(secrets)) => Ok(render_json(status::Ok, &secrets)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), name))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                name
+            ))),
         }
     }
 }
@@ -253,21 +295,30 @@ impl Api for SecretApi {
         router.post(
             "/accounts/:account_id/secrets",
             XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.secret.post".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new(
+                    "rioos.secret.post".to_string(),
+                    &*config,
+                )),
             "secrets",
         );
-        
+
         //MEGAM
         //without authentication
-        router.post("/origins/:origin_id/secrets", XHandler::new(C { inner: create_by_origin }), "secrets_by_origins");
+        router.post(
+            "/origins/:origin_id/secrets",
+            XHandler::new(C {
+                inner: create_by_origin,
+            }),
+            "secrets_by_origins",
+        );
         /*router.get(
             "/secrets",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "secrets_list",
         );*/
-        //TODO 
-        //without authentication 
+        //TODO
+        //without authentication
         router.get(
             "/secrets",
             XHandler::new(C { inner: list_blank }),
@@ -276,21 +327,27 @@ impl Api for SecretApi {
         router.get(
             "/secrets/:id",
             XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.secret.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.secret.get".to_string(), &*config)),
             "secret_show",
         );
         router.get(
             "/accounts/:account_id/secrets",
             XHandler::new(C { inner: list })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.secret.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.secret.get".to_string(), &*config)),
             "secret_show_by_account",
         );
-       
+
         //MEGAM
         //without authentication
-        router.get("/origins/:origin_id/secrets", C { inner: list_by_origin }, "secret_show_by_origin");
+        router.get(
+            "/origins/:origin_id/secrets",
+            C {
+                inner: list_by_origin,
+            },
+            "secret_show_by_origin",
+        );
 
         //TODO enable with authentication
         /*router.get(
@@ -298,7 +355,13 @@ impl Api for SecretApi {
             XHandler::new(C { inner: show_by_org_and_name }).before(basic.clone()),
             "secret_show_by_origin_name",
         );*/
-        router.get("/origins/:origin/secrets/:secret_name", C { inner: show_by_org_and_name }, "secret_show_by_origin_name");
+        router.get(
+            "/origins/:origin/secrets/:secret_name",
+            C {
+                inner: show_by_org_and_name,
+            },
+            "secret_show_by_origin_name",
+        );
     }
 }
 

@@ -169,7 +169,7 @@ impl Api for PlanFactory {
             "/plans",
             XHandler::new(C { inner: create })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.plan.post".to_string())),
+                .before(TrustAccessed::new("rioos.plan.post".to_string(),&*config)),
             "plans",
         );
 
@@ -177,7 +177,7 @@ impl Api for PlanFactory {
             "/plans",
             XHandler::new(C { inner: list_blank })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.plan.get".to_string())),
+                .before(TrustAccessed::new("rioos.plan.get".to_string(),&*config)),
             "plan_list",
         );
 
@@ -185,7 +185,7 @@ impl Api for PlanFactory {
             "/plans/:id",
             XHandler::new(C { inner: show })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.plan.get".to_string())),
+                .before(TrustAccessed::new("rioos.plan.get".to_string(),&*config)),
             "plan_show",
         );
         router.put(
@@ -193,7 +193,7 @@ impl Api for PlanFactory {
             XHandler::new(C {
                 inner: status_update,
             }).before(basic.clone())
-                .before(TrustAccessed::new("rioos.plan.put".to_string())),
+                .before(TrustAccessed::new("rioos.plan.put".to_string(),&*config)),
             "plan_status_update",
         );
     }

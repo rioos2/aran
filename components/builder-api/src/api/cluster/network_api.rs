@@ -145,7 +145,7 @@ impl NetworkApi {
 impl Api for NetworkApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
-
+        
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
@@ -163,7 +163,7 @@ impl Api for NetworkApi {
             "/networks",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.network.post".to_string())),
+            .before(TrustAccessed::new("rioos.network.post".to_string(),&*config)),
             "networks",
         );
 
@@ -171,7 +171,7 @@ impl Api for NetworkApi {
             "/networks",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.network.get".to_string())),
+            .before(TrustAccessed::new("rioos.network.get".to_string(),&*config)),
             "networks_list_blank",
         );
 
@@ -179,7 +179,7 @@ impl Api for NetworkApi {
             "/networks/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.network.get".to_string())),
+            .before(TrustAccessed::new("rioos.network.get".to_string(),&*config)),
             "networks_get",
         );
 
@@ -187,7 +187,7 @@ impl Api for NetworkApi {
             "/networks/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.network.put".to_string())),
+            .before(TrustAccessed::new("rioos.network.put".to_string(),&*config)),
             "networks_update",
         );
     }

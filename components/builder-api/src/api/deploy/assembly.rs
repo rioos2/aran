@@ -244,21 +244,21 @@ impl Api for AssemblyApi {
             "/accounts/:account_id/assemblys",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assembly.post".to_string())),
+            .before(TrustAccessed::new("rioos.assembly.post".to_string(),&*config)),
             "assemblys",
         );
         router.get(
             "/accounts/:account_id/assemblys",
             XHandler::new(C { inner: list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assembly.get".to_string())),
+            .before(TrustAccessed::new("rioos.assembly.get".to_string(),&*config)),
             "assembly_list",
         );
         router.get(
             "/assemblys/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assembly.get".to_string())),
+            .before(TrustAccessed::new("rioos.assembly.get".to_string(),&*config)),
             "assembly_show",
         );
         //Special move here from assemblyfactory code. We have  moved it here since
@@ -267,14 +267,14 @@ impl Api for AssemblyApi {
             "/assemblyfactorys/:id/describe",
             XHandler::new(C { inner: describe })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assembly.get".to_string())),
+            .before(TrustAccessed::new("rioos.assembly.get".to_string(),&*config)),
             "assemblyfactorys_describe",
         );
         router.get(
             "/assemblys",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assembly.get".to_string())),
+            .before(TrustAccessed::new("rioos.assembly.get".to_string(),&*config)),
             "assembly_list_blank",
         );
 
@@ -284,14 +284,14 @@ impl Api for AssemblyApi {
                 inner: status_update,
             })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assembly.put".to_string())),
+            .before(TrustAccessed::new("rioos.assembly.put".to_string(),&*config)),
             "assembly_status",
         );
         router.put(
             "/assemblys/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assembly.put".to_string())),
+            .before(TrustAccessed::new("rioos.assembly.put".to_string(),&*config)),
             "assembly_update",
         );
     }

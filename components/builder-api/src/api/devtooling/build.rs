@@ -192,7 +192,7 @@ impl Api for BuildApi {
             "/builds",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.post".to_string())),
+            .before(TrustAccessed::new("rioos.build.post".to_string(),&*config)),
             "build",
         );
 
@@ -200,35 +200,35 @@ impl Api for BuildApi {
             "/builds",
             XHandler::new(C { inner: list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.get".to_string())),
+            .before(TrustAccessed::new("rioos.build.get".to_string(),&*config)),
             "build_list",
         );
         router.get(
             "/builds/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.get".to_string())),
+            .before(TrustAccessed::new("rioos.build.get".to_string(),&*config)),
             "build_show",
         );
         router.get(
             "/builds/buildconfigs/:id",
             XHandler::new(C { inner: show_by_build_config })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.get".to_string())),
+            .before(TrustAccessed::new("rioos.build.get".to_string(),&*config)),
             "build_list_by_buildconfig",
         );
         router.put(
             "/builds/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.put".to_string())),
+            .before(TrustAccessed::new("rioos.build.put".to_string(),&*config)),
             "builds_update",
         );
         router.put(
             "/builds/:id/status",
             XHandler::new(C { inner: status_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.put".to_string())),
+            .before(TrustAccessed::new("rioos.build.put".to_string(),&*config)),
             "builds_status_update",
         );
     }

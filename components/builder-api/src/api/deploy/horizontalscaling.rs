@@ -222,7 +222,7 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.post".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.post".to_string(),&*config)),
             "horizontal_scalings",
         );
 
@@ -230,21 +230,21 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling/:id/status",
             XHandler::new(C { inner: status_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string(),&*config)),
             "horizontal_scaling_status_update",
         );
         router.put(
             "/horizontalscaling/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string(),&*config)),
             "horizontal_scaling_update",
         );
         router.get(
             "/horizontalscaling/:id/metrics",
             XHandler::new(C { inner: metrics })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string(),&*config)),
             "horizontal_scaling_metrics",
         );
 
@@ -252,7 +252,7 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling/:id/scale",
             XHandler::new(C { inner: scale })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string(),&*config)),
             "horizontal_scaling",
         );
 
@@ -266,7 +266,7 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string(),&*config)),
             "horizontal_scaling_list_blank",
         );
     }

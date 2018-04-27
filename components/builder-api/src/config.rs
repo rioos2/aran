@@ -55,12 +55,11 @@ pub struct Config {
     pub marketplaces: MarketplacesCfg,
     //  Security and vulnerabilty checker API
     pub vulnerability: VulnerabilityCfg,
-    // Controller configuration
-    pub controller: ControllerCfg,
-    // Scheduler configuration
-    pub scheduler: SchedulerCfg,
-    // Vnc Server configuration
-    pub vnc: VNCCfg,
+    //  Ping health checker configuration
+    //  Enpoint point information must be provided as
+    //  example:
+    //  controller_endpoint = https://controller.rioos.sh:8999
+    pub ping: PinguyCfg,
 }
 
 /// dump the configuration
@@ -107,6 +106,19 @@ impl Config {
         ui.para(&self.vulnerability.anchore_endpoint)?;
         ui.para(&self.vulnerability.anchore_username)?;
         ui.para(&self.vulnerability.anchore_password)?;
+        ui.heading("[ping]")?;
+        ui.para(&self.ping
+            .controller_endpoint
+            .clone()
+            .unwrap_or("".to_string()))?;
+        ui.para(&self.ping
+            .scheduler_endpoint
+            .clone()
+            .unwrap_or("".to_string()))?;
+        ui.para(&self.ping
+            .machineconsole_endpoint
+            .clone()
+            .unwrap_or("".to_string()))?;
         ui.end("Loaded.")?;
 
         Ok(())
@@ -140,19 +152,59 @@ impl Default for Config {
             blockchain: BlockchainCfg::default(),
             marketplaces: MarketplacesCfg::default(),
             vulnerability: VulnerabilityCfg::default(),
-            controller: ControllerCfg::default(),
-            scheduler: SchedulerCfg::default(),
-            vnc: VNCCfg::default(),
+            ping: PinguyCfg::default(),
         }
     }
 }
+use regex::Regex;
 
 /// A trait
 impl AuthenticationFlowCfg for Config {
-    //
-    fn modes(&self) -> Vec<(String, String)> {
-        //self.identity.enabled
-        vec![("service_account".to_string(), "testing.pub".to_string())]
+    //self.identity.enabled
+    //enabled = ["password", "token", "service_account", "passticket"]
+    //params = { service_account = "service_account.pub" }
+    // fn modes(&self) -> Vec<(String, HashMap<String, String>)> {
+    fn modes(&self) -> (Vec<String>, HashMap<String, String>) {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"/^(.*\.(?!(pub|key|toml|hbs|cert.pem)$))?[^.]*$/i").unwrap();
+        }
+
+        let b = self.identity
+            .enabled
+            .iter()
+            .map(|enabz| {
+                (
+                    enabz.to_string(),
+                    self.identity
+                        .params
+                        .clone()
+                        .into_iter()
+                        .filter(|kv| kv.0 == *enabz)
+                        .map(|x| {
+                            if RE.is_match(&x.1) {
+                                (
+                                    x.0,
+                                    rioconfig_config_path(None)
+                                        .join(x.1.clone())
+                                        .to_str()
+                                        .unwrap_or(&x.1)
+                                        .to_string(),
+                                )
+                            } else {
+                                x
+                            }
+                        })
+                        .collect::<_>(),
+                )
+            })
+            .collect::<Vec<(String, HashMap<String, String>)>>();
+        (
+            b.clone().into_iter().map(|x| x.0).collect::<Vec<String>>(),
+            b.into_iter()
+                .map(|x| x.1)
+                .flat_map(|y| y)
+                .collect::<HashMap<_, String>>(),
+        )
     }
 
     fn ready(&self) -> bool {
@@ -233,7 +285,7 @@ impl Streamer for Config {
     fn http2_tls_pair(&self) -> TLSPair {
         Config::tlspair_as_bytes(self.http2_tls(), self.http2_tls_password())
     }
-    
+
     fn http2_tls(&self) -> Option<String> {
         self.http2
             .tls
@@ -248,20 +300,10 @@ impl Streamer for Config {
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
-pub struct ControllerCfg {
-    pub url: Option<String>,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(default)]
-pub struct SchedulerCfg {
-    pub url: Option<String>,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(default)]
-pub struct VNCCfg {
-    pub url: Option<String>,
+pub struct PinguyCfg {
+    pub controller_endpoint: Option<String>,
+    pub scheduler_endpoint: Option<String>,
+    pub machineconsole_endpoint: Option<String>,
 }
 
 //A delegate, that returns the metrics (prometheus) config from the loaded prometheus config
@@ -410,7 +452,7 @@ mod tests {
         tls_password = "TEAMRIOADVANCEMENT123"
 
         [identity]
-        enabled = ["password", "token", "service_account", "passticket"]
+        enabled = ["password", "service_account", "jwt", "passticket"]
         params = { service_account = "service_account.pub" }
         
         [marketplaces]

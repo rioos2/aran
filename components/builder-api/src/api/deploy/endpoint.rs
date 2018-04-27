@@ -143,28 +143,28 @@ impl Api for EndpointApi {
             "/endpoints",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.endpoint.post".to_string())),
+            .before(TrustAccessed::new("rioos.endpoint.post".to_string(),&*config)),
             "endpoints",
         );
         router.get(
             "/endpoints/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.endpoint.get".to_string())),
+            .before(TrustAccessed::new("rioos.endpoint.get".to_string(),&*config)),
             "endpoint_show",
         );
         router.get(
             "/endpoints/assembly/:id",
             XHandler::new(C { inner: show_by_assembly })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.endpoint.get".to_string())),
+            .before(TrustAccessed::new("rioos.endpoint.get".to_string(),&*config)),
             "endpoint_show_by_assembly",
         );
         router.get(
             "/endpoints",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.endpoint.get".to_string())),
+            .before(TrustAccessed::new("rioos.endpoint.get".to_string(),&*config)),
             "endpoint_list_blank",
         );
     }

@@ -140,7 +140,7 @@ impl Api for ServiceApi {
             "/services",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.post".to_string())),
+            .before(TrustAccessed::new("rioos.service.post".to_string(),&*config)),
             "services",
         );
 
@@ -148,14 +148,14 @@ impl Api for ServiceApi {
             "/services/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.get".to_string())),
+            .before(TrustAccessed::new("rioos.service.get".to_string(),&*config)),
             "service_show",
         );
         router.get(
             "/services",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.get".to_string())),
+            .before(TrustAccessed::new("rioos.service.get".to_string(),&*config)),
             "service_list_blank",
         );
 
@@ -163,7 +163,7 @@ impl Api for ServiceApi {
             "/services/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.put".to_string())),
+            .before(TrustAccessed::new("rioos.service.put".to_string(),&*config)),
             "service_update",
         );
     }

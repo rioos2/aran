@@ -315,7 +315,7 @@ impl Api for AuthenticateApi {
             "/accounts/:id",
             XHandler::new(C { inner: account_show })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.account.get".to_string())),
+                .before(TrustAccessed::new("rioos.account.get".to_string(),&*config)),
             "account_show",
         );
 
@@ -323,7 +323,7 @@ impl Api for AuthenticateApi {
             "/accounts/name/:name",
             XHandler::new(C { inner: account_show_by_name })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.account.get".to_string())),
+                .before(TrustAccessed::new("rioos.account.get".to_string(),&*config)),
             "account_show_by_name",
         );
 

@@ -2,6 +2,11 @@
 
 use std::collections::HashMap;
 
+pub const PLUGIN_PASSWORD: &'static str = "password";
+pub const PLUGIN_SERVICE_ACCOUNT: &'static str = "service_account";
+pub const PLUGIN_PASSTICKET: &'static str = "passticket";
+pub const PLUGIN_JWT: &'static str = "jwt";
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct IdentityCfg {

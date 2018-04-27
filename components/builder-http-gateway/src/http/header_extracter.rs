@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use iron;
 use iron::prelude::*;
@@ -8,6 +8,11 @@ use iron::headers::{Authorization, Bearer};
 use super::headers::*;
 use util::errors::{bad_err, not_acceptable_error};
 use http::rendering::render_json_error;
+
+use auth::config::PLUGIN_PASSWORD;
+use auth::config::PLUGIN_SERVICE_ACCOUNT;
+use auth::config::PLUGIN_PASSTICKET;
+use auth::config::PLUGIN_JWT;
 
 use auth::util::authenticatable::Authenticatable;
 
@@ -63,7 +68,7 @@ impl HeaderExtracter for ServiceAccountHeader {
 struct EmailWithJWTTokenHeader {}
 
 impl HeaderExtracter for EmailWithJWTTokenHeader {
-    const AUTH_CONF_NAME: &'static str = "email_jwt";
+    const AUTH_CONF_NAME: &'static str = "jwt";
 
     fn extract(req: iron::Headers, token: String, _config_value: Option<&String>) -> Option<Authenticatable> {
         let useraccount = req.get::<XAuthRioOSUserAccountEmail>();
@@ -99,8 +104,9 @@ pub struct HeaderDecider {
 }
 
 impl HeaderDecider {
-    pub fn new(req_headers: iron::Headers, conf_map: BTreeMap<String, String>) -> IronResult<Self> {
+    pub fn new(req_headers: iron::Headers, plugins: Vec<String>, conf: HashMap<String, String>) -> IronResult<Self> {
         let req = req_headers.clone();
+
         let token = match req.get::<Authorization<Bearer>>() {
             Some(&Authorization(Bearer { ref token })) => token,
             _ => {
@@ -109,31 +115,35 @@ impl HeaderDecider {
             }
         };
 
-        let extractables = vec![
-            EmailHeader::extract(
-                req.clone(),
-                token.to_string(),
-                EmailHeader::exists_conf_key().and_then(|x| conf_map.get(&x)),
-            ),
-            ServiceAccountHeader::extract(
-                req.clone(),
-                token.to_string(),
-                ServiceAccountHeader::exists_conf_key().and_then(|x| conf_map.get(&x)),
-            ),
-            EmailWithJWTTokenHeader::extract(
-                req.clone(),
-                token.to_string(),
-                EmailWithJWTTokenHeader::exists_conf_key().and_then(|x| conf_map.get(&x)),
-            ),
-            PassTicketHeader::extract(
-                req.clone(),
-                token.to_string(),
-                EmailWithJWTTokenHeader::exists_conf_key().and_then(|x| conf_map.get(&x)),
-            ),
-        ];
+        let scrappers = plugins
+            .into_iter()
+            .map(|p| match p.as_str() {
+                PLUGIN_PASSWORD => EmailHeader::extract(
+                    req.clone(),
+                    token.to_string(),
+                    EmailHeader::exists_conf_key().and_then(|x| conf.get(&x)),
+                ),
+                PLUGIN_SERVICE_ACCOUNT => ServiceAccountHeader::extract(
+                    req.clone(),
+                    token.to_string(),
+                    ServiceAccountHeader::exists_conf_key().and_then(|x| conf.get(&x)),
+                ),
+                PLUGIN_PASSTICKET => PassTicketHeader::extract(
+                    req.clone(),
+                    token.to_string(),
+                    EmailWithJWTTokenHeader::exists_conf_key().and_then(|x| conf.get(&x)),
+                ),
+                PLUGIN_JWT => EmailWithJWTTokenHeader::extract(
+                    req.clone(),
+                    token.to_string(),
+                    EmailWithJWTTokenHeader::exists_conf_key().and_then(|x| conf.get(&x)),
+                ),
+                &_ => None,
+            })
+            .collect();
 
         Ok(HeaderDecider {
-            extractables: extractables,
+            extractables: scrappers,
         })
     }
 
@@ -144,7 +154,7 @@ impl HeaderDecider {
             return Ok(validate.unwrap());
         }
         let err = not_acceptable_error(&format!(
-            "Authentication not supported. You must have headers for the supported authetication. Refer https://www.rioos.sh/admin/auth."
+            "Authentication not supported. You must have headers for the supported authetication. Refer https://bit.ly/rioos_sh_adminguide"
         ));
         return Err(render_json_error(&bad_err(&err), err.http_code()));
     }

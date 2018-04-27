@@ -193,7 +193,7 @@ impl Api for BuildConfigApi {
             "/buildconfigs",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.post".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.post".to_string(),&*config)),
             "build_config",
         );
 
@@ -201,21 +201,21 @@ impl Api for BuildConfigApi {
             "/buildconfigs",
             XHandler::new(C { inner: list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.get".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.get".to_string(),&*config)),
             "build_config_list",
         );
         router.get(
             "/buildconfigs/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.get".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.get".to_string(),&*config)),
             "build_config_show",
         );
         router.get(
             "/buildconfigs/assemblyfactorys/:id",
             XHandler::new(C { inner: show_by_assembly_factory })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.get".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.get".to_string(),&*config)),
             "build_config_list_by_assembly_factorys",
         );
 
@@ -223,7 +223,7 @@ impl Api for BuildConfigApi {
             "/buildconfigs/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.put".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.put".to_string(),&*config)),
             "build_config_update",
         );
 
@@ -231,7 +231,7 @@ impl Api for BuildConfigApi {
             "/buildconfigs/:id/status",
             XHandler::new(C { inner: update_status })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.put".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.put".to_string(),&*config)),
             "build_config_status_update",
         );
     }

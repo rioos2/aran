@@ -144,21 +144,21 @@ impl Api for VolumeApi {
             "/volumes",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.post".to_string())),
+            .before(TrustAccessed::new("rioos.volume.post".to_string(),&*config)),
             "volumes",
         );
         router.get(
             "/volumes/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.get".to_string())),
+            .before(TrustAccessed::new("rioos.volume.get".to_string(),&*config)),
             "volumes_show",
         );
         router.put(
             "/volumes/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.put".to_string())),
+            .before(TrustAccessed::new("rioos.volume.put".to_string(),&*config)),
             "volumes_update",
         );
         router.put(
@@ -167,7 +167,7 @@ impl Api for VolumeApi {
                 inner: status_update,
             })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.put".to_string())),
+            .before(TrustAccessed::new("rioos.volume.put".to_string(),&*config)),
             "volumes_status_update",
         );
         router.get(
@@ -175,7 +175,7 @@ impl Api for VolumeApi {
             XHandler::new(C {
                 inner: show_by_assembly,
             }).before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.get".to_string())),
+            .before(TrustAccessed::new("rioos.volume.get".to_string(),&*config)),
             "volumes_show_by_assembly",
         );
     }

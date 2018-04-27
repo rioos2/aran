@@ -55,7 +55,7 @@ impl Api for VulnApi {
             "/image/:name/vulnerablity",
             XHandler::new(C { inner: show })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.vuln.get".to_string())),
+                .before(TrustAccessed::new("rioos.vuln.get".to_string(),&*config)),
             "show",
         );
     }

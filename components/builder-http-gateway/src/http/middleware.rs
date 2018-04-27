@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use iron::Handler;
 use iron::headers;
@@ -159,13 +159,17 @@ pub trait AuthFlow {
 
 #[derive(Clone)]
 pub struct Authenticated {
-    pub config_map: BTreeMap<String, String>,
+    pub plugins: Vec<String>,
+    pub conf: HashMap<String, String>,
 }
 
 impl Authenticated {
     pub fn new<T: AuthenticationFlowCfg>(config: &T) -> Self {
+        let plugins_and_its_configuration_tuple = config.modes();
+
         Authenticated {
-            config_map: config.modes().into_iter().collect::<BTreeMap<_, String>>(),
+            plugins: plugins_and_its_configuration_tuple.0,
+            conf: plugins_and_its_configuration_tuple.1,
         }
     }
 }
@@ -184,7 +188,7 @@ impl BeforeMiddleware for Authenticated {
             ),
         );
 
-        ProceedAuthenticating::proceed(req, self.config_map.clone())
+        ProceedAuthenticating::proceed(req, self.plugins.clone(), self.conf.clone())
     }
 }
 
@@ -200,7 +204,7 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(req: &mut Request, config_map: BTreeMap<String, String>) -> IronResult<()> {
+    pub fn proceed(req: &mut Request, plugins: Vec<String>, conf: HashMap<String, String>) -> IronResult<()> {
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -209,7 +213,7 @@ impl ProceedAuthenticating {
             }
         };
 
-        let header = HeaderDecider::new(req.headers.clone(), config_map.clone())?;
+        let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;
 
         let delegate = AuthenticateDelegate::new(broker.clone());
 
@@ -226,11 +230,18 @@ impl ProceedAuthenticating {
 #[derive(Clone)]
 pub struct TrustAccessed {
     pub trusted: String,
+    pub plugins: Vec<String>,
+    pub conf: HashMap<String, String>,
 }
 
 impl TrustAccessed {
-    pub fn new(trusted: String) -> Self {
-        TrustAccessed { trusted: trusted }
+    pub fn new<T: AuthenticationFlowCfg>(trusted: String, config: &T) -> Self {
+        let plugins_and_its_configuration_tuple = config.modes();
+        TrustAccessed {
+            trusted: trusted,
+            plugins: plugins_and_its_configuration_tuple.0,
+            conf: plugins_and_its_configuration_tuple.1,
+        }
     }
 
     fn get(&self) -> String {
@@ -248,9 +259,9 @@ impl BeforeMiddleware for TrustAccessed {
             }
         };
 
-        let header = HeaderDecider::new(req.headers.clone(), BTreeMap::new())?;
-
+        let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
         let roles: authorizer::RoleType = header.decide()?.into();
+        
         // return Ok if the request has no header with email and serviceaccount name
         if roles.name.get_id().is_empty() {
             return Ok(());

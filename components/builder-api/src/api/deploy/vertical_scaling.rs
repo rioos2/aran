@@ -195,7 +195,7 @@ impl Api for VerticalScalingApi {
             "/verticalscaling",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.post".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.post".to_string(),&*config)),
             "verticalscalings",
         );
 
@@ -203,21 +203,21 @@ impl Api for VerticalScalingApi {
             "/verticalscaling/:id/status",
             XHandler::new(C { inner: status_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string(),&*config)),
             "vertical_scaling_status_update",
         );
         router.put(
             "/verticalscaling/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string(),&*config)),
             "vertical_scaling_update",
         );
         router.get(
             "/verticalscaling",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string(),&*config)),
             "vertical_scaling_list_blank",
         );
 
@@ -225,14 +225,14 @@ impl Api for VerticalScalingApi {
             "/verticalscaling/scale/:id",
             XHandler::new(C { inner: scale })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string(),&*config)),
             "verticalscaling_scale",
         );
         router.get(
             "/verticalscaling/:id/metrics",
             XHandler::new(C { inner: metrics })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string(),&*config)),
             "vertical_scaling_metrics",
         );
     }

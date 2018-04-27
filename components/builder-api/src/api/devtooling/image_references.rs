@@ -170,7 +170,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.post".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.post".to_string(),&*config)),
             "image_ref",
         );
 
@@ -178,7 +178,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
             "image_ref_show",
         );
 
@@ -186,7 +186,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences",
             XHandler::new(C { inner: list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
             "image_references_list",
         );
 
@@ -194,7 +194,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.put".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.put".to_string(),&*config)),
             "image_references_update",
         );
 
@@ -202,7 +202,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences/buildconfigs/:id",
             XHandler::new(C { inner: show_by_build_config })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
             "image_references_show_by_build_config",
         );
     }
