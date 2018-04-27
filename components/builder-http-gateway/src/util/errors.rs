@@ -318,6 +318,32 @@ impl fmt::Display for NotAcceptable {
     }
 }
 
+
+pub struct NotAccess(String);
+
+impl AranError for NotAccess {
+    fn http_code(&self) -> Status {
+        Status::Forbidden
+    }
+
+    fn code(&self) -> &str {
+        "403"
+    }
+
+    fn description(&self) -> &str {
+        self.0.as_ref()
+    }
+    fn cause(&self) -> &str {
+        "Forbidden"
+    }
+}
+
+impl fmt::Display for NotAccess {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 struct BadRequest(String);
 
 impl AranError for BadRequest {
@@ -461,4 +487,8 @@ pub fn not_acceptable_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
 
 pub fn entitlement_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(Entitlement(error.to_string()))
+}
+
+pub fn forbidden_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(NotAccess(error.to_string()))
 }

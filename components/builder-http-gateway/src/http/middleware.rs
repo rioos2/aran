@@ -26,7 +26,8 @@ use auth::rioos::AuthenticateDelegate;
 use auth::rbac::authorizer;
 use config::base::AuthenticationFlowCfg;
 
-use util::errors::{bad_err, internal_error};
+use util::errors::{internal_error, not_acceptable_error, bad_err, forbidden_error};
+
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
@@ -261,7 +262,6 @@ impl BeforeMiddleware for TrustAccessed {
 
         let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
         let roles: authorizer::RoleType = header.decide()?.into();
-        
         // return Ok if the request has no header with email and serviceaccount name
         if roles.name.get_id().is_empty() {
             return Ok(());
@@ -270,7 +270,7 @@ impl BeforeMiddleware for TrustAccessed {
         match authorizer::Authorization::new(broker, roles).verify(self.get()) {
             Ok(_validate) => Ok(()),
             Err(err) => {
-                let err = unauthorized_error(&format!("{}\n", err));
+                let err = forbidden_error(&format!("{}\n", err));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         }
@@ -322,14 +322,3 @@ impl AfterMiddleware for Cors {
         Ok(res)
     }
 }
-
-/*pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> AranResult<Session> {
-    //wrong name, use another fascade method session_create
-    match sessions::DataStore::find_account(&conn, &request) {
-        Ok(session) => return Ok(session),
-        Err(e) => Err(not_found_error(&format!(
-            "{}: Couldn not create session for the account.",
-            e.to_string()
-        ))),
-    }
-}*/

@@ -9,7 +9,7 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
+use api::{Api, ApiValidator, Validator, ParmsVerifier, ExpanderSender};
 use protocol::api::schema::dispatch;
 use config::Config;
 use error::Error;
@@ -25,6 +25,8 @@ use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use authorize::models::permission;
 use protocol::api::authorize::Permissions;
 use protocol::api::base::IdGet;
+use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PERMISSION};
+
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -153,7 +155,7 @@ impl PermissionApi {
 impl Api for PermissionApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
-
+        self.with_cache();
         //closures : permissions
         let _self = self.clone();
         let permission_create = move |req: &mut Request| -> AranResult<Response> { _self.permission_create(req) };
@@ -197,6 +199,22 @@ impl Api for PermissionApi {
             "show_permissions_applied_for",
         );
 
+    }
+}
+use serde_json;
+
+impl ExpanderSender for PermissionApi {
+    fn with_cache(&mut self) {
+        let _conn = self.conn.clone();
+        let permission_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_PERMISSION.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                permission::DataStore::list_by_name(&_conn, &id)
+                    .ok()
+                    .and_then(|p| serde_json::to_string(&p).ok())
+            }),
+        ));
+        &self.conn.expander.with(permission_service);
     }
 }
 

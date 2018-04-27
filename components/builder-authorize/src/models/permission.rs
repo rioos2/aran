@@ -103,10 +103,10 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn list_by_name(datastore: &DataStoreConn, name: &IdGet, procedure_name: &str) -> PermissionsOutputList {
+    pub fn list_by_name(datastore: &DataStoreConn, name: &IdGet) -> PermissionsOutputList {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            &("SELECT * FROM ".to_string() + procedure_name + "($1)"),
+            &"SELECT * FROM get_permission_by_header_name_v1($1)",
             &[&(name.get_id() as String)],
         ).map_err(Error::PermissionsGet)?;
 

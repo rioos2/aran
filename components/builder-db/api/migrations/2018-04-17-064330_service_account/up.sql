@@ -128,13 +128,24 @@ SETOF service_accounts AS $$
                   $$ LANGUAGE PLPGSQL STABLE;
 
 
-CREATE OR REPLACE FUNCTION get_permission_by_service_account_v1 (serv_name text) RETURNS
+CREATE OR REPLACE FUNCTION get_permission_by_header_name_v1 (r_name text) RETURNS
 SETOF permissions AS $$
-              BEGIN
-                RETURN QUERY SELECT * FROM permissions WHERE role_id IN(SELECT id FROM roles WHERE name = ANY((SELECT roles FROM service_accounts WHERE object_meta ->> 'name'=serv_name)::text[]));
-                RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
+              DECLARE
+                                                existing_account accounts%rowtype;
+
+                                                                      BEGIN
+                                                                          SELECT * INTO existing_account FROM accounts WHERE email = r_name LIMIT 1;
+                                                        	IF FOUND THEN
+                                                          RETURN QUERY SELECT * FROM permissions WHERE role_id IN(SELECT id FROM roles WHERE name = ANY((SELECT roles FROM accounts WHERE email = r_name)::text[]));
+                                                          RETURN;
+                                                         ELSE
+                                                            RETURN QUERY SELECT * FROM permissions WHERE role_id IN(SELECT id FROM roles WHERE name = ANY((SELECT roles FROM service_accounts WHERE object_meta ->> 'name'=r_name)::text[]));
+                                                                        RETURN;
+
+                                                        END IF;
+                                                                        RETURN;
+                                                                      END
+                                                                      $$ LANGUAGE PLPGSQL STABLE;
 
 
 CREATE SEQUENCE IF NOT EXISTS end_id_seq;
