@@ -1,7 +1,4 @@
 use super::super::error::{Result, Error};
-use db::data_store::DataStoreConn;
-use rbac::authorizer::RoleType;
-use auth::models::permission::DataStore;
 use protocol::api::authorize::Permissions;
 
 type TrustedAccessList = Vec<TrustAccess>;
@@ -41,11 +38,10 @@ const RESOURCE_DELETE: &'static str = "delete";
 pub struct Roles {}
 
 impl Roles {
-    pub fn per_type(role_type: RoleType, ds: &DataStoreConn) -> Result<TrustedAccessList> {
-        match DataStore::list_by_name(ds, &role_type.name, &role_type.stored_procedure_name) {
-            Ok(Some(perm)) => Ok(perm.iter().map(|x| x.clone().into()).collect::<Vec<_>>()),
-            Ok(None) => Err(Error::PermissionError(format!("No Recored Found"))),
-            Err(err) => Err(Error::PermissionError(format!("{}", err))),
+    pub fn per_type(permission: Option<Vec<Permissions>>) -> Result<TrustedAccessList> {
+        match permission {
+            Some(perm) => Ok(perm.iter().map(|x| x.clone().into()).collect::<Vec<_>>()),
+            None => Err(Error::PermissionError(format!("No Recored Found"))),
         }
     }
 }

@@ -14,7 +14,7 @@ use serde_json;
 use api;
 
 use cache::multi_cache::MultiCache;
-use cache::inject::{PlanFeeder, FactoryFeeder, EndPointsFeeder, VolumeFeeder, MetricFeeder, ServicesFeeder};
+use cache::inject::{PlanFeeder, FactoryFeeder, EndPointsFeeder, VolumeFeeder, MetricFeeder, ServicesFeeder, PermissionFeeder};
 
 use self::flock::Cacher;
 
@@ -27,6 +27,8 @@ pub const CACHE_PREFIX_ENDPOINT: &'static str = "_endpoint";
 pub const CACHE_PREFIX_VOLUME: &'static str = "_volume";
 pub const CACHE_PREFIX_METRIC: &'static str = "_metric";
 pub const CACHE_PREFIX_SERVICE: &'static str = "_service";
+
+pub const CACHE_PREFIX_PERMISSION: &'static str = "_permission";
 
 
 /// The fake type that decides how to pull the data from cache (invalidate or just from cache)
@@ -95,8 +97,8 @@ impl CacheService for NewCacheServiceFn {
         self.key.clone()
     }
 
-    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {   
-    info!("✔ apply cache ≈ {}", id);    
+    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {
+        info!("✔ apply cache ≈ {}", id);
         self.cache().insert(
             lru,
             self.cache_id(id.clone()).clone(),
@@ -139,7 +141,7 @@ impl CacheService for NewCacheServiceFn {
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 #[derive(Clone)]
 pub struct InMemoryExpander {
-    cached: BTreeMap<String, Box<NewCacheServiceFn>>,
+    pub cached: BTreeMap<String, Box<NewCacheServiceFn>>,
     lru: Box<MultiCache<String, String>>,
 }
 
@@ -195,7 +197,7 @@ impl InMemoryExpander {
     /// Does an apply for the id and fetches that data from the cache,
     /// This will be the latest value of the id at any particular instant.
     fn cached_invalidate_for(&self, key: String, id: api::base::IdGet) -> Option<String> {
-        let mut _lru = &self.lru;        
+        let mut _lru = &self.lru;
         debug!("» Cache Invalidate key: {:?}", key.clone());
         debug!("» Cache Invalidate id: {:?}", id);
         match self.cache_service_for(key.clone()) {
@@ -222,7 +224,7 @@ impl InMemoryExpander {
                         .clone()
                 },
                 |_v| {
-                     debug!("» Plan cache get fn for ≈ {}", pid);
+                    debug!("» Plan cache get fn for ≈ {}", pid);
                     self.cached_value_for(CACHE_PREFIX_PLAN.to_string(), pid.clone())
                         .clone()
                 },
@@ -241,7 +243,7 @@ impl InMemoryExpander {
     /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
     /// If force is None, then it invalidates the cache and loads a fresh copy
     pub fn with_factory<F: FactoryFeeder>(&self, f: &mut F, force: Option<bool>) {
-        let fid = f.fget_id();       
+        let fid = f.fget_id();
         let opt_found_as_str = {
             force.map_or_else(
                 || {
@@ -269,7 +271,7 @@ impl InMemoryExpander {
     /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
     /// If force is None, then it invalidates the cache and loads a fresh copy
     pub fn with_endpoints<E: EndPointsFeeder>(&self, e: &mut E, force: Option<bool>) {
-        let eid = e.eget_id();       
+        let eid = e.eget_id();
         let opt_found_as_str = {
             force.map_or_else(
                 || {
@@ -325,7 +327,7 @@ impl InMemoryExpander {
     /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
     /// If force is None, then it invalidates the cache and loads a fresh copy
     pub fn with_volumes<V: VolumeFeeder>(&self, v: &mut V, force: Option<bool>) {
-        let vid = v.vget_id();       
+        let vid = v.vget_id();
         let opt_found_as_str = {
             force.map_or_else(
                 || {
@@ -348,6 +350,37 @@ impl InMemoryExpander {
             }
         }))
     }
+
+
+
+    /// Expands a structure with the volume information.
+    /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
+    /// If force is None, then it invalidates the cache and loads a fresh copy
+    pub fn with_permission<V: PermissionFeeder>(&self, v: &mut V, force: Option<bool>) {
+        let vid = v.p_get_id();
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    debug!("» Permission Invalidate fn for ≈ {}", vid);
+                    self.cached_invalidate_for(CACHE_PREFIX_PERMISSION.to_string(), vid.clone())
+                        .clone()
+                },
+                |_v| {
+                    debug!("» Permission cache fn for ≈ {}", vid);
+                    self.cached_value_for(CACHE_PREFIX_PERMISSION.to_string(), vid.clone())
+                        .clone()
+                },
+            )
+        };
+
+        v.p_feed(opt_found_as_str.and_then({
+            |found_as_str| {
+                let volume: Option<Vec<api::authorize::Permissions>> = serde_json::from_str(&found_as_str).ok();
+                volume
+            }
+        }))
+    }
+
 
     /// Expands a structure with the metrics information.
     /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.

@@ -13,10 +13,6 @@
 use rbac::authorizer::RoleType;
 use std::path::PathBuf;
 
-const PERMISSION_BY_EMAIL: &'static str = "get_permission_by_email_v1";
-const PERMISSION_BY_SERVICE_ACCOUNT: &'static str = "get_permission_by_service_account_v1";
-
-
 #[derive(Debug, Clone)]
 pub enum Authenticatable {
     UserAndPass { username: String, password: String },
@@ -81,25 +77,25 @@ impl Into<RoleType> for Authenticatable {
             Authenticatable::UserAndPass {
                 username: ref u,
                 password: ref _p,
-            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+            } => RoleType::new(u.to_string()),
 
             Authenticatable::ServiceAccountNameAndWebtoken {
                 name: ref u,
                 webtoken: ref _p,
                 key: ref _k,
-            } => RoleType::new(u.to_string(), PERMISSION_BY_SERVICE_ACCOUNT),
+            } => RoleType::new(u.to_string()),
 
             Authenticatable::UserEmailAndToken {
                 email: ref u,
                 token: ref _p,
-            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+            } => RoleType::new(u.to_string()),
 
             Authenticatable::UserEmailAndWebtoken {
                 email: ref u,
                 webtoken: ref _p,
-            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+            } => RoleType::new(u.to_string()),
 
-            _ => RoleType::new("".to_string(), ""),
+            _ => RoleType::new("".to_string()),
         }
     }
 }
