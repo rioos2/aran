@@ -6,7 +6,7 @@ use std::net::{IpAddr, Ipv4Addr};
 
 use http_gateway::config::prelude::TLSPair;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct StreamerCfg {
     pub listener: IpAddr,

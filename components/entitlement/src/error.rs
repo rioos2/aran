@@ -41,9 +41,9 @@ impl fmt::Display for Error {
             Error::LicenseAPIMustBeValid => format!("Entitlement library is tampered. License can’t be verified"),
             Error::LicenseCodeMustBeValid => format!("Entitlement library activate_code is tampered. License can’t be verified"),
             Error::LicenseAPIMustBeInConsistentState => format!("Entitlement library is not in consistent state. Can happen when library is not freed upon use. License can’t be verified."),
-            Error::TrialExpired => format!("Entitlement trial expired. Please contact sales sales@rio.company to buy license."),
-            Error::ProductExpired => format!("Entitlement trial expired. Please contact sales sales@rio.company to buy license."),
-            Error::SubscriptionExpired => format!("Entitlement activation code invalid. Please contact sales@rio.company to buy license (or) provide a valid code."),
+            Error::TrialExpired => format!("Entitlement trial expired. Contact sales@rio.company to buy license."),
+            Error::ProductExpired => format!("Entitlement trial expired. Contact sales@rio.company to buy license."),
+            Error::SubscriptionExpired => format!("Entitlement activation code invalid. Contact sales@rio.company to buy license (or) provide a valid code."),
         };
         write!(f, "{}", msg)
     }

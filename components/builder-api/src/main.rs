@@ -28,8 +28,6 @@ use api::Config;
 use api::{command, Error, Result};
 use api::node::Servers;
 
-const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
-
 lazy_static! {
     static ref CFG_DEFAULT_FILE: PathBuf = PathBuf::from(&*rioconfig_config_path(None).join("api.toml").to_str().unwrap());
 }
@@ -47,7 +45,7 @@ fn main() {
 
 fn app<'a, 'b>() -> clap::App<'a, 'b> {
     clap_app!(RIOOSAran =>
-        (version: VERSION)
+        (version: api::VERSION)
         (about: "Rio/OS api-server")
         (@setting VersionlessSubcommands)
         (@setting SubcommandRequiredElseHelp)
@@ -98,7 +96,7 @@ fn sub_cli_setup(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 
 fn sub_cli_sync(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
     let config = load_config(&matches)?;
-    
+
     command::cli::sync::start(ui, &config)
 }
 

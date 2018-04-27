@@ -33,8 +33,11 @@ serde_yaml = "0.7.3"
 hyper = "0.11"
 chrono = { version = "0.4.2", features = ["serde"] }
 
+tls-api-openssl = "0.*"
+tls-api = "0.1.12"
+
+
 typemap = "*"
-toml = { version = "0.4.5", default-features = false }
 url = "1.7.0"
 urlencoded = "0.6.0"
 futures = "0.1.21"
@@ -42,8 +45,6 @@ tokio-core = "0.1.17"
 tokio-io = "0.1.6"
 tokio-timer = "0.1.2"
 
-tls-api-openssl = "0.*"
-tls-api = "0.1.12"
 bytes = "0.*"
 tempdir = "*"
 postgres = { version = "0.15.2", features = ["with-chrono"] }
@@ -54,8 +55,7 @@ schedule_recv = "0.1.0"
 fallible-iterator = "0.1.4"
 enum_derive = "0.1.7"
 custom_derive = "0.1.7"
-handlebars = { version = "*", default-features = false }
-failure = { git = "https://github.com/withoutboats/failure.git" }
+handlebars = { version = "1.0.0-beta.1", default-features = false }
 
 [dependencies.clap]
 version = "*"

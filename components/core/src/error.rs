@@ -11,7 +11,6 @@ use std::result;
 use std::str;
 use std::string;
 
-use regex;
 use toml;
 
 use openssl;
@@ -84,8 +83,6 @@ pub enum Error {
     ParseIntError(num::ParseIntError),
     /// Occurs when setting ownership or permissions on a file or directory fails.
     PermissionFailed(String),
-    /// When an error occurs parsing or compiling a regular expression.
-    RegexParse(regex::Error),
     /// When an error occurs converting a `String` from a UTF-8 byte vector.
     StringFromUtf8Error(string::FromUtf8Error),
     /// When the system target (platform and architecture) do not match the package target.
@@ -232,7 +229,6 @@ impl fmt::Display for Error {
             Error::NoOutboundAddr => format!("Failed to discover this hosts outbound IP address"),
             Error::ParseIntError(ref e) => format!("{}", e),
             Error::PermissionFailed(ref e) => format!("{}", e),
-            Error::RegexParse(ref e) => format!("{}", e),
             Error::StringFromUtf8Error(ref e) => format!("{}", e),
             Error::TargetMatchError(ref e) => format!("{}", e),
             Error::UnameFailed(ref e) => format!("{}", e),
@@ -303,7 +299,6 @@ impl error::Error for Error {
             Error::NoOutboundAddr => "Failed to discover the outbound IP address",
             Error::ParseIntError(_) => "Failed to parse an integer from a string!",
             Error::PermissionFailed(_) => "Failed to set permissions",
-            Error::RegexParse(_) => "Failed to parse a regular expression",
             Error::StringFromUtf8Error(_) => "Failed to convert a string from a Vec<u8> as UTF-8",
             Error::TargetMatchError(_) => "System target does not match package target",
             Error::UnameFailed(_) => "uname failed",
@@ -342,11 +337,6 @@ impl From<num::ParseIntError> for Error {
     }
 }
 
-impl From<regex::Error> for Error {
-    fn from(err: regex::Error) -> Self {
-        Error::RegexParse(err)
-    }
-}
 
 impl From<openssl::error::ErrorStack> for Error {
     fn from(err: openssl::error::ErrorStack) -> Self {

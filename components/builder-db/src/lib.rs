@@ -44,7 +44,6 @@
 //! 1. Q: But what about those horror stories? A: The horror stories are about encoding your business logic in the database. For example, doing complex transformations on the data, or map reducing it, or all kinds of other crazy business. Both our application and our access patterns mean we likely won't need to do a whole lot of that.
 //!
 
-extern crate fallible_iterator;
 extern crate fnv;
 
 #[macro_use]
@@ -73,8 +72,6 @@ extern crate url;
 
 #[macro_use]
 extern crate lazy_static;
-
-extern crate time;
 
 pub mod config;
 pub mod error;

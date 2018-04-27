@@ -3,13 +3,13 @@
 
 //! A module containing the middleware of the HTTP server
 use std::str;
-use rand::{self, Rng};
 use std::path::PathBuf;
 
-use error::{Result, Error};
+use error::{Error, Result};
 use handlebars::Handlebars;
-use failure::SyncFailure;
-use rio_core::fs::{rioconfig_license_path, rioconfig_config_path, read_from_file};
+use rand::{self, Rng};
+
+use rio_core::fs::{read_from_file, rioconfig_config_path, rioconfig_license_path};
 
 use config;
 use lib_load;
@@ -35,7 +35,6 @@ const NALP_VALIDATE_LIBRARY: &'static str = "NSLValidateLibrary";
 const NALP_CLOSED_LIBRARY: &'static str = "NalpLibClose";
 const NALP_GET_LIBRARY: &'static str = "NSLGetLicense";
 
-
 #[derive(Debug)]
 pub struct Nalperion {
     fascade: API,
@@ -43,7 +42,9 @@ pub struct Nalperion {
 
 impl Nalperion {
     pub fn new<T: config::License>(config: &T) -> Self {
-        Nalperion { fascade: API::new(config.so_file().to_string(), config.activation_code()) }
+        Nalperion {
+            fascade: API::new(config.so_file().to_string(), config.activation_code()),
+        }
     }
 
     // Returns the status of license verified with nalperion
@@ -85,9 +86,7 @@ impl API {
         Ok(())
     }
 
-
     fn call_dynamic(so_file: String, secret_offset: (u32, u32), activation_code: Option<String>) -> Result<()> {
-
         let lib = lib_load::Library::new(&rioconfig_license_path(None).join(so_file))?;
 
         unsafe {
@@ -101,9 +100,7 @@ impl API {
             }
 
             //validate the library with customer id and product id
-            let validate_fn = lib.get::<fn(u32, u32) -> i32>(
-                NALP_VALIDATE_LIBRARY.as_bytes(),
-            )?;
+            let validate_fn = lib.get::<fn(u32, u32) -> i32>(NALP_VALIDATE_LIBRARY.as_bytes())?;
             let response = validate_fn(CUSTOMER_ID, PRODUCT_ID);
             debug!("=> validate_lib: {:?}", response);
 
@@ -147,7 +144,7 @@ fn shaferchk_xml_as_bytes(secret_value: u32) -> Result<String> {
             &read_from_file(&NALPERION_SHAFER_FILECHK_XML_TEMPLATE)?,
             &json,
         )
-        .map_err(SyncFailure::new);
+        .map_err(|tr| Error::RioosAranCore(format!("{}", tr)));
 
     let write_content = r.unwrap()
         .lines()

@@ -139,14 +139,10 @@ impl Default for Config {
             logs: LogsCfg::default(),
             blockchain: BlockchainCfg::default(),
             marketplaces: MarketplacesCfg::default(),
-<<<<<<< HEAD
             vulnerability: VulnerabilityCfg::default(),
-=======
-            anchore: AnchoreCfg::default(),
             controller: ControllerCfg::default(),
             scheduler: SchedulerCfg::default(),
             vnc: VNCCfg::default(),
->>>>>>> origin/2-0-stable
         }
     }
 }

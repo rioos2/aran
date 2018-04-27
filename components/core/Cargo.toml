@@ -10,12 +10,10 @@ gcc = "0.3.54"
 
 [dependencies]
 errno = "*"
-hex = "0.3.0"
 lazy_static = "*"
 libc = "0.2.40"
 log = "0.4.1"
 rand = "*"
-regex = "0.2.1"
 serde = "1.0.43"
 serde_derive = "*"
 serde_json = "1.0.16"
@@ -23,7 +21,6 @@ openssl = "0.9.23"
 time = "*"
 
 toml = { version = "0.4.5", default-features = false }
-url = "1.7.0"
 
 [target.'cfg(not(windows))'.dependencies]
 users = "*"

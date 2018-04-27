@@ -92,8 +92,8 @@ impl fmt::Display for Error {
             Error::IO(ref e) => format!("{}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
             Error::UNKNOWSECRET => format!("SecretType not found"),
-            Error::SetupNotDone => format!("Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start"),
-            Error::SyncNotDone => format!("Rio/OS Marketplace sync not done. You must run `rioos-apiserver sync` before attempting start"),
+            Error::SetupNotDone => format!("Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"),
+            Error::SyncNotDone => format!("Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start"),
             Error::Yaml(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
@@ -119,8 +119,8 @@ impl error::Error for Error {
             Error::Json(ref err) => err.description(),
             Error::Utf8Error(ref err) => err.description(),
             Error::UNKNOWSECRET => "Unknown SecretType",
-            Error::SetupNotDone => "Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start",
-            Error::SyncNotDone => "Rio/OS marketplace sync not done. You must run `rioos-apiserver sync` before attempting start",
+            Error::SetupNotDone => "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start",
+            Error::SyncNotDone => "Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start",
 
             Error::Yaml(ref err) => err.description(),
         }

@@ -5,8 +5,6 @@ extern crate clap;
 extern crate env_logger;
 #[macro_use]
 extern crate log;
-#[macro_use]
-extern crate serde_derive;
 
 #[macro_use]
 extern crate lazy_static;
@@ -16,7 +14,6 @@ extern crate hyper;
 
 extern crate base64;
 
-extern crate failure;
 extern crate handlebars;
 extern crate chrono;
 
@@ -48,7 +45,7 @@ extern crate rioos_entitlement as entitlement;
 extern crate rioos_auth as auth;
 extern crate rioos_ws as ws;
 extern crate rioos_telemetry as telemetry;
-extern crate rioos_builder_diagnostics as diagnostics;
+extern crate rioos_builder_diagnostics as rio_diago;
 
 extern crate iron;
 extern crate mount;
@@ -60,11 +57,12 @@ extern crate rioos_http_client as rioos_http;
 extern crate router;
 extern crate serde;
 #[macro_use]
+extern crate serde_derive;
+#[macro_use]
 extern crate serde_json;
 extern crate serde_yaml;
 extern crate mio;
 
-extern crate toml;
 extern crate typemap;
 extern crate url;
 
@@ -102,3 +100,5 @@ pub use self::config::Config;
 pub use self::error::{Error, Result};
 
 extern crate bytes;
+
+pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));

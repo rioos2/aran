@@ -37,7 +37,7 @@ impl ToSocketAddrs for HttpsCfg {
 }
 
 /// Path to UI files to host over HTTP. If not set the UI will be disabled.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct UiCfg {
     pub root: Option<String>,

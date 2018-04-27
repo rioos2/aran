@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct IdentityCfg {
     //  The identity handlers enabled

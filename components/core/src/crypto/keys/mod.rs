@@ -260,7 +260,6 @@ fn write_keypair_files(public_keyfile: Option<&Path>, public_content: Option<&[u
 mod test {
     use std::fs::{self, File};
 
-    use hex;
     use tempdir::TempDir;
 
     use super::super::test_support::*;
@@ -268,16 +267,6 @@ mod test {
     static VALID_KEY: &'static str = "ring-key-valid-20160504220722.sym.key";
     static VALID_KEY_AS_HEX: &'static str = "\
                                              53594d2d5345432d310a72696e672d6b65792d76616c69642d32303136303530343232303732320a0a524346614f38346a3431476d727a576464784d6473587047646e3369754979374d77337859726a504c73453d";
-
-    #[test]
-    fn read_key_bytes() {
-        let cache = TempDir::new("key_cache").unwrap();
-        let keyfile = cache.path().join(VALID_KEY);
-        fs::copy(fixture(&format!("keys/{}", VALID_KEY)), &keyfile).unwrap();
-        println!("keyfile {:?}", keyfile);
-        let result = super::read_key_bytes(keyfile.as_path()).unwrap();
-        assert_eq!(hex::encode(result.as_slice()), VALID_KEY_AS_HEX);
-    }
 
     #[test]
     #[should_panic(expected = "Can\\'t read key bytes")]

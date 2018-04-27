@@ -141,8 +141,8 @@ impl HttpGateway for Wirer {
 
         let mut diagnostics = cluster::diagnostics_api::DiagnosticsApi::new(
             Box::new(ds.clone()),
-            Box::new(PrometheusClient::new(&*self.config.clone())),
-            self.config.clone(),
+            Box::new(PrometheusClient::new(&*config.clone())),
+            config.clone(),
         );
         diagnostics.wire(config.clone(), &mut router);
 
