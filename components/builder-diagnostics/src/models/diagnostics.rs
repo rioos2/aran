@@ -70,13 +70,13 @@ impl Pinguy {
         ));
         mstatus.push(get_status(
             "logs",
-            "endpoint".to_string(),
+            "influx_endpoint".to_string(),
             config.clone(),
             "Logs".to_string(),
         ));
         mstatus.push(get_status(
             "telemetry",
-            "prometheus_endpoint".to_string(),
+            "endpoint".to_string(),
             config.clone(),
             "Telemetry".to_string(),
         ));
