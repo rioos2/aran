@@ -31,6 +31,13 @@ pub trait MetricFeeder: Send {
     fn mfeed(&mut self, v: Option<BTreeMap<String, String>>);
 }
 
+pub trait PermissionFeeder: Send {
+    fn p_get_id(&mut self) -> api::base::IdGet;
+
+    fn p_feed(&mut self, v: Option<Vec<api::authorize::Permissions>>);
+}
+
+
 pub trait ServicesFeeder: Send {
     fn sget_id(&mut self) -> api::base::IdGet;
 

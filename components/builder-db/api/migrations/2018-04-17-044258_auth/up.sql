@@ -506,15 +506,6 @@ SETOF permissions AS $$
              END
              $$ LANGUAGE PLPGSQL STABLE;
 
-
-CREATE OR REPLACE FUNCTION get_permission_by_email_v1 (email_id text) RETURNS
-SETOF permissions AS $$
-              BEGIN
-                RETURN QUERY SELECT * FROM permissions WHERE role_id IN(SELECT id FROM roles WHERE name = ANY((SELECT roles FROM accounts WHERE email = email_id)::text[]));
-                RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
 WITH first_insert AS
   (INSERT INTO roles(name, description)
    VALUES('rioos:superuser',

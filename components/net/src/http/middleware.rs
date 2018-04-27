@@ -26,7 +26,7 @@ use common::ui;
 use auth::rioos::AuthenticateDelegate;
 use auth::rbac::authorizer;
 
-use util::errors::{internal_error, not_acceptable_error, bad_err};
+use util::errors::{internal_error, not_acceptable_error, bad_err, forbidden_error};
 
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
@@ -267,7 +267,7 @@ impl TrustAccessed {
     pub fn new(trusted: String) -> Self {
         TrustAccessed { trusted: trusted }
     }
-   
+
     fn get(&self) -> String {
         self.trusted.clone()
     }
@@ -286,15 +286,16 @@ impl BeforeMiddleware for TrustAccessed {
         let header = HeaderDecider::new(req.headers.clone(), None)?;
 
         let roles: authorizer::RoleType = header.decide()?.into();
+
         // return Ok if the request has no header with email and serviceaccount name
         if roles.name.get_id().is_empty() {
             return Ok(());
         }
-        
+
         match authorizer::Authorization::new(broker, roles).verify(self.get()) {
             Ok(_validate) => Ok(()),
             Err(err) => {
-                let err = unauthorized_error(&format!("{}\n", err));
+                let err = forbidden_error(&format!("{}\n", err));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         }
