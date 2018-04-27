@@ -5,8 +5,6 @@
 
 use std::sync::Arc;
 use iron::prelude::*;
-use common::ui;
-use ansi_term::Colour;
 
 use router::Router;
 use config::Config;
@@ -15,9 +13,10 @@ pub mod deploy;
 pub mod security;
 use protocol::api::base::{IdGet, StatusUpdate};
 
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, malformed_body};
-use error::ErrorMessage::{MissingParameter, MissingBody, MustBeNumeric};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, malformed_body};
+
+use error::ErrorMessage::{MissingBody, MissingParameter, MustBeNumeric};
 
 // `Api` trait which defines `RESTful` API.
 pub trait Api {
@@ -108,14 +107,7 @@ struct NameParmsVerifier {}
 impl RequestVerifier for NameParmsVerifier {
     fn verify(req: &Request) -> AranResult<IdGet> {
         match req.extensions.get::<Router>().unwrap().find("name") {
-            Some(name) => {
-                ui::rawdumpln(
-                    Colour::White,
-                    '✓',
-                    format!("======= parms org {:?} ", name),
-                );
-                Ok(IdGet::with_id(name.to_string()))
-            }
+            Some(name) => Ok(IdGet::with_id(name.to_string())),
             None => return Err(bad_request(&MissingParameter("name".to_string()))),
         }
     }

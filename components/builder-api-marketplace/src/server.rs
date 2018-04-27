@@ -3,10 +3,11 @@
 //! Contains core functionality for the Application's main server.
 
 use std::sync::Arc;
-use rio_net::server::NetIdent;
+
 use config::Config;
 use error::Result;
 /* mod node;  don't remove this line, for channel/watch */
+
 use super::node::Node;
 use common::ui::UI;
 
@@ -31,9 +32,9 @@ impl Server {
         let cfg1 = self.config.clone();
 
         ui.begin(&format!(
-            "Rio/OS Marketplace listening on {}:{}",
-            self.config.http.listen,
-            self.config.http.port
+            "Rio.Marketplaces listening on {}:{}",
+            self.config.https.listen,
+            self.config.https.port
         ))?;
         ui.heading("Ready to go.")?;
 
@@ -46,10 +47,10 @@ impl Server {
     }
 }
 
-impl NetIdent for Server {}
-
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.
 pub fn run(ui: &mut UI, config: Config) -> Result<()> {
+    config.dump(ui)?;
+    
     Server::new(config).run(ui)
 }

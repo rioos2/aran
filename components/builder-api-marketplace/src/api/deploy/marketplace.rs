@@ -17,15 +17,15 @@ use rio_core::fs::rioconfig_package_path;
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
 use protocol::api::schema::{dispatch, type_meta};
-use rio_net::http::static_handler::Static;
 
 use config::Config;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::static_handler::Static;
 
 use marketplace::{marketplace_ds, package_attacher};
 

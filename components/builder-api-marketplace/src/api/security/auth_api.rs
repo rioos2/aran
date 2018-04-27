@@ -9,16 +9,16 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error};
 
 use rand;
 use session::models::session as sessions;
@@ -67,7 +67,7 @@ impl AuthenticateApi {
 
                 session_data.set_token(UserAccountAuthenticate::token().unwrap());
 
-                let session = try!(session_create(&self.conn, session_data));
+                let session = try!(sessions::DataStore::find_account(&self.conn, &session_data));
 
                 Ok(render_json(status::Ok, &session))
             }
@@ -78,9 +78,7 @@ impl AuthenticateApi {
     //POST: accounts",
     //Input account and creates an user, by returning the Account information of an user
     fn account_create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<SessionCreate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<SessionCreate>>()?)?;
 
         if unmarshall_body.get_apikey().len() <= 0 {
             unmarshall_body.set_apikey(rand::random::<u64>().to_string());
@@ -198,9 +196,7 @@ impl AuthenticateApi {
     //POST: Create a new saml provider
     ///auth/saml/providers/:providerid
     fn config_saml(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<SamlProvider>>()?,
-        )?;
+        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<SamlProvider>>()?)?;
 
         match sessions::DataStore::saml_provider_create(&self.conn, &unmarshall_body) {
             Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
@@ -239,9 +235,7 @@ impl AuthenticateApi {
     //POST: Create a new openid
     //  /auth/oidc/providers/:providerid
     fn config_openid(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<OidcProvider>>()?,
-        )?;
+        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<OidcProvider>>()?)?;
 
         //do you have to set the provider id in unmarshall_body here ?
 
@@ -332,29 +326,39 @@ impl Api for AuthenticateApi {
 
         router.post(
             "/accounts",
-            XHandler::new(C { inner: account_create }),
+            XHandler::new(C {
+                inner: account_create,
+            }),
             "account_create:signup",
         );
         router.get(
             "/accounts/:id",
-            XHandler::new(C { inner: account_show }).before(basic.clone()),
+            XHandler::new(C {
+                inner: account_show,
+            }).before(basic.clone()),
             "account_show",
         );
 
         router.get(
             "/accounts/name/:name",
-            XHandler::new(C { inner: account_show_by_name }).before(basic.clone()),
+            XHandler::new(C {
+                inner: account_show_by_name,
+            }).before(basic.clone()),
             "account_show_by_name",
         );
 
         router.post(
             "/authenticate",
-            XHandler::new(C { inner: authenticate }),
+            XHandler::new(C {
+                inner: authenticate,
+            }),
             "authenticate",
         );
         router.post(
             "/authenticate/ldap/:code",
-            XHandler::new(C { inner: authenticate_ldap }),
+            XHandler::new(C {
+                inner: authenticate_ldap,
+            }),
             "authenticate_ldap",
         );
 
@@ -370,7 +374,9 @@ impl Api for AuthenticateApi {
 
         router.get(
             "/auth/saml/providers",
-            C { inner: saml_list_blank },
+            C {
+                inner: saml_list_blank,
+            },
             "saml_list",
         );
 
@@ -382,12 +388,16 @@ impl Api for AuthenticateApi {
 
         router.post(
             "/auth/oidc/providers/:providerid",
-            C { inner: config_openid },
+            C {
+                inner: config_openid,
+            },
             "config_openid",
         );
         router.get(
             "/auth/oidc/providers",
-            C { inner: openid_list_blank },
+            C {
+                inner: openid_list_blank,
+            },
             "openid_list_blank",
         );
         router.get(
