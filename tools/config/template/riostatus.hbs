@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+  <!-- Meta -->
+  <meta charset="utf-8">
+  <title>Rio/OS System Status</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+  <style>
+      html {
+    box-sizing: border-box;
+    font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body, h1, h2, h3, h4 {
+    margin: 0;
+    padding: 0;
+}
+
+p {
+    color: #666;
+    line-height: 1.5;
+}
+
+a,
+a:visited {
+    color: #3498db;
+    text-decoration: none;
+}
+
+a:hover,
+a:focus {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 900px;
+    width: 90%;
+    overflow: hidden;
+    margin: 40px auto;
+}
+
+.intro {
+    text-align: center;
+    max-width: 650px;
+    margin: 0 auto 40px;
+}
+
+.title {
+    margin: 10px 0 0;
+    font-size: 40px;
+}
+
+.last-updated {
+    margin-bottom: 20px;
+    color: #999;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.status {
+    padding: 0;
+    overflow: hidden;
+    list-style: none;
+}
+
+.widget {
+    margin-bottom: 5%;
+    padding: 40px 10px;
+    color: #fff;
+    text-align: center;
+}
+
+@media all and (min-width: 780px) {
+  .widget {
+      width: 29.5%;
+      display: inline-block;
+      float: left;
+      margin: 1% 1% 1% 1%;
+      padding: 40px 0;
+  }
+}
+
+.widget:nth-child(even) {
+    margin-right: 0;
+}
+
+.widget--up       { background-color: #2ecc71; }
+.widget--down     { background-color: #e74c3c; }
+.widget--problem  { background-color: #f39c12; }
+
+.service-name {
+    margin-bottom: 10px;
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: 0;
+    color: #fff;
+}
+
+.status-message {
+    display: block;
+    font-size: 18px;
+    color: #fff;
+    color: rgba(0, 0, 0, .3);
+}
+
+.up {
+    stroke: #fff;
+    stroke-dasharray: 130px 130px;
+    stroke-dashoffset: 130px;
+    -webkit-transition: stroke-dashoffset 4.1s linear 0s;
+    transition: stroke-dashoffset 500ms ease-in-out;
+}
+
+.icon {
+    margin-top: 30px;
+    width: 50px;
+    height: 50px;
+    fill: #fff;
+}
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="intro">
+      <img src="https://console.rioos.xyz/images/logo2.png" alt="Rio OS logo">
+      <h1 class="title">Service Status</h1>
+      <h4 class="last-updated">Updated {{time}}</h4>
+
+      <p>This page offers performance information for Rio/OS services. Check back here any time to view the current status of the services listed below. For more information or to report a problem, please visit the <a href="https://github.com/rioadvancement/rioos/issues/new">support portal</a>.</p>
+    </div>
+
+   <ul class="status">
+    {{#each packages as |p| ~}}
+      <li class="widget  widget--{{p.status}}">
+      	<h2 class="service-name">{{p.name}}</h2>
+      	<span class="status-message">{{p.description}}</span>
+        {{status_symbol p.status ~}}      	
+      </li>
+    {{/each~}}
+    </ul>   
+    </div>
+    <div class="intro">
+    <h1 class="title">Node Systems Status</h1>
+    <h4 class="last-updated">Updated {{time}}</h4>
+    <ul class="status">
+    {{#each nodes as |p| ~}}
+      <li class="widget  widget--{{p.status}}">
+      	<h2 class="service-name">{{p.name}}</h2>
+      	<span class="status-message">{{p.description}}</span>
+        {{status_symbol p.status ~}}      	
+      </li>
+    {{/each~}}
+    </ul>   
+  </div>
+
+
+  <!-- jQuery -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/static/js/libs/jquery.min.js"><\/script>')</script>
+  <script>
+    $(document).ready(function () {
+       $('.up').css('stroke-dashoffset', 0);
+    });
+  </script>
+
+</body>
+</html>
+
