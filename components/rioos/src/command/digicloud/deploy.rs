@@ -1,6 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 //
-use std::fs::File;
+use std::path::Path;
+
 use serde_yaml;
 use common::ui::UI;
 use error::Result;
@@ -10,13 +11,13 @@ use protocol::api::schema::type_meta_url;
 use protocol::api::base::MetaFields;
 use protocol::api::{deploy, scale};
 
-use rcore::fs::open_from;
+use rioos_core::fs::open_from;
 
 pub fn start(ui: &mut UI, rio_client: Client, cache_path: &str, token: &str, email: &str) -> Result<()> {
     ui.br()?;
     ui.begin("Constructing a cozy digitalcloud for you...")?;
     ui.br()?;
-    let file = open_from(cache_path)?;
+    let file = open_from(Path::new(cache_path))?;
     let content: DeployData = serde_yaml::from_reader(file)?;
     let assembly_fac: deploy::AssemblyFactory = rio_client.deploy_digicloud(content.assembly_factory.clone(), token, email)?;
     if let Some(i) = content.horizontal_scaling {

@@ -32,7 +32,6 @@ members = [
   "components/core",
   "components/http-client",
   "components/http2",
-  "components/net",
   "components/entitlement",
   "components/rioos",
   "components/ws-rs",

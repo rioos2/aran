@@ -29,7 +29,7 @@ else
 endif
 
 BIN = rioos
-LIB = builder-db builder-apimachinery  builder-deployment builder-scaling common core builder-api-client http-client net
+LIB = builder-db builder-apimachinery  builder-deployment builder-scaling common core builder-api-client http-client
 API = builder-api
 AUD = builder-api-audit
 MKT = builder-api-marketplace
