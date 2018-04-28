@@ -9,15 +9,15 @@ use iron::status;
 use router::Router;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::type_meta;
+use protocol::api::schema::type_meta;
 
 use config::Config;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 use marketplace::package_ds;
 use protocol::api::package::Package;

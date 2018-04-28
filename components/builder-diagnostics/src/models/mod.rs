@@ -1,1 +1,1 @@
-pub mod diagnostics_ds;
+pub mod diagnostics;

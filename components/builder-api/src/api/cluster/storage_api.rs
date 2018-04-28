@@ -10,13 +10,13 @@ use iron::status;
 use router::Router;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 use storage::storage_ds::StorageDS;
 use protocol::api::base::StatusUpdate;
@@ -424,35 +424,35 @@ impl Api for StorageApi {
             "/storageconnectors",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storageconnector.post".to_string())),
+            .before(TrustAccessed::new("rioos.storageconnector.post".to_string(),&*config)),
             "storages",
         );
         router.get(
             "/storageconnectors",
             XHandler::new(C { inner: list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storageconnector.get".to_string())),
+            .before(TrustAccessed::new("rioos.storageconnector.get".to_string(),&*config)),
             "storages_list",
         );
         router.get(
             "/storageconnectors/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storageconnector.get".to_string())),
+            .before(TrustAccessed::new("rioos.storageconnector.get".to_string(),&*config)),
             "storages_show",
         );
         router.put(
             "storageconnectors/:id/status",
             XHandler::new(C { inner: status_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storageconnector.put".to_string())),
+            .before(TrustAccessed::new("rioos.storageconnector.put".to_string(),&*config)),
             "storages_status_update",
         );
         router.put(
             "storageconnectors/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storageconnector.put".to_string())),
+            .before(TrustAccessed::new("rioos.storageconnector.put".to_string(),&*config)),
             "storages_update",
         );
 
@@ -461,35 +461,35 @@ impl Api for StorageApi {
             "/storagespool",
             XHandler::new(C { inner: storage_pool_create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storagepool.post".to_string())),
+            .before(TrustAccessed::new("rioos.storagepool.post".to_string(),&*config)),
             "storages_pool",
         );
         router.get(
             "/storageconnectors/:id/storagespool",
             XHandler::new(C { inner: storage_pool_by_connector })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storagepool.get".to_string())),
+            .before(TrustAccessed::new("rioos.storagepool.get".to_string(),&*config)),
             "storages_pool_show_by_connector",
         );
         router.get(
             "/storagespool",
             XHandler::new(C { inner: storage_pool_list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storagepool.get".to_string())),
+            .before(TrustAccessed::new("rioos.storagepool.get".to_string(),&*config)),
             "storages_pool_list",
         );
         router.put(
             "/storagespool/:id/status",
             XHandler::new(C { inner: storage_pool_status_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storagepool.put".to_string())),
+            .before(TrustAccessed::new("rioos.storagepool.put".to_string(),&*config)),
             "storages_pool_status_update",
         );
         router.get(
             "/storagespool/:id",
             XHandler::new(C { inner: storagepool_show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.storagepool.get".to_string())),
+            .before(TrustAccessed::new("rioos.storagepool.get".to_string(),&*config)),
             "storagepool_show",
         );
 
@@ -500,21 +500,21 @@ impl Api for StorageApi {
             "/datacenters",
             XHandler::new(C { inner: data_center_create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.datacenter.post".to_string())),
+            .before(TrustAccessed::new("rioos.datacenter.post".to_string(),&*config)),
             "data_center",
         );
         router.get(
             "/datacenters",
             XHandler::new(C { inner: data_center_list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.datacenter.get".to_string())),
+            .before(TrustAccessed::new("rioos.datacenter.get".to_string(),&*config)),
             "data_center_list",
         );
         router.get(
             "/datacenters/:id",
             XHandler::new(C { inner: data_center_show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.datacenter.get".to_string())),
+            .before(TrustAccessed::new("rioos.datacenter.get".to_string(),&*config)),
             "data_center_show",
         );
 
@@ -522,7 +522,7 @@ impl Api for StorageApi {
             "/datacenters/:id",
             XHandler::new(C { inner: datacenter_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.datacenter.put".to_string())),
+            .before(TrustAccessed::new("rioos.datacenter.put".to_string(),&*config)),
             "data_center_update",
         );
     }

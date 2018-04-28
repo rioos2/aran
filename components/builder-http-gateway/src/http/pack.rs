@@ -134,9 +134,8 @@ impl AfterMiddleware for CompressionMiddleware {
 
         if res.body.is_some() {
             if let Some(compression) = which_compression(&req, &res, &default_priorities) {
-                res.headers.set(
-                    ContentEncoding(vec![get_header(&compression)]),
-                );
+                res.headers
+                    .set(ContentEncoding(vec![get_header(&compression)]));
                 res.headers.remove::<ContentLength>();
                 res.body = Some(get_body(&compression, res.body.take().unwrap()));
             }
@@ -153,7 +152,7 @@ mod test_common {
     use std::io::Read;
     use iron::prelude::*;
     use iron::headers::*;
-    use iron::{Chain, status};
+    use iron::{status, Chain};
     use iron::modifiers::Header;
     use self::iron_test::request;
 
@@ -340,18 +339,18 @@ mod brotli_tests {
         let chain = build_compressed_echo_chain(false);
         let res = post_data_with_accept_encoding(
             &value,
-            Some(AcceptEncoding(
-                vec![qitem(Encoding::EncodingExt(String::from("br")))],
-            )),
+            Some(AcceptEncoding(vec![
+                qitem(Encoding::EncodingExt(String::from("br"))),
+            ])),
             &chain,
         );
 
         assert_eq!(res.headers.get::<ContentLength>(), None);
         assert_eq!(
             res.headers.get::<ContentEncoding>(),
-            Some(&ContentEncoding(
-                vec![Encoding::EncodingExt(String::from("br"))],
-            ))
+            Some(&ContentEncoding(vec![
+                Encoding::EncodingExt(String::from("br")),
+            ],))
         );
 
         let compressed_bytes = response::extract_body_to_bytes(res);
@@ -453,9 +452,9 @@ mod priority_tests {
 
         assert_eq!(
             res.headers.get::<ContentEncoding>(),
-            Some(&ContentEncoding(
-                vec![Encoding::EncodingExt(String::from("br"))],
-            ))
+            Some(&ContentEncoding(vec![
+                Encoding::EncodingExt(String::from("br")),
+            ],))
         );
     }
 
@@ -484,9 +483,10 @@ mod priority_tests {
         let chain = build_compressed_echo_chain(false);
         let res = post_data_with_accept_encoding(
             &value,
-            Some(AcceptEncoding(
-                vec![qitem(Encoding::Deflate), qitem(Encoding::Gzip)],
-            )),
+            Some(AcceptEncoding(vec![
+                qitem(Encoding::Deflate),
+                qitem(Encoding::Gzip),
+            ])),
             &chain,
         );
 
@@ -508,9 +508,7 @@ mod middleware_benchmarks {
 
                 b.iter(|| {
                     let data: String = rng.gen_ascii_chars().take($response_size).collect();
-                    let res = post_data_with_accept_encoding(&data,
-                                                           $header,
-                                                           &chain);
+                    let res = post_data_with_accept_encoding(&data, $header, &chain);
                     let compressed_bytes = response::extract_body_to_bytes(res);
 
                     assert!(compressed_bytes.len() > 0);
@@ -537,7 +535,7 @@ mod middleware_benchmarks {
 
                 fn build_echo_chain() -> Chain {
                     let chain = Chain::new(|req: &mut Request| {
-                        let mut body: Vec<u8> = vec!();
+                        let mut body: Vec<u8> = vec![];
                         req.body.read_to_end(&mut body).unwrap();
                         Ok(Response::with((status::Ok, body)))
                     });
@@ -546,18 +544,9 @@ mod middleware_benchmarks {
 
                 bench_chain_with_header_and_size!(without_middleware, build_echo_chain(), None, $size);
                 bench_chain_with_header_and_size!(with_middleware_no_accept_header, build_compressed_echo_chain(false), None, $size);
-                bench_chain_with_header_and_size!(with_middleware_gzip,
-                                                  build_compressed_echo_chain(false),
-                                                  Some(AcceptEncoding(vec![qitem(Encoding::Gzip)])),
-                                                  $size);
-                bench_chain_with_header_and_size!(with_middleware_deflate,
-                                                  build_compressed_echo_chain(false),
-                                                  Some(AcceptEncoding(vec![qitem(Encoding::Deflate)])),
-                                                  $size);
-                bench_chain_with_header_and_size!(with_middleware_brotli,
-                                                  build_compressed_echo_chain(false),
-                                                  Some(AcceptEncoding(vec![qitem(Encoding::EncodingExt(String::from("br")))])),
-                                                  $size);
+                bench_chain_with_header_and_size!(with_middleware_gzip, build_compressed_echo_chain(false), Some(AcceptEncoding(vec![qitem(Encoding::Gzip)])), $size);
+                bench_chain_with_header_and_size!(with_middleware_deflate, build_compressed_echo_chain(false), Some(AcceptEncoding(vec![qitem(Encoding::Deflate)])), $size);
+                bench_chain_with_header_and_size!(with_middleware_brotli, build_compressed_echo_chain(false), Some(AcceptEncoding(vec![qitem(Encoding::EncodingExt(String::from("br")))])), $size);
             }
         };
     }

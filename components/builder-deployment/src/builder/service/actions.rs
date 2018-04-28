@@ -9,10 +9,10 @@ use std::collections::BTreeMap;
 
 use error::Result;
 
-use rio_net::http::schema::type_meta_url;
 
 use assembler::ServicesConfig;
 
+use protocol::api::schema::type_meta_url;
 use protocol::api::base::{MetaFields, WhoAmITypeMeta, Status};
 use protocol::api::linker::Services;
 use protocol::api::deploy::AssemblyFactory;

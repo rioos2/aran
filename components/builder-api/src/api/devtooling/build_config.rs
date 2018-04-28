@@ -13,14 +13,14 @@ use common::ui;
 use config::Config;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 
 use protocol::api::devtool::BuildConfig;
@@ -193,7 +193,7 @@ impl Api for BuildConfigApi {
             "/buildconfigs",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.post".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.post".to_string(),&*config)),
             "build_config",
         );
 
@@ -201,21 +201,21 @@ impl Api for BuildConfigApi {
             "/buildconfigs",
             XHandler::new(C { inner: list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.get".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.get".to_string(),&*config)),
             "build_config_list",
         );
         router.get(
             "/buildconfigs/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.get".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.get".to_string(),&*config)),
             "build_config_show",
         );
         router.get(
             "/buildconfigs/assemblyfactorys/:id",
             XHandler::new(C { inner: show_by_assembly_factory })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.get".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.get".to_string(),&*config)),
             "build_config_list_by_assembly_factorys",
         );
 
@@ -223,7 +223,7 @@ impl Api for BuildConfigApi {
             "/buildconfigs/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.put".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.put".to_string(),&*config)),
             "build_config_update",
         );
 
@@ -231,7 +231,7 @@ impl Api for BuildConfigApi {
             "/buildconfigs/:id/status",
             XHandler::new(C { inner: update_status })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.buildconfig.put".to_string())),
+            .before(TrustAccessed::new("rioos.buildconfig.put".to_string(),&*config)),
             "build_config_status_update",
         );
     }

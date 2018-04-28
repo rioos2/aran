@@ -9,15 +9,15 @@ use iron::status;
 use router::Router;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 use deploy::models::volume;
 use protocol::api::volume::Volumes;
@@ -55,11 +55,7 @@ impl VolumeApi {
     pub fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Volumes>>()?)?;
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
         match volume::DataStore::create(&self.conn, &unmarshall_body) {
@@ -87,11 +83,7 @@ impl VolumeApi {
 
         match volume::DataStore::show(&self.conn, &params) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -107,11 +99,7 @@ impl VolumeApi {
         match volume::DataStore::status_update(&self.conn, &unmarshall_body) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 
@@ -127,11 +115,7 @@ impl VolumeApi {
         match volume::DataStore::update(&self.conn, &unmarshall_body) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 }
@@ -160,21 +144,21 @@ impl Api for VolumeApi {
             "/volumes",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.post".to_string())),
+            .before(TrustAccessed::new("rioos.volume.post".to_string(),&*config)),
             "volumes",
         );
         router.get(
             "/volumes/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.get".to_string())),
+            .before(TrustAccessed::new("rioos.volume.get".to_string(),&*config)),
             "volumes_show",
         );
         router.put(
             "/volumes/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.put".to_string())),
+            .before(TrustAccessed::new("rioos.volume.put".to_string(),&*config)),
             "volumes_update",
         );
         router.put(
@@ -183,7 +167,7 @@ impl Api for VolumeApi {
                 inner: status_update,
             })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.put".to_string())),
+            .before(TrustAccessed::new("rioos.volume.put".to_string(),&*config)),
             "volumes_status_update",
         );
         router.get(
@@ -191,7 +175,7 @@ impl Api for VolumeApi {
             XHandler::new(C {
                 inner: show_by_assembly,
             }).before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.get".to_string())),
+            .before(TrustAccessed::new("rioos.volume.get".to_string(),&*config)),
             "volumes_show_by_assembly",
         );
     }

@@ -4,12 +4,21 @@ use std::error::Error;
 use std::fmt;
 
 #[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
 use time::{self, Timespec};
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
 #[cfg(feature = "cache")]
 use std::time::Duration;
 
 use iron::prelude::*;
 use iron::{Url, status};
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
 #[cfg(feature = "cache")]
 use iron::modifier::Modifier;
 use iron::modifiers::Redirect;
@@ -44,10 +53,7 @@ impl Static {
     /// If `Path::new("")` is given, files will be served from the current directory.
     #[cfg(feature = "cache")]
     pub fn new<P: Into<PathBuf>>(root: P) -> Static {
-        Static {
-            root: root.into(),
-            cache: None,
-        }
+        Static { root: root.into(), cache: None }
     }
 
     /// Create a new instance of `Static` with a given root path.
@@ -121,11 +127,7 @@ impl Static {
             original_url.path_segments_mut().unwrap().push("");
             let redirect_path = Url::from_generic_url(original_url).unwrap();
 
-            return Ok(Response::with((
-                status::MovedPermanently,
-                format!("Redirecting to {}", redirect_path),
-                Redirect(redirect_path),
-            )));
+            return Ok(Response::with((status::MovedPermanently, format!("Redirecting to {}", redirect_path), Redirect(redirect_path))));
         }
 
         match requested_path.get_file(&metadata) {
@@ -198,9 +200,7 @@ impl Cache {
         let cache = vec![CacheDirective::Public, CacheDirective::MaxAge(seconds)];
         let metadata = fs::metadata(path.as_ref());
 
-        let metadata = try!(metadata.map_err(
-            |e| IronError::new(e, status::InternalServerError),
-        ));
+        let metadata = try!(metadata.map_err(|e| IronError::new(e, status::InternalServerError),));
 
         let mut response = if req.method == Method::Head {
             let has_ct = req.headers.get::<ContentType>();
@@ -208,25 +208,14 @@ impl Cache {
                 None => ContentType(Mime(TopLevel::Text, SubLevel::Plain, vec![])),
                 Some(t) => t.clone(),
             };
-            Response::with((
-                status::Ok,
-                Header(cont_type),
-                Header(ContentLength(metadata.len())),
-            ))
+            Response::with((status::Ok, Header(cont_type), Header(ContentLength(metadata.len()))))
         } else {
             Response::with((status::Ok, path.as_ref()))
         };
 
         response.headers.set(CacheControl(cache));
-        response.headers.set(
-            LastModified(HttpDate(time::at(modified))),
-        );
-        response.headers.set(ETag(EntityTag::weak(format!(
-            "{0:x}-{1:x}.{2:x}",
-            size,
-            modified.sec,
-            modified.nsec
-        ))));
+        response.headers.set(LastModified(HttpDate(time::at(modified))));
+        response.headers.set(ETag(EntityTag::weak(format!("{0:x}-{1:x}.{2:x}", size, modified.sec, modified.nsec))));
 
         Ok(response)
     }

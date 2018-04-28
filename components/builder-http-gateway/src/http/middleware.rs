@@ -1,6 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
+use std::collections::HashMap;
+
 use iron::Handler;
 use iron::headers;
 use iron::method::Method;
@@ -12,22 +14,19 @@ use router::NoRoute;
 use persistent;
 
 use unicase::UniCase;
-use protocol::api::session::*;
 use ansi_term::Colour;
 use super::rendering::*;
 use super::super::util::errors::*;
-use super::header_exacter::HeaderDecider;
-
-use config;
+use super::header_extracter::HeaderDecider;
 
 use db::data_store::DataStoreConn;
-use session::models::session as sessions;
 use common::ui;
+
 use auth::rioos::AuthenticateDelegate;
 use auth::rbac::authorizer;
+use auth::config::AuthenticationFlowCfg;
 
-use util::errors::{internal_error, not_acceptable_error, bad_err, forbidden_error};
-
+use util::errors::{bad_err, forbidden_error, internal_error};
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
@@ -55,20 +54,18 @@ where
     fn handle(&self, req: &mut Request) -> Result<Response, IronError> {
         match (&self.inner)(req) {
             Ok(resp) => Ok(resp),
-            Err(e) => {
-                match e.response() {
-                    Some(response) => {
-                        println!("\n----------------\nOutput response: \n{}\n", response);
-                        Ok(response)
-                    }
-                    None => {
-                        let err = internal_error(&format!(
-                            "BUG! Report to development http://bit.ly/rioosbug"
-                        ));
-                        Err(render_json_error(&bad_err(&err), err.http_code()))
-                    }
+            Err(e) => match e.response() {
+                Some(response) => {
+                    println!("\n----------------\nOutput response: \n{}\n", response);
+                    Ok(response)
                 }
-            }
+                None => {
+                    let err = internal_error(&format!(
+                        "BUG! Report to development http://bit.ly/rioosbug"
+                    ));
+                    Err(render_json_error(&bad_err(&err), err.http_code()))
+                }
+            },
         }
     }
 }
@@ -136,68 +133,46 @@ impl Key for DataStoreBroker {
     type Value = DataStoreConn;
 }
 
-#[derive(Clone)]
-pub struct SecurerConn {
-    pub backend: config::SecureBackend,
-    pub endpoint: String,
-    pub token: String,
-}
+/// Setup authenticate flows and validate them.
+pub trait AuthFlow {
+    const AUTH_FLOW_NAME: &'static str;
+    //flow: F; type of flow
 
-#[allow(unused_variables)]
-impl SecurerConn {
-    pub fn new<T: config::SecurerAuth>(config: &T) -> Self {
-        SecurerConn {
-            backend: config.backend(),
-            endpoint: config.endpoint().to_string(),
-            token: config.token().to_string(),
-        }
+    //Get the value as set in the Flow.
+    fn get(&self) -> Option<String>;
+
+    //Say if the flow is valid or not.
+    /// The readiness check will be done for
+    /// 1. system auth =  which is the presence of service account key.
+    /// We should have a Readier trait that is registered for the Autheticated
+    /// Every readier will inform they are ready() or not ()
+    fn valid(&self) -> Option<String> {
+        //self.get().and_then(self.reason())
+        None
     }
-}
 
-#[derive(Clone, Debug)]
-pub struct BlockchainConn {
-    pub backend: config::AuditBackend,
-    pub url: String,
-}
-
-#[allow(unused_variables)]
-impl BlockchainConn {
-    pub fn new<T: config::Blockchain>(config: &T) -> Self {
-        BlockchainConn {
-            backend: config.backend(),
-            url: config.endpoint().to_string(),
-        }
+    //Tell the reason the auth flow is invalid
+    fn reason(&self) -> Option<String> {
+        Some("You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`.".to_string())
     }
 }
 
 #[derive(Clone)]
 pub struct Authenticated {
-    pub serviceaccount_public_key: Option<String>,
+    pub plugins: Vec<String>,
+    pub conf: HashMap<String, String>,
 }
 
 impl Authenticated {
-    pub fn new<T: config::SystemAuth>(config: &T) -> Self {
-        Authenticated { serviceaccount_public_key: config.serviceaccount_public_key() }
-    }
+    pub fn new<T: AuthenticationFlowCfg>(config: &T) -> Self {
+        let plugins_and_its_configuration_tuple = config.modes();
 
-    /// The readiness check will be done for
-    /// 1. system auth =  which is the presence of service account key.
-    /// We should have a Readier trait that is registered for the Autheticated
-    /// Every readier will inform they are ready() or not ()
-    fn ready(&self) -> Result<String, IronError> {
-        self.serviceaccount_public_key.clone().ok_or(
-            self.not_ready(),
-        )
-    }
-
-    fn not_ready(&self) -> IronError {
-        let err = not_acceptable_error(&format!(
-            "You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`."
-        ));
-        return render_json_error(&bad_err(&err), err.http_code());
+        Authenticated {
+            plugins: plugins_and_its_configuration_tuple.0,
+            conf: plugins_and_its_configuration_tuple.1,
+        }
     }
 }
-
 
 /// When an api request needs to be authenticated we will check for the following
 /// email + bearer token (or) email + apikey
@@ -209,16 +184,11 @@ impl BeforeMiddleware for Authenticated {
             '☛',
             format!(
                 "======= {}:{}:{}:{}",
-                req.version,
-                req.method,
-                req.url,
-                req.headers
+                req.version, req.method, req.url, req.headers
             ),
         );
 
-        self.ready().and_then(|public_key| {
-            ProceedAuthenticating::proceed(req, public_key.clone())
-        })
+        ProceedAuthenticating::proceed(req, self.plugins.clone(), self.conf.clone())
     }
 }
 
@@ -234,7 +204,7 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(req: &mut Request, public_key: String) -> IronResult<()> {
+    pub fn proceed(req: &mut Request, plugins: Vec<String>, conf: HashMap<String, String>) -> IronResult<()> {
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -242,8 +212,8 @@ impl ProceedAuthenticating {
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         };
-
-        let header = HeaderDecider::new(req.headers.clone(), Some(public_key))?;
+        
+        let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;
 
         let delegate = AuthenticateDelegate::new(broker.clone());
 
@@ -257,15 +227,21 @@ impl ProceedAuthenticating {
     }
 }
 
-
 #[derive(Clone)]
 pub struct TrustAccessed {
     pub trusted: String,
+    pub plugins: Vec<String>,
+    pub conf: HashMap<String, String>,
 }
 
 impl TrustAccessed {
-    pub fn new(trusted: String) -> Self {
-        TrustAccessed { trusted: trusted }
+    pub fn new<T: AuthenticationFlowCfg>(trusted: String, config: &T) -> Self {
+        let plugins_and_its_configuration_tuple = config.modes();
+        TrustAccessed {
+            trusted: trusted,
+            plugins: plugins_and_its_configuration_tuple.0,
+            conf: plugins_and_its_configuration_tuple.1,
+        }
     }
 
     fn get(&self) -> String {
@@ -283,10 +259,8 @@ impl BeforeMiddleware for TrustAccessed {
             }
         };
 
-        let header = HeaderDecider::new(req.headers.clone(), None)?;
-
+        let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
         let roles: authorizer::RoleType = header.decide()?.into();
-
         // return Ok if the request has no header with email and serviceaccount name
         if roles.name.get_id().is_empty() {
             return Ok(());
@@ -307,9 +281,10 @@ pub struct Custom404;
 impl AfterMiddleware for Custom404 {
     fn catch(&self, req: &mut Request, err: IronError) -> IronResult<Response> {
         if err.error.is::<NoRoute>() {
-            Ok(Response::with(
-                (NotFound, format!("404: {:?}", req.url.path())),
-            ))
+            Ok(Response::with((
+                NotFound,
+                format!("404: {:?}", req.url.path()),
+            )))
         } else {
             Err(err)
         }
@@ -325,9 +300,10 @@ impl AfterMiddleware for Cors {
             UniCase("authorization".to_string()),
             UniCase("range".to_string()),
         ]));
-        res.headers.set(headers::AccessControlAllowMethods(
-            vec![Method::Put, Method::Delete],
-        ));
+        res.headers.set(headers::AccessControlAllowMethods(vec![
+            Method::Put,
+            Method::Delete,
+        ]));
 
         ui::rawdumpln(
             Colour::Green,
@@ -343,16 +319,5 @@ impl AfterMiddleware for Cors {
         );
 
         Ok(res)
-    }
-}
-
-pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> AranResult<Session> {
-    //wrong name, use another fascade method session_create
-    match sessions::DataStore::find_account(&conn, &request) {
-        Ok(session) => return Ok(session),
-        Err(e) => Err(not_found_error(&format!(
-            "{}: Couldn not create session for the account.",
-            e.to_string()
-        ))),
     }
 }

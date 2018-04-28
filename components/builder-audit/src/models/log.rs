@@ -12,7 +12,7 @@ pub struct DataStore;
 
 impl DataStore {
     pub fn list_blank(client: &InfluxClientConn, query: &LogQueryBuilder) -> LogOutputList {
-        let conn = Client::new(&client.url, &client.db());
+        let conn = Client::new(&client.endpoint, &client.db());
         let res = conn.query(
             &("select * from ".to_owned() + &client.table() + " limit " +
                   &query.get_limits("limits")),
@@ -23,7 +23,7 @@ impl DataStore {
     }
 
     pub fn list(client: &InfluxClientConn, query: &LogQueryBuilder) -> LogOutputList {
-        let conn = Client::new(&client.url, &client.db());
+        let conn = Client::new(&client.endpoint, &client.db());
         let res = conn.query(
             &("select * from ".to_owned() + &client.table() + " where (" + &client.path() + " =~ /.*" + &query.get("name") +
                   "*/)"),

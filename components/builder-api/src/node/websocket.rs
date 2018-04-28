@@ -3,26 +3,27 @@
 
 //! Streamer that does the watch for the api
 //!
-use std;
+use std::iter;
 use std::io;
 use std::sync::{mpsc, Arc, Mutex};
+use std::rc::Rc;
 
 use watch::handler::LISTENERS;
 use watch::handler::WatchHandler;
 use telemetry::metrics::prometheus::PrometheusClient;
+
 use db::data_store::DataStoreConn;
-use rio_net::http::middleware::SecurerConn;
+use api::security::config::SecurerConn;
+
 use config::Config;
-use watch::socket_service::{Router, NotFound};
+use watch::socket_service::{NotFound, Router};
 use ws;
+
+use openssl::ssl::{SslAcceptorBuilder, SslMethod};
+use openssl::x509::X509Ref;
 use openssl::pkcs12::Pkcs12;
 
-use std::rc::Rc;
-use openssl::ssl::{SslAcceptorBuilder, SslMethod};
-
-use openssl::x509::X509Ref;
-
-pub type TLSPair = Option<(String, Vec<u8>, String)>;
+use http_gateway::config::prelude::TLSPair;
 
 #[derive(Debug)]
 pub struct Websocket {
@@ -46,7 +47,6 @@ impl Websocket {
 
         match ods {
             Some(ds) => {
-
                 let mut watchhandler = WatchHandler::new(
                     Box::new(ds.clone()),
                     Box::new(PrometheusClient::new(&*self.config.clone())),
@@ -77,14 +77,14 @@ impl Websocket {
                         SslMethod::tls(),
                         &parsed.pkey,
                         &parsed.cert,
-                        std::iter::empty::<X509Ref>(),
+                        iter::empty::<X509Ref>(),
                     ).unwrap()
                         .build(),
                 );
 
                 let address = format!(
                     "{}:{}",
-                    self.config.http.listen.to_string(),
+                    self.config.http2.listener.to_string(),
                     self.port.to_string()
                 );
                 // Listen on an address and call the closure for each connection

@@ -6,8 +6,6 @@ extern crate base64;
 extern crate hyper;
 #[macro_use]
 extern crate log;
-#[macro_use]
-extern crate lazy_static;
 extern crate reqwest;
 extern crate rioos_core as rio_core;
 extern crate serde;

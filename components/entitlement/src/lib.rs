@@ -12,7 +12,6 @@ extern crate rioos_core as rio_core;
 extern crate handlebars;
 #[macro_use]
 extern crate serde_json;
-extern crate failure;
 extern crate rand;
 
 pub use self::error::{Error, Result};

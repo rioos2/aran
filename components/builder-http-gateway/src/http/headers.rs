@@ -40,7 +40,6 @@ impl FromStr for XAuthRioOSEmail {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct XAuthRioOSServiceAccountName(pub String);
 
@@ -72,7 +71,6 @@ impl FromStr for XAuthRioOSServiceAccountName {
         Ok(XAuthRioOSServiceAccountName(value.to_string()))
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct XAuthRioOSUserAccountEmail(pub String);

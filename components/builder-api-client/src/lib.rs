@@ -4,9 +4,9 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
+extern crate rioos_builder_httpgateway as http_gateway;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_http_client as rioos_http;
-extern crate rioos_net as rio_net;
 
 #[macro_use]
 extern crate hyper;
@@ -26,8 +26,10 @@ use reqwest::{StatusCode, Body};
 use reqwest::header::{ContentType, Accept, Authorization, Bearer, Headers};
 
 use rioos_http::ApiClient;
-use rio_net::http::rendering::ResponseList;
 use rioos_http::api_client::err_from_response;
+
+use http_gateway::http::rendering::ResponseList;
+
 
 use protocol::api::{session, deploy, blueprint, job, network, node, storage, origin, scale, secret};
 use protocol::api::base::MetaFields;

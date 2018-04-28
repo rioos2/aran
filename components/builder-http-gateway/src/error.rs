@@ -52,27 +52,3 @@ impl error::Error for Error {
         }
     }
 }
-
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error::IO(err)
-    }
-}
-
-impl From<AuthErr> for Error {
-    fn from(err: AuthErr) -> Self {
-        Error::Auth(err)
-    }
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(err: serde_json::Error) -> Error {
-        Error::Json(err)
-    }
-}
-
-impl From<url::ParseError> for Error {
-    fn from(err: url::ParseError) -> Error {
-        Error::UrlParseError(err)
-    }
-}

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
-use std::fs::File;
+use std::io::{Error as IOError, ErrorKind};
 
-use error::Result;
+use error::{Error, Result};
 use serde_json;
 use serde_yaml;
 use chrono::prelude::*;
@@ -10,12 +10,13 @@ use data_store::DataStoreConn;
 
 use protocol::api::blueprint;
 use protocol::api::base::MetaFields;
+
 const SYNC_ELAPSED_SECONDS: i64 = 180;
 
-use rcore::crypto::default_rioconfig_key_path;
+use rcore::{crypto::default_rioconfig_key_path, fs::open_from};
 
 lazy_static! {
-    static  ref MARKETPLACE_CACHE_FILE: PathBuf =  PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
+    static ref MARKETPLACE_CACHE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
 }
 
 #[derive(Debug, Deserialize)]
@@ -41,9 +42,29 @@ impl MarketPlaceDiffer {
     fn diff_and_create(&self) -> Result<()> {
         let conn = self.conn.pool.get_shard(0)?;
 
-        let file = File::open(&MARKETPLACE_CACHE_FILE.as_path())?;
+        info!("Locating {:?}", MARKETPLACE_CACHE_FILE.to_str());
+
+        let file = open_from(&MARKETPLACE_CACHE_FILE.as_path())?;
+        if file.metadata()?.len() <= 0 {
+            return Err(Error::IO(IOError::new(
+                ErrorKind::Other,
+                format!(
+                    "oh no! {:?} is empty.\nRun `rioos-apiserver sync` to pull a fresh copy from Rio.Marketplace.",
+                    MARKETPLACE_CACHE_FILE.to_str()
+                ),
+            )));
+        }
+
         let u: MarketPlaceDownload = serde_yaml::from_reader(file)?;
+
+        info!("Loaded {:?}", MARKETPLACE_CACHE_FILE.to_str());
+
         elapsed_or_return(u.time_stamp);
+        info!(
+            "Loooks like we elapsed, updating again with yaml {:?}",
+            MARKETPLACE_CACHE_FILE.to_str()
+        );
+
         u.items
             .iter()
             .map(|x| {

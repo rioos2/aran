@@ -8,13 +8,13 @@ use router::Router;
 
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::type_meta;
+use protocol::api::schema::type_meta;
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 use protocol::api::settings_map::SettingsMap;
 use protocol::api::base::{IdGet, MetaFields};
@@ -52,17 +52,9 @@ impl SettingsMapApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate::<SettingsMap>(req.get::<bodyparser::Struct<SettingsMap>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
 
@@ -83,22 +75,14 @@ impl SettingsMapApi {
             (org_name, set_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?}{} ", org, name),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?}{} ", org, name));
         let mut params = IdGet::with_id(name.clone().to_string());
         params.set_name(org.clone().to_string());
 
         match SettingsMapDS::show(&self.conn, &params) {
             Ok(Some(settings)) => Ok(render_json(status::Ok, &settings)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                name
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), name))),
         }
     }
 
@@ -131,16 +115,8 @@ impl Api for SettingsMapApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         //settingsmap API
-        router.post(
-            "/settingsmap",
-            XHandler::new(C { inner: create }),
-            "settingsmap",
-        );
-        router.get(
-            "/origins/:origin/settingsmap/:name",
-            XHandler::new(C { inner: show }),
-            "settingsmap_show",
-        );
+        router.post("/settingsmap", XHandler::new(C { inner: create }), "settingsmap");
+        router.get("/origins/:origin/settingsmap/:name", XHandler::new(C { inner: show }), "settingsmap_show");
     }
 }
 

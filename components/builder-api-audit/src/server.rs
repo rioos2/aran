@@ -13,7 +13,6 @@ use rio_core::fs::rioconfig_blockchain_path;
 
 use api::audit::Habitat;
 
-use rio_net::server::NetIdent;
 use config::Config;
 use error::Result;
 
@@ -76,8 +75,6 @@ impl Server {
         Ok(())
     }
 }
-
-impl NetIdent for Server {}
 
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.

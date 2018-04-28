@@ -11,7 +11,6 @@ use std::result;
 use api_client;
 use common;
 use rioos_core;
-use handlebars;
 use toml;
 use serde_yaml;
 use serde_json;
@@ -28,7 +27,6 @@ pub enum Error {
     FileNotFound(String),
     HabitatCommon(common::Error),
     HabitatCore(rioos_core::Error),
-    HandlebarsRenderError(handlebars::TemplateRenderError),
     IO(io::Error),
     PathPrefixError(path::StripPrefixError),
     RootRequired,
@@ -56,7 +54,6 @@ impl fmt::Display for Error {
             Error::FileNotFound(ref e) => format!("File not found at: {}", e),
             Error::HabitatCommon(ref e) => format!("{}", e),
             Error::HabitatCore(ref e) => format!("{}", e),
-            Error::HandlebarsRenderError(ref e) => format!("{}", e),
             Error::IO(ref err) => format!("{}", err),
             Error::PathPrefixError(ref err) => format!("{}", err),
             Error::RootRequired => "Root or administrator permissions required to complete operation".to_string(),
@@ -82,7 +79,6 @@ impl error::Error for Error {
             Error::FileNotFound(_) => "File not found",
             Error::HabitatCommon(ref err) => err.description(),
             Error::HabitatCore(ref err) => err.description(),
-            Error::HandlebarsRenderError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::PathPrefixError(ref err) => err.description(),
             Error::RootRequired => "Root or administrator permissions required to complete operation",
@@ -115,11 +111,6 @@ impl From<rioos_core::Error> for Error {
     }
 }
 
-impl From<handlebars::TemplateRenderError> for Error {
-    fn from(err: handlebars::TemplateRenderError) -> Error {
-        Error::HandlebarsRenderError(err)
-    }
-}
 
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {

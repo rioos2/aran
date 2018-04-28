@@ -9,7 +9,7 @@ use reqwest::header::{ContentType, Accept, Authorization, Bearer};
 use reqwest::StatusCode;
 
 use rioos_http::ApiClient as ReqwestClient;
-use rio_net::http::rendering::ResponseList;
+use http_gateway::http::rendering::ResponseList;
 use rioos_http::api_client::err_from_response;
 
 use rio_core::fs::{write_to_file, rioconfig_config_path, append};

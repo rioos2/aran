@@ -12,18 +12,17 @@ use router::Router;
 
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier, QueryValidator, ExpanderSender};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use telemetry::metrics::prometheus::PrometheusClient;
 use deploy::assembler::{ServicesConfig, Assembler};
 use deploy::models::{assemblyfactory, blueprint, service};
 use protocol::cache::{CACHE_PREFIX_PLAN, NewCacheServiceFn, CACHE_PREFIX_SERVICE};
-
 
 use scale::{horizontalscaling_ds, scaling};
 use protocol::api::scale::{HorizontalScaling, StatusUpdate};
@@ -51,10 +50,7 @@ pub struct HorizontalScalingApi {
 /// PUT: /assemblyfactory/status_update
 impl HorizontalScalingApi {
     pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
-        HorizontalScalingApi {
-            conn: datastore,
-            prom: prom,
-        }
+        HorizontalScalingApi { conn: datastore, prom: prom }
     }
 
     //POST: /horizontalscaling
@@ -64,22 +60,12 @@ impl HorizontalScalingApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<HorizontalScaling>>()?,
-        )?;
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<HorizontalScaling>>()?)?;
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match horizontalscaling_ds::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
@@ -95,35 +81,18 @@ impl HorizontalScalingApi {
         let params = self.verify_id(req)?;
         match horizontalscaling_ds::DataStore::new(&self.conn).show(&params) {
             Ok(Some(hs)) => {
-                let af_id: Vec<IdGet> = hs.get_owner_references()
-                    .iter()
-                    .map(|x| IdGet::with_id(x.uid.to_string()))
-                    .collect::<Vec<_>>();
+                let af_id: Vec<IdGet> = hs.get_owner_references().iter().map(|x| IdGet::with_id(x.uid.to_string())).collect::<Vec<_>>();
                 match assemblyfactory::DataStore::new(&self.conn).show(&af_id[0]) {
-                    Ok(Some(factory)) => {
-                        match Assembler::new(&self.conn, _cfg).reassemble(
-                            hs.get_status().get_desired_replicas(),
-                            hs.get_status().get_current_replicas(),
-                            &factory,
-                        ) {
-                            Ok(factory) => Ok(render_json(status::Ok, &factory)),
-                            Err(err) => Err(internal_error(&format!("{}\n", err))),
-                        }
-                    }
+                    Ok(Some(factory)) => match Assembler::new(&self.conn, _cfg).reassemble(hs.get_status().get_desired_replicas(), hs.get_status().get_current_replicas(), &factory) {
+                        Ok(factory) => Ok(render_json(status::Ok, &factory)),
+                        Err(err) => Err(internal_error(&format!("{}\n", err))),
+                    },
                     Err(err) => Err(internal_error(&format!("{}\n", err))),
-                    Ok(None) => Err(not_found_error(&format!(
-                        "{} for {}",
-                        Error::Db(RecordsNotFound),
-                        params.get_id()
-                    ))),
+                    Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
                 }
             }
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 
@@ -172,11 +141,7 @@ impl HorizontalScalingApi {
         match scaling::metrics::Client::new(&self.prom).metrics(&params.get_id(), query_pairs) {
             Ok(Some(hs_metrics)) => Ok(render_json_list(status::Ok, dispatch(req), &hs_metrics)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 
@@ -185,19 +150,13 @@ impl HorizontalScalingApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<StatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match horizontalscaling_ds::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(hs_update)) => Ok(render_json(status::Ok, &hs_update)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 
@@ -206,19 +165,13 @@ impl HorizontalScalingApi {
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<HorizontalScaling>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<HorizontalScaling>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match horizontalscaling_ds::DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(hs)) => Ok(render_json(status::Ok, &hs)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 
@@ -269,7 +222,7 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.post".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.post".to_string(),&*config)),
             "horizontal_scalings",
         );
 
@@ -277,21 +230,21 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling/:id/status",
             XHandler::new(C { inner: status_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string(),&*config)),
             "horizontal_scaling_status_update",
         );
         router.put(
             "/horizontalscaling/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.put".to_string(),&*config)),
             "horizontal_scaling_update",
         );
         router.get(
             "/horizontalscaling/:id/metrics",
             XHandler::new(C { inner: metrics })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string(),&*config)),
             "horizontal_scaling_metrics",
         );
 
@@ -299,7 +252,7 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling/:id/scale",
             XHandler::new(C { inner: scale })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string(),&*config)),
             "horizontal_scaling",
         );
 
@@ -313,7 +266,7 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.horizontalscaling.get".to_string(),&*config)),
             "horizontal_scaling_list_blank",
         );
     }
@@ -323,24 +276,13 @@ impl ExpanderSender for HorizontalScalingApi {
     fn with_cache(&mut self) {
         let _conn = self.conn.clone();
 
-        let plan_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_PLAN.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
-                    serde_json::to_string(&p).ok()
-                })
-            }),
-        ));
+        let plan_service = Box::new(NewCacheServiceFn::new(CACHE_PREFIX_PLAN.to_string(), Box::new(move |id: IdGet| -> Option<String> { blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| serde_json::to_string(&p).ok()) })));
 
         let _conn = self.conn.clone();
 
         let services = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_SERVICE.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                service::DataStore::list_by_assembly_factory(&_conn, &id)
-                    .ok()
-                    .and_then(|v| serde_json::to_string(&v).ok())
-            }),
+            Box::new(move |id: IdGet| -> Option<String> { service::DataStore::list_by_assembly_factory(&_conn, &id).ok().and_then(|v| serde_json::to_string(&v).ok()) }),
         ));
 
         &self.conn.expander.with(plan_service);
@@ -374,8 +316,10 @@ impl Validator for HorizontalScaling {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }

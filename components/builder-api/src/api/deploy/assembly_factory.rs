@@ -10,23 +10,24 @@ use iron::status;
 use router::Router;
 
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier, ExpanderSender};
-use rio_net::http::schema::{dispatch, type_meta, dispatch_url};
+use api::{Api, ApiValidator, ExpanderSender, ParmsVerifier, Validator};
+use protocol::api::schema::{dispatch, dispatch_url, type_meta};
 
-use config::{Config, ServicesCfg};
+use config::Config;
+use api::deploy::config::ServicesCfg;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
-use deploy::assembler::{ServicesConfig, Assembler};
+use deploy::assembler::{Assembler, ServicesConfig};
 use deploy::models::{assemblyfactory, blueprint, service};
 
-use protocol::cache::{CACHE_PREFIX_PLAN, NewCacheServiceFn, CACHE_PREFIX_SERVICE};
+use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
 use protocol::api::deploy::AssemblyFactory;
-use protocol::api::base::{StatusUpdate, MetaFields, Status};
+use protocol::api::base::{MetaFields, Status, StatusUpdate};
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -56,9 +57,7 @@ impl AssemblyFactoryApi {
     //Input: Body of structure deploy::AssemblyFactory
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn create(&self, req: &mut Request, _cfg: &ServicesConfig) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<AssemblyFactory>(
-            req.get::<bodyparser::Struct<AssemblyFactory>>()?,
-        )?;
+        let mut unmarshall_body = self.validate::<AssemblyFactory>(req.get::<bodyparser::Struct<AssemblyFactory>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -98,17 +97,13 @@ impl AssemblyFactoryApi {
         }
     }
 
-
-
     ///PUT: /assemblyfactory/status
     ///Input: Status with conditions
     ///Returns AssemblyFactory with updated status
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<StatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match assemblyfactory::DataStore::new(&self.conn).status_update(&unmarshall_body) {
@@ -228,7 +223,7 @@ impl Api for AssemblyFactoryApi {
             "/accounts/:account_id/assemblyfactorys",
             XHandler::new(C { inner: create })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.assemblyfactory.post".to_string())),
+                .before(TrustAccessed::new("rioos.assemblyfactory.post".to_string(),&*config)),
             "assembly_factorys",
         );
 
@@ -236,34 +231,37 @@ impl Api for AssemblyFactoryApi {
             "/accounts/:account_id/assemblyfactorys",
             XHandler::new(C { inner: list })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string())),
+                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string(),&*config)),
             "assemblyfactorys_list",
         );
         router.get(
             "/assemblyfactorys/:id",
             XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string(),&*config)),
             "assembly_factorys_show",
         );
         router.get(
             "/assemblyfactorys",
             XHandler::new(C { inner: list_blank })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string())),
+                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string(),&*config)),
             "assemblys_factorys_list_blank",
         );
         router.put(
             "/assemblyfactorys/:id/status",
-            XHandler::new(C { inner: status_update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.assemblyfactory.put".to_string())),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone())
+                .before(TrustAccessed::new("rioos.assemblyfactory.put".to_string(),&*config)),
             "assembly_factory_status_update",
         );
-
     }
 }
 
+///Setup the cache sender for this api.
+///Essentially hookup all the computation intensive strategry
+///that will reload the cache using closures.
 ///Setup the cache sender for this api.
 ///Essentially hookup all the computation intensive strategry
 ///that will reload the cache using closures.
@@ -277,9 +275,9 @@ impl ExpanderSender for AssemblyFactoryApi {
         let plan_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PLAN.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
-                    serde_json::to_string(&p).ok()
-                })
+                blueprint::DataStore::show(&_conn, &id)
+                    .ok()
+                    .and_then(|p| serde_json::to_string(&p).ok())
             }),
         ));
 

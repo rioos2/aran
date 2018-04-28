@@ -13,14 +13,14 @@ use common::ui;
 use config::Config;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 
 use protocol::api::devtool::ImageReferences;
@@ -170,7 +170,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.post".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.post".to_string(),&*config)),
             "image_ref",
         );
 
@@ -178,7 +178,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
             "image_ref_show",
         );
 
@@ -186,7 +186,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences",
             XHandler::new(C { inner: list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
             "image_references_list",
         );
 
@@ -194,7 +194,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.put".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.put".to_string(),&*config)),
             "image_references_update",
         );
 
@@ -202,7 +202,7 @@ impl Api for ImageReferencesApi {
             "/imagereferences/buildconfigs/:id",
             XHandler::new(C { inner: show_by_build_config })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
             "image_references_show_by_build_config",
         );
     }

@@ -11,14 +11,14 @@ use iron::status;
 use router::Router;
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier, QueryValidator};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
+use http_gateway::http::controller::*;
 use telemetry::metrics::prometheus::PrometheusClient;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 use deploy::models::assembly;
 use scale::{verticalscaling_ds, scaling};
@@ -47,10 +47,7 @@ pub struct VerticalScalingApi {
 /// Assembly: URLs supported are.
 impl VerticalScalingApi {
     pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
-        VerticalScalingApi {
-            conn: datastore,
-            prom: prom,
-        }
+        VerticalScalingApi { conn: datastore, prom: prom }
     }
 
     //POST: /verticalscaling
@@ -60,22 +57,12 @@ impl VerticalScalingApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<VerticalScaling>>()?,
-        )?;
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<VerticalScaling>>()?)?;
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match verticalscaling_ds::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
@@ -89,19 +76,13 @@ impl VerticalScalingApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<VerticalScalingStatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<VerticalScalingStatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match verticalscaling_ds::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(vs_update)) => Ok(render_json(status::Ok, &vs_update)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 
@@ -110,19 +91,13 @@ impl VerticalScalingApi {
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<VerticalScaling>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<VerticalScaling>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match verticalscaling_ds::DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(vertical)) => Ok(render_json(status::Ok, &vertical)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 
@@ -162,11 +137,7 @@ impl VerticalScalingApi {
         match scaling::metrics::Client::new(&self.prom).metrics(&params.get_id(), query_pairs) {
             Ok(Some(vs_metrics)) => Ok(render_json_list(status::Ok, dispatch(req), &vs_metrics)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 
@@ -177,37 +148,22 @@ impl VerticalScalingApi {
         let params = self.verify_id(req)?;
         match verticalscaling_ds::DataStore::new(&self.conn).show(&params) {
             Ok(Some(vs)) => {
-                let af_id: Vec<IdGet> = vs.get_owner_references()
-                    .iter()
-                    .map(|x| IdGet::with_id(x.uid.to_string()))
-                    .collect::<Vec<_>>();
+                let af_id: Vec<IdGet> = vs.get_owner_references().iter().map(|x| IdGet::with_id(x.uid.to_string())).collect::<Vec<_>>();
                 match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&af_id[0]) {
                     Ok(Some(assemblys)) => {
                         let metrics = NodeDS::healthz_all(&self.prom)?;
                         match ReplicasExpander::new(&self.conn, assemblys, metrics, &vs).expand() {
                             Ok(Some(job)) => Ok(render_json(status::Ok, &job)),
                             Err(err) => Err(internal_error(&format!("{}\n", err))),
-                            Ok(None) => Err(not_found_error(&format!(
-                                "{} for {}",
-                                Error::Db(RecordsNotFound),
-                                params.get_id()
-                            ))),
+                            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
                         }
                     }
                     Err(err) => Err(internal_error(&format!("{}\n", err))),
-                    Ok(None) => Err(not_found_error(&format!(
-                        "{} for {}",
-                        Error::Db(RecordsNotFound),
-                        params.get_id()
-                    ))),
+                    Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
                 }
             }
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 }
@@ -239,7 +195,7 @@ impl Api for VerticalScalingApi {
             "/verticalscaling",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.post".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.post".to_string(),&*config)),
             "verticalscalings",
         );
 
@@ -247,21 +203,21 @@ impl Api for VerticalScalingApi {
             "/verticalscaling/:id/status",
             XHandler::new(C { inner: status_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string(),&*config)),
             "vertical_scaling_status_update",
         );
         router.put(
             "/verticalscaling/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.put".to_string(),&*config)),
             "vertical_scaling_update",
         );
         router.get(
             "/verticalscaling",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string(),&*config)),
             "vertical_scaling_list_blank",
         );
 
@@ -269,14 +225,14 @@ impl Api for VerticalScalingApi {
             "/verticalscaling/scale/:id",
             XHandler::new(C { inner: scale })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string(),&*config)),
             "verticalscaling_scale",
         );
         router.get(
             "/verticalscaling/:id/metrics",
             XHandler::new(C { inner: metrics })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string())),
+            .before(TrustAccessed::new("rioos.verticalscaling.get".to_string(),&*config)),
             "vertical_scaling_metrics",
         );
     }
@@ -290,7 +246,6 @@ impl ParmsVerifier for VerticalScalingApi {}
 
 ///verify the quer params
 impl QueryValidator for VerticalScalingApi {}
-
 
 ///Plugin in a Validator for verticalscaling structure
 ///For now we don't validate anything.
@@ -310,8 +265,10 @@ impl Validator for VerticalScaling {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }

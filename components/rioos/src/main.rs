@@ -7,7 +7,6 @@
 
 extern crate clap;
 extern crate env_logger;
-extern crate handlebars;
 #[macro_use]
 extern crate log;
 extern crate rioos;
@@ -24,7 +23,6 @@ use std::thread;
 
 use clap::ArgMatches;
 use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
-use rcore::crypto::init;
 use rcore::env as henv;
 
 use rioos::{cli, command, config, AUTH_TOKEN_ENVVAR, AUTH_EMAIL_ENVVAR, API_SERVER_ENVVAR};
@@ -33,9 +31,6 @@ use rcore::fs::rioconfig_etc_path;
 use rcore::fs::am_i_root;
 
 use api_client::Client;
-
-pub const PRODUCT: &'static str = "rioos";
-pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 lazy_static! {
     static  ref CLIENT_CLI_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_etc_path(None).join("client-cli.cert.pem").to_str().unwrap());
@@ -181,28 +176,22 @@ fn start(ui: &mut UI) -> Result<()> {
 }
 
 fn sub_cli_login(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    init();
     command::cli::login::start(ui, create_client(&api_server_param_or_env(&m)?)?)
 }
 
 fn sub_cli_logout(ui: &mut UI) -> Result<()> {
-    init();
-
     command::cli::logout::start(ui)
 }
 
 fn sub_cli_new(ui: &mut UI, m: &ArgMatches) -> Result<()> {
-    init();
     command::cli::new::start(ui, create_client(&api_server_param_or_env(&m)?)?)
 }
 
 fn sub_cli_whoami(ui: &mut UI) -> Result<()> {
-    init();
     command::cli::whoami::start(ui)
 }
 
 fn no_command(ui: &mut UI) -> Result<()> {
-    init();
     Ok(ui.end(&format!("Command currently not implemetened"))?)
 }
 
@@ -520,8 +509,8 @@ fn cli_certificate_path() -> PathBuf {
 fn create_client(url: &str) -> Result<Client> {
     Ok(Client::new(
         url,
-        PRODUCT,
-        VERSION,
+        rioos::PRODUCT,
+        rioos::VERSION,
         Some(&cli_certificate_path()),
     )?)
 }
