@@ -7,7 +7,7 @@ use api::audit::config::{BlockchainCfg, MarketplacesCfg};
 use api::deploy::config::ServicesCfg;
 use api::security::config::SecurerCfg;
 
-use auth::config::IdentityCfg;
+use auth::config::{IdentityCfg, PLUGIN_SERVICE_ACCOUNT};
 
 use entitlement::config::LicensesCfg;
 use telemetry::config::TelemetryCfg;
@@ -22,7 +22,7 @@ pub trait ConfigValidator {
 impl ConfigValidator for HttpsCfg {
     fn valid(&self) -> Result<()> {
         if self.tls.is_none() {
-            return Err(Error::MissingConfiguration("[https] → tls".to_string()));
+            return Err(Error::MissingConfiguration("Missing  in api.toml. [https] → tls".to_string()));
         }
 
         Ok(())
@@ -33,7 +33,7 @@ impl ConfigValidator for HttpsCfg {
 impl ConfigValidator for StreamerCfg {
     fn valid(&self) -> Result<()> {
         if self.tls.is_none() {
-            return Err(Error::MissingConfiguration("[http2] → tls".to_string()));
+            return Err(Error::MissingConfiguration("Missing  in api.toml. [http2] → tls".to_string()));
         }
         Ok(())
     }
@@ -44,7 +44,7 @@ impl ConfigValidator for TelemetryCfg {
     fn valid(&self) -> Result<()> {
         if self.endpoint.is_empty() {
             return Err(Error::MissingConfiguration(
-                "[telemetry] → endpoint".to_string(),
+                "Missing  in api.toml. [telemetry] → endpoint".to_string(),
             ));
         }
 
@@ -64,18 +64,45 @@ impl ConfigValidator for SecurerCfg {
 /// If service_account is enabled, then `pub` must exist
 impl ConfigValidator for IdentityCfg {
     fn valid(&self) -> Result<()> {
-        /*if self.identity.modes.is_empty() {
-            return Err(Error::MissingConfiguration(
-                SERVICEACCOUNT_PUBLIC_KEY.to_str().unwrap_or("").to_string(),
-            ));
-        }*/
-        Ok(())
+        debug!("Validating identity");
+
+        let mut s: Vec<&str> = vec![];
+
+        if self.enabled.is_empty() {
+            s.push("enabled");
+        }
+
+    
+        self.enabled
+            .clone()
+            .into_iter()
+            .map(|m| match m.as_str() {
+                PLUGIN_SERVICE_ACCOUNT => {
+                    if !(self.params.contains_key(&m)) {
+                        s.push("params {service_account}");
+                    }
+                }
+                &_ => {}
+            })
+            .collect::<()>();
+
+        if s.is_empty() {
+            return Ok(());
+        }
+
+        debug!("Error in validating identity.");
+
+        Err(Error::MissingConfiguration(format!(
+            "Missing  in api.toml. [identity] → {:?}",
+            s
+        )))
     }
 }
 
 /// Validate the presence of all the loadbalancer fields
 impl ConfigValidator for ServicesCfg {
     fn valid(&self) -> Result<()> {
+        debug!("Validating services");
         let mut s: Vec<&str> = vec![];
 
         if self.loadbalancer_imagein.is_empty() {
@@ -104,8 +131,10 @@ impl ConfigValidator for ServicesCfg {
             return Ok(());
         }
 
+        debug!("Error in validating services.");
+
         Err(Error::MissingConfiguration(format!(
-            "[services] → {:?}",
+            "Missing  in api.toml. [services] → {:?}",
             s
         )))
     }
@@ -116,7 +145,7 @@ impl ConfigValidator for LicensesCfg {
     fn valid(&self) -> Result<()> {
         if self.so_file.is_empty() {
             return Err(Error::MissingConfiguration(
-                "[licenses] → so_file".to_string(),
+                "Missing  in api.toml. [licenses] → so_file".to_string(),
             ));
         }
         Ok(())
@@ -128,7 +157,7 @@ impl ConfigValidator for LogsCfg {
     fn valid(&self) -> Result<()> {
         if self.influx_endpoint.is_empty() {
             return Err(Error::MissingConfiguration(
-                "[logs] → influx_endpoint".to_string(),
+                "Missing  in api.toml.  [logs] → influx_endpoint".to_string(),
             ));
         }
         Ok(())
@@ -140,7 +169,7 @@ impl ConfigValidator for BlockchainCfg {
     fn valid(&self) -> Result<()> {
         if self.endpoint.is_empty() {
             return Err(Error::MissingConfiguration(
-                "[blockchain] → endpoint".to_string(),
+                "Missing  in api.toml. [blockchain] → endpoint".to_string(),
             ));
         }
         Ok(())
@@ -167,7 +196,7 @@ impl ConfigValidator for MarketplacesCfg {
         }
 
         Err(Error::MissingConfiguration(format!(
-            "[marketplaces] → {:?}",
+            "Missing  in api.toml. [marketplaces] → {:?}",
             s
         )))
     }

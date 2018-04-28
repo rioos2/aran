@@ -2,20 +2,24 @@
 //
 
 //! The Watch stream handler
-use watch;
-use watch::messages::Messages;
-use error::Result;
-use postgres::notification::Notification;
-use fallible_iterator::FallibleIterator;
-use db::error::Error as DbError;
-use db::data_store::DataStoreConn;
-use protocol::api::base::IdGet;
-use telemetry::metrics::prometheus::PrometheusClient;
-
 use std::sync::Mutex;
 use std::sync::Arc;
 use std::sync::mpsc;
 use std::thread;
+
+use watch;
+use watch::messages::Messages;
+use error::Result;
+
+use postgres::notification::Notification;
+use fallible_iterator::FallibleIterator;
+
+use db::error::Error as DbError;
+use db::data_store::DataStoreConn;
+
+use protocol::api::base::IdGet;
+use telemetry::metrics::prometheus::PrometheusClient;
+
 use bytes::Bytes;
 use regex::Regex;
 use serde_json;
@@ -66,7 +70,6 @@ impl WatchHandler {
     //when listener get the data from triggers then send it to the handler channel
     //listener notifies any datas(like secrets, jobs,...) send to the channel
     pub fn notifier(&self, sender: Arc<Mutex<mpsc::Sender<Notification>>>, listeners: Vec<&str>) -> Result<()> {
-
         let conn = self.datastore.pool.get_shard(0).unwrap();
 
         for listener in listeners {
@@ -75,9 +78,8 @@ impl WatchHandler {
             owned_string.push_str(&listener);
             owned_string.push_str(&another_owned_string);
 
-            &conn.query(&owned_string, &[]).map_err(
-                DbError::AsyncFunctionCheck,
-            );
+            &conn.query(&owned_string, &[])
+                .map_err(DbError::AsyncFunctionCheck);
         }
 
         thread::spawn(move || {
@@ -86,17 +88,15 @@ impl WatchHandler {
             let send = sender.clone();
             let send_wrap = send.lock().unwrap();
 
-            println!("Waiting for notifications...");
             // could not use 'loop' here because it does not compile in --release mode
             // since Ok() is unreachable.
             #[allow(while_true)]
             while true {
-                // it.next() -> Result<Option<Notification>>
                 match it.next() {
                     Ok(Some(notification)) => {
                         send_wrap.send(notification).unwrap();
                     }
-                    Err(err) => println!("Got err {:?}", err),
+                    Err(err) => println!("Streamer: Watch handler got err {:?}", err),
                     _ => {}
                 }
             }
@@ -145,7 +145,6 @@ impl WatchHandler {
         self.outer.list_data(typ, act_id)
     }
 }
-
 
 pub type Peer = (String, Arc<Mutex<mpsc::Sender<Bytes>>>);
 

@@ -9,13 +9,12 @@ use super::headers::*;
 use util::errors::{bad_err, not_acceptable_error};
 use http::rendering::render_json_error;
 
-use auth::config::PLUGIN_PASSWORD;
-use auth::config::PLUGIN_SERVICE_ACCOUNT;
-use auth::config::PLUGIN_PASSTICKET;
+use auth::config::{PLUGIN_PASSTICKET, PLUGIN_PASSWORD, PLUGIN_SERVICE_ACCOUNT};
 use auth::config::PLUGIN_JWT;
 
 use auth::util::authenticatable::Authenticatable;
 
+//A trait responsible for extracting the identity plugin headers.
 pub trait HeaderExtracter {
     const AUTH_CONF_NAME: &'static str;
 
@@ -31,6 +30,7 @@ pub trait HeaderExtracter {
 
 struct EmailHeader {}
 
+//A trait responsible for extracting the email header
 impl HeaderExtracter for EmailHeader {
     const AUTH_CONF_NAME: &'static str = "email";
 
@@ -49,10 +49,12 @@ impl HeaderExtracter for EmailHeader {
 
 struct ServiceAccountHeader {}
 
+//A trait responsible for extracting the service_account header
 impl HeaderExtracter for ServiceAccountHeader {
-    const AUTH_CONF_NAME: &'static str = "service_account";
+    const AUTH_CONF_NAME: &'static str = PLUGIN_SERVICE_ACCOUNT;
 
     fn extract(req: iron::Headers, token: String, config_value: Option<&String>) -> Option<Authenticatable> {
+        println!("Service account header {:?}", config_value);
         let serviceaccount = req.get::<XAuthRioOSServiceAccountName>();
         if !serviceaccount.is_none() {
             return Some(Authenticatable::ServiceAccountNameAndWebtoken {

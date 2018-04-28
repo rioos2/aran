@@ -145,8 +145,6 @@ where
 
     chain.link(persister_event);
 
-    //chain.link(persister_.atabase_connection;
-
     let mount = T::mount(cfg.clone(), chain);
     let mut server = Iron::new(mount);
     server.threads = cfg.handler_count();

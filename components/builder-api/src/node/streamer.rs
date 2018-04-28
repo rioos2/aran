@@ -59,7 +59,7 @@ impl Streamer {
 
         let ods = tls_pair.clone().and(DataStoreConn::new().ok());
 
-        let streamer_thread = match ods {
+        match ods {
             Some(ds) => {
                 let mut watchhandler = WatchHandler::new(
                     Box::new(ds.clone()),
@@ -108,7 +108,7 @@ impl Streamer {
 
                     let running = server.build().expect("server");
 
-                    info!("Watch streamer is ready: {}", running.local_addr());
+                    debug!("http2: watch streamer is ready: {}", running.local_addr());
                     loop {
                         thread::park();
                     }
@@ -117,9 +117,7 @@ impl Streamer {
             }
             None => None,
         };
-        if let Some(streamer_thread) = streamer_thread {
-            streamer_thread.join().unwrap();
-        }
+
         Ok(())
     }
 }

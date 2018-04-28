@@ -44,37 +44,29 @@ impl Node {
 
     // A generic implementation that launches a `Node`
     // for aran api handlers.
-    pub fn run(self, ui: &mut UI, server: Servers) -> Result<()> {
-        ui.title("Node run");
+    pub fn run(self, ui: &mut UI) -> Result<()> {
+        ui.title("Starting node");
 
-        //start the runtime guard.
-        ui.begin("Runtime Guard");
+        ui.begin("→ Runtime Guard");
 
         let rg = runtime::Runtime::new(self.config.clone());
         let api_sender = rg.channel();
 
-        ui.end("Runtime Guard");
+        ui.end("✓ Runtime Guard");
+      
+        ui.begin("→ Api Srver");
+        &rg.start()?;
 
-        match server {
-            Servers::APISERVER => {
-                ui.heading("Api Srver");
-                &rg.start()?;
+        api_wirer::ApiSrv::new(self.config.clone()).start(api_sender)?;
+        ui.end("✓ Api Srver");
+        
+        ui.begin("→ Streamer");
+        streamer::Streamer::new(self.config.http2.port, self.config.clone()).start((*self.config).http2_tls_pair())?;
+        ui.end("✓ Streamer");
 
-                api_wirer::ApiSrv::new(self.config.clone()).start(api_sender)?;
-                
-                ui.end("Api Srver");
-            }
-            Servers::STREAMER => {
-                ui.begin("Streamer");
-                streamer::Streamer::new(self.config.http2.port, self.config.clone()).start((*self.config).http2_tls_pair())?;
-                ui.end("Streamer");
-            }
-            Servers::UISTREAMER => {
-                ui.begin("UIStreamer");
-                websocket::Websocket::new(self.config.http2.websocket, self.config.clone()).start((*self.config).http2_tls_pair())?;
-                ui.end("UIStreamer");
-            }
-        }
+        ui.begin("→ UIStreamer");
+        websocket::Websocket::new(self.config.http2.websocket, self.config.clone()).start((*self.config).http2_tls_pair())?;
+        ui.end("✓ UIStreamer");
 
         Ok(())
     }

@@ -1,5 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 //
+#[macro_use]
+extern crate lazy_static;
 
 extern crate crypto;
 extern crate rioos_builder_apimachinery as protocol;
@@ -16,6 +18,7 @@ extern crate serde;
 extern crate rand;
 extern crate iron;
 extern crate base64;
+extern crate regex;
 
 extern crate openssl;
 

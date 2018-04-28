@@ -29,8 +29,6 @@ impl Node {
     // for aran api handlers.
     // Aran api v1 prefix is `/api/v1`
     pub fn run(self, _ui: &mut UI) -> Result<()> {
-        api_wirer::ApiSrv::new(self.config.clone()).start()?;
-
-        Ok(())
+        api_wirer::ApiSrv::new(self.config.clone()).start()
     }
 }

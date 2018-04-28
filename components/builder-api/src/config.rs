@@ -11,7 +11,7 @@ use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCf
 use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
 use api::deploy::config::ServicesCfg;
 
-use auth::config::{Identity, IdentityCfg};
+use auth::config::{flow_modes, AuthenticationFlowCfg, Identity, IdentityCfg};
 use watch::config::{Streamer, StreamerCfg};
 use entitlement::config::{License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
@@ -20,7 +20,6 @@ use rio_core::config::ConfigFile;
 use rio_core::crypto::keys::read_key_in_bytes;
 use rio_core::fs::rioconfig_config_path;
 
-use http_gateway::config::base::AuthenticationFlowCfg;
 use validator::ConfigValidator;
 use common::ui::UI;
 
@@ -81,8 +80,8 @@ impl Config {
         ui.heading("[telemetry]")?;
         ui.para(&self.telemetry.endpoint)?;
         ui.heading("[identity]")?;
-        //ui.para(&format!("{:?}", &self.identity.enabled.into_iter().collect()))?;
-        //ui.para(&format!("{:?}", &self.identity.params.into_iter().collect()))?;
+        ui.para(&format!("{:?}", &self.identity.enabled))?;
+        ui.para(&format!("{:?}", &self.identity.params))?;
         ui.heading("[vaults]")?;
         ui.para(&format!("{:?}", &self.vaults.backend))?;
         ui.heading("[services]")?;
@@ -119,7 +118,7 @@ impl Config {
             .machineconsole_endpoint
             .clone()
             .unwrap_or("".to_string()))?;
-        ui.end("Loaded.")?;
+        ui.end("Loaded configuration")?;
 
         Ok(())
     }
@@ -156,59 +155,10 @@ impl Default for Config {
         }
     }
 }
-use regex::Regex;
 
-/// A trait
 impl AuthenticationFlowCfg for Config {
-    //self.identity.enabled
-    //enabled = ["password", "token", "service_account", "passticket"]
-    //params = { service_account = "service_account.pub" }
-    // fn modes(&self) -> Vec<(String, HashMap<String, String>)> {
     fn modes(&self) -> (Vec<String>, HashMap<String, String>) {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"/^(.*\.(?!(pub|key|toml|hbs|cert.pem)$))?[^.]*$/i").unwrap();
-        }
-
-        let b = self.identity
-            .enabled
-            .iter()
-            .map(|enabz| {
-                (
-                    enabz.to_string(),
-                    self.identity
-                        .params
-                        .clone()
-                        .into_iter()
-                        .filter(|kv| kv.0 == *enabz)
-                        .map(|x| {
-                            if RE.is_match(&x.1) {
-                                (
-                                    x.0,
-                                    rioconfig_config_path(None)
-                                        .join(x.1.clone())
-                                        .to_str()
-                                        .unwrap_or(&x.1)
-                                        .to_string(),
-                                )
-                            } else {
-                                x
-                            }
-                        })
-                        .collect::<_>(),
-                )
-            })
-            .collect::<Vec<(String, HashMap<String, String>)>>();
-        (
-            b.clone().into_iter().map(|x| x.0).collect::<Vec<String>>(),
-            b.into_iter()
-                .map(|x| x.1)
-                .flat_map(|y| y)
-                .collect::<HashMap<_, String>>(),
-        )
-    }
-
-    fn ready(&self) -> bool {
-        self.identity.valid().is_ok()
+        flow_modes(self, rioconfig_config_path(None))
     }
 }
 
@@ -229,8 +179,9 @@ impl ConfigValidator for Config {
                 &Ok(()) => return acc,
                 &Err(ref e) => {
                     if acc.is_ok() {
-                        return acc;
+                        return Err(Error::MissingConfiguration(format!("{}", e)));
                     }
+
                     Err(Error::MissingConfiguration(format!(
                         "{}\n{}",
                         e,

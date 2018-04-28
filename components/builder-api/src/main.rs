@@ -26,7 +26,6 @@ use common::ui::{Coloring, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR, UI};
 
 use api::Config;
 use api::{command, Error, Result};
-use api::node::Servers;
 
 lazy_static! {
     static ref CFG_DEFAULT_FILE: PathBuf = PathBuf::from(&*rioconfig_config_path(None).join("api.toml").to_str().unwrap());
@@ -56,20 +55,23 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
             (@arg port: --port +takes_value "Listen port(https). [default: 7443]")
             (@arg streamer_port: --streamer_port +takes_value "Listen streamer port(http2). [default: 8443]")
             (@arg uistreamer_port: --uistreamer_port +takes_value "Listen uistreamer port(wss). [default: 9443]")
-            (@arg streamer: --streamer +takes_value "Start http2 streamer server. [default: false]")
-            (@arg uistreamer: --uistreamer +takes_value "Start websocket streamer server. [default: false]")
-
         )
         (@subcommand setup =>
             (about: "Setup api server")
+            (@arg config: -c --config +takes_value
+                "Filepath to configuration file. [default: /var/lib/rioos/config/api.toml]")
         )
 
         (@subcommand sync =>
             (about: "Sync Rio.Marketplaces with api server")
+            (@arg config: -c --config +takes_value
+                "Filepath to configuration file. [default: /var/lib/rioos/config/api.toml]")
         )
 
         (@subcommand migrate =>
             (about: "Run migration on database - rioosdb")
+            (@arg config: -c --config +takes_value
+              "Filepath to configuration file. [default: /var/lib/rioos/config/api.toml]")
         )
 
     )
@@ -110,18 +112,7 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
         Err(e) => return Err(e),
     };
 
-    start(ui, config, servertype_from_args(&matches))
-}
-
-fn servertype_from_args(args: &clap::ArgMatches) -> Servers {
-    if args.value_of("streamer").is_some() {
-        return Servers::STREAMER;
-    }
-
-    match args.value_of("uistreamer") {
-        Some(_flag) => return Servers::UISTREAMER,
-        None => return Servers::APISERVER,
-    }
+    start(ui, config)
 }
 
 ///
@@ -170,8 +161,8 @@ fn load_config(args: &clap::ArgMatches) -> Result<Config> {
 /// Starts the aran-api server.
 /// # Failures
 /// * Fails if the postgresql dbr fails to be found - cannot bind to the port, etc.
-fn start(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
-    api::server::run(ui, config, server)
+fn start(ui: &mut UI, config: Config) -> Result<()> {
+    api::server::run(ui, config)
 }
 
 fn ui() -> UI {

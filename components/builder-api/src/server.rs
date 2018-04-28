@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use config::Config;
 use error::{Error, Result};
 
-use super::node::{Node, Servers};
+use super::node::Node;
 use common::ui::UI;
 use rio_core::crypto::default_rioconfig_key_path;
 use validator::ConfigValidator;
@@ -37,12 +37,10 @@ impl Server {
     /// # Errors
     ///
     /// * HTTPS server could not start
-    pub fn run(&mut self, ui: &mut UI, server: Servers) -> Result<()> {
+    pub fn run(&mut self, ui: &mut UI) -> Result<()> {
         let cfg1 = self.config.clone();
 
-        match server {
-            Servers::APISERVER => {
-                ui.begin(
+        ui.begin(
         r#"
     ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗     █████╗ ██████╗  █████╗ ███╗   ██╗     █████╗ ██████╗ ██╗
     ██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔══██╗██╔══██╗██╔══██╗████╗  ██║    ██╔══██╗██╔══██╗██║
@@ -52,62 +50,31 @@ impl Server {
     ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝╚═╝     ╚═╝                                                                                                        
     "#,
     )?;
-                ui.begin(&format!(
-                    "Rio/OS API listening on {}:{}",
-                    self.config.https.listen, self.config.https.port
-                ))?;
-            }
-            Servers::STREAMER => {
-                ui.begin(
-                    r#"
-                                                                                                                    
-██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗    ███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗███████╗██████╗ 
-██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║██╔════╝██╔══██╗
-██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║█████╗  ██████╔╝
-██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║██╔══╝  ██╔══██╗
-██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ███████║   ██║   ██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
-╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
-   "#,
-                )?;
-                ui.begin(&format!(
-                    "Rio/OS STREAMER listening on {}:{}",
-                    self.config.http2.listener, self.config.http2.port
-                ))?;
-            }
-            Servers::UISTREAMER => {
-                ui.begin(
-        r#"
-                                                                                                                                
-██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗    ██╗   ██╗██╗███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗███████╗██████╗ 
-██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██║   ██║██║██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║██╔════╝██╔══██╗
-██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ██║   ██║██║███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║█████╗  ██████╔╝
-██╔══██╗██║██║   ██║ ██╔╝  ██║   ██║╚════██║    ██║   ██║██║╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║██╔══╝  ██╔══██╗
-██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ╚██████╔╝██║███████║   ██║   ██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
-╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝     ╚═════╝ ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ 
-"#,
-    )?;
+        ui.para(&format!(
+            "Rio/OS {} listening on {}:{}","API",
+            self.config.https.listen, self.config.https.port
+        ))?;
 
-                ui.begin(&format!(
-                    "Rio/OS UISTREAMER listening on {}:{}",
-                    self.config.http2.listener, self.config.http2.websocket
-                ))?;
-            }
-        }
+        ui.para(&format!(
+            "Rio/OS {} listening on {}:{}", "Watch",
+            self.config.http2.listener, self.config.http2.port
+        ))?;
 
-        ui.heading("Ready to go.")?;
+        ui.para(&format!(
+            "Rio/OS {} listening on {}:{}","Websocket",
+            self.config.http2.listener, self.config.http2.websocket
+        ))?;
 
         let node = Node::new(cfg1);
 
-        ui.para("Ready to serve.")?;
-
-        node.run(ui, server)?;
+        node.run(ui)?;
         Ok(())
     }
 }
 
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.
-pub fn run(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
+pub fn run(ui: &mut UI, config: Config) -> Result<()> {
     config.valid()?;
 
     config.dump(ui)?;
@@ -120,5 +87,5 @@ pub fn run(ui: &mut UI, config: Config, server: Servers) -> Result<()> {
         return Err(Error::SyncNotDone);
     }
 
-    Server::new(config).run(ui, server)
+    Server::new(config).run(ui)
 }

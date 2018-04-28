@@ -1,20 +1,19 @@
-[http]
+[https]
 listen = "0.0.0.0"
 port = 7443
-streamer_port = 8443
-uistreamer_port = 9443
-tls_pkcs12_file = "api-server.pfx"
-tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
-serviceaccount_public_key = "service-account.pub"
+tls = "api-server.pfx"
+tls_password = "TEAMRIOADVANCEMENT123"
 
-[controller]
-url = "http://localhost:10252/"
+[http2]
+listen = "0.0.0.0"
+port = 8443
+websocket = 9443
+tls = "api-server.pfx"
+tls_password = "TEAMRIOADVANCEMENT123"
 
-[scheduler]
-url = "http://localhost:10251"
-
-[vnc]
-url = "http://localhost:8005"
+[identity]
+enabled = ["password", "service_account"]
+params = { service_account = "service-account.pub" }
 
 [marketplaces]
 username = "rioosdolphin@rio.company"
@@ -38,10 +37,15 @@ so_file = "ShaferFilechck.so"
 activation_code = ""
 
 [logs]
-endpoint = "http://localhost:8086"
-prefix = "rioos_logs"
+influx_endpoint = "http://localhost:8086"
+influx_prefix = "rioos_logs"
 
 [vulnerability]
 anchore_endpoint = "http://localhost:8228/v1"
 anchore_username = ""
 anchore_password = ""
+
+[ping]
+controller_endpoint = "http://localhost:10252/"
+scheduler_endpoint = "http://localhost:10251"
+machineconsole_endpoint = "http://localhost:8005"

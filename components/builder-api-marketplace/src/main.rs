@@ -15,10 +15,10 @@ extern crate log;
 #[macro_use]
 extern crate lazy_static;
 
+use std::fmt;
+use std::process;
 use std::str::FromStr;
 use std::path::PathBuf;
-use std::thread::sleep;
-use std::time::Duration;
 
 use rio_core::config::ConfigFile;
 use rio_core::env as renv;
@@ -89,8 +89,13 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
         Ok(result) => result,
         Err(e) => return Err(e),
     };
-    sleep(Duration::new(2, 0));
-    start(ui, config)
+
+    match start(ui, config) {
+        Ok(_) => std::process::exit(0),
+        Err(e) => exit_with(e, 1),
+    }
+
+    Ok(())
 }
 
 fn sub_cli_migrate(ui: &mut UI) -> Result<()> {
@@ -146,4 +151,12 @@ fn ui() -> UI {
         Coloring::Auto
     };
     UI::default_with(coloring, isatty)
+}
+
+fn exit_with<T>(err: T, code: i32)
+where
+    T: fmt::Display,
+{
+    println!("{}", err);
+    process::exit(code)
 }

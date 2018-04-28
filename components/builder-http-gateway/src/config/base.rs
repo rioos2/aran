@@ -1,7 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 use std::io;
-use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::option::IntoIter;
 
@@ -42,15 +41,4 @@ impl ToSocketAddrs for HttpsCfg {
 #[serde(default)]
 pub struct UiCfg {
     pub root: Option<String>,
-}
-
-/// A trait
-pub trait AuthenticationFlowCfg {
-    //The set of modes and their input.
-    //At the moment we support just string input for any of the authentication modes.
-    //example: service_account: service_account.pub
-    //fn modes(&self) -> Vec<(String, HashMap<String, String>)>;
-    fn modes(&self) -> (Vec<String>, HashMap<String, String>);
-    //Are all the authentication modes configured and ready.
-    fn ready(&self) -> bool;
 }

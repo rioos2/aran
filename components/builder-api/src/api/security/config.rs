@@ -9,7 +9,9 @@ pub enum SecureBackend {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SecurerCfg {
     pub backend: SecureBackend,
+    #[serde(default)]
     pub endpoint: String,
+    #[serde(default)]
     pub token: String,
 }
 

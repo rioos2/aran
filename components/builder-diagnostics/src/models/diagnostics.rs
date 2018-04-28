@@ -150,6 +150,13 @@ fn nodes_status(datastore: &DataStoreConn) -> Vec<Status> {
 fn get_status(name: &str, search: String, config: Value, print: String) -> Status {
     match config[name][search.clone()].as_str() {
         Some(endpoint) => {
+            if endpoint.is_empty() {
+                return Status {
+                    name: print,
+                    status: PROBLEM.to_string(),
+                    description: format!("Not configured (api.toml)"),
+                };
+            }
             let client = ApiClient::new(endpoint, "", "v1", None).unwrap();
             let mut res = client.get("").send();
             match res {

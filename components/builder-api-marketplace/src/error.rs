@@ -12,6 +12,7 @@ use common;
 use rio_core;
 use db;
 use bodyparser;
+use http_gateway;
 
 const MISSING_PARAMETER: &'static str = "Missing parameters: ";
 const MISSING_BODY: &'static str = "Missing body, empty: ";
@@ -45,6 +46,7 @@ impl ToString for ErrorMessage {
 pub enum Error {
     Db(db::error::Error),
     BadPort(String),
+    HttpsGateway(http_gateway::app::error::AppError),
     RioosAranCore(rio_core::Error),
     RioosBodyError(bodyparser::BodyError),
     RioosAranCommon(common::Error),
@@ -59,6 +61,7 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
+            Error::HttpsGateway(ref e) => format!("{} ", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::RioosBodyError(ref e) => format!("{:?}, {:?}", e.detail, e.cause),
             Error::RioosAranCommon(ref e) => format!("{}", e),
@@ -74,6 +77,7 @@ impl error::Error for Error {
         match *self {
             Error::Db(ref err) => err.description(),
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
+            Error::HttpsGateway(ref e) => e.description(),
             Error::RioosAranCore(ref err) => err.description(),
             Error::RioosBodyError(ref err) => err.description(),
             Error::RioosAranCommon(ref err) => err.description(),
@@ -116,5 +120,11 @@ impl From<bodyparser::BodyError> for Error {
 impl From<db::error::Error> for Error {
     fn from(err: db::error::Error) -> Error {
         Error::Db(err)
+    }
+}
+
+impl From<http_gateway::app::error::AppError> for Error {
+    fn from(err: http_gateway::app::error::AppError) -> Error {
+        Error::HttpsGateway(err)
     }
 }

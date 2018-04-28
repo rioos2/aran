@@ -5,11 +5,12 @@
 //!
 
 use std::sync::Arc;
+use std::thread;
 
 use router::Router;
 use mount::Mount;
 use iron;
-use error::Result;
+use error::{Error, Result};
 
 use persistent;
 
@@ -41,18 +42,17 @@ impl ApiSrv {
     // for aran api handlers.
     // Aran api v1 prefix is `/api/v1`
     pub fn start(self) -> Result<()> {
-        let ods = DataStoreConn::new().ok();
+        let ds = DataStoreConn::new()?;
 
-        match ods {
-            Some(ds) => {
-                let dev = persistent::Read::<DataStoreBroker>::both(Arc::new(ds));
+        let dev = persistent::Read::<DataStoreBroker>::both(Arc::new(ds));
+        // the thread exits faster, tries wrapping in on ther thread. So this actually runs like
+        // [Main Thread] ----> Thread[0] - HttpGateway  ----> Thread[1] AppWirer(below thread)
+        // But still the thread wasn't blocked
+        thread::spawn(move || http_gateway::app::start::<Wirer, _, _>(dev, self.config.clone()).map_err(Error::HttpsGateway));
 
-                http_gateway::app::start::<Wirer, _, _>(dev, self.config.clone());
-            }
-            None => {
-                error!("Failed to wire the api, \ndatabase isn't ready.");
-            }
-        };
+        //Added park on the current thread, which is [Main Thread] in the above illustration.
+        //
+        thread::park();
 
         Ok(())
     }

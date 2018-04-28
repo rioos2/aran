@@ -65,7 +65,7 @@ impl DiagnosticsApi {
 
     fn ping(&self, req: &mut Request) -> AranResult<Response> {
         let conf = serde_json::to_value(&*self.config).unwrap();
-
+        debug!("finding raw flag");
         let raw_flag = req.headers
             .get_raw("Accept")
             .map(|res| {
@@ -77,6 +77,7 @@ impl DiagnosticsApi {
                     .find(|&x| x == "text/html")
             })
             .unwrap_or(None);
+        debug!("-- raw flag is {:?}", raw_flag);
 
         match Pinguy::status(&self.conn, &self.prom, conf) {
             Some(data) => {

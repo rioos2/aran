@@ -9,10 +9,6 @@ extern crate log;
 #[macro_use]
 extern crate serde_derive;
 
-
-#[macro_use]
-extern crate lazy_static;
-
 extern crate ansi_term;
 extern crate bodyparser;
 extern crate regex;

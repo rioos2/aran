@@ -24,10 +24,9 @@ use common::ui;
 
 use auth::rioos::AuthenticateDelegate;
 use auth::rbac::authorizer;
-use config::base::AuthenticationFlowCfg;
+use auth::config::AuthenticationFlowCfg;
 
-use util::errors::{internal_error, not_acceptable_error, bad_err, forbidden_error};
-
+use util::errors::{bad_err, forbidden_error, internal_error};
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
@@ -213,7 +212,7 @@ impl ProceedAuthenticating {
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         };
-
+        
         let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;
 
         let delegate = AuthenticateDelegate::new(broker.clone());

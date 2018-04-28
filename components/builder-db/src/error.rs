@@ -83,7 +83,7 @@ impl fmt::Display for Error {
             Error::IO(ref e) => format!("{}", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
-            Error::Yaml(ref e) => format!("{}", e),
+            Error::Yaml(ref e) => format!("{:?}\n", e),
         };
         write!(f, "{}", msg)
     }
