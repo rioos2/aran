@@ -18,7 +18,6 @@ use reqwest;
 use db;
 use service;
 use bodyparser;
-use rio_net;
 use serde_yaml;
 
 const MISSING_PARAMETER: &'static str = "Missing parameters: ";
@@ -54,13 +53,12 @@ pub enum Error {
     Db(db::error::Error),
     Secret(service::Error),
     BadPort(String),
-    MissingTLS(String),
+    MissingConfiguration(String),
     WatchServer(httpbis::Error),
     UNKNOWSECRET,
     SetupNotDone,
     SyncNotDone,
     RioosAranCore(rio_core::Error),
-    RioNetError(rio_net::Error),
     RioosBodyError(bodyparser::BodyError),
     RioHttpClient(rioos_http::Error),
     RioosAranCommon(common::Error),
@@ -80,14 +78,10 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
-            Error::MissingTLS(ref e) => format!(
-                "TLS certificate missing - [{}], Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start",
-                e
-            ),
+            Error::MissingConfiguration(ref e) => format!("{},", e),
             Error::Secret(ref e) => format!("{}", e),
             Error::WatchServer(ref e) => format!("{}", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
-            Error::RioNetError(ref e) => format!("{}", e),
             Error::RioosBodyError(ref e) => format!("{:?}, {:?}", e.detail, e.cause),
             Error::RioHttpClient(ref e) => format!("{}", e),
             Error::RioosAranCommon(ref e) => format!("{}", e),
@@ -98,8 +92,8 @@ impl fmt::Display for Error {
             Error::IO(ref e) => format!("{}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
             Error::UNKNOWSECRET => format!("SecretType not found"),
-            Error::SetupNotDone => format!("Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start"),
-            Error::SyncNotDone => format!("Rio/OS Marketplace sync not done. You must run `rioos-apiserver sync` before attempting start"),
+            Error::SetupNotDone => format!("Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"),
+            Error::SyncNotDone => format!("Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start"),
             Error::Yaml(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
@@ -111,12 +105,11 @@ impl error::Error for Error {
         match *self {
             Error::Db(ref err) => err.description(),
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
-            Error::MissingTLS(ref err) => err,
+            Error::MissingConfiguration(ref err) => err,
             Error::Secret(ref err) => err.description(),
             Error::WatchServer(ref err) => err.description(),
             Error::RioHttpClient(ref err) => err.description(),
             Error::RioosAranCore(ref err) => err.description(),
-            Error::RioNetError(ref err) => err.description(),
             Error::RioosBodyError(ref err) => err.description(),
             Error::RioosAranCommon(ref err) => err.description(),
             Error::ReqwestError(ref err) => err.description(),
@@ -126,8 +119,8 @@ impl error::Error for Error {
             Error::Json(ref err) => err.description(),
             Error::Utf8Error(ref err) => err.description(),
             Error::UNKNOWSECRET => "Unknown SecretType",
-            Error::SetupNotDone => "Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start",
-            Error::SyncNotDone => "Rio/OS marketplace sync not done. You must run `rioos-apiserver sync` before attempting start",
+            Error::SetupNotDone => "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start",
+            Error::SyncNotDone => "Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start",
 
             Error::Yaml(ref err) => err.description(),
         }
@@ -167,12 +160,6 @@ impl From<io::Error> for Error {
 impl From<url::ParseError> for Error {
     fn from(err: url::ParseError) -> Error {
         Error::UrlParseError(err)
-    }
-}
-
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
-        Error::RioNetError(err)
     }
 }
 

@@ -9,14 +9,14 @@ use router::Router;
 use ansi_term::Colour;
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier, QueryValidator};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error, badgateway_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error, badgateway_error};
 use telemetry::metrics::prometheus::PrometheusClient;
 use bytes::Bytes;
 use serde_json;
@@ -213,7 +213,7 @@ impl Api for NodeApi {
             "/healthz/overall",
             XHandler::new(C { inner: healthz_all })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.healthz.get".to_string())),
+            .before(TrustAccessed::new("rioos.healthz.get".to_string(),&*config)),
             "healthz_all",
         );
 
@@ -223,28 +223,28 @@ impl Api for NodeApi {
             "/nodes",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.post".to_string())),
+            .before(TrustAccessed::new("rioos.node.post".to_string(),&*config)),
             "nodes",
         );
         router.get(
             "/nodes",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string())),
+            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
             "nodes_list",
         );
         router.get(
             "/nodes/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string())),
+            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
             "node_show",
         );
         router.put(
             "/nodes/:id/status",
             XHandler::new(C { inner: status_update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.put".to_string())),
+            .before(TrustAccessed::new("rioos.node.put".to_string(),&*config)),
             "node_status_update",
         );
 
@@ -252,7 +252,7 @@ impl Api for NodeApi {
             "/nodes/ip",
             XHandler::new(C { inner: show_by_address })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string())),
+            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
             "node_show_by_address",
         );
     }

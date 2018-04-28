@@ -11,7 +11,7 @@ pub fn start(ui: &mut UI) -> Result<()> {
     ui.heading("Logout")?;
     ui.para(
         "For more information on authenticating using commandline, please read the \
-         documentation at https://docs.rioos.sh/docs/identity-overview/",
+         documentation at https://bit.ly/rioos_sh_usersguide",
     )?;
 
     ui.br()?;

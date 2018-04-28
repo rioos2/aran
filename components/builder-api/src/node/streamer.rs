@@ -9,18 +9,18 @@ use std::thread;
 
 use watch::handler::WatchHandler;
 use watch::service::ServiceImpl;
+
 use telemetry::metrics::prometheus::PrometheusClient;
 use config::Config;
+use http_gateway::config::prelude::TLSPair;
 
 use tls_api::TlsAcceptorBuilder as tls_api_TlsAcceptorBuilder;
 use tls_api_openssl;
 
 use httpbis;
 
-use rio_net::http::middleware::SecurerConn;
+use api::security::config::SecurerConn;
 use db::data_store::DataStoreConn;
-
-pub type TLSPair = Option<(String, Vec<u8>, String)>;
 
 #[derive(Debug)]
 pub struct Streamer {
@@ -37,8 +37,7 @@ impl Streamer {
     }
 
     pub fn start(self, tls_pair: TLSPair) -> io::Result<()> {
-        let ods = tls_pair.clone().and(DataStoreConn::new().ok());
-        let listeners = vec![
+        let listeners: Vec<&str> = vec![
             "secrets",
             "networks",
             "jobs",
@@ -57,7 +56,10 @@ impl Streamer {
             "assemblyfactorys",
             "assemblys",
         ];
-        let streamer_thread = match ods {
+
+        let ods = tls_pair.clone().and(DataStoreConn::new().ok());
+
+        match ods {
             Some(ds) => {
                 let mut watchhandler = WatchHandler::new(
                     Box::new(ds.clone()),
@@ -70,7 +72,9 @@ impl Streamer {
 
                 let send = Arc::new(Mutex::new(db_sender));
 
-                watchhandler.notifier(send.clone(), listeners).unwrap();
+                watchhandler
+                    .notifier(send.clone(), listeners.to_vec())
+                    .unwrap();
 
                 watchhandler.publisher(db_receiver);
 
@@ -84,12 +88,12 @@ impl Streamer {
 
                     let mut tls_acceptor = tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(&tls_tuple.1, &tls_tuple.2).expect("acceptor builder");
 
-                    tls_acceptor.set_alpn_protocols(&[b"h2"]).expect(
-                        "set_alpn_protocols",
-                    );
+                    tls_acceptor
+                        .set_alpn_protocols(&[b"h2"])
+                        .expect("set_alpn_protocols");
 
                     let mut server = httpbis::ServerBuilder::new();
-                    println!("watch streamer running on port {} ", self.watch_port);
+
                     server.set_port(self.watch_port);
                     server.set_tls(tls_acceptor.build().expect("tls acceptor"));
                     server.conf = conf;
@@ -104,11 +108,7 @@ impl Streamer {
 
                     let running = server.build().expect("server");
 
-                    info!("watch streamer started");
-                    info!(
-                        "watch streamer running: https://localhost:{}/",
-                        running.local_addr().port().unwrap()
-                    );
+                    debug!("http2: watch streamer is ready: {}", running.local_addr());
                     loop {
                         thread::park();
                     }
@@ -117,9 +117,7 @@ impl Streamer {
             }
             None => None,
         };
-        if let Some(streamer_thread) = streamer_thread {
-            streamer_thread.join().unwrap();
-        }
+
         Ok(())
     }
 }

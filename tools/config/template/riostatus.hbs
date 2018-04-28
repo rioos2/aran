@@ -1,182 +1,204 @@
 <!doctype html>
 <html lang="en">
+
 <head>
 
-  <!-- Meta -->
-  <meta charset="utf-8">
-  <title>Rio/OS System Status</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <title>Rio/OS Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
-  <style>
-      html {
-    box-sizing: border-box;
-    font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-weight: 400;
-}
+    <!-- CSS -->
+    <link href='https://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Merriweather+Sans' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Signika+Negative:400,600,700,300' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Playfair+Display' rel='stylesheet' type='text/css'>
 
-*, *:before, *:after {
-    box-sizing: inherit;
-}
+    <style>
+        html {
+            box-sizing: border-box;
+            font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-weight: 400;
+        }
 
-body, h1, h2, h3, h4 {
-    margin: 0;
-    padding: 0;
-}
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
 
-p {
-    color: #666;
-    line-height: 1.5;
-}
+        body,
+        h1,
+        h2,
+        h3,
+        h4 {
+            margin: 0;
+            padding: 0;
+        }
 
-a,
-a:visited {
-    color: #3498db;
-    text-decoration: none;
-}
+        p {
+            color: #666;
+            line-height: 1.5;
+        }
 
-a:hover,
-a:focus {
-    color: #3498db;
-    text-decoration: underline;
-}
+        a,
+        a:visited {
+            color: #3498db;
+            text-decoration: none;
+        }
 
-.container {
-    max-width: 900px;
-    width: 90%;
-    overflow: hidden;
-    margin: 40px auto;
-}
+        a:hover,
+        a:focus {
+            color: #3498db;
+            text-decoration: underline;
+        }
 
-.intro {
-    text-align: center;
-    max-width: 650px;
-    margin: 0 auto 40px;
-}
+        .container {
+            max-width: 900px;
+            width: 90%;
+            overflow: hidden;
+            margin: 40px auto;
+        }
 
-.title {
-    margin: 10px 0 0;
-    font-size: 40px;
-}
+        .intro {
+            text-align: center;
+            max-width: 650px;
+            margin: 0 auto 40px;
+        }
 
-.last-updated {
-    margin-bottom: 20px;
-    color: #999;
-    font-size: 20px;
-    font-weight: 400;
-}
+        .title {
+            margin: 10px 0 0;
+            font-size: 40px;
+        }
 
-.status {
-    padding: 0;
-    overflow: hidden;
-    list-style: none;
-}
+        .last-updated {
+            margin-bottom: 20px;
+            color: #999;
+            font-size: 20px;
+            font-weight: 400;
+        }
 
-.widget {
-    margin-bottom: 5%;
-    padding: 40px 10px;
-    color: #fff;
-    text-align: center;
-}
+        .status {
+            padding: 0;
+            overflow: hidden;
+            list-style: none;
+        }
 
-@media all and (min-width: 780px) {
-  .widget {
-      width: 29.5%;
-      display: inline-block;
-      float: left;
-      margin: 1% 1% 1% 1%;
-      padding: 40px 0;
-  }
-}
+        .widget {
+            margin-bottom: 5%;
+            padding: 40px 10px;
+            color: #fff;
+            text-align: center;
+        }
 
-.widget:nth-child(even) {
-    margin-right: 0;
-}
+        @media all and (min-width: 780px) {
+            .widget {
+                width: 29.5%;
+                display: inline-block;
+                float: left;
+                margin: 1% 1% 1% 1%;
+                padding: 40px 0;
+            }
+        }
 
-.widget--up       { background-color: #2ecc71; }
-.widget--down     { background-color: #e74c3c; }
-.widget--problem  { background-color: #f39c12; }
+        .widget:nth-child(even) {
+            margin-right: 0;
+        }
 
-.service-name {
-    margin-bottom: 10px;
-    font-size: 32px;
-    font-weight: 300;
-    letter-spacing: 0;
-    color: #fff;
-}
+        .widget--up {
+            background-color: #2ecc71;
+        }
 
-.status-message {
-    display: block;
-    font-size: 18px;
-    color: #fff;
-    color: rgba(0, 0, 0, .3);
-}
+        .widget--down {
+            background-color: #e74c3c;
+        }
 
-.up {
-    stroke: #fff;
-    stroke-dasharray: 130px 130px;
-    stroke-dashoffset: 130px;
-    -webkit-transition: stroke-dashoffset 4.1s linear 0s;
-    transition: stroke-dashoffset 500ms ease-in-out;
-}
+        .widget--problem {
+            background-color: #f39c12;
+        }
 
-.icon {
-    margin-top: 30px;
-    width: 50px;
-    height: 50px;
-    fill: #fff;
-}
-  </style>
+        .service-name {
+            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 0;
+            color: #fff;
+        }
+
+        .status-message {
+            display: block;
+            font-size: 18px;
+            color: #fff;
+            color: rgba(0, 0, 0, .3);
+        }
+
+        .up {
+            stroke: #fff;
+            stroke-dasharray: 130px 130px;
+            stroke-dashoffset: 130px;
+            -webkit-transition: stroke-dashoffset 4.1s linear 0s;
+            transition: stroke-dashoffset 500ms ease-in-out;
+        }
+
+        .icon {
+            margin-top: 30px;
+            width: 50px;
+            height: 50px;
+            fill: #fff;
+        }
+    </style>
 
 </head>
 
 <body>
 
-  <div class="container">
+    <div class="container">
+        <div class="intro">
+            <img src="https://console.rioos.xyz/images/logo2.png" alt="Rio OS logo">
+            <h1 class="title">Status</h1> 
+            <h4 class="last-updated">Updated {{time}}</h4>
 
+            <p>This page offers performance information for Rio/OS services. Check back here any time to view the current status
+                of the services listed below. For more information or to report a problem, please visit the
+                <a href="https://github.com/rioadvancement/rioos/issues/new">support portal</a>.</p>
+        </div>
+
+        <ul class="status">
+            {{#each packages as |p| ~}}
+            <li class="widget  widget--{{p.status}}">
+                <h2 class="service-name">{{p.name}}</h2>
+                <span class="status-message">{{p.description}}</span>
+                {{status_symbol p.status ~}}
+            </li>
+            {{/each~}}
+        </ul>
+    </div>
     <div class="intro">
-      <img src="https://console.rioos.xyz/images/logo2.png" alt="Rio OS logo">
-      <h1 class="title">Service Status</h1>
-      <h4 class="last-updated">Updated {{time}}</h4>
-
-      <p>This page offers performance information for Rio/OS services. Check back here any time to view the current status of the services listed below. For more information or to report a problem, please visit the <a href="https://github.com/rioadvancement/rioos/issues/new">support portal</a>.</p>
+        <h1 class="title">Nodes Status</h1>
+        <h4 class="last-updated">Updated {{time}}</h4>
+        <ul class="status">
+            {{#each nodes as |p| ~}}
+            <li class="widget  widget--{{p.status}}">
+                <h2 class="service-name">{{p.name}}</h2>
+                <span class="status-message">{{p.description}}</span>
+                {{status_symbol p.status ~}}
+            </li>
+            {{/each~}}
+        </ul>
     </div>
 
-   <ul class="status">
-    {{#each packages as |p| ~}}
-      <li class="widget  widget--{{p.status}}">
-      	<h2 class="service-name">{{p.name}}</h2>
-      	<span class="status-message">{{p.description}}</span>
-        {{status_symbol p.status ~}}      	
-      </li>
-    {{/each~}}
-    </ul>   
-    </div>
-    <div class="intro">
-    <h1 class="title">Node Systems Status</h1>
-    <h4 class="last-updated">Updated {{time}}</h4>
-    <ul class="status">
-    {{#each nodes as |p| ~}}
-      <li class="widget  widget--{{p.status}}">
-      	<h2 class="service-name">{{p.name}}</h2>
-      	<span class="status-message">{{p.description}}</span>
-        {{status_symbol p.status ~}}      	
-      </li>
-    {{/each~}}
-    </ul>   
-  </div>
 
-
-  <!-- jQuery -->
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-  <script>window.jQuery || document.write('<script src="/static/js/libs/jquery.min.js"><\/script>')</script>
-  <script>
-    $(document).ready(function () {
-       $('.up').css('stroke-dashoffset', 0);
-    });
-  </script>
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/static/js/libs/jquery.min.js"><\/script>')</script>
+    <script>
+        $(document).ready(function () {
+            $('.up').css('stroke-dashoffset', 0);
+        });
+    </script>
 
 </body>
-</html>
 
+</html>

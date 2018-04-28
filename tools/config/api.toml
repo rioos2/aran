@@ -1,52 +1,51 @@
-[http]
+[https]
 listen = "0.0.0.0"
 port = 7443
-watch_port = 8443
-tls_pkcs12_file = "api-server.pfx"
-tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
-serviceaccount_public_key = "service-account.pub"
+tls = "api-server.pfx"
+tls_password = "TEAMRIOADVANCEMENT123"
 
-[controller]
-url = "http://localhost:10252/"
+[http2]
+listen = "0.0.0.0"
+port = 8443
+websocket = 9443
+tls = "api-server.pfx"
+tls_password = "TEAMRIOADVANCEMENT123"
 
-[scheduler]
-url = "http://localhost:10251"
-
-[vnc]
-url = "http://localhost:8005"
+[identity]
+enabled = ["password", "service_account"]
+params = { service_account = "service-account.pub" }
 
 [marketplaces]
-username = "dev@rio.companyadmin"
+username = "rioosdolphin@rio.company"
 token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-endpoint = "https://localhost:6443/api/v1"
+endpoint = "https://marketplces.rioos.xyz:6443/api/v1"
 
 [blockchain]
 endpoint = "http://localhost:7000"
 
 [ui]
-root = "/some/path"
+root = "/public"
 
-[prometheus]
-url = "http://192.168.1.8:9090/api/v1"
+[telemetry]
+endpoint = "http://localhost:9090/api/v1"
 
 [vaults]
 backend = "Local"
-endpoint = "https://env.envkey.com/v1/"
-token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 
 [licenses]
 so_file = "ShaferFilechck.so"
-activation_code = "null"
+activation_code = ""
 
 [logs]
-url = "http://localhost:8086"
-prefix = "rioos_logs"
+influx_endpoint = "http://localhost:8086"
+influx_prefix = "rioos_logs"
 
-[anchore]
-url = "http://localhost:8228/v1"
-username = ""
-password = ""
+[vulnerability]
+anchore_endpoint = "http://localhost:8228/v1"
+anchore_username = ""
+anchore_password = ""
 
-[[targets]]
-platform = "windows"
-architecture = "x86_64"
+[ping]
+controller_endpoint = "http://localhost:10252/"
+scheduler_endpoint = "http://localhost:10251"
+machineconsole_endpoint = "http://localhost:8005"

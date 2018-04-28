@@ -13,16 +13,16 @@ use iron::status;
 use router::Router;
 
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 use deploy::models::blueprint;
 use protocol::api::blueprint::Plan;
@@ -115,9 +115,7 @@ impl PlanFactory {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<StatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match blueprint::DataStore::status_update(&self.conn, &unmarshall_body) {
@@ -167,35 +165,35 @@ impl Api for PlanFactory {
         let _self = self.clone();
         let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
-
         router.post(
             "/plans",
             XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.plan.post".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.plan.post".to_string(),&*config)),
             "plans",
         );
 
         router.get(
             "/plans",
             XHandler::new(C { inner: list_blank })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.plan.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.plan.get".to_string(),&*config)),
             "plan_list",
         );
 
         router.get(
             "/plans/:id",
             XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.plan.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.plan.get".to_string(),&*config)),
             "plan_show",
         );
         router.put(
             "/plans/:id/status",
-            XHandler::new(C { inner: status_update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.plan.put".to_string())),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone())
+                .before(TrustAccessed::new("rioos.plan.put".to_string(),&*config)),
             "plan_status_update",
         );
     }

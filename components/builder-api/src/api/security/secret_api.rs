@@ -7,19 +7,19 @@ use iron::status;
 use router::Router;
 
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta, dispatch_url};
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use protocol::api::schema::{dispatch, dispatch_url, type_meta};
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-use rio_net::http::middleware::SecurerConn;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use api::security::config::SecurerConn;
 
 use super::securer;
 use protocol::api::secret::Secret;
-use protocol::api::base::{MetaFields, IdGet};
+use protocol::api::base::{IdGet, MetaFields};
 use service::secret_ds::SecretDS;
 
 use db::data_store::DataStoreConn;
@@ -88,10 +88,7 @@ impl SecretApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create_by_origin(&self, req: &mut Request) -> AranResult<Response> {
-
-        let mut unmarshall_body = self.validate::<Secret>(
-            req.get::<bodyparser::Struct<Secret>>()?,
-        )?;
+        let mut unmarshall_body = self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
         ui::rawdumpln(
             Colour::White,
@@ -106,7 +103,6 @@ impl SecretApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-
 
         let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
 
@@ -189,7 +185,6 @@ impl SecretApi {
     //Every user will be able to list their own origin.
     //Will need roles/permission to access others origin.
     pub fn watch_list_by_account(&self, params: IdGet, dispatch: String) -> Option<String> {
-        
         let data = match securer::from_config(&self.secret, Box::new(*self.conn.clone())) {
             Ok(result) => result,
             Err(_err) => return None,
@@ -214,7 +209,7 @@ impl SecretApi {
     //Every user will be able to list their own origin.
     //Will need roles/permission to access others origin.
     fn list_by_origin(&self, req: &mut Request) -> AranResult<Response> {
-         let (org, name) = {
+        let (org, name) = {
             let params = req.extensions.get::<Router>().unwrap();
             let org_name = params.find("origin_id").unwrap().to_owned();
             let ser_name = "".to_string();
@@ -239,7 +234,7 @@ impl SecretApi {
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
-        
+
     //GET: /origin/:origin_name/secrets/:secrets_name
     //Input id - string as input and returns a secrets
     fn show_by_origin_and_name(&self, req: &mut Request) -> AranResult<Response> {
@@ -300,16 +295,21 @@ impl Api for SecretApi {
         router.post(
             "/accounts/:account_id/secrets",
             XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.secret.post".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new(
+                    "rioos.secret.post".to_string(),
+                    &*config,
+                )),
             "secrets",
         );
-        
+
         //MEGAM
-        //without authentication 
+        //without authentication
         router.post(
             "/origins/:origin_id/secrets",
-            XHandler::new(C { inner: create_by_origin }),
+            XHandler::new(C {
+                inner: create_by_origin,
+            }),
             "secrets_by_origins",
         );
         /*router.get(
@@ -317,8 +317,8 @@ impl Api for SecretApi {
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "secrets_list",
         );*/
-        //TODO 
-        //without authentication 
+        //TODO
+        //without authentication
         router.get(
             "/secrets",
             XHandler::new(C { inner: list_blank }),
@@ -327,23 +327,25 @@ impl Api for SecretApi {
         router.get(
             "/secrets/:id",
             XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.secret.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.secret.get".to_string(), &*config)),
             "secret_show",
         );
         router.get(
             "/accounts/:account_id/secrets",
             XHandler::new(C { inner: list })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.secret.get".to_string())),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.secret.get".to_string(), &*config)),
             "secret_show_by_account",
         );
-       
+
         //MEGAM
-        //without authentication 
+        //without authentication
         router.get(
             "/origins/:origin_id/secrets",
-            C { inner: list_by_origin },
+            C {
+                inner: list_by_origin,
+            },
             "secret_show_by_origin",
         );
 
@@ -355,9 +357,10 @@ impl Api for SecretApi {
         );*/
         router.get(
             "/origins/:origin/secrets/:secret_name",
-            C { inner: show_by_org_and_name },
+            C {
+                inner: show_by_org_and_name,
+            },
             "secret_show_by_origin_name",
-
         );
     }
 }

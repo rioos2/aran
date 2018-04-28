@@ -5,12 +5,12 @@ pub const DEFAULT_PROMETHEUS_URL: &'static str = "http://localhost:9090/api/v1";
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct TelemetryCfg {
-    pub url: String,
+    pub endpoint: String,
 }
 
 impl Default for TelemetryCfg {
     fn default() -> Self {
-        TelemetryCfg { url: DEFAULT_PROMETHEUS_URL.to_string() }
+        TelemetryCfg { endpoint: DEFAULT_PROMETHEUS_URL.to_string() }
     }
 }
 

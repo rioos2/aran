@@ -6,7 +6,7 @@ use protocol::api::base::IdGet;
 use db::data_store::DataStoreConn;
 use telemetry::metrics::prometheus::PrometheusClient;
 use api::{cluster, security, deploy};
-use rio_net::http::middleware::SecurerConn;
+use api::security::config::SecurerConn;
 
 //which is help for build response structure and which type of response
 //handler handle this enum

@@ -1,66 +1,194 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! Configuration for a Rio/OS API service
+//! Configuration for a Rio/OS API server
+use std::collections::HashMap;
+use std::path::PathBuf;
 
-use rio_net::config::{AuditBackend, Blockchain, Marketplaces, PasswordAuth, SecureBackend, SecurerAuth, SystemAuth};
-use rio_net::config::{BlockchainCfg, HttpCfg, MarketplacesCfg, SecurerCfg};
+use api::audit::config::AuditBackend;
+use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
+use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg};
+use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
+use api::deploy::config::ServicesCfg;
+
+use auth::config::{flow_modes, AuthenticationFlowCfg, Identity, IdentityCfg};
+use watch::config::{Streamer, StreamerCfg};
 use entitlement::config::{License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
-use audit::config::{Anchore, AnchoreCfg, Influx, LogsCfg};
 
 use rio_core::config::ConfigFile;
+use rio_core::crypto::keys::read_key_in_bytes;
+use rio_core::fs::rioconfig_config_path;
 
-use error::Error;
+use validator::ConfigValidator;
+use common::ui::UI;
+
+use error::{Error, Result};
+
+use http_gateway::config::prelude::*;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct Config {
-    pub http: HttpCfg,
-    //  Console user interface
+    //  The base listener configuration for https
+    pub https: HttpsCfg,
+    //  The streamer (http2, websocket) configuration
+    pub http2: StreamerCfg,
+    //  The serving directory for files shown in browser.
     pub ui: UiCfg,
     //  Where to pull and record metrics
-    pub prometheus: TelemetryCfg,
+    pub telemetry: TelemetryCfg,
+    //  The type of security to use. service_account to use.
+    pub identity: IdentityCfg,
     //  Where to store the hidden treasures
     pub vaults: SecurerCfg,
     //  What information to use for creating services
     pub services: ServicesCfg,
     //  The information needed to load the license
     pub licenses: LicensesCfg,
-    //  The information for posting in a separate logs db (influx)
-    //  TO-DO: This will be moved to blockchain (rocksdb) as doing analytics will be easy.
+    //  TO-DO: This will be removed as logs will be sent to blockchain (rocksdb) for doing analytics
     pub logs: LogsCfg,
     //  Blockchain API configuration.
     pub blockchain: BlockchainCfg,
     //  Marketplaces API configuration
     pub marketplaces: MarketplacesCfg,
     //  Security and vulnerabilty checker API
-    pub anchore: AnchoreCfg,
-    // Controller configuration
-    pub controller: ControllerCfg,
-    // Scheduler configuration
-    pub scheduler: SchedulerCfg,
-    // Vnc Server configuration
-    pub vnc: VNCCfg,
+    pub vulnerability: VulnerabilityCfg,
+    //  Ping health checker configuration
+    //  Enpoint point information must be provided as
+    //  example:
+    //  controller_endpoint = https://controller.rioos.sh:8999
+    pub ping: PinguyCfg,
 }
 
+/// dump the configuration
+impl Config {
+    pub fn dump(&self, ui: &mut UI) -> Result<()> {
+        ui.begin("Configuration")?;
+        ui.heading("[https]")?;
+        ui.para(&format!("{}:{}", self.https.listen, self.https.port))?;
+        ui.para(&format!(
+            "{:?} {:?}",
+            self.https.tls, self.https.tls_password
+        ))?;
+        ui.heading("[http2]")?;
+        ui.para(&format!("{}:{}", self.http2.listener, self.http2.port))?;
+        ui.para(&format!(
+            "{:?} {:?}",
+            self.http2.tls, self.http2.tls_password
+        ))?;
+        ui.heading("[telemetry]")?;
+        ui.para(&self.telemetry.endpoint)?;
+        ui.heading("[identity]")?;
+        ui.para(&format!("{:?}", &self.identity.enabled))?;
+        ui.para(&format!("{:?}", &self.identity.params))?;
+        ui.heading("[vaults]")?;
+        ui.para(&format!("{:?}", &self.vaults.backend))?;
+        ui.heading("[services]")?;
+        ui.para(&self.services.loadbalancer_imagein)?;
+        ui.para(&self.services.loadbalancer_imagename)?;
+        ui.para(&self.services.loadbalancer_cpu)?;
+        ui.para(&self.services.loadbalancer_mem)?;
+        ui.para(&self.services.loadbalancer_disk)?;
+        ui.heading("[licenses]")?;
+        ui.para(&self.licenses.so_file)?;
+        ui.heading("[logs]")?;
+        ui.para(&self.logs.influx_endpoint)?;
+        ui.para(&self.logs.influx_prefix)?;
+        ui.heading("[blockchain]")?;
+        ui.para(&self.blockchain.endpoint)?;
+        ui.heading("[marketplaces]")?;
+        ui.para(&self.marketplaces.endpoint)?;
+        ui.para(&self.marketplaces.username)?;
+        ui.para(&self.marketplaces.token)?;
+        ui.heading("[vulnerability]")?;
+        ui.para(&self.vulnerability.anchore_endpoint)?;
+        ui.para(&self.vulnerability.anchore_username)?;
+        ui.para(&self.vulnerability.anchore_password)?;
+        ui.heading("[ping]")?;
+        ui.para(&self.ping
+            .controller_endpoint
+            .clone()
+            .unwrap_or("".to_string()))?;
+        ui.para(&self.ping
+            .scheduler_endpoint
+            .clone()
+            .unwrap_or("".to_string()))?;
+        ui.para(&self.ping
+            .machineconsole_endpoint
+            .clone()
+            .unwrap_or("".to_string()))?;
+        ui.end("Loaded configuration")?;
+
+        Ok(())
+    }
+
+    /// Returns the a tuple for tls usage with
+    /// Option<(tls file location, bytes loaded from the name in the config toml file,
+    ///        tls password if present or empty string)>
+    fn tlspair_as_bytes(tls: Option<String>, tls_password: Option<String>) -> TLSPair {
+        tls.clone().and_then(|t| {
+            read_key_in_bytes(&PathBuf::from(t.clone()))
+                .map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string())))
+                .ok()
+        })
+    }
+}
+
+// Set all the defaults fo the config
 impl Default for Config {
     fn default() -> Self {
         Config {
-            http: HttpCfg::default(),
+            https: HttpsCfg::default(),
+            http2: StreamerCfg::default(),
             ui: UiCfg::default(),
-            prometheus: TelemetryCfg::default(),
+            telemetry: TelemetryCfg::default(),
+            identity: IdentityCfg::default(),
             vaults: SecurerCfg::default(),
             services: ServicesCfg::default(),
             licenses: LicensesCfg::default(),
             logs: LogsCfg::default(),
             blockchain: BlockchainCfg::default(),
             marketplaces: MarketplacesCfg::default(),
-            anchore: AnchoreCfg::default(),
-            controller: ControllerCfg::default(),
-            scheduler: SchedulerCfg::default(),
-            vnc: VNCCfg::default(),
+            vulnerability: VulnerabilityCfg::default(),
+            ping: PinguyCfg::default(),
         }
+    }
+}
+
+impl AuthenticationFlowCfg for Config {
+    fn modes(&self) -> (Vec<String>, HashMap<String, String>) {
+        flow_modes(self, rioconfig_config_path(None))
+    }
+}
+
+impl ConfigValidator for Config {
+    fn valid(&self) -> Result<()> {
+        vec![
+            self.https.valid(),
+            self.http2.valid(),
+            self.telemetry.valid(),
+            self.identity.valid(),
+            self.vaults.valid(),
+            self.licenses.valid(),
+            self.logs.valid(),
+            self.blockchain.valid(),
+            self.marketplaces.valid(),
+        ].iter()
+            .fold(Ok(()), |acc, x| match x {
+                &Ok(()) => return acc,
+                &Err(ref e) => {
+                    if acc.is_ok() {
+                        return Err(Error::MissingConfiguration(format!("{}", e)));
+                    }
+
+                    Err(Error::MissingConfiguration(format!(
+                        "{}\n{}",
+                        e,
+                        acc.unwrap_err()
+                    )))
+                }
+            })
     }
 }
 
@@ -69,36 +197,81 @@ impl ConfigFile for Config {
     type Error = Error;
 }
 
-/// Path to UI files to host over HTTP. If not set the UI will be disabled.
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(default)]
-pub struct UiCfg {
-    pub url: Option<String>,
-    pub root: Option<String>,
+/// GatewayCfg for HttpGateway
+impl GatewayCfg for Config {
+    fn listen_addr(&self) -> &IpAddr {
+        &self.https.listen
+    }
+
+    fn listen_port(&self) -> u16 {
+        self.https.port
+    }
+
+    fn tls_pair(&self) -> TLSPair {
+        Config::tlspair_as_bytes(self.tls(), self.tls_password())
+    }
+
+    fn tls(&self) -> Option<String> {
+        self.https
+            .tls
+            .clone()
+            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
+    }
+
+    fn tls_password(&self) -> Option<String> {
+        self.https.tls_password.clone()
+    }
+}
+
+/// Streamer configuration for Watcher
+impl Streamer for Config {
+    fn http2_port(&self) -> u16 {
+        self.http2.port
+    }
+
+    fn websocket_port(&self) -> u16 {
+        self.http2.websocket
+    }
+
+    fn http2_tls_pair(&self) -> TLSPair {
+        Config::tlspair_as_bytes(self.http2_tls(), self.http2_tls_password())
+    }
+
+    fn http2_tls(&self) -> Option<String> {
+        self.http2
+            .tls
+            .clone()
+            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
+    }
+
+    fn http2_tls_password(&self) -> Option<String> {
+        self.http2.tls_password.clone()
+    }
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
-pub struct ControllerCfg {
-    pub url: Option<String>,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(default)]
-pub struct SchedulerCfg {
-    pub url: Option<String>,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(default)]
-pub struct VNCCfg {
-    pub url: Option<String>,
+pub struct PinguyCfg {
+    pub controller_endpoint: Option<String>,
+    pub scheduler_endpoint: Option<String>,
+    pub machineconsole_endpoint: Option<String>,
 }
 
 //A delegate, that returns the metrics (prometheus) config from the loaded prometheus config
 impl Telemetry for Config {
     fn endpoint(&self) -> &str {
-        &self.prometheus.url
+        &self.telemetry.endpoint
+    }
+}
+
+//A delegate, that returns the identity the loaded identity config
+impl Identity for Config {
+    fn enabled(&self) -> Vec<String> {
+        self.identity.enabled.clone()
+    }
+
+    fn params(&self) -> HashMap<String, String> {
+        self.identity.params.clone()
     }
 }
 
@@ -112,29 +285,6 @@ impl SecurerAuth for Config {
     }
     fn token(&self) -> &str {
         &self.vaults.token
-    }
-}
-
-//Returns the stub services config
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(default)]
-pub struct ServicesCfg {
-    pub loadbalancer_imagein: String,
-    pub loadbalancer_imagename: String,
-    pub loadbalancer_cpu: String,
-    pub loadbalancer_mem: String,
-    pub loadbalancer_disk: String,
-}
-
-impl Default for ServicesCfg {
-    fn default() -> Self {
-        ServicesCfg {
-            loadbalancer_imagein: "container".to_string(),
-            loadbalancer_imagename: "registry.rioos.xyz:5000/rioos/loadbalancer".to_string(),
-            loadbalancer_cpu: "1".to_string(),
-            loadbalancer_mem: "1024 MiB".to_string(),
-            loadbalancer_disk: "1 GiB".to_string(),
-        }
     }
 }
 
@@ -176,25 +326,26 @@ impl Marketplaces for Config {
 }
 
 //A delegate, that returns the influx config from the loaded influx config
-impl Influx for Config {
-    fn endpoint(&self) -> &str {
-        &self.logs.url
+impl Logs for Config {
+    fn influx_endpoint(&self) -> &str {
+        &self.logs.influx_endpoint
     }
-    fn prefix(&self) -> &str {
-        &self.logs.prefix
+    fn influx_prefix(&self) -> &str {
+        &self.logs.influx_prefix
     }
 }
 
-//A delegate, that returns the anchore config from the loaded anchore config
-impl Anchore for Config {
-    fn endpoint(&self) -> &str {
-        &self.anchore.url
+//A delegate, that returns the vulnerability provider
+// Supported providers are anchore
+impl Vulnerability for Config {
+    fn anchore_endpoint(&self) -> &str {
+        &self.vulnerability.anchore_endpoint
     }
-    fn username(&self) -> &str {
-        &self.anchore.username
+    fn anchore_username(&self) -> &str {
+        &self.vulnerability.anchore_username
     }
-    fn password(&self) -> &str {
-        &self.anchore.password
+    fn anchore_password(&self) -> &str {
+        &self.vulnerability.anchore_password
     }
 }
 
@@ -208,21 +359,16 @@ impl License for Config {
     }
 }
 
-///// Authentication delegate configuration.
+/*
+TO-DO: 
+Use the bleow configuration for the events channel
+Rename the tx_pool_capacity to events_pool_capacity
 
-impl PasswordAuth for Config {}
-
-impl SystemAuth for Config {
-    fn serviceaccount_public_key(&self) -> Option<String> {
-        self.http.serviceaccount_public_key.clone()
-    }
-}
-
-/*// Memory pool configuration parameters.
+// Memory pool configuration parameters.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MemoryPoolConfig {
     /// Maximum number of uncommited transactions.
-    pub tx_pool_capacity: usize,
+    pub     tx_pool_capacity: usize,
     /// Sets the maximum number of messages that can be buffered on the event loop's
     /// notification channel before a send will fail.
     pub events_pool_capacity: EventsPoolCapacity,
@@ -243,32 +389,155 @@ mod tests {
 
     #[test]
     fn config_from_file() {
-        let content = r#"
-        [http]
-        listen = "0:0:0:0:0:0:0:1"
-        port = 7443
+        let content = r#"        
+        [https]
+        listen = "0.0.0.0"
+        port = 7443        
+        tls = "api-server.pfx"
+        tls_password = "TEAMRIOADVANCEMENT123"
+
+        [http2]
+        port      = 8443
+        websocket = 9443        
+        tls = "api-server.pfx"
+        tls_password = "TEAMRIOADVANCEMENT123"
+
+        [identity]
+        enabled = ["password", "service_account", "jwt", "passticket"]
+        params = { service_account = "service_account.pub" }
+        
+        [marketplaces]
+        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
+        username = "rioosdolphin@rio.company"
+        token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+
+        [blockchain]
+        endpoint = "http://localhost:7000"
 
         [ui]
-        root = "/some/path"
+        root = "/public"
 
-        [[targets]]
-        platform = "windows"
-        architecture = "x86_64"
+        [telemetry]
+        endpoint = "http://localhost:9090/api/v1"
+
+        [vaults]
+        backend = "Local"
+
+        [licenses]
+        so_file = "ShaferFilechck.so"
+        activation_code = ""
+
+        [logs]
+        influx_endpoint = "http://localhost:8086"
+        influx_prefix = "rioos_logs"
+
+        [vulnerability]
+        anchore_endpoint = "http://localhost:8228/v1"
+        anchore_username = ""
+        anchore_password = ""       
         "#;
 
         let config = Config::from_raw(&content).unwrap();
         assert_eq!(&format!("{}", config.http.listen), "::1");
-        assert_eq!(config.http.port, 7443);
+        assert_eq!(config.https.port, 7443);
+
+        assert_eq!(config.https.tls, "api-server.pfx");
+        assert_eq!(config.https.tls_password, "TEAMRIOADVANCEMENT123");
+
+        assert_eq!(config.http2.port, 8443);
+        assert_eq!(config.http2.websocker, 9443);
+
+        assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
+        assert_eq!(
+            config.marketplaces.token,
+            "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+        );
+        assert_eq!(
+            config.marketplaces.endpoint,
+            "https://marketplces.rioos.xyz:6443/api/v1"
+        );
+
+        assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
+
+        assert_eq!(config.ui.root, "/public");
+
+        assert_eq!(config.telemetry.endpoint, "http://localhost:9090/api/v1");
+
+        assert_eq!(config.identity.enabled, vec!["password", "token"]);
+
+        assert_eq!(config.vaults.backend, "Local");
+
+        assert_eq!(config.licenses.so_file, "ShaferFilechck.so");
+        assert_eq!(config.licenses.activation_code, "");
+
+        assert_eq!(config.logs.influx_endpoint, "http://localhost:8086");
+        assert_eq!(config.logs.influx_prefix, "rioos_logs");
+
+        assert_eq!(
+            config.vulnerability.anchore_endpoint,
+            "http://localhost:8086"
+        );
+        assert_eq!(config.vulnerability.anchore_username, "");
+        assert_eq!(config.vulnerability.anchore_password, "");
     }
 
     #[test]
-    fn config_from_file_defaults() {
-        let content = r#"
-        [http]
-        port = 9000
+    fn config_from_file() {
+        let content = r#"        
+        [https]
+        listen = "0.0.0.0"
+        port = 7443        
+
+        [marketplaces]
+        username = "rioosdolphin@rio.company"
+        token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"            
         "#;
 
         let config = Config::from_raw(&content).unwrap();
-        assert_eq!(config.http.port, 9000);
+        assert_eq!(&format!("{}", config.http.listen), "::1");
+        assert_eq!(config.https.port, 7443);
+
+        assert_eq!(config.https.tls, "api-server.pfx");
+        assert_eq!(config.https.tls_password, "TEAMRIOADVANCEMENT123");
+
+        assert_eq!(config.http2.port, 8443);
+        assert_eq!(config.http2.websocket, 9443);
+        assert_eq!(config.http2.tls, "api-server.pfx");
+        assert_eq!(config.http2.tls_password, "TEAMRIOADVANCEMENT123");
+
+        assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
+        assert_eq!(
+            config.marketplaces.token,
+            "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+        );
+        assert_eq!(
+            config.marketplaces.endpoint,
+            "https://marketplces.rioos.xyz:6443/api/v1"
+        );
+
+        assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
+
+        assert_eq!(config.ui.root, "/public");
+
+        assert_eq!(config.telemetry.endpoint, "http://localhost:9090/api/v1");
+
+        assert_eq!(config.identity.enabled, vec!["password", "token"]);
+
+        assert_eq!(config.vaults.backend, "Local");
+
+        assert_eq!(config.licenses.so_file, "ShaferFilechck.so");
+        assert_eq!(config.licenses.activation_code, "");
+
+        assert_eq!(config.logs.endpoint, "http://localhost:8086");
+        assert_eq!(config.logs.prefix, "rioos_logs");
+
+        assert_eq!(
+            config.vulnerability.anchore_endpoint,
+            "http://localhost:8086"
+        );
+        assert_eq!(config.vulnerability.anchore_username, "");
+        assert_eq!(config.vulnerability.anchore_password, "");
     }
+
 }

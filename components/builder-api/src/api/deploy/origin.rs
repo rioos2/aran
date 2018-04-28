@@ -9,15 +9,15 @@ use iron::status;
 use router::Router;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
 use error::Error;
 use error::ErrorMessage::{MustBeNumeric, MissingParameter};
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 use session::origin_ds::OriginDS;
 use protocol::api::origin::Origin;
@@ -92,11 +92,7 @@ impl OriginApi {
         match OriginDS::show(&self.conn, &params) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_name()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_name()))),
         }
     }
 
@@ -133,27 +129,15 @@ impl Api for OriginApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         //Origin API
-        router.post(
-            "/origins",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "origins",
-        );
+        router.post("/origins", XHandler::new(C { inner: create }).before(basic.clone()), "origins");
 
-        //TODO 
+        //TODO
         //without authentication
-        router.get(
-            "/origins",
-            XHandler::new(C { inner: list }),
-            "origin_list",
-        );
+        router.get("/origins", XHandler::new(C { inner: list }), "origin_list");
 
-        //TODO 
+        //TODO
         //without authentication
-        router.get(
-            "/origins/:name",
-            XHandler::new(C { inner: show }),
-            "origin_show",
-        );
+        router.get("/origins/:name", XHandler::new(C { inner: show }), "origin_show");
     }
 }
 

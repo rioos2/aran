@@ -10,10 +10,10 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
+pub mod config;
 pub mod models;
 pub mod error;
 pub mod vulnerable;
-pub mod config;
 
 pub use self::error::Result;
 

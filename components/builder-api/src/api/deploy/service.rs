@@ -8,13 +8,13 @@ use router::Router;
 
 use common::ui;
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use protocol::api::base::MetaFields;
 
 use deploy::models::service;
@@ -54,18 +54,10 @@ impl ServiceApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Services>>()?)?;
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match service::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(services) => Ok(render_json(status::Ok, &services)),
@@ -80,11 +72,7 @@ impl ServiceApi {
 
         match service::DataStore::show(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
@@ -127,11 +115,7 @@ impl ServiceApi {
         match service::DataStore::update(&self.conn, &unmarshall_body) {
             Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
         }
     }
 }
@@ -156,7 +140,7 @@ impl Api for ServiceApi {
             "/services",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.post".to_string())),
+            .before(TrustAccessed::new("rioos.service.post".to_string(),&*config)),
             "services",
         );
 
@@ -164,14 +148,14 @@ impl Api for ServiceApi {
             "/services/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.get".to_string())),
+            .before(TrustAccessed::new("rioos.service.get".to_string(),&*config)),
             "service_show",
         );
         router.get(
             "/services",
             XHandler::new(C { inner: list_blank })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.get".to_string())),
+            .before(TrustAccessed::new("rioos.service.get".to_string(),&*config)),
             "service_list_blank",
         );
 
@@ -179,7 +163,7 @@ impl Api for ServiceApi {
             "/services/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.put".to_string())),
+            .before(TrustAccessed::new("rioos.service.put".to_string(),&*config)),
             "service_update",
         );
     }
@@ -217,8 +201,10 @@ impl Validator for Services {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }

@@ -1,7 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-
 use futures::{Future, Sink};
 use futures::sync::mpsc;
 

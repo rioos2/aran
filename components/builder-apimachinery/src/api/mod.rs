@@ -1,3 +1,4 @@
+pub mod schema;
 pub mod authorize;
 pub mod base;
 pub mod deploy;

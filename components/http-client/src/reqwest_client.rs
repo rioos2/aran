@@ -13,10 +13,6 @@ use reqwest::header::{Authorization, Bearer, UserAgent};
 const USER_AGENT: &'static str = "Rio/OS Aran";
 const HTTP_TIMEOUT: u64 = 3_000;
 
-// lazy_static! {
-//     static  ref CLIENT_PROM_CERTIFICATE:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("client-prometheus.cert.pem").to_str().unwrap());
-// }
-
 fn reqwest_client(fs_root_path: Option<&Path>) -> Result<reqwest::Client> {
     let mut buf = Vec::new();
     if !fs_root_path.is_none() && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok() {

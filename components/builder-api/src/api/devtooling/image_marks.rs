@@ -13,14 +13,14 @@ use common::ui;
 use config::Config;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use protocol::api::schema::{dispatch, type_meta};
 
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 
 use protocol::api::devtool::ImageMarks;
@@ -168,7 +168,7 @@ impl Api for ImageMarksApi {
             "/imagemarks",
             XHandler::new(C { inner: create })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.post".to_string())),
+            .before(TrustAccessed::new("rioos.imagemark.post".to_string(),&*config)),
             "image_marks",
         );
 
@@ -176,14 +176,14 @@ impl Api for ImageMarksApi {
             "/imagemarks/:id",
             XHandler::new(C { inner: show })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagemark.get".to_string(),&*config)),
             "image_marks_show",
         );
         router.get(
             "/imagemarks",
             XHandler::new(C { inner: list })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagemark.get".to_string(),&*config)),
             "image_marks_list",
         );
 
@@ -191,7 +191,7 @@ impl Api for ImageMarksApi {
             "/imagemarks/:id",
             XHandler::new(C { inner: update })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.put".to_string())),
+            .before(TrustAccessed::new("rioos.imagemark.put".to_string(),&*config)),
             "image_marks_update",
         );
 
@@ -199,7 +199,7 @@ impl Api for ImageMarksApi {
             "/imagemarks/builds/:id",
             XHandler::new(C { inner: list_by_build })
             .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.get".to_string())),
+            .before(TrustAccessed::new("rioos.imagemark.get".to_string(),&*config)),
             "image_marks_list_by_build",
         );
     }

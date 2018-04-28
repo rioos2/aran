@@ -16,7 +16,7 @@
 
 use rioos_http::ApiClient as ReqwestClient;
 
-use rio_net::http::middleware::SecurerConn;
+use api::security::config::SecurerConn;
 use error::{Result, Error};
 
 use reqwest::IntoUrl;
@@ -39,9 +39,7 @@ impl EnvKeyClient {
         let url = url.into_url()?;
         Ok(EnvKeyClient {
             _token: token.to_string(),
-            _inner: ReqwestClient::new(url, "rioos", "v1", None).map_err(
-                Error::RioHttpClient,
-            )?,
+            _inner: ReqwestClient::new(url, "rioos", "v1", None).map_err(Error::RioHttpClient)?,
         })
     }
 }
@@ -61,9 +59,7 @@ impl EnvKeySecurer {
 
         let token = config.token.split("-").collect::<Vec<_>>();
 
-        Ok(EnvKeySecurer {
-            _client: EnvKeyClient::new(&config.endpoint, token[0])?,
-        })
+        Ok(EnvKeySecurer { _client: EnvKeyClient::new(&config.endpoint, token[0])? })
     }
 }
 

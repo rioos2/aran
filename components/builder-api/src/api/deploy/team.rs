@@ -9,15 +9,15 @@ use iron::status;
 use router::Router;
 
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::type_meta;
+use protocol::api::schema::type_meta;
 
 use config::Config;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 
 use session::team_ds::TeamDS;
 use protocol::api::team::Team;
@@ -52,11 +52,7 @@ impl TeamApi {
     pub fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Team>>()?)?;
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
         match TeamDS::create(&self.conn, &unmarshall_body) {
@@ -75,11 +71,7 @@ impl Api for TeamApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         //Team API
-        router.post(
-            "/teams",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "teams",
-        );
+        router.post("/teams", XHandler::new(C { inner: create }).before(basic.clone()), "teams");
     }
 }
 
@@ -98,11 +90,7 @@ impl Validator for Team {
             s.push("name".to_string());
         }
 
-        if self.get_metadata()
-            .get("origin")
-            .unwrap_or(&"".to_string())
-            .len() <= 0
-        {
+        if self.get_metadata().get("origin").unwrap_or(&"".to_string()).len() <= 0 {
             s.push("origin".to_string());
         }
 

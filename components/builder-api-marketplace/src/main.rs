@@ -1,11 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! ~~~~ This where everything starts: main starting point of the Rio/OS Aran server.
+//! ~~~~ This where everything starts: main starting point of the Rio.Marketplace server.
 #[macro_use]
 extern crate clap;
 extern crate env_logger;
-#[macro_use]
-extern crate lazy_static;
 
 extern crate rioos_common as common;
 extern crate rioos_core as rio_core;
@@ -14,23 +12,23 @@ extern crate rioos_marketplace_api as api;
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate lazy_static;
+
+use std::fmt;
+use std::process;
 use std::str::FromStr;
 use std::path::PathBuf;
-use std::thread::sleep;
-use std::time::Duration;
 
 use rio_core::config::ConfigFile;
 use rio_core::env as renv;
 use rio_core::fs::rioconfig_config_path;
-use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
+use common::ui::{Coloring, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR, UI};
 
 use api::{command, Config, Error, Result};
 
-const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
-
 lazy_static! {
     static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("marketplace.toml").to_str().unwrap());
-    static  ref SERVING_TLS_PFX:  PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("api-server.pfx").to_str().unwrap());
 }
 
 fn main() {
@@ -46,12 +44,12 @@ fn main() {
 
 fn app<'a, 'b>() -> clap::App<'a, 'b> {
     clap_app!(RIOOSAran =>
-        (version: VERSION)
-        (about: "Rio/OS api-server")
+        (version: api::VERSION)
+        (about: "Rio.Marketplace api-server")
         (@setting VersionlessSubcommands)
         (@setting SubcommandRequiredElseHelp)
         (@subcommand start =>
-            (about: "Run the rio marketplaces server")
+            (about: "Run the rio.marketplaces server")
             (@arg config: -c --config +takes_value
                 "Filepath to configuration file. [default: /var/lib/rioos/config/marketplaces.toml]")
             (@arg port: --port +takes_value "Listen port. [default: 6443]")
@@ -91,8 +89,13 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
         Ok(result) => result,
         Err(e) => return Err(e),
     };
-    sleep(Duration::new(2, 0));
-    start(ui, config)
+
+    match start(ui, config) {
+        Ok(_) => std::process::exit(0),
+        Err(e) => exit_with(e, 1),
+    }
+
+    Ok(())
 }
 
 fn sub_cli_migrate(ui: &mut UI) -> Result<()> {
@@ -102,27 +105,25 @@ fn sub_cli_migrate(ui: &mut UI) -> Result<()> {
 ///
 ///
 fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
-    let mut config = match args.value_of("config") {
-        Some(cfg_path) => try!(Config::from_file(cfg_path)),
-        None => {
-            let mut default_config = Config::default();
-
-            if let Some(identity_pkcs12_file) = SERVING_TLS_PFX.to_str() {
-                if SERVING_TLS_PFX.exists() {
-                    default_config.http.port = 6443;
-                    default_config.http.tls_pkcs12_file = Some(identity_pkcs12_file.to_string());
-                }
-            };
-            Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(default_config)
-        }
-    };
+    let mut config = load_config(args)?;
 
     if let Some(port) = args.value_of("port") {
-        if u16::from_str(port).map(|p| config.http.port = p).is_err() {
+        if u16::from_str(port).map(|p| config.https.port = p).is_err() {
             return Err(Error::BadPort(port.to_string()));
         }
     }
 
+    Ok(config)
+}
+
+fn load_config(args: &clap::ArgMatches) -> Result<Config> {
+    let config = match args.value_of("config") {
+        Some(cfg_path) => try!(Config::from_file(cfg_path)),
+        None => {
+            let mut default_config = Config::default();
+            Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(default_config)
+        }
+    };
     Ok(config)
 }
 /// Starts the aran-api server.
@@ -131,8 +132,6 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
 fn start(ui: &mut UI, config: Config) -> Result<()> {
     api::server::run(ui, config)
 }
-
-
 
 fn ui() -> UI {
     let isatty = if renv::var(NONINTERACTIVE_ENVVAR)
@@ -152,4 +151,12 @@ fn ui() -> UI {
         Coloring::Auto
     };
     UI::default_with(coloring, isatty)
+}
+
+fn exit_with<T>(err: T, code: i32)
+where
+    T: fmt::Display,
+{
+    println!("{}", err);
+    process::exit(code)
 }
