@@ -100,7 +100,7 @@ impl<'a> DataStore<'a> {
     }
 
     ///TO-DO need to use in future
-    /*pub fn show_by_assembly_factory(&self, scale_get: &IdGet) -> HorizontalScalingOutput {
+    pub fn show_by_assembly_factory(&self, scale_get: &IdGet) -> HorizontalScalingOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_scale_by_asmfacid_v1($1)",
@@ -112,7 +112,7 @@ impl<'a> DataStore<'a> {
             return Ok(Some(scale));
         }
         Ok(None)
-    }*/
+    }
 
     pub fn show(&self, scale_get: &IdGet) -> HorizontalScalingOutput {
         let conn = self.db.pool.get_shard(0)?;
