@@ -10,6 +10,7 @@ use error::Result;
 
 use super::node::Node;
 use common::ui::UI;
+use config::ConfigValidator;
 
 /// The main server for the Builder-API application. This should be run on the main thread.
 pub struct Server {
@@ -50,7 +51,9 @@ impl Server {
 /// Helper function for creating a new Server and running it. This function will block the calling
 /// thread.
 pub fn run(ui: &mut UI, config: Config) -> Result<()> {
+    config.valid()?;
+
     config.dump(ui)?;
-    
+
     Server::new(config).run(ui)
 }

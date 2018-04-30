@@ -66,16 +66,22 @@ impl Config {
     pub fn dump(&self, ui: &mut UI) -> Result<()> {
         ui.begin("Configuration")?;
         ui.heading("[https]")?;
-        ui.para(&format!("{}:{}", self.https.listen, self.https.port))?;
+        ui.para(
+            &format!("{}:{}", self.https.listen, self.https.port),
+        )?;
         ui.para(&format!(
             "{:?} {:?}",
-            self.https.tls, self.https.tls_password
+            self.https.tls,
+            self.https.tls_password
         ))?;
         ui.heading("[http2]")?;
-        ui.para(&format!("{}:{}", self.http2.listener, self.http2.port))?;
+        ui.para(
+            &format!("{}:{}", self.http2.listener, self.http2.port),
+        )?;
         ui.para(&format!(
             "{:?} {:?}",
-            self.http2.tls, self.http2.tls_password
+            self.http2.tls,
+            self.http2.tls_password
         ))?;
         ui.heading("[telemetry]")?;
         ui.para(&self.telemetry.endpoint)?;
@@ -106,18 +112,17 @@ impl Config {
         ui.para(&self.vulnerability.anchore_username)?;
         ui.para(&self.vulnerability.anchore_password)?;
         ui.heading("[ping]")?;
-        ui.para(&self.ping
-            .controller_endpoint
-            .clone()
-            .unwrap_or("".to_string()))?;
-        ui.para(&self.ping
-            .scheduler_endpoint
-            .clone()
-            .unwrap_or("".to_string()))?;
-        ui.para(&self.ping
-            .machineconsole_endpoint
-            .clone()
-            .unwrap_or("".to_string()))?;
+        ui.para(&self.ping.controller_endpoint.clone().unwrap_or(
+            "".to_string(),
+        ))?;
+        ui.para(&self.ping.scheduler_endpoint.clone().unwrap_or(
+            "".to_string(),
+        ))?;
+        ui.para(
+            &self.ping.machineconsole_endpoint.clone().unwrap_or(
+                "".to_string(),
+            ),
+        )?;
         ui.end("Loaded configuration")?;
 
         Ok(())
@@ -129,7 +134,9 @@ impl Config {
     fn tlspair_as_bytes(tls: Option<String>, tls_password: Option<String>) -> TLSPair {
         tls.clone().and_then(|t| {
             read_key_in_bytes(&PathBuf::from(t.clone()))
-                .map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string())))
+                .map(|p| {
+                    (t.clone(), p, tls_password.clone().unwrap_or("".to_string()))
+                })
                 .ok()
         })
     }
@@ -181,12 +188,9 @@ impl ConfigValidator for Config {
                     if acc.is_ok() {
                         return Err(Error::MissingConfiguration(format!("{}", e)));
                     }
-
-                    Err(Error::MissingConfiguration(format!(
-                        "{}\n{}",
-                        e,
-                        acc.unwrap_err()
-                    )))
+                    Err(Error::MissingConfiguration(
+                        format!("{}\n{}", e, acc.unwrap_err()),
+                    ))
                 }
             })
     }
@@ -212,10 +216,9 @@ impl GatewayCfg for Config {
     }
 
     fn tls(&self) -> Option<String> {
-        self.https
-            .tls
-            .clone()
-            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
+        self.https.tls.clone().map(|n| {
+            (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string()
+        })
     }
 
     fn tls_password(&self) -> Option<String> {
@@ -238,10 +241,9 @@ impl Streamer for Config {
     }
 
     fn http2_tls(&self) -> Option<String> {
-        self.http2
-            .tls
-            .clone()
-            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
+        self.http2.tls.clone().map(|n| {
+            (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string()
+        })
     }
 
     fn http2_tls_password(&self) -> Option<String> {
@@ -360,7 +362,7 @@ impl License for Config {
 }
 
 /*
-TO-DO: 
+TO-DO:
 Use the bleow configuration for the events channel
 Rename the tx_pool_capacity to events_pool_capacity
 
@@ -389,23 +391,23 @@ mod tests {
 
     #[test]
     fn config_from_file() {
-        let content = r#"        
+        let content = r#"
         [https]
         listen = "0.0.0.0"
-        port = 7443        
+        port = 7443
         tls = "api-server.pfx"
         tls_password = "TEAMRIOADVANCEMENT123"
 
         [http2]
         port      = 8443
-        websocket = 9443        
+        websocket = 9443
         tls = "api-server.pfx"
         tls_password = "TEAMRIOADVANCEMENT123"
 
         [identity]
         enabled = ["password", "service_account", "jwt", "passticket"]
         params = { service_account = "service_account.pub" }
-        
+
         [marketplaces]
         endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
         username = "rioosdolphin@rio.company"
@@ -434,7 +436,7 @@ mod tests {
         [vulnerability]
         anchore_endpoint = "http://localhost:8228/v1"
         anchore_username = ""
-        anchore_password = ""       
+        anchore_password = ""
         "#;
 
         let config = Config::from_raw(&content).unwrap();
@@ -483,15 +485,15 @@ mod tests {
 
     #[test]
     fn config_from_file() {
-        let content = r#"        
+        let content = r#"
         [https]
         listen = "0.0.0.0"
-        port = 7443        
+        port = 7443
 
         [marketplaces]
         username = "rioosdolphin@rio.company"
         token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"            
+        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
         "#;
 
         let config = Config::from_raw(&content).unwrap();
