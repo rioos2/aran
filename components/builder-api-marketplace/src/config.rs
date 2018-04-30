@@ -32,10 +32,13 @@ impl Config {
     pub fn dump(&self, ui: &mut UI) -> Result<()> {
         ui.begin("Configuration")?;
         ui.heading("[https]")?;
-        ui.para(&format!("{}:{}", self.https.listen, self.https.port))?;
+        ui.para(
+            &format!("{}:{}", self.https.listen, self.https.port),
+        )?;
         ui.para(&format!(
             "{:?} {:?}",
-            self.https.tls, self.https.tls_password
+            self.https.tls,
+            self.https.tls_password
         ))?;
         ui.heading("[identity]")?;
         //ui.para(&format!("{:?}", &self.identity.enabled.into_iter().collect()))?;
@@ -51,11 +54,63 @@ impl Config {
     fn tlspair_as_bytes(tls: Option<String>, tls_password: Option<String>) -> TLSPair {
         tls.clone().and_then(|t| {
             read_key_in_bytes(&PathBuf::from(t.clone()))
-                .map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string())))
+                .map(|p| {
+                    (t.clone(), p, tls_password.clone().unwrap_or("".to_string()))
+                })
                 .ok()
         })
     }
 }
+
+pub trait ConfigValidator {
+    fn valid(&self) -> Result<()>;
+}
+
+
+impl ConfigValidator for Config {
+    fn valid(&self) -> Result<()> {
+        vec![self.https.valid()].iter().fold(
+            Ok(()),
+            |acc, x| match x {
+                &Ok(()) => return acc,
+                &Err(ref e) => {
+                    if acc.is_ok() {
+                        return Err(Error::MissingConfiguration(format!("{}", e)));
+                    }
+                    Err(Error::MissingConfiguration(
+                        format!("{}\n{}", e, acc.unwrap_err()),
+                    ))
+                }
+            },
+        )
+    }
+}
+
+
+/// Validate the presence of listener, port, and tls
+impl ConfigValidator for HttpsCfg {
+    fn valid(&self) -> Result<()> {
+        if self.tls.is_none() {
+            return Err(Error::MissingConfiguration(
+                "Missing  in api.toml. [https] → tls".to_string(),
+            ));
+        }
+
+        let tls_location = PathBuf::from(&*rioconfig_config_path(None)
+            .join(self.tls.clone().unwrap())
+            .to_str()
+            .unwrap());
+
+        if !tls_location.exists() {
+            return Err(Error::MissingConfiguration(
+                format!("File Not Found at {}", tls_location.display()),
+            ));
+        }
+
+        Ok(())
+    }
+}
+
 
 impl AuthenticationFlowCfg for Config {
     fn modes(&self) -> (Vec<String>, HashMap<String, String>) {
@@ -92,10 +147,9 @@ impl GatewayCfg for Config {
     }
 
     fn tls(&self) -> Option<String> {
-        self.https
-            .tls
-            .clone()
-            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
+        self.https.tls.clone().map(|n| {
+            (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string()
+        })
     }
 
     fn tls_password(&self) -> Option<String> {
@@ -123,7 +177,7 @@ mod tests {
         let content = r#"
         [https]
         listen = "0.0.0.0"
-        port = 6443        
+        port = 6443
         tls = "api-server.pfx"
         tls_password = "TEAMRIOADVANCEMENT123"
 

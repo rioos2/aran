@@ -1,6 +1,5 @@
-[http]
+[https]
 listen = "0.0.0.0"
 port = 6443
-tls_pkcs12_file = "api-server.pfx"
-tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
-
+tls = "api-server.pfx"
+tls_password = "TEAMRIOADVANCEMENT123"
