@@ -41,6 +41,13 @@ SETOF horizontal_scalings AS $$
                   END
                   $$ LANGUAGE PLPGSQL STABLE;
 
+CREATE OR REPLACE FUNCTION get_scale_by_asmfacid_v1(asm_fac_id text) RETURNS
+SETOF horizontal_scalings AS $$
+                  BEGIN
+                    RETURN QUERY SELECT * FROM horizontal_scalings where object_meta @> json_build_object('owner_references',json_build_array(json_build_object('uid',asm_fac_id)))::jsonb;
+                    RETURN;
+                  END
+                  $$ LANGUAGE PLPGSQL STABLE;
 
 CREATE OR REPLACE FUNCTION set_hs_status_v1 (hid bigint, hs_status JSONB) RETURNS
 SETOF horizontal_scalings AS $$

@@ -217,8 +217,27 @@ describe('Scaling API', function() {
             done(err);
           });
       });
+      it('returns the horizontalscaling by assembly factory id', function(done) {
+        request.get('/horizontalscaling/assemblyfactory/'+globalAny.asm_fac_id)
+        .ca(globalAny.rootCA)
+          .set('Authorization', globalAny.bobo_bearer)
+          .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+          .expect(200)
+          .end(function(err, res) {
+            done(err);
+          });
+      });
 
-
+      it('returns the horizontalscaling by wrong  assembly factory id', function(done) {
+        request.get('/horizontalscaling/assemblyfactory/9876543456788765')
+        .ca(globalAny.rootCA)
+          .set('Authorization', globalAny.bobo_bearer)
+          .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+          .expect(404)
+          .end(function(err, res) {
+            done(err);
+          });
+      });
 
   });
   });
