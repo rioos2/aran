@@ -319,6 +319,7 @@ impl Client {
                                         i.object_meta().account,
                                         ips_ports.0.into_iter().collect(),
                                         ips_ports.1.into_iter().collect(),
+                                        i.get_status().get_phase(),
                                         i.get_created_at()]
                 })
                 .collect(),
