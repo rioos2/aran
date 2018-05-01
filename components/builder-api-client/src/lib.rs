@@ -650,33 +650,7 @@ impl Client {
         Ok(strcon.items)
     }
 
-    pub fn get_storagepool_by_scid(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("/storagespool/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
-
-        if res.status() != StatusCode::Ok {
-            return Err(Error::RioHttpClient(err_from_response(res)));
-        };
-        let mut strpool: ResponseList<Vec<storage::StoragePool>> = res.json()?;
-        Ok(
-            strpool
-                .items
-                .iter_mut()
-                .map(|i| {
-                    vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_status().get_phase(),
-                    i.get_created_at(),
-                ]
-                })
-                .collect(),
-        )
-    }
-    pub fn get_storagepool_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<storage::StoragePool>> {
+    pub fn get_storagepool_by_scid(&self, token: &str, email: &str, id: &str) -> Result<Vec<storage::StoragePool>> {
         let mut res = self.0
             .get(&format!("/storageconnectors/{}/storagespool", id))
             .headers(self.add_authz(token, email))
@@ -686,11 +660,9 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let strpool: ResponseList<Vec<storage::StoragePool>> = res.json()?;
         Ok(strpool.items)
     }
-
 
     fn add_authz(&self, token: &str, email: &str) -> Headers {
         let mut headers = Headers::new();

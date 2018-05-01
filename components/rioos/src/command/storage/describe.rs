@@ -13,8 +13,19 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
 
     let storageconn = rio_client.get_storageconnector_by_id(&token, &email, &id)?;
 
-    let storagepool = rio_client.get_storagepool_by_scid(&token, &email, &id)?;
+    let mut storagepool = rio_client.get_storagepool_by_scid(&token, &email, &id)?;
 
+    let result = storagepool
+        .iter_mut()
+        .map(|i| {
+            vec![
+                i.get_id(),
+                i.object_meta().name,
+                i.get_status().get_phase(),
+                i.get_created_at(),
+            ]
+        })
+        .collect::<Vec<_>>();
     ui.br()?;
     ui.heading("StoragesConnector:")?;
 
@@ -39,7 +50,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
 
     let title = row!["Id", "Name", "Status", "Hrs ago"];
 
-    pretty_table(storagepool.to_owned(), title);
+    pretty_table(result.to_owned(), title);
     ui.end(format!(
         "{} records listed.",
         storagepool.to_owned().len()

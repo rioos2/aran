@@ -20,7 +20,8 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
     ui.para(&format!("Enabled : {}", result.get_enabled()))?;
-    ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
+    let time = ui.hours_ago(result.get_created_at())?;
+    ui.para(&format!("Hrs ago: {}", time))?;
 
     let storageconn = rio_client.get_storageconnector_by_id(
         &token,
@@ -43,21 +44,32 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         "Status: {}",
         storageconn.get_status().get_phase()
     ))?;
-    ui.para(
-        &format!("Hrs ago: {}", storageconn.get_created_at()),
-    )?;
+    let time = ui.hours_ago(storageconn.get_created_at())?;
 
-    let storagepool = rio_client.get_storagepool_by_scid(
+    ui.para(&format!("Hrs ago: {}", time))?;
+
+    let mut storagepool = rio_client.get_storagepool_by_scid(
         &token,
         &email,
         &storageconn.get_id(),
     )?;
+    let result = storagepool
+        .iter_mut()
+        .map(|i| {
+            vec![
+                i.get_id(),
+                i.object_meta().name,
+                i.get_status().get_phase(),
+                ui.hours_ago(i.get_created_at())?,
+            ]
+        })
+        .collect::<Vec<_>>();
 
     ui.heading("StoragesPool list:")?;
 
     let title = row!["Id", "Name", "Status", "Hrs ago"];
 
-    pretty_table(storagepool.to_owned(), title);
+    pretty_table(result.to_owned(), title);
     ui.end(format!(
         "{} records listed.",
         storagepool.to_owned().len()

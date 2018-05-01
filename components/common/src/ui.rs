@@ -8,6 +8,9 @@ use uuid::Uuid;
 use std::fs::{self, File};
 use rpassword::read_password;
 use std::process::{self, Command};
+use chrono;
+use chrono::prelude::*;
+use chrono_humanize;
 
 use ansi_term::Colour;
 use pbr;
@@ -381,6 +384,15 @@ impl UI {
 
         fs::remove_file(tmp_file_path)?;
         Ok(out)
+    }
+    pub fn hours_ago(&mut self, time: String) -> Result<String> {
+        let now_time = DateTime::parse_from_rfc3339(&Utc::now().to_rfc3339().to_string()).unwrap();
+        let time_stamp = DateTime::parse_from_rfc3339(&time.to_string()).unwrap();
+        let diff = now_time.timestamp() - time_stamp.timestamp();
+
+        let dt = chrono::Local::now() - chrono::Duration::seconds(diff);
+        let ht = chrono_humanize::HumanTime::from(dt);
+        Ok(ht.to_string())
     }
 
     fn write_heading<T: ToString>(stream: &mut OutputStream, color: Colour, symbol: char, message: T) -> Result<()> {
