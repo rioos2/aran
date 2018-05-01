@@ -273,7 +273,20 @@ impl Client {
         Ok(())
     }
 
+    pub fn create_vertical_scaling(&self, vscale: scale::VerticalScaling, token: &str, email: &str) -> Result<()> {
+        let res = self.0
+            .post(&format!("verticalscaling"))
+            .body(Body::from(serde_json::to_string(&vscale)?))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
 
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioHttpClient(err_from_response(res)));
+        };
+
+        Ok(())
+    }
 
     pub fn get_assembly_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
