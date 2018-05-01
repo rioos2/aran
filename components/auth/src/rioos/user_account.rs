@@ -45,30 +45,8 @@ impl UserAccountAuthenticate {
         let mut account_get = session::AccountGet::new();
         account_get.set_email(username.clone());
         account_get.set_password(password);
-        match sessions::DataStore::get_account(&datastore, &account_get) {
-            Ok(opt_account) => {
-                let account = opt_account.unwrap();
-                GoofyCrypto::new()
-                    .verify_password(
-                        &account.get_password().to_string(),
-                        &account_get.get_password(),
-                    )
-                    .map_err(|e| {
-                        error::Error::Auth(rioos::AuthErr {
-                            error: String::from("Password match not found"),
-                            error_description: format!("{}", e),
-                        })
-                    })?;
-
-                Ok(true)
-            }
-            Err(err) => {
-                return Err(error::Error::Auth(rioos::AuthErr {
-                    error: format!("Couldn't find {} in session.", username.clone()),
-                    error_description: format!("{}", err),
-                }))
-            }
-        }
+        try!(get_account(&datastore, account_get, true));
+        Ok(true)
     }
 
     // it authenticates username and bearer token values
@@ -124,28 +102,44 @@ impl UserAccountAuthenticate {
     // first it validates some static header and payload claims
     // then token is valid or not
     pub fn from_email_and_webtoken(datastore: &DataStoreConn, email: String, webtoken: String) -> Result<bool> {
+        let mut account_get = session::AccountGet::new();
+        account_get.set_email(email);
+        try!(get_account(&datastore, account_get, false));
+
         let jwt = try!(JWTAuthenticator::new(webtoken.clone()));
         try!(jwt.has_correct_issuer(LEGACYUSERACCOUNTISSUER));
         try!(jwt.has_correct_subject(USERACCOUNTNAMECLAIM));
         try!(jwt.has_secret_name_claim(SECRETNAMECLAIM));
         try!(jwt.has_account_uid_claim(USERACCOUNTUIDCLAIM));
         try!(jwt.has_correct_token_from_secret(datastore, SECRETUIDCLAIM));
-        let mut session_tk: SessionCreate = SessionCreate::new();
-        session_tk.set_email(email);
-        session_tk.set_token(webtoken.clone());
-
-        let _session = try!(session_create(datastore, session_tk));
         Ok(true)
     }
 }
 
-pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> Result<Session> {
-    match sessions::DataStore::find_account(&conn, &request) {
-        Ok(session) => return Ok(session),
-        Err(e) => {
+fn get_account(conn: &DataStoreConn, account_get: AccountGet, verify_password: bool) -> Result<()> {
+    match sessions::DataStore::get_account(&conn, &account_get) {
+        Ok(opt_account) => {
+            let account = opt_account.unwrap();
+            if verify_password {
+                GoofyCrypto::new()
+                    .verify_password(
+                        &account.get_password().to_string(),
+                        &account_get.get_password(),
+                    )
+                    .map_err(|e| {
+                        error::Error::Auth(rioos::AuthErr {
+                            error: String::from("Password match not found"),
+                            error_description: format!("{}", e),
+                        })
+                    })?;
+                return Ok(());
+            }
+            Ok(())
+        }
+        Err(err) => {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!("Couldn not create session for the account."),
-                error_description: format!("{}", e),
+                error: format!("Couldn't find {} in session.", account_get.get_email()),
+                error_description: format!("{}", err),
             }))
         }
     }

@@ -53,14 +53,24 @@ impl SeriveAccountApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<ServiceAccount>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<ServiceAccount>>()?,
+        )?;
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
         unmarshall_body.set_roles(vec![SERVICEACCOUNTDEFAULT.to_string()]);
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
 
         match ServiceAccountDS::create(&self.conn, &unmarshall_body) {
             Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
@@ -82,21 +92,19 @@ impl SeriveAccountApi {
     //GET: /serviceaccount/:id
     //Input id - u64 as input and returns a serviceaccount
     fn show(&self, req: &mut Request) -> AranResult<Response> {
-        let (org, name) = {
+        let name = {
             let params = req.extensions.get::<Router>().unwrap();
-            //  let org_name = params.find("origin_id").unwrap().to_owned();
-            let org_name = "".to_string();
             let ser_name = params.find("serviceaccount").unwrap().to_owned();
-            (org_name, ser_name)
+            ser_name
         };
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?}{} ", org, name));
-        let mut id = IdGet::with_id(name.clone().to_string());
-        id.set_name(org.clone().to_string());
-        match ServiceAccountDS::show(&self.conn, &id) {
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", name));
+        match ServiceAccountDS::show(&self.conn, &IdGet::with_id(name.clone().to_string())) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), name))),
+            Ok(None) => Err(not_found_error(
+                &format!("{} for {}", Error::Db(RecordsNotFound), name),
+            )),
         }
     }
 
@@ -110,16 +118,26 @@ impl SeriveAccountApi {
             (org_name, ser_name)
         };
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<ServiceAccount>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<ServiceAccount>>()?,
+        )?;
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
 
         match ServiceAccountDS::update(&self.conn, &unmarshall_body) {
             Ok(Some(serviceaccount)) => Ok(render_json(status::Ok, &serviceaccount)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), name.clone()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                name.clone()
+            ))),
         }
     }
 
@@ -163,13 +181,33 @@ impl Api for SeriveAccountApi {
         let secret_update = move |req: &mut Request| -> AranResult<Response> { _self.secret_update(req) };
 
         //serviceAccount API
-        router.post("/origins/:origin_id/serviceaccounts", XHandler::new(C { inner: create }), "service_accounts");
-        router.get("/serviceaccounts", C { inner: list_blank }, "service_account_list");
-        router.get("/origins/:origin_id/serviceaccounts/:serviceaccount", C { inner: show_by_origin }, "service_account_get_by_origin");
+        router.post(
+            "/origins/:origin_id/serviceaccounts",
+            XHandler::new(C { inner: create }),
+            "service_accounts",
+        );
+        router.get(
+            "/serviceaccounts",
+            C { inner: list_blank },
+            "service_account_list",
+        );
+        router.get(
+            "/origins/:origin_id/serviceaccounts/:serviceaccount",
+            C { inner: show_by_origin },
+            "service_account_get_by_origin",
+        );
 
-        router.put("/origins/:origin_id/serviceaccounts/:serviceaccount", C { inner: secret_update }, "service_account_secret_update");
+        router.put(
+            "/origins/:origin_id/serviceaccounts/:serviceaccount",
+            C { inner: secret_update },
+            "service_account_secret_update",
+        );
 
-        router.get("/serviceaccounts/:serviceaccount", C { inner: show }, "service_account_get");
+        router.get(
+            "/serviceaccounts/:serviceaccount",
+            C { inner: show },
+            "service_account_get",
+        );
     }
 }
 
