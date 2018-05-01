@@ -20,13 +20,13 @@ impl ServiceAccountAuthenticate {
     // first it validates some static header and payload claims
     // then token is valid or not
     pub fn from_name_and_webtoken(datastore: &DataStoreConn, name: String, webtoken: String, key: PathBuf) -> error::Result<bool> {
+        try!(get_service_account(datastore, name));
         let jwt = try!(JWTAuthenticator::new(webtoken.clone()));
         try!(jwt.has_correct_issuer(LEGACYUSERACCOUNTISSUER));
         try!(jwt.has_correct_subject(SERVICEACCOUNTNAMECLAIM));
         try!(jwt.has_secret_name_claim(SECRETNAMECLAIM));
         try!(jwt.has_account_uid_claim(SERVICEACCOUNTUIDCLAIM));
         try!(jwt.has_correct_token_from_path(key));
-        try!(get_service_account(datastore, name));
         Ok(true)
     }
 }

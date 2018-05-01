@@ -102,17 +102,16 @@ impl UserAccountAuthenticate {
     // first it validates some static header and payload claims
     // then token is valid or not
     pub fn from_email_and_webtoken(datastore: &DataStoreConn, email: String, webtoken: String) -> Result<bool> {
+        let mut account_get = session::AccountGet::new();
+        account_get.set_email(email);
+        try!(get_account(&datastore, account_get, false));
+
         let jwt = try!(JWTAuthenticator::new(webtoken.clone()));
         try!(jwt.has_correct_issuer(LEGACYUSERACCOUNTISSUER));
         try!(jwt.has_correct_subject(USERACCOUNTNAMECLAIM));
         try!(jwt.has_secret_name_claim(SECRETNAMECLAIM));
         try!(jwt.has_account_uid_claim(USERACCOUNTUIDCLAIM));
         try!(jwt.has_correct_token_from_secret(datastore, SECRETUIDCLAIM));
-
-        let mut account_get = session::AccountGet::new();
-        account_get.set_email(email);
-        try!(get_account(&datastore, account_get, false));
-
         Ok(true)
     }
 }
