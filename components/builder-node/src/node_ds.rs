@@ -6,6 +6,7 @@ use chrono::prelude::*;
 use error::{Result, Error};
 use itertools::Itertools;
 use std::ops::Div;
+use std::collections::BTreeMap;
 
 use protocol::api::node;
 use protocol::api::base::{IdGet, MetaFields};
@@ -193,9 +194,13 @@ fn get_statistics(client: &PrometheusClient, cpu_nodes_collected: Vec<node::Prom
         .into_iter()
         .map(|x| { node_statistics = x.into(); })
         .collect::<Vec<_>>();
-    Ok(append_network_speed(
-        node_statistics,
-        collect_network(client)?,
+
+    Ok(append_process(
+        append_network_speed(
+            node_statistics,
+            collect_network(client)?,
+        )?,
+        collect_process(client)?,
     )?)
 }
 
@@ -277,6 +282,20 @@ fn collect_network(client: &PrometheusClient) -> Result<Vec<node::PromResponse>>
         "",
     );
     Ok(Collector::new(client, network_scope).network_metric()?)
+}
+
+fn collect_process(client: &PrometheusClient) -> Result<Vec<node::PromResponse>> {
+    //collect the process_metric for node
+    let process_scope = collect_scope(
+        vec![
+            "node_process_cpu".to_string(),
+            "node_process_mem".to_string(),
+        ],
+        vec![],
+        "",
+        "",
+    );
+    Ok(Collector::new(client, process_scope).process_metric()?)
 }
 
 fn collect_os_usage(client: &PrometheusClient) -> Result<(Vec<node::PromResponse>, Vec<node::PromResponse>)> {
@@ -399,6 +418,67 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
         })
         .collect::<Vec<_>>()
 }
+
+
+fn append_process(nodes: Vec<node::NodeStatistic>, mut process: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
+    Ok(
+        nodes
+            .into_iter()
+            .map(|mut x| if let node::Data::Vector(ref mut instancevec) =
+                process[0].clone().data
+            {
+                let mut net_collection = Vec::new();
+                instancevec
+                    .iter()
+                    .map(|y| if x.get_name() ==
+                        y.metric.get("instance").unwrap().to_string()
+                    {
+                        net_collection.push(y.clone())
+                    })
+                    .collect::<Vec<_>>();
+                x.set_process(group_process(&net_collection));
+                x
+            } else {
+                return x;
+            })
+            .collect::<Vec<_>>(),
+    )
+}
+
+
+fn group_process(process: &Vec<node::InstantVecItem>) -> Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>> {
+    let merged = process
+        .iter()
+        .flat_map(|s| s.metric.get("__name__"))
+        .collect::<Vec<_>>()
+        .into_iter()
+        .unique()
+        .collect::<Vec<_>>();
+
+    merged
+        .into_iter()
+        .map(|x| {
+            let mut pro = BTreeMap::new();
+            let mut a = Vec::new();
+            process
+                .into_iter()
+                .map(|y| if x == y.metric.get("__name__").unwrap() {
+                    let mut b = BTreeMap::new();
+                    b.insert("pid".to_string(), y.metric.get("pid").unwrap().to_string());
+                    b.insert(
+                        "command".to_string(),
+                        y.metric.get("command").unwrap().to_string(),
+                    );
+                    b.insert("value".to_string(), y.value.clone().1);
+                    a.push(b)
+                })
+                .collect::<Vec<_>>();
+            pro.insert(x.to_string(), a);
+            pro
+        })
+        .collect::<_>()
+}
+
 
 fn collect_scope(metric_scope: Vec<String>, labels: Vec<String>, duration: &str, avg_by: &str) -> CollectorScope {
     CollectorScope {
