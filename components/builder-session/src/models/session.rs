@@ -126,42 +126,6 @@ impl DataStore {
         }
     }
 
-    /*pub fn get_session_by_token(datastore: &DataStoreConn, session: &str) -> Result<Option<session::Session>> {
-        let conn = datastore.pool.get_shard(0)?;
-
-        let rows = conn.query(
-            "SELECT * FROM get_account_session_by_token_v1($1)",
-            &[&session_get.get_token()],
-        ).map_err(Error::SessionGet)?;
-        if rows.len() != 0 {
-            let row = rows.get(0);
-            let mut session = session::Session::new();
-            let id = row.get("id");
-            session.set_id(id);
-            let email: String = row.get("email");
-            session.set_email(email);
-            let name: String = row.get("name");
-            session.set_name(name);
-            let token: String = row.get("token");
-            session.set_token(token);
-            let mut flags = privilege::FeatureFlags::empty();
-            if row.get("is_admin") {
-                flags.insert(privilege::ADMIN);
-            }
-            if row.get("is_service_access") {
-                flags.insert(privilege::SERVICE_ACCESS);
-            }
-            if row.get("is_default_worker") {
-                flags.insert(privilege::DEFAULT_ACCESS);
-            }
-            session.set_flags(flags.bits());
-            Ok(Some(session))
-        } else {
-            Ok(None)
-        }
-    }
-*/
-
     pub fn get_session(datastore: &DataStoreConn, session_get: &session::SessionGet) -> Result<Option<session::Session>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
