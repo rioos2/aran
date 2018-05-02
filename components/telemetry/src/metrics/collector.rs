@@ -125,6 +125,27 @@ impl<'a> Collector<'a> {
         Ok(content_datas)
     }
 
+
+    pub fn process_metric(&self) -> Result<Vec<PromResponse>> {
+        let mut content_datas = vec![];
+
+        let process_query = Functions::Network(AvgInfo {
+            operator: Operators::Process(SumInfo {
+                labels: self.scope.labels.clone(),
+                metric: self.scope.metric_names.clone(),
+                total: self.scope.last_x_minutes.clone(),
+            }),
+        });
+
+        let content = self.client.pull_metrics(&format!("{}", process_query))?;
+
+        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+
+        content_datas.push(response);
+
+        Ok(content_datas)
+    }
+
     //os usage metric of the assemblys
     pub fn metric_by_os_usage(&mut self) -> Result<(Vec<PromResponse>, Vec<PromResponse>)> {
         let content_datas = self.avg_collect()?;

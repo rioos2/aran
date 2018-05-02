@@ -13,6 +13,7 @@ pub enum Functions {
     Sum(AvgInfo),
     SumDisk(AvgInfo),
     Network(AvgInfo),
+    Process(AvgInfo),
 }
 
 pub enum Operators {
@@ -21,6 +22,7 @@ pub enum Operators {
     Sum(SumInfo),
     SumDisk(SumInfo),
     Network(SumInfo),
+    Process(SumInfo),
 }
 
 pub struct AvgInfo {
@@ -68,6 +70,7 @@ impl fmt::Display for Functions {
             Functions::Sum(ref a) => format!("{}", a.operator),
             Functions::SumDisk(ref a) => format!("{}", a.operator),
             Functions::Network(ref a) => format!("{}", a.operator),
+            Functions::Process(ref a) => format!("{}", a.operator),
         };
         write!(f, "{}", msg)
     }
@@ -98,8 +101,19 @@ impl fmt::Display for Operators {
                         format!("{}={}{}{}{}", data[0], '"', data[1], '"', ",")
                     })
                     .collect();
-                let r: Vec<String> = i.metric.clone().into_iter().map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}")).collect::<Vec<_>>();
-                format!("({}-{}-{})/{}({}) *100", r[0], r[1], r[2], i.total, i.metric[0])
+                let r: Vec<String> = i.metric
+                    .clone()
+                    .into_iter()
+                    .map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}"))
+                    .collect::<Vec<_>>();
+                format!(
+                    "({}-{}-{})/{}({}) *100",
+                    r[0],
+                    r[1],
+                    r[2],
+                    i.total,
+                    i.metric[0]
+                )
             }
             //generate the query to get usage of node memory
             Operators::SumDisk(ref i) => {
@@ -112,7 +126,11 @@ impl fmt::Display for Operators {
                     })
                     .collect();
 
-                let r: Vec<String> = i.metric.clone().into_iter().map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}")).collect::<Vec<_>>();
+                let r: Vec<String> = i.metric
+                    .clone()
+                    .into_iter()
+                    .map(|x| format!("{}({}{}{}{})", i.total, x, "{", s, "}"))
+                    .collect::<Vec<_>>();
                 format!("({} - {})/ {}({}) *100", r[0], r[1], i.total, i.metric[0],)
             }
             Operators::NoOp(ref i) => {
@@ -139,6 +157,18 @@ impl fmt::Display for Operators {
                     '"',
                     "}",
                     i.total
+                )
+            }
+
+            Operators::Process(ref i) => {
+                format!(
+                    "{}__name__=~{}{}|{}{}{}",
+                    "{",
+                    '"',
+                    i.metric[0],
+                    i.metric[1],
+                    '"',
+                    "}",
                 )
             }
         };
