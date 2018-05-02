@@ -149,7 +149,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
 
-    let time = ui.hours_ago(result.get_created_at())?;
+    let time = ui.hours_ago(result.get_created_at()).unwrap_or("now".to_string());
     ui.para(&format!("Hrs Ago: {}", time))?;
 
     ui.heading("Conditions")?;
