@@ -23,7 +23,7 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     ui.br()?;
     ui.para("Enter your credentials.")?;
     let userid = prompt_userid(ui)?;
-    let password = prompt_password(ui)?;
+    let password = ui.prompt_ask("Password", None)?;
 
     let account: Session = login(ui, client, &userid, &password)?;
 
@@ -68,19 +68,4 @@ fn prompt_userid(ui: &mut UI) -> Result<String> {
         None => env::var(AUTH_TOKEN_ENVVAR).ok(),
     };
     Ok(ui.prompt_ask("Userid", default.as_ref().map(|x| &**x))?)
-}
-
-fn prompt_password(ui: &mut UI) -> Result<String> {
-    let config = config::load()?;
-    let default = match config.auth_token {
-        Some(o) => {
-            ui.para(
-                "You already have a default auth token set up, but feel free to change it \
-                 if you wish.",
-            )?;
-            Some(o)
-        }
-        None => env::var(AUTH_TOKEN_ENVVAR).ok(),
-    };
-    Ok(ui.prompt_ask("Password", default.as_ref().map(|x| &**x))?)
 }

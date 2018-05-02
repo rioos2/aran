@@ -15,6 +15,7 @@ extern crate serde_json;
 
 extern crate linked_hash_map;
 extern crate time;
+extern crate chrono_humanize;
 
 pub mod api;
 pub mod error;
