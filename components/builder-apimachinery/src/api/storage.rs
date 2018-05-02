@@ -72,9 +72,9 @@ impl Storage {
     //Convert it using Into or From<String>
     pub fn get_disks_str(&self) -> String {
         self.get_storage_info().disks.iter().fold(
-            "0".to_string(),
+            "".to_string(),
             |acc, ref d| {
-                format!("{}+{}", acc, d.size)
+                format!("{}{} → {}{}", acc,d.disk,d.size,"\n")
             },
         )
     }
@@ -345,9 +345,9 @@ impl StoragePool {
     //Convert it using Into or From<String>
     pub fn get_disks_str(&self) -> String {
         self.get_storage_info().disks.iter().fold(
-            "0".to_string(),
+            "".to_string(),
             |acc, ref d| {
-                format!("{}+{}", acc, d.size)
+                format!("{}{} → {}{}", acc,d.disk,d.size,"\n")
             },
         )
     }

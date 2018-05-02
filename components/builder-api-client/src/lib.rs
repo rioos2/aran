@@ -144,7 +144,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_replicas().to_string(),
                     i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -234,7 +234,7 @@ impl Client {
                 i.get_id(),
                 i.object_meta().name,
                 i.get_secret_type(),
-                hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                hours_ago(i.get_created_at()),
             ]
                 })
                 .collect(),
@@ -331,7 +331,7 @@ impl Client {
                                         ips_ports.0.into_iter().collect(),
                                         ips_ports.1.into_iter().collect(),
                                         i.get_status().get_phase(),
-                                        hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                                        hours_ago(i.get_created_at()),
                                         ]
                 })
                 .collect(),
@@ -357,7 +357,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_status().get_phase(),
                     (!i.get_spec().get_unschedulable()).to_string(),
-                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -400,7 +400,7 @@ impl Client {
                     i.get_version(),
                     i.get_description(),
                     i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -427,7 +427,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_enabled().to_string(),
                     i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -455,7 +455,7 @@ impl Client {
                     i.get_id(),
                     i.get_name(),
                     i.object_meta().account,
-                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -481,7 +481,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_spec().get_node_id(),
                     i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -511,7 +511,7 @@ impl Client {
                     i.get_netmask(),
                     i.get_gateway(),
                     i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -534,7 +534,7 @@ impl Client {
                 result.get_id(),
                 result.get_name(),
                 result.object_meta().account,
-                hours_ago(result.get_created_at()).unwrap_or("now".to_string()),
+                hours_ago(result.get_created_at()),
             ],
         ];
         Ok(data)

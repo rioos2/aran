@@ -21,7 +21,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
     ui.para(&format!("Enabled : {}", result.get_enabled()))?;
-    ui.para(&format!("Hrs ago: {}", hours_ago(result.get_created_at()).unwrap_or("now".to_string())))?;
+    ui.para(&format!("Hrs ago: {}", hours_ago(result.get_created_at())))?;
 
     let storageconn = rio_client.get_storageconnector_by_id(
         &token,
@@ -45,7 +45,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         storageconn.get_status().get_phase()
     ))?;
 
-    ui.para(&format!("Hrs ago: {}", hours_ago(storageconn.get_created_at()).unwrap_or("now".to_string())))?;
+    ui.para(&format!("Hrs ago: {}", hours_ago(storageconn.get_created_at())))?;
 
     let mut storagepool = rio_client.get_storagepool_by_scid(
         &token,
@@ -59,7 +59,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
                 i.get_id(),
                 i.object_meta().name,
                 i.get_status().get_phase(),
-                hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                hours_ago(i.get_created_at()),
             ]
         })
         .collect::<Vec<_>>();

@@ -149,7 +149,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
 
-    ui.para(&format!("Hrs Ago: {}", hours_ago(result.get_created_at()).unwrap_or("now".to_string())))?;
+    ui.para(&format!("Hrs Ago: {}", hours_ago(result.get_created_at())))?;
 
     ui.heading("Conditions")?;
     let title = row!["Type", "Status", "Reason", "LastTransitionTime"];

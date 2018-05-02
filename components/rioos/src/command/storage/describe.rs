@@ -30,7 +30,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
     ))?;
 
     ui.para(
-        &format!("Hrs ago: {}", hours_ago(storageconn.get_created_at()).unwrap_or("now".to_string())),
+        &format!("Hrs ago: {}", hours_ago(storageconn.get_created_at())),
     )?;
 
     let mut storagepool = rio_client.get_storagepool_by_scid(&token, &email, &id)?;
@@ -42,7 +42,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
                 i.get_id(),
                 i.object_meta().name,
                 i.get_status().get_phase(),
-                hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                hours_ago(i.get_created_at()),
             ]
         })
         .collect::<Vec<_>>();

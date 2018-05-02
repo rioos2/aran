@@ -618,14 +618,14 @@ impl QueryInput {
     }
 }
 
-pub fn hours_ago(time: String) -> Result<String,String> {
+pub fn hours_ago(time: String) -> String {
     let now_time = DateTime::parse_from_rfc3339(&Utc::now().to_rfc3339().to_string()).unwrap();
     let time_stamp = DateTime::parse_from_rfc3339(&time.to_string()).unwrap();
     let diff = now_time.timestamp() - time_stamp.timestamp();
 
     let dt = chrono::Local::now() - chrono::Duration::seconds(diff);
     let ht = chrono_humanize::HumanTime::from(dt);
-    Ok(ht.to_string())
+    ht.to_string()
 }
 
 

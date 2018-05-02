@@ -21,7 +21,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
             dc.object_meta().name,
             dc.get_enabled().to_string(),
             dc.get_status().get_phase(),
-            hours_ago(dc.get_created_at()).unwrap_or("now".to_string()),
+            hours_ago(dc.get_created_at()),
         ],
     ];
     pretty_table(data.to_owned(), title);
