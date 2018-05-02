@@ -458,23 +458,29 @@ fn group_process(process: &Vec<node::InstantVecItem>) -> Vec<BTreeMap<String, Ve
     merged
         .into_iter()
         .map(|x| {
-            let mut pro = BTreeMap::new();
+            let mut process_metric = BTreeMap::new();
             let mut a = Vec::new();
             process
                 .into_iter()
                 .map(|y| if x == y.metric.get("__name__").unwrap() {
-                    let mut b = BTreeMap::new();
-                    b.insert("pid".to_string(), y.metric.get("pid").unwrap().to_string());
-                    b.insert(
-                        "command".to_string(),
-                        y.metric.get("command").unwrap().to_string(),
+                    let mut group = BTreeMap::new();
+                    group.insert(
+                        "pid".to_string(),
+                        y.metric.get("pid").unwrap_or(&"".to_string()).to_string(),
                     );
-                    b.insert("value".to_string(), y.value.clone().1);
-                    a.push(b)
+                    group.insert(
+                        "command".to_string(),
+                        y.metric
+                            .get("command")
+                            .unwrap_or(&"".to_string())
+                            .to_string(),
+                    );
+                    group.insert("value".to_string(), y.value.clone().1);
+                    a.push(group)
                 })
                 .collect::<Vec<_>>();
-            pro.insert(x.to_string(), a);
-            pro
+            process_metric.insert(x.to_string(), a);
+            process_metric
         })
         .collect::<_>()
 }
