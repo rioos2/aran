@@ -21,11 +21,12 @@ impl DataStore {
     //For new users to onboard in Rio/OS, which takes the full account creation arguments and returns the Session which has the token.
     //The default role and permission for the user is
     //The default origin is
-    pub fn account_create(datastore: &DataStoreConn, session_create: &session::SessionCreate) -> Result<session::Session> {
+    pub fn account_create(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device) -> Result<session::Session> {
         //call and do find_or_create_account_via_session
         Self::find_or_create_account_via_session(
             datastore,
             session_create,
+            device,
             true,
             false,
             "select_or_insert_account_v1",
@@ -39,13 +40,14 @@ impl DataStore {
         Self::find_or_create_account_via_session(
             datastore,
             session_create,
+            &session::Device::new(),
             true,
             false,
             "select_only_account_v1",
         )
     }
 
-    pub fn find_or_create_account_via_session(datastore: &DataStoreConn, session_create: &session::SessionCreate, is_admin: bool, is_service_access: bool, dbprocedure: &str) -> Result<session::Session> {
+    pub fn find_or_create_account_via_session(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device, is_admin: bool, is_service_access: bool, dbprocedure: &str) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
         let query = "SELECT * FROM ".to_string() + dbprocedure + "($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
         let rows = conn.query(
@@ -89,10 +91,19 @@ impl DataStore {
                     &is_admin,
                     &is_service_access,
                 ],
-            ).map_err(Error::AccountGetById)?;
+            ).map_err(Error::SessionCreate)?;
+
             let session_row = rows.get(0);
             let mut session: session::Session = account.into();
             session.set_token(session_row.get("token"));
+
+            let session_id: i64 = session_row.get("id");
+
+            conn.query(
+                "SELECT * FROM insert_account_device_v1($1, $2, $3)",
+                &[&id, &session_id, &serde_json::to_value(device).unwrap()],
+            ).map_err(Error::DeviceCreate)?;
+
             Ok(session)
         } else {
             return Err(Error::Db(db::error::Error::RecordsNotFound));
@@ -213,7 +224,7 @@ impl DataStore {
                     .into_iter()
                     .map(|import_user| {
                         let mut add_account: session::SessionCreate = import_user.into();
-                        let session = Self::account_create(datastore, &mut add_account)?;
+                        let session = Self::account_create(datastore, &mut add_account, &session::Device::new())?;
                         imported_users.push(session.get_email());
                         Ok(session)
                     })

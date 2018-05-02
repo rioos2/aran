@@ -8,7 +8,6 @@ use bodyparser;
 use iron::prelude::*;
 use iron::status;
 use router::Router;
-
 use api::{Api, ApiValidator, Validator, ParmsVerifier};
 use protocol::api::schema::{dispatch, type_meta};
 
@@ -56,7 +55,10 @@ impl AuthenticateApi {
     fn default_authenticate(&self, req: &mut Request) -> AranResult<Response> {
         let account = self.validate(req.get::<bodyparser::Struct<AccountGet>>()?)?;
         let delegate = AuthenticateDelegate::new(Arc::new(*self.conn.clone()));
-        let auth = Authenticatable::UserAndPass { username: account.get_email(), password: account.get_password() };
+        let auth = Authenticatable::UserAndPass {
+            username: account.get_email(),
+            password: account.get_password(),
+        };
 
         match delegate.authenticate(&auth) {
             Ok(_validate) => {
@@ -77,13 +79,19 @@ impl AuthenticateApi {
     //POST: accounts",
     //Input account and creates an user, by returning the Account information of an user
     fn account_create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<SessionCreate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<SessionCreate>>()?,
+        )?;
 
         if unmarshall_body.get_apikey().len() <= 0 {
             unmarshall_body.set_apikey(rand::random::<u64>().to_string());
         }
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_email(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_email(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
         if unmarshall_body.get_roles().is_empty() {
@@ -95,7 +103,11 @@ impl AuthenticateApi {
         let en = unmarshall_body.get_password();
         unmarshall_body.set_password(UserAccountAuthenticate::encrypt(en).unwrap());
 
-        match sessions::DataStore::account_create(&self.conn, &unmarshall_body) {
+
+        let mut samp: Device = user_agent(req).into();
+        samp.set_ip(format!("{}", req.remote_addr));
+
+        match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &samp) {
             Ok(account) => Ok(render_json(status::Ok, &account)),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
@@ -112,7 +124,11 @@ impl AuthenticateApi {
         match sessions::DataStore::get_account_by_id(&self.conn, &account_get_by_id) {
             Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &account_get_by_id.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &account_get_by_id.get_id()
+            ))),
         }
     }
 
@@ -131,7 +147,11 @@ impl AuthenticateApi {
         match sessions::DataStore::get_account(&self.conn, &account_get) {
             Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &account_get.get_email()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &account_get.get_email()
+            ))),
         }
     }
 
@@ -186,7 +206,9 @@ impl AuthenticateApi {
     //POST: Create a new saml provider
     ///auth/saml/providers/:providerid
     fn config_saml(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<SamlProvider>>()?)?;
+        let unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<SamlProvider>>()?,
+        )?;
 
         match sessions::DataStore::saml_provider_create(&self.conn, &unmarshall_body) {
             Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
@@ -203,7 +225,11 @@ impl AuthenticateApi {
         match sessions::DataStore::saml_show(&self.conn, &params) {
             Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
         }
     }
 
@@ -221,7 +247,9 @@ impl AuthenticateApi {
     //POST: Create a new openid
     //  /auth/oidc/providers/:providerid
     fn config_openid(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<OidcProvider>>()?)?;
+        let unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<OidcProvider>>()?,
+        )?;
 
         //do you have to set the provider id in unmarshall_body here ?
 
@@ -240,7 +268,11 @@ impl AuthenticateApi {
         match sessions::DataStore::oidc_show(&self.conn, &params) {
             Ok(Some(openid)) => Ok(render_json(status::Ok, &openid)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
         }
     }
 
@@ -315,7 +347,10 @@ impl Api for AuthenticateApi {
             "/accounts/:id",
             XHandler::new(C { inner: account_show })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.account.get".to_string(),&*config)),
+                .before(TrustAccessed::new(
+                    "rioos.account.get".to_string(),
+                    &*config,
+                )),
             "account_show",
         );
 
@@ -323,7 +358,10 @@ impl Api for AuthenticateApi {
             "/accounts/name/:name",
             XHandler::new(C { inner: account_show_by_name })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.account.get".to_string(),&*config)),
+                .before(TrustAccessed::new(
+                    "rioos.account.get".to_string(),
+                    &*config,
+                )),
             "account_show_by_name",
         );
 
@@ -342,15 +380,39 @@ impl Api for AuthenticateApi {
         router.post("/ldap/config/:id/test", C { inner: test_ldap }, "test_ldap");
         router.post("/ldap/import/:id", C { inner: import_ldap }, "import_ldap");
 
-        router.post("/auth/saml/providers", C { inner: config_saml }, "config_saml");
+        router.post(
+            "/auth/saml/providers",
+            C { inner: config_saml },
+            "config_saml",
+        );
 
-        router.get("/auth/saml/providers", C { inner: saml_list_blank }, "saml_list");
+        router.get(
+            "/auth/saml/providers",
+            C { inner: saml_list_blank },
+            "saml_list",
+        );
 
-        router.get("/auth/saml/providers/:id", C { inner: saml_show }, "saml_show");
+        router.get(
+            "/auth/saml/providers/:id",
+            C { inner: saml_show },
+            "saml_show",
+        );
 
-        router.post("/auth/oidc/providers/:providerid", C { inner: config_openid }, "config_openid");
-        router.get("/auth/oidc/providers", C { inner: openid_list_blank }, "openid_list_blank");
-        router.get("auth/oidc/providers/:id", C { inner: openid_show }, "openid_show");
+        router.post(
+            "/auth/oidc/providers/:providerid",
+            C { inner: config_openid },
+            "config_openid",
+        );
+        router.get(
+            "/auth/oidc/providers",
+            C { inner: openid_list_blank },
+            "openid_list_blank",
+        );
+        router.get(
+            "auth/oidc/providers/:id",
+            C { inner: openid_show },
+            "openid_show",
+        );
     }
 }
 
