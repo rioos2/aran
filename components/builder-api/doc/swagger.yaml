@@ -163,29 +163,44 @@ paths:
             type: string
       responses:
         '200':
-          description: successful creation of assembly
+          description: succesfull creation of assembly
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssemblyResponse'
         '400':
-          description: Missing parameters for required fields or malformed body, downstream system unavailable errors
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '500':
-          description: "DB error"
+          description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-        '404':
-          description: assmebly not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Error'
       requestBody:
         content:
           application/json:
@@ -211,13 +226,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssemblyList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
           description: assemblys not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
-
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   /assemblys:
     get:
       tags:
@@ -227,17 +265,41 @@ paths:
       operationId: find assembly
       responses:
         '200':
-          description: success operation
+          description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssemblyList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
           description: assemblys not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/assemblys/{assemblyId}':
     get:
       tags:
@@ -259,12 +321,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssemblyResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
-          description: assembly not found
+          description: assemblys not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
     put:
       tags:
         - assembly
@@ -285,24 +371,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssemblyResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
-          description: assembly not found
+          description: assemblys not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
         '500':
-          description: "DB error"
+          description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-        '400':
-          description: Missing parameters for required fields or malformed body, downstream system unavailable errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Error'
       requestBody:
         content:
           application/json:
@@ -330,23 +437,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/AssemblyResponse'
         '400':
-          description: "malformed body, downstream system unavailable errors"
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/400Error'
-        '500':
-          description: "DB error"
+        '401':
+          description:  UnAuthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/500Error'
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
-          description: assembly not found
+          description: assemblys not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
       requestBody:
         content:
           application/json:
@@ -488,7 +616,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-
   '/origins/{name}':
     get:
       tags:
@@ -516,7 +643,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
-
   /services:
     get:
       tags:
@@ -568,7 +694,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Services'
-
   '/services/{servicesid}':
     get:
       tags:
@@ -1312,7 +1437,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/assemblyfactorys/{assemlyFactoryId}':
+  '/assemblyfactorys/{assemblyFactoryId}':
     get:
       tags:
         - assemblyfactorys
@@ -1372,7 +1497,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/assemblyfactorys/{assemlyFactoryId}/status':
+  '/assemblyfactorys/{assemblyFactoryId}/status':
     put:
       tags:
         - assemblyfactorys
@@ -1438,7 +1563,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ReadyStatus'
-  '/assemblyfactorys/{assemlyFactoryId}/describe':
+  '/assemblyfactorys/{assemblyFactoryId}/describe':
     get:
       tags:
         - assemblyfactorys
@@ -1595,7 +1720,7 @@ paths:
           required: true
           schema:
             type: string
-      responses:
+      responses:  
         '200':
           description: successful operation
           content:
@@ -1761,7 +1886,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/horizontalscaling/{AssemblyFactoryId}/metrics?source={sourceName}&job={jobName}':
+  '/horizontalscaling/assemblyfactory/{AssemblyFactoryId}':
+    get:
+      tags:
+        - horizontalscaling
+      summary: Get horizontalscaling assembly factory id
+      parameters:
+        - name: AssemblyFactoryId
+          in: path
+          description: ID of the assembly factory
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HorizontalScalingStatusUpdateResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: horizontal scaling not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/horizontalscaling/{AssemblyFactoryId}/metrics(ques)source={sourceName}&job={jobName}':
     get:
       tags:
         - horizontalscaling
@@ -1981,7 +2155,7 @@ paths:
       description: Returns a single permissions
       operationId: getPermissionById
       parameters:
-        - name: Id
+        - name: RolesId
           in: path
           description: ID of permission to return
           required: true
@@ -2305,7 +2479,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#components/schemas/ServiceAccountsResponse'
+                $ref: '#/components/schemas/ServiceAccountsResponse'
         '400':
           description: |
             Must supply required fields
@@ -2847,7 +3021,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#components/schemas/JobsResponse'
+                $ref: '#/components/schemas/JobsResponse'
         '500':
           description: "DB error"
           content:
@@ -2879,7 +3053,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JobsList'
-  '/jobs/node?node_id={nodeId}':
+  '/jobs/node(ques)node_id={nodeId}':
     get:
       tags:
         - jobs
@@ -3402,7 +3576,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
-  '/logs/{assembly_id}?range=10m&limits=1':
+  '/logs/{assembly_id}(ques)range=10m&limits=1':
     get:
       tags:
         - logs
@@ -3433,7 +3607,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/logs?limits=1&range=15m':
+  '/logs(ques)limits=1&range=15m':
     get:
       tags:
         - logs
@@ -3839,34 +4013,10 @@ components:
               type: string
               description: "account  defines the id the user account"
               example: "870109412813971456"
-            created_at:
-              type: string
-              description: "created_at is a timestamp representing the server time when this object was created. "
-              example: "2017-12-11T11:29:50.547529+00:00"
-            deleted_at:
-              type: string
-              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
-              example: ""
-            deletion_grace_period_seconds:
-              type: integer
-              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
-              example: 30
             cluster_name:
               type: string
               description: "The name of the cluster(datacenter/location) which the object belongs to."
               example: ""
-            labels:
-              type: object
-              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
-            annotations:
-              type: object
-              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
-            finalizers:
-              type: array
-              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
-              items:
-                type: string
-                example: ""
             owner_references:
               type: array
               description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
@@ -3894,7 +4044,11 @@ components:
                     description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
                     example: false
         status:
-          $ref: '#/components/schemas/Status'
+          type: object
+          properties:
+            phase:
+              type: string
+              example: "pending"
     AssemblyResponse:
       type: object
       properties:
@@ -3907,7 +4061,7 @@ components:
             name:
               type: string
               description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
-              example: "levi1.megam.io"
+              example: "rough-bush-86341.svc.local"
             account:
               type: string
               description: "account  defines the id the user account"
@@ -3927,7 +4081,7 @@ components:
             cluster_name:
               type: string
               description: "The name of the cluster(datacenter/location) which the object belongs to."
-              example: ""
+              example: "chennai"
             labels:
               type: object
               description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
@@ -3936,7 +4090,6 @@ components:
               description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
             initializers:
               $ref: '#/components/schemas/Initializers'
-
             finalizers:
               type: array
               description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
@@ -3990,8 +4143,6 @@ components:
         spec:
           type: object
           properties:
-            assembly_factory:
-              $ref: '#/components/schemas/AssemblyFactoryReadyResponse'
             metrics:
               type: object
               properties:
@@ -4001,6 +4152,8 @@ components:
                   description: "value of the assembly metric"
             endpoints:
               $ref: '#/components/schemas/EndpointsResponse'
+            assembly_factory:
+              $ref: '#/components/schemas/AssemblyFactoryResponse'
             volumes:
               type: array
               items:
@@ -4114,7 +4267,7 @@ components:
             cluster_name:
               type: string
               description: "The name of the cluster(datacenter/location) which the object belongs to."
-              example: ""
+              example: "chennai"
             labels:
               type: object
               description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
@@ -4209,7 +4362,7 @@ components:
             labels:
               type: object
               description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
-
+              
             annotations:
               type: object
               description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
@@ -5475,8 +5628,8 @@ components:
         created_at:
           type: string
           example: "2017-12-11T11:29:50.547529+00:00"
-
-
+        
+        
     AssemblyFactoryGet:
       type: object
       properties:
@@ -6029,9 +6182,9 @@ components:
               description: " wait minutes for the after last scale action for scale up"
               example: 5
             scale_down_wait_time:
-              type: integer
+              type: string
               description: " wait minutes for the after last scale action for scale down"
-              example: 5
+              example: "5"
             metrics:
               type: array
               items:
@@ -9063,7 +9216,7 @@ components:
                     description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
                     example: false
         status:
-          $ref: '#components/schemas/Status'
+          $ref: '#/components/schemas/Status'
         spec:
           type: object
           required:
@@ -9166,7 +9319,7 @@ components:
                     description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
                     example: false
         status:
-          $ref: '#components/schemas/Status'
+          $ref: '#/components/schemas/Status'
         spec:
           type: object
           properties:

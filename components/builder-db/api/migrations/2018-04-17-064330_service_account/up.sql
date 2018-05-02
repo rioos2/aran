@@ -119,7 +119,7 @@ SETOF service_accounts AS $$
                   $$ LANGUAGE PLPGSQL STABLE;
 
 
-CREATE OR REPLACE FUNCTION get_serviceaccount_by_originid_v1(ser_name text,acc_id text) RETURNS
+CREATE OR REPLACE FUNCTION get_serviceaccount_by_name_v1(ser_name text) RETURNS
 SETOF service_accounts AS $$
                   BEGIN
                    RETURN QUERY SELECT * FROM service_accounts WHERE object_meta ->> 'name'=ser_name;

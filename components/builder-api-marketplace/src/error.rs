@@ -51,6 +51,7 @@ pub enum Error {
     RioosBodyError(bodyparser::BodyError),
     RioosAranCommon(common::Error),
     UrlParseError(url::ParseError),
+    MissingConfiguration(String),
     IO(io::Error),
 }
 
@@ -67,6 +68,7 @@ impl fmt::Display for Error {
             Error::RioosAranCommon(ref e) => format!("{}", e),
             Error::UrlParseError(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
+            Error::MissingConfiguration(ref e) => format!("{},", e),
         };
         write!(f, "{}", msg)
     }
@@ -83,6 +85,7 @@ impl error::Error for Error {
             Error::RioosAranCommon(ref err) => err.description(),
             Error::UrlParseError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
+            Error::MissingConfiguration(ref err) => err,
         }
     }
 }

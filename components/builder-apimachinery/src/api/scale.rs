@@ -359,6 +359,7 @@ pub struct VerticalScaling {
     scale_type: String,
     state: String,
     update_policy: UpdatePolicy, //The update policy controls how verticalscaling(VS) applies changes.
+    #[serde(default)]
     metadata: BTreeMap<String, String>, //Standard object's metadata. Can contain optional label selector team, origin
     spec: VerticalScalingSpec,
     status: VerticalScalingStatus, //Most recently observed status of the service.last_scale_time,current_replicas,desired_replicas details
@@ -560,6 +561,7 @@ impl VerticalScalingSpec {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct VerticalScalingStatus {
+    #[serde(default)]
     last_scale_time: String,
     current_resource: BTreeMap<String, String>, //`current_resources` is current resource average of the metrics for the assemblyfactory managed by this verticalscaler, as last seen by the verticalscaler.
     desired_resource: BTreeMap<String, String>, //`desired_resources` is desired resource average of the metrics for the assemblyfactory managed by this verticalscaler, as last seen by the verticalscaler.
