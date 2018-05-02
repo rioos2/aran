@@ -18,9 +18,3 @@ path = "../builder-http-gateway"
 
 [dependencies.rioos_http_client]
 path = "../http-client"
-
-[dependencies.rioos_common]
-path = "../common"
-
-[dependencies.rioos_core]
-path = "../core"

@@ -7,8 +7,6 @@
 extern crate rioos_builder_httpgateway as http_gateway;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_http_client as rioos_http;
-extern crate rioos_common as common;
-extern crate rioos_core as rcore;
 
 #[macro_use]
 extern crate hyper;
@@ -31,11 +29,9 @@ use rioos_http::ApiClient;
 use rioos_http::api_client::err_from_response;
 
 use http_gateway::http::rendering::ResponseList;
-use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
-use rcore::env as henv;
 
 use protocol::api::{session, deploy, blueprint, job, network, node, storage, origin, scale, secret};
-use protocol::api::base::MetaFields;
+use protocol::api::base::{MetaFields, hours_ago};
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
 
@@ -136,7 +132,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui();
         let mut assemblyfactory: ResponseList<Vec<deploy::AssemblyFactory>> = res.json()?;
 
         Ok(
@@ -149,7 +144,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_replicas().to_string(),
                     i.get_status().get_phase(),
-                    ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
                 ]
                 })
                 .collect(),
@@ -229,7 +224,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui() ;
         let mut secret: ResponseList<Vec<secret::Secret>> = res.json()?;
         Ok(
             secret
@@ -240,7 +234,7 @@ impl Client {
                 i.get_id(),
                 i.object_meta().name,
                 i.get_secret_type(),
-                ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
             ]
                 })
                 .collect(),
@@ -303,7 +297,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui();
         let mut assembly: ResponseList<Vec<deploy::Assembly>> = res.json()?;
 
         Ok(
@@ -338,7 +331,7 @@ impl Client {
                                         ips_ports.0.into_iter().collect(),
                                         ips_ports.1.into_iter().collect(),
                                         i.get_status().get_phase(),
-                                        ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                                        hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
                                         ]
                 })
                 .collect(),
@@ -354,7 +347,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui() ;
         let mut node: ResponseList<Vec<node::Node>> = res.json()?;
         Ok(
             node.items
@@ -364,8 +356,8 @@ impl Client {
                     i.get_id(),
                     i.object_meta().name,
                     i.get_status().get_phase(),
-                    i.get_spec().get_unschedulable().to_string(),
-                    ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    (!i.get_spec().get_unschedulable()).to_string(),
+                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
                 ]
                 })
                 .collect(),
@@ -396,7 +388,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui();
         let mut plan: ResponseList<Vec<blueprint::Plan>> = res.json()?;
         Ok(
             plan.items
@@ -409,7 +400,7 @@ impl Client {
                     i.get_version(),
                     i.get_description(),
                     i.get_status().get_phase(),
-                    ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
                 ]
                 })
                 .collect(),
@@ -425,7 +416,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui();
         let mut datacenter: ResponseList<Vec<storage::DataCenter>> = res.json()?;
         Ok(
             datacenter
@@ -437,7 +427,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_enabled().to_string(),
                     i.get_status().get_phase(),
-                    ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
                 ]
                 })
                 .collect(),
@@ -455,7 +445,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui();
         let mut origin: ResponseList<Vec<origin::Origin>> = res.json()?;
         Ok(
             origin
@@ -466,7 +455,7 @@ impl Client {
                     i.get_id(),
                     i.get_name(),
                     i.object_meta().account,
-                    ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
                 ]
                 })
                 .collect(),
@@ -482,7 +471,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui() ;
         let mut job: ResponseList<Vec<job::Jobs>> = res.json()?;
         Ok(
             job.items
@@ -493,7 +481,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_spec().get_node_id(),
                     i.get_status().get_phase(),
-                    ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
                 ]
                 })
                 .collect(),
@@ -509,7 +497,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui();
         let mut network: ResponseList<Vec<network::Network>> = res.json()?;
         Ok(
             network
@@ -524,7 +511,7 @@ impl Client {
                     i.get_netmask(),
                     i.get_gateway(),
                     i.get_status().get_phase(),
-                    ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
+                    hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
                 ]
                 })
                 .collect(),
@@ -541,14 +528,13 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let mut ui=ui();
         let result: origin::Origin = res.json()?;
         let data = vec![
             vec![
                 result.get_id(),
                 result.get_name(),
                 result.object_meta().account,
-                ui.hours_ago(result.get_created_at()).unwrap_or("now".to_string()),
+                hours_ago(result.get_created_at()).unwrap_or("now".to_string()),
             ],
         ];
         Ok(data)
@@ -681,24 +667,4 @@ impl Client {
     }
 
 
-}
-
-fn ui() -> UI {
-    let isatty = if henv::var(NONINTERACTIVE_ENVVAR)
-        .map(|val| val == "true")
-        .unwrap_or(false)
-    {
-        Some(false)
-    } else {
-        None
-    };
-    let coloring = if henv::var(NOCOLORING_ENVVAR)
-        .map(|val| val == "true")
-        .unwrap_or(false)
-    {
-        Coloring::Never
-    } else {
-        Coloring::Auto
-    };
-    UI::default_with(coloring, isatty)
 }

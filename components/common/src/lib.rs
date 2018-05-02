@@ -13,8 +13,7 @@ extern crate uuid;
 extern crate serde;
 extern crate serde_json;
 extern crate rpassword;
-extern crate chrono;
-extern crate chrono_humanize;
+
 
 pub use self::error::{Error, Result};
 

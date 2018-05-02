@@ -1,8 +1,10 @@
 use std::collections::BTreeMap;
 use std::fmt;
 
+use chrono;
 use chrono::prelude::*;
 use api::deploy::PHASE_PENDING;
+use chrono_humanize;
 
 
 // These are internal finalizer values for rioos-like APIs, must be qualified name
@@ -405,7 +407,7 @@ impl Status {
             conditions: conditions,
         }
     }
-    
+
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
@@ -615,6 +617,17 @@ impl QueryInput {
         self.labels.get(key).unwrap_or(&"".to_string()).to_string()
     }
 }
+
+pub fn hours_ago(time: String) -> Result<String,String> {
+    let now_time = DateTime::parse_from_rfc3339(&Utc::now().to_rfc3339().to_string()).unwrap();
+    let time_stamp = DateTime::parse_from_rfc3339(&time.to_string()).unwrap();
+    let diff = now_time.timestamp() - time_stamp.timestamp();
+
+    let dt = chrono::Local::now() - chrono::Duration::seconds(diff);
+    let ht = chrono_humanize::HumanTime::from(dt);
+    Ok(ht.to_string())
+}
+
 
 #[cfg(test)]
 mod test {

@@ -3,7 +3,7 @@ pub use error::{Error, Result};
 use common::ui::UI;
 use api_client::Client;
 use protocol::api::storage::DataCenter;
-use protocol::api::base::MetaFields;
+use protocol::api::base::{MetaFields,hours_ago};
 
 
 use super::super::common::pretty_table;
@@ -21,7 +21,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
             dc.object_meta().name,
             dc.get_enabled().to_string(),
             dc.get_status().get_phase(),
-            ui.hours_ago(dc.get_created_at()).unwrap_or("now".to_string()),
+            hours_ago(dc.get_created_at()).unwrap_or("now".to_string()),
         ],
     ];
     pretty_table(data.to_owned(), title);
