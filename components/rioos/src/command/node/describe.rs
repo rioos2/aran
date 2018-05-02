@@ -148,7 +148,10 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
     ui.para(
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
-    ui.para(&format!("Hrs Ago: {}", result.get_created_at()))?;
+
+    let time = ui.hours_ago(result.get_created_at())?;
+    ui.para(&format!("Hrs Ago: {}", time))?;
+
     ui.heading("Conditions")?;
     let title = row!["Type", "Status", "Reason", "LastTransitionTime"];
     condition_table(conditions.to_owned(), title);

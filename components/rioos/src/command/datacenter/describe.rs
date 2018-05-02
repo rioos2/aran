@@ -60,7 +60,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
                 i.get_id(),
                 i.object_meta().name,
                 i.get_status().get_phase(),
-                ui.hours_ago(i.get_created_at())?,
+                ui.hours_ago(i.get_created_at()).unwrap_or("now".to_string()),
             ]
         })
         .collect::<Vec<_>>();

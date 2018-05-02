@@ -28,7 +28,9 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
 
-    ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
+    let time = ui.hours_ago(result.get_created_at())?;
+
+    ui.para(&format!("Hrs ago: {}", time))?;
 
     /*let hs_result = rio_client.get_hs_by_asmfac_id(
         &token,

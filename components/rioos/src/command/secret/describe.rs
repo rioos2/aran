@@ -37,7 +37,8 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
             .unwrap()
     ))?;
 
-    ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
+    let time = ui.hours_ago(result.get_created_at())?;
+    ui.para(&format!("Hrs ago: {}", time))?;
 
 
     ui.para(
