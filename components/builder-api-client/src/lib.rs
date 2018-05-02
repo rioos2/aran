@@ -17,7 +17,6 @@ extern crate reqwest;
 extern crate serde_json;
 extern crate url;
 
-
 pub mod error;
 pub use error::{Error, Result};
 
