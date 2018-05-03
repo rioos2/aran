@@ -12,6 +12,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+extern crate woothee;
 
 extern crate linked_hash_map;
 extern crate time;

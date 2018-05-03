@@ -16,6 +16,7 @@ pub const INTERNALERROR: &'static str = "Must have database, Server running. Is 
 pub const BADREQUEST: &'static str = "Bad Request";
 pub const MALFORMED: &'static str = "MalformedBody";
 pub const BADGATEWAY: &'static str = "BadGateway";
+pub const CONFLICT: &'static str = "Conflict";
 
 #[derive(Serialize, Debug, Clone)]
 pub struct Bad {
@@ -451,6 +452,31 @@ impl fmt::Display for BadGateway {
 }
 
 
+pub struct Conflict(String);
+
+impl AranError for Conflict {
+    fn http_code(&self) -> Status {
+        Status::Conflict
+    }
+
+    fn code(&self) -> &str {
+        "409"
+    }
+
+    fn description(&self) -> &str {
+        self.0.as_ref()
+    }
+
+    fn cause(&self) -> &str {
+        CONFLICT
+    }
+}
+
+impl fmt::Display for Conflict {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 pub fn bad_request<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(BadRequest(error.to_string()))
@@ -491,4 +517,8 @@ pub fn entitlement_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
 
 pub fn forbidden_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
     Box::new(NotAccess(error.to_string()))
+}
+
+pub fn conflict_error<S: ToString + ?Sized>(error: &S) -> Box<AranError> {
+    Box::new(Conflict(error.to_string()))
 }
