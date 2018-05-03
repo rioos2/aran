@@ -41,7 +41,7 @@ VERSION := $(shell cat VERSION)
 
 setup:
 	@echo "» $(RIOOS_HOME)"
-ifeq ("$(wildcard $(RIOOS_HOME)/config/pullcache)",)
+ifeq ("$(wildcard $(RIOOS_HOME)/config/pullcache)","")
 	mkdir -p $(RIOOS_HOME)/config/pullcache  > /dev/null
 endif
 	@echo "✔ mkdir $(RIOOS_HOME)/config/pullcache"

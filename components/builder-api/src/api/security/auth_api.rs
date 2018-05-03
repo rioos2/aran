@@ -169,6 +169,18 @@ impl AuthenticateApi {
         }
     }
 
+    //POST: /logout
+    //Global: Logout the current user
+    fn account_logout(&self, req: &mut Request) -> AranResult<Response> {
+        let account = self.validate(req.get::<bodyparser::Struct<AccountTokenGet>>()?)?;
+
+        match sessions::DataStore::account_logout(&self.conn, &account) {
+            Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+        }
+    }
+
     //GET: Not used any where
     //The object seems to be getting an users session based on session_id.
     fn _session_get(&self, req: &mut Request) -> AranResult<Response> {
@@ -320,6 +332,9 @@ impl Api for AuthenticateApi {
         let authenticate = move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
 
         let _self = self.clone();
+        let account_logout = move |req: &mut Request| -> AranResult<Response> { _self.account_logout(req) };
+
+        let _self = self.clone();
         let authenticate_ldap = move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
 
         //closures: ldap
@@ -385,6 +400,13 @@ impl Api for AuthenticateApi {
             "authenticate",
         );
         router.post(
+            "/logout",
+            XHandler::new(C { inner: account_logout })
+            .before(basic.clone()),
+            "account_logout",
+        );
+
+        router.post(
             "/authenticate/ldap/:code",
             XHandler::new(C { inner: authenticate_ldap }),
             "authenticate_ldap",
@@ -439,6 +461,24 @@ impl Validator for AccountGet {
     fn valid(self) -> AranValidResult<Self> {
         let s: Vec<String> = vec![];
 
+        if s.is_empty() {
+            return Ok(Box::new(self));
+        }
+
+        Err(bad_request(&MissingParameter(format!("{:?}", s))))
+    }
+}
+impl Validator for AccountTokenGet {
+    //default implementation is to check for `name` and 'origin'
+    fn valid(self) -> AranValidResult<Self> {
+        let mut s: Vec<String> = vec![];
+
+        if self.get_email().len() <= 0 {
+            s.push("email".to_string());
+        }
+        if self.get_token().len() <= 0 {
+            s.push("token".to_string());
+        }
         if s.is_empty() {
             return Ok(Box::new(self));
         }

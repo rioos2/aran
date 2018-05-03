@@ -17,6 +17,7 @@ linked-hash-map="0.5.1"
 iron = "0.6.0"
 lazy_static = "*"
 woothee = "*"
+chrono-humanize = "0.0.11"
 
 [features]
 functional = []

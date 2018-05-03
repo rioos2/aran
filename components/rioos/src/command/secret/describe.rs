@@ -1,7 +1,7 @@
 pub use error::{Error, Result};
 use common::ui::UI;
 use api_client::Client;
-use protocol::api::base::MetaFields;
+use protocol::api::base::{hours_ago,MetaFields};
 use base64::decode;
 const SSH_AUTH_PRIVATE_KEY: &'static str = "rioos_sh/ssh_privatekey";
 const SSH_AUTH_PUBLIC_KEY: &'static str = "rioos_sh/ssh_pubkey";
@@ -37,7 +37,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
             .unwrap()
     ))?;
 
-    ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
+    ui.para(&format!("Hrs ago: {}", hours_ago(result.get_created_at())))?;
 
 
     ui.para(

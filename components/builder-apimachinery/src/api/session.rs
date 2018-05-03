@@ -379,6 +379,35 @@ impl AccountGet {
     }
 }
 
+
+#[derive(PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct AccountTokenGet {
+    email: String,
+    token: String,
+}
+
+impl AccountTokenGet {
+    pub fn new() -> AccountTokenGet {
+        ::std::default::Default::default()
+    }
+
+    pub fn get_email(&self) -> ::std::string::String {
+        self.email.clone()
+    }
+
+    pub fn set_email(&mut self, v: ::std::string::String) {
+        self.email = v;
+    }
+
+    pub fn get_token(&self) -> ::std::string::String {
+        self.token.clone()
+    }
+
+    pub fn set_token(&mut self, v: ::std::string::String) {
+        self.token = v;
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AccountGetId {
     id: String,

@@ -6,7 +6,7 @@ use api_client::Client;
 
 use super::super::common::pretty_table;
 
-use protocol::api::base::MetaFields;
+use protocol::api::base::{MetaFields,hours_ago};
 
 pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name: String) -> Result<()> {
     ui.begin(&format!(
@@ -28,7 +28,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
 
-    ui.para(&format!("Hrs ago: {}", result.get_created_at()))?;
+    ui.para(&format!("Hrs ago: {}", hours_ago(result.get_created_at())))?;
 
     /*let hs_result = rio_client.get_hs_by_asmfac_id(
         &token,
