@@ -16,6 +16,7 @@ linked-hash-map="0.5.1"
 ###  Used by schema.rs
 iron = "0.6.0"
 lazy_static = "*"
+woothee = "*"
 chrono-humanize = "0.0.11"
 
 [features]

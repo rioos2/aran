@@ -2,6 +2,9 @@
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use std::result;
 use api::base::{TypeMeta, ObjectMeta, MetaFields};
+use iron::headers::UserAgent;
+use iron::prelude::*;
+use woothee::parser::{WootheeResult, Parser};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SessionCreate {
@@ -995,4 +998,60 @@ impl OidcProvider {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Device {
+    name: String,
+    category: String,
+    os: String,
+    os_version: String,
+    browser_type: String,
+    version: String,
+    vendor: String,
+    ip: String,
+}
+
+impl Device {
+    pub fn new() -> Device {
+        ::std::default::Default::default()
+    }
+    pub fn with(name: String, category: String, os: String, os_version: String, browser_type: String, version: String, vendor: String) -> Device {
+        Device {
+            name: name,
+            category: category,
+            os: os,
+            os_version: os_version,
+            browser_type: browser_type,
+            version: version,
+            vendor: vendor,
+            ..Default::default()
+        }
+    }
+
+    pub fn set_ip(&mut self, v: ::std::string::String) {
+        self.ip = v;
+    }
+}
+
+//convert the PromResponse into OSUsages value
+impl Into<Device> for WootheeResult {
+    fn into(self) -> Device {
+        Device::with(
+            self.name,
+            self.category,
+            self.os,
+            self.os_version,
+            self.browser_type,
+            self.version,
+            self.vendor,
+        )
+    }
+}
+
+pub fn user_agent(req: &Request) -> WootheeResult {
+    let user_agent = req.headers.get::<UserAgent>().unwrap();
+    let parser = Parser::new();
+    let result = parser.parse(user_agent).unwrap();
+    result
 }
