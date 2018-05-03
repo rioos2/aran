@@ -31,7 +31,9 @@ pub fn http_bearer_get(path: &str, token: &str) -> Result<reqwest::Response> {
     let url = Url::parse(path)?;
     let res = reqwest_client(None)?
         .get(url)
-        .header(Authorization(Bearer { token: token.to_owned() }))
+        .header(Authorization(Bearer {
+            token: token.to_owned(),
+        }))
         .header(UserAgent::new(USER_AGENT.to_string()))
         .send()
         .map_err(Error::ReqwestError)?;
@@ -45,6 +47,7 @@ pub fn http_basic_get(path: &str, username: String, password: String) -> Result<
     let url = Url::parse(path)?;
     let res = reqwest_client(None)?
         .get(url)
+        .header(UserAgent::new(USER_AGENT.to_string()))
         .basic_auth(username.to_string(), Some(password.to_string()))
         .send()
         .map_err(Error::ReqwestError)?;
