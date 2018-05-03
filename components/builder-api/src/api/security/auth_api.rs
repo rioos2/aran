@@ -71,13 +71,10 @@ impl AuthenticateApi {
                 let mut device: Device = user_agent(req).into();
                 device.set_ip(format!("{}", req.remote_addr));
 
-                let session = try!(sessions::DataStore::find_account(
-                    &self.conn,
-                    &session_data,
-                    &device,
-                ));
-
-                Ok(render_json(status::Ok, &session))
+                match sessions::DataStore::find_account(&self.conn, &session_data, &device) {
+                    Ok(session) => Ok(render_json(status::Ok, &session)),
+                    Err(err) => Err(internal_error(&format!("{}", err))),
+                }
             }
             Err(e) => Err(unauthorized_error(&format!("{}", e))),
         }

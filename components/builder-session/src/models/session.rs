@@ -24,20 +24,47 @@ impl DataStore {
         let rows = conn.query(&query, &[&session_create.get_email()]).map_err(
             Error::AccountGetById,
         )?;
+
         if rows.len() > 0 {
-            let row = rows.get(0);
-            let account = row_to_account(row);
+            let account_row = rows.get(0);
+            let account = row_to_account(account_row);
             let id = account.get_id().parse::<i64>().unwrap();
+            let provider = match session_create.get_provider() {
+                session::OAuthProvider::OpenID => "openid",
+                _ => "password",
+            };
 
             let session_rows = conn.query(
-                "SELECT * FROM select_or_insert_session_by_id_device_v1($1, $2)",
+                "SELECT * FROM get_session_v1($1, $2)",
                 &[&id, &serde_json::to_value(device).unwrap()],
             ).map_err(Error::SessionGet)?;
 
-            let session_row = session_rows.get(0);
-            let mut session: session::Session = account.into();
-            session.set_token(session_row.get("token"));
-            Ok(session)
+            if session_rows.len() > 0 {
+                let session_row = session_rows.get(0);
+                let mut session: session::Session = account.into();
+                session.set_token(session_row.get("token"));
+                return Ok(session);
+            } else {
+                let new_rows = conn.query(
+                    "SELECT * FROM insert_account_session_v1($1, $2, $3, $4)",
+                    &[
+                        &id,
+                        &session_create.get_token(),
+                        &provider,
+                        &(serde_json::to_value(device).unwrap()),
+                    ],
+                ).map_err(Error::SessionCreate)?;
+
+                let session_row = new_rows.get(0);
+                let mut session: session::Session = account.into();
+                session.set_token(session_row.get("token"));
+                println!(
+                    "--------------------------------------------\n{:?}",
+                    session
+                );
+                return Ok(session);
+            }
+
         } else {
             return Err(Error::Db(db::error::Error::RecordsNotFound));
         }
@@ -79,20 +106,18 @@ impl DataStore {
             };
 
             let rows = conn.query(
-                "SELECT * FROM insert_account_session_v1($1, $2, $3, $4, $5)",
-                &[&id, &session_create.get_token(), &provider, &true, &false],
+                "SELECT * FROM insert_account_session_v1($1, $2, $3, $4)",
+                &[
+                    &id,
+                    &session_create.get_token(),
+                    &provider,
+                    &serde_json::to_value(device).unwrap(),
+                ],
             ).map_err(Error::SessionCreate)?;
 
             let session_row = rows.get(0);
             let mut session: session::Session = account.into();
             session.set_token(session_row.get("token"));
-
-            let session_id: i64 = session_row.get("id");
-
-            conn.query(
-                "SELECT * FROM insert_account_device_v1($1, $2, $3)",
-                &[&id, &session_id, &serde_json::to_value(device).unwrap()],
-            ).map_err(Error::DeviceCreate)?;
 
             Ok(session)
         } else {

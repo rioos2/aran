@@ -52,47 +52,30 @@ SETOF accounts AS $$
                                                              $$ LANGUAGE PLPGSQL STABLE;
 
 
-CREATE SEQUENCE IF NOT EXISTS account_session_id_seq;
+CREATE TABLE IF NOT EXISTS account_sessions (account_id bigint REFERENCES accounts(id),
+                                                                          token text, device JSONB,
+                                                                                             provider text, is_admin bool DEFAULT FALSE,
+                                                                                                                                  is_service_access bool DEFAULT FALSE,
+                                                                                                                                                                 created_at timestamptz DEFAULT now(),
+                                                                                                                                                                                                expires_at timestamptz DEFAULT now() + interval '00:02:00');
 
 
-CREATE TABLE IF NOT EXISTS account_sessions (id bigint PRIMARY KEY DEFAULT next_id_v1('account_session_id_seq'),
-                                                                           account_id bigint REFERENCES accounts(id),
-                                                                                                        token text, provider text, is_admin bool DEFAULT FALSE,
-                                                                                                                                                         is_service_access bool DEFAULT FALSE,
-                                                                                                                                                                                        created_at timestamptz DEFAULT now(),
-                                                                                                                                                                                                                       expires_at timestamptz DEFAULT now() + interval '00:02:00',
-                                                                                                                                                                                                                                                                       UNIQUE (account_id));
-
-
-CREATE OR REPLACE FUNCTION insert_account_session_v1 (a_account_id bigint, account_token text, account_provider text, account_is_admin bool, account_is_service_access bool) RETURNS
+CREATE OR REPLACE FUNCTION insert_account_session_v1 (a_account_id bigint, account_token text, account_provider text, device JSONB) RETURNS
 SETOF account_sessions AS $$
 BEGIN
-RETURN QUERY INSERT INTO account_sessions (account_id, token, provider, is_admin, is_service_access)
-                                                                                                               VALUES (a_account_id, account_token, account_provider, account_is_admin, account_is_service_access)
+RETURN QUERY INSERT INTO account_sessions (account_id, token, provider, device)
+                                                                                                               VALUES (a_account_id, account_token, account_provider, device)
                                                                                                                RETURNING *;
                                                                                                RETURN;
                                                                                             END
                                                                                         $$ LANGUAGE PLPGSQL VOLATILE;
 
 
-CREATE SEQUENCE IF NOT EXISTS account_device_id_seq;
-
-
-CREATE TABLE IF NOT EXISTS account_devices
-  (id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('account_device_id_seq'),
-                                        account_id bigint REFERENCES accounts(id),
-                                                                     account_session_id bigint REFERENCES account_sessions(id) ON DELETE CASCADE,
-                                                                                                                                         device JSONB,
-                                                                                                                                                created_at timestamptz DEFAULT now());
-
-
-CREATE OR REPLACE FUNCTION insert_account_device_v1 (a_account_id bigint, account_session bigint, device JSONB) RETURNS
-SETOF account_devices AS $$
-BEGIN
-RETURN QUERY INSERT INTO account_devices (account_id, account_session_id, device)
-VALUES (a_account_id, account_session, device)
-RETURNING *;
-RETURN;
+CREATE OR REPLACE FUNCTION get_session_v1 (acc_id bigint, acc_device JSONB) RETURNS
+SETOF account_sessions AS $$
+      BEGIN
+      RETURN QUERY SELECT * FROM account_sessions WHERE account_id = acc_id AND acc_device = device LIMIT 1;
+      RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
