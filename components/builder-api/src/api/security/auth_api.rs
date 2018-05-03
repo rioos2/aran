@@ -17,7 +17,7 @@ use error::ErrorMessage::MissingParameter;
 
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error, conflict_error};
 
 use rand;
 use session::models::session as sessions;
@@ -68,7 +68,14 @@ impl AuthenticateApi {
 
                 session_data.set_token(UserAccountAuthenticate::token().unwrap());
 
-                let session = try!(sessions::DataStore::find_account(&self.conn, &session_data));
+                let mut device: Device = user_agent(req).into();
+                device.set_ip(format!("{}", req.remote_addr));
+
+                let session = try!(sessions::DataStore::find_account(
+                    &self.conn,
+                    &session_data,
+                    &device,
+                ));
 
                 Ok(render_json(status::Ok, &session))
             }
@@ -103,13 +110,23 @@ impl AuthenticateApi {
         let en = unmarshall_body.get_password();
         unmarshall_body.set_password(UserAccountAuthenticate::encrypt(en).unwrap());
 
+        let mut account_get = AccountGet::new();
+        account_get.set_email(unmarshall_body.get_email());
 
-        let mut samp: Device = user_agent(req).into();
-        samp.set_ip(format!("{}", req.remote_addr));
+        let mut device: Device = user_agent(req).into();
+        device.set_ip(format!("{}", req.remote_addr));
 
-        match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &samp) {
-            Ok(account) => Ok(render_json(status::Ok, &account)),
+        match sessions::DataStore::get_account(&self.conn, &account_get) {
+            Ok(Some(_account)) => Err(conflict_error(
+                &format!("alreay exists {}", account_get.get_email()),
+            )),
             Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => {
+                match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device) {
+                    Ok(account) => Ok(render_json(status::Ok, &account)),
+                    Err(err) => Err(internal_error(&format!("{}", err))),
+                }
+            }
         }
     }
 

@@ -18,38 +18,34 @@ use super::super::{SamlOutputList, OpenIdOutputList};
 pub struct DataStore;
 
 impl DataStore {
-    //For new users to onboard in Rio/OS, which takes the full account creation arguments and returns the Session which has the token.
-    //The default role and permission for the user is
-    //The default origin is
-    pub fn account_create(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device) -> Result<session::Session> {
-        //call and do find_or_create_account_via_session
-        Self::find_or_create_account_via_session(
-            datastore,
-            session_create,
-            device,
-            true,
-            false,
-            "select_or_insert_account_v1",
-        )
-        //do find_or_create_default_role_permission
-        //do find_or_create_default_origin
-        //return Session
-    }
-
-    pub fn find_account(datastore: &DataStoreConn, session_create: &session::SessionCreate) -> Result<session::Session> {
-        Self::find_or_create_account_via_session(
-            datastore,
-            session_create,
-            &session::Device::new(),
-            true,
-            false,
-            "select_only_account_v1",
-        )
-    }
-
-    pub fn find_or_create_account_via_session(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device, is_admin: bool, is_service_access: bool, dbprocedure: &str) -> Result<session::Session> {
+    pub fn find_account(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
-        let query = "SELECT * FROM ".to_string() + dbprocedure + "($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
+        let query = "SELECT * FROM get_account_by_email_v1($1)";
+        let rows = conn.query(&query, &[&session_create.get_email()]).map_err(
+            Error::AccountGetById,
+        )?;
+        if rows.len() > 0 {
+            let row = rows.get(0);
+            let account = row_to_account(row);
+            let id = account.get_id().parse::<i64>().unwrap();
+
+            let session_rows = conn.query(
+                "SELECT * FROM select_or_insert_session_by_id_device_v1($1, $2)",
+                &[&id, &serde_json::to_value(device).unwrap()],
+            ).map_err(Error::SessionGet)?;
+
+            let session_row = session_rows.get(0);
+            let mut session: session::Session = account.into();
+            session.set_token(session_row.get("token"));
+            Ok(session)
+        } else {
+            return Err(Error::Db(db::error::Error::RecordsNotFound));
+        }
+    }
+
+    pub fn account_create(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device) -> Result<session::Session> {
+        let conn = datastore.pool.get_shard(0)?;
+        let query = "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
         let rows = conn.query(
             &query,
             &[
@@ -84,13 +80,7 @@ impl DataStore {
 
             let rows = conn.query(
                 "SELECT * FROM insert_account_session_v1($1, $2, $3, $4, $5)",
-                &[
-                    &id,
-                    &session_create.get_token(),
-                    &provider,
-                    &is_admin,
-                    &is_service_access,
-                ],
+                &[&id, &session_create.get_token(), &provider, &true, &false],
             ).map_err(Error::SessionCreate)?;
 
             let session_row = rows.get(0);
@@ -120,7 +110,7 @@ impl DataStore {
             let row = rows.get(0);
             return Ok(Some(row_to_account(row)));
         } else {
-            Err(Error::Db(db::error::Error::RecordsNotFound))
+            Ok(None)
         }
     }
 
@@ -140,7 +130,7 @@ impl DataStore {
     pub fn get_session(datastore: &DataStoreConn, session_get: &session::SessionGet) -> Result<Option<session::Session>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
-            "SELECT * FROM get_account_session_v1($1, $2)",
+            "SELECT * FROM get_account_session_by_email_token_v1($1, $2)",
             &[&session_get.get_email(), &session_get.get_token()],
         ).map_err(Error::SessionGet)?;
         if rows.len() != 0 {
@@ -154,14 +144,6 @@ impl DataStore {
             session.set_token(token);
             let api_key: String = row.get("api_key");
             session.set_apikey(api_key);
-            // let mut flags = privilege::FeatureFlags::empty();
-            // if row.get("is_admin") {
-            //     flags.insert(privilege::ADMIN);
-            // }
-            // if row.get("is_service_access") {
-            //     flags.insert(privilege::SERVICE_ACCESS);
-            // }
-            // session.set_flags(flags.bits());
             return Ok(Some(session));
         } else {
             Ok(None)
