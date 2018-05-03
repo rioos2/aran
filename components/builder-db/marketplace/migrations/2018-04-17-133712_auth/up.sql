@@ -109,3 +109,10 @@ CREATE OR REPLACE FUNCTION get_account_session_v1 (account_email text, account_t
       RETURN;
       END
       $$ LANGUAGE PLPGSQL VOLATILE;
+
+CREATE SEQUENCE IF NOT EXISTS account_device_id_seq;
+
+CREATE TABLE IF NOT EXISTS account_devices (account_id bigint REFERENCES accounts(id),
+                                            account_session_id bigint REFERENCES account_sessions(id),
+                                                                      device jsonb, created_at timestamptz DEFAULT now(),
+                                                                      UNIQUE (account_id),UNIQUE (account_session_id));
