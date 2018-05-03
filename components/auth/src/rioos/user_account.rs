@@ -118,12 +118,11 @@ impl UserAccountAuthenticate {
 
 fn get_account(conn: &DataStoreConn, account_get: AccountGet, verify_password: bool) -> Result<()> {
     match sessions::DataStore::get_account(&conn, &account_get) {
-        Ok(opt_account) => {
-            let account = opt_account.unwrap();
+        Ok(Some(opt_account)) => {
             if verify_password {
                 GoofyCrypto::new()
                     .verify_password(
-                        &account.get_password().to_string(),
+                        &opt_account.get_password().to_string(),
                         &account_get.get_password(),
                     )
                     .map_err(|e| {
@@ -138,8 +137,17 @@ fn get_account(conn: &DataStoreConn, account_get: AccountGet, verify_password: b
         }
         Err(err) => {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!("Couldn't find {} in session.", account_get.get_email()),
+                error: format!(
+                    "Error while retriving session for {}.",
+                    account_get.get_email()
+                ),
                 error_description: format!("{}", err),
+            }))
+        }
+        Ok(None) => {
+            return Err(error::Error::Auth(rioos::AuthErr {
+                error: format!("Couldn't find {} in session.", account_get.get_email()),
+                error_description: "Unauthorized".to_string(),
             }))
         }
     }
