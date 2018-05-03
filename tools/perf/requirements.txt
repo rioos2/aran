@@ -1,1 +1,2 @@
+openerp-client-lib==1.1.2
 locustio
