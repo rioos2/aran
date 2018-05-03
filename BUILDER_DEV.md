@@ -222,18 +222,88 @@ This should show the status of the api server.
 
 You should see a response similar to the following:
 
-* Healthz
-`curl  https://localhost:7443/v1/status
-`
+* Ping
 
-```
-HTTP/1.1 201 Created
+`curl  https://localhost:7443/api/v1/ping --insecure
 
+```json
 {
-    "name": "aran",
-    "version": "2.0.dev"
-    "state": "alliswell"
+   "master":[
+      {
+         "name":"API Server",
+         "status":"up",
+         "description":"Service is operating normally"
+      },
+      {
+         "name":"Postgres",
+         "status":"up",
+         "description":"Service is operating normally"
+      },
+      {
+         "name":"Controller",
+         "status":"up",
+         "description":"Service is operating normally"
+      },
+      {
+         "name":"Scheduler",
+         "status":"up",
+         "description":"Service is operating normally"
+      },
+      {
+         "name":"Blockchain",
+         "status":"up",
+         "description":"Service is operating normally"
+      },
+      {
+         "name":"Logs",
+         "status":"down",
+         "description":"Service is currently down"
+      },
+      {
+         "name":"Telemetry",
+         "status":"up",
+         "description":"Service is operating normally"
+      },
+      {
+         "name":"VNC Console",
+         "status":"down",
+         "description":"Service is currently down"
+      },
+      {
+         "name":"Rio.Marketplace",
+         "status":"down",
+         "description":"Service is currently down"
+      },
+      {
+         "name":"Vaults",
+         "status":"down",
+         "description":"Service is currently down"
+      },
+      {
+         "name":"Anchore",
+         "status":"down",
+         "description":"Service is currently down"
+      }
+   ],
+   "nodes":[
+      {
+         "name":"216.126.195.154",
+         "status":"up",
+         "description":"Service is operating normally"
+      },
+      {
+         "name":"192.168.1.3",
+         "status":"up",
+         "description":"Service is operating normally"
+      },
+      {
+         "name":"107.152.143.242",
+         "status":"up",
+         "description":"Service is operating normally"
+      }
+   ]
 }
+
 ```
 
 ## To verify pfx
@@ -330,13 +400,15 @@ https://asciinema.org/a/LtzjvzEWOkxqPZmMo6UbhujsY
 
 ```
 
-### Run scripts
+### Run locust profile
 
 
 ```
 cd tools/perf
 
-locust -f auth.py --host=http://<rioos_aran_api_server>
+# To run Launcher profile
+locust -f launcher.py Launcher --host=https://console.rioos.xyz
+
 
 ```
 
