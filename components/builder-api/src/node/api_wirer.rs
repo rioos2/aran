@@ -211,6 +211,13 @@ impl HttpGateway for Wirer {
                 );
                 vscale.wire(config.clone(), &mut router);
 
+                let mut vncconsole = deploy::vncconsole_api::VncConsoleApi::new(
+                    Box::new(ds.clone()),
+                    Box::new(PrometheusClient::new(&*config.clone())),
+                    config.clone(),
+                );
+                vncconsole.wire(config.clone(), &mut router);
+
                 //origin
                 let mut origin = deploy::origin::OriginApi::new(Box::new(ds.clone()));
                 origin.wire(config.clone(), &mut router);

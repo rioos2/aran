@@ -676,6 +676,11 @@ impl Affinity {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct VncResponseUrl {
+    pub url: String,
+}
+
 ///////////// To discuss
 /*
 //how to attach handlers to Container lifecycle events. rioos supports the postStart and preStop events.
