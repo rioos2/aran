@@ -99,20 +99,20 @@ CREATE OR REPLACE FUNCTION get_account_session_by_email_token_v1 (account_email 
       $$ LANGUAGE PLPGSQL VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION get_logout_v1 (account_email text, account_token text) RETURNS SETOF accounts AS $$
+CREATE OR REPLACE FUNCTION get_logout_v1 (account_email text, account_token text,acc_device JSONB) RETURNS
+SETOF accounts AS $$
       DECLARE
         this_account accounts%rowtype;
       BEGIN
           SELECT * FROM accounts WHERE accounts.email = account_email LIMIT 1 INTO this_account;
             IF FOUND THEN
-              DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token;
+              DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token AND account_sessions.device = acc_device;
               RETURN QUERY
               SELECT * from accounts WHERE accounts.id = this_account.id;
             END IF;
               RETURN;
             END
             $$ LANGUAGE PLPGSQL VOLATILE;
-
 
 
 CREATE SEQUENCE IF NOT EXISTS ldap_id_seq;

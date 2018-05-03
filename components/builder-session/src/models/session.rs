@@ -58,10 +58,6 @@ impl DataStore {
                 let session_row = new_rows.get(0);
                 let mut session: session::Session = account.into();
                 session.set_token(session_row.get("token"));
-                println!(
-                    "--------------------------------------------\n{:?}",
-                    session
-                );
                 return Ok(session);
             }
 
@@ -175,14 +171,16 @@ impl DataStore {
         }
     }
 
-    pub fn account_logout(datastore: &DataStoreConn,logout: &session::AccountTokenGet) -> Result<Option<session::Account>> {
+    pub fn account_logout(datastore: &DataStoreConn, logout: &session::AccountTokenGet, device: &session::Device) -> Result<Option<session::Account>> {
         let conn = datastore.pool.get_shard(0)?;
-        let rows = &conn.query("SELECT * FROM get_logout_v1($1,$2)",
-                        &[
-                            &(logout.get_email() as String),
-                            &(logout.get_token() as String)
-                            ],
-                        ).map_err(Error::SessionGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_logout_v1($1,$2,$3)",
+            &[
+                &(logout.get_email() as String),
+                &(logout.get_token() as String),
+                &(serde_json::to_value(device).unwrap()),
+            ],
+        ).map_err(Error::SessionGet)?;
 
         if rows.len() != 0 {
             let row = rows.get(0);

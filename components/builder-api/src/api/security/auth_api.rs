@@ -69,7 +69,7 @@ impl AuthenticateApi {
                 session_data.set_token(UserAccountAuthenticate::token().unwrap());
 
                 let mut device: Device = user_agent(req).into();
-                device.set_ip(format!("{}", req.remote_addr));
+                device.set_ip(format!("{}", req.remote_addr.ip()));
 
                 match sessions::DataStore::find_account(&self.conn, &session_data, &device) {
                     Ok(session) => Ok(render_json(status::Ok, &session)),
@@ -111,7 +111,7 @@ impl AuthenticateApi {
         account_get.set_email(unmarshall_body.get_email());
 
         let mut device: Device = user_agent(req).into();
-        device.set_ip(format!("{}", req.remote_addr));
+        device.set_ip(format!("{}", req.remote_addr.ip()));
 
         match sessions::DataStore::get_account(&self.conn, &account_get) {
             Ok(Some(_account)) => Err(conflict_error(
@@ -172,24 +172,17 @@ impl AuthenticateApi {
     //POST: /logout
     //Global: Logout the current user
     fn account_logout(&self, req: &mut Request) -> AranResult<Response> {
-        let account = self.validate(req.get::<bodyparser::Struct<AccountTokenGet>>()?)?;
+        let account = self.validate(
+            req.get::<bodyparser::Struct<AccountTokenGet>>()?,
+        )?;
 
-        match sessions::DataStore::account_logout(&self.conn, &account) {
+        let mut device: Device = user_agent(req).into();
+        device.set_ip(format!("{}", req.remote_addr.ip()));
+
+        match sessions::DataStore::account_logout(&self.conn, &account, &device) {
             Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
             Err(err) => Err(internal_error(&format!("{}", err))),
-        }
-    }
-
-    //GET: Not used any where
-    //The object seems to be getting an users session based on session_id.
-    fn _session_get(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<SessionGet>>()?)?;
-
-        match sessions::DataStore::get_session(&self.conn, &unmarshall_body) {
-            Ok(Some(session)) => Ok(render_json(status::Ok, &session)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
 
@@ -401,8 +394,7 @@ impl Api for AuthenticateApi {
         );
         router.post(
             "/logout",
-            XHandler::new(C { inner: account_logout })
-            .before(basic.clone()),
+            XHandler::new(C { inner: account_logout }).before(basic.clone()),
             "account_logout",
         );
 
