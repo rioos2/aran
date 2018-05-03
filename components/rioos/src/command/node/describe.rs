@@ -5,7 +5,7 @@ use api_client::Client;
 use protocol::api::node;
 use super::super::common::condition_table;
 use human_size::Size;
-use protocol::api::base::MetaFields;
+use protocol::api::base::{MetaFields,hours_ago};
 
 pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: String) -> Result<()> {
     ui.begin(&format!("Constructing a {} node for you...", id))?;
@@ -148,7 +148,9 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
     ui.para(
         &format!("Status: {}", result.get_status().get_phase()),
     )?;
-    ui.para(&format!("Hrs Ago: {}", result.get_created_at()))?;
+
+    ui.para(&format!("Hrs Ago: {}", hours_ago(result.get_created_at())))?;
+
     ui.heading("Conditions")?;
     let title = row!["Type", "Status", "Reason", "LastTransitionTime"];
     condition_table(conditions.to_owned(), title);

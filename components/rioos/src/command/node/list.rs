@@ -12,7 +12,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
 
     let results = rio_client.list_node(&token, &email)?;
 
-    let title = row!["Id", "Name", "Status", "Unschedulable", "Hrs Ago"];
+    let title = row!["Id", "Name", "Status", "Schedulable", "Hrs Ago"];
 
     pretty_table(results.to_owned(), title);
 

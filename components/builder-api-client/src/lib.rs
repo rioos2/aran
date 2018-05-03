@@ -30,9 +30,8 @@ use rioos_http::api_client::err_from_response;
 
 use http_gateway::http::rendering::ResponseList;
 
-
 use protocol::api::{session, deploy, blueprint, job, network, node, storage, origin, scale, secret};
-use protocol::api::base::MetaFields;
+use protocol::api::base::{MetaFields, hours_ago};
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
 
@@ -50,6 +49,7 @@ impl Client {
         if !endpoint.cannot_be_a_base() && endpoint.path() == "/" {
             endpoint.set_path(DEFAULT_API_PATH);
         }
+
         Ok(Client(
             ApiClient::new(endpoint, product, version, fs_root_path)
                 .map_err(Error::RioHttpClient)?,
@@ -132,7 +132,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let mut assemblyfactory: ResponseList<Vec<deploy::AssemblyFactory>> = res.json()?;
 
         Ok(
@@ -145,7 +144,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_replicas().to_string(),
                     i.get_status().get_phase(),
-                    i.get_created_at(),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -235,7 +234,7 @@ impl Client {
                 i.get_id(),
                 i.object_meta().name,
                 i.get_secret_type(),
-                i.get_created_at(),
+                hours_ago(i.get_created_at()),
             ]
                 })
                 .collect(),
@@ -298,7 +297,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let mut assembly: ResponseList<Vec<deploy::Assembly>> = res.json()?;
 
         Ok(
@@ -333,7 +331,8 @@ impl Client {
                                         ips_ports.0.into_iter().collect(),
                                         ips_ports.1.into_iter().collect(),
                                         i.get_status().get_phase(),
-                                        i.get_created_at()]
+                                        hours_ago(i.get_created_at()),
+                                        ]
                 })
                 .collect(),
         )
@@ -357,8 +356,8 @@ impl Client {
                     i.get_id(),
                     i.object_meta().name,
                     i.get_status().get_phase(),
-                    i.get_spec().get_unschedulable().to_string(),
-                    i.get_created_at(),
+                    (!i.get_spec().get_unschedulable()).to_string(),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -389,7 +388,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let mut plan: ResponseList<Vec<blueprint::Plan>> = res.json()?;
         Ok(
             plan.items
@@ -402,7 +400,7 @@ impl Client {
                     i.get_version(),
                     i.get_description(),
                     i.get_status().get_phase(),
-                    i.get_created_at(),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -418,7 +416,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let mut datacenter: ResponseList<Vec<storage::DataCenter>> = res.json()?;
         Ok(
             datacenter
@@ -430,7 +427,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_enabled().to_string(),
                     i.get_status().get_phase(),
-                    i.get_created_at(),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -448,7 +445,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let mut origin: ResponseList<Vec<origin::Origin>> = res.json()?;
         Ok(
             origin
@@ -459,7 +455,7 @@ impl Client {
                     i.get_id(),
                     i.get_name(),
                     i.object_meta().account,
-                    i.get_created_at(),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -475,7 +471,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let mut job: ResponseList<Vec<job::Jobs>> = res.json()?;
         Ok(
             job.items
@@ -486,7 +481,7 @@ impl Client {
                     i.object_meta().name,
                     i.get_spec().get_node_id(),
                     i.get_status().get_phase(),
-                    i.get_created_at(),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -502,7 +497,6 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let mut network: ResponseList<Vec<network::Network>> = res.json()?;
         Ok(
             network
@@ -517,7 +511,7 @@ impl Client {
                     i.get_netmask(),
                     i.get_gateway(),
                     i.get_status().get_phase(),
-                    i.get_created_at(),
+                    hours_ago(i.get_created_at()),
                 ]
                 })
                 .collect(),
@@ -534,14 +528,13 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let result: origin::Origin = res.json()?;
         let data = vec![
             vec![
                 result.get_id(),
                 result.get_name(),
                 result.object_meta().account,
-                result.get_created_at(),
+                hours_ago(result.get_created_at()),
             ],
         ];
         Ok(data)
@@ -650,33 +643,7 @@ impl Client {
         Ok(strcon.items)
     }
 
-    pub fn get_storagepool_by_scid(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("/storagespool/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
-
-        if res.status() != StatusCode::Ok {
-            return Err(Error::RioHttpClient(err_from_response(res)));
-        };
-        let mut strpool: ResponseList<Vec<storage::StoragePool>> = res.json()?;
-        Ok(
-            strpool
-                .items
-                .iter_mut()
-                .map(|i| {
-                    vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_status().get_phase(),
-                    i.get_created_at(),
-                ]
-                })
-                .collect(),
-        )
-    }
-    pub fn get_storagepool_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<storage::StoragePool>> {
+    pub fn get_storagepool_by_scid(&self, token: &str, email: &str, id: &str) -> Result<Vec<storage::StoragePool>> {
         let mut res = self.0
             .get(&format!("/storageconnectors/{}/storagespool", id))
             .headers(self.add_authz(token, email))
@@ -686,11 +653,9 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-
         let strpool: ResponseList<Vec<storage::StoragePool>> = res.json()?;
         Ok(strpool.items)
     }
-
 
     fn add_authz(&self, token: &str, email: &str) -> Headers {
         let mut headers = Headers::new();
@@ -700,4 +665,6 @@ impl Client {
         headers.set(Accept::json());
         headers
     }
+
+
 }

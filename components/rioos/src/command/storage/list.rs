@@ -13,7 +13,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
         .iter_mut()
         .map(|c| {
             rio_client
-                .get_storagepool_by_id(&token, &email, &(c.get_id()))
+                .get_storagepool_by_scid(&token, &email, &(c.get_id()))
                 .map(|p| {
                     p.into_iter()
                         .map(|x| {
@@ -33,7 +33,8 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
         .flat_map(|s| s)
         .collect::<Vec<_>>();
 
-    let title = row![
+    let title =
+        row![
         "Id",
         "Type",
         "Stored At",
