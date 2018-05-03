@@ -4,8 +4,8 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
-extern crate rioos_builder_httpgateway as http_gateway;
 extern crate rioos_builder_apimachinery as protocol;
+extern crate rioos_builder_httpgateway as http_gateway;
 extern crate rioos_http_client as rioos_http;
 
 #[macro_use]
@@ -22,18 +22,19 @@ use std::path::Path;
 use std::string::ToString;
 
 use reqwest::IntoUrl;
-use reqwest::{StatusCode, Body};
-use reqwest::header::{ContentType, Accept, Authorization, Bearer, Headers};
+use reqwest::{Body, StatusCode};
+use reqwest::header::{Accept, Authorization, Bearer, ContentType, Headers, UserAgent};
 
 use rioos_http::ApiClient;
 use rioos_http::api_client::err_from_response;
 
 use http_gateway::http::rendering::ResponseList;
 
-use protocol::api::{session, deploy, blueprint, job, network, node, storage, origin, scale, secret};
-use protocol::api::base::{MetaFields, hours_ago};
+use protocol::api::{blueprint, deploy, job, network, node, origin, scale, secret, session, storage};
+use protocol::api::base::{hours_ago, MetaFields};
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
+const USER_AGENT: &'static str = "Rio/OS Blu";
 
 header! { (XAuthRioOSEmail, "X-AUTH-RIOOS-EMAIL") => [String] }
 
@@ -51,8 +52,7 @@ impl Client {
         }
 
         Ok(Client(
-            ApiClient::new(endpoint, product, version, fs_root_path)
-                .map_err(Error::RioHttpClient)?,
+            ApiClient::new(endpoint, product, version, fs_root_path).map_err(Error::RioHttpClient)?,
         ))
     }
 
@@ -62,6 +62,7 @@ impl Client {
             .body(Body::from(serde_json::to_string(&body)?))
             .header(Accept::json())
             .header(ContentType::json())
+            .header(UserAgent::new(USER_AGENT.to_string()))
             .send()
             .map_err(Error::ReqwestError)?;
 
@@ -83,6 +84,7 @@ impl Client {
             .body(Body::from(serde_json::to_string(&body)?))
             .header(Accept::json())
             .header(ContentType::json())
+            .header(UserAgent::new(USER_AGENT.to_string()))
             .send()
             .map_err(Error::ReqwestError)?;
 
@@ -95,9 +97,11 @@ impl Client {
     }
 
     pub fn logout(&self, token: &str) -> Result<(String)> {
-        let res = self.0.get(&format!("logout/{}", token)).send().map_err(
-            Error::ReqwestError,
-        )?;
+        let res = self.0
+            .get(&format!("logout/{}", token))
+            .header(UserAgent::new(USER_AGENT.to_string()))
+            .send()
+            .map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -108,9 +112,10 @@ impl Client {
 
     pub fn deploy_digicloud(&self, assembly_fac: deploy::AssemblyFactory, token: &str, email: &str) -> Result<deploy::AssemblyFactory> {
         let mut res = self.0
-            .post(
-                &format!("accounts/{}/assemblyfactorys",assembly_fac.object_meta().account),
-            )
+            .post(&format!(
+                "accounts/{}/assemblyfactorys",
+                assembly_fac.object_meta().account
+            ))
             .body(Body::from(serde_json::to_string(&assembly_fac)?))
             .headers(self.add_authz(token, email))
             .send()
@@ -122,10 +127,9 @@ impl Client {
         Ok(assembly_fat)
     }
 
-
     pub fn list_deploy(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
-            .get(&format!("accounts/{}/assemblyfactorys",account))
+            .get(&format!("accounts/{}/assemblyfactorys", account))
             .headers(self.add_authz(token, email))
             .send()
             .map_err(Error::ReqwestError)?;
@@ -134,21 +138,19 @@ impl Client {
         };
         let mut assemblyfactory: ResponseList<Vec<deploy::AssemblyFactory>> = res.json()?;
 
-        Ok(
-            assemblyfactory
-                .items
-                .iter_mut()
-                .map(|i| {
-                    vec![
+        Ok(assemblyfactory
+            .items
+            .iter_mut()
+            .map(|i| {
+                vec![
                     i.get_id(),
                     i.object_meta().name,
                     i.get_replicas().to_string(),
                     i.get_status().get_phase(),
                     hours_ago(i.get_created_at()),
                 ]
-                })
-                .collect(),
-        )
+            })
+            .collect())
     }
 
     pub fn describe_deploy(&self, token: &str, email: &str, id: &str) -> Result<deploy::AssemblyFactory> {
@@ -165,8 +167,6 @@ impl Client {
         let assembly: deploy::AssemblyFactory = res.json()?;
         Ok(assembly)
     }
-
-
 
     pub fn create_network(&self, network: network::Network, token: &str, email: &str) -> Result<network::Network> {
         let mut res = self.0
@@ -200,7 +200,7 @@ impl Client {
 
     pub fn create_secret(&self, secret: secret::Secret, origin: &str, token: &str, email: &str) -> Result<()> {
         let res = self.0
-            .post(&format!("origins/{}/secrets",origin))
+            .post(&format!("origins/{}/secrets", origin))
             .body(Body::from(serde_json::to_string(&secret)?))
             .headers(self.add_authz(token, email))
             .send()
@@ -213,10 +213,9 @@ impl Client {
         Ok(())
     }
 
-
     pub fn list_secret(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
-            .get(&format!("accounts/{}/secrets",account))
+            .get(&format!("accounts/{}/secrets", account))
             .headers(self.add_authz(token, email))
             .send()
             .map_err(Error::ReqwestError)?;
@@ -225,22 +224,19 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut secret: ResponseList<Vec<secret::Secret>> = res.json()?;
-        Ok(
-            secret
-                .items
-                .iter_mut()
-                .map(|i| {
-                    vec![
-                i.get_id(),
-                i.object_meta().name,
-                i.get_secret_type(),
-                hours_ago(i.get_created_at()),
-            ]
-                })
-                .collect(),
-        )
+        Ok(secret
+            .items
+            .iter_mut()
+            .map(|i| {
+                vec![
+                    i.get_id(),
+                    i.object_meta().name,
+                    i.get_secret_type(),
+                    hours_ago(i.get_created_at()),
+                ]
+            })
+            .collect())
     }
-
 
     pub fn describe_secret(&self, token: &str, email: &str, id: &str) -> Result<secret::Secret> {
         let mut res = self.0
@@ -299,16 +295,15 @@ impl Client {
         };
         let mut assembly: ResponseList<Vec<deploy::Assembly>> = res.json()?;
 
-        Ok(
-            assembly
-                .items
-                .iter_mut()
-                .map(|i| {
-                    let ips_ports = (match i.get_spec().get_endpoints() {
-                                         None => None,
-                                         Some(endpoint) => {
-                                             let subsets = endpoint.get_subsets();
-                                             Some((
+        Ok(assembly
+            .items
+            .iter_mut()
+            .map(|i| {
+                let ips_ports = (match i.get_spec().get_endpoints() {
+                    None => None,
+                    Some(endpoint) => {
+                        let subsets = endpoint.get_subsets();
+                        Some((
                             subsets
                                 .get_addresses()
                                 .clone()
@@ -322,20 +317,20 @@ impl Client {
                                 .map(|x| x.port.to_owned())
                                 .collect::<Vec<_>>(),
                         ))
-                                         }
-                                     }).unwrap_or(([].to_vec(), [].to_vec()));
+                    }
+                }).unwrap_or(([].to_vec(), [].to_vec()));
 
-                    vec![               i.get_id(),
-                                        i.object_meta().name,
-                                        i.object_meta().account,
-                                        ips_ports.0.into_iter().collect(),
-                                        ips_ports.1.into_iter().collect(),
-                                        i.get_status().get_phase(),
-                                        hours_ago(i.get_created_at()),
-                                        ]
-                })
-                .collect(),
-        )
+                vec![
+                    i.get_id(),
+                    i.object_meta().name,
+                    i.object_meta().account,
+                    ips_ports.0.into_iter().collect(),
+                    ips_ports.1.into_iter().collect(),
+                    i.get_status().get_phase(),
+                    hours_ago(i.get_created_at()),
+                ]
+            })
+            .collect())
     }
     pub fn list_node(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
@@ -348,20 +343,18 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut node: ResponseList<Vec<node::Node>> = res.json()?;
-        Ok(
-            node.items
-                .iter_mut()
-                .map(|i| {
-                    vec![
+        Ok(node.items
+            .iter_mut()
+            .map(|i| {
+                vec![
                     i.get_id(),
                     i.object_meta().name,
                     i.get_status().get_phase(),
                     (!i.get_spec().get_unschedulable()).to_string(),
                     hours_ago(i.get_created_at()),
                 ]
-                })
-                .collect(),
-        )
+            })
+            .collect())
     }
 
     pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<node::Node> {
@@ -389,11 +382,10 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut plan: ResponseList<Vec<blueprint::Plan>> = res.json()?;
-        Ok(
-            plan.items
-                .iter_mut()
-                .map(|i| {
-                    vec![
+        Ok(plan.items
+            .iter_mut()
+            .map(|i| {
+                vec![
                     i.get_id(),
                     i.object_meta().name,
                     i.get_category(),
@@ -402,9 +394,8 @@ impl Client {
                     i.get_status().get_phase(),
                     hours_ago(i.get_created_at()),
                 ]
-                })
-                .collect(),
-        )
+            })
+            .collect())
     }
     pub fn list_datacenters(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
@@ -417,25 +408,22 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut datacenter: ResponseList<Vec<storage::DataCenter>> = res.json()?;
-        Ok(
-            datacenter
-                .items
-                .iter_mut()
-                .map(|i| {
-                    vec![
+        Ok(datacenter
+            .items
+            .iter_mut()
+            .map(|i| {
+                vec![
                     i.get_id(),
                     i.object_meta().name,
                     i.get_enabled().to_string(),
                     i.get_status().get_phase(),
                     hours_ago(i.get_created_at()),
                 ]
-                })
-                .collect(),
-        )
+            })
+            .collect())
     }
 
     pub fn list_origins(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
-
         let mut res = self.0
             .get(&format!("origins"))
             .headers(self.add_authz(token, email))
@@ -446,20 +434,18 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut origin: ResponseList<Vec<origin::Origin>> = res.json()?;
-        Ok(
-            origin
-                .items
-                .iter_mut()
-                .map(|i| {
-                    vec![
+        Ok(origin
+            .items
+            .iter_mut()
+            .map(|i| {
+                vec![
                     i.get_id(),
                     i.get_name(),
                     i.object_meta().account,
                     hours_ago(i.get_created_at()),
                 ]
-                })
-                .collect(),
-        )
+            })
+            .collect())
     }
     pub fn list_job(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
@@ -472,20 +458,18 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut job: ResponseList<Vec<job::Jobs>> = res.json()?;
-        Ok(
-            job.items
-                .iter_mut()
-                .map(|i| {
-                    vec![
+        Ok(job.items
+            .iter_mut()
+            .map(|i| {
+                vec![
                     i.get_id(),
                     i.object_meta().name,
                     i.get_spec().get_node_id(),
                     i.get_status().get_phase(),
                     hours_ago(i.get_created_at()),
                 ]
-                })
-                .collect(),
-        )
+            })
+            .collect())
     }
     pub fn list_network(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
@@ -498,12 +482,11 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut network: ResponseList<Vec<network::Network>> = res.json()?;
-        Ok(
-            network
-                .items
-                .iter_mut()
-                .map(|i| {
-                    vec![
+        Ok(network
+            .items
+            .iter_mut()
+            .map(|i| {
+                vec![
                     i.get_id(),
                     i.object_meta().name,
                     i.get_network_type(),
@@ -513,9 +496,8 @@ impl Client {
                     i.get_status().get_phase(),
                     hours_ago(i.get_created_at()),
                 ]
-                })
-                .collect(),
-        )
+            })
+            .collect())
     }
 
     pub fn origin_get(&self, token: &str, email: &str, name: &str) -> Result<Vec<Vec<String>>> {
@@ -570,7 +552,7 @@ impl Client {
     }
     pub fn network_update(&self, token: &str, email: &str, net: network::Network) -> Result<()> {
         let res = self.0
-            .put(&format!("networks/{}",net.get_id()))
+            .put(&format!("networks/{}", net.get_id()))
             .body(Body::from(serde_json::to_string(&net)?))
             .headers(self.add_authz(token, email))
             .send()
@@ -585,7 +567,7 @@ impl Client {
 
     pub fn datacenter_update(&self, token: &str, email: &str, dc: storage::DataCenter) -> Result<()> {
         let res = self.0
-            .put(&format!("datacenters/{}",dc.get_id()))
+            .put(&format!("datacenters/{}", dc.get_id()))
             .body(Body::from(serde_json::to_string(&dc)?))
             .headers(self.add_authz(token, email))
             .send()
@@ -597,7 +579,6 @@ impl Client {
 
         Ok(())
     }
-
 
     pub fn describe_datacenter(&self, token: &str, email: &str, id: &str) -> Result<storage::DataCenter> {
         let mut res = self.0
@@ -659,12 +640,13 @@ impl Client {
 
     fn add_authz(&self, token: &str, email: &str) -> Headers {
         let mut headers = Headers::new();
-        headers.set(Authorization(Bearer { token: token.to_string() }));
+        headers.set(Authorization(Bearer {
+            token: token.to_string(),
+        }));
         headers.set(XAuthRioOSEmail(email.to_string()));
+        headers.set(UserAgent::new(USER_AGENT.to_string()));
         headers.set(ContentType::json());
         headers.set(Accept::json());
         headers
     }
-
-
 }
