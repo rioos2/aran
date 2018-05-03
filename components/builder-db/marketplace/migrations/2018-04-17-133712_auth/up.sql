@@ -89,30 +89,20 @@ RETURN QUERY INSERT INTO account_sessions (account_id, token, provider, is_admin
                                                                                         $$ LANGUAGE PLPGSQL VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION get_account_session_v1 (account_email text, account_token text) RETURNS TABLE(id bigint, email text, token text, api_key text, is_admin bool, is_service_access bool) AS $$
-      DECLARE
-      this_account accounts%rowtype;
-      BEGIN
-      SELECT * FROM accounts WHERE accounts.email = account_email LIMIT 1 INTO this_account;
-      IF FOUND THEN
-      DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token AND expires_at < now();
-      IF NOT FOUND THEN
-      RETURN QUERY
-      SELECT accounts.id, accounts.email, accounts.api_key, account_sessions.token,account_sessions.is_admin,
-      account_sessions.is_service_access
-      FROM accounts
-      INNER JOIN account_sessions ON account_sessions.account_id = accounts.id
-      WHERE accounts.id = this_account.id
-      AND account_sessions.token = account_token;
-      END IF;
-      END IF;
-      RETURN;
-      END
-      $$ LANGUAGE PLPGSQL VOLATILE;
-
-CREATE SEQUENCE IF NOT EXISTS account_device_id_seq;
-
-CREATE TABLE IF NOT EXISTS account_devices (account_id bigint REFERENCES accounts(id),
-                                            account_session_id bigint REFERENCES account_sessions(id),
-                                                                      device jsonb, created_at timestamptz DEFAULT now(),
-                                                                      UNIQUE (account_id),UNIQUE (account_session_id));
+CREATE OR REPLACE FUNCTION get_account_session_v1 (account_email text, account_token text) RETURNS TABLE(id bigint, email text, api_key text,token text) AS $$
+                                                                                              DECLARE
+                                                                                              this_account accounts%rowtype;
+                                                                                              BEGIN
+                                                                                              SELECT * FROM accounts WHERE accounts.email = account_email LIMIT 1 INTO this_account;
+                                                                                              IF FOUND THEN
+                                                                                              DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token AND expires_at < now();
+                                                                                              RETURN QUERY
+                                                                                              SELECT accounts.id, accounts.email, accounts.api_key, account_sessions.token
+                                                                                              FROM accounts
+                                                                                              INNER JOIN account_sessions ON  accounts.id =account_sessions.account_id
+                                                                                              WHERE accounts.id = this_account.id
+                                                                                              AND account_sessions.token = account_token;
+                                                                                              END IF;
+                                                                                              RETURN;
+                                                                                              END
+                                                                                              $$ LANGUAGE PLPGSQL VOLATILE;

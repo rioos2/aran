@@ -108,13 +108,19 @@ CREATE OR REPLACE FUNCTION get_account_session_v1 (account_email text, account_t
       $$ LANGUAGE PLPGSQL VOLATILE;
 
 
-CREATE SEQUENCE IF NOT EXISTS account_device_id_seq;
-
-CREATE TABLE IF NOT EXISTS account_devices (account_id bigint REFERENCES accounts(id),
-                                            account_session_id bigint REFERENCES account_sessions(id),
-                                                                          device jsonb, created_at timestamptz DEFAULT now(),
-                                                                          UNIQUE (account_id),UNIQUE (account_session_id));
-
+CREATE OR REPLACE FUNCTION get_logout_v1 (account_email text, account_token text) RETURNS SETOF accounts AS $$
+      DECLARE
+        this_account accounts%rowtype;
+      BEGIN
+          SELECT * FROM accounts WHERE accounts.email = account_email LIMIT 1 INTO this_account;
+            IF FOUND THEN
+              DELETE FROM account_sessions WHERE account_id = this_account.id AND account_sessions.token = account_token;
+              RETURN QUERY
+              SELECT * from accounts WHERE accounts.id = this_account.id;
+            END IF;
+              RETURN;
+            END
+            $$ LANGUAGE PLPGSQL VOLATILE;
 
 
 
