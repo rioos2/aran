@@ -211,6 +211,12 @@ impl HttpGateway for Wirer {
                 );
                 vscale.wire(config.clone(), &mut router);
 
+                let mut console = deploy::console::Containers::new(
+                    Box::new(ds.clone()),
+                    config.clone(),
+                );
+                console.wire(config.clone(), &mut router);
+
                 //origin
                 let mut origin = deploy::origin::OriginApi::new(Box::new(ds.clone()));
                 origin.wire(config.clone(), &mut router);
