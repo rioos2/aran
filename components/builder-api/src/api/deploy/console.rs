@@ -52,8 +52,8 @@ impl Containers {
                         return Err(not_found_error(&format!("Still deploying. Must have console host and port: for {} ",asm_id)))
 
                         }
-                    let host = assembly.get_metadata().get("rioos_sh_vnc_host").unwrap_or("".to_string());
-                    let port = assembly.get_metadata().get("rioos_sh_vnc_port").unwrap("".to_string());
+                    let host = assembly.get_metadata().get("rioos_sh_vnc_host").unwrap_or(&"".to_string());
+                    let port = assembly.get_metadata().get("rioos_sh_vnc_port").unwrap_or(&"".to_string());
                     let url = format!("http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1", host, port,acc,asm_id);
 
                     let client = ApiClient::new(&url, "", "v1", None)?;
