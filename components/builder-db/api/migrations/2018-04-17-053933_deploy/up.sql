@@ -7,16 +7,17 @@ CREATE TABLE IF NOT EXISTS assemblys (id bigint PRIMARY KEY DEFAULT next_id_v1('
                                                                     type_meta JSONB,
                                                                               object_meta JSONB,
                                                                                           selector text[], status JSONB,
-                                                                                                                  metadata JSONB,
+                                                                                                      metadata JSONB,
+                                                                                                                  probe JSONB,
                                                                                                                            updated_at timestamptz,
                                                                                                                            created_at timestamptz DEFAULT now());
 
 
-CREATE OR REPLACE FUNCTION insert_assembly_v1 (type_meta JSONB, object_meta JSONB, selector text[], status JSONB, metadata JSONB) RETURNS
+CREATE OR REPLACE FUNCTION insert_assembly_v1 (type_meta JSONB, object_meta JSONB, selector text[], status JSONB, metadata JSONB,probe JSONB) RETURNS
 SETOF assemblys AS $$
                                                                                                                                                      BEGIN
-                                                                                                                                                         RETURN QUERY INSERT INTO assemblys(type_meta,object_meta,selector,status,metadata)
-                                                                                                                                                             VALUES (type_meta,object_meta,selector,status,metadata)
+                                                                                                                                                         RETURN QUERY INSERT INTO assemblys(type_meta,object_meta,selector,status,metadata,probe)
+                                                                                                                                                             VALUES (type_meta,object_meta,selector,status,metadata,probe)
                                                                                                                                                              RETURNING *;
                                                                                                                                                          RETURN;
                                                                                                                                                      END
@@ -65,10 +66,10 @@ SETOF assemblys AS $$
  $$ LANGUAGE PLPGSQL STABLE;
 
 
-CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint,asm_selector text[],asm_status JSONB, asm_object_meta JSONB, asm_metadata JSONB) RETURNS
+CREATE OR REPLACE FUNCTION update_assembly_v1 (aid bigint,asm_selector text[],asm_status JSONB, asm_object_meta JSONB, asm_metadata JSONB, asm_probe JSONB) RETURNS
 SETOF assemblys AS $$
   BEGIN
-  RETURN QUERY UPDATE assemblys SET selector=asm_selector,status=asm_status,object_meta = asm_object_meta,metadata=asm_metadata,updated_at=now() WHERE id=aid
+  RETURN QUERY UPDATE assemblys SET selector=asm_selector,status=asm_status,object_meta = asm_object_meta,metadata=asm_metadata,probe = asm_probe,updated_at=now() WHERE id=aid
   RETURNING *;
   RETURN;
   END

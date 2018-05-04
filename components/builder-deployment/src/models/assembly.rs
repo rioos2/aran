@@ -37,13 +37,14 @@ impl<'a> DataStore<'a> {
     pub fn create(&self, assembly: &deploy::Assembly) -> AssemblyOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM insert_assembly_v1($1,$2,$3,$4,$5,$6)",
             &[
                 &(serde_json::to_value(assembly.type_meta()).unwrap()),
                 &(serde_json::to_value(assembly.object_meta()).unwrap()),
                 &(assembly.get_selector() as Vec<String>),
                 &(serde_json::to_value(assembly.get_status()).unwrap()),
                 &(serde_json::to_value(assembly.get_metadata()).unwrap()),
+                &(serde_json::to_value(assembly.get_probe()).unwrap()),
             ],
         ).map_err(Error::AssemblyCreate)?;
         if rows.len() > 0 {
@@ -58,13 +59,14 @@ impl<'a> DataStore<'a> {
     pub fn update(&self, assembly: &deploy::Assembly) -> AssemblyOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5,$6)",
             &[
                 &(assembly.get_id().parse::<i64>().unwrap()),
                 &(assembly.get_selector() as Vec<String>),
                 &(serde_json::to_value(assembly.get_status()).unwrap()),
                 &(serde_json::to_value(assembly.object_meta()).unwrap()),
                 &(serde_json::to_value(assembly.get_metadata()).unwrap()),
+                &(serde_json::to_value(assembly.get_probe()).unwrap()),
             ],
         ).map_err(Error::AssemblyUpdate)?;
 
@@ -210,6 +212,7 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<deploy::Assembly> {
     assembly.set_selector(row.get("selector"));
     assembly.set_status(serde_json::from_value(row.get("status")).unwrap());
     assembly.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
+    assembly.set_probe(serde_json::from_value(row.get("probe")).unwrap());
     assembly.set_created_at(created_at.to_rfc3339());
     Ok(assembly)
 }
