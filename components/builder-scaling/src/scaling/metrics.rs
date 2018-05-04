@@ -90,7 +90,7 @@ impl<'a> Client<'a> {
                 .metric_by_avg_for_containers("cpu")?,
         );
         data.insert(
-            "ram".to_string(),
+            "memory".to_string(),
             Collector::new(self.prom, container_mem_scope.clone())
                 .metric_by_avg_for_containers("ram")?,
         );
