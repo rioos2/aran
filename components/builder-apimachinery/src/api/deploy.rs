@@ -1086,4 +1086,5 @@ mod test {
         assert_eq!(assembly.metadata.len(), 1);
         assert!(assembly.metadata.contains_key("io:rioos:scheduled::node"));
     }
+
 }
