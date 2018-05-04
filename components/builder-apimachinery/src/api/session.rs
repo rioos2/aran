@@ -5,6 +5,8 @@ use api::base::{TypeMeta, ObjectMeta, MetaFields};
 use iron::headers::UserAgent;
 use iron::prelude::*;
 use woothee::parser::{WootheeResult, Parser};
+pub const DEFAULT_AGENT: &'static str = "Rio Bulldog";
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SessionCreate {
@@ -1050,9 +1052,19 @@ impl Into<Device> for WootheeResult {
 }
 
 pub fn user_agent(req: &Request) -> WootheeResult {
-    let default_agent = UserAgent("Rio/OS Macaw".to_owned());
-    let user_agent = req.headers.get::<UserAgent>().unwrap_or(&default_agent);
-    let parser = Parser::new();
-    let result = parser.parse(user_agent).unwrap();
-    result
+   let default_agent = UserAgent(DEFAULT_AGENT.to_owned());
+   let user_agent = req.headers.get::<UserAgent>().unwrap_or(&default_agent);
+   let parser = Parser::new();
+   let result = parser.parse(user_agent).unwrap_or(
+       WootheeResult {
+   name: DEFAULT_AGENT.to_string(),
+   category: "cli".to_string(),
+   os: "Linux".to_string(),
+   os_version: "0".to_string(),
+   browser_type: "CLI".to_string(),
+   version: "0".to_string(),
+   vendor: "Rio/OS".to_string()
+}
+);
+   result
 }
