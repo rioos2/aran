@@ -175,49 +175,55 @@ mod test {
     #[test]
     fn decode_marketplace() {
         let val = r#"{
-            "type_meta":{"kind": "PlanFactory", "api_version": "V1"},
-            "object_meta":{"name":"rails","account":"","labels":{},"annotations":{},"owner_references":[{"kind":"","api_version":"","name":"","uid":"","block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"finalizers":[],"cluster_name":""},
-            "category": "application",
-            "version": "5.2.0",
-                "characteristics" :{"image_pullpolicy": "always","git":"source url"},
-                "icon" : "rails.png",
-                "description": "Rails is a framework for building websites. As such, Rails establishes conventions for easier collaboration and maintenance",
-                "ports": [{
-                    "container_port": 80,
-                    "host_ip":"192.168.1.10",
-                    "host_port": 8001,
-                    "protocol":"TCP/UDP"
-                }],
-                "envs":{
-                    "RUBY_HOME":
-                    {
-                        "required":"true",
-                        "value":"/usr/lib/ruby/2.4.9",
-                        "editable":"false"
-                    },
-                    "RAILS_APP_HOME":{
-                        "required":"true",
-                        "value":"/home/rails/app",
-                        "editable":"true"
-                    }
+            "object_meta":{
+                "name":"ubuntu",
+                "account":"",
+                "created_at":"",
+                "deleted_at":"",
+                "deletion_grace_period_seconds":30,
+                "labels":{},
+                "annotations":{},
+                "owner_references":[{
+                    "kind":"Package",
+                    "api_version":"v1",
+                    "name":"ubuntu",
+                    "uid":"956913916145836032",
+                    "block_owner_deletion":false}],
+                "initializers":{
+                    "pending":[],
+                    "result":{
+                        "type_meta":{"kind":"","api_version":""},
+                        "status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],"uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},
+            "category":"machine",
+            "version":"16.04",
+            "characteristics":{
+                "rioos_sh_image_extension": "raw",
+                "rioos_sh_market_image_extension": "tar.gz"
                 },
-                "lifecycle": {
-                    "postStart":{
-                        "exec":{
-                            "command": ["/bin/sh","-c","echo Hello from the postStart handler > /usr/share/message"]
-                        }
-                    },
-                    "preStop": {
-                        "exec": {
-                            "command": ["/usr/sbin/nginx","-s","quit"]
-                        }
-                    }
-                },
-            "status":{"phase":"","message":"","reason":"","conditions":[{"message":"", "reason":"","status":"ready","last_transition_time":"","last_probe_time":"","condition_type":"","last_update_time": ""}]}
-    }"#;
+            "icon":"ubuntu.png",
+            "description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+            "ports":[],
+            "envs":{},
+            "lifecycle":{
+                "probe": {
+                    "env": {},
+                    "exec": [],
+                    "http_get": {
+                        "host": "",
+                        "path": "",
+                        "port": "",
+                        "scheme": ""},
+                    "tcp_socket": {
+                        "host": "",
+                        "port": ""},
+                    "http_headers": {}},
+                "pre_stop": {"command": []},
+                "post_start": {"command": []}},
+            "status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}
+            }"#;
         let market: MarketPlace = json_decode(val).unwrap();
-        assert_eq!(market.category, "application");
-        assert_eq!(market.version, "5.2.0");
+        assert_eq!(market.category, "machine");
+        assert_eq!(market.version, "16.04");
     }
 
 }
