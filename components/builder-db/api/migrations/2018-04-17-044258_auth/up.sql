@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS account_sessions (account_id bigint REFERENCES accoun
                                                                                              provider text, is_admin bool DEFAULT FALSE,
                                                                                                                                   is_service_access bool DEFAULT FALSE,
                                                                                                                                                                  created_at timestamptz DEFAULT now(),
-                                                                                                                                                                                                expires_at timestamptz DEFAULT now() + interval '00:02:00');
+                                                                                                                                                                                                expires_at timestamptz DEFAULT now() + interval '1 day');
 
 
 CREATE OR REPLACE FUNCTION insert_account_session_v1 (a_account_id bigint, account_token text, account_provider text, device JSONB) RETURNS
