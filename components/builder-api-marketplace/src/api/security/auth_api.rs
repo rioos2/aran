@@ -8,8 +8,7 @@ use bodyparser;
 use iron::prelude::*;
 use iron::status;
 use router::Router;
-
-use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use api::{Api, ApiValidator, Validator, ParmsVerifier};
 use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
@@ -18,7 +17,7 @@ use error::ErrorMessage::MissingParameter;
 
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error, conflict_error};
 
 use rand;
 use session::models::session as sessions;
@@ -30,6 +29,7 @@ use protocol::api::base::MetaFields;
 use auth::rioos::AuthenticateDelegate;
 use auth::util::authenticatable::Authenticatable;
 use auth::rioos::user_account::UserAccountAuthenticate;
+const DEFAULTROLE: &'static str = "rioos:loneranger";
 
 #[derive(Clone)]
 pub struct AuthenticateApi {
@@ -37,12 +37,13 @@ pub struct AuthenticateApi {
 }
 
 /// Authenticate api: AuthenticateyApi provides ability to authenticate the user.
-/// Needs a Datastore mapper, hence a DataStoreConn needs to be sent in.
+/// Needs a DataStore mapper, hence a DataStoreConn needs to be sent in.
 //
 /// Authentication: URLs supported are.
 /// POST: /authenticate,
 /// GET: /account/id
 /// Record the other apis here.
+
 impl AuthenticateApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
         AuthenticateApi { conn: datastore }
@@ -67,9 +68,13 @@ impl AuthenticateApi {
 
                 session_data.set_token(UserAccountAuthenticate::token().unwrap());
 
-                let session = try!(sessions::DataStore::find_account(&self.conn, &session_data));
+                let mut device: Device = user_agent(req).into();
+                device.set_ip(format!("{}", req.remote_addr.ip()));
 
-                Ok(render_json(status::Ok, &session))
+                match sessions::DataStore::find_account(&self.conn, &session_data, &device) {
+                    Ok(session) => Ok(render_json(status::Ok, &session)),
+                    Err(err) => Err(internal_error(&format!("{}", err))),
+                }
             }
             Err(e) => Err(unauthorized_error(&format!("{}", e))),
         }
@@ -93,15 +98,32 @@ impl AuthenticateApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
+        if unmarshall_body.get_roles().is_empty() {
+            unmarshall_body.set_roles(vec![DEFAULTROLE.to_string()]);
+        }
 
         unmarshall_body.set_token(UserAccountAuthenticate::token().unwrap());
 
         let en = unmarshall_body.get_password();
         unmarshall_body.set_password(UserAccountAuthenticate::encrypt(en).unwrap());
 
-        match sessions::DataStore::account_create(&self.conn, &unmarshall_body) {
-            Ok(account) => Ok(render_json(status::Ok, &account)),
+        let mut account_get = AccountGet::new();
+        account_get.set_email(unmarshall_body.get_email());
+
+        let mut device: Device = user_agent(req).into();
+        device.set_ip(format!("{}", req.remote_addr.ip()));
+
+        match sessions::DataStore::get_account(&self.conn, &account_get) {
+            Ok(Some(_account)) => Err(conflict_error(
+                &format!("alreay exists {}", account_get.get_email()),
+            )),
             Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => {
+                match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device) {
+                    Ok(account) => Ok(render_json(status::Ok, &account)),
+                    Err(err) => Err(internal_error(&format!("{}", err))),
+                }
+            }
         }
     }
 
@@ -144,6 +166,23 @@ impl AuthenticateApi {
                 Error::Db(RecordsNotFound),
                 &account_get.get_email()
             ))),
+        }
+    }
+
+    //POST: /logout
+    //Global: Logout the current user
+    fn account_logout(&self, req: &mut Request) -> AranResult<Response> {
+        let account = self.validate(
+            req.get::<bodyparser::Struct<AccountTokenGet>>()?,
+        )?;
+
+        let mut device: Device = user_agent(req).into();
+        device.set_ip(format!("{}", req.remote_addr.ip()));
+
+        match sessions::DataStore::account_logout(&self.conn, &account, &device) {
+            Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+            Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
 
@@ -286,6 +325,9 @@ impl Api for AuthenticateApi {
         let authenticate = move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
 
         let _self = self.clone();
+        let account_logout = move |req: &mut Request| -> AranResult<Response> { _self.account_logout(req) };
+
+        let _self = self.clone();
         let authenticate_ldap = move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
 
         //closures: ldap
@@ -325,13 +367,23 @@ impl Api for AuthenticateApi {
         );
         router.get(
             "/accounts/:id",
-            XHandler::new(C { inner: account_show }).before(basic.clone()),
+            XHandler::new(C { inner: account_show })
+                .before(basic.clone())
+                .before(TrustAccessed::new(
+                    "rioos.account.get".to_string(),
+                    &*config,
+                )),
             "account_show",
         );
 
         router.get(
             "/accounts/name/:name",
-            XHandler::new(C { inner: account_show_by_name }).before(basic.clone()),
+            XHandler::new(C { inner: account_show_by_name })
+                .before(basic.clone())
+                .before(TrustAccessed::new(
+                    "rioos.account.get".to_string(),
+                    &*config,
+                )),
             "account_show_by_name",
         );
 
@@ -340,6 +392,12 @@ impl Api for AuthenticateApi {
             XHandler::new(C { inner: authenticate }),
             "authenticate",
         );
+        router.post(
+            "/logout",
+            XHandler::new(C { inner: account_logout }).before(basic.clone()),
+            "account_logout",
+        );
+
         router.post(
             "/authenticate/ldap/:code",
             XHandler::new(C { inner: authenticate_ldap }),
@@ -395,6 +453,24 @@ impl Validator for AccountGet {
     fn valid(self) -> AranValidResult<Self> {
         let s: Vec<String> = vec![];
 
+        if s.is_empty() {
+            return Ok(Box::new(self));
+        }
+
+        Err(bad_request(&MissingParameter(format!("{:?}", s))))
+    }
+}
+impl Validator for AccountTokenGet {
+    //default implementation is to check for `name` and 'origin'
+    fn valid(self) -> AranValidResult<Self> {
+        let mut s: Vec<String> = vec![];
+
+        if self.get_email().len() <= 0 {
+            s.push("email".to_string());
+        }
+        if self.get_token().len() <= 0 {
+            s.push("token".to_string());
+        }
         if s.is_empty() {
             return Ok(Box::new(self));
         }

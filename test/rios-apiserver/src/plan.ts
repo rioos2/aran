@@ -14,7 +14,9 @@ describe('Plan Factory API', function() {
         .send({"object_meta":{"name":"ubuntu","account":"","created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Package","api_version":"v1","name":"ubuntu","uid":"956913916145836032",
         "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
         "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"category":"machine","version":"16.04","characteristics":{"rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz","rioos_sh_image_url":"https://localhost:6443/api/v1/marketplaces/956914125793927168/download"},
-        "icon":"ubuntu.png","description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","ports":[],"envs":{},"lifecycle":{},"status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}})
+        "icon":"ubuntu.png","description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","ports":[],"envs":{},"lifecycle":{"probe": {"env": {}, "exec": [],
+        "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}}, "pre_stop": {"command": []},
+        "post_start": {"command": []}},"status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}})
         .expect(200)
         .end(function(err, res) {
           expect(res.body);

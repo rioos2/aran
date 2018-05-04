@@ -30,7 +30,7 @@ pub struct Plan {
     PreStop
     This hook is called immediately before a machine/container is terminated. It is blocking, meaning it is synchronous, so it must complete before the call to delete the machine/container can be sent. No parameters are passed to the handler.*/
     #[serde(default)]
-    lifecycle: BTreeMap<String, LifeCycle>,
+    lifecycle: LifeCycle,
     #[serde(default)]
     status: Status, //`status` : <<old status definition>> Indicates if the plan can be used are not. Default no status is available. Will be turned on when the rio.marketplace syncer gets active.
     #[serde(default)]
@@ -130,11 +130,11 @@ impl Plan {
         &self.envs
     }
 
-    pub fn set_lifecycle(&mut self, v: BTreeMap<String, LifeCycle>) {
+    pub fn set_lifecycle(&mut self, v: LifeCycle) {
         self.lifecycle = v;
     }
 
-    pub fn get_lifecycle(&self) -> &BTreeMap<String, LifeCycle> {
+    pub fn get_lifecycle(&self) -> &LifeCycle {
         &self.lifecycle
     }
 
@@ -193,20 +193,32 @@ impl Envs {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct LifeCycle {
-    exec: Command,
+    pre_stop: Command,
+    post_start: Command,
+    probe: Probe,
 }
-impl LifeCycle {
-    pub fn new() -> LifeCycle {
-        ::std::default::Default::default()
-    }
 
-    pub fn set_exec(&mut self, v: Command) {
-        self.exec = v;
-    }
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Probe {
+    tcp_socket: TcpSocket, // TCPSocket specifies an action involving a TCP port implement a realistic TCP lifecycle hook
+    exec: Vec<String>, //One and only one of the following should be specified. Exec specifies the action to take.  optional
+    http_get: HttpGet, // HTTPGet specifies the http request to perform.
+    http_headers: BTreeMap<String, String>, //HTTPHeader describes a custom header to be used in HTTP probes
+    env: BTreeMap<String, String>, // EnvVar represents an environment variable present in a Container.
+}
 
-    pub fn get_exec(&self) -> &Command {
-        &self.exec
-    }
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct TcpSocket {
+    port: String,// Port to connect to.
+    host: String, //Host name to connect to, defaults to the pod IP.
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HttpGet {
+    path: String, //Path to access on the HTTP server.
+    port: String, //Name or number of the port to access on the container.
+    host: String, // Host name to connect to, defaults to the pod IP. probably want to set "Host" in httpHeaders instead.
+    scheme: String, //Scheme to use for connecting to the host, defaults to HTTP.
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -264,15 +276,34 @@ mod test {
                     }
                 },
                 "lifecycle": {
-                    "postStart":{
+                    "post_start":{
                         "exec":{
                             "command": ["/bin/sh","-c","echo Hello from the postStart handler > /usr/share/message"]
                         }
                     },
-                    "preStop": {
+                    "pre_stop": {
                         "exec": {
                             "command": ["/usr/sbin/nginx","-s","quit"]
                         }
+                    },
+                    "probe": {
+                        "tcp_socket" :
+                            {
+                            "port": "8080",
+                            "host": "console.rioos.xyz"
+                            },
+                        "exec": ["cat","/tmp/health"],
+                        "http_get":
+                            {
+                                "path": "/healthz",
+                                "port": "8080",
+                                "host": "console.rioos.xyz",
+                                "scheme": "http"
+                            },
+                        "http_headers": {
+                            "X-Custom-Header": "Awesome"
+                            },
+                        "env": {}
                     }
                 },
             "status":{"phase":"","message":"","reason":"","conditions":[{"message":"", "reason":"","status":"ready","last_transition_time":"","last_probe_time":"","condition_type":"","last_update_time": ""}]}
@@ -280,6 +311,31 @@ mod test {
         let plan: Plan = json_decode(val).unwrap();
         assert_eq!(plan.category, "application");
         assert_eq!(plan.version, "5.2.0");
+    }
+    #[test]
+    fn decode_probe() {
+        let probe_val = r#"{
+            "tcp_socket" :
+                {
+                "port": "8080",
+                "host": "console.rioos.xyz"
+                },
+            "exec": ["cat","/tmp/health"],
+            "http_get":
+                {
+                    "path": "/healthz",
+                    "port": "8080",
+                    "host": "console.rioos.xyz",
+                    "scheme": "http"
+                },
+            "http_headers": {
+                "X-Custom-Header": "Awesome"
+                },
+            "env": {}
+            }"#;
+        let probe: Probe = json_decode(probe_val).unwrap();
+        assert!(probe.http_headers.contains_key("X-Custom-Header"));
+
     }
 
     #[test]

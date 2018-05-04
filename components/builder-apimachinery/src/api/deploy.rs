@@ -196,8 +196,6 @@ pub struct Assembly {
     #[serde(default)]
     spec: Spec,
     #[serde(default)]
-    probe: Probe, // Probe defines a specific action that should be taken pass structured data to these actions, and document that data here.
-    #[serde(default)]
     created_at: String,
 }
 
@@ -266,14 +264,6 @@ impl Assembly {
 
     pub fn get_metadata(&self) -> &BTreeMap<String, String> {
         &self.metadata
-    }
-
-    pub fn set_probe(&mut self, v: Probe) {
-        self.probe = v;
-    }
-
-    pub fn get_probe(&self) -> &Probe {
-        &self.probe
     }
 }
 
@@ -691,29 +681,6 @@ pub struct ExecURL {
     pub url: String,
 }
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Probe {
-    tcp_socket: TcpSocket, // TCPSocket specifies an action involving a TCP port implement a realistic TCP lifecycle hook
-    exec: Vec<String>, //One and only one of the following should be specified. Exec specifies the action to take.  optional
-    http_get: HttpGet, // HTTPGet specifies the http request to perform.
-    http_headers: BTreeMap<String, String>, //HTTPHeader describes a custom header to be used in HTTP probes
-    env: BTreeMap<String, String>, // EnvVar represents an environment variable present in a Container.
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct TcpSocket {
-    port: String,// Port to connect to.
-    host: String, //Host name to connect to, defaults to the pod IP.
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct HttpGet {
-    path: String, //Path to access on the HTTP server.
-    port: String, //Name or number of the port to access on the container.
-    host: String, // Host name to connect to, defaults to the pod IP. probably want to set "Host" in httpHeaders instead.
-    scheme: String, //Scheme to use for connecting to the host, defaults to HTTP.
-}
-
 ///////////// To discuss
 /*
 //how to attach handlers to Container lifecycle events. rioos supports the postStart and preStop events.
@@ -1118,31 +1085,6 @@ mod test {
         assert_eq!(assembly.created_at, "");
         assert_eq!(assembly.metadata.len(), 1);
         assert!(assembly.metadata.contains_key("io:rioos:scheduled::node"));
-    }
-    #[test]
-    fn decode_probe() {
-        let probe_val = r#"{
-            "tcp_socket" :
-                {
-                "port": "8080",
-                "host": "console.rioos.xyz"
-                },
-            "exec": ["cat","/tmp/health"],
-            "http_get":
-                {
-                    "path": "/healthz",
-                    "port": "8080",
-                    "host": "console.rioos.xyz",
-                    "scheme": "http"
-                },
-            "http_headers": {
-                "X-Custom-Header": "Awesome"
-                },
-            "env": {}
-            }"#;
-        let probe: Probe = json_decode(probe_val).unwrap();
-        assert!(probe.http_headers.contains_key("X-Custom-Header"));
-
     }
 
 }
