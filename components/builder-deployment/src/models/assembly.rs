@@ -179,7 +179,7 @@ impl<'a> DataStore<'a> {
             last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
             avg_by_name: "rioos_assembly_id".to_string(),
         };
-        Ok(Collector::new(prom, scope).metric_by_avg()?)
+        Ok(Collector::new(prom, scope).metric_by_avg_for_machines()?)
     }
 
     /// Expands the assembly by sticking in Spec
