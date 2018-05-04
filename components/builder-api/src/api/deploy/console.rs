@@ -67,7 +67,7 @@ impl Containers {
                     vnc,
                 );
                 let url = format!(
-                    "http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1",
+                    "http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1&stdout=1&stdin=1&stderr=1",
                     host,
                     port,
                     acc,
@@ -76,6 +76,7 @@ impl Containers {
 
                 let client = ApiClient::new(&url, "", "v1", None)?;
                 let res = client.get("").send();
+
                 match res {
                     Ok(mut data) => {
                         let x: ExecURL = data.json()?;
@@ -87,7 +88,10 @@ impl Containers {
                             },
                         ))
                     }
-                    Err(err) => Err(internal_error(&format!("{}", err))),
+                    Err(err) => {
+                        println!("{:?}", err);
+                        Err(internal_error(&format!("{}", err)))
+                    }
                 }
             }
         }

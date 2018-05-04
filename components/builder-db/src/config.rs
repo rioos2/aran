@@ -37,7 +37,7 @@ impl Default for DataStore {
             connection_retry_ms: 300,
             connection_timeout_sec: 3600,
             connection_test: false,
-            pool_size: (num_cpus::get() * 2) as u32,
+            pool_size: (num_cpus::get() * 1) as u32,
         }
     }
 }
