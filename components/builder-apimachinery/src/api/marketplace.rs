@@ -32,7 +32,7 @@ pub struct MarketPlace {
     PreStop
     This hook is called immediately before a machine/container is terminated. It is blocking, meaning it is synchronous, so it must complete before the call to delete the machine/container can be sent. No parameters are passed to the handler.*/
     #[serde(default)]
-    lifecycle: BTreeMap<String, LifeCycle>,
+    lifecycle: LifeCycle,
     #[serde(default)]
     status: Status, //`status` : <<old status definition>> Indicates if the marketplace can be used are not. Default no status is available. Will be turned on when the rio.marketplace syncer gets active.
     #[serde(default)]
@@ -134,11 +134,11 @@ impl MarketPlace {
         &self.envs
     }
 
-    pub fn set_lifecycle(&mut self, v: BTreeMap<String, LifeCycle>) {
+    pub fn set_lifecycle(&mut self, v: LifeCycle) {
         self.lifecycle = v;
     }
 
-    pub fn get_lifecycle(&self) -> &BTreeMap<String, LifeCycle> {
+    pub fn get_lifecycle(&self) -> &LifeCycle {
         &self.lifecycle
     }
 
