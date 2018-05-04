@@ -193,8 +193,11 @@ impl Envs {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct LifeCycle {
+    #[serde(default)]
     pre_stop: Command,
+    #[serde(default)]
     post_start: Command,
+    #[serde(default)]
     probe: Probe,
 }
 
@@ -325,6 +328,7 @@ mod test {
         assert!(probe.http_headers.contains_key("X-Custom-Header"));
 
     }
+
 
     #[test]
     fn decode_ports() {
