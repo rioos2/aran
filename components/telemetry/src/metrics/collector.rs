@@ -160,15 +160,20 @@ impl<'a> Collector<'a> {
 
 
     //metric for general
-    pub fn metric_by_avg(&mut self) -> Result<BTreeMap<String, String>> {
+    pub fn metric_by_avg_for_machines(&mut self) -> Result<BTreeMap<String, String>> {
         let content_datas = self.avg_collect()?;
-
         let metrics = self.set_metrics_average(Ok(content_datas.clone()));
         Ok(metrics.unwrap())
     }
     //metrics for container
-    pub fn metric_by_avg_for_containers(&mut self) -> Result<BTreeMap<String, String>> {
-        let content_datas = self.avg_collect_for_containers()?;
+    pub fn metric_by_avg_for_containers(&mut self, name: &str) -> Result<BTreeMap<String, String>> {
+
+        let content_datas = match name {
+            "cpu" => self.container_cpu_metric()?,
+            "ram" => self.container_metric()?,
+            "disk" => self.container_metric()?,
+            _ => vec![],
+        };
 
         let metrics = self.set_metrics_average(Ok(content_datas.clone()));
         Ok(metrics.unwrap())
@@ -229,7 +234,7 @@ impl<'a> Collector<'a> {
         Ok(content_datas)
     }
     // collect the average data for the cpu usage from prometheus
-    fn avg_collect_for_containers(&self) -> Result<Vec<PromResponse>> {
+    fn container_cpu_metric(&self) -> Result<Vec<PromResponse>> {
         let mut content_datas = vec![];
         for scope in self.scope.metric_names.iter() {
             let sum = Functions::Sum(AvgInfo {
@@ -251,6 +256,23 @@ impl<'a> Collector<'a> {
 
         }
 
+        Ok(content_datas)
+    }
+
+    fn container_metric(&self) -> Result<Vec<PromResponse>> {
+        let mut content_datas = vec![];
+        let mut q = vec![];
+        for scope in self.scope.metric_names.iter() {
+            let sum = Operators::NoOp(IRateInfo {
+                labels: self.scope.labels.clone(),
+                metric: scope.to_string(),
+                last_x_minutes: self.scope.last_x_minutes.clone(),
+            });
+            q.push(sum);
+        }
+        let content = self.client.pull_metrics(&format!("{}/{}*100", q[0], q[1]))?;
+        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+        content_datas.push(response);
         Ok(content_datas)
     }
 
@@ -333,8 +355,11 @@ impl<'a> Collector<'a> {
                     .map(|mut x| if let Data::Vector(ref mut instancevec) = x.data {
                         instancevec
                             .iter_mut()
-                            .map(|x| for (_k, v) in &x.metric {
-                                data.insert(v.to_string(), x.value.1.clone());
+                            .map(|x| {
+                                data.insert(
+                                    x.metric.get("rioos_assembly_id").unwrap().to_string(),
+                                    x.value.1.clone(),
+                                );
                             })
                             .collect::<Vec<_>>();
                     })

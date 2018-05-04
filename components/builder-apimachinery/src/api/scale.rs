@@ -334,14 +334,14 @@ impl StatusUpdate {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ScalingGetResponse {
-    metrics: BTreeMap<String, String>,
+    metrics: BTreeMap<String, BTreeMap<String, String>>,
 }
 
 impl ScalingGetResponse {
     pub fn new() -> ScalingGetResponse {
         ::std::default::Default::default()
     }
-    pub fn set_metrics(&mut self, v: BTreeMap<String, String>) {
+    pub fn set_metrics(&mut self, v: BTreeMap<String, BTreeMap<String, String>>) {
         self.metrics = v;
     }
 }
