@@ -1050,7 +1050,8 @@ impl Into<Device> for WootheeResult {
 }
 
 pub fn user_agent(req: &Request) -> WootheeResult {
-    let user_agent = req.headers.get::<UserAgent>().unwrap();
+    let default_agent = UserAgent("Rio/OS Macaw".to_owned());
+    let user_agent = req.headers.get::<UserAgent>().unwrap_or(&default_agent);
     let parser = Parser::new();
     let result = parser.parse(user_agent).unwrap();
     result
