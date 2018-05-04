@@ -44,7 +44,6 @@ describe('Plan Factory API', function() {
         });
     });
 
-
     it('returns the Malformed error without category field', function(done) {
       request.post('/plans')
       .ca(globalAny.rootCA)
