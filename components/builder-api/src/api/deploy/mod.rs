@@ -14,3 +14,4 @@ pub mod service;
 pub mod team;
 pub mod vertical_scaling;
 pub mod volume;
+pub mod console;
