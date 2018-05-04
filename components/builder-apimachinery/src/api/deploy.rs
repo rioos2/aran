@@ -679,6 +679,8 @@ impl Affinity {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ExecURL {
     pub url: String,
+    #[serde(default)]
+    pub target: String,
 }
 
 ///////////// To discuss
