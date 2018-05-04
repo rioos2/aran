@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use telemetry::metrics::prometheus::PrometheusClient;
 use iron::prelude::*;
 use router::Router;
 
@@ -16,33 +15,28 @@ use http_gateway::util::errors::{not_found_error, internal_error};
 use protocol::api::base::IdGet;
 use deploy::models::{assembly};
 use iron::status;
-use protocol::api::deploy::VncResponseUrl;
+use protocol::api::deploy::ExecURL;
 use api::Api;
 use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;
 
 #[derive(Clone)]
-pub struct VncConsoleApi {
-    prom: Box<PrometheusClient>,
+pub struct Containers {
     conn: Box<DataStoreConn>,
     config: Arc<Config>,
 }
 
-/// BlockChainApi: BlockChainApi provides ability to post the audits of the users
-/// and manage them.
-//
+
 /// URL:
-/// POST:/account/:account_id/audits,
-/// GET: /account/:account_id/audits
-impl VncConsoleApi {
-    pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>, config: Arc<Config>) -> Self {
-        VncConsoleApi { prom: prom,
-                        conn: datastore,
-                        config: config }
+/// GET: /account/:account_id/assemblys/:id/exec
+impl Containers {
+    pub fn new(datastore: Box<DataStoreConn>, config: Arc<Config>) -> Self {
+        Containers { conn: datastore,
+                    config: config }
     }
 
 
-    fn get_url(&self, req: &mut Request) -> AranResult<Response> {
+    fn get(&self, req: &mut Request) -> AranResult<Response> {
         let (acc, asm_id) = {
             let params = req.extensions.get::<Router>().unwrap();
             let acc = params.find("account_id").unwrap().to_owned();
@@ -54,35 +48,35 @@ impl VncConsoleApi {
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound),asm_id))),
             Ok(Some(assembly)) => {
-                if assembly.get_metadata().contains_key("rioos_sh_vnc_host") && assembly.get_metadata().contains_key("rioos_sh_vnc_port") {
-                    let host = assembly.get_metadata().get("rioos_sh_vnc_host").unwrap();
-                    let port = assembly.get_metadata().get("rioos_sh_vnc_port").unwrap();
+                if !assembly.get_metadata().contains_key("rioos_sh_vnc_host") || !assembly.get_metadata().contains_key("rioos_sh_vnc_port") {
+                        return Err(not_found_error(&format!("Still deploying. Must have console host and port: for {} ",asm_id)))
+
+                        }
+                    let host = assembly.get_metadata().get("rioos_sh_vnc_host").unwrap_or("".to_string());
+                    let port = assembly.get_metadata().get("rioos_sh_vnc_port").unwrap("".to_string());
                     let url = format!("http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1", host, port,acc,asm_id);
 
-                    let client = ApiClient::new(&url, "", "v1", None).unwrap();
+                    let client = ApiClient::new(&url, "", "v1", None)?;
                     let res = client.get("").send();
                     match res {
                         Ok(mut data) => {
-                            let x: VncResponseUrl = data.json()?;
-                            Ok(render_json(status::Ok, &VncResponseUrl {
+                            let x: ExecURL = data.json()?;
+                            Ok(render_json(status::Ok, &ExecURL {
                             url: format!("{}:{}/{:?}",host,port,x)
                             }))
                             }
                         Err(err) => Err(internal_error(&format!("{}", err))),
-                    }
-                    } else {
-                        return Err(not_found_error(&format!("No host or Port fount for {} ",asm_id)))
                     }
         }
     }
 }
 }
 
-impl Api for VncConsoleApi {
+impl Api for Containers {
     fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
 
         let _self = self.clone();
-        let get_url = move |req: &mut Request| -> AranResult<Response> { _self.get_url(req) };
+        let get_url = move |req: &mut Request| -> AranResult<Response> { _self.get(req) };
 
         router.get("/accounts/:account_id/assemblys/:id/exec", XHandler::new(C { inner: get_url }), "get_console_url");
 

@@ -677,7 +677,7 @@ impl Affinity {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct VncResponseUrl {
+pub struct ExecURL {
     pub url: String,
 }
 
