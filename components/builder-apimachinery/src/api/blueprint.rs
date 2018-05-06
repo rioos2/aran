@@ -30,7 +30,7 @@ pub struct Plan {
     PreStop
     This hook is called immediately before a machine/container is terminated. It is blocking, meaning it is synchronous, so it must complete before the call to delete the machine/container can be sent. No parameters are passed to the handler.*/
     #[serde(default)]
-    lifecycle: BTreeMap<String, LifeCycle>,
+    lifecycle: LifeCycle,
     #[serde(default)]
     status: Status, //`status` : <<old status definition>> Indicates if the plan can be used are not. Default no status is available. Will be turned on when the rio.marketplace syncer gets active.
     #[serde(default)]
@@ -130,11 +130,11 @@ impl Plan {
         &self.envs
     }
 
-    pub fn set_lifecycle(&mut self, v: BTreeMap<String, LifeCycle>) {
+    pub fn set_lifecycle(&mut self, v: LifeCycle) {
         self.lifecycle = v;
     }
 
-    pub fn get_lifecycle(&self) -> &BTreeMap<String, LifeCycle> {
+    pub fn get_lifecycle(&self) -> &LifeCycle {
         &self.lifecycle
     }
 
@@ -193,20 +193,35 @@ impl Envs {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct LifeCycle {
-    exec: Command,
+    #[serde(default)]
+    pre_stop: Command,
+    #[serde(default)]
+    post_start: Command,
+    #[serde(default)]
+    probe: Probe,
 }
-impl LifeCycle {
-    pub fn new() -> LifeCycle {
-        ::std::default::Default::default()
-    }
 
-    pub fn set_exec(&mut self, v: Command) {
-        self.exec = v;
-    }
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Probe {
+    tcp_socket: TcpSocket, // TCPSocket specifies an action involving a TCP port implement a realistic TCP lifecycle hook
+    exec: Vec<String>, //One and only one of the following should be specified. Exec specifies the action to take.  optional
+    http_get: HttpGet, // HTTPGet specifies the http request to perform.
+    http_headers: BTreeMap<String, String>, //HTTPHeader describes a custom header to be used in HTTP probes
+    env: BTreeMap<String, String>, // EnvVar represents an environment variable present in a Container.
+}
 
-    pub fn get_exec(&self) -> &Command {
-        &self.exec
-    }
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct TcpSocket {
+    port: String,// Port to connect to.
+    host: String, //Host name to connect to, defaults to the pod IP.
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HttpGet {
+    path: String, //Path to access on the HTTP server.
+    port: String, //Name or number of the port to access on the container.
+    host: String, // Host name to connect to, defaults to the pod IP. probably want to set "Host" in httpHeaders instead.
+    scheme: String, //Scheme to use for connecting to the host, defaults to HTTP.
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -237,50 +252,83 @@ mod test {
     #[test]
     fn decode_plan_factory() {
         let val = r#"{
-            "type_meta":{"kind": "PlanFactory", "api_version": "V1"},
-            "object_meta":{"name":"rails","account":"","labels":{},"annotations":{},"owner_references":[{"kind":"","api_version":"","name":"","uid":"","block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"finalizers":[],"cluster_name":""},
-            "category": "application",
-            "version": "5.2.0",
-                "characteristics" :{"image_pullpolicy": "always","git":"source url"},
-                "icon" : "rails.png",
-                "description": "Rails is a framework for building websites. As such, Rails establishes conventions for easier collaboration and maintenance",
-                "ports": [{
-                    "container_port": 80,
-                    "host_ip":"192.168.1.10",
-                    "host_port": 8001,
-                    "protocol":"TCP/UDP"
-                }],
-                "envs":{
-                    "RUBY_HOME":
-                    {
-                        "required":"true",
-                        "value":"/usr/lib/ruby/2.4.9",
-                        "editable":"false"
-                    },
-                    "RAILS_APP_HOME":{
-                        "required":"true",
-                        "value":"/home/rails/app",
-                        "editable":"true"
-                    }
-                },
-                "lifecycle": {
-                    "postStart":{
-                        "exec":{
-                            "command": ["/bin/sh","-c","echo Hello from the postStart handler > /usr/share/message"]
-                        }
-                    },
-                    "preStop": {
-                        "exec": {
-                            "command": ["/usr/sbin/nginx","-s","quit"]
-                        }
-                    }
-                },
-            "status":{"phase":"","message":"","reason":"","conditions":[{"message":"", "reason":"","status":"ready","last_transition_time":"","last_probe_time":"","condition_type":"","last_update_time": ""}]}
-    }"#;
+            "object_meta":{
+                "name":"ubuntu",
+                "account":"",
+                "created_at":"",
+                "deleted_at":"",
+                "deletion_grace_period_seconds":30,
+                "labels":{},
+                "annotations":{},
+                "owner_references":[{
+                    "kind":"Package",
+                    "api_version":"v1",
+                    "name":"ubuntu",
+                    "uid":"956913916145836032",
+                    "block_owner_deletion":false}],
+                "initializers":{
+                    "pending":[],
+                    "result":{
+                        "type_meta":{"kind":"","api_version":""},
+                        "status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],"uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},
+            "category":"machine",
+            "version":"16.04",
+            "characteristics":{
+                "rioos_sh_image_extension": "raw",
+                "rioos_sh_market_image_extension": "tar.gz",
+                "rioos_sh_image_url":"https://localhost:6443/api/v1/marketplaces/956914125793927168/download"},
+            "icon":"ubuntu.png",
+            "description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+            "ports":[],
+            "envs":{},
+            "lifecycle":{
+                "probe": {
+                    "env": {},
+                    "exec": [],
+                    "http_get": {
+                        "host": "",
+                        "path": "",
+                        "port": "",
+                        "scheme": ""},
+                    "tcp_socket": {
+                        "host": "",
+                        "port": ""},
+                    "http_headers": {}},
+                "pre_stop": {"command": []},
+                "post_start": {"command": []}},
+            "status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}
+            }"#;
         let plan: Plan = json_decode(val).unwrap();
-        assert_eq!(plan.category, "application");
-        assert_eq!(plan.version, "5.2.0");
+        assert_eq!(plan.category, "machine");
+        assert_eq!(plan.version, "16.04");
+        assert_eq!(plan.icon, "ubuntu.png");
     }
+    #[test]
+    fn decode_probe() {
+        let probe_val = r#"{
+            "tcp_socket" :
+                {
+                "port": "8080",
+                "host": "console.rioos.xyz"
+                },
+            "exec": ["cat","/tmp/health"],
+            "http_get":
+                {
+                    "path": "/healthz",
+                    "port": "8080",
+                    "host": "console.rioos.xyz",
+                    "scheme": "http"
+                },
+            "http_headers": {
+                "X-Custom-Header": "Awesome"
+                },
+            "env": {}
+            }"#;
+        let probe: Probe = json_decode(probe_val).unwrap();
+        assert!(probe.http_headers.contains_key("X-Custom-Header"));
+
+    }
+
 
     #[test]
     fn decode_ports() {

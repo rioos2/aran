@@ -7,6 +7,7 @@ const path = require('path');
 const globalAny:any = global;
 
 globalAny.version = "v1"
+globalAny.user_agent= "Rio/OS Aran";
 globalAny.account = "Account";
 globalAny.assemblys = "Assembly";
 globalAny.assemblylist = "AssemblyList";

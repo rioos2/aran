@@ -679,6 +679,8 @@ impl Affinity {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ExecURL {
     pub url: String,
+    #[serde(default)]
+    pub target: String,
 }
 
 ///////////// To discuss
@@ -1086,4 +1088,5 @@ mod test {
         assert_eq!(assembly.metadata.len(), 1);
         assert!(assembly.metadata.contains_key("io:rioos:scheduled::node"));
     }
+
 }
