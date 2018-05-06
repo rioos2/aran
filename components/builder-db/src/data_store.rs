@@ -2,6 +2,7 @@
 embed_migrations!("api/migrations");
 
 use std::io;
+
 use error::Result;
 use pool::Pool;
 use config::DataStore;
@@ -13,7 +14,7 @@ use diesel::Connection;
 
 use protocol::cache::InMemoryExpander;
 
-#[derive(Clone)]
+//#[derive(Clone)]
 pub struct DataStoreConn {
     pub pool: Pool,
     pub diesel_pool: DieselPool,

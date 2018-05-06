@@ -36,7 +36,7 @@ use bytes::Bytes;
 
 #[derive(Clone)]
 pub struct AssemblyFactoryApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// AssemblyFactory API:
@@ -49,7 +49,7 @@ pub struct AssemblyFactoryApi {
 /// GET: /assemblyfactorys  --> list all assemblyfactorys.
 /// PUT: /assemblyfactorys/status_update
 impl AssemblyFactoryApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         AssemblyFactoryApi { conn: datastore }
     }
 
@@ -134,7 +134,7 @@ impl AssemblyFactoryApi {
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
-    
+
     //Will need roles/permission to access this.
     //GET: /assemblyfactorys
     //Returns all the AssemblyFactorys (irrespective of accounts, origins)
@@ -188,7 +188,6 @@ impl AssemblyFactoryApi {
             Err(_err) => None,
         }
     }
-
 }
 
 ///The Api wirer for AssemblyFactoryApi
@@ -223,7 +222,10 @@ impl Api for AssemblyFactoryApi {
             "/accounts/:account_id/assemblyfactorys",
             XHandler::new(C { inner: create })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.assemblyfactory.post".to_string(),&*config)),
+                .before(TrustAccessed::new(
+                    "rioos.assemblyfactory.post".to_string(),
+                    &*config,
+                )),
             "assembly_factorys",
         );
 
@@ -231,21 +233,30 @@ impl Api for AssemblyFactoryApi {
             "/accounts/:account_id/assemblyfactorys",
             XHandler::new(C { inner: list })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string(),&*config)),
+                .before(TrustAccessed::new(
+                    "rioos.assemblyfactory.get".to_string(),
+                    &*config,
+                )),
             "assemblyfactorys_list",
         );
         router.get(
             "/assemblyfactorys/:id",
             XHandler::new(C { inner: show })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string(),&*config)),
+                .before(TrustAccessed::new(
+                    "rioos.assemblyfactory.get".to_string(),
+                    &*config,
+                )),
             "assembly_factorys_show",
         );
         router.get(
             "/assemblyfactorys",
             XHandler::new(C { inner: list_blank })
                 .before(basic.clone())
-                .before(TrustAccessed::new("rioos.assemblyfactory.get".to_string(),&*config)),
+                .before(TrustAccessed::new(
+                    "rioos.assemblyfactory.get".to_string(),
+                    &*config,
+                )),
             "assemblys_factorys_list_blank",
         );
         router.put(
@@ -253,7 +264,10 @@ impl Api for AssemblyFactoryApi {
             XHandler::new(C {
                 inner: status_update,
             }).before(basic.clone())
-                .before(TrustAccessed::new("rioos.assemblyfactory.put".to_string(),&*config)),
+                .before(TrustAccessed::new(
+                    "rioos.assemblyfactory.put".to_string(),
+                    &*config,
+                )),
             "assembly_factory_status_update",
         );
     }
@@ -281,19 +295,30 @@ impl ExpanderSender for AssemblyFactoryApi {
             }),
         ));
 
-        let _conn = self.conn.clone();
+        let _conn1 = self.conn.clone();
 
-        let services = Box::new(NewCacheServiceFn::new(
+        let services_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_SERVICE.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                service::DataStore::list_by_assembly_factory(&_conn, &id)
+                service::DataStore::list_by_assembly_factory(&_conn1, &id)
                     .ok()
                     .and_then(|v| serde_json::to_string(&v).ok())
             }),
         ));
 
-        &self.conn.expander.with(plan_service);
-        &self.conn.expander.with(services);
+        let ref mut _arc_conn = self.conn.clone();
+        /* 
+        TO-DO: If the below get_mut doesn't work, then we'll use make_mut.
+        Arc::make_mut does a inner clone of  ds resulting in new pool connections.
+       
+        let ref mut ex = &mut Arc::make_mut(_arc_conn).expander;
+        (&mut **ex).with(plan_service);
+        (&mut **ex).with(services_service);
+        */
+        &mut Arc::get_mut(_arc_conn).map(|m| {
+            m.expander.with(plan_service);
+            m.expander.with(services_service);            
+        });
     }
 }
 

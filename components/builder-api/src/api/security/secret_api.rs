@@ -38,12 +38,12 @@ use serde_json;
 /// GET: /secrets,
 #[derive(Clone)]
 pub struct SecretApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
     secret: Box<SecurerConn>,
 }
 
 impl SecretApi {
-    pub fn new(datastore: Box<DataStoreConn>, secret: Box<SecurerConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, secret: Box<SecurerConn>) -> Self {
         SecretApi {
             conn: datastore,
             secret: secret,
@@ -72,7 +72,7 @@ impl SecretApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
+        let data = securer::from_config(&self.secret, self.conn.clone())?;
 
         match data.secure(&securer::parse::parse_key(&unmarshall_body)?) {
             Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
@@ -104,7 +104,7 @@ impl SecretApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
+        let data = securer::from_config(&self.secret, self.conn.clone())?;
 
         match data.secure(&securer::parse::parse_key(&unmarshall_body)?) {
             Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
@@ -151,7 +151,7 @@ impl SecretApi {
     //Blank origin: Returns all the secrets(irrespective of namespaces)
     //Will need roles/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
+        let data = securer::from_config(&self.secret, self.conn.clone())?;
 
         match data.retrieve() {
             Ok(Some(service_list)) => Ok(render_json_list(status::Ok, dispatch(req), &service_list)),
@@ -167,7 +167,7 @@ impl SecretApi {
     fn list(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_account(req)?;
 
-        let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
+        let data = securer::from_config(&self.secret, self.conn.clone())?;
 
         match data.retrieve_by(&params) {
             Ok(Some(secret)) => Ok(render_json_list(status::Ok, dispatch(req), &secret)),
@@ -185,7 +185,7 @@ impl SecretApi {
     //Every user will be able to list their own origin.
     //Will need roles/permission to access others origin.
     pub fn watch_list_by_account(&self, params: IdGet, dispatch: String) -> Option<String> {
-        let data = match securer::from_config(&self.secret, Box::new(*self.conn.clone())) {
+        let data = match securer::from_config(&self.secret, self.conn.clone()) {
             Ok(result) => result,
             Err(_err) => return None,
         };

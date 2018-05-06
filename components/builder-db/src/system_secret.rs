@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::path::PathBuf;
 
 use base64;
@@ -18,11 +19,11 @@ lazy_static! {
 }
 
 pub struct SystemSecret {
-    conn: DataStoreConn,
+    conn: Arc<DataStoreConn>,
 }
 
 impl SystemSecret {
-    pub fn new(conn: DataStoreConn) -> Self {
+    pub fn new(conn: Arc<DataStoreConn>) -> Self {
         SystemSecret { conn: conn }
     }
     pub fn setup(&self) -> Result<()> {

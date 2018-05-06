@@ -28,7 +28,7 @@ use db::error::Error::RecordsNotFound;
 
 #[derive(Clone)]
 pub struct VolumeApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// volume api: VolumeApi provides ability to create sandboxed or spaces for
@@ -42,7 +42,7 @@ pub struct VolumeApi {
 /// PUT: /volumes/:id
 /// PUT: /volumes/:id/status
 impl VolumeApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         VolumeApi { conn: datastore }
     }
 

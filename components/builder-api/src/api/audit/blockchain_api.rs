@@ -34,7 +34,7 @@ define_event_log!();
 #[derive(Clone)]
 pub struct BlockChainApi {
     clientcfg: Box<BlockchainConn>,
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// BlockChainApi: BlockChainApi provides ability to post the audits of the users
@@ -44,7 +44,7 @@ pub struct BlockChainApi {
 /// POST:/account/:account_id/audits,
 /// GET: /account/:account_id/audits
 impl BlockChainApi {
-    pub fn new(datastore: Box<DataStoreConn>, clientcfg: Box<BlockchainConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, clientcfg: Box<BlockchainConn>) -> Self {
         BlockChainApi { clientcfg: clientcfg, conn: datastore }
     }
 

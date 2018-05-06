@@ -32,14 +32,14 @@ use serde_json;
 
 #[derive(Clone)]
 pub struct JobApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// Job api
 /// - every instance of NetworkApi needs a DataStoreConn
 /// POST: networks, GET: networks/:id, GET: networks
 impl JobApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         JobApi { conn: datastore }
     }
 
