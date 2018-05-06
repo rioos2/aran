@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::path::PathBuf;
 use std::io::{Error as IOError, ErrorKind};
 
@@ -28,11 +29,11 @@ struct MarketPlaceDownload {
 }
 
 pub struct MarketPlaceDiffer {
-    conn: DataStoreConn,
+    conn: Arc<DataStoreConn>,
 }
 
 impl MarketPlaceDiffer {
-    pub fn new(conn: DataStoreConn) -> Self {
+    pub fn new(conn: Arc<DataStoreConn>) -> Self {
         MarketPlaceDiffer { conn: conn }
     }
     pub fn setup(&self) -> Result<()> {

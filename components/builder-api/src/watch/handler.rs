@@ -32,31 +32,32 @@ pub const LISTENERS: [&'static str; 2] = ["assemblyfactorys", "assemblys"];
 #[derive(Clone)]
 pub struct MyInner {
     v: Vec<(u32, String, Arc<Mutex<mpsc::Sender<Bytes>>>)>,
-    datastore: Box<DataStoreConn>,
+    datastore: Arc<DataStoreConn>,
     prom: Box<PrometheusClient>,
     securer: Box<SecurerConn>,
 }
 
 #[derive(Clone)]
 pub struct WatchHandler {
-    pub datastore: Box<DataStoreConn>,
+    pub datastore: Arc<DataStoreConn>,
     inner: Arc<Mutex<MyInner>>,
     outer: MyInner,
     prom: Box<PrometheusClient>,
 }
 
 impl WatchHandler {
-    pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>, securer: Box<SecurerConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, prom: Box<PrometheusClient>, securer: Box<SecurerConn>) -> Self {
         let vec = Vec::<(u32, String, Arc<Mutex<mpsc::Sender<Bytes>>>)>::new();
+        let ds = &datastore;
         let inner = MyInner {
             v: vec,
-            datastore: datastore.clone(),
+            datastore: ds.clone(),
             prom: prom.clone(),
             securer: securer.clone(),
         };
         WatchHandler {
             inner: Arc::new(Mutex::new(inner.clone())),
-            datastore: datastore.clone(),
+            datastore: ds.clone(),
             outer: inner.clone(),
             prom: prom.clone(),
         }
@@ -197,10 +198,13 @@ impl MyInner {
 
     fn list_data(&self, typ: &str, act_id: String) -> Option<String> {
         let idget = IdGet::with_account(act_id);
+        let one_ref_ds = &self.datastore;
+        
+
         let res = match self.uppercase_first_letter(typ).parse().unwrap() {
-            Messages::Assemblys => watch::messages::handle_assembly_list(idget, self.datastore.clone(), self.prom.clone()),
-            Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory_list(idget, self.datastore.clone()),
-            Messages::Secrets => watch::messages::handle_secrets_list(idget, self.datastore.clone(), self.securer.clone()),
+            Messages::Assemblys => watch::messages::handle_assembly_list(idget, one_ref_ds.clone(), self.prom.clone()),
+            Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory_list(idget, one_ref_ds.clone()),
+            Messages::Secrets => watch::messages::handle_secrets_list(idget, one_ref_ds.clone(), self.securer.clone()),
             Messages::Services => None,
             Messages::Nodes => None,
             Messages::Jobs => None,
@@ -216,6 +220,7 @@ impl MyInner {
             Messages::Plans => None,
             Messages::Serviceaccounts => None,
         };
+        println!("==> watch handler list_data >> cloned");
         res
     }
 
@@ -224,25 +229,28 @@ impl MyInner {
         let idget = IdGet::with_id(v["data"].to_string());
         let typ = v["type"].to_string();
 
+        let one_ref_ds = &self.datastore;
+        
         let res = match self.uppercase_first_letter(&name).parse().unwrap() {
-            Messages::Assemblys => watch::messages::handle_assembly(idget, typ, self.datastore.clone(), self.prom.clone()),
-            Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory(idget, typ, self.datastore.clone()),
-            Messages::Services => watch::messages::handle_services(idget, typ, self.datastore.clone()),
-            Messages::Nodes => watch::messages::handle_nodes(idget, typ, self.datastore.clone(), self.prom.clone()),
-            Messages::Secrets => watch::messages::handle_secrets(idget, typ, self.datastore.clone(), self.securer.clone()),
-            Messages::Jobs => watch::messages::handle_jobs(idget, typ, self.datastore.clone()),
-            Messages::Horizontalscaling => watch::messages::handle_horizontalscaling(idget, typ, self.datastore.clone(), self.prom.clone()),
-            Messages::Networks => watch::messages::handle_networks(idget, typ, self.datastore.clone()),
-            Messages::Storagespool => watch::messages::handle_storagespool(idget, typ, self.datastore.clone()),
-            Messages::Storageconnectors => watch::messages::handle_storageconnectors(idget, typ, self.datastore.clone()),
-            Messages::Datacenters => watch::messages::handle_datacenters(idget, typ, self.datastore.clone()),
-            Messages::Verticalscaling => watch::messages::handle_verticalscaling(idget, typ, self.datastore.clone(), self.prom.clone()),
-            Messages::Settingsmap => watch::messages::handle_settingsmap(idget, typ, self.datastore.clone()),
-            Messages::Endpoints => watch::messages::handle_endpoints(idget, typ, self.datastore.clone()),
-            Messages::Origins => watch::messages::handle_origins(idget, typ, self.datastore.clone()),
-            Messages::Plans => watch::messages::handle_plans(idget, typ, self.datastore.clone()),
-            Messages::Serviceaccounts => watch::messages::handle_serviceaccounts(idget, typ, self.datastore.clone()),
+            Messages::Assemblys => watch::messages::handle_assembly(idget, typ, one_ref_ds.clone(), self.prom.clone()),
+            Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory(idget, typ, one_ref_ds.clone()),
+            Messages::Services => watch::messages::handle_services(idget, typ, one_ref_ds.clone()),
+            Messages::Nodes => watch::messages::handle_nodes(idget, typ, one_ref_ds.clone(), self.prom.clone()),
+            Messages::Secrets => watch::messages::handle_secrets(idget, typ, one_ref_ds.clone(), self.securer.clone()),
+            Messages::Jobs => watch::messages::handle_jobs(idget, typ, one_ref_ds.clone()),
+            Messages::Horizontalscaling => watch::messages::handle_horizontalscaling(idget, typ, one_ref_ds.clone(), self.prom.clone()),
+            Messages::Networks => watch::messages::handle_networks(idget, typ, one_ref_ds.clone()),
+            Messages::Storagespool => watch::messages::handle_storagespool(idget, typ, one_ref_ds.clone()),
+            Messages::Storageconnectors => watch::messages::handle_storageconnectors(idget, typ, one_ref_ds.clone()),
+            Messages::Datacenters => watch::messages::handle_datacenters(idget, typ, one_ref_ds.clone()),
+            Messages::Verticalscaling => watch::messages::handle_verticalscaling(idget, typ, one_ref_ds.clone(), self.prom.clone()),
+            Messages::Settingsmap => watch::messages::handle_settingsmap(idget, typ, one_ref_ds.clone()),
+            Messages::Endpoints => watch::messages::handle_endpoints(idget, typ, one_ref_ds.clone()),
+            Messages::Origins => watch::messages::handle_origins(idget, typ, one_ref_ds.clone()),
+            Messages::Plans => watch::messages::handle_plans(idget, typ, one_ref_ds.clone()),
+            Messages::Serviceaccounts => watch::messages::handle_serviceaccounts(idget, typ, one_ref_ds.clone()),
         };
+        println!("==> watch handler get_data >> cloned");
         return res;
     }
 

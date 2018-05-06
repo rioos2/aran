@@ -2,7 +2,7 @@
 
 use std::error::Error;
 use std::fmt;
-use std::net::{Ipv4Addr, IpAddr};
+use std::net::{IpAddr, Ipv4Addr};
 
 use num_cpus;
 use url::percent_encoding::{utf8_percent_encode, PATH_SEGMENT_ENCODE_SET};
@@ -28,6 +28,17 @@ pub struct DataStore {
 
 impl Default for DataStore {
     fn default() -> Self {
+        // If the cpus are more then 4, then we round it up to 12 .
+        // This make sure the max_connections in close to 100 in postgres.
+        // If you still find issues, increase it by configuring postgres.
+        let pool_factor = {
+            if num_cpus::get() <= 4 {
+                num_cpus::get() * 3
+            } else {
+                12
+            }
+        };
+
         DataStore {
             host: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             port: 5432,
@@ -37,7 +48,7 @@ impl Default for DataStore {
             connection_retry_ms: 300,
             connection_timeout_sec: 3600,
             connection_test: false,
-            pool_size: (num_cpus::get() * 2) as u32,
+            pool_size: pool_factor as u32,
         }
     }
 }

@@ -22,7 +22,7 @@ use db::data_store::DataStoreConn;
 
 #[derive(Clone)]
 pub struct Containers {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
     config: Arc<Config>,
 }
 
@@ -30,7 +30,7 @@ pub struct Containers {
 /// URL:
 /// GET: /account/:account_id/assemblys/:id/exec
 impl Containers {
-    pub fn new(datastore: Box<DataStoreConn>, config: Arc<Config>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, config: Arc<Config>) -> Self {
         Containers { conn: datastore,
                     config: config }
     }

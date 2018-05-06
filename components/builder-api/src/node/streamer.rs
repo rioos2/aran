@@ -62,7 +62,7 @@ impl Streamer {
         match ods {
             Some(ds) => {
                 let mut watchhandler = WatchHandler::new(
-                    Box::new(ds.clone()),
+                    Arc::new(ds),
                     Box::new(PrometheusClient::new(&*self.config.clone())),
                     Box::new(SecurerConn::new(&*self.config.clone())),
                 );
@@ -101,7 +101,6 @@ impl Streamer {
                     server.service.set_service(
                         "/api/v1",
                         Arc::new(ServiceImpl {
-                            datastore: Box::new(ds),
                             sender: Arc::new(Mutex::new(reg_sender)),
                         }),
                     );
