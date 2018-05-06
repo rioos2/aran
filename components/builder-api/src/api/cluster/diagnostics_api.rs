@@ -40,7 +40,7 @@ lazy_static! {
 #[derive(Clone)]
 pub struct DiagnosticsApi {
     prom: Box<PrometheusClient>,
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
     config: Arc<Config>,
 }
 
@@ -55,7 +55,7 @@ pub struct DiagnosticsApi {
 /// GET: /diagnostics
 
 impl DiagnosticsApi {
-    pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>, config: Arc<Config>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, prom: Box<PrometheusClient>, config: Arc<Config>) -> Self {
         DiagnosticsApi {
             prom: prom,
             conn: datastore,

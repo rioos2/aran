@@ -3,14 +3,14 @@ use serde_json;
 
 use protocol::api::base::IdGet;
 use protocol::api::authorize::Permissions;
-use protocol::cache::{PULL_DIRECTLY, NewCacheServiceFn, CACHE_PREFIX_PERMISSION};
+use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PERMISSION, PULL_DIRECTLY};
 use protocol::cache::inject::PermissionFeeder;
 
 use db::data_store::DataStoreConn;
 use super::roles::Roles;
 use rbac::roles::TrustAccess;
 use rbac::ExpanderSender;
-use super::super::error::{Result, Error};
+use super::super::error::{Error, Result};
 
 use auth::models::permission::DataStore;
 
@@ -22,14 +22,16 @@ pub struct RoleType {
 
 impl RoleType {
     pub fn new(name: String) -> Self {
-        RoleType { name: IdGet::with_id(name) }
+        RoleType {
+            name: IdGet::with_id(name),
+        }
     }
 }
 
 //Authorization is called from middleware.rs to verify the access of user or serviceaccount
 pub struct Authorization {
     role_type: RoleType,
-    ds: Box<DataStoreConn>,
+    ds: Arc<DataStoreConn>,
     permissions: Option<Vec<Permissions>>,
 }
 
@@ -37,7 +39,7 @@ impl Authorization {
     pub fn new(ds: Arc<DataStoreConn>, role_type: RoleType) -> Self {
         Authorization {
             role_type: role_type,
-            ds: Box::new((*ds).clone()),
+            ds: ds.clone(),
             permissions: None,
         }
     }
@@ -76,11 +78,20 @@ impl ExpanderSender for Authorization {
         let permission_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PERMISSION.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                DataStore::list_by_name(&_conn, &id).ok().and_then(|p| {
-                    serde_json::to_string(&p).ok()
-                })
+                DataStore::list_by_name(&_conn, &id)
+                    .ok()
+                    .and_then(|p| serde_json::to_string(&p).ok())
             }),
         ));
-        &self.ds.expander.with(permission_service);
+
+        let ref mut _arc_conn = self.ds.clone();
+        /* 
+        TO-DO: If the below get_mut doesn't work, then we'll use make_mut.
+        Arc::make_mut does a inner clone of  ds resulting in new pool connections.
+        let ref mut ex = &mut Arc::make_mut(_arc_conn).expander;
+        (&mut **ex).with(permission_service);
+        */
+
+        &mut Arc::get_mut(_arc_conn).map(|m| m.expander.with(permission_service));
     }
 }

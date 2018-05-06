@@ -33,7 +33,7 @@ const DEFAULTROLE: &'static str = "rioos:loneranger";
 
 #[derive(Clone)]
 pub struct AuthenticateApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// Authenticate api: AuthenticateyApi provides ability to authenticate the user.
@@ -45,7 +45,7 @@ pub struct AuthenticateApi {
 /// Record the other apis here.
 
 impl AuthenticateApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         AuthenticateApi { conn: datastore }
     }
 
@@ -54,7 +54,7 @@ impl AuthenticateApi {
     //The body contains email, password, authenticate and if all is well return a token.
     fn default_authenticate(&self, req: &mut Request) -> AranResult<Response> {
         let account = self.validate(req.get::<bodyparser::Struct<AccountGet>>()?)?;
-        let delegate = AuthenticateDelegate::new(Arc::new(*self.conn.clone()));
+        let delegate = AuthenticateDelegate::new(self.conn.clone());
         let auth = Authenticatable::UserAndPass {
             username: account.get_email(),
             password: account.get_password(),

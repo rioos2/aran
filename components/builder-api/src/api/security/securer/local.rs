@@ -2,6 +2,7 @@
 //
 //! Securer variant which stores hidden gems in the local database.
 //!
+use std::sync::Arc;
 
 use error::Result;
 use db::data_store::DataStoreConn;
@@ -13,10 +14,10 @@ use service::{SecretOutput, SecretOutputList};
 use protocol::api::base::IdGet;
 
 /// Wraps a `DataStoreConn` representing the root of a local vault security.
-pub struct LocalSecurer(Box<DataStoreConn>);
+pub struct LocalSecurer(Arc<DataStoreConn>);
 
 impl LocalSecurer {
-    pub fn new(conn: Box<DataStoreConn>) -> Result<Self> {
+    pub fn new(conn: Arc<DataStoreConn>) -> Result<Self> {
         Ok(LocalSecurer(conn))
     }
 }

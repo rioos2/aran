@@ -48,7 +48,7 @@ impl Websocket {
         match ods {
             Some(ds) => {
                 let mut watchhandler = WatchHandler::new(
-                    Box::new(ds.clone()),
+                    Arc::new(ds),
                     Box::new(PrometheusClient::new(&*self.config.clone())),
                     Box::new(SecurerConn::new(&*self.config.clone())),
                 );
@@ -58,15 +58,12 @@ impl Websocket {
 
                 let send = Arc::new(Mutex::new(db_sender));
                 let register = Arc::new(Mutex::new(reg_sender));
-
                 watchhandler
                     .notifier(send.clone(), LISTENERS.to_vec())
                     .unwrap();
-
                 watchhandler.publisher(db_receiver);
 
                 watchhandler.register(reg_receiver);
-
                 let tls_tuple = tls_pair.clone().unwrap(); //no panic, as ods handles it.
 
                 let pkcs12 = Pkcs12::from_der(&tls_tuple.1).unwrap();
@@ -102,7 +99,6 @@ impl Websocket {
                             // Default to returning a 404 when the route doesn't match.
                             // You could default to any handler here.
                             inner: Box::new(NotFound),
-                            datastore: Box::new(ds.clone()),
                             register: register.clone(),
                             ssl: acceptor.clone(),
                         }

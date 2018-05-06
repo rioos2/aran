@@ -34,7 +34,7 @@ use db::error::Error::RecordsNotFound;
 
 #[derive(Clone)]
 pub struct ImageMarksApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// ImageMarks API:
@@ -48,7 +48,7 @@ pub struct ImageMarksApi {
 
 
 impl ImageMarksApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         ImageMarksApi { conn: datastore }
     }
 

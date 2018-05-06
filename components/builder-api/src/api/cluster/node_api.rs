@@ -33,7 +33,7 @@ use protocol::api::base::MetaFields;
 #[derive(Clone)]
 pub struct NodeApi {
     prom: Box<PrometheusClient>,
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// Network api: NodeApi provides ability to declare the node
@@ -46,7 +46,7 @@ pub struct NodeApi {
 /// PUT: /nodes/status
 /// GET: /node/:ip
 impl NodeApi {
-    pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
         NodeApi {
             prom: prom,
             conn: datastore,
