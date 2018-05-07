@@ -92,13 +92,16 @@ impl Containers {
 }
 
 impl Api for Containers {
-    fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
+    fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
+        let basic = Authenticated::new(&*config);
+
         let _self = self.clone();
         let get_url = move |req: &mut Request| -> AranResult<Response> { _self.get(req) };
 
         router.get(
             "/accounts/:account_id/assemblys/:id/exec",
-            XHandler::new(C { inner: get_url }),
+            XHandler::new(C { inner: get_url })
+            .before(basic.clone()),
             "get_console_url",
         );
     }

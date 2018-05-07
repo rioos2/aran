@@ -96,10 +96,15 @@ impl Client {
         Ok(data)
     }
 
-    pub fn logout(&self, token: &str) -> Result<(String)> {
+    pub fn logout(&self, token: &str, email: &str) -> Result<()> {
+        let body = json!({
+            "email": format!("{}", email),
+            "token": format!("{}", token)
+        });
         let res = self.0
-            .get(&format!("logout/{}", token))
-            .header(UserAgent::new(USER_AGENT.to_string()))
+            .post(&format!("logout"))
+            .body(Body::from(serde_json::to_string(&body)?))
+            .headers(self.add_authz(token, email))
             .send()
             .map_err(Error::ReqwestError)?;
 
@@ -107,7 +112,7 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
-        Ok("".to_string())
+        Ok(())
     }
 
     pub fn deploy_digicloud(&self, assembly_fac: deploy::AssemblyFactory, token: &str, email: &str) -> Result<deploy::AssemblyFactory> {
