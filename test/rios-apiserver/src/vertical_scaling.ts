@@ -220,6 +220,25 @@ describe('Scaling API', function() {
           });
       });
 
+
+      it('returns the assembly_update by id', function(done) {
+        this.timeout(4000)
+        request.put('/assemblys/'+globalAny.assembly_id)
+        .ca(globalAny.rootCA)
+          .set('Authorization', globalAny.bobo_bearer)
+          .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+          .send({"object_meta":{"name":"levi.megam.io","account":globalAny.account_id,"created_at":"2018-05-03T12:59:04.519663446+00:00","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},
+          "owner_references":[{"kind":"AssemblyFactory","api_version":"v1","name":"levi.megam.io","uid":globalAny.asm_fac_id,"block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},
+          "status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],"uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":"chennai"},
+          "selector":[],"status": {"phase":"Ready","message":"Initializing replicas...Brew some coffee!!! levi.megam.io","reason":"","conditions":[]},"metadata":{}})
+          .expect(200)
+          .end(function(err, res) {
+           expect(res.body);
+           expect(res.body.id).to.equal(globalAny.assembly_id);
+            done(err);
+          });
+      });
+
       it('returns the assembly by id and check spec data', function(done) {
         this.timeout(4000)
         request.get('/assemblys/'+ globalAny.assembly_id)

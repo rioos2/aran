@@ -34,7 +34,7 @@ use db::error::Error::RecordsNotFound;
 
 #[derive(Clone)]
 pub struct BuildConfigApi {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 /// BuildConfig API:
@@ -46,7 +46,7 @@ pub struct BuildConfigApi {
 /// GET: /buildconfig
 
 impl BuildConfigApi {
-    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>) -> Self {
         BuildConfigApi { conn: datastore }
     }
 

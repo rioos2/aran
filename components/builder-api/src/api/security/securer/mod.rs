@@ -9,7 +9,6 @@ pub mod local;
 pub mod parse;
 pub mod vault;
 
-use std::sync::Arc;
 
 use db::data_store::DataStoreConn;
 use error::Result;
@@ -50,7 +49,7 @@ pub trait Securer: Send {
 }
 
 /// Create appropriate Securer variant based on configuration values.
-pub fn from_config(config: &SecurerConn, conn: Arc<DataStoreConn>) -> Result<Box<Securer>> {
+pub fn from_config(config: &SecurerConn, conn: Box<DataStoreConn>) -> Result<Box<Securer>> {
     match config.backend {
         SecureBackend::Local => Ok(Box::new(local::LocalSecurer::new(conn)?)),
         SecureBackend::EnvKey => Ok(Box::new(vault::EnvKeySecurer::new(config)?)),

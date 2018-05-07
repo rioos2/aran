@@ -54,7 +54,6 @@ impl HeaderExtracter for ServiceAccountHeader {
     const AUTH_CONF_NAME: &'static str = PLUGIN_SERVICE_ACCOUNT;
 
     fn extract(req: iron::Headers, token: String, config_value: Option<&String>) -> Option<Authenticatable> {
-        println!("Service account header {:?}", config_value);
         let serviceaccount = req.get::<XAuthRioOSServiceAccountName>();
         if !serviceaccount.is_none() {
             return Some(Authenticatable::ServiceAccountNameAndWebtoken {
