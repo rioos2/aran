@@ -81,7 +81,7 @@ fn start(ui: &mut UI) -> Result<()> {
         ("auth", Some(matches)) => {
             match matches.subcommand() {
                 ("login", Some(m)) => sub_cli_login(ui, m)?,
-                ("logout", Some(_)) => sub_cli_logout(ui)?,
+                ("logout", Some(m)) => sub_cli_logout(ui,m)?,
                 ("list", Some(_)) => no_command(ui)?,
                 _ => unreachable!(),
             }
@@ -165,7 +165,7 @@ fn start(ui: &mut UI) -> Result<()> {
             }
         }
         ("login", Some(m)) => sub_cli_login(ui, m)?,
-        ("logout", Some(_)) => sub_cli_logout(ui)?,
+        ("logout", Some(m)) => sub_cli_logout(ui,m)?,
         ("new", Some(m)) => sub_cli_new(ui, m)?,
         ("init", Some(m)) => sub_digicloud_deploy(ui, m)?,
         ("list", Some(m)) => sub_digicloud_list(ui, m)?,
@@ -179,8 +179,13 @@ fn sub_cli_login(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     command::cli::login::start(ui, create_client(&api_server_param_or_env(&m)?)?)
 }
 
-fn sub_cli_logout(ui: &mut UI) -> Result<()> {
-    command::cli::logout::start(ui)
+fn sub_cli_logout(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    command::cli::logout::start(
+        ui,
+        create_client(&api_server_param_or_env(&m)?)?,
+        auth_token_param_or_env(&m)?,
+        auth_email_param_or_env(&m)?,
+    )
 }
 
 fn sub_cli_new(ui: &mut UI, m: &ArgMatches) -> Result<()> {
