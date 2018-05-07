@@ -67,12 +67,16 @@ impl Containers {
                     .get("rioos_sh_vnc_port")
                     .unwrap_or(vnc);
                 let url = format!(
-                    "http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1",
-                    host, port, acc, asm_id
+                    "http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1&stdout=1&stdin=1&stderr=1",
+                    host,
+                    port,
+                    acc,
+                    asm_id
                 );
 
                 let client = ApiClient::new(&url, "", "v1", None)?;
                 let res = client.get("").send();
+
                 match res {
                     Ok(mut data) => {
                         let x: ExecURL = data.json()?;
@@ -84,7 +88,10 @@ impl Containers {
                             },
                         ))
                     }
-                    Err(err) => Err(internal_error(&format!("{}", err))),
+                    Err(err) => {
+                        println!("{:?}", err);
+                        Err(internal_error(&format!("{}", err)))
+                    }
                 }
             }
         }
@@ -92,8 +99,10 @@ impl Containers {
 }
 
 impl Api for Containers {
+
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
+
 
         let _self = self.clone();
         let get_url = move |req: &mut Request| -> AranResult<Response> { _self.get(req) };

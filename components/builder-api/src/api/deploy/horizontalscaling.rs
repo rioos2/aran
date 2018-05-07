@@ -353,7 +353,7 @@ impl ExpanderSender for HorizontalScalingApi {
             }),
         ));
 
-        let ref mut _arc_conn = self.conn.clone();
+        let ref mut _arc_conn = self.conn;
 
         /* 
         TO-DO: If the below get_mut doesn't work, then we'll use make_mut.

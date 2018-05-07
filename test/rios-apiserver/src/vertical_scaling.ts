@@ -220,7 +220,24 @@ describe('Scaling API', function() {
           });
       });
 
-
+      it('returns the assembly by id and check spec data', function(done) {
+        this.timeout(4000)
+        request.get('/assemblys/'+ globalAny.assembly_id)
+        .ca(globalAny.rootCA)
+          .set('Authorization', globalAny.bobo_bearer)
+          .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+          .expect(200)
+          .end(function(err, res) {
+           expect(res.body.id).to.equal(globalAny.assembly_id);
+           expect(res.body.spec.assembly_factory.id).to.equal(globalAny.asm_fac_id);
+           expect(res.body.spec.assembly_factory.spec.plan.id).to.equal(globalAny.plan_id);
+           expect(res.body.spec.endpoints.id).to.equal(globalAny.endpoints_id);
+           expect(res.body.spec.volumes[0].id).to.equal(globalAny.vol_id);
+           expect(res.body.type_meta.kind).to.equal(globalAny.assemblys);
+           expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+            done(err);
+          });
+      });
 
 
   });
