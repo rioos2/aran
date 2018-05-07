@@ -148,7 +148,7 @@ describe('volume  API', function() {
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .send({"object_meta":{"name":"","account":"876234567","created_at":"2017-12-15T11:22:56.243005857+00:00","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Assembly",
-        "api_version":"v1","name":"lev.megam.io","uid":"876543212345678","block_owner_deletion":false},{"kind":"StoragePool","api_version":"v1","name":"private","uid":"87654567876544567","block_owner_deletion":false}], "finalizers":["orphan"],"cluster_name":""},
+        "api_version":"v1","name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{"kind":"StoragePool","api_version":"v1","name":"private","uid":globalAny.stp_id,"block_owner_deletion":false}], "finalizers":["orphan"],"cluster_name":""},
         "type_meta":{"kind":"Volume","api_version":"v1"},"mount_path":"/var/lib/path","allocated":"50 GiB","status":{"phase":"pending","message":"","reason":"","conditions":[{"condition_type":"OutOfDisk","message":"nodelet has sufficient disk space available",
         "reason":"NodeletHasSufficientDisk","status":"False","last_update_time":"2017-09-21T06:35:16Z","last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z"}]}})
         .expect(200)

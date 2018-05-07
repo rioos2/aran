@@ -139,18 +139,23 @@ impl EnvelopeResponse {
 pub struct ObjectReference {
     // Kind of the referent.
     // +optional
+    #[serde(default)]
     kind: String,
     // Origin of the referent.
     // +optional
+    #[serde(default)]
     origin: String,
     // Name of the referent.
     // +optional
     name: String,
     // UID of the referent.
+    #[serde(default)]
     uid: String,
     // API version of the referent.
+    #[serde(default)]
     api_version: String,
     // Specific resourceVersion to which this reference is made, if any.
+    #[serde(default)]
     resource_version: String,
 
     // If referring to a piece of an object instead of an entire object, this string
@@ -160,5 +165,6 @@ pub struct ObjectReference {
     // the event) or if no container name is specified "spec.containers[2]" (container with
     // index 2 in this assemblyfactory). This syntax is chosen only to have some well-defined way of
     // referencing a part of an object.
+    #[serde(default)]
     field_path: String,
 }
