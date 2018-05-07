@@ -14,7 +14,7 @@ use diesel::Connection;
 
 use protocol::cache::InMemoryExpander;
 
-//#[derive(Clone)]
+#[derive(Clone)]
 pub struct DataStoreConn {
     pub pool: Pool,
     pub diesel_pool: DieselPool,

@@ -20,7 +20,7 @@ use audit::vulnerable::vulnerablity::AnchoreClient;
 #[derive(Clone)]
 pub struct VulnApi {
     anchore: Box<AnchoreClient>,
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 /// VulnApi: VulnApi provides ability to check the image vulnerabilty
@@ -28,7 +28,7 @@ pub struct VulnApi {
 /// Vulnerable: URLs supported are.
 /// GET: /image/:name/vulnerablity,
 impl VulnApi {
-    pub fn new(datastore: Arc<DataStoreConn>, anchore: Box<AnchoreClient>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>, anchore: Box<AnchoreClient>) -> Self {
         VulnApi { anchore: anchore, conn: datastore }
     }
 

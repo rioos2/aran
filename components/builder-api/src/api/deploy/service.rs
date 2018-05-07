@@ -29,7 +29,7 @@ use protocol::api::base::IdGet;
 
 #[derive(Clone)]
 pub struct ServiceApi {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 /// Storage api
@@ -41,7 +41,7 @@ pub struct ServiceApi {
 /// Datacenters
 /// POST: datacenters, GET: datacenters/:id, GET: datacenters PUT: datacenters/status_update
 impl ServiceApi {
-    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>) -> Self {
         ServiceApi { conn: datastore }
     }
 
