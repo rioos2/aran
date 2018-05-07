@@ -1,19 +1,19 @@
-
-use ws;
+use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::mpsc;
 use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
+
+use ws;
 use regex::Regex;
 use bytes::Bytes;
-use db::data_store::DataStoreConn;
 use serde_json;
 use serde_json::Value;
 use watch::handler::WatchHandler;
 use watch::handler::LISTENERS;
 
-use std::rc::Rc;
+
 use openssl::ssl::{SslAcceptor, SslStream};
 use mio::tcp::TcpStream;
 use nodesrv::node_ds::NodeDS;
@@ -27,7 +27,6 @@ pub struct Router {
     pub watchhandler: WatchHandler,
     pub sender: ws::Sender,
     pub inner: Box<ws::Handler>,
-    pub datastore: Box<DataStoreConn>,
     pub register: Arc<Mutex<mpsc::SyncSender<(String, Arc<Mutex<mpsc::Sender<Bytes>>>)>>>,
     pub ssl: Rc<SslAcceptor>,
 }
@@ -40,16 +39,14 @@ impl ws::Handler for Router {
 
     fn on_request(&mut self, req: &ws::Request) -> ws::Result<(ws::Response)> {
         // Clone the sender so that we can move it into the child handler
-        let out = self.sender.clone();
-        let db = self.datastore.clone();
+        let out = self.sender.clone();        
         let reg = self.register.clone();        
 
         let re = Regex::new("/api/v1/accounts/(\\w+)/watch").unwrap();        
         if re.is_match(req.resource()) {
             self.inner = Box::new(Data {
                     ws: out,
-                    path: req.resource().to_string(),
-                    datastore: db,
+                    path: req.resource().to_string(),               
                     register: reg,
                     watchhandler: self.watchhandler.clone(),
                 })
@@ -59,8 +56,7 @@ impl ws::Handler for Router {
                 // Route to a data handler
                 "/api/v1/healthz/overall" => {      
                     self.inner = Box::new(Metrics {
-                        ws: out,
-                        datastore: db,
+                        ws: out,                        
                         watchhandler: self.watchhandler.clone(),
                 })          
                 }  
@@ -121,7 +117,6 @@ struct Data {
     ws: ws::Sender,
     watchhandler: WatchHandler,
     path: String,
-    datastore: Box<DataStoreConn>,
     register: Arc<Mutex<mpsc::SyncSender<(String, Arc<Mutex<mpsc::Sender<Bytes>>>)>>>,
 }
 
@@ -199,7 +194,6 @@ impl ws::Handler for Data {
 struct Metrics {
     ws: ws::Sender,
     watchhandler: WatchHandler,
-    datastore: Box<DataStoreConn>,
 }
 
 impl ws::Handler for Metrics {

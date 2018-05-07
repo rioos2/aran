@@ -14,10 +14,7 @@ use regex::Regex;
 use httpbis::*;
 use httpbis::Headers;
 
-use db::data_store::DataStoreConn;
-
 pub struct ServiceImpl {
-    pub datastore: Box<DataStoreConn>,
     pub sender: Arc<Mutex<mpsc::SyncSender<(String, Arc<Mutex<mpsc::Sender<Bytes>>>)>>>,
 }
 

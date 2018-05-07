@@ -28,7 +28,7 @@ use db::error::Error::RecordsNotFound;
 
 #[derive(Clone)]
 pub struct TeamApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// Origin api: OriginApi provides ability to create sandboxed or spaces for
@@ -39,7 +39,7 @@ pub struct TeamApi {
 /// POST: /origin,
 /// GET: /origin/:id
 impl TeamApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         TeamApi { conn: datastore }
     }
 

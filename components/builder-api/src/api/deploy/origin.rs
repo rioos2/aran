@@ -31,7 +31,7 @@ use protocol::api::base::IdGet;
 
 #[derive(Clone)]
 pub struct OriginApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// Origin api: OriginApi provides ability to create sandboxed or spaces for
@@ -42,7 +42,7 @@ pub struct OriginApi {
 /// POST: /origin,
 /// GET: /origin/:id
 impl OriginApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         OriginApi { conn: datastore }
     }
 

@@ -28,7 +28,7 @@ use db::data_store::DataStoreConn;
 #[derive(Clone)]
 pub struct LogApi {
     logconn: Box<InfluxClientConn>,
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 /// LogApi: LogApi provides ability to get the log for machine and container
@@ -38,7 +38,7 @@ pub struct LogApi {
 /// GET: /list,
 /// GET: /list_blank
 impl LogApi {
-    pub fn new(datastore: Box<DataStoreConn>, logconn: Box<InfluxClientConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, logconn: Box<InfluxClientConn>) -> Self {
         LogApi { logconn: logconn, conn: datastore }
     }
 

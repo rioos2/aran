@@ -2,7 +2,6 @@ use std::sync::Arc;
 use iron::prelude::*;
 use router::Router;
 
-
 use config::Config;
 use error::Error;
 
@@ -10,7 +9,7 @@ use http_gateway::http::controller::*;
 use rioos_http::ApiClient;
 
 use http_gateway::util::errors::AranResult;
-use http_gateway::util::errors::{not_found_error, internal_error};
+use http_gateway::util::errors::{internal_error, not_found_error};
 
 use protocol::api::base::IdGet;
 use deploy::models::assembly;
@@ -22,21 +21,19 @@ use db::data_store::DataStoreConn;
 
 #[derive(Clone)]
 pub struct Containers {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
     config: Arc<Config>,
 }
-
 
 /// URL:
 /// GET: /account/:account_id/assemblys/:id/exec
 impl Containers {
-    pub fn new(datastore: Box<DataStoreConn>, config: Arc<Config>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, config: Arc<Config>) -> Self {
         Containers {
             conn: datastore,
             config: config,
         }
     }
-
 
     fn get(&self, req: &mut Request) -> AranResult<Response> {
         let (acc, asm_id) = {
@@ -57,7 +54,6 @@ impl Containers {
                         "Still deploying. Must have console host and port: for {} ",
                         asm_id
                     )));
-
                 }
                 let vnc = &"".to_string();
                 let host = assembly.get_metadata().get("rioos_sh_vnc_host").unwrap_or(
@@ -100,7 +96,6 @@ impl Containers {
 
 impl Api for Containers {
     fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
-
         let _self = self.clone();
         let get_url = move |req: &mut Request| -> AranResult<Response> { _self.get(req) };
 
@@ -109,6 +104,5 @@ impl Api for Containers {
             XHandler::new(C { inner: get_url }),
             "get_console_url",
         );
-
     }
 }

@@ -36,7 +36,7 @@ use serde_json;
 
 #[derive(Clone)]
 pub struct VerticalScalingApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
     prom: Box<PrometheusClient>,
 }
 
@@ -46,7 +46,7 @@ pub struct VerticalScalingApi {
 //
 /// Assembly: URLs supported are.
 impl VerticalScalingApi {
-    pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
         VerticalScalingApi { conn: datastore, prom: prom }
     }
 

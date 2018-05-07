@@ -9,13 +9,12 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use api::{Api, ApiValidator, Validator, ParmsVerifier, ExpanderSender};
+use api::{Api, ApiValidator, ExpanderSender, ParmsVerifier, Validator};
 use protocol::api::schema::dispatch;
 use config::Config;
 use error::Error;
 use common::ui;
 use ansi_term::Colour;
-
 
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{AranResult, AranValidResult};
@@ -26,7 +25,6 @@ use authorize::models::permission;
 use protocol::api::authorize::Permissions;
 use protocol::api::base::IdGet;
 use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PERMISSION};
-
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -44,11 +42,11 @@ use error::ErrorMessage::{MissingParameter, MustBeNumeric};
 //GET: /permissions/email/:name
 #[derive(Clone)]
 pub struct PermissionApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 impl PermissionApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         PermissionApi { conn: datastore }
     }
     //POST: /permissions
@@ -58,9 +56,7 @@ impl PermissionApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn permission_create(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate::<Permissions>(
-            req.get::<bodyparser::Struct<Permissions>>()?,
-        )?;
+        let unmarshall_body = self.validate::<Permissions>(req.get::<bodyparser::Struct<Permissions>>()?)?;
         ui::rawdumpln(
             Colour::White,
             '✓',
@@ -105,9 +101,11 @@ impl PermissionApi {
                 &permissions_list,
             )),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(
-                &format!("{} for {}", Error::Db(RecordsNotFound), role_id),
-            )),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                role_id
+            ))),
         }
     }
     //GET: /permission/:id
@@ -175,30 +173,39 @@ impl Api for PermissionApi {
         //Routes:  Authorization : Permissions
         router.post(
             "/permissions",
-            XHandler::new(C { inner: permission_create }).before(basic.clone()),
+            XHandler::new(C {
+                inner: permission_create,
+            }).before(basic.clone()),
             "permissions",
         );
         router.get(
             "/permissions",
-            XHandler::new(C { inner: permission_list }).before(basic.clone()),
+            XHandler::new(C {
+                inner: permission_list,
+            }).before(basic.clone()),
             "permission_list",
         );
         router.get(
             "/permissions/roles/:role_id",
-            XHandler::new(C { inner: list_permissions_by_role }).before(basic.clone()),
+            XHandler::new(C {
+                inner: list_permissions_by_role,
+            }).before(basic.clone()),
             "list_permissions_by_role",
         );
         router.get(
             "/permissions/:id",
-            XHandler::new(C { inner: permission_show }).before(basic.clone()),
+            XHandler::new(C {
+                inner: permission_show,
+            }).before(basic.clone()),
             "permission_show",
         );
         router.get(
             "/permissions/:id/roles/:role_id",
-            XHandler::new(C { inner: show_permissions_applied_for }).before(basic.clone()),
+            XHandler::new(C {
+                inner: show_permissions_applied_for,
+            }).before(basic.clone()),
             "show_permissions_applied_for",
         );
-
     }
 }
 use serde_json;
@@ -214,7 +221,19 @@ impl ExpanderSender for PermissionApi {
                     .and_then(|p| serde_json::to_string(&p).ok())
             }),
         ));
-        &self.conn.expander.with(permission_service);
+
+        let ref mut _arc_conn = self.conn.clone();
+        /* 
+        TO-DO: If the below get_mut doesn't work, then we'll use make_mut.
+        Arc::make_mut does a inner clone of  ds resulting in new pool connections.
+              
+      
+        let ref mut ex = &mut Arc::make_mut(_arc_conn).expander;
+        (&mut **ex).with(permission_service);
+        */
+        &mut Arc::get_mut(_arc_conn).map(|m| {
+            m.expander.with(permission_service);
+        });
     }
 }
 
