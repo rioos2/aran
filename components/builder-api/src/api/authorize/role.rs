@@ -41,11 +41,11 @@ use error::ErrorMessage::MissingParameter;
 //GET: /roles/:name
 #[derive(Clone)]
 pub struct RoleApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 impl RoleApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         RoleApi { conn: datastore }
     }
     //POST: /roles

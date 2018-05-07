@@ -36,11 +36,11 @@ use serde_json;
 /// GET: /secrets,
 #[derive(Clone)]
 pub struct SettingsMapApi {
-    conn: Box<DataStoreConn>,
+    conn: Arc<DataStoreConn>,
 }
 
 impl SettingsMapApi {
-    pub fn new(datastore: Box<DataStoreConn>) -> Self {
+    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
         SettingsMapApi { conn: datastore }
     }
     //POST: /settingsmap
