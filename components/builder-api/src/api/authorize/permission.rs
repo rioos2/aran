@@ -222,7 +222,7 @@ impl ExpanderSender for PermissionApi {
             }),
         ));
 
-        let ref mut _arc_conn = self.conn.clone();
+        let ref mut _arc_conn = self.conn;
         /* 
         TO-DO: If the below get_mut doesn't work, then we'll use make_mut.
         Arc::make_mut does a inner clone of  ds resulting in new pool connections.
