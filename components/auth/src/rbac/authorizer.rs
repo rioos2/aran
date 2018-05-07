@@ -31,7 +31,7 @@ impl RoleType {
 //Authorization is called from middleware.rs to verify the access of user or serviceaccount
 pub struct Authorization {
     role_type: RoleType,
-    ds: Arc<DataStoreConn>,
+    ds: Box<DataStoreConn>,
     permissions: Option<Vec<Permissions>>,
 }
 
@@ -39,7 +39,7 @@ impl Authorization {
     pub fn new(ds: Arc<DataStoreConn>, role_type: RoleType) -> Self {
         Authorization {
             role_type: role_type,
-            ds: ds.clone(),
+            ds: Box::new((*ds).clone()),
             permissions: None,
         }
     }
@@ -83,15 +83,6 @@ impl ExpanderSender for Authorization {
                     .and_then(|p| serde_json::to_string(&p).ok())
             }),
         ));
-
-        let ref mut _arc_conn = self.ds;
-        /* 
-        TO-DO: If the below get_mut doesn't work, then we'll use make_mut.
-        Arc::make_mut does a inner clone of  ds resulting in new pool connections.
-        let ref mut ex = &mut Arc::make_mut(_arc_conn).expander;
-        (&mut **ex).with(permission_service);
-        */
-
-        &mut Arc::get_mut(_arc_conn).map(|m| m.expander.with(permission_service));
+        &self.ds.expander.with(permission_service);
     }
 }

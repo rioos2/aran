@@ -32,21 +32,21 @@ pub const LISTENERS: [&'static str; 2] = ["assemblyfactorys", "assemblys"];
 #[derive(Clone)]
 pub struct MyInner {
     v: Vec<(u32, String, Arc<Mutex<mpsc::Sender<Bytes>>>)>,
-    datastore: Arc<DataStoreConn>,
+    datastore: Box<DataStoreConn>,
     prom: Box<PrometheusClient>,
     securer: Box<SecurerConn>,
 }
 
 #[derive(Clone)]
 pub struct WatchHandler {
-    pub datastore: Arc<DataStoreConn>,
+    pub datastore: Box<DataStoreConn>,
     inner: Arc<Mutex<MyInner>>,
     outer: MyInner,
     prom: Box<PrometheusClient>,
 }
 
 impl WatchHandler {
-    pub fn new(datastore: Arc<DataStoreConn>, prom: Box<PrometheusClient>, securer: Box<SecurerConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>, securer: Box<SecurerConn>) -> Self {
         let vec = Vec::<(u32, String, Arc<Mutex<mpsc::Sender<Bytes>>>)>::new();
         let ds = &datastore;
         let inner = MyInner {

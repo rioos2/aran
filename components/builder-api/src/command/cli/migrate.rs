@@ -12,7 +12,7 @@ pub fn start(ui: &mut UI) -> Result<()> {
     let _arc_conn = Arc::new(ds);
 
     system_secret::SystemSecret::new(_arc_conn.clone()).setup()?;
-    marketplace_differ::MarketPlaceDiffer::new(_arc_conn.clone())
+    marketplace_differ::MarketPlaceDiffer::new(_arc_conn)
         .setup()?;
     ui.heading("Rio/OS Migration Complete")?;
     Ok(())

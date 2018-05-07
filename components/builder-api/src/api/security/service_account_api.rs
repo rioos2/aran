@@ -37,11 +37,11 @@ const SERVICEACCOUNTDEFAULT: &'static str = "rioos:universalsoldier";
 /// GET: /secrets,
 #[derive(Clone)]
 pub struct SeriveAccountApi {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 impl SeriveAccountApi {
-    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>) -> Self {
         SeriveAccountApi { conn: datastore }
     }
 

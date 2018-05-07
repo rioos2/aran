@@ -41,7 +41,7 @@ impl Roles {
     pub fn per_type(permission: Option<Vec<Permissions>>) -> Result<TrustedAccessList> {
         match permission {
             Some(perm) => Ok(perm.iter().map(|x| x.clone().into()).collect::<Vec<_>>()),
-            None => Err(Error::PermissionError(format!("No Recored Found"))),
+            None => Err(Error::PermissionError(format!("Record Not Found"))),
         }
     }
 }

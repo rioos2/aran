@@ -36,7 +36,7 @@ use protocol::api::base::IdGet;
 
 #[derive(Clone)]
 pub struct PlanFactory {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 /// PlanFactory Api:  provides ability to manage prebuilt custom blueprint suites.
@@ -49,7 +49,7 @@ pub struct PlanFactory {
 /// GET: /planfactory/:id
 /// GET: storagepools PUT: storagepools/status_update
 impl PlanFactory {
-    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>) -> Self {
         PlanFactory { conn: datastore }
     }
 

@@ -21,14 +21,14 @@ use db::data_store::DataStoreConn;
 
 #[derive(Clone)]
 pub struct Containers {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
     config: Arc<Config>,
 }
 
 /// URL:
 /// GET: /account/:account_id/assemblys/:id/exec
 impl Containers {
-    pub fn new(datastore: Arc<DataStoreConn>, config: Arc<Config>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>, config: Arc<Config>) -> Self {
         Containers {
             conn: datastore,
             config: config,
@@ -99,13 +99,9 @@ impl Containers {
 }
 
 impl Api for Containers {
-<<<<<<< HEAD
-    fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
-=======
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
 
->>>>>>> origin/2-0-stable
         let _self = self.clone();
         let get_url = move |req: &mut Request| -> AranResult<Response> { _self.get(req) };
 
