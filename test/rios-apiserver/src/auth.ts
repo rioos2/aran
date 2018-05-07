@@ -17,7 +17,9 @@ describe('User authenticate API', function() {
       .end(function(err, res) {
         globalAny.account_id =res.body.id;
         globalAny.email = res.body.email;
-        globalAny.bobo_bearer = "Bearer " + res.body.token;
+        globalAny.token = res.body.token;
+        globalAny.bobo_bearer = "Bearer " + globalAny.token;
+        expect(res.body.roles[0]).to.equal("rioos:superuser");
         expect(res.body.type_meta.kind).to.equal(globalAny.account);
         expect(res.body.type_meta.api_version).to.equal(globalAny.version);
         expect(res.body.object_meta.name).to.equal(globalAny.email);
