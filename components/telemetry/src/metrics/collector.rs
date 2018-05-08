@@ -125,6 +125,25 @@ impl<'a> Collector<'a> {
         Ok(content_datas)
     }
 
+    pub fn disk_metric(&self) -> Result<Vec<PromResponse>> {
+        let mut content_datas = vec![];
+
+        let disk_query = Functions::Network(AvgInfo {
+            operator: Operators::Network(SumInfo {
+                labels: self.scope.labels.clone(),
+                metric: self.scope.metric_names.clone(),
+                total: self.scope.last_x_minutes.clone(),
+            }),
+        });
+
+        let content = self.client.pull_metrics(&format!("{}", disk_query))?;
+
+        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
+
+        content_datas.push(response);
+
+        Ok(content_datas)
+    }
 
     pub fn process_metric(&self) -> Result<Vec<PromResponse>> {
         let mut content_datas = vec![];
