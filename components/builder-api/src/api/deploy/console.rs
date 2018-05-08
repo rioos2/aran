@@ -89,7 +89,6 @@ impl Containers {
                         ))
                     }
                     Err(err) => {
-                        println!("{:?}", err);
                         Err(internal_error(&format!("{}", err)))
                     }
                 }
