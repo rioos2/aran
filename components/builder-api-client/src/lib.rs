@@ -30,7 +30,7 @@ use rioos_http::api_client::err_from_response;
 
 use http_gateway::http::rendering::ResponseList;
 
-use protocol::api::{blueprint, deploy, job, network, node, origin, scale, secret, session, storage};
+use protocol::api::{blueprint, deploy, job, network, node, origin, scale, secret, session, storage, devtool};
 use protocol::api::base::{hours_ago, MetaFields};
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
@@ -96,10 +96,15 @@ impl Client {
         Ok(data)
     }
 
-    pub fn logout(&self, token: &str) -> Result<(String)> {
+    pub fn logout(&self, token: &str, email: &str) -> Result<()> {
+        let body = json!({
+            "email": format!("{}", email),
+            "token": format!("{}", token)
+        });
         let res = self.0
-            .get(&format!("logout/{}", token))
-            .header(UserAgent::new(USER_AGENT.to_string()))
+            .post(&format!("logout"))
+            .body(Body::from(serde_json::to_string(&body)?))
+            .headers(self.add_authz(token, email))
             .send()
             .map_err(Error::ReqwestError)?;
 
@@ -107,7 +112,7 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
 
-        Ok("".to_string())
+        Ok(())
     }
 
     pub fn deploy_digicloud(&self, assembly_fac: deploy::AssemblyFactory, token: &str, email: &str) -> Result<deploy::AssemblyFactory> {
@@ -212,6 +217,22 @@ impl Client {
 
         Ok(())
     }
+
+    pub fn create_build_config(&self, build_config: devtool::BuildConfig, token: &str, email: &str) -> Result<()> {
+        let res = self.0
+            .post(&format!("buildconfigs"))
+            .body(Body::from(serde_json::to_string(&build_config)?))
+            .headers(self.add_authz(token, email))
+            .send()
+            .map_err(Error::ReqwestError)?;
+
+        if res.status() != StatusCode::Ok {
+            return Err(Error::RioHttpClient(err_from_response(res)));
+        };
+
+        Ok(())
+    }
+
 
     pub fn list_secret(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0

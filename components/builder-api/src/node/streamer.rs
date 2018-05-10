@@ -62,7 +62,7 @@ impl Streamer {
         match ods {
             Some(ds) => {
                 let mut watchhandler = WatchHandler::new(
-                    Arc::new(ds),
+                    Box::new(ds),
                     Box::new(PrometheusClient::new(&*self.config.clone())),
                     Box::new(SecurerConn::new(&*self.config.clone())),
                 );

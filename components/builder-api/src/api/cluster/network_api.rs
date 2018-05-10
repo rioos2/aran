@@ -34,7 +34,7 @@ use protocol::api::base::IdGet;
 
 #[derive(Clone)]
 pub struct NetworkApi {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 /// Network api: NetworkApi provides ability to declare the network
@@ -45,7 +45,7 @@ pub struct NetworkApi {
 /// POST: /network,
 /// GET: /networks
 impl NetworkApi {
-    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>) -> Self {
         NetworkApi { conn: datastore }
     }
 

@@ -195,13 +195,16 @@ fn get_statistics(client: &PrometheusClient, cpu_nodes_collected: Vec<node::Prom
         .map(|x| { node_statistics = x.into(); })
         .collect::<Vec<_>>();
 
-    Ok(append_process(
-        append_network_speed(
-            node_statistics,
-            collect_network(client)?,
+    Ok(append_disk(append_process(
+            append_network_speed(
+                node_statistics,
+                collect_network(client)?,
+                )?,
+            collect_process(client)?,
         )?,
-        collect_process(client)?,
-    )?)
+        collect_disk_io(client)?
+        )?
+    )
 }
 
 fn get_os_statistics(client: &PrometheusClient) -> Result<(Vec<Vec<node::Item>>, Vec<node::Counters>)> {
@@ -284,6 +287,22 @@ fn collect_network(client: &PrometheusClient) -> Result<Vec<node::PromResponse>>
     Ok(Collector::new(client, network_scope).network_metric()?)
 }
 
+fn collect_disk_io(client: &PrometheusClient) -> Result<Vec<node::PromResponse>> {
+    //collect the disk_metric for node
+    let disk_scope = collect_scope(
+        vec![
+            "node_disk_mega_bytes_read".to_string(),
+            "node_disk_mega_bytes_written".to_string(),
+            "node_disk_io_now".to_string(),
+            "node_disk_mega_bytes_io_total".to_string(),
+        ],
+        vec![],
+        "",
+        "",
+    );
+    Ok(Collector::new(client, disk_scope).disk_metric()?)
+}
+
 fn collect_process(client: &PrometheusClient) -> Result<Vec<node::PromResponse>> {
     //collect the process_metric for node
     let process_scope = collect_scope(
@@ -351,7 +370,8 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
             let mut b = Vec::new();
             network
                 .into_iter()
-                .map(|y| if x == y.metric.get("device").unwrap() {
+                .map(|y|
+                    if x == y.metric.get("device").unwrap() {
                     if y.metric.get("__name__").unwrap() == "node_network_receive_bytes_total" || y.metric.get("__name__").unwrap() == "node_network_transmit_bytes_total" {
                         a.push(y.clone())
                     } else {
@@ -365,7 +385,6 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
             net
         })
         .collect::<Vec<_>>();
-
     data.iter()
         .map(|x| {
             let mut group = node::NetworkSpeed::new();
@@ -444,6 +463,59 @@ fn append_process(nodes: Vec<node::NodeStatistic>, mut process: Vec<node::PromRe
             .collect::<Vec<_>>(),
     )
 }
+
+fn append_disk(nodes: Vec<node::NodeStatistic>, mut disk: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
+
+    Ok(
+        nodes
+            .into_iter()
+            .map(|mut x| if let node::Data::Vector(ref mut instancevec) =
+                disk[0].clone().data
+            {
+                let mut net_collection = Vec::new();
+                instancevec
+                    .iter()
+                    .map(|y| if x.get_name() ==
+                        y.metric.get("instance").unwrap().to_string()
+                    {
+                        net_collection.push(y.clone())
+                    })
+                    .collect::<Vec<_>>();
+                x.set_disk(group_disk(&net_collection));
+                x
+            }else {
+                return x;
+            })
+            .collect::<Vec<_>>(),
+    )
+}
+fn group_disk(disk: &Vec<node::InstantVecItem>) -> Vec<BTreeMap<String, String>> {
+
+    let merged = disk
+        .iter()
+        .flat_map(|s| s.metric.get("device"))
+        .collect::<Vec<_>>()
+        .into_iter()
+        .unique()
+        .collect::<Vec<_>>();
+
+        merged
+            .into_iter()
+            .map(|x| {
+                let mut disk_metric = BTreeMap::new();
+                disk_metric.insert("name".to_string(),x.to_string());
+                disk
+                    .into_iter()
+                    .map(|y| if x == y.metric.get("device").unwrap() {
+                        disk_metric.insert(y.metric.get("__name__").unwrap_or(&"".to_string()).to_string(),y.value.clone().1);
+
+                    }).collect::<Vec<_>>();
+                disk_metric
+            })
+            .collect::<_>()
+
+}
+
 
 
 fn group_process(process: &Vec<node::InstantVecItem>) -> Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>> {

@@ -1,0 +1,64 @@
+# ================================================================
+# Deploy Information
+# ================================================================
+---
+assembly_factory:
+  object_meta:
+    name: king.megam.io
+    account: '976649707684110336'
+    cluster_name: newyork
+    labels:
+      rioos_category: 'container'
+  replicas: 1
+  resources:
+    compute_type: cpu
+    storage_type: hdd
+    cpu: '1'
+    memory: 1 GiB
+    storage: 3 GiB
+    private_ipv4: 'true'
+  secret:
+    id: '922303941599854592'
+  plan: '976649514033102848'
+
+# ================================================================
+# BuildConfig Information 
+# ================================================================
+
+buildconfig:
+  object_meta:
+    name: ruby-sample-build
+    account: '976649707684110336'
+    cluster_name: newyork
+  spec:
+    run_policy: Serial
+    build_trigger_policys:
+    - trigger_type: gittrigger
+      webhook:
+        hook_type: GitHub
+        secret: '922303941599854592'
+    source:
+      source:
+      images:
+      - from:
+          kind: 'DockerImage'
+          name: 'rust-docker-image'
+      git:
+        uri: https://github.com/openshift/ruby-hello-world
+        reference: master
+      source_secret: '922303941599854592'
+    strategy:
+      build_type: Source
+      source_strategy:
+        from:
+          kind: ImageMarks
+          name: builder-image:latest
+        scripts: rake build
+    output:
+      to:
+        kind: ImageMarks
+        name: mydev-ruby-sample:latest
+    post_commit:
+      script: bundle exec rake test
+  status:
+    phase: pending

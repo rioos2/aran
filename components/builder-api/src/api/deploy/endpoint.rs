@@ -30,7 +30,7 @@ use protocol::api::base::IdGet;
 
 #[derive(Clone)]
 pub struct EndpointApi {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 /// Endpoint api: EndpointsApi manages Endpoints of an Assembly.
@@ -42,7 +42,7 @@ pub struct EndpointApi {
 /// GET: /endpoint/assembly/:id
 /// GET: /endpoint
 impl EndpointApi {
-    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>) -> Self {
         EndpointApi { conn: datastore }
     }
 

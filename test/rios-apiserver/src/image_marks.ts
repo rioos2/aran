@@ -185,5 +185,26 @@ describe('Image Marks  API', function() {
         });
     });
 
+    it('logout', function(done) {
+      request.post('/logout')
+      .ca(globalAny.rootCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"email": globalAny.email, "token":globalAny.token})
+      .expect(200)
+      .end(function(err, res) {
+          done(err);
+        });
+    });
 
+    it('returns list of the imagemarks by  wrong build id', function(done) {
+      request.get('/imagemarks/builds/92142250042240')
+      .ca(globalAny.rootCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .expect(401)
+        .end(function(err, res) {
+          done(err);
+        });
+    });
   });

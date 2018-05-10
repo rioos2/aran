@@ -24,11 +24,11 @@ use db::data_store::DataStoreConn;
 /// GET: /passticket,
 #[derive(Clone)]
 pub struct PassTicketApi {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 impl PassTicketApi {
-    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>) -> Self {
         PassTicketApi { conn: datastore }
     }
     //Get: /passtickets

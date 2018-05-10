@@ -36,7 +36,7 @@ use bytes::Bytes;
 
 #[derive(Clone)]
 pub struct AssemblyApi {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
     prom: Box<PrometheusClient>,
 }
 
@@ -51,7 +51,7 @@ pub struct AssemblyApi {
 /// PUT: /assemblys/status_update
 /// GET: /assemblys  --> list all assemblys.
 impl AssemblyApi {
-    pub fn new(datastore: Arc<DataStoreConn>, promconn: Box<PrometheusClient>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>, promconn: Box<PrometheusClient>) -> Self {
         AssemblyApi {
             conn: datastore,
             prom: promconn,
@@ -366,71 +366,57 @@ impl ExpanderSender for AssemblyApi {
             }),
         ));
 
-        let _conn1 = self.conn.clone();
+        let mut _conn = self.conn.clone();
+        _conn.expander.with(plan_service);
         let factory_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_FACTORY.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 debug!("» Assemblyfactory live load for ≈ {}", id);
-                assemblyfactory::DataStore::new(&_conn1)
+                assemblyfactory::DataStore::new(&_conn)
                     .show(&id)
                     .ok()
                     .and_then(|f| serde_json::to_string(&f).ok())
             }),
         ));
 
-        let _conn2 = self.conn.clone();
+        let _conn = self.conn.clone();
         let endpoint_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_ENDPOINT.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 debug!("» Endpoint live load for ≈ {}", id);
-                endpoint::DataStore::show_by_assembly(&_conn2, &id)
+                endpoint::DataStore::show_by_assembly(&_conn, &id)
                     .ok()
                     .and_then(|e| serde_json::to_string(&e).ok())
             }),
         ));
 
-        let _conn3 = self.conn.clone();
+        let _conn = self.conn.clone();
         let volume_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_VOLUME.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 debug!("» Volume live load for ≈ {}", id);
-                volume::DataStore::show_by_assembly(&_conn3, &id)
+                volume::DataStore::show_by_assembly(&_conn, &id)
                     .ok()
                     .and_then(|v| serde_json::to_string(&v).ok())
             }),
         ));
 
         let _prom = self.prom.clone();
-        let _conn4 = self.conn.clone();
+        let _conn = self.conn.clone();
         let metric_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_METRIC.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                assembly::DataStore::new(&_conn4)
+                assembly::DataStore::new(&_conn)
                     .show_metrics(&id, &_prom)
                     .ok()
                     .and_then(|m| serde_json::to_string(&m).ok())
             }),
         ));
 
-        let ref mut _arc_conn = self.conn.clone();
-        /* 
-        TO-DO: If the below get_mut doesn't work, then we'll use make_mut.
-        Arc::make_mut does a inner clone of  ds resulting in new pool connections.
-        
-        let ref mut ex = &mut Arc::make_mut(_arc_conn).expander;
-        (&mut **ex).with(plan_service);
-        (&mut **ex).with(factory_service);
-        (&mut **ex).with(endpoint_service);
-        (&mut **ex).with(volume_service);
-        (&mut **ex).with(metric_service);
-        */
-        &mut Arc::get_mut(_arc_conn).map(|m| {
-            m.expander.with(plan_service);
-            m.expander.with(factory_service);
-            m.expander.with(endpoint_service);
-            m.expander.with(volume_service);
-            m.expander.with(metric_service);
-        });
+        &self.conn.expander.with(factory_service);
+        &self.conn.expander.with(endpoint_service);
+        &self.conn.expander.with(volume_service);
+        &self.conn.expander.with(metric_service);
     }
 }
 

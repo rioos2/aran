@@ -36,7 +36,7 @@ use bytes::Bytes;
 
 #[derive(Clone)]
 pub struct AssemblyFactoryApi {
-    conn: Arc<DataStoreConn>,
+    conn: Box<DataStoreConn>,
 }
 
 /// AssemblyFactory API:
@@ -49,7 +49,7 @@ pub struct AssemblyFactoryApi {
 /// GET: /assemblyfactorys  --> list all assemblyfactorys.
 /// PUT: /assemblyfactorys/status_update
 impl AssemblyFactoryApi {
-    pub fn new(datastore: Arc<DataStoreConn>) -> Self {
+    pub fn new(datastore: Box<DataStoreConn>) -> Self {
         AssemblyFactoryApi { conn: datastore }
     }
 
@@ -295,30 +295,19 @@ impl ExpanderSender for AssemblyFactoryApi {
             }),
         ));
 
-        let _conn1 = self.conn.clone();
+        let _conn = self.conn.clone();
 
         let services_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_SERVICE.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                service::DataStore::list_by_assembly_factory(&_conn1, &id)
+                service::DataStore::list_by_assembly_factory(&_conn, &id)
                     .ok()
                     .and_then(|v| serde_json::to_string(&v).ok())
             }),
         ));
 
-        let ref mut _arc_conn = self.conn.clone();
-        /* 
-        TO-DO: If the below get_mut doesn't work, then we'll use make_mut.
-        Arc::make_mut does a inner clone of  ds resulting in new pool connections.
-       
-        let ref mut ex = &mut Arc::make_mut(_arc_conn).expander;
-        (&mut **ex).with(plan_service);
-        (&mut **ex).with(services_service);
-        */
-        &mut Arc::get_mut(_arc_conn).map(|m| {
-            m.expander.with(plan_service);
-            m.expander.with(services_service);            
-        });
+        &self.conn.expander.with(plan_service);
+        &self.conn.expander.with(services_service);
     }
 }
 

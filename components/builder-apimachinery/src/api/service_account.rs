@@ -2,80 +2,7 @@
 use api::base::{TypeMeta, ObjectMeta, MetaFields};
 use super::session::Session;
 use std::collections::BTreeMap;
-
-// ObjectReference contains enough information to let you inspect or modify the referred object.
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct ObjectReference {
-    kind: String,
-    origin: String,
-    name: String,
-    uid: String,
-    api_version: String,
-    resource_version: String,
-    field_path: String,
-}
-
-impl ObjectReference {
-    pub fn new() -> ObjectReference {
-        ::std::default::Default::default()
-    }
-
-    pub fn set_kind(&mut self, v: ::std::string::String) {
-        self.kind = v;
-    }
-
-    pub fn get_kind(&self) -> ::std::string::String {
-        self.kind.clone()
-    }
-
-    pub fn set_origin(&mut self, v: ::std::string::String) {
-        self.origin = v;
-    }
-
-    pub fn get_origin(&self) -> ::std::string::String {
-        self.origin.clone()
-    }
-
-    pub fn set_api_version(&mut self, v: ::std::string::String) {
-        self.api_version = v;
-    }
-
-    pub fn get_api_version(&self) -> ::std::string::String {
-        self.api_version.clone()
-    }
-
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-
-    pub fn get_name(&self) -> ::std::string::String {
-        self.name.clone()
-    }
-
-    pub fn set_uid(&mut self, v: ::std::string::String) {
-        self.uid = v;
-    }
-
-    pub fn get_uid(&self) -> ::std::string::String {
-        self.uid.clone()
-    }
-
-    pub fn set_resource_version(&mut self, v: ::std::string::String) {
-        self.resource_version = v;
-    }
-
-    pub fn get_resource_version(&self) -> ::std::string::String {
-        self.resource_version.clone()
-    }
-
-    pub fn set_field_path(&mut self, v: ::std::string::String) {
-        self.field_path = v;
-    }
-
-    pub fn get_field_path(&self) -> ::std::string::String {
-        self.field_path.clone()
-    }
-}
+use api::audit::ObjectReference;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ServiceAccount {
@@ -189,13 +116,7 @@ mod test {
                 "origin":"rioos_system"},
             "secrets":[
             {
-                "kind":"",
-                "origin":"",
-                "name":"",
-                "uid":"",
-                "api_version":"",
-                "resource_version":"",
-                "field_path":""
+                "name":"controller-shared-informers-token-6b6qh"
             }]
         }"#;
         let serv_acc: ServiceAccount = json_decode(val).unwrap();
