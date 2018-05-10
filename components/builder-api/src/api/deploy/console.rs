@@ -45,11 +45,9 @@ impl Containers {
         let id_get = IdGet::with_id(asm_id.to_string());
         match assembly::DataStore::new(&self.conn).show(&id_get) {
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                asm_id
-            ))),
+            Ok(None) => Err(not_found_error(
+                &format!("{} for {}", Error::Db(RecordsNotFound), asm_id),
+            )),
             Ok(Some(assembly)) => {
                 if !assembly.get_metadata().contains_key("rioos_sh_vnc_host") || !assembly.get_metadata().contains_key("rioos_sh_vnc_port") {
                     return Err(not_found_error(&format!(
@@ -58,14 +56,12 @@ impl Containers {
                     )));
                 }
                 let vnc = &"".to_string();
-                let host = assembly
-                    .get_metadata()
-                    .get("rioos_sh_vnc_host")
-                    .unwrap_or(vnc);
-                let port = assembly
-                    .get_metadata()
-                    .get("rioos_sh_vnc_port")
-                    .unwrap_or(vnc);
+                let host = assembly.get_metadata().get("rioos_sh_vnc_host").unwrap_or(
+                    vnc,
+                );
+                let port = assembly.get_metadata().get("rioos_sh_vnc_port").unwrap_or(
+                    vnc,
+                );
                 let url = format!(
                     "http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1&stdout=1&stdin=1&stderr=1",
                     host,
@@ -88,9 +84,7 @@ impl Containers {
                             },
                         ))
                     }
-                    Err(err) => {
-                        Err(internal_error(&format!("{}", err)))
-                    }
+                    Err(err) => Err(internal_error(&format!("{}", err))),
                 }
             }
         }
@@ -106,8 +100,7 @@ impl Api for Containers {
 
         router.get(
             "/accounts/:account_id/assemblys/:id/exec",
-            XHandler::new(C { inner: get_url })
-            .before(basic.clone()),
+            XHandler::new(C { inner: get_url }).before(basic.clone()),
             "get_console_url",
         );
     }
