@@ -165,23 +165,44 @@ impl<'a> DataStore<'a> {
 
     //Get the metrics as a map of assembly_id and its metric
     pub fn show_metrics(&self, id: &IdGet, prom: &PrometheusClient) -> Result<BTreeMap<String, String>> {
-        // code will be changed
-        let label_collection = vec![
-            format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string(),
-            node::ASSEMBLY_JOBS.to_string(),
-            node::IDLEMODE.to_string(),
-        ];
-        let nodes_metric_scope: Vec<String> = vec!["node_cpu".to_string()];
+        match &id.get_name()[..] {
+            "machine" => {
+                let label_collection = vec![
+                    format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string(),
+                    node::ASSEMBLY_JOBS.to_string(),
+                    node::IDLEMODE.to_string(),
+                ];
+                let nodes_metric_scope: Vec<String> = vec!["node_cpu".to_string()];
 
-        let scope = CollectorScope {
-            metric_names: nodes_metric_scope,
-            labels: label_collection,
-            last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
-            avg_by_name: "rioos_assembly_id".to_string(),
-        };
-        Ok(Collector::new(prom, scope).metric_by_avg_for_machines()?)
+                let scope = CollectorScope {
+                    metric_names: nodes_metric_scope,
+                    labels: label_collection,
+                    last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
+                    avg_by_name: "rioos_assembly_id".to_string(),
+                };
+                Ok(Collector::new(prom, scope).metric_by_avg_for_machines()?)
+            }
+            "container" => {
+                let label_collection: Vec<String> = vec![
+                    format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string(),
+                ];
+
+                let container_metric_scope: Vec<String> = vec!["container_cpu_usage_seconds_total".to_string()];
+
+                let scope = CollectorScope {
+                    metric_names: container_metric_scope,
+                    labels: label_collection,
+                    last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
+                    avg_by_name: "rioos_assembly_id".to_string(),
+                };
+                Ok(Collector::new(prom, scope).metric_by_avg_for_containers(
+                    "cpu",
+                )?)
+            }
+            _ => Ok(BTreeMap::new()),
+        }
+
     }
-
     /// Expands the assembly by sticking in Spec
     ///         1. AssemblyFactory (parent information)
     ///         2. endpoints for this assembly.

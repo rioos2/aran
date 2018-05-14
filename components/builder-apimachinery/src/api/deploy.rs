@@ -336,7 +336,16 @@ impl VolumeFeeder for Assembly {
 
 impl MetricFeeder for Assembly {
     fn mget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(self.get_id(), "_metricsingle".to_string())
+        IdGet::with_id_name(
+            self.get_id(),
+            self.get_spec()
+                .get_parent()
+                .unwrap()
+                .get_spec()
+                .get_plan()
+                .unwrap()
+                .get_category(),
+        )
     }
 
     fn mfeed(&mut self, m: Option<BTreeMap<String, String>>) {
