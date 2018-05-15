@@ -10,6 +10,7 @@ extern crate rioos_builder_jobsrv as job;
 extern crate rioos_telemetry as telemetry;
 extern crate postgres;
 extern crate serde_json;
+extern crate human_size;
 
 pub mod error;
 pub mod models;

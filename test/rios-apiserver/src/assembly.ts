@@ -56,26 +56,6 @@ describe('Deployment API', function() {
     });
 
 
-    it('returns the assembly_update by id', function(done) {
-      this.timeout(4000)
-      request.put('/assemblys/'+globalAny.assembly_id+'/status')
-      .ca(globalAny.rootCA)
-        .set('Authorization', globalAny.bobo_bearer)
-        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta": {"name":"levi.megam.io","account":"87654323456","labels":{"rioos_environment":"development","rioos_category":"machine"},
-              "annotations":{"rioos/karthika.calvincare.org/apply":"OnHeadBald","rioos/ruchi.calvincare.org/pickup":"OnHungry"},"owner_references":[],
-              "created_at":"2017-11-20T06:49:06.907347+00:00","deleted_at":"2017-11-20T06:49:06.907347+00:00","deletion_grace_period_seconds":30,
-              "finalizers":["orphan"],"cluster_name":"dc1_torono"},"selector": ["876543456787654"],"status": {"phase": "pending","message": "",
-              "reason": "","conditions": [{"message": "nodelet has sufficient disk space available","reason": "NodeletHasSufficientDisk","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk",
-              "last_update_time": "2017-09-21T06:35:16Z"}]},"metadata": {"io:rioos:scheduled::node":"765434567"}})
-        .expect(200)
-        .end(function(err, res) {
-         expect(res.body);
-         expect(res.body.id).to.equal(globalAny.assembly_id);
-          done(err);
-        });
-    });
-
     it('returns the bad request error for empty phase field', function(done) {
       request.put('/assemblys/'+globalAny.assembly_id+'/status')
       .ca(globalAny.rootCA)

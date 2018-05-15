@@ -9,7 +9,7 @@ use api_client::Client;
 
 use protocol::api::schema::type_meta_url;
 use protocol::api::base::MetaFields;
-use protocol::api::{deploy, scale};
+use protocol::api::{deploy, scale,devtool};
 
 use rioos_core::fs::open_from;
 
@@ -72,6 +72,30 @@ pub fn start(ui: &mut UI, rio_client: Client, cache_path: &str, token: &str, ema
         )?;
     }
 
+    if let Some(i) = content.buildconfig {
+        let mut build_config: devtool::BuildConfig = i;
+        let ref mut object_data = build_config.mut_meta(
+            build_config.object_meta(),
+            build_config.object_meta().name,
+            build_config.object_meta().account,
+        );
+
+        build_config.set_owner_reference(
+            object_data,
+            assembly_fac.type_meta().kind,
+            assembly_fac.type_meta().api_version,
+            assembly_fac.object_meta().name,
+            assembly_fac.get_id(),
+        );
+        build_config.set_meta(type_meta_url("".to_string()), object_data.clone());
+
+        rio_client.create_build_config(
+            build_config.clone(),
+            token,
+            email,
+        )?;
+    }
+
 
     ui.end("Your digitalcloud is ready")?;
     ui.br()?;
@@ -87,4 +111,5 @@ struct DeployData {
     assembly_factory: deploy::AssemblyFactory,
     horizontal_scaling: Option<scale::HorizontalScaling>,
     vertical_scaling: Option<scale::VerticalScaling>,
+    buildconfig: Option<devtool::BuildConfig>,
 }

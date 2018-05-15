@@ -413,6 +413,7 @@ pub struct NodeStatistic {
     health: String,
     network: Vec<NetworkSpeed>,
     process: Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>>,
+    disk: Vec<BTreeMap<String, String>>,
 }
 impl NodeStatistic {
     pub fn new() -> NodeStatistic {
@@ -463,6 +464,10 @@ impl NodeStatistic {
 
     pub fn set_process(&mut self, v: Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>>) {
         self.process = v;
+    }
+
+    pub fn set_disk(&mut self, v: Vec<BTreeMap<String, String>>) {
+        self.disk = v;
     }
 }
 
