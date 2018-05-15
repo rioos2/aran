@@ -1,14 +1,14 @@
 [profile.debug]
 incremental = true
-codegen-units = 4
+codegen-units = 16
 
 [profile.release]
 opt-level = 3
-debug = true
+debug = false
 rpath = false
-lto = false
+lto = true
 debug-assertions = false
-codegen-units = 1
+codegen-units = 16
 
 [workspace]
 members = [

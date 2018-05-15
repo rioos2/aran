@@ -4,12 +4,12 @@
 ---
 assembly_factory:
   object_meta:
-    name: king.megam.io
-    account: '923614490522558464'
+    name: pongo.megam.io
+    account: '976712288302014464'
     cluster_name: newyork
     labels:
       rioos_category: machine #for container "rioos_category: container"
-  replicas: 2
+  replicas: 1
   resources:
     compute_type: cpu
     storage_type: hdd
@@ -18,8 +18,8 @@ assembly_factory:
     storage: 3 GiB
     private_ipv4: 'true'
   secret:
-    id: '922303941599854592'
-  plan: '926517208534753280'
+    id: '982409383835140096'
+  plan: '976712076380839936'
 # ================================================================
 # Horizontal scaling Information
 # ================================================================
@@ -27,8 +27,8 @@ horizontal_scaling:
   scale_type: AUTOHS
   state: ABLETOSCALE
   spec:
-    min_replicas: 2
-    max_replicas: 3
+    min_replicas: 1
+    max_replicas: 4
     scale_up_wait_time: 5
     scale_down_wait_time: 5
     metrics:
@@ -52,5 +52,5 @@ horizontal_scaling:
     desired_replicas: 3
   object_meta:
     name: hscale
-    account: '933004880560267264'
+    account: '976712288302014464'
     cluster_name: 'newyork'
