@@ -3,6 +3,7 @@
 use protocol::api::schema::type_meta_url;
 use protocol::api::{deploy, node, job, scale};
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
+use human_size::Size;
 
 use job::{JobOutput, job_ds, error};
 
@@ -104,19 +105,21 @@ impl<'a> ReplicasExpander<'a> {
                 .get_status()
                 .get_current_resource()
                 .get("cpu")
-                .unwrap_or(&"".to_string())
+                .unwrap_or(&"0".to_string())
                 .to_string(),
         )
     }
 
-    fn current_ram(&self) -> Option<String> {
+    fn current_ram(&self) -> Option<f64> {
         Some(
             self.scaling_policy
                 .get_status()
                 .get_current_resource()
                 .get("ram")
-                .unwrap_or(&"".to_string())
-                .to_string(),
+                .unwrap_or(&"0 KiB".to_string())
+                .parse::<Size>()
+                .unwrap()
+                .into_bytes(),
         )
     }
 
@@ -126,19 +129,21 @@ impl<'a> ReplicasExpander<'a> {
                 .get_status()
                 .get_desired_resource()
                 .get("cpu")
-                .unwrap_or(&"".to_string())
+                .unwrap_or(&"0".to_string())
                 .to_string(),
         )
     }
 
-    fn desired_ram(&self) -> Option<String> {
+    fn desired_ram(&self) -> Option<f64> {
         Some(
             self.scaling_policy
                 .get_status()
                 .get_desired_resource()
                 .get("ram")
-                .unwrap_or(&"".to_string())
-                .to_string(),
+                .unwrap_or(&"0 KiB".to_string())
+                .parse::<Size>()
+                .unwrap()
+                .into_bytes(),
         )
     }
 
