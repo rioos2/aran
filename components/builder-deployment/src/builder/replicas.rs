@@ -1,16 +1,16 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use error::{Result, Error};
+use error::{Error, Result};
 
-use protocol::api::schema::type_meta_url;
-use protocol::api::deploy::{Assembly, AssemblyFactory, NEW_REPLICA_INITALIZING_MSG, NEW_STAND_STILL_MSG, PHASE_PENDING, PHASE_STAND_STILL};
 use protocol::api::base::Status;
-use protocol::api::base::{MetaFields, ChildTypeMeta}; //To access object_meta() and children() in AssemblyFactory, Assembly
+use protocol::api::base::{ChildTypeMeta, MetaFields};
+use protocol::api::deploy::{Assembly, AssemblyFactory, NEW_REPLICA_INITALIZING_MSG, NEW_STAND_STILL_MSG, PHASE_PENDING, PHASE_STAND_STILL};
+use protocol::api::schema::type_meta_url; //To access object_meta() and children() in AssemblyFactory, Assembly
 
 use models::{assembly, assemblyfactory};
 
-use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
 
 use super::super::APPLICABLE_TO_STAND_STILL;
 
@@ -86,11 +86,7 @@ impl<'a> Replicas<'a> {
         let mut context = ReplicaContext::new(&self.response, self.current(), self.desired());
         context.calculate(id);
 
-        context
-            .deploys
-            .iter()
-            .map(|k| assembly::DataStore::new(&self.conn).create(&k))
-            .collect::<Vec<_>>()
+        context.deploys.iter().map(|k| assembly::DataStore::new(&self.conn).create(&k)).collect::<Vec<_>>()
 
         /*TO-DO: we need this code.
         This code removes the assemblys
@@ -131,7 +127,7 @@ impl<'a> ReplicaContext<'a> {
             current: current_replicas,
             desired: desired_replicas,
             parent: &*response,
-            namer: ReplicaNamer::new(&base_name, response.get_replicas()),
+            namer: ReplicaNamer::new(&base_name, desired_replicas),
             deploys: vec![],
             nukes: vec![],
         }
@@ -144,22 +140,11 @@ impl<'a> ReplicaContext<'a> {
     //  set the phase as "StandStill"  for `blockchain_template`
     fn calculate(&mut self, id: &str) {
         for x in self.current..self.desired {
-            let phase_msg_tuple = Self::initialize_phase_for(self.parent.get_spec().get_plan().map_or("".to_string(), |p| {
-                        p.get_category()
-                    }));
+            let phase_msg_tuple = Self::initialize_phase_for(self.parent.get_spec().get_plan().map_or("".to_string(), |p| p.get_category()));
 
             let mut assembly = self.build_assembly(&x, id);
-                        
-            assembly.set_status(Status::with_conditions(
-                &phase_msg_tuple.0,
-                &format!(
-                    "{} {}",
-                    &phase_msg_tuple.1,
-                    self.namer.next(x + 1)
-                ),
-                "",
-                vec![],
-            ));
+
+            assembly.set_status(Status::with_conditions(&phase_msg_tuple.0, &format!("{} {}", &phase_msg_tuple.1, self.namer.next(x + 1)), "", vec![]));
 
             self.add_for_deployment(assembly);
         }
@@ -174,27 +159,16 @@ impl<'a> ReplicaContext<'a> {
     ///and its type meta from the parent)
     fn build_assembly(&mut self, x: &u32, id: &str) -> Assembly {
         let mut assembly = Assembly::new();
-        let ref mut om = assembly.mut_meta(
-            assembly.object_meta(),
-            self.namer.next(x + 1),
-            self.parent.get_account(),
-        );
+        let ref mut om = assembly.mut_meta(assembly.object_meta(), self.namer.next(x + 1), self.parent.get_account());
         //set the parents datacenter/location or clustername
         assembly.set_cluster_name(om, self.parent.get_cluster_name());
 
         //send the parents typemeta.
-        assembly.set_owner_reference(
-            om,
-            self.parent.type_meta().kind,
-            self.parent.type_meta().api_version,
-            self.parent.object_meta().name,
-            id.to_string(),
-        );
+        assembly.set_owner_reference(om, self.parent.type_meta().kind, self.parent.type_meta().api_version, self.parent.object_meta().name, id.to_string());
         assembly.set_meta(type_meta_url(self.parent.children()), om.clone());
         assembly
     }
 
-   
     fn add_for_deployment(&mut self, assembly_req: Assembly) {
         self.deploys.push(assembly_req);
     }
@@ -203,15 +177,14 @@ impl<'a> ReplicaContext<'a> {
         self.nukes.push(assembly_req);
     }
 
-     /// Initialize the phase and msg based on category
+    /// Initialize the phase and msg based on category
     /// We will stand still if its a blockchain_template
     fn initialize_phase_for(category: String) -> (String, String) {
-       if APPLICABLE_TO_STAND_STILL.contains(&category.as_str()) {            
-            return (PHASE_STAND_STILL.to_string(), NEW_STAND_STILL_MSG.to_string())
+        if APPLICABLE_TO_STAND_STILL.contains(&category.as_str()) {
+            return (PHASE_STAND_STILL.to_string(), NEW_STAND_STILL_MSG.to_string());
         }
         (PHASE_PENDING.to_string(), NEW_REPLICA_INITALIZING_MSG.to_string())
     }
-
 }
 
 /// Replica namer is used to name the assembly object
@@ -229,16 +202,12 @@ struct ReplicaNamer {
 
 impl ReplicaNamer {
     fn new(name: &str, upto: u32) -> ReplicaNamer {
-        ReplicaNamer {
-            name: name.to_string(),
-            upto: upto,
-        }
+        ReplicaNamer { name: name.to_string(), upto: upto }
     }
 
     fn fqdn_as_tuples(&self) -> (&str, &str, &str) {
         if self.name.contains(".") {
             let subdot_fqdn = &self.name.split(".").collect::<Vec<_>>();
-
             return (subdot_fqdn[0], subdot_fqdn[1], subdot_fqdn[2]);
         }
         (&self.name, "", "")
@@ -247,11 +216,10 @@ impl ReplicaNamer {
     ///  If the requested replica count is just one then we need to return
     ///  levi.megam.io (base_name)
     fn next(&self, count: u32) -> String {
-        if self.upto > 1 {
+        if self.upto >= 1 {
             let fqdns = self.fqdn_as_tuples();
             return format!("{}{}.{}.{}", fqdns.0, count, fqdns.1, fqdns.2);
         }
-
         self.name.clone()
     }
 }

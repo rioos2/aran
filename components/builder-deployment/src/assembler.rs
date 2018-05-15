@@ -30,7 +30,6 @@ impl ServicesConfig {
     const LOAD_BALANCER_DISK_KEY: &'static str = "rioos_sh_loadbalancer_disk";
 
     pub fn as_map(&self) -> BTreeMap<String, String> {
-        println!("as map function", );
         vec![
             (
                 Self::LOAD_BALANCER_IMAGEIN_KEY.to_string(),
