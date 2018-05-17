@@ -11,6 +11,16 @@ pub const DEV_RIO_COMPANY: &'static str = "dev@rio.companyadmin";
 /// a default token for the marketplace
 pub const TOKEN: &'static str = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R";
 
+const USERNAME: &'static str = "postmaster@ojamail.megambox.com";
+
+const PASSWORD: &'static str = "b311ed99d8d544b10ca001bd5fdbcbe1";
+
+const SENDER: &'static str = "info@rio.company";
+
+const DOMAIN: &'static str = "smtp.mailgun.org:587";
+
+
+
 ///// Configuration for Audits (blockchain)
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -91,6 +101,50 @@ impl BlockchainConn {
         BlockchainConn {
             backend: config.backend(),
             url: config.endpoint().to_string(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct MailerCfg {
+    pub enabled: bool,
+    pub username: String,
+    pub password: String,
+    pub domain: String,
+    pub sender: String,
+}
+
+impl Default for MailerCfg {
+    fn default() -> Self {
+        MailerCfg {
+            enabled: true,
+            username: USERNAME.to_string(),
+            password: PASSWORD.to_string(),
+            domain: DOMAIN.to_string(),
+            sender: SENDER.to_string(),
+        }
+    }
+}
+
+pub trait Mailer {
+    fn enabled(&self) -> bool;
+    fn username(&self) -> &str;
+    fn password(&self) -> &str;
+    fn domain(&self) -> &str;
+    fn sender(&self) -> &str;
+}
+
+
+#[allow(unused_variables)]
+impl MailerCfg {
+    pub fn new<T: Mailer>(config: &T) -> Self {
+        MailerCfg {
+            enabled: config.enabled(),
+            username: config.username().to_string(),
+            password: config.password().to_string(),
+            domain: config.domain().to_string(),
+            sender: config.sender().to_string(),
         }
     }
 }

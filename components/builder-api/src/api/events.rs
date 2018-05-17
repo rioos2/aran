@@ -59,6 +59,18 @@ macro_rules! log_event {
     }};
 }
 
+
+// Macros to post in the event logger  from any request.
+#[macro_export]
+macro_rules! send_email {
+    ($req:ident, $evt:expr) => {{
+        use persistent;
+        let ad = format!("{}", ($req).remote_addr);
+        let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
+        el.send_email($evt, (($evt).get_account(), ad))
+    }};
+}
+
 fn write_file<T: ?Sized>(parent_dir: &Path, file_path: &Path, val: &T)
 where
     T: Serialize,
@@ -90,6 +102,13 @@ impl EventLogger {
             let file_path = self.log_dir.join("audits-blockchain.json");
             write_file(&self.log_dir, &file_path, &envelope);
             self.channel.peer_add(envelope);
+        }
+    }
+
+    pub fn send_email(&self, event: AuditEvent, accessed_by: AccessedBy) {
+        if self.enabled {
+            let envelope = Envelope::new(&event, accessed_by);
+            self.channel.send_email(envelope);
         }
     }
 }
