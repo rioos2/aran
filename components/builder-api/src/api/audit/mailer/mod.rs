@@ -1,4 +1,4 @@
-pub mod email_notifier;
+pub mod email_sender;
 pub mod email_generator;
 
 const LAUNCHSUCCESS: &'static str = "LaunchSuccess";
@@ -19,4 +19,9 @@ impl Status {
             _ => Status::None,
         }
     }
+}
+
+pub trait PushNotifier {
+    fn should_notify(&self) -> bool;
+    fn notify(&self);
 }

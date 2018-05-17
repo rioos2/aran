@@ -62,7 +62,7 @@ macro_rules! log_event {
 
 // Macros to post in the event logger  from any request.
 #[macro_export]
-macro_rules! send_email {
+macro_rules! push_notification {
     ($req:ident, $evt:expr) => {{
         use persistent;
         let ad = format!("{}", ($req).remote_addr);

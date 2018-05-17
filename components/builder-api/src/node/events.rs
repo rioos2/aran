@@ -4,8 +4,9 @@ use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{RuntimeHandler, ExternalMessage};
 
 use api::audit::ledger;
-use api::audit::mailer::{email_generator, email_notifier, Status};
+use api::audit::mailer::{email_generator, email_sender, Status};
 use protocol::api::base::MetaFields;
+use api::audit::mailer::PushNotifier;
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
@@ -36,23 +37,10 @@ impl RuntimeHandler {
                     _ => println!("--> ledger load  fail."),
                 }
             }
-            ExternalMessage::EmailNotification(event_envl) => {
-                let data = email_generator::EmailGenerator::new(
-                    event_envl.event.object_meta().labels,
-                    &event_envl.event.message,
-                );
-                match Status::from_str(&event_envl.event.reason) {
-                    Status::DigitalCloudRunning => {
-                        let content = data.deploy_success().unwrap();
-                        let mail_builder = email_notifier::EmailNotifier::new(*self.mailer.clone(), data.email(), content.0, content.1);
-                        mail_builder.send_email();
-                    }
-                    Status::DigitalCloudFailed => {
-                        let content = data.deploy_failed().unwrap();
-                        let mail_builder = email_notifier::EmailNotifier::new(*self.mailer.clone(), data.email(), content.0, content.1);
-                        mail_builder.send_email();
-                    }
-                    Status::None => {}
+            ExternalMessage::PushNotification(event_envl) => {
+                let notify = email_sender::EmailNotifier::new(&event_envl, *self.mailer.clone());
+                if notify.should_notify() {
+                    notify.notify();
                 }
             }
         }

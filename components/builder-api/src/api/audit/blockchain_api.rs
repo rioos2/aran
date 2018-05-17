@@ -81,7 +81,7 @@ impl BlockChainApi {
         unmarshall_body.set_meta(type_meta(req), m);
         //Send to the eventlogger and return.
         log_event!(req, *unmarshall_body.clone());
-        send_email!(req, *unmarshall_body.clone());
+        push_notification!(req, *unmarshall_body.clone());
 
         Ok(render_json(status::Ok, &unmarshall_body))
     }
