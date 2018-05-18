@@ -4,8 +4,7 @@ use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{RuntimeHandler, ExternalMessage};
 
 use api::audit::ledger;
-use api::audit::mailer::{email_generator, email_sender, Status};
-use protocol::api::base::MetaFields;
+use api::audit::mailer::email_sender;
 use api::audit::mailer::PushNotifier;
 
 impl EventHandler for RuntimeHandler {
@@ -38,7 +37,7 @@ impl RuntimeHandler {
                 }
             }
             ExternalMessage::PushNotification(event_envl) => {
-                let notify = email_sender::EmailNotifier::new(&event_envl, *self.mailer.clone());
+                let notify = email_sender::EmailNotifier::new(event_envl, *self.mailer.clone());
                 if notify.should_notify() {
                     notify.notify();
                 }

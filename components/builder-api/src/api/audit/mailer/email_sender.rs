@@ -6,7 +6,9 @@ use lettre::smtp::ConnectionReuseParameters;
 use lettre_email::EmailBuilder;
 use std::net::ToSocketAddrs;
 use api::audit::config::MailerCfg;
-use api::audit::mailer::{PushNotifier, Status};
+use api::audit::mailer::{PushNotifier, Status, email_generator};
+use protocol::api::audit::Envelope;
+use protocol::api::base::MetaFields;
 
 
 pub struct EmailSender {
@@ -72,18 +74,18 @@ impl PushNotifier for EmailNotifier {
     }
     fn notify(&self) {
         let data = email_generator::EmailGenerator::new(
-            event_envl.event.object_meta().labels,
-            &event_envl.event.message,
+            self.envelope.event.object_meta().labels,
+            &self.envelope.event.message,
         );
-        match Status::from_str(&event_envl.event.reason) {
+        match Status::from_str(&self.envelope.event.reason) {
             Status::DigitalCloudRunning => {
                 let content = data.deploy_success().unwrap();
-                let mail_builder = email_sender::EmailSender::new(self.config, data.email(), content.0, content.1);
+                let mail_builder = EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
                 mail_builder.send_email();
             }
             Status::DigitalCloudFailed => {
                 let content = data.deploy_failed().unwrap();
-                let mail_builder = email_sender::EmailSender::new(self.config, data.email(), content.0, content.1);
+                let mail_builder = EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
                 mail_builder.send_email();
             }
             Status::None => {}
