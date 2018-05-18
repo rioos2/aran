@@ -265,6 +265,26 @@ impl Assembly {
     pub fn get_metadata(&self) -> &BTreeMap<String, String> {
         &self.metadata
     }
+
+    pub fn get_category(&self) -> String {
+        if self.get_spec().get_parent().is_some() &&
+            self.get_spec()
+                .get_parent()
+                .unwrap()
+                .get_spec()
+                .get_plan()
+                .is_some()
+        {
+            return self.get_spec()
+                .get_parent()
+                .unwrap()
+                .get_spec()
+                .get_plan()
+                .unwrap()
+                .get_category();
+        }
+        "".to_string()
+    }
 }
 
 impl MetaFields for Assembly {
@@ -336,16 +356,7 @@ impl VolumeFeeder for Assembly {
 
 impl MetricFeeder for Assembly {
     fn mget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(
-            self.get_id(),
-            self.get_spec()
-                .get_parent()
-                .unwrap()
-                .get_spec()
-                .get_plan()
-                .unwrap()
-                .get_category(),
-        )
+        IdGet::with_id_name(self.get_id(), self.get_category())
     }
 
     fn mfeed(&mut self, m: Option<BTreeMap<String, String>>) {

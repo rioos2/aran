@@ -4,7 +4,8 @@ use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{RuntimeHandler, ExternalMessage};
 
 use api::audit::ledger;
-
+use api::audit::mailer::email_sender;
+use api::audit::mailer::PushNotifier;
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
@@ -28,10 +29,17 @@ impl RuntimeHandler {
                     Ok(ledger) => {
                         match ledger.record(&event_envl) {
                             Ok(_) => println!("--> save success"),
+
                             _ => println!("--> save fail. {:?}", event_envl),
                         };
                     }
                     _ => println!("--> ledger load  fail."),
+                }
+            }
+            ExternalMessage::PushNotification(event_envl) => {
+                let notify = email_sender::EmailNotifier::new(event_envl, *self.mailer.clone());
+                if notify.should_notify() {
+                    notify.notify();
                 }
             }
         }

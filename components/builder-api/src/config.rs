@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg};
+use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg, Mailer, MailerCfg};
 use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
 use api::deploy::config::ServicesCfg;
 
@@ -59,6 +59,8 @@ pub struct Config {
     //  example:
     //  controller_endpoint = https://controller.rioos.sh:8999
     pub ping: PinguyCfg,
+
+    pub mailer: MailerCfg,
 }
 
 /// dump the configuration
@@ -159,6 +161,7 @@ impl Default for Config {
             marketplaces: MarketplacesCfg::default(),
             vulnerability: VulnerabilityCfg::default(),
             ping: PinguyCfg::default(),
+            mailer: MailerCfg::default(),
         }
     }
 }
@@ -358,6 +361,24 @@ impl License for Config {
     }
     fn activation_code(&self) -> Option<String> {
         self.licenses.activation_code.clone()
+    }
+}
+
+impl Mailer for Config {
+    fn username(&self) -> &str {
+        &self.mailer.username
+    }
+    fn password(&self) -> &str {
+        &self.mailer.password
+    }
+    fn domain(&self) -> &str {
+        &self.mailer.domain
+    }
+    fn sender(&self) -> &str {
+        &self.mailer.sender
+    }
+    fn enabled(&self) -> bool {
+        self.mailer.enabled
     }
 }
 

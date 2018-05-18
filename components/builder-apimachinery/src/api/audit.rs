@@ -82,12 +82,12 @@ pub struct AuditEvent {
     // for the transition into the object's current status.
     // TODO: provide exact specification for format.
     // +optional
-    reason: String,
+    pub reason: String,
 
     // A human-readable description of the status of this operation.
     // TODO: decide on maximum length.
     // +optional
-    message: String,
+    pub message: String,
 
     // The component reporting this event. Should be a short machine understandable string.
     // +optional
