@@ -1,7 +1,8 @@
 pub mod email_sender;
 pub mod email_generator;
 
-const LAUNCHSUCCESS: &'static str = "LaunchSuccess";
+const DIGITALCLOUDRUNNING: &'static str = "DigitalCloudRunning";
+const CONTAINERRUNNING: &'static str = "ContainerRunning";
 const LAUNCHFAILED: &'static str = "LaunchFailed";
 
 pub enum Status {
@@ -14,7 +15,7 @@ pub enum Status {
 impl Status {
     pub fn from_str(value: &str) -> Status {
         match &value[..] {
-            LAUNCHSUCCESS => Status::DigitalCloudRunning,
+            DIGITALCLOUDRUNNING | CONTAINERRUNNING => Status::DigitalCloudRunning,
             LAUNCHFAILED => Status::DigitalCloudFailed,
             _ => Status::None,
         }
