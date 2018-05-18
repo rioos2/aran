@@ -49,3 +49,10 @@ anchore_password = ""
 controller_endpoint = "http://localhost:10252/"
 scheduler_endpoint = "http://localhost:10251"
 machineconsole_endpoint = "http://localhost:8005"
+
+[mailer]
+enabled = true
+username = ""
+password = ""
+domain = ""
+sender = ""

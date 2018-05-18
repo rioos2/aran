@@ -7,7 +7,7 @@ use std::thread;
 use std::time::Duration;
 
 use config::Config;
-use api::audit::config::BlockchainConn;
+use api::audit::config::{BlockchainConn, MailerCfg};
 use protocol::api::audit::Envelope;
 use entitlement::licensor::Client;
 
@@ -25,6 +25,7 @@ use tokio_timer;
 #[derive(Debug)]
 pub enum ExternalMessage {
     PeerAdd(Envelope),
+    PushNotification(Envelope),
 }
 
 /// Transactions sender.
@@ -35,10 +36,7 @@ pub struct ApiSender(pub mpsc::Sender<ExternalMessage>);
 #[derive(Debug)]
 pub struct RuntimeChannel {
     /// Channel for api requests.
-    pub api_requests: (
-        mpsc::Sender<ExternalMessage>,
-        mpsc::Receiver<ExternalMessage>,
-    ),
+    pub api_requests: (mpsc::Sender<ExternalMessage>, mpsc::Receiver<ExternalMessage>),
     /// Channel for internal events.
     pub internal_events: (mpsc::Sender<InternalEvent>, mpsc::Receiver<InternalEvent>),
 }
@@ -57,6 +55,7 @@ impl RuntimeChannel {
 pub struct RuntimeHandler {
     pub config: Box<BlockchainConn>,
     pub license: Box<Client>,
+    pub mailer: Box<MailerCfg>,
 }
 
 impl fmt::Debug for RuntimeHandler {
@@ -74,12 +73,17 @@ impl ApiSender {
     /// Add peer to peer list
     pub fn peer_add(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PeerAdd(envl);
-        self.0
-            .clone()
-            .send(msg)
-            .wait()
-            .map(drop)
-            .map_err(into_other)
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
+    }
+
+    /// Add peer to peer list
+    pub fn send_email(&self, envl: Envelope) -> io::Result<()> {
+        let msg = ExternalMessage::PushNotification(envl);
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
     }
 }
 
@@ -95,6 +99,7 @@ impl Runtime {
             handler: RuntimeHandler {
                 config: Box::new(BlockchainConn::new(&*config.clone())),
                 license: Box::new(Client::new(&*config.clone())),
+                mailer: Box::new(MailerCfg::new(&*config.clone())),
             },
         }
     }
@@ -118,8 +123,9 @@ impl Runtime {
 
         thread::spawn(move || {
             let mut core = Core::new()?;
-            core.run(handler_part.run())
-                .map_err(|_| other_error("An error in the `RuntimeHandler` thread occurred"))
+            core.run(handler_part.run()).map_err(|_| {
+                other_error("An error in the `RuntimeHandler` thread occurred")
+            })
         });
 
         Ok(())
