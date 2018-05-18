@@ -84,6 +84,9 @@ extern crate custom_derive;
 #[macro_use]
 extern crate enum_derive;
 
+extern crate lettre;
+extern crate lettre_email;
+
 pub mod config;
 pub mod error;
 #[macro_use]

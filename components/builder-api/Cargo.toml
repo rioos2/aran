@@ -56,6 +56,8 @@ fallible-iterator = "0.1.4"
 enum_derive = "0.1.7"
 custom_derive = "0.1.7"
 handlebars = { version = "1.0.0-beta.1", default-features = false }
+lettre = "0.8"
+lettre_email="0.8"
 
 [dependencies.clap]
 version = "*"
