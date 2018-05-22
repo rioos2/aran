@@ -199,7 +199,7 @@ impl MyInner {
     fn list_data(&self, typ: &str, act_id: String) -> Option<String> {
         let idget = IdGet::with_account(act_id);
         let one_ref_ds = &self.datastore;
-        
+
 
         let res = match self.uppercase_first_letter(typ).parse().unwrap() {
             Messages::Assemblys => watch::messages::handle_assembly_list(idget, one_ref_ds.clone(), self.prom.clone()),
@@ -230,7 +230,7 @@ impl MyInner {
         let typ = v["type"].to_string();
 
         let one_ref_ds = &self.datastore;
-        
+
         let res = match self.uppercase_first_letter(&name).parse().unwrap() {
             Messages::Assemblys => watch::messages::handle_assembly(idget, typ, one_ref_ds.clone(), self.prom.clone()),
             Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory(idget, typ, one_ref_ds.clone()),

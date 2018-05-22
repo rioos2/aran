@@ -39,14 +39,14 @@ impl ws::Handler for Router {
 
     fn on_request(&mut self, req: &ws::Request) -> ws::Result<(ws::Response)> {
         // Clone the sender so that we can move it into the child handler
-        let out = self.sender.clone();        
-        let reg = self.register.clone();        
+        let out = self.sender.clone();
+        let reg = self.register.clone();
 
-        let re = Regex::new("/api/v1/accounts/(\\w+)/watch").unwrap();        
+        let re = Regex::new("/api/v1/accounts/(\\w+)/watch").unwrap();
         if re.is_match(req.resource()) {
             self.inner = Box::new(Data {
                     ws: out,
-                    path: req.resource().to_string(),               
+                    path: req.resource().to_string(),
                     register: reg,
                     watchhandler: self.watchhandler.clone(),
                 })
@@ -54,12 +54,12 @@ impl ws::Handler for Router {
             //TODO - use it for other websocket urls
             match req.resource() {
                 // Route to a data handler
-                "/api/v1/healthz/overall" => {      
+                "/api/v1/healthz/overall" => {
                     self.inner = Box::new(Metrics {
-                        ws: out,                        
+                        ws: out,
                         watchhandler: self.watchhandler.clone(),
-                })          
-                }  
+                })
+                }
                 // Use the default child handler, NotFound
                 _ => {
                     ()
@@ -121,8 +121,8 @@ struct Data {
 }
 
 impl ws::Handler for Data {
-    //when open a new socket connection first server collects all account specific data from database and 
-    //send it to response. then start watch database, if any changes made into database, 
+    //when open a new socket connection first server collects all account specific data from database and
+    //send it to response. then start watch database, if any changes made into database,
     //then server collect that data and send it.
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
         let re = Regex::new("/(\\w+)/watch").expect("regex");
@@ -138,16 +138,16 @@ impl ws::Handler for Data {
             Err(poisoned) => poisoned.into_inner(),
         };
 
-        let (ty, ry) = mpsc::channel();     
-        let res_sender = Arc::new(Mutex::new(ty));  
+        let (ty, ry) = mpsc::channel();
+        let res_sender = Arc::new(Mutex::new(ty));
 
         for listener in LISTENERS.iter() {
-            thread::sleep(Duration::from_millis(1000)); 
+            thread::sleep(Duration::from_millis(1000));
             send_wrap.send((listener.to_string(), res_sender.clone())).unwrap();
             //when got new websocket connection, then server load list data
-            //from database and send to it.                                                   
+            //from database and send to it.
             match watchhandler.load_list_data(&listener, id.clone()) {
-                Some(res) => {     
+                Some(res) => {
                     match sender.send(res) {
                         Ok(_success) => {}
                         Err(_err) => {
@@ -159,34 +159,27 @@ impl ws::Handler for Data {
             }
         }
 
+        // Here periodic assembly list will be send to websocket from cache.
+        let tick = schedule_recv::periodic_ms(10000);
         thread::spawn(move || {
             loop {
-                match ry.recv() {
-                    Ok(msg) => {
-                        //send data to response channel for particular accountant
-                        //check response account id and request account id, if equal it could send response to channel
-                        //otherwise skip it
-                        let s = String::from_utf8(msg.to_vec()).expect("Found invalid UTF-8");  
-                        let v: Value = serde_json::from_str(&s).unwrap();
-                   
-                        if v["data"]["object_meta"]["account"] == id.to_string() {
-                            match sender.send(s) {
-                                Ok(_success) => {}
-                                Err(_err) => {
-                                    break;
-                                }
+                match watchhandler.load_list_data("assemblys", id.clone()) {
+                    Some(res) => {
+                        match sender.send(res) {
+                            Ok(_success) => {}
+                            Err(_err) => {
+                                break;
                             }
-                        }                  
+                        }
                     }
-                    _ => {
-                        break;
-                    }
+                    None => {}
                 }
+                tick.recv().unwrap();
             }
         });
         Ok(())
     }
-   
+
 }
 
 
@@ -197,15 +190,15 @@ struct Metrics {
 }
 
 impl ws::Handler for Metrics {
-    // when handler got a new connection, to collect overall metrics data from prometheus in time period 
+    // when handler got a new connection, to collect overall metrics data from prometheus in time period
     // scheduling time - 10s
-    fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> { 
+    fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
         let sender = self.ws.clone();
         let prom = self.watchhandler.prom_client();
 
         let tick = schedule_recv::periodic_ms(10000);
         thread::spawn(move || {
-            loop {            
+            loop {
                 match NodeDS::healthz_all(&prom) {
                     Ok(Some(health_all)) => {
                         let res = serde_json::to_string(&health_all).unwrap();
