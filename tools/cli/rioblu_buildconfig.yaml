@@ -22,7 +22,7 @@ assembly_factory:
   plan: '976649514033102848'
 
 # ================================================================
-# BuildConfig Information 
+# BuildConfig Information
 # ================================================================
 
 buildconfig:
@@ -57,7 +57,7 @@ buildconfig:
     output:
       to:
         kind: ImageMarks
-        name: mydev-ruby-sample:latest
+        name: registry.rioos.xyz:5000/mydev-ruby-sample:latest
     post_commit:
       script: bundle exec rake test
   status:
