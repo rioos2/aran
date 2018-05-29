@@ -1,11 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use events::{Event, EventHandler, InternalEvent};
-use node::runtime::{RuntimeHandler, ExternalMessage};
+use node::runtime::{ExternalMessage, RuntimeHandler};
 
+use api::audit::PushNotifier;
 use api::audit::ledger;
 use api::audit::mailer::email_sender;
-use api::audit::mailer::PushNotifier;
+use api::audit::slack::slack_sender;
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
@@ -37,9 +38,14 @@ impl RuntimeHandler {
                 }
             }
             ExternalMessage::PushNotification(event_envl) => {
-                let notify = email_sender::EmailNotifier::new(event_envl, *self.mailer.clone());
-                if notify.should_notify() {
-                    notify.notify();
+                let e = event_envl.clone();
+                let enotify = email_sender::EmailNotifier::new(e, *self.mailer.clone());
+                if enotify.should_notify() {
+                    enotify.notify();
+                }
+                let snotify = slack_sender::SlackNotifier::new(event_envl, *self.slack.clone());
+                if snotify.should_notify() {
+                    snotify.notify();
                 }
             }
         }

@@ -1,15 +1,18 @@
-use lettre::smtp::authentication::{Credentials, Mechanism};
+// Copyright 2018 The Rio Advancement Inc
+//
+
+use api::audit::config::MailerCfg;
+use api::audit::mailer::email_generator;
+use api::audit::{PushNotifier, Status};
 use lettre::EmailTransport;
-use lettre::smtp::SmtpTransportBuilder;
 use lettre::smtp::ClientSecurity;
 use lettre::smtp::ConnectionReuseParameters;
+use lettre::smtp::SmtpTransportBuilder;
+use lettre::smtp::authentication::{Credentials, Mechanism};
 use lettre_email::EmailBuilder;
-use std::net::ToSocketAddrs;
-use api::audit::config::MailerCfg;
-use api::audit::mailer::{PushNotifier, Status, email_generator};
 use protocol::api::audit::Envelope;
 use protocol::api::base::MetaFields;
-
+use std::net::ToSocketAddrs;
 
 pub struct EmailSender {
     config: MailerCfg,
@@ -17,6 +20,7 @@ pub struct EmailSender {
     subject: String,
     content: String,
 }
+
 impl EmailSender {
     pub fn new(config: MailerCfg, email: String, subject: String, content: String) -> Self {
         EmailSender {
@@ -28,19 +32,11 @@ impl EmailSender {
     }
     pub fn send_email(self) {
         if self.config.enabled {
-            let email = EmailBuilder::new()
-                .to(self.email)
-                .from(self.config.sender)
-                .subject(self.subject)
-                .html(self.content)
-                .build();
+            let email = EmailBuilder::new().to(self.email).from(self.config.sender).subject(self.subject).html(self.content).build();
             let mut addrs_iter = self.config.domain.to_socket_addrs().unwrap();
             let mut mailer = SmtpTransportBuilder::new(addrs_iter.next().unwrap(), ClientSecurity::None)
                 .unwrap()
-                .credentials(Credentials::new(
-                    self.config.username.to_string(),
-                    self.config.password.to_string(),
-                ))
+                .credentials(Credentials::new(self.config.username.to_string(), self.config.password.to_string()))
                 .authentication_mechanism(Mechanism::Plain)
                 .connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
                 .build();
@@ -57,26 +53,19 @@ pub struct EmailNotifier {
 
 impl EmailNotifier {
     pub fn new(envelope: Envelope, config: MailerCfg) -> Self {
-        EmailNotifier {
-            envelope: envelope,
-            config: config,
-        }
+        EmailNotifier { envelope: envelope, config: config }
     }
 }
 
 impl PushNotifier for EmailNotifier {
     fn should_notify(&self) -> bool {
         match Status::from_str(&self.envelope.event.reason) {
-            Status::DigitalCloudRunning |
-            Status::DigitalCloudFailed => true,
-            Status::None => false,
+            Status::DigitalCloudRunning | Status::DigitalCloudFailed => true,
+            _ => false,
         }
     }
     fn notify(&self) {
-        let data = email_generator::EmailGenerator::new(
-            self.envelope.event.object_meta().labels,
-            &self.envelope.event.message,
-        );
+        let data = email_generator::EmailGenerator::new(self.envelope.event.object_meta().labels, &self.envelope.event.message);
         match Status::from_str(&self.envelope.event.reason) {
             Status::DigitalCloudRunning => {
                 let content = data.deploy_success().unwrap();
@@ -88,7 +77,7 @@ impl PushNotifier for EmailNotifier {
                 let mail_builder = EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
                 mail_builder.send_email();
             }
-            Status::None => {}
+            _ => {}
         }
     }
 }

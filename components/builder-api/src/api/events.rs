@@ -9,7 +9,7 @@ use serde::Serialize;
 use serde_json;
 
 use node::runtime::ApiSender;
-use protocol::api::audit::{Envelope, AuditEvent, AccessedBy};
+use protocol::api::audit::{AccessedBy, AuditEvent, Envelope};
 
 /// The records created by the Rio/OS AuditBlockchain capture information on
 /// who has performed, what action, when, and how successfully:
@@ -45,7 +45,7 @@ macro_rules! define_event_log {
         impl typemap::Key for EventLog {
             type Value = EventLogger;
         }
-    }
+    };
 }
 
 // Macros to post in the event logger  from any request.
@@ -59,7 +59,6 @@ macro_rules! log_event {
     }};
 }
 
-
 // Macros to post in the event logger  from any request.
 #[macro_export]
 macro_rules! push_notification {
@@ -67,7 +66,7 @@ macro_rules! push_notification {
         use persistent;
         let ad = format!("{}", ($req).remote_addr);
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
-        el.send_email($evt, (($evt).get_account(), ad))
+        el.send_notify($evt, (($evt).get_account(), ad))
     }};
 }
 
@@ -89,11 +88,7 @@ pub struct EventLogger {
 #[allow(unused_must_use)]
 impl EventLogger {
     pub fn new<T: Into<PathBuf>>(channel: ApiSender, log_dir: T, enabled: bool) -> Self {
-        EventLogger {
-            channel: channel,
-            log_dir: log_dir.into(),
-            enabled: enabled,
-        }
+        EventLogger { channel: channel, log_dir: log_dir.into(), enabled: enabled }
     }
 
     pub fn record_event(&self, event: AuditEvent, accessed_by: AccessedBy) {
@@ -105,10 +100,10 @@ impl EventLogger {
         }
     }
 
-    pub fn send_email(&self, event: AuditEvent, accessed_by: AccessedBy) {
+    pub fn send_notify(&self, event: AuditEvent, accessed_by: AccessedBy) {
         if self.enabled {
             let envelope = Envelope::new(&event, accessed_by);
-            self.channel.send_email(envelope);
+            self.channel.send_notify(envelope);
         }
     }
 }

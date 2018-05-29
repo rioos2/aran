@@ -1,22 +1,22 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::sync::Arc;
 use std::fmt;
 use std::io;
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
+use api::audit::config::{BlockchainConn, MailerCfg, SlackCfg};
 use config::Config;
-use api::audit::config::{BlockchainConn, MailerCfg};
-use protocol::api::audit::Envelope;
 use entitlement::licensor::Client;
+use protocol::api::audit::Envelope;
 
+use events::error::{into_other, other_error};
 use events::{HandlerPart, InternalEvent};
 use node::internal::InternalPart;
-use events::error::{into_other, other_error};
 
-use futures::{Future, Sink, Stream};
 use futures::sync::mpsc;
+use futures::{Future, Sink, Stream};
 
 use tokio_core::reactor::Core;
 use tokio_timer;
@@ -56,6 +56,7 @@ pub struct RuntimeHandler {
     pub config: Box<BlockchainConn>,
     pub license: Box<Client>,
     pub mailer: Box<MailerCfg>,
+    pub slack: Box<SlackCfg>,
 }
 
 impl fmt::Debug for RuntimeHandler {
@@ -73,17 +74,13 @@ impl ApiSender {
     /// Add peer to peer list
     pub fn peer_add(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PeerAdd(envl);
-        self.0.clone().send(msg).wait().map(drop).map_err(
-            into_other,
-        )
+        self.0.clone().send(msg).wait().map(drop).map_err(into_other)
     }
 
     /// Add peer to peer list
-    pub fn send_email(&self, envl: Envelope) -> io::Result<()> {
+    pub fn send_notify(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PushNotification(envl);
-        self.0.clone().send(msg).wait().map(drop).map_err(
-            into_other,
-        )
+        self.0.clone().send(msg).wait().map(drop).map_err(into_other)
     }
 }
 
@@ -100,6 +97,7 @@ impl Runtime {
                 config: Box::new(BlockchainConn::new(&*config.clone())),
                 license: Box::new(Client::new(&*config.clone())),
                 mailer: Box::new(MailerCfg::new(&*config.clone())),
+                slack: Box::new(SlackCfg::new(&*config.clone())),
             },
         }
     }
@@ -123,9 +121,7 @@ impl Runtime {
 
         thread::spawn(move || {
             let mut core = Core::new()?;
-            core.run(handler_part.run()).map_err(|_| {
-                other_error("An error in the `RuntimeHandler` thread occurred")
-            })
+            core.run(handler_part.run()).map_err(|_| other_error("An error in the `RuntimeHandler` thread occurred"))
         });
 
         Ok(())

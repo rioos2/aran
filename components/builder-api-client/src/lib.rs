@@ -22,19 +22,19 @@ use std::path::Path;
 use std::string::ToString;
 
 use reqwest::IntoUrl;
-use reqwest::{Body, StatusCode};
 use reqwest::header::{Accept, Authorization, Bearer, ContentType, Headers, UserAgent};
+use reqwest::{Body, StatusCode};
 
 use rioos_http::ApiClient;
 use rioos_http::api_client::err_from_response;
 
 use http_gateway::http::rendering::ResponseList;
 
-use protocol::api::{blueprint, deploy, job, network, node, origin, scale, secret, session, storage, devtool};
 use protocol::api::base::{hours_ago, MetaFields};
+use protocol::api::{blueprint, deploy, devtool, job, network, node, origin, scale, secret, session, storage};
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
-const USER_AGENT: &'static str = "Rio/OS Blu";
+pub const USER_AGENT: &'static str = "Rio/OS Blu";
 
 header! { (XAuthRioOSEmail, "X-AUTH-RIOOS-EMAIL") => [String] }
 
@@ -51,9 +51,7 @@ impl Client {
             endpoint.set_path(DEFAULT_API_PATH);
         }
 
-        Ok(Client(
-            ApiClient::new(endpoint, product, version, fs_root_path).map_err(Error::RioHttpClient)?,
-        ))
+        Ok(Client(ApiClient::new(endpoint, product, version, fs_root_path).map_err(Error::RioHttpClient)?))
     }
 
     pub fn signup(&self, body: session::SessionCreate) -> Result<session::Session> {
@@ -101,12 +99,7 @@ impl Client {
             "email": format!("{}", email),
             "token": format!("{}", token)
         });
-        let res = self.0
-            .post(&format!("logout"))
-            .body(Body::from(serde_json::to_string(&body)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self.0.post(&format!("logout")).body(Body::from(serde_json::to_string(&body)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -117,10 +110,7 @@ impl Client {
 
     pub fn deploy_digicloud(&self, assembly_fac: deploy::AssemblyFactory, token: &str, email: &str) -> Result<deploy::AssemblyFactory> {
         let mut res = self.0
-            .post(&format!(
-                "accounts/{}/assemblyfactorys",
-                assembly_fac.object_meta().account
-            ))
+            .post(&format!("accounts/{}/assemblyfactorys", assembly_fac.object_meta().account))
             .body(Body::from(serde_json::to_string(&assembly_fac)?))
             .headers(self.add_authz(token, email))
             .send()
@@ -133,37 +123,17 @@ impl Client {
     }
 
     pub fn list_deploy(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("accounts/{}/assemblyfactorys", account))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("accounts/{}/assemblyfactorys", account)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut assemblyfactory: ResponseList<Vec<deploy::AssemblyFactory>> = res.json()?;
 
-        Ok(assemblyfactory
-            .items
-            .iter_mut()
-            .map(|i| {
-                vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_replicas().to_string(),
-                    i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()),
-                ]
-            })
-            .collect())
+        Ok(assemblyfactory.items.iter_mut().map(|i| vec![i.get_id(), i.object_meta().name, i.get_replicas().to_string(), i.get_status().get_phase(), hours_ago(i.get_created_at())]).collect())
     }
 
     pub fn describe_deploy(&self, token: &str, email: &str, id: &str) -> Result<deploy::AssemblyFactory> {
-        let mut res = self.0
-            .get(&format!("assemblyfactorys/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("assemblyfactorys/{}", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -174,12 +144,7 @@ impl Client {
     }
 
     pub fn create_network(&self, network: network::Network, token: &str, email: &str) -> Result<network::Network> {
-        let mut res = self.0
-            .post(&format!("networks"))
-            .body(Body::from(serde_json::to_string(&network)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.post(&format!("networks")).body(Body::from(serde_json::to_string(&network)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
@@ -189,12 +154,7 @@ impl Client {
     }
 
     pub fn create_datacenter(&self, storage: storage::DataCenter, token: &str, email: &str) -> Result<()> {
-        let res = self.0
-            .post(&format!("datacenters"))
-            .body(Body::from(serde_json::to_string(&storage)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self.0.post(&format!("datacenters")).body(Body::from(serde_json::to_string(&storage)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -204,12 +164,7 @@ impl Client {
     }
 
     pub fn create_secret(&self, secret: secret::Secret, origin: &str, token: &str, email: &str) -> Result<()> {
-        let res = self.0
-            .post(&format!("origins/{}/secrets", origin))
-            .body(Body::from(serde_json::to_string(&secret)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self.0.post(&format!("origins/{}/secrets", origin)).body(Body::from(serde_json::to_string(&secret)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -219,12 +174,7 @@ impl Client {
     }
 
     pub fn create_build_config(&self, build_config: devtool::BuildConfig, token: &str, email: &str) -> Result<()> {
-        let res = self.0
-            .post(&format!("buildconfigs"))
-            .body(Body::from(serde_json::to_string(&build_config)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self.0.post(&format!("buildconfigs")).body(Body::from(serde_json::to_string(&build_config)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -233,38 +183,18 @@ impl Client {
         Ok(())
     }
 
-
     pub fn list_secret(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("accounts/{}/secrets", account))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("accounts/{}/secrets", account)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut secret: ResponseList<Vec<secret::Secret>> = res.json()?;
-        Ok(secret
-            .items
-            .iter_mut()
-            .map(|i| {
-                vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_secret_type(),
-                    hours_ago(i.get_created_at()),
-                ]
-            })
-            .collect())
+        Ok(secret.items.iter_mut().map(|i| vec![i.get_id(), i.object_meta().name, i.get_secret_type(), hours_ago(i.get_created_at())]).collect())
     }
 
     pub fn describe_secret(&self, token: &str, email: &str, id: &str) -> Result<secret::Secret> {
-        let mut res = self.0
-            .get(&format!("secrets/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("secrets/{}", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -275,12 +205,7 @@ impl Client {
     }
 
     pub fn create_horizontal_scaling(&self, hscale: scale::HorizontalScaling, token: &str, email: &str) -> Result<()> {
-        let res = self.0
-            .post(&format!("horizontalscaling"))
-            .body(Body::from(serde_json::to_string(&hscale)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self.0.post(&format!("horizontalscaling")).body(Body::from(serde_json::to_string(&hscale)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -290,12 +215,7 @@ impl Client {
     }
 
     pub fn create_vertical_scaling(&self, vscale: scale::VerticalScaling, token: &str, email: &str) -> Result<()> {
-        let res = self.0
-            .post(&format!("verticalscaling"))
-            .body(Body::from(serde_json::to_string(&vscale)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self.0.post(&format!("verticalscaling")).body(Body::from(serde_json::to_string(&vscale)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -305,11 +225,7 @@ impl Client {
     }
 
     pub fn get_assembly_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("assemblyfactorys/{}/describe", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("assemblyfactorys/{}/describe", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -324,66 +240,26 @@ impl Client {
                     None => None,
                     Some(endpoint) => {
                         let subsets = endpoint.get_subsets();
-                        Some((
-                            subsets
-                                .get_addresses()
-                                .clone()
-                                .iter_mut()
-                                .map(|x| x.ip.to_owned())
-                                .collect::<Vec<_>>(),
-                            subsets
-                                .get_ports()
-                                .clone()
-                                .iter_mut()
-                                .map(|x| x.port.to_owned())
-                                .collect::<Vec<_>>(),
-                        ))
+                        Some((subsets.get_addresses().clone().iter_mut().map(|x| x.ip.to_owned()).collect::<Vec<_>>(), subsets.get_ports().clone().iter_mut().map(|x| x.port.to_owned()).collect::<Vec<_>>()))
                     }
                 }).unwrap_or(([].to_vec(), [].to_vec()));
 
-                vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.object_meta().account,
-                    ips_ports.0.into_iter().collect(),
-                    ips_ports.1.into_iter().collect(),
-                    i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()),
-                ]
+                vec![i.get_id(), i.object_meta().name, i.object_meta().account, ips_ports.0.into_iter().collect(), ips_ports.1.into_iter().collect(), i.get_status().get_phase(), hours_ago(i.get_created_at())]
             })
             .collect())
     }
     pub fn list_node(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("nodes"))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("nodes")).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut node: ResponseList<Vec<node::Node>> = res.json()?;
-        Ok(node.items
-            .iter_mut()
-            .map(|i| {
-                vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_status().get_phase(),
-                    (!i.get_spec().get_unschedulable()).to_string(),
-                    hours_ago(i.get_created_at()),
-                ]
-            })
-            .collect())
+        Ok(node.items.iter_mut().map(|i| vec![i.get_id(), i.object_meta().name, i.get_status().get_phase(), (!i.get_spec().get_unschedulable()).to_string(), hours_ago(i.get_created_at())]).collect())
     }
 
     pub fn node_describe(&self, token: &str, email: &str, id: &str) -> Result<node::Node> {
-        let mut res = self.0
-            .get(&format!("/nodes/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("/nodes/{}", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -393,111 +269,44 @@ impl Client {
         Ok(node)
     }
     pub fn list_image(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("plans"))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("plans")).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut plan: ResponseList<Vec<blueprint::Plan>> = res.json()?;
-        Ok(plan.items
-            .iter_mut()
-            .map(|i| {
-                vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_category(),
-                    i.get_version(),
-                    i.get_description(),
-                    i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()),
-                ]
-            })
-            .collect())
+        Ok(plan.items.iter_mut().map(|i| vec![i.get_id(), i.object_meta().name, i.get_category(), i.get_version(), i.get_description(), i.get_status().get_phase(), hours_ago(i.get_created_at())]).collect())
     }
     pub fn list_datacenters(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("datacenters"))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("datacenters")).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut datacenter: ResponseList<Vec<storage::DataCenter>> = res.json()?;
-        Ok(datacenter
-            .items
-            .iter_mut()
-            .map(|i| {
-                vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_enabled().to_string(),
-                    i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()),
-                ]
-            })
-            .collect())
+        Ok(datacenter.items.iter_mut().map(|i| vec![i.get_id(), i.object_meta().name, i.get_enabled().to_string(), i.get_status().get_phase(), hours_ago(i.get_created_at())]).collect())
     }
 
     pub fn list_origins(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("origins"))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("origins")).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut origin: ResponseList<Vec<origin::Origin>> = res.json()?;
-        Ok(origin
-            .items
-            .iter_mut()
-            .map(|i| {
-                vec![
-                    i.get_id(),
-                    i.get_name(),
-                    i.object_meta().account,
-                    hours_ago(i.get_created_at()),
-                ]
-            })
-            .collect())
+        Ok(origin.items.iter_mut().map(|i| vec![i.get_id(), i.get_name(), i.object_meta().account, hours_ago(i.get_created_at())]).collect())
     }
     pub fn list_job(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("jobs"))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("jobs")).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let mut job: ResponseList<Vec<job::Jobs>> = res.json()?;
-        Ok(job.items
-            .iter_mut()
-            .map(|i| {
-                vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_spec().get_node_id(),
-                    i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()),
-                ]
-            })
-            .collect())
+        Ok(job.items.iter_mut().map(|i| vec![i.get_id(), i.object_meta().name, i.get_spec().get_node_id(), i.get_status().get_phase(), hours_ago(i.get_created_at())]).collect())
     }
     pub fn list_network(&self, token: &str, email: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("networks"))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("networks")).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -506,48 +315,22 @@ impl Client {
         Ok(network
             .items
             .iter_mut()
-            .map(|i| {
-                vec![
-                    i.get_id(),
-                    i.object_meta().name,
-                    i.get_network_type(),
-                    i.get_subnet_ip(),
-                    i.get_netmask(),
-                    i.get_gateway(),
-                    i.get_status().get_phase(),
-                    hours_ago(i.get_created_at()),
-                ]
-            })
+            .map(|i| vec![i.get_id(), i.object_meta().name, i.get_network_type(), i.get_subnet_ip(), i.get_netmask(), i.get_gateway(), i.get_status().get_phase(), hours_ago(i.get_created_at())])
             .collect())
     }
 
     pub fn origin_get(&self, token: &str, email: &str, name: &str) -> Result<Vec<Vec<String>>> {
-        let mut res = self.0
-            .get(&format!("/origins/{}", name))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("/origins/{}", name)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let result: origin::Origin = res.json()?;
-        let data = vec![
-            vec![
-                result.get_id(),
-                result.get_name(),
-                result.object_meta().account,
-                hours_ago(result.get_created_at()),
-            ],
-        ];
+        let data = vec![vec![result.get_id(), result.get_name(), result.object_meta().account, hours_ago(result.get_created_at())]];
         Ok(data)
     }
     pub fn datacenter_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<storage::DataCenter> {
-        let mut res = self.0
-            .get(&format!("/datacenters/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("/datacenters/{}", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -558,11 +341,7 @@ impl Client {
     }
 
     pub fn network_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<network::Network> {
-        let mut res = self.0
-            .get(&format!("/networks/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("/networks/{}", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -572,12 +351,7 @@ impl Client {
         Ok(net)
     }
     pub fn network_update(&self, token: &str, email: &str, net: network::Network) -> Result<()> {
-        let res = self.0
-            .put(&format!("networks/{}", net.get_id()))
-            .body(Body::from(serde_json::to_string(&net)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self.0.put(&format!("networks/{}", net.get_id())).body(Body::from(serde_json::to_string(&net)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -587,12 +361,7 @@ impl Client {
     }
 
     pub fn datacenter_update(&self, token: &str, email: &str, dc: storage::DataCenter) -> Result<()> {
-        let res = self.0
-            .put(&format!("datacenters/{}", dc.get_id()))
-            .body(Body::from(serde_json::to_string(&dc)?))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let res = self.0.put(&format!("datacenters/{}", dc.get_id())).body(Body::from(serde_json::to_string(&dc)?)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -602,11 +371,7 @@ impl Client {
     }
 
     pub fn describe_datacenter(&self, token: &str, email: &str, id: &str) -> Result<storage::DataCenter> {
-        let mut res = self.0
-            .get(&format!("/datacenters/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("/datacenters/{}", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -617,11 +382,7 @@ impl Client {
     }
 
     pub fn get_storageconnector_by_id(&self, token: &str, email: &str, id: &str) -> Result<storage::Storage> {
-        let mut res = self.0
-            .get(&format!("/storageconnectors/{}", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("/storageconnectors/{}", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -631,11 +392,7 @@ impl Client {
         Ok(strcon)
     }
     pub fn get_storageconnector(&self, token: &str, email: &str) -> Result<Vec<storage::Storage>> {
-        let mut res = self.0
-            .get(&format!("storageconnectors"))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("storageconnectors")).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -646,11 +403,7 @@ impl Client {
     }
 
     pub fn get_storagepool_by_scid(&self, token: &str, email: &str, id: &str) -> Result<Vec<storage::StoragePool>> {
-        let mut res = self.0
-            .get(&format!("/storageconnectors/{}/storagespool", id))
-            .headers(self.add_authz(token, email))
-            .send()
-            .map_err(Error::ReqwestError)?;
+        let mut res = self.0.get(&format!("/storageconnectors/{}/storagespool", id)).headers(self.add_authz(token, email)).send().map_err(Error::ReqwestError)?;
 
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
@@ -661,9 +414,7 @@ impl Client {
 
     fn add_authz(&self, token: &str, email: &str) -> Headers {
         let mut headers = Headers::new();
-        headers.set(Authorization(Bearer {
-            token: token.to_string(),
-        }));
+        headers.set(Authorization(Bearer { token: token.to_string() }));
         headers.set(XAuthRioOSEmail(email.to_string()));
         headers.set(UserAgent::new(USER_AGENT.to_string()));
         headers.set(ContentType::json());

@@ -19,7 +19,9 @@ const SENDER: &'static str = "info@rio.company";
 
 const DOMAIN: &'static str = "smtp.mailgun.org:587";
 
+const SLACK_DOMAIN: &'static str = "slack.com";
 
+const SLACK_API_TOKEN: &'static str = "";
 
 ///// Configuration for Audits (blockchain)
 
@@ -98,10 +100,7 @@ pub struct BlockchainConn {
 #[allow(unused_variables)]
 impl BlockchainConn {
     pub fn new<T: Blockchain>(config: &T) -> Self {
-        BlockchainConn {
-            backend: config.backend(),
-            url: config.endpoint().to_string(),
-        }
+        BlockchainConn { backend: config.backend(), url: config.endpoint().to_string() }
     }
 }
 
@@ -120,7 +119,7 @@ impl Default for MailerCfg {
         MailerCfg {
             enabled: true,
             username: USERNAME.to_string(),
-            password: PASSWORD.to_string(),
+            password: SLACK_API_TOKEN.to_string(),
             domain: DOMAIN.to_string(),
             sender: SENDER.to_string(),
         }
@@ -135,7 +134,6 @@ pub trait Mailer {
     fn sender(&self) -> &str;
 }
 
-
 #[allow(unused_variables)]
 impl MailerCfg {
     pub fn new<T: Mailer>(config: &T) -> Self {
@@ -145,6 +143,41 @@ impl MailerCfg {
             password: config.password().to_string(),
             domain: config.domain().to_string(),
             sender: config.sender().to_string(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct SlackCfg {
+    pub enabled: bool,
+    pub token: String,
+    pub domain: String,
+}
+
+impl Default for SlackCfg {
+    fn default() -> Self {
+        SlackCfg {
+            enabled: true,
+            token: SLACK_API_TOKEN.to_string(),
+            domain: SLACK_DOMAIN.to_string(),
+        }
+    }
+}
+
+pub trait Slack {
+    fn enabled(&self) -> bool;
+    fn token(&self) -> &str;
+    fn domain(&self) -> &str;
+}
+
+#[allow(unused_variables)]
+impl SlackCfg {
+    pub fn new<T: Slack>(config: &T) -> Self {
+        SlackCfg {
+            enabled: config.enabled(),
+            token: config.token().to_string(),
+            domain: config.domain().to_string(),
         }
     }
 }

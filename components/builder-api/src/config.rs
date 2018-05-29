@@ -7,21 +7,21 @@ use std::path::PathBuf;
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg, Mailer, MailerCfg};
-use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
+use api::audit::config::{Blockchain, BlockchainCfg, Mailer, MailerCfg, Marketplaces, MarketplacesCfg, Slack, SlackCfg};
 use api::deploy::config::ServicesCfg;
+use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
 
 use auth::config::{flow_modes, AuthenticationFlowCfg, Identity, IdentityCfg};
-use watch::config::{Streamer, StreamerCfg};
 use entitlement::config::{License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
+use watch::config::{Streamer, StreamerCfg};
 
 use rio_core::config::ConfigFile;
 use rio_core::crypto::keys::read_key_in_bytes;
 use rio_core::fs::rioconfig_config_path;
 
-use validator::ConfigValidator;
 use common::ui::UI;
+use validator::ConfigValidator;
 
 use error::{Error, Result};
 
@@ -61,6 +61,8 @@ pub struct Config {
     pub ping: PinguyCfg,
 
     pub mailer: MailerCfg,
+
+    pub slack: SlackCfg,
 }
 
 /// dump the configuration
@@ -68,23 +70,11 @@ impl Config {
     pub fn dump(&self, ui: &mut UI) -> Result<()> {
         ui.begin("Configuration")?;
         ui.heading("[https]")?;
-        ui.para(
-            &format!("{}:{}", self.https.listen, self.https.port),
-        )?;
-        ui.para(&format!(
-            "{:?} {:?}",
-            self.https.tls,
-            self.https.tls_password
-        ))?;
+        ui.para(&format!("{}:{}", self.https.listen, self.https.port))?;
+        ui.para(&format!("{:?} {:?}", self.https.tls, self.https.tls_password))?;
         ui.heading("[http2]")?;
-        ui.para(
-            &format!("{}:{}", self.http2.listener, self.http2.port),
-        )?;
-        ui.para(&format!(
-            "{:?} {:?}",
-            self.http2.tls,
-            self.http2.tls_password
-        ))?;
+        ui.para(&format!("{}:{}", self.http2.listener, self.http2.port))?;
+        ui.para(&format!("{:?} {:?}", self.http2.tls, self.http2.tls_password))?;
         ui.heading("[telemetry]")?;
         ui.para(&self.telemetry.endpoint)?;
         ui.heading("[identity]")?;
@@ -114,17 +104,9 @@ impl Config {
         ui.para(&self.vulnerability.anchore_username)?;
         ui.para(&self.vulnerability.anchore_password)?;
         ui.heading("[ping]")?;
-        ui.para(&self.ping.controller_endpoint.clone().unwrap_or(
-            "".to_string(),
-        ))?;
-        ui.para(&self.ping.scheduler_endpoint.clone().unwrap_or(
-            "".to_string(),
-        ))?;
-        ui.para(
-            &self.ping.machineconsole_endpoint.clone().unwrap_or(
-                "".to_string(),
-            ),
-        )?;
+        ui.para(&self.ping.controller_endpoint.clone().unwrap_or("".to_string()))?;
+        ui.para(&self.ping.scheduler_endpoint.clone().unwrap_or("".to_string()))?;
+        ui.para(&self.ping.machineconsole_endpoint.clone().unwrap_or("".to_string()))?;
         ui.end("Loaded configuration")?;
 
         Ok(())
@@ -134,13 +116,7 @@ impl Config {
     /// Option<(tls file location, bytes loaded from the name in the config toml file,
     ///        tls password if present or empty string)>
     fn tlspair_as_bytes(tls: Option<String>, tls_password: Option<String>) -> TLSPair {
-        tls.clone().and_then(|t| {
-            read_key_in_bytes(&PathBuf::from(t.clone()))
-                .map(|p| {
-                    (t.clone(), p, tls_password.clone().unwrap_or("".to_string()))
-                })
-                .ok()
-        })
+        tls.clone().and_then(|t| read_key_in_bytes(&PathBuf::from(t.clone())).map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string()))).ok())
     }
 }
 
@@ -162,6 +138,7 @@ impl Default for Config {
             vulnerability: VulnerabilityCfg::default(),
             ping: PinguyCfg::default(),
             mailer: MailerCfg::default(),
+            slack: SlackCfg::default(),
         }
     }
 }
@@ -174,26 +151,15 @@ impl AuthenticationFlowCfg for Config {
 
 impl ConfigValidator for Config {
     fn valid(&self) -> Result<()> {
-        vec![
-            self.https.valid(),
-            self.http2.valid(),
-            self.telemetry.valid(),
-            self.identity.valid(),
-            self.vaults.valid(),
-            self.licenses.valid(),
-            self.logs.valid(),
-            self.blockchain.valid(),
-            self.marketplaces.valid(),
-        ].iter()
+        vec![self.https.valid(), self.http2.valid(), self.telemetry.valid(), self.identity.valid(), self.vaults.valid(), self.licenses.valid(), self.logs.valid(), self.blockchain.valid(), self.marketplaces.valid()]
+            .iter()
             .fold(Ok(()), |acc, x| match x {
                 &Ok(()) => return acc,
                 &Err(ref e) => {
                     if acc.is_ok() {
                         return Err(Error::MissingConfiguration(format!("{}", e)));
                     }
-                    Err(Error::MissingConfiguration(
-                        format!("{}\n{}", e, acc.unwrap_err()),
-                    ))
+                    Err(Error::MissingConfiguration(format!("{}\n{}", e, acc.unwrap_err())))
                 }
             })
     }
@@ -219,9 +185,7 @@ impl GatewayCfg for Config {
     }
 
     fn tls(&self) -> Option<String> {
-        self.https.tls.clone().map(|n| {
-            (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string()
-        })
+        self.https.tls.clone().map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
     }
 
     fn tls_password(&self) -> Option<String> {
@@ -244,9 +208,7 @@ impl Streamer for Config {
     }
 
     fn http2_tls(&self) -> Option<String> {
-        self.http2.tls.clone().map(|n| {
-            (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string()
-        })
+        self.http2.tls.clone().map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
     }
 
     fn http2_tls_password(&self) -> Option<String> {
@@ -382,6 +344,18 @@ impl Mailer for Config {
     }
 }
 
+impl Slack for Config {
+    fn token(&self) -> &str {
+        &self.slack.token
+    }
+    fn domain(&self) -> &str {
+        &self.slack.domain
+    }
+    fn enabled(&self) -> bool {
+        self.slack.enabled
+    }
+}
+
 /*
 TO-DO:
 Use the bleow configuration for the events channel
@@ -471,14 +445,8 @@ mod tests {
         assert_eq!(config.http2.websocker, 9443);
 
         assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
-        assert_eq!(
-            config.marketplaces.token,
-            "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-        );
-        assert_eq!(
-            config.marketplaces.endpoint,
-            "https://marketplces.rioos.xyz:6443/api/v1"
-        );
+        assert_eq!(config.marketplaces.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
+        assert_eq!(config.marketplaces.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
 
         assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
 
@@ -496,10 +464,7 @@ mod tests {
         assert_eq!(config.logs.influx_endpoint, "http://localhost:8086");
         assert_eq!(config.logs.influx_prefix, "rioos_logs");
 
-        assert_eq!(
-            config.vulnerability.anchore_endpoint,
-            "http://localhost:8086"
-        );
+        assert_eq!(config.vulnerability.anchore_endpoint, "http://localhost:8086");
         assert_eq!(config.vulnerability.anchore_username, "");
         assert_eq!(config.vulnerability.anchore_password, "");
     }
@@ -530,14 +495,8 @@ mod tests {
         assert_eq!(config.http2.tls_password, "TEAMRIOADVANCEMENT123");
 
         assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
-        assert_eq!(
-            config.marketplaces.token,
-            "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-        );
-        assert_eq!(
-            config.marketplaces.endpoint,
-            "https://marketplces.rioos.xyz:6443/api/v1"
-        );
+        assert_eq!(config.marketplaces.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
+        assert_eq!(config.marketplaces.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
 
         assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
 
@@ -555,10 +514,7 @@ mod tests {
         assert_eq!(config.logs.endpoint, "http://localhost:8086");
         assert_eq!(config.logs.prefix, "rioos_logs");
 
-        assert_eq!(
-            config.vulnerability.anchore_endpoint,
-            "http://localhost:8086"
-        );
+        assert_eq!(config.vulnerability.anchore_endpoint, "http://localhost:8086");
         assert_eq!(config.vulnerability.anchore_username, "");
         assert_eq!(config.vulnerability.anchore_password, "");
     }
