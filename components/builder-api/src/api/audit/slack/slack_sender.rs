@@ -2,7 +2,7 @@
 //
 
 use USER_AGENT;
-use api::audit::config::SlackCfg;
+use api::audit::config::{SlackCfg, SLACK_URL};
 use api::audit::{PushNotifier, Status};
 use error::{Error, Result};
 use protocol::api::audit::Envelope;
@@ -14,7 +14,7 @@ use serde_json;
 
 const DEPLOY_SUBJECT: &'static str = "Ahoy! Kryptonite QRCode generated successfully.";
 const FAILED_SUBJECT: &'static str = "Kryptonite QRCode sync failure";
-const DEFAULT_SLACK_USER: &'static str = "rioos";
+const DEFAULT_SLACK_USER: &'static str = "test2";
 pub struct SlackSender {
     config: SlackCfg,
     user: String,
@@ -27,21 +27,20 @@ impl SlackSender {
     pub fn new(config: SlackCfg, user: String, subject: String, content: String) -> Self {
         SlackSender { config: config, user: user, subject: subject, content: content }
     }
-    pub fn send_notify(self) -> Result<()> {
-        if self.config.enabled {
-            let client = ApiClient::new(&format!("https://{}/api/", self.config.domain.to_string()), USER_AGENT, "v1", None).unwrap();
-            let body = json!({
+    pub fn send(self) -> Result<()> {
+        let client = ApiClient::new(&format!("{}", SLACK_URL), USER_AGENT, "v1", None).unwrap();
+        let body = json!({
                 "channel":"test2",
                 "text": self.content,
             });
-            let mut headers = Headers::new();
-            headers.set(Authorization(Bearer { token: self.config.token.to_string() }));
-            headers.set(UserAgent::new(USER_AGENT.to_string()));
-            headers.set(ContentType::json());
-            headers.set(Accept::json());
+        let mut headers = Headers::new();
+        headers.set(Authorization(Bearer { token: self.config.token.to_string() }));
+        headers.set(UserAgent::new(USER_AGENT.to_string()));
+        headers.set(ContentType::json());
+        headers.set(Accept::json());
 
-            client.post("chat.PostMessage").body(Body::from(serde_json::to_string(&body)?)).headers(headers).send().map_err(Error::ReqwestError)?;
-        }
+        client.post("chat.PostMessage").body(Body::from(serde_json::to_string(&body)?)).headers(headers).send().map_err(Error::ReqwestError)?;
+
         Ok({})
     }
 }
@@ -75,6 +74,9 @@ impl SlackNotifier {
 
 impl PushNotifier for SlackNotifier {
     fn should_notify(&self) -> bool {
+        if !self.config.enabled {
+            return false;
+        }
         match Status::from_str(&self.envelope.event.reason) {
             Status::KryptoniteQRCode | Status::KryptoniteSyncFailed => true,
             _ => false,
@@ -82,15 +84,18 @@ impl PushNotifier for SlackNotifier {
     }
 
     fn notify(&self) {
+        if self.should_notify() {
+            return;
+        }
         match Status::from_str(&self.envelope.event.reason) {
             // Status::KryptoniteQRCode => {
             //     let content = data.deploy_success().unwrap();
             //     let mail_builder = SlackSender::new(self.config.clone(), data.user(), content.0, content.1);
-            //     mail_builder.send_email();
+            //     mail_builder.send();
             // }
             Status::KryptoniteSyncFailed => {
                 let sender = SlackSender::new(self.config.clone(), "".to_string(), FAILED_SUBJECT.to_string(), self.envelope.event.message.to_string());
-                sender.send_notify();
+                sender.send();
             }
             _ => {}
         }

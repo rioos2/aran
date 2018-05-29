@@ -78,7 +78,7 @@ impl ApiSender {
     }
 
     /// Add peer to peer list
-    pub fn send_notify(&self, envl: Envelope) -> io::Result<()> {
+    pub fn push_notify(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PushNotification(envl);
         self.0.clone().send(msg).wait().map(drop).map_err(into_other)
     }

@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{Blockchain, BlockchainCfg, Mailer, MailerCfg, Marketplaces, MarketplacesCfg, Slack, SlackCfg};
+use api::audit::config::{Blockchain, BlockchainCfg, Mailer, Marketplaces, MarketplacesCfg, Notifications, Slack};
 use api::deploy::config::ServicesCfg;
 use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
 
@@ -60,9 +60,7 @@ pub struct Config {
     //  controller_endpoint = https://controller.rioos.sh:8999
     pub ping: PinguyCfg,
 
-    pub mailer: MailerCfg,
-
-    pub slack: SlackCfg,
+    pub notifications: Notifications,
 }
 
 /// dump the configuration
@@ -137,8 +135,7 @@ impl Default for Config {
             marketplaces: MarketplacesCfg::default(),
             vulnerability: VulnerabilityCfg::default(),
             ping: PinguyCfg::default(),
-            mailer: MailerCfg::default(),
-            slack: SlackCfg::default(),
+            notifications: Notifications::default(),
         }
     }
 }
@@ -328,31 +325,28 @@ impl License for Config {
 
 impl Mailer for Config {
     fn username(&self) -> &str {
-        &self.mailer.username
+        &self.notifications.mailer.username
     }
     fn password(&self) -> &str {
-        &self.mailer.password
+        &self.notifications.mailer.password
     }
     fn domain(&self) -> &str {
-        &self.mailer.domain
+        &self.notifications.mailer.domain
     }
     fn sender(&self) -> &str {
-        &self.mailer.sender
+        &self.notifications.mailer.sender
     }
     fn enabled(&self) -> bool {
-        self.mailer.enabled
+        self.notifications.mailer.enabled
     }
 }
 
 impl Slack for Config {
     fn token(&self) -> &str {
-        &self.slack.token
-    }
-    fn domain(&self) -> &str {
-        &self.slack.domain
+        &self.notifications.slack.token
     }
     fn enabled(&self) -> bool {
-        self.slack.enabled
+        self.notifications.slack.enabled
     }
 }
 

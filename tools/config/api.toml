@@ -12,7 +12,7 @@ tls = "api-server.pfx"
 tls_password = "TEAMRIOADVANCEMENT123"
 
 [identity]
-enabled = ["password", "service_account"]
+enabled = ["password", "service_account", "jwt"]
 params = { service_account = "service-account.pub" }
 
 [marketplaces]
@@ -49,10 +49,14 @@ anchore_password = ""
 controller_endpoint = "http://localhost:10252/"
 scheduler_endpoint = "http://localhost:10251"
 machineconsole_endpoint = "http://localhost:8005"
+[[notifications]]
+  [mailer]
+  enabled = true
+  username = ""
+  password = ""
+  domain = ""
+  sender = ""
 
-[mailer]
-enabled = true
-username = ""
-password = ""
-domain = ""
-sender = ""
+  [slack]
+  enabled = true
+  token = ""

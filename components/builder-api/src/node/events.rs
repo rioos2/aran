@@ -5,8 +5,8 @@ use node::runtime::{ExternalMessage, RuntimeHandler};
 
 use api::audit::PushNotifier;
 use api::audit::ledger;
-use api::audit::mailer::email_sender;
-use api::audit::slack::slack_sender;
+use api::audit::mailer::email_sender as mailer;
+use api::audit::slack::slack_sender as slack;
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
@@ -39,14 +39,8 @@ impl RuntimeHandler {
             }
             ExternalMessage::PushNotification(event_envl) => {
                 let e = event_envl.clone();
-                let enotify = email_sender::EmailNotifier::new(e, *self.mailer.clone());
-                if enotify.should_notify() {
-                    enotify.notify();
-                }
-                let snotify = slack_sender::SlackNotifier::new(event_envl, *self.slack.clone());
-                if snotify.should_notify() {
-                    snotify.notify();
-                }
+                mailer::EmailNotifier::new(e, *self.mailer.clone()).notify();
+                slack::SlackNotifier::new(event_envl, *self.slack.clone()).notify();
             }
         }
     }

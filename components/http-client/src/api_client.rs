@@ -117,25 +117,6 @@ impl ApiClient {
         self.post_with_custom_url(path, |_| {})
     }
 
-    // /// Builds an HTTP POST request with multipart.
-    // pub fn post_with_file(&self, f_paths: Vec<str>, contents: BTreeMap<String, String>) -> RequestBuilder {
-    //     let url = path.to_string().parse().expect("Failed to parse URL");
-    //     let filepart = reqwest::multipart::Form::new();
-    //     filepart.file("file", "/path/to/file")?;
-    //     filepart.text("token", token)?;
-    //     let request = Request::new(Method::Post, url).expect("Failed to create request");
-    //
-    //     write_body(&mut multipart).expect("Failed to write multipart body");
-    //
-    //     let mut response = multipart.send().expect("Failed to send multipart request");
-    //
-    //     if !response.status.is_success() {
-    //         let mut res = String::new();
-    //         response.read_to_string(&mut res).expect("failed to read response");
-    //         println!("response reported unsuccessful: {:?}\n {}", response, res);
-    //     }
-    // }
-
     /// Builds an HTTP POST request for a given path with the ability to customize the target URL.
     pub fn post_with_custom_url<F>(&self, path: &str, mut customize_url: F) -> RequestBuilder
     where

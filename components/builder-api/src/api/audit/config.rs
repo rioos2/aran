@@ -19,9 +19,9 @@ const SENDER: &'static str = "info@rio.company";
 
 const DOMAIN: &'static str = "smtp.mailgun.org:587";
 
-const SLACK_DOMAIN: &'static str = "slack.com";
+pub const SLACK_URL: &'static str = "https://slack.com/api";
 
-const SLACK_API_TOKEN: &'static str = "";
+const SLACK_API_TOKEN: &'static str = "xoxp-15643264595-15651742039-292147004003-835083f841ed3a0207a6ad46d19b7959";
 
 ///// Configuration for Audits (blockchain)
 
@@ -103,6 +103,18 @@ impl BlockchainConn {
         BlockchainConn { backend: config.backend(), url: config.endpoint().to_string() }
     }
 }
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct Notifications {
+    pub mailer: MailerCfg,
+    pub slack: SlackCfg,
+}
+
+impl Default for Notifications {
+    fn default() -> Self {
+        Notifications { mailer: MailerCfg::default(), slack: SlackCfg::default() }
+    }
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
@@ -119,7 +131,7 @@ impl Default for MailerCfg {
         MailerCfg {
             enabled: true,
             username: USERNAME.to_string(),
-            password: SLACK_API_TOKEN.to_string(),
+            password: PASSWORD.to_string(),
             domain: DOMAIN.to_string(),
             sender: SENDER.to_string(),
         }
@@ -152,32 +164,22 @@ impl MailerCfg {
 pub struct SlackCfg {
     pub enabled: bool,
     pub token: String,
-    pub domain: String,
 }
 
 impl Default for SlackCfg {
     fn default() -> Self {
-        SlackCfg {
-            enabled: true,
-            token: SLACK_API_TOKEN.to_string(),
-            domain: SLACK_DOMAIN.to_string(),
-        }
+        SlackCfg { enabled: true, token: SLACK_API_TOKEN.to_string() }
     }
 }
 
 pub trait Slack {
     fn enabled(&self) -> bool;
     fn token(&self) -> &str;
-    fn domain(&self) -> &str;
 }
 
 #[allow(unused_variables)]
 impl SlackCfg {
     pub fn new<T: Slack>(config: &T) -> Self {
-        SlackCfg {
-            enabled: config.enabled(),
-            token: config.token().to_string(),
-            domain: config.domain().to_string(),
-        }
+        SlackCfg { enabled: config.enabled(), token: config.token().to_string() }
     }
 }

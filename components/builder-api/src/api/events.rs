@@ -66,7 +66,7 @@ macro_rules! push_notification {
         use persistent;
         let ad = format!("{}", ($req).remote_addr);
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
-        el.send_notify($evt, (($evt).get_account(), ad))
+        el.push_notify($evt, (($evt).get_account(), ad))
     }};
 }
 
@@ -100,10 +100,10 @@ impl EventLogger {
         }
     }
 
-    pub fn send_notify(&self, event: AuditEvent, accessed_by: AccessedBy) {
+    pub fn push_notify(&self, event: AuditEvent, accessed_by: AccessedBy) {
         if self.enabled {
             let envelope = Envelope::new(&event, accessed_by);
-            self.channel.send_notify(envelope);
+            self.channel.push_notify(envelope);
         }
     }
 }
