@@ -156,6 +156,7 @@ pub struct ImageSourcePath {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SpecData {
     run_policy: String, // RunPolicy describes how the new build created from this build  configuration will be scheduled for execution. This is optional, if not specified we default to "Serial".
+    #[serde(default)]
     build_trigger_policys: Vec<BuildTriggerPolicy>, // Triggers determine how new Builds can be launched from a BuildConfig. If  no triggers are defined, a new build can only occur as a result of an  explicit client build creation.
     source: BuildSource, // Source describes the SCM in use.
     strategy: BuildStrategy, // Strategy defines how to perform a build.
@@ -521,16 +522,21 @@ pub struct TagEvent {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TagReference {
     name: String, // Name of the tag
+    #[serde(default)]
     annotations: BTreeMap<String, String>, // Optional; if specified, annotations that are applied to images retrieved via ImageMarks.
     from: ObjectReference, // Optional; if specified, a reference to another image that this tag should point to. Valid values are ImageMark, ImageStreamImage, and DockerImage.
+    #[serde(default)]
     reference: bool, // Reference states if the tag will be imported. Default value is false, which means the tag will be imported.
+    #[serde(default)]
     generation: i64, // Generation is a counter that tracks mutations to the spec tag (user intent).
     import_policy: TagImportPolicy, // ImportPolicy is information that controls how images may be imported by the server.
     reference_policy: String, // ReferencePolicy defines how other components should consume the image.
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TagImportPolicy {
+    #[serde(default)]
     insecure: bool, // Insecure is true if the server may bypass certificate verification or connect directly over HTTP during image import.
+    #[serde(default)]
     scheduled: bool, // Scheduled indicates to the server that this tag should be periodically checked to ensure it is up to date, and imported
 }
 
@@ -544,9 +550,11 @@ pub struct ImageMarks {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     tag: TagReference, // Tag is the spec tag associated with this image stream tag, and it may be null  if only pushes have occurred to this image stream.
+    #[serde(default)]
     generation: i64, // Generation is the current generation of the tagged image
     #[serde(default)]
     conditions: Vec<TagEventCondition>, // Conditions is an array of conditions that apply to the image stream tag.
+    #[serde(default)]
     lookup_policy: bool, // LookupPolicy indicates whether this tag will handle image references in this namespace.
     image: Image, // The Image associated with the ImageStream and tag.
     #[serde(default)]
