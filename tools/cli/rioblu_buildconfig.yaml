@@ -32,11 +32,11 @@ buildconfig:
     cluster_name: newyork
   spec:
     run_policy: Serial
-    build_trigger_policys:
-    - trigger_type: gittrigger
-      webhook:
-        hook_type: GitHub
-        secret: '922303941599854592'
+    # build_trigger_policys:
+    # - trigger_type: gittrigger
+    #   webhook:
+    #     hook_type: GitHub
+    #     secret: '922303941599854592'
     source:
       source:
       images:
@@ -44,7 +44,7 @@ buildconfig:
           kind: 'DockerImage'
           name: 'rust-docker-image'
       git:
-        uri: https://github.com/openshift/ruby-hello-world
+        uri: https://github.com/rioadvancement/blockchain-demo
         reference: master
       source_secret: '922303941599854592'
     strategy:
