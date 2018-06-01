@@ -26,10 +26,13 @@ use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use protocol::api::devtool::{Build, BuildStatusUpdate};
 use devtooling::models::build;
 
-use protocol::api::base::MetaFields;
+use protocol::api::base::{MetaFields, IdGet};
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+
+use bytes::Bytes;
+use serde_json;
 
 
 #[derive(Clone)]
@@ -140,6 +143,23 @@ impl BuildApi {
         }
     }
 
+    ///GET: /builds/:id
+    ///Input: id - u64
+    ///Returns Build
+    pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
+        let res = match build::DataStore::show(&self.conn, &idget) {
+            Ok(Some(build)) => {
+                let data = json!({
+                            "type": typ,
+                            "data": build,
+                            });
+                serde_json::to_string(&data).unwrap()
+            }
+            _ => "".to_string(),
+        };
+        Bytes::from(res)
+    }
+
     //PUT: /builds/id/status
     //Input status  as input and returns an updated builds
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
@@ -191,44 +211,44 @@ impl Api for BuildApi {
         router.post(
             "/builds",
             XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.post".to_string(),&*config)),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.build.post".to_string(), &*config)),
             "build",
         );
 
         router.get(
             "/builds",
             XHandler::new(C { inner: list })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.get".to_string(),&*config)),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.build.get".to_string(), &*config)),
             "build_list",
         );
         router.get(
             "/builds/:id",
             XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.get".to_string(),&*config)),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.build.get".to_string(), &*config)),
             "build_show",
         );
         router.get(
             "/builds/buildconfigs/:id",
             XHandler::new(C { inner: show_by_build_config })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.get".to_string(),&*config)),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.build.get".to_string(), &*config)),
             "build_list_by_buildconfig",
         );
         router.put(
             "/builds/:id",
             XHandler::new(C { inner: update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.put".to_string(),&*config)),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.build.put".to_string(), &*config)),
             "builds_update",
         );
         router.put(
             "/builds/:id/status",
             XHandler::new(C { inner: status_update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.build.put".to_string(),&*config)),
+                .before(basic.clone())
+                .before(TrustAccessed::new("rioos.build.put".to_string(), &*config)),
             "builds_status_update",
         );
     }
