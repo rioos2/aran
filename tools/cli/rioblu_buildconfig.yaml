@@ -48,7 +48,6 @@ buildconfig:
         from:
           kind: 'DockerImage'
           name: node:latest
-        scripts: ''
     output:
       to:
         kind: ImageMarks

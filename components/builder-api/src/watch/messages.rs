@@ -4,7 +4,7 @@ use bytes::Bytes;
 use protocol::api::base::IdGet;
 use db::data_store::DataStoreConn;
 use telemetry::metrics::prometheus::PrometheusClient;
-use api::{cluster, security, deploy};
+use api::{cluster, security, deploy, devtooling};
 use api::security::config::SecurerConn;
 
 //which is help for build response structure and which type of response
@@ -29,6 +29,8 @@ custom_derive! {
         Serviceaccounts,
         Assemblyfactorys,
         Assemblys,
+        Builds,
+        Buildconfigs,
     }
 }
 
@@ -130,4 +132,14 @@ pub fn handle_plans(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) ->
 pub fn handle_serviceaccounts(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
     let mut serviceaccounts = security::service_account_api::SeriveAccountApi::new(datastore);
     serviceaccounts.watch(idget, typ)
+}
+
+pub fn handle_builds(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
+    let mut builds = devtooling::build::BuildApi::new(datastore);
+    builds.watch(idget, typ)
+}
+
+pub fn handle_builds_config(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
+    let mut build_conf = devtooling::build_config::BuildConfigApi::new(datastore);
+    build_conf.watch(idget, typ)
 }
