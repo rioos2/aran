@@ -26,10 +26,13 @@ use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use protocol::api::devtool::BuildConfig;
 use devtooling::models::build_config;
 
-use protocol::api::base::{MetaFields, StatusUpdate};
+use protocol::api::base::{MetaFields, StatusUpdate, IdGet};
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+
+use bytes::Bytes;
+use serde_json;
 
 
 #[derive(Clone)]
@@ -139,6 +142,25 @@ impl BuildConfigApi {
             ))),
         }
     }
+
+    ///GET: /buildconfig/:id
+    ///Input: id - u64
+    ///Returns BuildConfigs
+    pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
+        let res = match build_config::DataStore::show(&self.conn, &idget) {
+            Ok(Some(build_config)) => {
+                let data = json!({
+                            "type": typ,
+                            "data": build_config,
+                            });
+                serde_json::to_string(&data).unwrap()
+            }
+            _ => "".to_string(),
+        };
+        Bytes::from(res)
+    }
+
+
     ///PUT: /buildconfigs/:id/status
     ///Input Status  as input
     ///Returns an BuildConfigs
