@@ -27,16 +27,11 @@ assembly_factory:
 
 buildconfig:
   object_meta:
-    name: ruby-sample-build
-    account: '976649707684110336'
-    cluster_name: newyork
+    name: blockchain-demo
+    account: '988832549822283776'
+    cluster_name: chennai
   spec:
     run_policy: Serial
-    # build_trigger_policys:
-    # - trigger_type: gittrigger
-    #   webhook:
-    #     hook_type: GitHub
-    #     secret: '922303941599854592'
     source:
       source:
       images:
@@ -46,19 +41,19 @@ buildconfig:
       git:
         uri: https://github.com/rioadvancement/blockchain-demo
         reference: master
-      source_secret: '922303941599854592'
+      source_secret: ''
     strategy:
       build_type: Source
       source_strategy:
         from:
-          kind: ImageMarks
-          name: builder-image:latest
-        scripts: rake build
+          kind: 'DockerImage'
+          name: node:latest
+        scripts: ''
     output:
       to:
         kind: ImageMarks
-        name: registry.rioos.xyz:5000/mydev-ruby-sample:latest
+        name: registry.rioos.xyz:5000/blockchain-sample:latest
     post_commit:
-      script: bundle exec rake test
+      script: ''
   status:
     phase: pending
