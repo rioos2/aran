@@ -18,5 +18,3 @@ assembly_factory:
   secret:
     id: '988843586395095040'
   plan: '988821495968980992'
-  status:
-    phase: pending

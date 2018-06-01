@@ -52,7 +52,3 @@ buildconfig:
       to:
         kind: ImageMarks
         name: registry.rioos.xyz:5000/blockchain-sample:latest
-    post_commit:
-      script: ''
-  status:
-    phase: pending
