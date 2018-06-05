@@ -79,8 +79,9 @@ impl WatchHandler {
             owned_string.push_str(&listener);
             owned_string.push_str(&another_owned_string);
 
-            &conn.query(&owned_string, &[])
-                .map_err(DbError::AsyncFunctionCheck);
+            &conn.query(&owned_string, &[]).map_err(
+                DbError::AsyncFunctionCheck,
+            );
         }
 
         thread::spawn(move || {
@@ -199,8 +200,6 @@ impl MyInner {
     fn list_data(&self, typ: &str, act_id: String) -> Option<String> {
         let idget = IdGet::with_account(act_id);
         let one_ref_ds = &self.datastore;
-
-
         let res = match self.uppercase_first_letter(typ).parse().unwrap() {
             Messages::Assemblys => watch::messages::handle_assembly_list(idget, one_ref_ds.clone(), self.prom.clone()),
             Messages::Assemblyfactorys => watch::messages::handle_assemblyfactory_list(idget, one_ref_ds.clone()),
@@ -219,6 +218,8 @@ impl MyInner {
             Messages::Origins => None,
             Messages::Plans => None,
             Messages::Serviceaccounts => None,
+            Messages::Builds => None,
+            Messages::Buildconfigs => None,
         };
         println!("==> watch handler list_data >> cloned");
         res
@@ -249,6 +250,8 @@ impl MyInner {
             Messages::Origins => watch::messages::handle_origins(idget, typ, one_ref_ds.clone()),
             Messages::Plans => watch::messages::handle_plans(idget, typ, one_ref_ds.clone()),
             Messages::Serviceaccounts => watch::messages::handle_serviceaccounts(idget, typ, one_ref_ds.clone()),
+            Messages::Builds => watch::messages::handle_builds(idget, typ, one_ref_ds.clone()),
+            Messages::Buildconfigs => watch::messages::handle_builds_config(idget, typ, one_ref_ds.clone()),
         };
         println!("==> watch handler get_data >> cloned");
         return res;

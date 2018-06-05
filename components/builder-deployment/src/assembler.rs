@@ -109,7 +109,7 @@ impl<'a> Assembler<'a> {
     ///
     ///
     fn rebuild_replicas(&self, desired_replicas: u32, current_replicas: u32, factory: AssemblyFactory) -> AssembledMap {
-        Replicas::new(&self.conn, current_replicas, desired_replicas, &factory).upto_desired(&factory.get_id())
+        Replicas::new(&self.conn, current_replicas, desired_replicas, &factory).upto_desired()
     }
 
     ///
