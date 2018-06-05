@@ -1,7 +1,7 @@
 [package]
 name = "rioos_builder_asmsrv"
 version = "0.0.0"
-authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>", "Suganya K <suganyakaliyamoorthy@megam.io>"]
+authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>", "Suganya K <suganyakaliyamoorthy@megam.io>", "Rathish V <rathishvbr@megam.io>"]
 description = "RIO/OS Deployment library"
 workspace = "../../"
 

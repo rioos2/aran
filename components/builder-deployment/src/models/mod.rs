@@ -1,4 +1,5 @@
 pub mod assemblyfactory;
+pub mod blockchainfactory;
 pub mod assembly;
 pub mod blueprint;
 pub mod endpoint;
