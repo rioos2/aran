@@ -387,33 +387,6 @@ pkg install rocksdb-lite-5.11.3_1
 
 ```
 
-## Performance testing
-
-We want to do load testing on the api-server. We will use [locust](https://locust.io)
-
-### Install locust.io
-
-Watch this asciinema
-
-```
-https://asciinema.org/a/LtzjvzEWOkxqPZmMo6UbhujsY
-
-```
-
-### Run locust profile
-
-
-```
-cd tools/perf
-
-# To run Launcher profile
-locust -f launcher.py Launcher --host=https://console.rioos.xyz
-
-
-```
-
-Locust's web:  [http://127.0.0.1:8089](http://127.0.0.1:8089)
-
 ## Troubleshooting
 1. If you get the following error when starting the api-server, check to make sure you have the database setup correctly.
 `ERROR:r2d2: Error opening a connection: Error communicating with the server: Connection refused (os error 111)`

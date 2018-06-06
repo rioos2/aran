@@ -1,4 +1,3 @@
-
 // Copyright 2018 The Rio Advancement Inc
 
 //Authenticatable enum helps for various of authentication types
@@ -18,11 +17,7 @@ pub enum Authenticatable {
     UserAndPass { username: String, password: String },
     UserEmailAndToken { email: String, token: String },
     UserEmailAndWebtoken { email: String, webtoken: String },
-    ServiceAccountNameAndWebtoken {
-        name: String,
-        webtoken: String,
-        key: PathBuf,
-    },
+    ServiceAccountNameAndWebtoken { name: String, webtoken: String, key: PathBuf },
     PassTicket { token: String },
 }
 
@@ -35,32 +30,10 @@ impl ToAuth for Authenticatable {
     //it validates enum types correct or not
     fn to_auth(&self) -> Authenticatable {
         match *self {
-            Authenticatable::UserAndPass {
-                username: ref u,
-                password: ref p,
-            } => Authenticatable::UserAndPass {
-                username: u.to_string(),
-                password: p.to_string(),
-            },
-            Authenticatable::UserEmailAndToken {
-                email: ref u,
-                token: ref p,
-            } => Authenticatable::UserEmailAndToken {
-                email: u.to_string(),
-                token: p.to_string(),
-            },
-            Authenticatable::UserEmailAndWebtoken {
-                email: ref u,
-                webtoken: ref p,
-            } => Authenticatable::UserEmailAndWebtoken {
-                email: u.to_string(),
-                webtoken: p.to_string(),
-            },
-            Authenticatable::ServiceAccountNameAndWebtoken {
-                name: ref u,
-                webtoken: ref p,
-                key: ref k,
-            } => Authenticatable::ServiceAccountNameAndWebtoken {
+            Authenticatable::UserAndPass { username: ref u, password: ref p } => Authenticatable::UserAndPass { username: u.to_string(), password: p.to_string() },
+            Authenticatable::UserEmailAndToken { email: ref u, token: ref p } => Authenticatable::UserEmailAndToken { email: u.to_string(), token: p.to_string() },
+            Authenticatable::UserEmailAndWebtoken { email: ref u, webtoken: ref p } => Authenticatable::UserEmailAndWebtoken { email: u.to_string(), webtoken: p.to_string() },
+            Authenticatable::ServiceAccountNameAndWebtoken { name: ref u, webtoken: ref p, key: ref k } => Authenticatable::ServiceAccountNameAndWebtoken {
                 name: u.to_string(),
                 webtoken: p.to_string(),
                 key: k.to_path_buf(),
@@ -74,26 +47,13 @@ impl ToAuth for Authenticatable {
 impl Into<RoleType> for Authenticatable {
     fn into(self) -> RoleType {
         match self {
-            Authenticatable::UserAndPass {
-                username: ref u,
-                password: ref _p,
-            } => RoleType::new(u.to_string()),
+            Authenticatable::UserAndPass { username: ref u, password: ref _p } => RoleType::new(u.to_string()),
 
-            Authenticatable::ServiceAccountNameAndWebtoken {
-                name: ref u,
-                webtoken: ref _p,
-                key: ref _k,
-            } => RoleType::new(u.to_string()),
+            Authenticatable::ServiceAccountNameAndWebtoken { name: ref u, webtoken: ref _p, key: ref _k } => RoleType::new(u.to_string()),
 
-            Authenticatable::UserEmailAndToken {
-                email: ref u,
-                token: ref _p,
-            } => RoleType::new(u.to_string()),
+            Authenticatable::UserEmailAndToken { email: ref u, token: ref _p } => RoleType::new(u.to_string()),
 
-            Authenticatable::UserEmailAndWebtoken {
-                email: ref u,
-                webtoken: ref _p,
-            } => RoleType::new(u.to_string()),
+            Authenticatable::UserEmailAndWebtoken { email: ref u, webtoken: ref _p } => RoleType::new(u.to_string()),
 
             _ => RoleType::new("".to_string()),
         }

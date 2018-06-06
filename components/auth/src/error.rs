@@ -1,14 +1,13 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use base64::DecodeError as B64Error;
+use openssl::error::ErrorStack;
+use rioos;
+use serde_json::Error as SJError;
 use std::error;
 use std::fmt;
 use std::io;
 use std::result;
-use serde_json::Error as SJError;
-use openssl::error::ErrorStack;
-use base64::DecodeError as B64Error;
-
-use rioos;
 
 #[derive(Debug)]
 pub enum Error {

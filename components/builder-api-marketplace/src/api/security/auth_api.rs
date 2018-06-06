@@ -29,6 +29,7 @@ use protocol::api::base::MetaFields;
 use auth::rioos::AuthenticateDelegate;
 use auth::util::authenticatable::Authenticatable;
 use auth::rioos::user_account::UserAccountAuthenticate;
+
 const DEFAULTROLE: &'static str = "rioos:loneranger";
 
 #[derive(Clone)]
@@ -185,126 +186,6 @@ impl AuthenticateApi {
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
-
-    //POST: ldap/configd",
-    //Input LdapConfig as body json, and returns LDAPConfgit as the response
-    fn config_ldap(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<LdapConfig>>()?)?;
-
-        match sessions::DataStore::ldap_config_create(&self.conn, &unmarshall_body) {
-            Ok(Some(ldap)) => Ok(render_json(status::Ok, &ldap)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-        }
-    }
-
-    //POST: ldap/test/:id",
-    //Input id - u64 as input and returns the response after testing ldapconfig
-    fn test_ldap(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
-
-        match sessions::DataStore::test_ldap_config(&self.conn, &params) {
-            Ok(Some(result)) => Ok(render_json(status::Ok, &result)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-        }
-    }
-
-    //POST: ldap/import/:id",
-    //Input id - u64 as input and returns the response after importing ldapconfig into
-    //Rioos
-    fn import_ldap(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
-
-        match sessions::DataStore::import_ldap_config(&self.conn, &params) {
-            Ok(result) => Ok(render_json(status::Ok, &result)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-        }
-    }
-
-    //POST: Create a new saml provider
-    ///auth/saml/providers/:providerid
-    fn config_saml(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<SamlProvider>>()?,
-        )?;
-
-        match sessions::DataStore::saml_provider_create(&self.conn, &unmarshall_body) {
-            Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-        }
-    }
-
-    //GET: auth/saml/providers/:providerid",
-    //Input id - u64 as input and returns a SamlProvider
-    fn saml_show(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
-
-        match sessions::DataStore::saml_show(&self.conn, &params) {
-            Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
-        }
-    }
-
-    //GET: auth/saml/providers",
-    //Returns all saml (no origion)
-    // Move to a separatedatastore samls
-    fn saml_list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match sessions::DataStore::saml_provider_list_blank(&self.conn) {
-            Ok(Some(samls)) => Ok(render_json_list(status::Ok, dispatch(req), &samls)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-        }
-    }
-
-    //POST: Create a new openid
-    //  /auth/oidc/providers/:providerid
-    fn config_openid(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<OidcProvider>>()?,
-        )?;
-
-        //do you have to set the provider id in unmarshall_body here ?
-
-        match sessions::DataStore::oidc_provider_create(&self.conn, &unmarshall_body) {
-            Ok(Some(oidc)) => Ok(render_json(status::Ok, &oidc)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-        }
-    }
-
-    //GET: auth/oidc/providers/:providerid",
-    //Input id - u64 as input and returns a OpenIdProvider
-    fn openid_show(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
-
-        match sessions::DataStore::oidc_show(&self.conn, &params) {
-            Ok(Some(openid)) => Ok(render_json(status::Ok, &openid)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                &params.get_id()
-            ))),
-        }
-    }
-
-    //GET: auth/oidc/providers",
-    //Returns all openid (no origion)
-    // Move to a separatedatastore openidds
-    fn openid_list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match sessions::DataStore::openid_provider_list_blank(&self.conn) {
-            Ok(Some(openids)) => Ok(render_json_list(status::Ok, dispatch(req), &openids)),
-            Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-        }
-    }
 }
 
 impl Api for AuthenticateApi {
@@ -327,39 +208,6 @@ impl Api for AuthenticateApi {
         let _self = self.clone();
         let account_logout = move |req: &mut Request| -> AranResult<Response> { _self.account_logout(req) };
 
-        let _self = self.clone();
-        let authenticate_ldap = move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
-
-        //closures: ldap
-        let _self = self.clone();
-        let config_ldap = move |req: &mut Request| -> AranResult<Response> { _self.config_ldap(req) };
-
-        let _self = self.clone();
-        let import_ldap = move |req: &mut Request| -> AranResult<Response> { _self.import_ldap(req) };
-
-        let _self = self.clone();
-        let test_ldap = move |req: &mut Request| -> AranResult<Response> { _self.test_ldap(req) };
-
-        //closures: saml
-        let _self = self.clone();
-        let config_saml = move |req: &mut Request| -> AranResult<Response> { _self.config_saml(req) };
-
-        let _self = self.clone();
-        let saml_show = move |req: &mut Request| -> AranResult<Response> { _self.saml_show(req) };
-
-        let _self = self.clone();
-        let saml_list_blank = move |req: &mut Request| -> AranResult<Response> { _self.saml_list_blank(req) };
-
-        //closures: openid
-        let _self = self.clone();
-        let config_openid = move |req: &mut Request| -> AranResult<Response> { _self.config_openid(req) };
-
-        let _self = self.clone();
-        let openid_show = move |req: &mut Request| -> AranResult<Response> { _self.openid_show(req) };
-
-        let _self = self.clone();
-        let openid_list_blank = move |req: &mut Request| -> AranResult<Response> { _self.openid_list_blank(req) };
-
         router.post(
             "/accounts",
             XHandler::new(C { inner: account_create }),
@@ -369,10 +217,6 @@ impl Api for AuthenticateApi {
             "/accounts/:id",
             XHandler::new(C { inner: account_show })
                 .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.account.get".to_string(),
-                    &*config,
-                )),
             "account_show",
         );
 
@@ -380,10 +224,7 @@ impl Api for AuthenticateApi {
             "/accounts/name/:name",
             XHandler::new(C { inner: account_show_by_name })
                 .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.account.get".to_string(),
-                    &*config,
-                )),
+                
             "account_show_by_name",
         );
 
@@ -396,51 +237,9 @@ impl Api for AuthenticateApi {
             "/logout",
             XHandler::new(C { inner: account_logout }).before(basic.clone()),
             "account_logout",
-        );
-
-        router.post(
-            "/authenticate/ldap/:code",
-            XHandler::new(C { inner: authenticate_ldap }),
-            "authenticate_ldap",
-        );
-
-        router.post("/ldap/config", C { inner: config_ldap }, "config_ldap");
-        router.post("/ldap/config/:id/test", C { inner: test_ldap }, "test_ldap");
-        router.post("/ldap/import/:id", C { inner: import_ldap }, "import_ldap");
-
-        router.post(
-            "/auth/saml/providers",
-            C { inner: config_saml },
-            "config_saml",
-        );
-
-        router.get(
-            "/auth/saml/providers",
-            C { inner: saml_list_blank },
-            "saml_list",
-        );
-
-        router.get(
-            "/auth/saml/providers/:id",
-            C { inner: saml_show },
-            "saml_show",
-        );
-
-        router.post(
-            "/auth/oidc/providers/:providerid",
-            C { inner: config_openid },
-            "config_openid",
-        );
-        router.get(
-            "/auth/oidc/providers",
-            C { inner: openid_list_blank },
-            "openid_list_blank",
-        );
-        router.get(
-            "auth/oidc/providers/:id",
-            C { inner: openid_show },
-            "openid_show",
-        );
+        );    
+       
+       
     }
 }
 

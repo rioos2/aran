@@ -1,14 +1,13 @@
 // Copyright 2018 The Rio Advancement Inc
 use std::collections::BTreeMap;
 
-use api::base::{TypeMeta, ObjectMeta, IdGet, Status, MetaFields, ChildTypeMeta};
+use api::base::{ChildTypeMeta, IdGet, MetaFields, ObjectMeta, Status, TypeMeta};
 use api::blueprint::Plan;
-use api::volume::Volumes;
 use api::endpoints::EndPoints;
 use api::linker::Services;
+use api::volume::Volumes;
 
-
-use cache::inject::{PlanFeeder, FactoryFeeder, EndPointsFeeder, VolumeFeeder, MetricFeeder, ServicesFeeder};
+use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PlanFeeder, ServicesFeeder, VolumesFeeder};
 
 pub const PHASE_PENDING: &'static str = "Pending";
 pub const PHASE_STAND_STILL: &'static str = "StandStill";
@@ -16,17 +15,16 @@ pub const PHASE_STAND_STILL: &'static str = "StandStill";
 pub const NEW_REPLICA_INITALIZING_MSG: &'static str = "Initializing replicas...Brew some coffee!!!";
 pub const NEW_STAND_STILL_MSG: &'static str = "I'm in sleep state. ...Wake me up!!!";
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactory {
     #[serde(default)]
     id: String, // Id an unique identifier in systems of record. Generated during creation of the AssemblyFactory
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: AssemblyFactory
-    object_meta: ObjectMeta, ////Standard object metadata
-    replicas: u32, //Replicas is the number of desired replicas of the plan.
+    object_meta: ObjectMeta,             ////Standard object metadata
+    replicas: u32,                       //Replicas is the number of desired replicas of the plan.
     resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
-    secret: Secret, //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
+    secret: Secret,                      //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
     plan: String, // A Plan is meta-data that provides a description of the artifacts that make up an application, the services that are required to execute or utilize those artifacts, and the relationship of the artifacts to those services. Plans are expressed as json under a /plans resource.    Here we provide the identifier as pointed to /plans
     #[serde(default)]
     status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
@@ -46,11 +44,7 @@ impl AssemblyFactory {
     //Create a new assemblyfactory with type_meta and object_meta
     //and other defaulted.
     pub fn with(t: TypeMeta, o: ObjectMeta) -> AssemblyFactory {
-        AssemblyFactory {
-            type_meta: t,
-            object_meta: o,
-            ..Default::default()
-        }
+        AssemblyFactory { type_meta: t, object_meta: o, ..Default::default() }
     }
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v
@@ -146,7 +140,6 @@ impl PlanFeeder for AssemblyFactory {
     }
 }
 
-
 // The service feeder, which gets called from an expander cache.
 // The expander cache is ttl and loads the service the first time.
 impl ServicesFeeder for AssemblyFactory {
@@ -190,7 +183,7 @@ pub struct Assembly {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     selector: Vec<String>, // selector to restrict the list of returned objects by their labels. Defaults to everything
-    status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
+    status: Status,          //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
     #[serde(default)]
     metadata: BTreeMap<String, String>, //Standard object's metadata. Can contain optional label selector team, origin
     #[serde(default)]
@@ -207,11 +200,7 @@ impl Assembly {
     //Create a new assembly with type_meta and object_meta
     //and other defaulted.
     pub fn with(t: TypeMeta, o: ObjectMeta) -> Assembly {
-        Assembly {
-            type_meta: t,
-            object_meta: o,
-            ..Default::default()
-        }
+        Assembly { type_meta: t, object_meta: o, ..Default::default() }
     }
 
     pub fn set_id(&mut self, v: ::std::string::String) {
@@ -267,21 +256,8 @@ impl Assembly {
     }
 
     pub fn get_category(&self) -> String {
-        if self.get_spec().get_parent().is_some() &&
-            self.get_spec()
-                .get_parent()
-                .unwrap()
-                .get_spec()
-                .get_plan()
-                .is_some()
-        {
-            return self.get_spec()
-                .get_parent()
-                .unwrap()
-                .get_spec()
-                .get_plan()
-                .unwrap()
-                .get_category();
+        if self.get_spec().get_parent().is_some() && self.get_spec().get_parent().unwrap().get_spec().get_plan().is_some() {
+            return self.get_spec().get_parent().unwrap().get_spec().get_plan().unwrap().get_category();
         }
         "".to_string()
     }
@@ -314,13 +290,7 @@ impl MetaFields for Assembly {
 // The expander cache is ttl and loads the factory the first time.
 impl FactoryFeeder for Assembly {
     fn fget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(
-            self.get_owner_references()
-                .iter()
-                .map(|x| x.get_uid().to_string())
-                .collect::<String>(),
-            "_factory".to_string(),
-        )
+        IdGet::with_id_name(self.get_owner_references().iter().map(|x| x.get_uid().to_string()).collect::<String>(), "_factory".to_string())
     }
 
     fn ffeed(&mut self, f: Option<AssemblyFactory>) {
@@ -340,11 +310,9 @@ impl EndPointsFeeder for Assembly {
     }
 }
 
-
-
 /// The volume feeder, which gets called from an expander cache.
 /// The expander cache is ttl and loads the volume for the assembly the first time.
-impl VolumeFeeder for Assembly {
+impl VolumesFeeder for Assembly {
     fn vget_id(&mut self) -> IdGet {
         IdGet::with_id_name(self.get_id(), "_volume".to_string())
     }
@@ -354,7 +322,7 @@ impl VolumeFeeder for Assembly {
     }
 }
 
-impl MetricFeeder for Assembly {
+impl MetricsFeeder for Assembly {
     fn mget_id(&mut self) -> IdGet {
         IdGet::with_id_name(self.get_id(), self.get_category())
     }
@@ -839,9 +807,7 @@ mod test {
         assert!(assemblyfactory.resources.contains_key("compute_type"));
         assert!(assemblyfactory.resources.contains_key("stotage_type"));
         assert_eq!(assemblyfactory.metadata.len(), 2);
-        assert!(assemblyfactory.metadata.contains_key(
-            "io:rioos:orginin::name",
-        ));
+        assert!(assemblyfactory.metadata.contains_key("io:rioos:orginin::name",));
         assert!(assemblyfactory.metadata.contains_key("io:rioos:team::name"));
     }
 
@@ -950,9 +916,7 @@ mod test {
         assert!(assemblyfactory.resources.contains_key("compute_type"));
         assert!(assemblyfactory.resources.contains_key("stotage_type"));
         assert_eq!(assemblyfactory.metadata.len(), 2);
-        assert!(assemblyfactory.metadata.contains_key(
-            "io:rioos:orginin::name",
-        ));
+        assert!(assemblyfactory.metadata.contains_key("io:rioos:orginin::name",));
         assert!(assemblyfactory.metadata.contains_key("io:rioos:team::name"));
     }
 
@@ -982,10 +946,7 @@ mod test {
     fn decode_affinity() {
         let affinity = r#"{"assemblyfactory_affinity": "requiredDuringSchedulingIgnoredDuringExecution"}"#;
         let affinit: Affinity = json_decode(affinity).unwrap();
-        assert_eq!(
-            affinit.assemblyfactory_affinity,
-            "requiredDuringSchedulingIgnoredDuringExecution"
-        );
+        assert_eq!(affinit.assemblyfactory_affinity, "requiredDuringSchedulingIgnoredDuringExecution");
     }
 
     #[test]

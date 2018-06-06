@@ -1,22 +1,20 @@
 use std::rc::Rc;
-use std::sync::Arc;
 use std::sync::mpsc;
+use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 
-use ws;
-use regex::Regex;
 use bytes::Bytes;
+use regex::Regex;
 use serde_json;
-use serde_json::Value;
 use watch::handler::WatchHandler;
 use watch::handler::LISTENERS;
+use ws;
 
-
-use openssl::ssl::{SslAcceptor, SslStream};
 use mio::tcp::TcpStream;
 use nodesrv::node_ds::NodeDS;
+use openssl::ssl::{SslAcceptor, SslStream};
 
 use schedule_recv;
 
@@ -32,7 +30,6 @@ pub struct Router {
 }
 
 impl ws::Handler for Router {
-
     fn upgrade_ssl_server(&mut self, sock: TcpStream) -> ws::Result<SslStream<TcpStream>> {
         self.ssl.accept(sock).map_err(From::from)
     }
@@ -45,25 +42,18 @@ impl ws::Handler for Router {
         let re = Regex::new("/api/v1/accounts/(\\w+)/watch").unwrap();
         if re.is_match(req.resource()) {
             self.inner = Box::new(Data {
-                    ws: out,
-                    path: req.resource().to_string(),
-                    register: reg,
-                    watchhandler: self.watchhandler.clone(),
-                })
+                ws: out,
+                path: req.resource().to_string(),
+                register: reg,
+                watchhandler: self.watchhandler.clone(),
+            })
         } else {
             //TODO - use it for other websocket urls
             match req.resource() {
                 // Route to a data handler
-                "/api/v1/healthz/overall" => {
-                    self.inner = Box::new(Metrics {
-                        ws: out,
-                        watchhandler: self.watchhandler.clone(),
-                })
-                }
+                "/api/v1/healthz/overall" => self.inner = Box::new(Metrics { ws: out, watchhandler: self.watchhandler.clone() }),
                 // Use the default child handler, NotFound
-                _ => {
-                    ()
-                },
+                _ => (),
             }
             ()
         }
@@ -147,41 +137,33 @@ impl ws::Handler for Data {
             //when got new websocket connection, then server load list data
             //from database and send to it.
             match watchhandler.load_list_data(&listener, id.clone()) {
-                Some(res) => {
-                    match sender.send(res) {
-                        Ok(_success) => {}
-                        Err(_err) => {
-                            break;
-                        }
+                Some(res) => match sender.send(res) {
+                    Ok(_success) => {}
+                    Err(_err) => {
+                        break;
                     }
-                }
+                },
                 None => {}
             }
         }
 
         // Here periodic assembly list will be send to websocket from cache.
         let tick = schedule_recv::periodic_ms(10000);
-        thread::spawn(move || {
-            loop {
-                match watchhandler.load_list_data("assemblys", id.clone()) {
-                    Some(res) => {
-                        match sender.send(res) {
-                            Ok(_success) => {}
-                            Err(_err) => {
-                                break;
-                            }
-                        }
+        thread::spawn(move || loop {
+            match watchhandler.load_list_data("assemblys", id.clone()) {
+                Some(res) => match sender.send(res) {
+                    Ok(_success) => {}
+                    Err(_err) => {
+                        break;
                     }
-                    None => {}
-                }
-                tick.recv().unwrap();
+                },
+                None => {}
             }
+            tick.recv().unwrap();
         });
         Ok(())
     }
-
 }
-
 
 // This handler sends some data to the client and then terminates the connection on the first
 struct Metrics {
@@ -197,23 +179,24 @@ impl ws::Handler for Metrics {
         let prom = self.watchhandler.prom_client();
 
         let tick = schedule_recv::periodic_ms(10000);
-        thread::spawn(move || {
-            loop {
-                match NodeDS::healthz_all(&prom) {
-                    Ok(Some(health_all)) => {
-                        let res = serde_json::to_string(&health_all).unwrap();
-                        match sender.send(res) {
-                            Ok(_success) => {}
-                            Err(_err) => {break;}
+        thread::spawn(move || loop {
+            match NodeDS::healthz_all(&prom) {
+                Ok(Some(health_all)) => {
+                    let res = serde_json::to_string(&health_all).unwrap();
+                    match sender.send(res) {
+                        Ok(_success) => {}
+                        Err(_err) => {
+                            break;
                         }
                     }
-                    Err(_err) => {break;},
-                    Ok(None) => (),
                 }
-                tick.recv().unwrap();
+                Err(_err) => {
+                    break;
+                }
+                Ok(None) => (),
             }
+            tick.recv().unwrap();
         });
         Ok(())
     }
-
 }

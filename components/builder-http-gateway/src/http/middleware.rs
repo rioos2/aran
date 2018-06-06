@@ -1,31 +1,27 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
-use std::collections::HashMap;
-
-use iron::Handler;
+use super::super::util::errors::*;
+use super::header_extracter::HeaderDecider;
+use super::rendering::*;
+use ansi_term::Colour;
+use auth::config::AuthenticationFlowCfg;
+use auth::rbac::{authorizer, permissions::Permissions};
+use auth::rioos::AuthenticateDelegate;
+use common::ui;
+use db::data_store::DataStoreConn;
 use iron::headers;
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
 use iron::status::NotFound;
 use iron::typemap::Key;
-use router::NoRoute;
+use iron::Handler;
 use persistent;
-
+use router::NoRoute;
+use std::collections::HashMap;
+use std::sync::Arc;
 use unicase::UniCase;
-use ansi_term::Colour;
-use super::rendering::*;
-use super::super::util::errors::*;
-use super::header_extracter::HeaderDecider;
-
-use db::data_store::DataStoreConn;
-use common::ui;
-
-use auth::rioos::AuthenticateDelegate;
-use auth::rbac::authorizer;
-use auth::config::AuthenticationFlowCfg;
-
 use util::errors::{bad_err, forbidden_error, internal_error};
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
@@ -204,7 +200,11 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(req: &mut Request, plugins: Vec<String>, conf: HashMap<String, String>) -> IronResult<()> {
+    pub fn proceed(
+        req: &mut Request,
+        plugins: Vec<String>,
+        conf: HashMap<String, String>,
+    ) -> IronResult<()> {
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -212,7 +212,7 @@ impl ProceedAuthenticating {
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         };
-        
+
         let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;
 
         let delegate = AuthenticateDelegate::new(broker.clone());
@@ -227,46 +227,84 @@ impl ProceedAuthenticating {
     }
 }
 
-#[derive(Clone)]
-pub struct TrustAccessed {
-    pub trusted: String,
-    pub plugins: Vec<String>,
-    pub conf: HashMap<String, String>,
+struct URLGrabber {}
+
+impl URLGrabber {
+    const WHITE_LIST: &'static [&'static str] = &[
+        "rioos.accounts.POST",
+        "rioos.authenticate.POST",
+        "rioos.logout.POST",
+        "rioos.accounts*audits.POST",
+        "rioos.accounts*audits.GET",
+        "rioos.logs.GET",
+        "rioos.image*vulnerability.GET",
+        "rioos.roles.GET",
+        "rioos.roles.POST",
+        "rioos.permissions.GET",
+        "rioos.permissions.POST",
+        "rioos.origins.GET",
+        "rioos.origins.POST",
+        "rioos.teams.POST",
+        "rioos.origins*secrets.POST",
+        "rioos.origins*secrets.GET",
+        "rioos.origins*secrets*.POST",
+        "rioos.origins*serviceaccounts.POST",
+        "rioos.origins*serviceaccounts*.GET",
+        "rioos.origins*serviceaccounts*.PUT",
+        "rioos.serviceaccounts.GET",
+        "rioos.settingsmap.GET",
+        "rioos.origins*settingsmap*.POST",
+        "rioos.ping.GET",
+        "rioos.accounts*assemblys*exec",
+    ];
+
+    fn grab(req: &mut Request) -> Option<String> {
+        let system = "rioos";
+        let method = &req.method;
+        let resource = format!("{:?}", &req.url.path());
+
+        if !URLGrabber::WHITE_LIST.contains(&resource.as_str()) {
+            return Some(format!("{}:{}:{}", system, resource, method));
+        }
+
+        None
+    }
 }
 
-impl TrustAccessed {
-    pub fn new<T: AuthenticationFlowCfg>(trusted: String, config: &T) -> Self {
+#[derive(Clone)]
+pub struct RBAC {
+    pub plugins: Vec<String>,
+    pub conf: HashMap<String, String>,
+    authorizer: authorizer::Authorization,
+}
+
+impl RBAC {
+    pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions) -> Self {
         let plugins_and_its_configuration_tuple = config.modes();
-        TrustAccessed {
-            trusted: trusted,
+        RBAC {
             plugins: plugins_and_its_configuration_tuple.0,
             conf: plugins_and_its_configuration_tuple.1,
+            authorizer: authorizer::Authorization::new(permissions),
         }
     }
 
-    fn get(&self) -> String {
-        self.trusted.clone()
+    fn input_trust(&self, req: &mut Request) -> Option<String> {
+        URLGrabber::grab(req)
     }
 }
 
-impl BeforeMiddleware for TrustAccessed {
+impl BeforeMiddleware for RBAC {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
-            Ok(broker) => broker,
-            Err(err) => {
-                let err = internal_error(&format!("{}\n", err));
-                return Err(render_json_error(&bad_err(&err), err.http_code()));
-            }
-        };
-
-        let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
+        let header =
+            HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
         let roles: authorizer::RoleType = header.decide()?.into();
-        // return Ok if the request has no header with email and serviceaccount name
-        if roles.name.get_id().is_empty() {
+        let input_trust = self.input_trust(req);
+
+        if roles.name.get_id().pop().is_none() || input_trust.is_none() {
             return Ok(());
         }
 
-        match authorizer::Authorization::new(broker, roles).verify(self.get()) {
+        match self.authorizer.clone().verify(roles, input_trust.unwrap()) {
             Ok(_validate) => Ok(()),
             Err(err) => {
                 let err = forbidden_error(&format!("{}\n", err));

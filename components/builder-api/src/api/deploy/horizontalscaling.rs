@@ -2,37 +2,32 @@
 
 //! A collection of deployment [assembly, assembly_factory, for the HTTP server
 
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
+use bytes::Bytes;
 use common::ui;
-use api::{Api, ApiValidator, ExpanderSender, ParmsVerifier, QueryValidator, Validator};
-use protocol::api::schema::{dispatch, type_meta};
 use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-use telemetry::metrics::prometheus::PrometheusClient;
-use deploy::assembler::{Assembler, ServicesConfig};
-use deploy::models::{assemblyfactory, blueprint, service};
-use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
-
-use scale::{horizontalscaling_ds, scaling};
-use protocol::api::scale::{HorizontalScaling, StatusUpdate};
-use protocol::api::base::{IdGet, MetaFields};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::assembler::{Assembler, ServicesConfig};
+use deploy::models::{assemblyfactory, blueprint, service};
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::scale::{HorizontalScaling, StatusUpdate};
+use protocol::api::schema::{dispatch, type_meta};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
+use router::Router;
+use scale::{horizontalscaling_ds, scaling};
 use serde_json;
+use std::sync::Arc;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 #[derive(Clone)]
 pub struct HorizontalScalingApi {
@@ -63,7 +58,8 @@ impl HorizontalScalingApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<HorizontalScaling>>()?)?;
+        let mut unmarshall_body =
+            self.validate(req.get::<bodyparser::Struct<HorizontalScaling>>()?)?;
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
             unmarshall_body.get_name(),
@@ -197,7 +193,8 @@ impl HorizontalScalingApi {
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<HorizontalScaling>>()?)?;
+        let mut unmarshall_body =
+            self.validate(req.get::<bodyparser::Struct<HorizontalScaling>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match horizontalscaling_ds::DataStore::new(&self.conn).update(&unmarshall_body) {
@@ -243,25 +240,24 @@ impl Api for HorizontalScalingApi {
         let metrics = move |req: &mut Request| -> AranResult<Response> { _self.metrics(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
-        let show_by_assembly_factory = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly_factory(req) };
+        let show_by_assembly_factory = move |req: &mut Request| -> AranResult<Response> {
+            _self.show_by_assembly_factory(req)
+        };
 
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         let _self = self.clone();
-        let scale = move |req: &mut Request| -> AranResult<Response> { _self.scale(req, &_service_cfg) };
+        let scale =
+            move |req: &mut Request| -> AranResult<Response> { _self.scale(req, &_service_cfg) };
 
         router.post(
             "/horizontalscaling",
-            XHandler::new(C { inner: create })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.horizontalscaling.post".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "horizontal_scalings",
         );
 
@@ -269,42 +265,23 @@ impl Api for HorizontalScalingApi {
             "/horizontalscaling/:id/status",
             XHandler::new(C {
                 inner: status_update,
-            }).before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.horizontalscaling.put".to_string(),
-                    &*config,
-                )),
+            }).before(basic.clone()),
             "horizontal_scaling_status_update",
         );
         router.put(
             "/horizontalscaling/:id",
-            XHandler::new(C { inner: update })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.horizontalscaling.put".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: update }).before(basic.clone()),
             "horizontal_scaling_update",
         );
         router.get(
             "/horizontalscaling/:id/metrics",
-            XHandler::new(C { inner: metrics })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.horizontalscaling.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: metrics }).before(basic.clone()),
             "horizontal_scaling_metrics",
         );
 
         router.get(
             "/horizontalscaling/:id/scale",
-            XHandler::new(C { inner: scale })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.horizontalscaling.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: scale }).before(basic.clone()),
             "horizontal_scaling",
         );
 
@@ -318,12 +295,7 @@ impl Api for HorizontalScalingApi {
 
         router.get(
             "/horizontalscaling",
-            XHandler::new(C { inner: list_blank })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.horizontalscaling.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "horizontal_scaling_list_blank",
         );
     }

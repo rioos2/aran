@@ -19,27 +19,26 @@ pub trait EndPointsFeeder: Send {
     fn efeed(&mut self, e: Option<api::endpoints::EndPoints>);
 }
 
-pub trait VolumeFeeder: Send {
+pub trait VolumesFeeder: Send {
     fn vget_id(&mut self) -> api::base::IdGet;
 
     fn vfeed(&mut self, v: Option<Vec<api::volume::Volumes>>); //change it to mount::Volume
 }
 
-pub trait MetricFeeder: Send {
+pub trait MetricsFeeder: Send {
     fn mget_id(&mut self) -> api::base::IdGet;
 
     fn mfeed(&mut self, v: Option<BTreeMap<String, String>>);
 }
 
-pub trait PermissionFeeder: Send {
-    fn p_get_id(&mut self) -> api::base::IdGet;
-
-    fn p_feed(&mut self, v: Option<Vec<api::authorize::Permissions>>);
-}
-
-
 pub trait ServicesFeeder: Send {
     fn sget_id(&mut self) -> api::base::IdGet;
 
     fn sfeed(&mut self, v: Option<Vec<api::linker::Services>>);
+}
+
+pub trait PermissionsFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<Vec<api::authorize::Permissions>>);
 }

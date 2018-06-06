@@ -9,22 +9,20 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use api::{Api, ApiValidator, ExpanderSender, ParmsVerifier, Validator};
-use protocol::api::schema::dispatch;
+use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use common::ui;
 use config::Config;
 use error::Error;
-use common::ui;
-use ansi_term::Colour;
 
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
 
 /// TO_DO: Should be named  (authorize::models::roles, authorize::models::permission)
 use authorize::models::permission;
-use protocol::api::authorize::Permissions;
-use protocol::api::base::IdGet;
-use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PERMISSION};
+use protocol::api::{authorize::Permissions, base::IdGet, schema::dispatch};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PERMISSION};
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -55,15 +53,16 @@ impl PermissionApi {
     //- id
     //- ObjectMeta: has updated created_at
     //- created_at
-    fn permission_create(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate::<Permissions>(req.get::<bodyparser::Struct<Permissions>>()?)?;
+    fn create(&self, req: &mut Request) -> AranResult<Response> {
+        let unmarshall_body =
+            self.validate::<Permissions>(req.get::<bodyparser::Struct<Permissions>>()?)?;
         ui::rawdumpln(
             Colour::White,
             '✓',
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match permission::DataStore::permissions_create(&self.conn, &unmarshall_body) {
+        match permission::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(permissions_create)) => Ok(render_json(status::Ok, &permissions_create)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -72,8 +71,8 @@ impl PermissionApi {
 
     //GET: /permissions
     //Returns all the permissions(irrespective of namespaces)
-    fn permission_list(&self, _req: &mut Request) -> AranResult<Response> {
-        match permission::DataStore::permissions_list(&self.conn) {
+    fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
+        match permission::DataStore::new(&self.conn).list_blank() {
             Ok(Some(permissions_list)) => Ok(render_json_list(
                 status::Ok,
                 dispatch(_req),
@@ -85,7 +84,7 @@ impl PermissionApi {
     }
 
     //Send in the role id and get all the list the permissions for the role.
-    pub fn list_permissions_by_role(&self, req: &mut Request) -> AranResult<Response> {
+    pub fn list_by_role(&self, req: &mut Request) -> AranResult<Response> {
         let role_id = {
             let params = req.extensions.get::<Router>().unwrap();
             match params.find("role_id").unwrap().parse::<u64>() {
@@ -94,7 +93,9 @@ impl PermissionApi {
             }
         };
 
-        match permission::DataStore::get_rolebased_permissions(&self.conn, &IdGet::with_id(role_id.clone().to_string())) {
+        match permission::DataStore::new(&self.conn)
+            .list_by_role(&IdGet::with_id(role_id.clone().to_string()))
+        {
             Ok(Some(permissions_list)) => Ok(render_json_list(
                 status::Ok,
                 dispatch(req),
@@ -110,10 +111,10 @@ impl PermissionApi {
     }
     //GET: /permission/:id
     //Input id - u64 as input and returns a permission
-    fn permission_show(&self, req: &mut Request) -> AranResult<Response> {
+    fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match permission::DataStore::permissions_show(&self.conn, &params) {
+        match permission::DataStore::new(&self.conn).show(&params) {
             Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -126,7 +127,7 @@ impl PermissionApi {
 
     //Permission applied for a role
     //Don't know the reason we use this.
-    fn show_permissions_applied_for(&self, req: &mut Request) -> AranResult<Response> {
+    fn show_by_role(&self, req: &mut Request) -> AranResult<Response> {
         let (perm_id, role_id) = {
             let params = req.extensions.get::<Router>().unwrap();
             let perm_id = params.find("id").unwrap().to_owned();
@@ -138,7 +139,7 @@ impl PermissionApi {
         perms_get.set_id(perm_id);
         perms_get.set_name(role_id);
 
-        match permission::DataStore::get_specfic_permission_based_role(&self.conn, &perms_get) {
+        match permission::DataStore::new(&self.conn).show_by_role(&perms_get) {
             Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -154,55 +155,52 @@ impl Api for PermissionApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
         self.with_cache();
+
         //closures : permissions
         let _self = self.clone();
-        let permission_create = move |req: &mut Request| -> AranResult<Response> { _self.permission_create(req) };
+        let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let permission_list = move |req: &mut Request| -> AranResult<Response> { _self.permission_list(req) };
+        let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         let _self = self.clone();
-        let permission_show = move |req: &mut Request| -> AranResult<Response> { _self.permission_show(req) };
+        let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let list_permissions_by_role = move |req: &mut Request| -> AranResult<Response> { _self.list_permissions_by_role(req) };
+        let list_by_role =
+            move |req: &mut Request| -> AranResult<Response> { _self.list_by_role(req) };
 
         let _self = self.clone();
-        let show_permissions_applied_for = move |req: &mut Request| -> AranResult<Response> { _self.show_permissions_applied_for(req) };
+        let show_by_role =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_role(req) };
 
         //Routes:  Authorization : Permissions
         router.post(
             "/permissions",
-            XHandler::new(C {
-                inner: permission_create,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "permissions",
         );
         router.get(
             "/permissions",
-            XHandler::new(C {
-                inner: permission_list,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "permission_list",
         );
         router.get(
             "/permissions/roles/:role_id",
             XHandler::new(C {
-                inner: list_permissions_by_role,
+                inner: list_by_role,
             }).before(basic.clone()),
             "list_permissions_by_role",
         );
         router.get(
             "/permissions/:id",
-            XHandler::new(C {
-                inner: permission_show,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "permission_show",
         );
         router.get(
             "/permissions/:id/roles/:role_id",
             XHandler::new(C {
-                inner: show_permissions_applied_for,
+                inner: show_by_role,
             }).before(basic.clone()),
             "show_permissions_applied_for",
         );
@@ -216,7 +214,8 @@ impl ExpanderSender for PermissionApi {
         let permission_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PERMISSION.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                permission::DataStore::list_by_name(&_conn, &id)
+                permission::DataStore::new(&_conn)
+                    .show_by_role(&id)
                     .ok()
                     .and_then(|p| serde_json::to_string(&p).ok())
             }),

@@ -9,17 +9,16 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::dispatch;
+use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use common::ui;
 use config::Config;
 use error::Error;
-use common::ui;
-use ansi_term::Colour;
-
+use protocol::api::schema::dispatch;
 
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
 
 /// TO_DO: Should be named  (authorize::models::roles, authorize::models::permission)
 use authorize::models::role;
@@ -55,9 +54,7 @@ impl RoleApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn role_create(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate::<Roles>(
-            req.get::<bodyparser::Struct<Roles>>()?,
-        )?;
+        let unmarshall_body = self.validate::<Roles>(req.get::<bodyparser::Struct<Roles>>()?)?;
         ui::rawdumpln(
             Colour::White,
             '✓',
@@ -100,7 +97,6 @@ impl RoleApi {
         }
     }
 
-
     //GET: /roles
     //Returns all the roles(irrespective of namespaces)
     fn role_list(&self, req: &mut Request) -> AranResult<Response> {
@@ -118,7 +114,8 @@ impl Api for RoleApi {
 
         //closures : roles
         let _self = self.clone();
-        let role_create = move |req: &mut Request| -> AranResult<Response> { _self.role_create(req) };
+        let role_create =
+            move |req: &mut Request| -> AranResult<Response> { _self.role_create(req) };
 
         let _self = self.clone();
         let role_list = move |req: &mut Request| -> AranResult<Response> { _self.role_list(req) };
@@ -127,8 +124,8 @@ impl Api for RoleApi {
         let role_show = move |req: &mut Request| -> AranResult<Response> { _self.role_show(req) };
 
         let _self = self.clone();
-        let role_show_by_name = move |req: &mut Request| -> AranResult<Response> { _self.role_show_by_name(req) };
-
+        let role_show_by_name =
+            move |req: &mut Request| -> AranResult<Response> { _self.role_show_by_name(req) };
 
         //Routes:  Authorization : Roles
         router.post(
@@ -149,10 +146,11 @@ impl Api for RoleApi {
 
         router.get(
             "/roles/name/:name",
-            XHandler::new(C { inner: role_show_by_name }).before(basic.clone()),
+            XHandler::new(C {
+                inner: role_show_by_name,
+            }).before(basic.clone()),
             "role_show_by_name",
         );
-
     }
 }
 
