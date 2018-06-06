@@ -174,6 +174,171 @@ impl ChildTypeMeta for AssemblyFactory {
     const CHILD_KIND: &'static str = "POST:assemblys";
 }
 
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct BlockchainFactory {
+    #[serde(default)]
+    id: String, // Id an unique identifier in systems of record. Generated during creation of the BlockchainFactory
+    #[serde(default)]
+    type_meta: TypeMeta, //standard type metadata: kind: BlockchainFactory
+    object_meta: ObjectMeta, ////Standard object metadata
+    replicas: u32, //Replicas is the number of desired replicas of the plan.
+    resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
+    secret: Secret, //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
+    plan: String, // A Plan is meta-data that provides a description of the artifacts that make up an application, the services that are required to execute or utilize those artifacts, and the relationship of the artifacts to those services. Plans are expressed as json under a /plans resource.    Here we provide the identifier as pointed to /plans
+    #[serde(default)]
+    status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
+    #[serde(default)]
+    spec: BlockchainFactorySpec,
+    #[serde(default)]
+    metadata: BTreeMap<String, String>, //Standard object's metadata. Can contain optional label selector team, origin
+    #[serde(default)]
+    created_at: String,
+}
+
+impl BlockchainFactory {
+    pub fn new() -> BlockchainFactory {
+        ::std::default::Default::default()
+    }
+
+    //Create a new assemblyfactory with type_meta and object_meta
+    //and other defaulted.
+    pub fn with(t: TypeMeta, o: ObjectMeta) -> BlockchainFactory {
+        BlockchainFactory {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v
+    }
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
+    pub fn set_replicas(&mut self, v: u32) {
+        self.replicas = v;
+    }
+
+    pub fn get_replicas(&self) -> u32 {
+        self.replicas
+    }
+
+    pub fn set_status(&mut self, v: Status) {
+        self.status = v;
+    }
+
+    pub fn get_status(&self) -> &Status {
+        &self.status
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
+    pub fn set_plan(&mut self, v: ::std::string::String) {
+        self.plan = v;
+    }
+
+    pub fn get_plan(&self) -> ::std::string::String {
+        self.plan.clone()
+    }
+
+    pub fn set_secret(&mut self, v: Secret) {
+        self.secret = v;
+    }
+
+    pub fn get_secret(&self) -> &Secret {
+        &self.secret
+    }
+
+    pub fn set_resources(&mut self, v: BTreeMap<String, String>) {
+        self.resources = v;
+    }
+
+    pub fn get_resources(&self) -> &BTreeMap<String, String> {
+        &self.resources
+    }
+
+    pub fn set_spec(&mut self, v: BlockchainFactorySpec) {
+        self.spec = v;
+    }
+
+    pub fn get_spec(&self) -> &BlockchainFactorySpec {
+        &self.spec
+    }
+
+    // Mutable pointer to the field spec.
+    pub fn mut_spec(&mut self) -> &mut BlockchainFactorySpec {
+        &mut self.spec
+    }
+
+    pub fn set_metadata(&mut self, v: BTreeMap<String, String>) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self) -> &BTreeMap<String, String> {
+        &self.metadata
+    }
+}
+
+// Cache based feeders for the base BlockchainFactory
+//           BlockchainFactory
+//              |
+//             Plan
+//
+// The plan feeder, which get a callback from an expander cache.
+// The expander cache is ttl and loads the plan the first time.
+impl PlanFeeder for BlockchainFactory {
+    fn pget_id(&mut self) -> IdGet {
+        IdGet::with_id(self.get_plan().clone())
+    }
+
+    fn pfeed(&mut self, p: Option<Plan>) {
+        self.mut_spec().set_plan(p);
+    }
+}
+
+
+// The service feeder, which gets called from an expander cache.
+// The expander cache is ttl and loads the service the first time.
+impl ServicesFeeder for BlockchainFactory {
+    fn sget_id(&mut self) -> IdGet {
+        IdGet::with_id(self.get_id().clone())
+    }
+
+    fn sfeed(&mut self, s: Option<Vec<Services>>) {
+        self.mut_spec().set_services(s);
+    }
+}
+
+impl MetaFields for BlockchainFactory {
+    /// Returns the latest self with built ObjectMeta and Type_meta
+    /// Wipes out the old meta.
+    /// Should be handled externally by doing Meta::with(by mutating the old ObjectMeta)
+    fn set_meta(&mut self, t: TypeMeta, v: ObjectMeta) {
+        self.type_meta = t;
+        self.object_meta = v;
+    }
+
+    fn object_meta(&self) -> ObjectMeta {
+        self.object_meta.clone()
+    }
+
+    fn type_meta(&self) -> TypeMeta {
+        self.type_meta.clone()
+    }
+}
+
+impl ChildTypeMeta for BlockchainFactory {
+    const CHILD_KIND: &'static str = "POST:assemblys";
+}
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Assembly {
     #[serde(default)]
@@ -636,6 +801,79 @@ impl AssemblyFactorySpec {
         self.services.clone()
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct BlockchainFactorySpec {
+
+    #[serde(default)]
+    tolerations: Vec<Tolerations>,
+
+    restart_policy: String,
+
+    #[serde(default)]
+    affinity: Affinity,
+
+    #[serde(default)]
+    node_selector: BTreeMap<String, String>,
+
+    #[serde(default)]
+    plan: Option<Plan>,
+
+    #[serde(default)]
+    services: Option<Vec<Services>>,
+}
+
+impl BlockchainFactorySpec {
+    pub fn new() -> BlockchainFactorySpec {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_tolerations(&mut self, v: Vec<Tolerations>) {
+        self.tolerations = v;
+    }
+
+    pub fn get_tolerations(&self) -> &Vec<Tolerations> {
+        &self.tolerations
+    }
+    pub fn set_node_selector(&mut self, v: BTreeMap<String, String>) {
+        self.node_selector = v;
+    }
+
+    pub fn get_node_selector(&self) -> &BTreeMap<String, String> {
+        &self.node_selector
+    }
+
+    pub fn set_affinity(&mut self, v: Affinity) {
+        self.affinity = v;
+    }
+
+    pub fn get_affinity(&self) -> &Affinity {
+        &self.affinity
+    }
+    pub fn set_restart_policy(&mut self, v: ::std::string::String) {
+        self.restart_policy = v;
+    }
+
+    pub fn get_restart_policy(&self) -> ::std::string::String {
+        self.restart_policy.clone()
+    }
+    pub fn set_plan(&mut self, v: Option<Plan>) {
+        self.plan = v;
+    }
+
+    pub fn get_plan(&self) -> Option<Plan> {
+        self.plan.clone()
+    }
+
+    pub fn set_services(&mut self, v: Option<Vec<Services>>) {
+        self.services = v;
+    }
+
+    pub fn get_services(&self) -> Option<Vec<Services>> {
+        self.services.clone()
+    }
+}
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Tolerations {

@@ -32,6 +32,12 @@ pub type AssemblyFactoryOutput = Result<std::option::Option<protocol::api::deplo
 /// AssemblyFactory output as list
 pub type AssemblyFactoryOutputList = Result<std::option::Option<Vec<protocol::api::deploy::AssemblyFactory>>>;
 
+// BlockchainFactory output
+pub type BlockchainFactoryOutput = Result<std::option::Option<protocol::api::deploy::BlockchainFactory>>;
+
+/// BlockchainFactory output as list
+pub type BlockchainFactoryOutputList = Result<std::option::Option<Vec<protocol::api::deploy::BlockchainFactory>>>;
+
 /// Assembly output
 pub type AssemblyOutput = Result<std::option::Option<protocol::api::deploy::Assembly>>;
 
