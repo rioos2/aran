@@ -35,9 +35,9 @@ use error::ErrorMessage::{MissingParameter, MustBeNumeric};
 /// POST: /permissions,,
 /// GET: /permissions,
 /// GET: /permissions/:id,
-//GET: /permissions/roles/:role_id
-//GET: /permissions/:id/roles/:role_id
-//GET: /permissions/email/:name
+/// GET: /permissions/roles/:role_id
+/// GET: /permissions/:id/roles/:role_id
+/// GET: /permissions/email/:name
 #[derive(Clone)]
 pub struct PermissionApi {
     conn: Box<DataStoreConn>,

@@ -1,38 +1,27 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api blockchain_factory
-use std::sync::Arc;
-
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, ExpanderSender, ParmsVerifier, Validator};
-use protocol::api::schema::{dispatch, dispatch_url, type_meta};
-
+use bytes::Bytes;
 use config::Config;
-// use api::deploy::config::ServicesCfg;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::assembler::{Assembler, ServicesConfig};
-use deploy::models::{blockchainfactory, blueprint, service};
-
-use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
-use protocol::api::deploy::BlockchainFactory;
-use protocol::api::base::{MetaFields, Status, StatusUpdate};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-
-use bytes::Bytes;
+use deploy::assembler::ServicesConfig;
+use deploy::models::{blockchainfactory, blueprint, service};
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{MetaFields, StatusUpdate};
+use protocol::api::deploy::BlockchainFactory;
+use protocol::api::schema::{dispatch, dispatch_url};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
+use router::Router;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct BlockchainFactoryApi {
@@ -185,52 +174,33 @@ impl Api for BlockchainFactoryApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         //list everything
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
-
         router.get(
             "/accounts/:account_id/blockchainfactorys",
-            XHandler::new(C { inner: list })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.blockchainfactory.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: list }).before(basic.clone()),
             "blockchainfactorys_list",
         );
         router.get(
             "/blockchainfactorys/:id",
-            XHandler::new(C { inner: show })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.blockchainfactory.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "blockchain_factorys_show",
         );
         router.get(
             "/blockchainfactorys",
-            XHandler::new(C { inner: list_blank })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.blockchainfactory.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "blockchains_factorys_list_blank",
         );
         router.put(
             "/blockchainfactorys/:id/status",
             XHandler::new(C {
                 inner: status_update,
-            }).before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.blockchainfactory.put".to_string(),
-                    &*config,
-                )),
+            }).before(basic.clone()),
             "blockchain_factory_status_update",
         );
     }
@@ -273,41 +243,6 @@ impl ExpanderSender for BlockchainFactoryApi {
         &self.conn.expander.with(services_service);
     }
 }
-
-pub struct ServicesCfg {
-    pub loadbalancer_imagein: String,
-    pub loadbalancer_imagename: String,
-    pub loadbalancer_cpu: String,
-    pub loadbalancer_mem: String,
-    pub loadbalancer_disk: String,
-}
-
-impl Default for ServicesCfg {
-    fn default() -> Self {
-        ServicesCfg {
-            loadbalancer_imagein: "container".to_string(),
-            loadbalancer_imagename: "registry.rioos.xyz:5000/rioos/loadbalancer".to_string(),
-            loadbalancer_cpu: "1".to_string(),
-            loadbalancer_mem: "1024 MiB".to_string(),
-            loadbalancer_disk: "1 GiB".to_string(),
-        }
-    }
-}
-
-/// Convert into ServicesConfig  from the ServiceCfg provided as defaults.
-impl Into<ServicesConfig> for ServicesCfg {
-    fn into(self) -> ServicesConfig {
-        ServicesConfig {
-            loadbalancer_imagein: self.loadbalancer_imagein,
-            loadbalancer_imagename: self.loadbalancer_imagename,
-            loadbalancer_cpu: self.loadbalancer_cpu,
-            loadbalancer_mem: self.loadbalancer_mem,
-            loadbalancer_disk: self.loadbalancer_disk,
-        }
-    }
-}
-
-
 
 ///Convinient helpers to validating an api
 impl ApiValidator for BlockchainFactoryApi {}

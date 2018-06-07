@@ -2,7 +2,6 @@
 
 //! A collection of deployment declaration api assembly_factory
 use ansi_term::Colour;
-use api::deploy::config::ServicesCfg;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
@@ -279,19 +278,6 @@ impl ExpanderSender for AssemblyFactoryApi {
 
         &self.conn.expander.with(plan_service);
         &self.conn.expander.with(services_service);
-    }
-}
-
-/// Convert into ServicesConfig  from the ServiceCfg provided as defaults.
-impl Into<ServicesConfig> for ServicesCfg {
-    fn into(self) -> ServicesConfig {
-        ServicesConfig {
-            loadbalancer_imagein: self.loadbalancer_imagein,
-            loadbalancer_imagename: self.loadbalancer_imagename,
-            loadbalancer_cpu: self.loadbalancer_cpu,
-            loadbalancer_mem: self.loadbalancer_mem,
-            loadbalancer_disk: self.loadbalancer_disk,
-        }
     }
 }
 
