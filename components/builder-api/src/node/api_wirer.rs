@@ -26,9 +26,10 @@ use api::Api;
 use api::events::EventLogger;
 use api::audit::config::BlockchainConn;
 use api::security::config::SecurerConn;
+use api::objectstorage::config::ObjectStorageConn;
 use config::Config;
 
-use api::{audit, authorize, cluster, deploy, devtooling, security};
+use api::{audit, authorize, cluster, deploy, devtooling, security, objectstorage};
 use node::runtime::ApiSender;
 
 use db::data_store::*;
@@ -125,6 +126,11 @@ impl HttpGateway for Wirer {
 
                 let mut storage = cluster::storage_api::StorageApi::new(Box::new(ds.clone()));
                 storage.wire(config.clone(), &mut router);
+
+                let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(
+                    Box::new(ObjectStorageConn::new(&*config.clone())),
+                );
+                s3.wire(config.clone(), &mut router);
 
                 let mut service = deploy::service::ServiceApi::new(Box::new(ds.clone()));
                 service.wire(config.clone(), &mut router);

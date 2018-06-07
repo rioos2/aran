@@ -11,6 +11,7 @@ pub struct Plan {
     #[serde(default)]
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
+    metadata: BTreeMap<String, String>,
     category: String, //`Category` represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain.
     version: String, //`version` represents the version of this plan software. example : Ubuntu 14.04
     #[serde(default)]
@@ -97,6 +98,14 @@ impl Plan {
 
     pub fn get_characteristics(&self) -> &BTreeMap<String, String> {
         &self.characteristics
+    }
+
+    pub fn set_metadata(&mut self, v: BTreeMap<String, String>) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self) -> &BTreeMap<String, String> {
+        &self.metadata
     }
 
     pub fn set_description(&mut self, v: ::std::string::String) {

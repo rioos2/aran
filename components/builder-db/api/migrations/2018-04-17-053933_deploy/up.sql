@@ -28,7 +28,8 @@ CREATE SEQUENCE IF NOT EXISTS plan_id_seq;
 
 CREATE TABLE IF NOT EXISTS plan_factory (id bigint PRIMARY KEY DEFAULT next_id_v1('plan_id_seq'),
                                                                        type_meta JSONB,
-                                                                                 object_meta JSONB,
+                                                                            object_meta JSONB,
+                                                                                 metadata JSONB,
                                                                                              category text, VERSION text, CHARACTERISTICS JSONB,
                                                                                                                                           icon text, description text, ports JSONB,
                                                                                                                                                                              envs JSONB,

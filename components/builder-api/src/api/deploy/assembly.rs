@@ -20,9 +20,9 @@ use http_gateway::util::errors::{AranResult, AranValidResult};
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use telemetry::metrics::prometheus::PrometheusClient;
 
-use deploy::models::{assembly, assemblyfactory, blueprint, endpoint, volume};
+use deploy::models::{assembly, assemblyfactory, blueprint, endpoint, volume, blockchainfactory};
 
-use protocol::cache::{CACHE_PREFIX_ENDPOINT, CACHE_PREFIX_FACTORY, CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN, CACHE_PREFIX_VOLUME};
+use protocol::cache::{CACHE_PREFIX_ENDPOINT, CACHE_PREFIX_FACTORY, CACHE_PREFIX_BLOCKCHAIN_FACTORY, CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN, CACHE_PREFIX_VOLUME};
 use protocol::cache::NewCacheServiceFn;
 use protocol::api::deploy::Assembly;
 use protocol::api::base::StatusUpdate;
@@ -382,6 +382,19 @@ impl ExpanderSender for AssemblyApi {
             }),
         ));
 
+        let mut _conn = self.conn.clone();
+        _conn.expander.with(plan_service);
+        let blockchain_factory_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_BLOCKCHAIN_FACTORY.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Blockchainfactory live load for ≈ {}", id);
+                blockchainfactory::DataStore::new(&_conn)
+                    .show(&id)
+                    .ok()
+                    .and_then(|f| serde_json::to_string(&f).ok())
+            }),
+        ));
+
         let _conn = self.conn.clone();
         let endpoint_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_ENDPOINT.to_string(),
@@ -420,6 +433,7 @@ impl ExpanderSender for AssemblyApi {
         &self.conn.expander.with(endpoint_service);
         &self.conn.expander.with(volume_service);
         &self.conn.expander.with(metric_service);
+        &self.conn.expander.with(blockchain_factory_service);
     }
 }
 
