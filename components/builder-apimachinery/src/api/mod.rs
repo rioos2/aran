@@ -11,6 +11,7 @@ pub mod origin;
 pub mod scale;
 pub mod session;
 pub mod storage;
+pub mod objectstorage;
 pub mod team;
 pub mod volume;
 pub mod secret;

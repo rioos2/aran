@@ -22,6 +22,7 @@ pub mod deploy;
 pub mod security;
 pub mod devtooling;
 pub mod authorize;
+pub mod objectstorage;
 
 mod helpers;
 use protocol::api::base::{IdGet, StatusUpdate, QueryInput};
@@ -147,7 +148,7 @@ struct NameParmsVerifier {}
 impl RequestVerifier for NameParmsVerifier {
     fn verify(req: &Request) -> AranResult<IdGet> {
         match req.extensions.get::<Router>().unwrap().find("name") {
-            Some(name) => {                
+            Some(name) => {
                 Ok(IdGet::with_id(name.to_string()))
             }
             None => return Err(bad_request(&MissingParameter("name".to_string()))),

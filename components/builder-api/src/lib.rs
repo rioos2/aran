@@ -85,6 +85,7 @@ extern crate custom_derive;
 extern crate enum_derive;
 
 extern crate lettre;
+extern crate openio_sdk_rust;
 extern crate lettre_email;
 
 pub mod config;

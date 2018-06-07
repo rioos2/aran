@@ -17,6 +17,10 @@ lazy_static! {
         map.register("GET:accountsassemblyfactorys", "AssemblyFactoryList");
         map.register("GET:assemblyfactorys", "AssemblyFactoryList");
 
+        map.register("POST:accountsblockchainfactorys", "BlockchainFactory");
+        map.register("GET:accountsblockchainfactorys", "BlockchainFactoryList");
+        map.register("GET:blockchainfactorys", "BlockchainFactoryList");
+
         map.register("POST:plans", "PlanFactory");
         map.register("GET:plans", "PlanFactoryList");
 
@@ -24,6 +28,7 @@ lazy_static! {
         map.register("GET:assemblys", "AssemblyList");
         map.register("GET:accountsassemblys", "AssemblyList");
         map.register("GET:assemblyfactorysdescribe", "AssemblyList");
+        map.register("GET:blockchainfactorysdescribe", "AssemblyList");
 
         map.register("POST:nodes", "Node");
         map.register("GET:nodes", "NodeList");
@@ -113,6 +118,12 @@ lazy_static! {
         map.register("POST:packages", "Package");
         map.register("GET:authoidcproviders", "OpenidList");
         map.register("GET:authsamlproviders", "SamlList");
+
+        map.register("POST:accountsbuckets", "Bucket");
+        map.register("GET:accountsbuckets", "BucketList");
+
+        map.register("POST:accountsbucketsfilesupload", "File");
+        map.register("GET:accountsbucketsfilesdownload", "File");
 
         map
     };

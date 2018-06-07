@@ -43,3 +43,9 @@ pub trait ServicesFeeder: Send {
 
     fn sfeed(&mut self, v: Option<Vec<api::linker::Services>>);
 }
+
+pub trait BlockchainFactoryFeeder: Send {
+    fn bget_id(&mut self) -> api::base::IdGet;
+
+    fn bfeed(&mut self, a: Option<api::deploy::BlockchainFactory>);
+}
