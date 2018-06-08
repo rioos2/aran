@@ -121,6 +121,8 @@ pub struct BuildSource {
     #[serde(default)]
     source_secret: String, // SourceSecret is the name of a Secret that would be used for setting up the authentication for cloning private repository.
     images: Vec<ImageSource>, // Images describes a set of images to be used to provide source for the build
+    #[serde(default)]
+    context_dir: String,
 }
 
 
