@@ -8,7 +8,7 @@ use api::endpoints::EndPoints;
 use api::linker::Services;
 
 
-use cache::inject::{PlanFeeder, FactoryFeeder, EndPointsFeeder, VolumeFeeder, MetricFeeder, ServicesFeeder};
+use cache::inject::{BlockchainFactoryFeeder, PlanFeeder, FactoryFeeder, EndPointsFeeder, VolumeFeeder, MetricFeeder, ServicesFeeder};
 
 pub const PHASE_PENDING: &'static str = "Pending";
 pub const PHASE_STAND_STILL: &'static str = "StandStill";

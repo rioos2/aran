@@ -38,7 +38,7 @@ pub trait StorageClient: Send {
 /// Create appropriate Securer variant based on configuration values.
 pub fn from_config(config: &ObjectStorageConn) -> Result<Box<StorageClient>> {
     match config.backend {
-        ObjectStorageBackend::OpenIO => Ok(Box::new(openio::ObjectStorage::new(config)?)),
+        ObjectStorageBackend::OpenIO => Ok(Box::new(openio::ObjectStorage::new(config))),
 
     }
 }
