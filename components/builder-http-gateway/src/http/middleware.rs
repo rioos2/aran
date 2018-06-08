@@ -18,6 +18,7 @@ use iron::status::NotFound;
 use iron::typemap::Key;
 use iron::Handler;
 use persistent;
+use regex::Regex;
 use router::NoRoute;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -231,41 +232,71 @@ struct URLGrabber {}
 
 impl URLGrabber {
     const WHITE_LIST: &'static [&'static str] = &[
-        "rioos.accounts.POST",
-        "rioos.authenticate.POST",
-        "rioos.logout.POST",
-        "rioos.accounts*audits.POST",
-        "rioos.accounts*audits.GET",
-        "rioos.logs.GET",
-        "rioos.image*vulnerability.GET",
-        "rioos.roles.GET",
-        "rioos.roles.POST",
-        "rioos.permissions.GET",
-        "rioos.permissions.POST",
-        "rioos.origins.GET",
-        "rioos.origins.POST",
-        "rioos.teams.POST",
-        "rioos.origins*secrets.POST",
-        "rioos.origins*secrets.GET",
-        "rioos.origins*secrets*.POST",
-        "rioos.origins*serviceaccounts.POST",
-        "rioos.origins*serviceaccounts*.GET",
-        "rioos.origins*serviceaccounts*.PUT",
-        "rioos.serviceaccounts.GET",
-        "rioos.settingsmap.GET",
-        "rioos.origins*settingsmap*.POST",
-        "rioos.ping.GET",
-        "rioos.accounts*assemblys*exec",
+        "RIOOS.ACCOUNTS.POST",
+        "RIOOS.ACCOUNTS.*.AUDITS.POST",
+        "RIOOS.ACCOUNTS.*.AUDITS.GET",
+        "RIOOS.ACCOUNTS.*.ASSEMBLYS*EXEC",
+        "RIOOS.AUTHENTICATE.POST",
+        "RIOOS.LOGOUT.POST",
+        "RIOOS.LOGS.GET",
+        "RIOOS.IMAGES.*.VULNERABILITY.GET",
+        "RIOOS.ROLES.GET",
+        "RIOOS.ROLES.POST",
+        "RIOOS.PERMISSIONS.GET",
+        "RIOOS.PERMISSIONS.POST",
+        "RIOOS.TEAMS.POST",
+        "RIOOS.ORIGINS.GET",
+        "RIOOS.ORIGINS.POST",
+        "RIOOS.ORIGINS.*.SECRETS.POST",
+        "RIOOS.ORIGINS.*.SECRETS.GET",
+        "RIOOS.ORIGINS.*.SECRETS*.POST",
+        "RIOOS.ORIGINS.*.SERVICEACCOUNTS.POST",
+        "RIOOS.ORIGINS.*.SERVICEACCOUNTS*.GET",
+        "RIOOS.ORIGINS.*.SERVICEACCOUNTS*.PUT",
+        "RIOOS.ORIGINS.*.SETTINGSMAP*.POST",
+        "RIOOS.SERVICEACCOUNTS.GET",
+        "RIOOS.SETTINGSMAP.GET",
+        "RIOOS.PING.GET",
     ];
 
     fn grab(req: &mut Request) -> Option<String> {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^(0|[1-9][0-9]*)$").unwrap();
+        }
+
         let system = "rioos";
         let method = &req.method;
-        let resource = format!("{:?}", &req.url.path());
+        let resource = format!(
+            "{}{}.{:?}",
+            system,
+            &req.url
+                .path()
+                .into_iter()
+                .map(|p| {
+                    if RE.is_match(&p) {
+                        ".*".to_string()
+                    } else {
+                        format!(".{}", &p)
+                    }
+                })
+                .collect::<String>(),
+            method
+        ).to_uppercase();
+
+        info!("{}", format!("↑ Permission {} {}", "→", resource));
 
         if !URLGrabber::WHITE_LIST.contains(&resource.as_str()) {
-            return Some(format!("{}:{}:{}", system, resource, method));
+            info!(
+                "{}",
+                format!("↑ Permission Verify {} {}", "→", resource)
+            );
+            return Some(resource.clone());
         }
+
+        info!(
+            "{}",
+            format!("↑ Permission WHITE_LIST {} {}", "→", resource)
+        );
 
         None
     }
@@ -295,19 +326,46 @@ impl RBAC {
 
 impl BeforeMiddleware for RBAC {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        let header =
-            HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
-        let roles: authorizer::RoleType = header.decide()?.into();
         let input_trust = self.input_trust(req);
 
-        if roles.name.get_id().pop().is_none() || input_trust.is_none() {
+        if input_trust.is_none() {
             return Ok(());
         }
 
-        match self.authorizer.clone().verify(roles, input_trust.unwrap()) {
+        let header =
+            HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
+        let roles: authorizer::RoleType = header.decide()?.into();
+
+        info!(
+            "↑ RBAC {} {} {:?}",
+            "→",
+            &roles.name.get_id(),
+            input_trust
+        );
+
+        if roles.name.get_id().pop().is_none() {
+            info!("↑ RBAC SKIP {} {} {:?}", "→", &roles.name, input_trust);
+            return Ok(());
+        }
+
+        match self.authorizer
+            .clone()
+            .verify(roles.clone(), input_trust.clone().unwrap())
+        {
             Ok(_validate) => Ok(()),
             Err(err) => {
-                let err = forbidden_error(&format!("{}\n", err));
+                info!(
+                    "↑☒ RBAC ERROR {} {} {:?}",
+                    "→",
+                    &roles.clone().name,
+                    input_trust.clone()
+                );
+
+                let err = forbidden_error(&format!(
+                    "{}, is denied access. Must have permission for [{}].",
+                    &roles.clone().name.get_id(),
+                    input_trust.clone().unwrap_or("".to_string())
+                ));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         }

@@ -4,31 +4,28 @@
 
 use std::sync::Arc;
 
-use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
-
-use config::Config;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error, unauthorized_error, conflict_error};
-
-use rand;
-use session::models::session as sessions;
-use protocol::api::session::*;
-
-use db::data_store::DataStoreConn;
-use db::error::Error::RecordsNotFound;
-use protocol::api::base::MetaFields;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use auth::rioos::user_account::UserAccountAuthenticate;
 use auth::rioos::AuthenticateDelegate;
 use auth::util::authenticatable::Authenticatable;
-use auth::rioos::user_account::UserAccountAuthenticate;
+use bodyparser;
+use config::Config;
+use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, conflict_error, internal_error, not_found_error,
+                                 unauthorized_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::MetaFields;
+use protocol::api::schema::type_meta;
+use protocol::api::session::*;
+use rand;
+use router::Router;
+use session::models::session as sessions;
 
 const DEFAULTROLE: &'static str = "rioos:loneranger";
 
@@ -84,9 +81,7 @@ impl AuthenticateApi {
     //POST: accounts",
     //Input account and creates an user, by returning the Account information of an user
     fn account_create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<SessionCreate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<SessionCreate>>()?)?;
 
         if unmarshall_body.get_apikey().len() <= 0 {
             unmarshall_body.set_apikey(rand::random::<u64>().to_string());
@@ -115,9 +110,10 @@ impl AuthenticateApi {
         device.set_ip(format!("{}", req.remote_addr.ip()));
 
         match sessions::DataStore::get_account(&self.conn, &account_get) {
-            Ok(Some(_account)) => Err(conflict_error(
-                &format!("alreay exists {}", account_get.get_email()),
-            )),
+            Ok(Some(_account)) => Err(conflict_error(&format!(
+                "alreay exists {}",
+                account_get.get_email()
+            ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => {
                 match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device) {
@@ -173,9 +169,7 @@ impl AuthenticateApi {
     //POST: /logout
     //Global: Logout the current user
     fn account_logout(&self, req: &mut Request) -> AranResult<Response> {
-        let account = self.validate(
-            req.get::<bodyparser::Struct<AccountTokenGet>>()?,
-        )?;
+        let account = self.validate(req.get::<bodyparser::Struct<AccountTokenGet>>()?)?;
 
         let mut device: Device = user_agent(req).into();
         device.set_ip(format!("{}", req.remote_addr.ip()));
@@ -194,52 +188,62 @@ impl Api for AuthenticateApi {
 
         //closures : scaling
         let _self = self.clone();
-        let account_create = move |req: &mut Request| -> AranResult<Response> { _self.account_create(req) };
+        let account_create =
+            move |req: &mut Request| -> AranResult<Response> { _self.account_create(req) };
 
         let _self = self.clone();
-        let account_show = move |req: &mut Request| -> AranResult<Response> { _self.account_show(req) };
+        let account_show =
+            move |req: &mut Request| -> AranResult<Response> { _self.account_show(req) };
 
         let _self = self.clone();
-        let account_show_by_name = move |req: &mut Request| -> AranResult<Response> { _self.account_show_by_name(req) };
+        let account_show_by_name =
+            move |req: &mut Request| -> AranResult<Response> { _self.account_show_by_name(req) };
 
         let _self = self.clone();
-        let authenticate = move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
+        let authenticate =
+            move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
 
         let _self = self.clone();
-        let account_logout = move |req: &mut Request| -> AranResult<Response> { _self.account_logout(req) };
+        let account_logout =
+            move |req: &mut Request| -> AranResult<Response> { _self.account_logout(req) };
 
         router.post(
             "/accounts",
-            XHandler::new(C { inner: account_create }),
+            XHandler::new(C {
+                inner: account_create,
+            }),
             "account_create:signup",
         );
         router.get(
             "/accounts/:id",
-            XHandler::new(C { inner: account_show })
-                .before(basic.clone())
+            XHandler::new(C {
+                inner: account_show,
+            }).before(basic.clone()),
             "account_show",
         );
 
         router.get(
             "/accounts/name/:name",
-            XHandler::new(C { inner: account_show_by_name })
-                .before(basic.clone())
-                
+            XHandler::new(C {
+                inner: account_show_by_name,
+            }).before(basic.clone()),
             "account_show_by_name",
         );
 
         router.post(
             "/authenticate",
-            XHandler::new(C { inner: authenticate }),
+            XHandler::new(C {
+                inner: authenticate,
+            }),
             "authenticate",
         );
         router.post(
             "/logout",
-            XHandler::new(C { inner: account_logout }).before(basic.clone()),
+            XHandler::new(C {
+                inner: account_logout,
+            }).before(basic.clone()),
             "account_logout",
-        );    
-       
-       
+        );
     }
 }
 
@@ -298,45 +302,6 @@ impl Validator for SessionCreate {
 }
 
 impl Validator for SessionGet {
-    //default implementation is to check for `name` and 'origin'
-    fn valid(self) -> AranValidResult<Self> {
-        let s: Vec<String> = vec![];
-
-        if s.is_empty() {
-            return Ok(Box::new(self));
-        }
-
-        Err(bad_request(&MissingParameter(format!("{:?}", s))))
-    }
-}
-
-impl Validator for LdapConfig {
-    //default implementation is to check for `name` and 'origin'
-    fn valid(self) -> AranValidResult<Self> {
-        let s: Vec<String> = vec![];
-
-        if s.is_empty() {
-            return Ok(Box::new(self));
-        }
-
-        Err(bad_request(&MissingParameter(format!("{:?}", s))))
-    }
-}
-
-impl Validator for SamlProvider {
-    //default implementation is to check for `name` and 'origin'
-    fn valid(self) -> AranValidResult<Self> {
-        let s: Vec<String> = vec![];
-
-        if s.is_empty() {
-            return Ok(Box::new(self));
-        }
-
-        Err(bad_request(&MissingParameter(format!("{:?}", s))))
-    }
-}
-
-impl Validator for OidcProvider {
     //default implementation is to check for `name` and 'origin'
     fn valid(self) -> AranValidResult<Self> {
         let s: Vec<String> = vec![];

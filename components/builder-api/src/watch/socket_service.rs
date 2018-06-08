@@ -51,7 +51,12 @@ impl ws::Handler for Router {
             //TODO - use it for other websocket urls
             match req.resource() {
                 // Route to a data handler
-                "/api/v1/healthz/overall" => self.inner = Box::new(Metrics { ws: out, watchhandler: self.watchhandler.clone() }),
+                "/api/v1/healthz/overall" => {
+                    self.inner = Box::new(Metrics {
+                        ws: out,
+                        watchhandler: self.watchhandler.clone(),
+                    })
+                }
                 // Use the default child handler, NotFound
                 _ => (),
             }
@@ -128,12 +133,14 @@ impl ws::Handler for Data {
             Err(poisoned) => poisoned.into_inner(),
         };
 
-        let (ty, ry) = mpsc::channel();
+        let (ty, _ry) = mpsc::channel();
         let res_sender = Arc::new(Mutex::new(ty));
 
         for listener in LISTENERS.iter() {
             thread::sleep(Duration::from_millis(1000));
-            send_wrap.send((listener.to_string(), res_sender.clone())).unwrap();
+            send_wrap
+                .send((listener.to_string(), res_sender.clone()))
+                .unwrap();
             //when got new websocket connection, then server load list data
             //from database and send to it.
             match watchhandler.load_list_data(&listener, id.clone()) {

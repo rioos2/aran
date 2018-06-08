@@ -4,14 +4,16 @@ use rbac::permissions;
 use rbac::roles::{Roles, TrustAccess};
 
 // role type to get the permission from database
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RoleType {
     pub name: IdGet,
 }
 
 impl RoleType {
     pub fn new(name: String) -> Self {
-        RoleType { name: IdGet::with_id(name) }
+        RoleType {
+            name: IdGet::with_id(name),
+        }
     }
 }
 
@@ -23,7 +25,9 @@ pub struct Authorization {
 
 impl Authorization {
     pub fn new(permissions: permissions::Permissions) -> Self {
-        Authorization { permissions: permissions }
+        Authorization {
+            permissions: permissions,
+        }
     }
 
     pub fn verify(self, role_type: RoleType, incoming_to_trust: String) -> Result<bool> {

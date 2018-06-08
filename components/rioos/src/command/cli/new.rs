@@ -6,8 +6,8 @@ use common::ui::UI;
 
 use api_client::Client;
 use config;
-use rioos_core::env;
 use protocol::api::session;
+use rioos_core::env;
 use AUTH_TOKEN_ENVVAR;
 
 pub fn start(ui: &mut UI, client: Client) -> Result<()> {
@@ -16,7 +16,7 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
 
     ui.heading("Signup")?;
     ui.para(
-        "For more information on authenticating using commandline, please read the \
+        "For more information on onboard using commandline, read the \
          documentation at https://bit.ly/rioos_sh_usersguide",
     )?;
 
@@ -26,9 +26,9 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     let mut account = session::SessionCreate::new();
     account.set_first_name(prompt_firstname(ui)?);
     account.set_last_name(prompt_lastname(ui)?);
-    account.set_email(ui.prompt_ask("Userid", None)?);
-    account.set_password(ui.prompt_ask("password", None)?);
-    account.set_phone(ui.prompt_ask("phone", None)?);
+    account.set_email(ui.prompt_ask("Email", None)?);
+    account.set_password(ui.prompt_ask("Password", None)?);
+    account.set_phone(ui.prompt_ask("Phone", Some("18007462665"))?);
     account.set_company_name(prompt_company(ui)?);
 
     let account: session::Session = signup(ui, client, account.clone())?;
@@ -39,8 +39,8 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
         &account.get_id(),
     )?;
 
-    ui.heading("Create new account in rioos and Logged in.")?;
-    ui.para("That's all for now. Thanks for using Rio/OS!")?;
+    ui.heading("Onboarded in Rio/OS and Logged in successfully.")?;
+    ui.para("To get you started, Run 'rioos digitalcloud list'. Thanks for using Rio/OS!")?;
     Ok(())
 }
 
@@ -52,7 +52,11 @@ fn write_cli_config_auth_token(auth_token: &str, email: &str, account: &str) -> 
     config::save(&config)
 }
 
-fn signup(ui: &mut UI, rio_client: Client, account: session::SessionCreate) -> Result<session::Session> {
+fn signup(
+    ui: &mut UI,
+    rio_client: Client,
+    account: session::SessionCreate,
+) -> Result<session::Session> {
     ui.br()?;
     Ok(rio_client.signup(account)?)
 }

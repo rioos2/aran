@@ -21,13 +21,22 @@ pub struct DataStore<'a> {
 
 impl<'a> DataStore<'a> {
     pub fn new(db: &'a DataStoreConn) -> Self {
-        DataStore { db: db, expander: &db.expander }
+        DataStore {
+            db: db,
+            expander: &db.expander,
+        }
     }
 
     pub fn create(&self, permissions: &Permissions) -> PermissionsOutput {
         let conn = self.db.pool.get_shard(0)?;
-        let rows = &conn.query("SELECT * FROM insert_permission_v1 ($1,$2,$3)", &[&(permissions.get_role_id().parse::<i64>().unwrap()), &(permissions.get_name() as String), &(permissions.get_description() as String)])
-            .map_err(Error::PermissionsCreate)?;
+        let rows = &conn.query(
+            "SELECT * FROM insert_permission_v1 ($1,$2,$3)",
+            &[
+                &(permissions.get_role_id().parse::<i64>().unwrap()),
+                &(permissions.get_name() as String),
+                &(permissions.get_description() as String),
+            ],
+        ).map_err(Error::PermissionsCreate)?;
 
         if rows.len() > 0 {
             let permissions_create = row_to_permissions(&rows.get(0))?;
@@ -40,7 +49,10 @@ impl<'a> DataStore<'a> {
     pub fn show(&self, get_perms: &IdGet) -> PermissionsOutput {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_permission_v1($1)", &[&(get_perms.get_id().parse::<i64>().unwrap())]).map_err(Error::PermissionGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_permission_v1($1)",
+            &[&(get_perms.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::PermissionGet)?;
 
         if rows.len() > 0 {
             let permission = row_to_permissions(&rows.get(0))?;
@@ -53,7 +65,13 @@ impl<'a> DataStore<'a> {
     pub fn show_by_role(&self, get_perms: &IdGet) -> PermissionsOutput {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_permission_by_role_v1($1,$2)", &[&(get_perms.get_id().parse::<i64>().unwrap()), &(get_perms.get_name().parse::<i64>().unwrap())]).map_err(Error::PermissionGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_permission_by_role_v1($1,$2)",
+            &[
+                &(get_perms.get_id().parse::<i64>().unwrap()),
+                &(get_perms.get_name().parse::<i64>().unwrap()),
+            ],
+        ).map_err(Error::PermissionGet)?;
 
         if rows.len() > 0 {
             let permission = row_to_permissions(&rows.get(0))?;
@@ -64,7 +82,8 @@ impl<'a> DataStore<'a> {
 
     pub fn list_blank(&self) -> PermissionsOutputList {
         let conn = self.db.pool.get_shard(0)?;
-        let rows = &conn.query("SELECT * FROM get_permissions_v1()", &[]).map_err(Error::PermissionsGet)?;
+        let rows = &conn.query("SELECT * FROM get_permissions_v1()", &[])
+            .map_err(Error::PermissionsGet)?;
 
         let mut response = Vec::new();
 
@@ -79,31 +98,48 @@ impl<'a> DataStore<'a> {
     }
 
     //This is a fascade method to list_by_email.
-    pub fn list_by_email_fascade(&self, _email: IdGet) -> PermissionsForAccount {
+    pub fn list_by_email_fascade(&self, email: IdGet) -> PermissionsForAccount {
         let mut perms_for_account = PermissionsForAccount::new();
-        self.expander.with_permissions(&mut perms_for_account, PULL_DIRECTLY);
+        perms_for_account.set_account_email(email.get_id());
+        self.expander
+            .with_permissions(&mut perms_for_account, PULL_DIRECTLY);
         perms_for_account
     }
 
     //This is a fascade method to list_by_email.
     pub fn list_by_email(&self, email: &IdGet) -> PermissionsOutputList {
         let conn = self.db.pool.get_shard(0)?;
-        let rows = &conn.query(&"SELECT * FROM get_permission_by_email_v1($1)", &[&(email.get_id() as String)]).map_err(Error::PermissionsGet)?;
+        let rows = &conn.query(
+            &"SELECT * FROM get_permission_by_email_v1($1)",
+            &[&(email.get_id() as String)],
+        ).map_err(Error::PermissionsGet)?;
 
         let mut response = Vec::new();
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
             }
+            info!(
+                "---------- STRT: Permission loader {} ----------",
+                email.get_id()
+            );
+            info!("Loaded ! Permissions\n{:?}", response);
+            info!(
+                "---------- DONE: Permission loader {} ----------",
+                email.get_id()
+            );
             return Ok(Some(response));
         }
         Ok(None)
     }
 
-    pub fn list_by_role(&self, get_permission: &IdGet) -> PermissionsOutputList {
+    pub fn list_by_role(&self, role_id: &IdGet) -> PermissionsOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_permissions_by_role_v1($1)", &[&(get_permission.get_id().parse::<i64>().unwrap())]).map_err(Error::RolePermissionsGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_permissions_by_role_v1($1)",
+            &[&(role_id.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::RolePermissionsGet)?;
 
         let mut response = Vec::new();
 

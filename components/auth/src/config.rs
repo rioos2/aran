@@ -25,7 +25,10 @@ pub struct IdentityCfg {
 /// ["password"]
 impl Default for IdentityCfg {
     fn default() -> Self {
-        IdentityCfg { enabled: vec!["password".to_string()], params: HashMap::new() }
+        IdentityCfg {
+            enabled: vec!["password".to_string()],
+            params: HashMap::new(),
+        }
     }
 }
 
@@ -69,7 +72,10 @@ pub trait AuthenticationFlowCfg {
 
 ///A public wrapper function that converts Identity into another form of a tuple.
 ///Seems like a Into function actually.
-pub fn flow_modes<I: Identity>(identity: &I, prefix_path: PathBuf) -> (Vec<String>, HashMap<String, String>) {
+pub fn flow_modes<I: Identity>(
+    identity: &I,
+    prefix_path: PathBuf,
+) -> (Vec<String>, HashMap<String, String>) {
     lazy_static! {
         static ref RE: Regex = Regex::new(r"^.*\.((pub|key|toml|hbs|cert.pem)).*$").unwrap();
     }
@@ -80,9 +86,34 @@ pub fn flow_modes<I: Identity>(identity: &I, prefix_path: PathBuf) -> (Vec<Strin
         .map(|enabz| {
             (
                 enabz.to_string(),
-                identity.params().clone().into_iter().filter(|kv| kv.0 == *enabz.clone()).map(|x| if RE.is_match(&x.1) { (x.0, prefix_path.join(x.1.clone()).to_str().unwrap_or(&x.1).to_string()) } else { x }).collect::<_>(),
+                identity
+                    .params()
+                    .clone()
+                    .into_iter()
+                    .filter(|kv| kv.0 == *enabz.clone())
+                    .map(|x| {
+                        if RE.is_match(&x.1) {
+                            (
+                                x.0,
+                                prefix_path
+                                    .join(x.1.clone())
+                                    .to_str()
+                                    .unwrap_or(&x.1)
+                                    .to_string(),
+                            )
+                        } else {
+                            x
+                        }
+                    })
+                    .collect::<_>(),
             )
         })
         .collect::<Vec<(String, HashMap<String, String>)>>();
-    (b.clone().into_iter().map(|x| x.0).collect::<Vec<String>>(), b.into_iter().map(|x| x.1).flat_map(|y| y).collect::<HashMap<_, String>>())
+    (
+        b.clone().into_iter().map(|x| x.0).collect::<Vec<String>>(),
+        b.into_iter()
+            .map(|x| x.1)
+            .flat_map(|y| y)
+            .collect::<HashMap<_, String>>(),
+    )
 }
