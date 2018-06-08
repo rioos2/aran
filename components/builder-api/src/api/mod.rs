@@ -17,7 +17,6 @@ use std::collections::BTreeMap;
 pub mod events;
 pub mod audit;
 pub mod authorize;
-pub mod authorize;
 pub mod cluster;
 pub mod deploy;
 pub mod devtooling;

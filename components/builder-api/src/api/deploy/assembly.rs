@@ -12,7 +12,6 @@ use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use deploy::models::{assembly, assemblyfactory, blockchainfactory, blueprint, endpoint, volume};
-use deploy::models::{assembly, assemblyfactory, blueprint, endpoint, volume};
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
