@@ -463,6 +463,23 @@ impl FactoryFeeder for Assembly {
     }
 }
 
+
+impl BlockchainFactoryFeeder for Assembly {
+    fn bget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(
+            self.get_owner_references()
+                .iter()
+                .map(|x| x.get_uid().to_string())
+                .collect::<String>(),
+            "_blockchain_factory".to_string(),
+        )
+    }
+
+    fn bfeed(&mut self, f: Option<BlockchainFactory>) {
+        self.mut_spec().set_blockchain(f);
+    }
+}
+
 // The endpoints feeder, which gets called from an expander cache.
 // The expander cache is ttl and loads the endpoints the first time.
 impl EndPointsFeeder for Assembly {
@@ -524,11 +541,14 @@ impl Secret {
 pub struct Spec {
     assembly_factory: Option<AssemblyFactory>,
 
+    blockchain_factory: Option<BlockchainFactory>,
+
     endpoints: Option<EndPoints>,
 
     volumes: Option<Vec<Volumes>>,
 
     metrics: Option<BTreeMap<String, String>>,
+
 }
 
 impl Spec {
@@ -541,6 +561,14 @@ impl Spec {
 
     pub fn get_parent(&self) -> Option<AssemblyFactory> {
         self.assembly_factory.clone()
+    }
+
+    pub fn set_blockchain(&mut self, factory: Option<BlockchainFactory>) {
+        self.blockchain_factory = factory;
+    }
+
+    pub fn get_blockchain(&self) -> Option<BlockchainFactory> {
+        self.blockchain_factory.clone()
     }
 
     pub fn set_endpoints(&mut self, endpoints: Option<EndPoints>) {

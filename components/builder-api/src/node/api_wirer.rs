@@ -7,12 +7,13 @@
 use api::audit::blockchain_api::EventLog;
 use api::audit::config::BlockchainConn;
 use api::events::EventLogger;
+use api::objectstorage::config::ObjectStorageConn;
 use api::security::config::SecurerConn;
-use api::Api;
-use api::{audit, authorize, cluster, deploy, devtooling, security};
+use api::{audit, authorize, cluster, deploy, devtooling, objectstorage, security, Api};
 use audit::config::InfluxClientConn;
 use audit::vulnerable::vulnerablity::AnchoreClient;
 use auth::rbac::permissions;
+use config::Config;
 use config::Config;
 use db::data_store::*;
 use error::Result;
@@ -21,6 +22,7 @@ use http_gateway::app::prelude::*;
 use http_gateway::http::pack;
 use iron;
 use mount::Mount;
+use node::runtime::ApiSender;
 use node::runtime::ApiSender;
 use persistent;
 use protocol::cache::ExpanderSender;
@@ -124,6 +126,11 @@ impl HttpGateway for Wirer {
 
                 let mut storage = cluster::storage_api::StorageApi::new(Box::new(ds.clone()));
                 storage.wire(config.clone(), &mut router);
+
+                let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(Box::new(
+                    ObjectStorageConn::new(&*config.clone()),
+                ));
+                s3.wire(config.clone(), &mut router);
 
                 let mut service = deploy::service::ServiceApi::new(Box::new(ds.clone()));
                 service.wire(config.clone(), &mut router);

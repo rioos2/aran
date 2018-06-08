@@ -23,6 +23,7 @@ pub const PULL_INVALDATED: Option<bool> = None;
 
 pub const CACHE_PREFIX_PLAN: &'static str = "_plan";
 pub const CACHE_PREFIX_FACTORY: &'static str = "_factory";
+pub const CACHE_PREFIX_BLOCKCHAIN_FACTORY: &'static str = "_blockchain_factory";
 pub const CACHE_PREFIX_ENDPOINT: &'static str = "_endpoint";
 pub const CACHE_PREFIX_VOLUME: &'static str = "_volume";
 pub const CACHE_PREFIX_METRIC: &'static str = "_metric";

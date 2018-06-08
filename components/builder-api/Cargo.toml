@@ -58,6 +58,7 @@ custom_derive = "0.1.7"
 handlebars = { version = "1.0.0-beta.1", default-features = false }
 lettre = "0.8"
 lettre_email="0.8"
+openio_sdk_rust = {git = "https://github.com/rioadvancement/openio-sdk-rust.git" }
 
 [dependencies.clap]
 version = "*"

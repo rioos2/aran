@@ -9,7 +9,9 @@ use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
 use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg, Mailer, MailerCfg};
 use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
+use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
 use api::deploy::config::ServicesCfg;
+use api::objectstorage::config::ObjectStorageAuth;
 
 use auth::config::{flow_modes, AuthenticationFlowCfg, Identity, IdentityCfg};
 use watch::config::{Streamer, StreamerCfg};
@@ -61,6 +63,8 @@ pub struct Config {
     pub ping: PinguyCfg,
 
     pub mailer: MailerCfg,
+    //objectstorage
+    pub objectstorage: ObjectStorageCfg,
 }
 
 /// dump the configuration
@@ -113,6 +117,11 @@ impl Config {
         ui.para(&self.vulnerability.anchore_endpoint)?;
         ui.para(&self.vulnerability.anchore_username)?;
         ui.para(&self.vulnerability.anchore_password)?;
+        ui.heading("[objectstorage]")?;
+        ui.para(&format!("{:?}", &self.objectstorage.backend))?;
+        ui.para(&self.objectstorage.endpoint)?;
+        ui.para(&self.objectstorage.access_key)?;
+        ui.para(&self.objectstorage.secret_key)?;
         ui.heading("[ping]")?;
         ui.para(&self.ping.controller_endpoint.clone().unwrap_or(
             "".to_string(),
@@ -162,6 +171,7 @@ impl Default for Config {
             vulnerability: VulnerabilityCfg::default(),
             ping: PinguyCfg::default(),
             mailer: MailerCfg::default(),
+            objectstorage: ObjectStorageCfg::default(),
         }
     }
 }
@@ -379,6 +389,22 @@ impl Mailer for Config {
     }
     fn enabled(&self) -> bool {
         self.mailer.enabled
+    }
+}
+
+//A delegate, that returns the securer auth config from the loaded securer auth config
+impl ObjectStorageAuth for Config {
+    fn storage_backend(&self) -> ObjectStorageBackend {
+        self.objectstorage.backend.clone()
+    }
+    fn storage_endpoint(&self) -> &str {
+        &self.objectstorage.endpoint
+    }
+    fn storage_access_key(&self) -> &str {
+        &self.objectstorage.access_key
+    }
+    fn storage_secret_key(&self) -> &str {
+        &self.objectstorage.secret_key
     }
 }
 

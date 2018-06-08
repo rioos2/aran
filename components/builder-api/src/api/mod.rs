@@ -15,21 +15,21 @@ use std::collections::BTreeMap;
 //Hence  `mod events` must be loaded before `mod audit`
 #[macro_use]
 pub mod events;
-
 pub mod audit;
+pub mod authorize;
 pub mod authorize;
 pub mod cluster;
 pub mod deploy;
 pub mod devtooling;
-pub mod security;
-
 mod helpers;
-use protocol::api::base::{IdGet, QueryInput, StatusUpdate};
+pub mod objectstorage;
+pub mod security;
 
 use api::helpers::extract_query_value;
 use error::ErrorMessage::{MissingBody, MissingParameter, MissingQueryParameter, MustBeNumeric};
 use http_gateway::util::errors::{bad_request, malformed_body};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use protocol::api::base::{IdGet, QueryInput, StatusUpdate};
 
 // `Api` trait which defines `RESTful` API.
 pub trait Api {
@@ -190,7 +190,11 @@ impl QueryVerifier for DefaultQuery {
     fn validate_query(req: &mut Request) -> AranResult<QueryInput> {
         match extract_query_value(req) {
             Some(query_pairs) => Ok(QueryInput::with(query_pairs)),
-            None => return Err(bad_request(&MissingQueryParameter("No Query Params Found".to_string()))),
+            None => {
+                return Err(bad_request(&MissingQueryParameter(
+                    "No Query Params Found".to_string(),
+                )))
+            }
         }
     }
 }

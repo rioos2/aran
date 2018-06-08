@@ -33,15 +33,6 @@ pub trait SecurerAuth {
     fn token(&self) -> &str;
 }
 
-/// Trait that feeds the configuration into the APIWirers.
-/// This trait feed the configuration into the PasswordClient (via PasswordCLI)
-pub trait PasswordAuth {}
-
-/// This trait feed the service account public key credential configuration into the
-/// Authenticated (Authenticated is invoked by all APIs (from APIWirers)
-pub trait SystemAuth {
-    fn serviceaccount_public_key(&self) -> Option<String>;
-}
 
 #[derive(Clone)]
 pub struct SecurerConn {

@@ -21,10 +21,11 @@ impl DataStore {
         let conn = db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+            "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
             &[
                 &(serde_json::to_value(plan.type_meta()).unwrap()),
                 &(serde_json::to_value(plan.object_meta()).unwrap()),
+                &(serde_json::to_value(plan.get_metadata()).unwrap()),
                 &(plan.get_category() as String),
                 &(plan.get_version() as String),
                 &(serde_json::to_value(plan.get_characteristics()).unwrap()),
@@ -106,6 +107,7 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<blueprint::Plan> {
     plan.set_category(row.get("category"));
     plan.set_version(row.get("version"));
     plan.set_characteristics(serde_json::from_value(row.get("characteristics")).unwrap());
+    plan.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
     plan.set_icon(row.get("icon"));
     plan.set_description(row.get("description"));
     plan.set_ports(serde_json::from_value(row.get("ports")).unwrap());
