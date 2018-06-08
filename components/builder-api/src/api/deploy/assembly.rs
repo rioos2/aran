@@ -330,7 +330,7 @@ impl ExpanderSender for AssemblyApi {
         ));
 
         let mut _conn = self.conn.clone();
-        _conn.expander.with(plan_service);
+        _conn.expander.with(plan_service.clone());
         let factory_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_FACTORY.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {

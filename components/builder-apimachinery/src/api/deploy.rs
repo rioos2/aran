@@ -6,8 +6,8 @@ use api::blueprint::Plan;
 use api::endpoints::EndPoints;
 use api::linker::Services;
 use api::volume::Volumes;
-
-use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PlanFeeder, ServicesFeeder, VolumesFeeder};
+use cache::inject::{BlockchainFactoryFeeder, EndPointsFeeder, FactoryFeeder, MetricsFeeder,
+                    PlanFeeder, ServicesFeeder, VolumesFeeder};
 
 pub const PHASE_PENDING: &'static str = "Pending";
 pub const PHASE_STAND_STILL: &'static str = "StandStill";
@@ -24,7 +24,7 @@ pub struct AssemblyFactory {
     object_meta: ObjectMeta,             ////Standard object metadata
     replicas: u32,                       //Replicas is the number of desired replicas of the plan.
     resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
-    secret: Secret,                      //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
+    secret: Secret, //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
     plan: String, // A Plan is meta-data that provides a description of the artifacts that make up an application, the services that are required to execute or utilize those artifacts, and the relationship of the artifacts to those services. Plans are expressed as json under a /plans resource.    Here we provide the identifier as pointed to /plans
     #[serde(default)]
     status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
@@ -44,7 +44,11 @@ impl AssemblyFactory {
     //Create a new assemblyfactory with type_meta and object_meta
     //and other defaulted.
     pub fn with(t: TypeMeta, o: ObjectMeta) -> AssemblyFactory {
-        AssemblyFactory { type_meta: t, object_meta: o, ..Default::default() }
+        AssemblyFactory {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
     }
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v
@@ -174,15 +178,14 @@ impl ChildTypeMeta for AssemblyFactory {
     const CHILD_KIND: &'static str = "POST:assemblys";
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BlockchainFactory {
     #[serde(default)]
     id: String, // Id an unique identifier in systems of record. Generated during creation of the BlockchainFactory
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: BlockchainFactory
-    object_meta: ObjectMeta, ////Standard object metadata
-    replicas: u32, //Replicas is the number of desired replicas of the plan.
+    object_meta: ObjectMeta,             ////Standard object metadata
+    replicas: u32,                       //Replicas is the number of desired replicas of the plan.
     resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
     secret: Secret, //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
     plan: String, // A Plan is meta-data that provides a description of the artifacts that make up an application, the services that are required to execute or utilize those artifacts, and the relationship of the artifacts to those services. Plans are expressed as json under a /plans resource.    Here we provide the identifier as pointed to /plans
@@ -304,7 +307,6 @@ impl PlanFeeder for BlockchainFactory {
     }
 }
 
-
 // The service feeder, which gets called from an expander cache.
 // The expander cache is ttl and loads the service the first time.
 impl ServicesFeeder for BlockchainFactory {
@@ -348,7 +350,7 @@ pub struct Assembly {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     selector: Vec<String>, // selector to restrict the list of returned objects by their labels. Defaults to everything
-    status: Status,          //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
+    status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
     #[serde(default)]
     metadata: BTreeMap<String, String>, //Standard object's metadata. Can contain optional label selector team, origin
     #[serde(default)]
@@ -365,7 +367,11 @@ impl Assembly {
     //Create a new assembly with type_meta and object_meta
     //and other defaulted.
     pub fn with(t: TypeMeta, o: ObjectMeta) -> Assembly {
-        Assembly { type_meta: t, object_meta: o, ..Default::default() }
+        Assembly {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
     }
 
     pub fn set_id(&mut self, v: ::std::string::String) {
@@ -421,8 +427,21 @@ impl Assembly {
     }
 
     pub fn get_category(&self) -> String {
-        if self.get_spec().get_parent().is_some() && self.get_spec().get_parent().unwrap().get_spec().get_plan().is_some() {
-            return self.get_spec().get_parent().unwrap().get_spec().get_plan().unwrap().get_category();
+        if self.get_spec().get_parent().is_some()
+            && self.get_spec()
+                .get_parent()
+                .unwrap()
+                .get_spec()
+                .get_plan()
+                .is_some()
+        {
+            return self.get_spec()
+                .get_parent()
+                .unwrap()
+                .get_spec()
+                .get_plan()
+                .unwrap()
+                .get_category();
         }
         "".to_string()
     }
@@ -455,14 +474,19 @@ impl MetaFields for Assembly {
 // The expander cache is ttl and loads the factory the first time.
 impl FactoryFeeder for Assembly {
     fn fget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(self.get_owner_references().iter().map(|x| x.get_uid().to_string()).collect::<String>(), "_factory".to_string())
+        IdGet::with_id_name(
+            self.get_owner_references()
+                .iter()
+                .map(|x| x.get_uid().to_string())
+                .collect::<String>(),
+            "_factory".to_string(),
+        )
     }
 
     fn ffeed(&mut self, f: Option<AssemblyFactory>) {
         self.mut_spec().set_parent(f);
     }
 }
-
 
 impl BlockchainFactoryFeeder for Assembly {
     fn bget_id(&mut self) -> IdGet {
@@ -548,7 +572,6 @@ pub struct Spec {
     volumes: Option<Vec<Volumes>>,
 
     metrics: Option<BTreeMap<String, String>>,
-
 }
 
 impl Spec {
@@ -832,7 +855,6 @@ impl AssemblyFactorySpec {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BlockchainFactorySpec {
-
     #[serde(default)]
     tolerations: Vec<Tolerations>,
 
@@ -902,7 +924,6 @@ impl BlockchainFactorySpec {
     }
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Tolerations {
     key: String,
@@ -926,7 +947,9 @@ pub struct Affinity {
 }
 impl Affinity {
     pub fn with_affinity(assemblyfactory_affinity: &str) -> Affinity {
-        Affinity { assemblyfactory_affinity: assemblyfactory_affinity.to_string() }
+        Affinity {
+            assemblyfactory_affinity: assemblyfactory_affinity.to_string(),
+        }
     }
 }
 
@@ -1073,7 +1096,11 @@ mod test {
         assert!(assemblyfactory.resources.contains_key("compute_type"));
         assert!(assemblyfactory.resources.contains_key("stotage_type"));
         assert_eq!(assemblyfactory.metadata.len(), 2);
-        assert!(assemblyfactory.metadata.contains_key("io:rioos:orginin::name",));
+        assert!(
+            assemblyfactory
+                .metadata
+                .contains_key("io:rioos:orginin::name",)
+        );
         assert!(assemblyfactory.metadata.contains_key("io:rioos:team::name"));
     }
 
@@ -1182,7 +1209,11 @@ mod test {
         assert!(assemblyfactory.resources.contains_key("compute_type"));
         assert!(assemblyfactory.resources.contains_key("stotage_type"));
         assert_eq!(assemblyfactory.metadata.len(), 2);
-        assert!(assemblyfactory.metadata.contains_key("io:rioos:orginin::name",));
+        assert!(
+            assemblyfactory
+                .metadata
+                .contains_key("io:rioos:orginin::name",)
+        );
         assert!(assemblyfactory.metadata.contains_key("io:rioos:team::name"));
     }
 
@@ -1210,9 +1241,13 @@ mod test {
 
     #[test]
     fn decode_affinity() {
-        let affinity = r#"{"assemblyfactory_affinity": "requiredDuringSchedulingIgnoredDuringExecution"}"#;
+        let affinity =
+            r#"{"assemblyfactory_affinity": "requiredDuringSchedulingIgnoredDuringExecution"}"#;
         let affinit: Affinity = json_decode(affinity).unwrap();
-        assert_eq!(affinit.assemblyfactory_affinity, "requiredDuringSchedulingIgnoredDuringExecution");
+        assert_eq!(
+            affinit.assemblyfactory_affinity,
+            "requiredDuringSchedulingIgnoredDuringExecution"
+        );
     }
 
     #[test]

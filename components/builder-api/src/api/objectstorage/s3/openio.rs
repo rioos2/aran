@@ -17,28 +17,29 @@ use openio_sdk_rust::aws::s3::endpoint::{Endpoint, Signature};
 use openio_sdk_rust::aws::s3::s3client::S3Client;
 use url::Url;
 
-
-
 pub struct ObjectStorage {
-    client: S3Client
+    provider: DefaultCredentialsProvider,
+    endpoint: Endpoint,
+   // client: S3Client
 }
 
 impl ObjectStorage {
     pub fn new(conn: &ObjectStorageConn) -> Self {
-
         let param_provider: Option<ParametersProvider>;
             param_provider = Some(
-                 ParametersProvider::with_parameters(conn.access_key,conn.secret_key,None).unwrap()
-);
+                 ParametersProvider::with_parameters(conn.access_key.clone(),conn.secret_key.clone(),None).unwrap()
+            );
 
-let provider = DefaultCredentialsProvider::new(param_provider).unwrap();
+        let provider = DefaultCredentialsProvider::new(param_provider).unwrap();
 
-// V4 is the default signature for AWS. However, other systems also use V2.
-//let endpoint = Endpoint::new(Region::UsEast1, Signature::V2, None, None, None, None);
-let url = Url::parse(conn.endpoint).unwrap();
-let endpoint = Endpoint::new(Region::UsEast1, Signature::V2, Some(url), None, None, Some(false));
-let client = S3Client::new(provider, endpoint);
-        ObjectStorage{client:client};
+        // V4 is the default signature for AWS. However, other systems also use V2.
+        let url = Url::parse(&conn.endpoint).unwrap();
+        let endpoint = Endpoint::new(Region::UsEast1, Signature::V2, Some(url), None, None, Some(false));
+        
+        ObjectStorage{
+            provider: provider,
+            endpoint: endpoint,
+            }
     }
 }
 
@@ -49,18 +50,19 @@ impl StorageClient for ObjectStorage {
     }
 
     fn create_bucket(&self, bucket: &Bucket) -> BucketOutput {
-        Ok(())
+        //let client = S3Client::new(provider, endpoint);
+        Ok(None)
     }
 
     fn list_bucket(&self) -> BucketOutputList {
-        Ok(())
+        Ok(None)
     }
 
     fn upload(&self, bucket: &Bucket) -> BucketOutput {
-        Ok(())
+        Ok(None)
     }
 
     fn download(&self) -> BucketOutput {
-        Ok(())
+        Ok(None)
     }
 }
