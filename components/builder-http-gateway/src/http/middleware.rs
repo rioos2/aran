@@ -21,7 +21,6 @@ use persistent;
 use regex::Regex;
 use router::NoRoute;
 use std::collections::HashMap;
-use std::sync::Arc;
 use unicase::UniCase;
 use util::errors::{bad_err, forbidden_error, internal_error};
 

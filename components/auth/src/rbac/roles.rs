@@ -4,36 +4,34 @@ use protocol::api::authorize::Permissions;
 type TrustedAccessList = Vec<TrustAccess>;
 
 const ALL: &'static str = "*";
-const ASSEMBLY: &'static str = "assembly";
-const ASSEMBLYFACTORY: &'static str = "assemblyfactory";
-//const SERVICEACCOUNT: &'static str = "serviceaccount";
-const HORIZONTALSCALING: &'static str = "horizontalscaling";
-const VERTICALSCALING: &'static str = "verticalscaling";
-const SECRET: &'static str = "secret";
-const ENDPOINT: &'static str = "endpoint";
-const JOB: &'static str = "job";
-const SERVICE: &'static str = "service";
-const VOLUME: &'static str = "volume";
-const NODE: &'static str = "node";
-const STORAGECONNECTOR: &'static str = "storageconnector";
-const STORAGEPOOL: &'static str = "storagepool";
-//const SETTINGSMAP: &'static str = "settingsmap";
-const IMAGEREFERENCE: &'static str = "imagereference";
-const IMAGEMARK: &'static str = "imagemark";
-const BUILD: &'static str = "build";
-const BUILDCONFIG: &'static str = "buildconfig";
-const PLAN: &'static str = "plan";
-const ACCOUNT: &'static str = "account";
-const DATACENTER: &'static str = "datacenter";
-const NETWORK: &'static str = "network";
-const AUDIT: &'static str = "audit";
-const LOG: &'static str = "log";
-const HEALTHZ: &'static str = "healthz";
+const ASSEMBLY: &'static str = "ASSEMBLYS";
+const ASSEMBLYFACTORY: &'static str = "ASSSEMBLYFACTORY";
+const HORIZONTALSCALING: &'static str = "HORIZONTALSCALING";
+const VERTICALSCALING: &'static str = "VERTICALSCALING";
+const SECRET: &'static str = "SECRETS";
+const ENDPOINT: &'static str = "ENDPOINTS";
+const JOB: &'static str = "JOBS";
+const SERVICE: &'static str = "SERVICES";
+const VOLUME: &'static str = "VOLUMES";
+const NODE: &'static str = "NODES";
+const STORAGECONNECTOR: &'static str = "STORAGECONNECTORS";
+const STORAGEPOOL: &'static str = "STORAGEPOOLS";
+const IMAGEREFERENCE: &'static str = "IMAGEREFERENCES";
+const IMAGEMARK: &'static str = "IMAGEMARKS";
+const BUILD: &'static str = "BUILDS";
+const BUILDCONFIG: &'static str = "BUILDCONFIGS";
+const PLAN: &'static str = "PLANS";
+const ACCOUNT: &'static str = "ACCOUNTS";
+const DATACENTER: &'static str = "DATACENTERS";
+const NETWORK: &'static str = "NETWORKS";
+const AUDIT: &'static str = "AUDITS";
+const LOG: &'static str = "LOGS";
+const HEALTHZ: &'static str = "HEALTHZ";
 
-const RESOURCE_GET: &'static str = "get";
-const RESOURCE_POST: &'static str = "post";
-const RESOURCE_PUT: &'static str = "put";
-const RESOURCE_DELETE: &'static str = "delete";
+const RESOURCE_GET: &'static str = "GET";
+const RESOURCE_POST: &'static str = "POST";
+const RESOURCE_PUT: &'static str = "PUT";
+const RESOURCE_DELETE: &'static str = "DELETE";
 
 pub struct Roles {}
 
@@ -73,6 +71,9 @@ impl TrustAccess {
         if perms.len() < 2 && self.is_all_wild(perms.clone()) {
             return Ok(true);
         }
+
+        println!("Not ALL WILD.");
+
         for p in perms.iter() {
             if p == self {
                 flag = true;
@@ -80,7 +81,9 @@ impl TrustAccess {
         }
         match flag {
             true => Ok(flag),
-            false => Err(Error::PermissionError(format!("User doesn't have permission for this operation."))),
+            false => Err(Error::PermissionError(format!(
+                "User doesn't have permission for this operation."
+            ))),
         }
     }
 }
@@ -90,6 +93,13 @@ impl TrustAccess {
 //otherwise it will check resource and level permissions
 impl PartialEq for TrustAccess {
     fn eq(&self, other: &TrustAccess) -> bool {
+        println!(
+            "Comparing [{:?}={:?}] [{:?}={:?}]",
+            self.0.clone(),
+            other.0.clone(),
+            self.1.clone(),
+            other.1.clone()
+        );
         match self.1 {
             TrustLevel::ResourceWild => self.0 == other.0,
             _ => self.0 == other.0 && self.1 == other.1,
