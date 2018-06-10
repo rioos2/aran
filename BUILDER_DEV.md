@@ -77,6 +77,12 @@ postgres=# grant all privileges on database rioosdb to rioos;
 GRANT
 ```
 
+All the 3 statements
+
+```
+drop database rioosdb; create database rioosdb; grant all privileges on database  rioosdb to rioos;
+```
+
 ### To exit from postgres
 ```
 postgres=#  \q

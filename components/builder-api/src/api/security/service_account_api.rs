@@ -1,5 +1,6 @@
 use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use auth::rbac::BUILTIN_ROLE_RIOOS_UNIVERSALSOLDIER;
 use bodyparser;
 use bytes::Bytes;
 use common::ui;
@@ -20,8 +21,6 @@ use router::Router;
 use serde_json;
 use service::service_account_ds::ServiceAccountDS;
 use std::sync::Arc;
-
-const SERVICEACCOUNTDEFAULT: &'static str = "rioos:universalsoldier";
 
 /// Securer api: SecurerApi provides ability to declare the node
 /// and manage them.
@@ -58,7 +57,7 @@ impl SeriveAccountApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        unmarshall_body.set_roles(vec![SERVICEACCOUNTDEFAULT.to_string()]);
+        unmarshall_body.set_roles(vec![BUILTIN_ROLE_RIOOS_UNIVERSALSOLDIER.to_string()]);
 
         ui::rawdumpln(
             Colour::White,

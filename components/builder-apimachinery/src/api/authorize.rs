@@ -151,12 +151,15 @@ mod test {
     #[test]
     fn decode_roles() {
         let val = r#"{
-            "name": "rioos:superuser",
+            "name": "RIOOS:SUPERUSER",
             "description":"superuser of RIO/OS. God given powers.  instance"
             }"#;
         let role: Roles = json_decode(val).unwrap();
-        assert_eq!(role.name, "rioos:superuser");
-        assert_eq!(role.description, "superuser of RIO/OS. God given powers.  instance");
+        assert_eq!(role.name, "RIOOS:SUPERUSER");
+        assert_eq!(
+            role.description,
+            "superuser of RIO/OS. God given powers.  instance"
+        );
     }
 
     #[test]
@@ -169,6 +172,9 @@ mod test {
         let perms: Permissions = json_decode(val).unwrap();
         assert_eq!(perms.role_id, "98765432123456");
         assert_eq!(perms.name, "rioos.assembly.get");
-        assert_eq!(perms.description, "Read only access to all the users  VMs, Containers");
+        assert_eq!(
+            perms.description,
+            "Read only access to all the users  VMs, Containers"
+        );
     }
 }

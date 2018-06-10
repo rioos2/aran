@@ -5,7 +5,6 @@ use protocol::api::base::MetaFields;
 use protocol::api::blueprint;
 use serde_json;
 use serde_yaml;
-use std::collections::BTreeMap;
 use std::io::{Error as IOError, ErrorKind};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -74,9 +73,8 @@ impl MarketPlaceDiffer {
                     &[
                         &(x.object_meta().name as String),
                         &(serde_json::to_value(x.type_meta()).unwrap()),
-                        &(serde_json::to_value(x.object_meta()).unwrap()),
-                        /* TO-DO: Temporary HACK */
-                        &(serde_json::to_value(BTreeMap::<String, String>::new()).unwrap()),
+                        &(serde_json::to_value(x.object_meta()).unwrap()),                        
+                        &(serde_json::to_value(x.get_metadata()).unwrap()),
                         &(x.get_category() as String),
                         &(x.get_version() as String),
                         &(serde_json::to_value(x.get_characteristics()).unwrap()),

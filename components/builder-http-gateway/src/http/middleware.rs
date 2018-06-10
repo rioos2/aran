@@ -353,7 +353,7 @@ impl BeforeMiddleware for RBAC {
             .verify(roles.clone(), input_trust.clone().unwrap())
         {
             Ok(_validate) => Ok(()),
-            Err(err) => {
+            Err(_) => {
                 info!(
                     "↑☒ RBAC ERROR {} {} {:?}",
                     "→",
