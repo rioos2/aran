@@ -2,14 +2,12 @@
 
 //! A module containing events and logger
 
-use std::fs::{self, File};
-use std::path::{Path, PathBuf};
-
+use node::runtime::ApiSender;
+use protocol::api::audit::{AccessedBy, AuditEvent, Envelope};
 use serde::Serialize;
 use serde_json;
-
-use node::runtime::ApiSender;
-use protocol::api::audit::{Envelope, AuditEvent, AccessedBy};
+use std::fs::{self, File};
+use std::path::{Path, PathBuf};
 
 /// The records created by the Rio/OS AuditBlockchain capture information on
 /// who has performed, what action, when, and how successfully:
@@ -45,7 +43,7 @@ macro_rules! define_event_log {
         impl typemap::Key for EventLog {
             type Value = EventLogger;
         }
-    }
+    };
 }
 
 // Macros to post in the event logger  from any request.
@@ -58,7 +56,6 @@ macro_rules! log_event {
         el.record_event($evt, (($evt).get_account(), ad))
     }};
 }
-
 
 // Macros to post in the event logger  from any request.
 #[macro_export]
@@ -89,11 +86,7 @@ pub struct EventLogger {
 #[allow(unused_must_use)]
 impl EventLogger {
     pub fn new<T: Into<PathBuf>>(channel: ApiSender, log_dir: T, enabled: bool) -> Self {
-        EventLogger {
-            channel: channel,
-            log_dir: log_dir.into(),
-            enabled: enabled,
-        }
+        EventLogger { channel: channel, log_dir: log_dir.into(), enabled: enabled }
     }
 
     pub fn record_event(&self, event: AuditEvent, accessed_by: AccessedBy) {

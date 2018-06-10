@@ -1,31 +1,26 @@
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use auth::rbac::BUILTIN_ROLE_RIOOS_UNIVERSALSOLDIER;
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
+use bytes::Bytes;
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
 use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-use protocol::api::service_account::ServiceAccount;
-use protocol::api::base::{IdGet, MetaFields};
-use service::service_account_ds::ServiceAccountDS;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::schema::{dispatch, type_meta};
+use protocol::api::service_account::ServiceAccount;
+use router::Router;
 use serde_json;
-const SERVICEACCOUNTDEFAULT: &'static str = "rioos:universalsoldier";
+use service::service_account_ds::ServiceAccountDS;
+use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
 /// and manage them.
@@ -53,9 +48,7 @@ impl SeriveAccountApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<ServiceAccount>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<ServiceAccount>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -64,7 +57,7 @@ impl SeriveAccountApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        unmarshall_body.set_roles(vec![SERVICEACCOUNTDEFAULT.to_string()]);
+        unmarshall_body.set_roles(vec![BUILTIN_ROLE_RIOOS_UNIVERSALSOLDIER.to_string()]);
 
         ui::rawdumpln(
             Colour::White,
@@ -83,7 +76,9 @@ impl SeriveAccountApi {
     //Will need roles/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match ServiceAccountDS::list_blank(&self.conn) {
-            Ok(Some(service_list)) => Ok(render_json_list(status::Ok, dispatch(req), &service_list)),
+            Ok(Some(service_list)) => {
+                Ok(render_json_list(status::Ok, dispatch(req), &service_list))
+            }
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
@@ -102,9 +97,11 @@ impl SeriveAccountApi {
         match ServiceAccountDS::show(&self.conn, &IdGet::with_id(name.clone().to_string())) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(
-                &format!("{} for {}", Error::Db(RecordsNotFound), name),
-            )),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                name
+            ))),
         }
     }
 
@@ -118,9 +115,7 @@ impl SeriveAccountApi {
             (org_name, ser_name)
         };
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<ServiceAccount>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<ServiceAccount>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -178,7 +173,8 @@ impl Api for SeriveAccountApi {
         let show_by_origin = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let secret_update = move |req: &mut Request| -> AranResult<Response> { _self.secret_update(req) };
+        let secret_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.secret_update(req) };
 
         //serviceAccount API
         router.post(
@@ -193,13 +189,17 @@ impl Api for SeriveAccountApi {
         );
         router.get(
             "/origins/:origin_id/serviceaccounts/:serviceaccount",
-            C { inner: show_by_origin },
+            C {
+                inner: show_by_origin,
+            },
             "service_account_get_by_origin",
         );
 
         router.put(
             "/origins/:origin_id/serviceaccounts/:serviceaccount",
-            C { inner: secret_update },
+            C {
+                inner: secret_update,
+            },
             "service_account_secret_update",
         );
 

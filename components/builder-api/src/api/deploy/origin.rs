@@ -8,26 +8,26 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
 use error::Error;
-use error::ErrorMessage::{MustBeNumeric, MissingParameter};
+use error::ErrorMessage::{MissingParameter, MustBeNumeric};
 
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
 
-use session::origin_ds::OriginDS;
-use protocol::api::origin::Origin;
 use protocol::api::base::MetaFields;
+use protocol::api::origin::Origin;
+use session::origin_ds::OriginDS;
 
+use bytes::Bytes;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use bytes::Bytes;
-use serde_json;
 use protocol::api::base::IdGet;
+use serde_json;
 
 #[derive(Clone)]
 pub struct OriginApi {
@@ -92,7 +92,11 @@ impl OriginApi {
         match OriginDS::show(&self.conn, &params) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_name()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_name()
+            ))),
         }
     }
 
@@ -129,7 +133,11 @@ impl Api for OriginApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         //Origin API
-        router.post("/origins", XHandler::new(C { inner: create }).before(basic.clone()), "origins");
+        router.post(
+            "/origins",
+            XHandler::new(C { inner: create }).before(basic.clone()),
+            "origins",
+        );
 
         //TODO
         //without authentication
@@ -137,7 +145,11 @@ impl Api for OriginApi {
 
         //TODO
         //without authentication
-        router.get("/origins/:name", XHandler::new(C { inner: show }), "origin_show");
+        router.get(
+            "/origins/:name",
+            XHandler::new(C { inner: show }),
+            "origin_show",
+        );
     }
 }
 

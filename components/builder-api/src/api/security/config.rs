@@ -1,4 +1,6 @@
-///// Configuration for Secure vault.
+// Copyright 2018 The Rio Advancement Inc
+
+//! Configuration for Secure vault.
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum SecureBackend {

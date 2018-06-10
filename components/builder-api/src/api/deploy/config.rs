@@ -1,3 +1,5 @@
+use deploy::assembler::ServicesConfig as AssemblerServicesConfig;
+
 // Returns the stub services config
 //
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -18,6 +20,19 @@ impl Default for ServicesCfg {
             loadbalancer_cpu: "1".to_string(),
             loadbalancer_mem: "1024 MiB".to_string(),
             loadbalancer_disk: "1 GiB".to_string(),
+        }
+    }
+}
+
+/// Convert into ServicesConfig  from the ServiceCfg provided as defaults.
+impl Into<AssemblerServicesConfig> for ServicesCfg {
+    fn into(self) -> AssemblerServicesConfig {
+        AssemblerServicesConfig {
+            loadbalancer_imagein: self.loadbalancer_imagein,
+            loadbalancer_imagename: self.loadbalancer_imagename,
+            loadbalancer_cpu: self.loadbalancer_cpu,
+            loadbalancer_mem: self.loadbalancer_mem,
+            loadbalancer_disk: self.loadbalancer_disk,
         }
     }
 }

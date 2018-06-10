@@ -6,7 +6,8 @@ description = "A library for implementing API HTTP Gateways"
 workspace = "../../"
 
 [dependencies]
-regex = "*"
+lazy_static="*"
+regex ="*"
 rand = "*"
 ansi_term = "*"
  env_logger = "0.5.9"

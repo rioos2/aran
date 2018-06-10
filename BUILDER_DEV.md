@@ -7,9 +7,10 @@
 This document outlines the steps to start and run a Rio/OS Aran API environment for development. The environment includes the database services.
 
 ## Pre-Reqs
+
 1. Use a Linux OS - either Ubuntu or ArchLinux.
-1. Clone the aran repo to your local filesystem.
-1. The sample commands below use the `curl` tool.
+2. Clone the aran repo to your local filesystem.
+3. The sample commands below use the `curl` tool.
 
 ## Git hooks
 
@@ -74,6 +75,12 @@ CREATE DATABASE
 ```
 postgres=# grant all privileges on database rioosdb to rioos;
 GRANT
+```
+
+All the 3 statements
+
+```
+drop database rioosdb; create database rioosdb; grant all privileges on database  rioosdb to rioos;
 ```
 
 ### To exit from postgres
@@ -152,37 +159,41 @@ All builder migrations are run with [Diesel](http://diesel.rs). This document de
 
 ```
 cargo install diesel_cli --no-default-features --features postgres
+
 ```
 
 ## Generating new migrations
 
 Every time you need to make a change to the Rio/OS schema you will be required to generate a new migration
 
-For the service `builder-db` you will need to run:
+For the service `rioos-apiserver` you will need to run:
 
-* `cd components/builder-db/src`
-* `diesel migration generate <your migration name>`
+* `cd components/builder-db/api`
+* `diesel migration generate <your migration name>` --database-url postgres://rioos:rioosd@localhost/rioodb
 
 The migration name should describe what you are doing. Ex:
 
-* create-posts
-* add-user-select-v4
-* remove-user-select-43
+* create_auth_providers
+* add_user_select_v4
 
 This will generate something like
 
 ```
-Creating migrations/20160815133237_create_posts/up.sql
-Creating migrations/20160815133237_create_posts/down.sql
+Creating migrations/2018-06-08-123529_create_auth_providers/up.sql
+Creating migrations/2018-06-08-123529_create_auth_providers/down.sql
 ```
 
+Watch this [asciicast](https://asciinema.org/a/rW6ypal1wTEjZ9ONbXU8fooKR)
+
 You can then edit `up.sql` to create your migration steps.
+
+Recommed to use the [SQLFormatter here](https://www.freeformatter.com/sql-formatter.html#ad-output) to format the `.sql` files. Other formatters tend to disrupt your sql.
 
 You should ignore, but not delete, `down.sql` as we don't use it since we rely on transactions for our rollback logic.
 
 ## Testing your changes
 
-You will need to compile your service and restart it to test your changes. You should see:
+You will need to compile your service and `rioos-api-server migrate` to test your changes. You should see:
 
 `Running Migration <your-migration-name>`
 
@@ -386,33 +397,6 @@ FreeBSD
 pkg install rocksdb-lite-5.11.3_1
 
 ```
-
-## Performance testing
-
-We want to do load testing on the api-server. We will use [locust](https://locust.io)
-
-### Install locust.io
-
-Watch this asciinema
-
-```
-https://asciinema.org/a/LtzjvzEWOkxqPZmMo6UbhujsY
-
-```
-
-### Run locust profile
-
-
-```
-cd tools/perf
-
-# To run Launcher profile
-locust -f launcher.py Launcher --host=https://console.rioos.xyz
-
-
-```
-
-Locust's web:  [http://127.0.0.1:8089](http://127.0.0.1:8089)
 
 ## Troubleshooting
 1. If you get the following error when starting the api-server, check to make sure you have the database setup correctly.

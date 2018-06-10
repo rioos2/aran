@@ -1,31 +1,26 @@
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
+use bytes::Bytes;
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
 use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-use protocol::api::base::MetaFields;
-
-use deploy::models::service;
-use protocol::api::linker::Services;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::models::service;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
-use serde_json;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::linker::Services;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct ServiceApi {
@@ -54,10 +49,18 @@ impl ServiceApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Services>>()?)?;
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
 
         match service::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(services) => Ok(render_json(status::Ok, &services)),
@@ -72,7 +75,11 @@ impl ServiceApi {
 
         match service::DataStore::show(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
@@ -115,7 +122,11 @@ impl ServiceApi {
         match service::DataStore::update(&self.conn, &unmarshall_body) {
             Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
         }
     }
 }
@@ -138,32 +149,24 @@ impl Api for ServiceApi {
 
         router.post(
             "/services",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "services",
         );
 
         router.get(
             "/services/:id",
-            XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.get".to_string(),&*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "service_show",
         );
         router.get(
             "/services",
-            XHandler::new(C { inner: list_blank })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.get".to_string(),&*config)),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "service_list_blank",
         );
 
         router.put(
             "/services/:id",
-            XHandler::new(C { inner: update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.service.put".to_string(),&*config)),
+            XHandler::new(C { inner: update }).before(basic.clone()),
             "service_update",
         );
     }

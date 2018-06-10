@@ -1,34 +1,28 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of auth [origin] for the HTTP server
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
+use bytes::Bytes;
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier, QueryValidator};
-use protocol::api::schema::{dispatch, type_meta};
-
 use config::Config;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-use job::job_ds::JobDS;
-use protocol::api::job::Jobs;
-use protocol::api::base::{StatusUpdate, MetaFields, IdGet};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use bytes::Bytes;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use job::job_ds::JobDS;
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::job::Jobs;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
 use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct JobApi {
@@ -52,11 +46,19 @@ impl JobApi {
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Jobs>>()?)?;
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
 
         match JobDS::create(&self.conn, &unmarshall_body) {
             Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
@@ -98,7 +100,11 @@ impl JobApi {
         match JobDS::status_update(&self.conn, &unmarshall_body) {
             Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
         }
     }
 
@@ -128,13 +134,16 @@ impl Api for JobApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let service_account_based_create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
+        let service_account_based_create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
-        let show_by_node = move |req: &mut Request| -> AranResult<Response> { _self.show_by_node(req) };
+        let show_by_node =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_node(req) };
 
         //origin less,
         let _self = self.clone();
@@ -142,38 +151,34 @@ impl Api for JobApi {
 
         router.post(
             "/jobs",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.job.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "jobs",
         );
 
         router.post(
             "serviceaccounts/:service_name/jobs",
-            XHandler::new(C { inner: service_account_based_create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.job.post".to_string(),&*config)),
+            XHandler::new(C {
+                inner: service_account_based_create,
+            }).before(basic.clone()),
             "jobs_create",
         );
         router.put(
             "/jobs/:id/status",
-            XHandler::new(C { inner: status_update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.job.put".to_string(),&*config)),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone()),
             "job_status_update",
         );
         router.get(
             "/jobs/node",
-            XHandler::new(C { inner: show_by_node })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.job.get".to_string(),&*config)),
+            XHandler::new(C {
+                inner: show_by_node,
+            }).before(basic.clone()),
             "job_show_by_node",
         );
         router.get(
             "/jobs",
-            XHandler::new(C { inner: list_blank })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.job.get".to_string(),&*config)),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "job_list_blank",
         );
     }

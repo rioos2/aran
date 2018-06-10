@@ -1,39 +1,28 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api assembly_factory
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
+use bytes::Bytes;
 use common::ui;
 use config::Config;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
-
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-
-use protocol::api::devtool::BuildConfig;
-use devtooling::models::build_config;
-
-use protocol::api::base::{MetaFields, StatusUpdate, IdGet};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-
-use bytes::Bytes;
+use devtooling::models::build_config;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::devtool::BuildConfig;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
 use serde_json;
-
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct BuildConfigApi {
@@ -56,9 +45,8 @@ impl BuildConfigApi {
     //POST: /buildconfig
     //Input: Body of structure deploy::BuildConfig
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<BuildConfig>(
-            req.get::<bodyparser::Struct<BuildConfig>>()?,
-        )?;
+        let mut unmarshall_body =
+            self.validate::<BuildConfig>(req.get::<bodyparser::Struct<BuildConfig>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -160,16 +148,13 @@ impl BuildConfigApi {
         Bytes::from(res)
     }
 
-
     ///PUT: /buildconfigs/:id/status
     ///Input Status  as input
     ///Returns an BuildConfigs
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<StatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match build_config::DataStore::status_update(&self.conn, &unmarshall_body) {
@@ -202,76 +187,51 @@ impl Api for BuildConfigApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_assembly_factory = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assemblyfactory(req) };
+        let show_by_assembly_factory =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_assemblyfactory(req) };
 
         let _self = self.clone();
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         let _self = self.clone();
-        let update_status = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
-
+        let update_status =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         router.post(
             "/buildconfigs",
-            XHandler::new(C { inner: create })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.buildconfig.post".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "build_config",
         );
 
         router.get(
             "/buildconfigs",
-            XHandler::new(C { inner: list })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.buildconfig.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: list }).before(basic.clone()),
             "build_config_list",
         );
         router.get(
             "/buildconfigs/:id",
-            XHandler::new(C { inner: show })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.buildconfig.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "build_config_show",
         );
         router.get(
             "/buildconfigs/assemblyfactorys/:id",
-            XHandler::new(C { inner: show_by_assembly_factory })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.buildconfig.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C {
+                inner: show_by_assembly_factory,
+            }).before(basic.clone()),
             "build_config_list_by_assembly_factorys",
         );
 
         router.put(
             "/buildconfigs/:id",
-            XHandler::new(C { inner: update })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.buildconfig.put".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: update }).before(basic.clone()),
             "build_config_update",
         );
 
         router.put(
             "/buildconfigs/:id/status",
-            XHandler::new(C { inner: update_status })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.buildconfig.put".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C {
+                inner: update_status,
+            }).before(basic.clone()),
             "build_config_status_update",
         );
     }
@@ -299,8 +259,10 @@ impl Validator for BuildConfig {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }
@@ -309,8 +271,9 @@ impl Validator for BuildConfig {
             return Ok(Box::new(self));
         }
 
-        Err(bad_request(
-            &MissingParameter(format!("{:?} -> {}", s, "must have => ")),
-        ))
+        Err(bad_request(&MissingParameter(format!(
+            "{:?} -> {}",
+            s, "must have => "
+        ))))
     }
 }

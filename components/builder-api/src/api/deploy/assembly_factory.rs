@@ -1,38 +1,29 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api assembly_factory
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
+use bytes::Bytes;
 use common::ui;
-use api::{Api, ApiValidator, ExpanderSender, ParmsVerifier, Validator};
-use protocol::api::schema::{dispatch, dispatch_url, type_meta};
-
 use config::Config;
-use api::deploy::config::ServicesCfg;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::assembler::{Assembler, ServicesConfig};
-use deploy::models::{assemblyfactory, blueprint, service};
-
-use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
-use protocol::api::deploy::AssemblyFactory;
-use protocol::api::base::{MetaFields, Status, StatusUpdate};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-
-use bytes::Bytes;
+use deploy::assembler::{Assembler, ServicesConfig};
+use deploy::models::{assemblyfactory, blueprint, service};
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{MetaFields, Status, StatusUpdate};
+use protocol::api::deploy::AssemblyFactory;
+use protocol::api::schema::{dispatch, dispatch_url, type_meta};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
+use router::Router;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct AssemblyFactoryApi {
@@ -57,7 +48,8 @@ impl AssemblyFactoryApi {
     //Input: Body of structure deploy::AssemblyFactory
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn create(&self, req: &mut Request, _cfg: &ServicesConfig) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<AssemblyFactory>(req.get::<bodyparser::Struct<AssemblyFactory>>()?)?;
+        let mut unmarshall_body =
+            self.validate::<AssemblyFactory>(req.get::<bodyparser::Struct<AssemblyFactory>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -203,7 +195,8 @@ impl Api for AssemblyFactoryApi {
         self.with_cache();
 
         let mut _self = self.clone();
-        let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_service_cfg) };
+        let create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_service_cfg) };
 
         let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
@@ -212,7 +205,8 @@ impl Api for AssemblyFactoryApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         //list everything
         let _self = self.clone();
@@ -220,54 +214,30 @@ impl Api for AssemblyFactoryApi {
 
         router.post(
             "/accounts/:account_id/assemblyfactorys",
-            XHandler::new(C { inner: create })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.assemblyfactory.post".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "assembly_factorys",
         );
 
         router.get(
             "/accounts/:account_id/assemblyfactorys",
-            XHandler::new(C { inner: list })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.assemblyfactory.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: list }).before(basic.clone()),
             "assemblyfactorys_list",
         );
         router.get(
             "/assemblyfactorys/:id",
-            XHandler::new(C { inner: show })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.assemblyfactory.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "assembly_factorys_show",
         );
         router.get(
             "/assemblyfactorys",
-            XHandler::new(C { inner: list_blank })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.assemblyfactory.get".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "assemblys_factorys_list_blank",
         );
         router.put(
             "/assemblyfactorys/:id/status",
             XHandler::new(C {
                 inner: status_update,
-            }).before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.assemblyfactory.put".to_string(),
-                    &*config,
-                )),
+            }).before(basic.clone()),
             "assembly_factory_status_update",
         );
     }
@@ -308,19 +278,6 @@ impl ExpanderSender for AssemblyFactoryApi {
 
         &self.conn.expander.with(plan_service);
         &self.conn.expander.with(services_service);
-    }
-}
-
-/// Convert into ServicesConfig  from the ServiceCfg provided as defaults.
-impl Into<ServicesConfig> for ServicesCfg {
-    fn into(self) -> ServicesConfig {
-        ServicesConfig {
-            loadbalancer_imagein: self.loadbalancer_imagein,
-            loadbalancer_imagename: self.loadbalancer_imagename,
-            loadbalancer_cpu: self.loadbalancer_cpu,
-            loadbalancer_mem: self.loadbalancer_mem,
-            loadbalancer_disk: self.loadbalancer_disk,
-        }
     }
 }
 

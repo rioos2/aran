@@ -4,36 +4,29 @@
 //! Api gets wired here for the node api server.
 //!
 
-use std::sync::Arc;
-
-use router::Router;
-use mount::Mount;
-use iron;
-use error::Result;
-
-use persistent;
-
-use http_gateway;
-use http_gateway::http::pack;
-use http_gateway::app::prelude::*;
-
-use telemetry::metrics::prometheus::PrometheusClient;
-
-use audit::vulnerable::vulnerablity::AnchoreClient;
-use audit::config::InfluxClientConn;
-
-use api::Api;
-use api::events::EventLogger;
-use api::audit::config::BlockchainConn;
-use api::security::config::SecurerConn;
-use api::objectstorage::config::ObjectStorageConn;
-use config::Config;
-
-use api::{audit, authorize, cluster, deploy, devtooling, security, objectstorage};
-use node::runtime::ApiSender;
-
-use db::data_store::*;
 use api::audit::blockchain_api::EventLog;
+use api::audit::config::BlockchainConn;
+use api::events::EventLogger;
+use api::objectstorage::config::ObjectStorageConn;
+use api::security::config::SecurerConn;
+use api::{audit, authorize, cluster, deploy, devtooling, objectstorage, security, Api};
+use audit::config::InfluxClientConn;
+use audit::vulnerable::vulnerablity::AnchoreClient;
+use auth::rbac::permissions;
+use config::Config;
+use db::data_store::*;
+use error::Result;
+use http_gateway;
+use http_gateway::app::prelude::*;
+use http_gateway::http::pack;
+use iron;
+use mount::Mount;
+use node::runtime::ApiSender;
+use persistent;
+use protocol::cache::ExpanderSender;
+use router::Router;
+use std::sync::Arc;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 // ApiSrv using GatewayCfg.
 #[derive(Clone, Debug)]
@@ -78,7 +71,12 @@ impl HttpGateway for Wirer {
 
         match ods {
             Some(ds) => {
-                chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(ds)));
+                chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(
+                    ds.clone(),
+                )));
+                let mut permissions = permissions::Permissions::new(Box::new(ds.clone()));
+                permissions.with_cache();
+                chain.link_before(Arc::new(RBAC::new(&*_config, permissions)));
             }
             None => {
                 error!("Failed to wire the api middleware, \ndatabase isn't ready.");
@@ -127,9 +125,9 @@ impl HttpGateway for Wirer {
                 let mut storage = cluster::storage_api::StorageApi::new(Box::new(ds.clone()));
                 storage.wire(config.clone(), &mut router);
 
-                let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(
-                    Box::new(ObjectStorageConn::new(&*config.clone())),
-                );
+                let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(Box::new(
+                    ObjectStorageConn::new(&*config.clone()),
+                ));
                 s3.wire(config.clone(), &mut router);
 
                 let mut service = deploy::service::ServiceApi::new(Box::new(ds.clone()));
@@ -148,17 +146,20 @@ impl HttpGateway for Wirer {
                 );
                 assembly.wire(config.clone(), &mut router);
 
-                let mut assembly_factory = deploy::assembly_factory::AssemblyFactoryApi::new(Box::new(ds.clone()));
+                let mut assembly_factory =
+                    deploy::assembly_factory::AssemblyFactoryApi::new(Box::new(ds.clone()));
                 assembly_factory.wire(config.clone(), &mut router);
 
-                let mut blockchain_factory = deploy::blockchain_factory::BlockchainFactoryApi::new(Box::new(ds.clone()));
+                let mut blockchain_factory =
+                    deploy::blockchain_factory::BlockchainFactoryApi::new(Box::new(ds.clone()));
                 blockchain_factory.wire(config.clone(), &mut router);
 
                 //securer apis
                 let mut securer = security::auth_api::AuthenticateApi::new(Box::new(ds.clone()));
                 securer.wire(config.clone(), &mut router);
 
-                let mut passticket = security::passticket_api::PassTicketApi::new(Box::new(ds.clone()));
+                let mut passticket =
+                    security::passticket_api::PassTicketApi::new(Box::new(ds.clone()));
                 passticket.wire(config.clone(), &mut router);
 
                 let mut secret = security::secret_api::SecretApi::new(
@@ -167,7 +168,8 @@ impl HttpGateway for Wirer {
                 );
                 secret.wire(config.clone(), &mut router);
 
-                let mut service_account = security::service_account_api::SeriveAccountApi::new(Box::new(ds.clone()));
+                let mut service_account =
+                    security::service_account_api::SeriveAccountApi::new(Box::new(ds.clone()));
                 service_account.wire(config.clone(), &mut router);
 
                 //job apis
@@ -190,7 +192,8 @@ impl HttpGateway for Wirer {
                 );
                 vscale.wire(config.clone(), &mut router);
 
-                let mut console = deploy::console::Containers::new(Box::new(ds.clone()), config.clone());
+                let mut console =
+                    deploy::console::Containers::new(Box::new(ds.clone()), config.clone());
                 console.wire(config.clone(), &mut router);
 
                 //origin
@@ -203,10 +206,12 @@ impl HttpGateway for Wirer {
                 let mut role = authorize::role::RoleApi::new(Box::new(ds.clone()));
                 role.wire(config.clone(), &mut router);
 
-                let mut permission = authorize::permission::PermissionApi::new(Box::new(ds.clone()));
+                let mut permission =
+                    authorize::permission::PermissionApi::new(Box::new(ds.clone()));
                 permission.wire(config.clone(), &mut router);
 
-                let mut settings = security::settings_map_api::SettingsMapApi::new(Box::new(ds.clone()));
+                let mut settings =
+                    security::settings_map_api::SettingsMapApi::new(Box::new(ds.clone()));
                 settings.wire(config.clone(), &mut router);
 
                 let mut log = audit::log_api::LogApi::new(
@@ -221,16 +226,19 @@ impl HttpGateway for Wirer {
                 );
                 vuln.wire(config.clone(), &mut router);
 
-                let mut build_config = devtooling::build_config::BuildConfigApi::new(Box::new(ds.clone()));
+                let mut build_config =
+                    devtooling::build_config::BuildConfigApi::new(Box::new(ds.clone()));
                 build_config.wire(config.clone(), &mut router);
 
                 let mut build = devtooling::build::BuildApi::new(Box::new(ds.clone()));
                 build.wire(config.clone(), &mut router);
 
-                let mut image_references = devtooling::image_references::ImageReferencesApi::new(Box::new(ds.clone()));
+                let mut image_references =
+                    devtooling::image_references::ImageReferencesApi::new(Box::new(ds.clone()));
                 image_references.wire(config.clone(), &mut router);
 
-                let mut image_marks = devtooling::image_marks::ImageMarksApi::new(Box::new(ds.clone()));
+                let mut image_marks =
+                    devtooling::image_marks::ImageMarksApi::new(Box::new(ds.clone()));
                 image_marks.wire(config.clone(), &mut router);
 
                 let mut block_chain = audit::blockchain_api::BlockChainApi::new(

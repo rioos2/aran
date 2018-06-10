@@ -1,6 +1,5 @@
-use crypto::pbkdf2::{pbkdf2_simple, pbkdf2_check};
-
 use super::super::error;
+use crypto::pbkdf2::{pbkdf2_check, pbkdf2_simple};
 use rioos;
 
 pub struct GoofyCrypto {
@@ -9,9 +8,7 @@ pub struct GoofyCrypto {
 
 impl GoofyCrypto {
     pub fn new() -> GoofyCrypto {
-        GoofyCrypto {
-            pbkdf2_iterations: 1024,
-        }
+        GoofyCrypto { pbkdf2_iterations: 1024 }
     }
 
     //The username is actually an email
@@ -36,7 +33,7 @@ impl GoofyCrypto {
             }
             Err(e) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
-                    error: format!("Unable to verify password. Is it in the right format ? {}",e),
+                    error: format!("Unable to verify password. Is it in the right format ? {}", e),
                     error_description: format!("{}", e),
                 }));
             }

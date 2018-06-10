@@ -4,35 +4,29 @@
 //! PlanFactory produces plans which are blueprint for deployment.
 //These are pre built recipes that a customer can use (ready to cook).
 
-use std::sync::Arc;
-
 use ansi_term::Colour;
-use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use protocol::api::schema::{dispatch, type_meta};
-
+use bodyparser;
+use bytes::Bytes;
+use common::ui;
 use config::Config;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::models::blueprint;
-use protocol::api::blueprint::Plan;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use protocol::api::base::{MetaFields, StatusUpdate};
-use bytes::Bytes;
-use serde_json;
+use deploy::models::blueprint;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
 use protocol::api::base::IdGet;
+use protocol::api::base::{MetaFields, StatusUpdate};
+use protocol::api::blueprint::Plan;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct PlanFactory {
@@ -163,37 +157,31 @@ impl Api for PlanFactory {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         router.post(
             "/plans",
-            XHandler::new(C { inner: create })
-                .before(basic.clone())
-                .before(TrustAccessed::new("rioos.plan.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "plans",
         );
 
         router.get(
             "/plans",
-            XHandler::new(C { inner: list_blank })
-                .before(basic.clone())
-                .before(TrustAccessed::new("rioos.plan.get".to_string(),&*config)),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "plan_list",
         );
 
         router.get(
             "/plans/:id",
-            XHandler::new(C { inner: show })
-                .before(basic.clone())
-                .before(TrustAccessed::new("rioos.plan.get".to_string(),&*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "plan_show",
         );
         router.put(
             "/plans/:id/status",
             XHandler::new(C {
                 inner: status_update,
-            }).before(basic.clone())
-                .before(TrustAccessed::new("rioos.plan.put".to_string(),&*config)),
+            }).before(basic.clone()),
             "plan_status_update",
         );
     }

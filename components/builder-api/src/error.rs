@@ -2,23 +2,24 @@
 
 //! A module containing the errors handling for the builder api
 
+use httpbis;
+use rioos_http;
+use serde_json;
 use std::error;
 use std::fmt;
 use std::io;
 use std::result;
-use rioos_http;
-use url;
-use httpbis;
 use std::str::Utf8Error;
-use serde_json;
+use url;
 
-use common;
-use rio_core;
-use reqwest;
-use db;
-use service;
 use bodyparser;
+use common;
+use db;
+use openio_sdk_rust::aws;
+use reqwest;
+use rio_core;
 use serde_yaml;
+use service;
 
 const MISSING_PARAMETER: &'static str = "Missing parameters: ";
 const MISSING_BODY: &'static str = "Missing body, empty: ";
@@ -39,10 +40,14 @@ impl ToString for ErrorMessage {
     fn to_string(&self) -> String {
         match *self {
             ErrorMessage::MissingParameter(ref m) => format!("{} {}.", MISSING_PARAMETER, m),
-            ErrorMessage::MissingBody => format!("{} {}.", MISSING_BODY, "forgot the payload json ?"),
+            ErrorMessage::MissingBody => {
+                format!("{} {}.", MISSING_BODY, "forgot the payload json ?")
+            }
             ErrorMessage::MustBeNumeric(ref m) => format!("{} {}.", MUST_BE_NUMERIC, m),
             ErrorMessage::MustBeAlphanumeric(ref m) => format!("{} {}.", MUST_BE_ALPHANUMERIC, m),
-            ErrorMessage::MissingQueryParameter(ref m) => format!("{} {}.", MISSING_QUERY_PARMETER, m),
+            ErrorMessage::MissingQueryParameter(ref m) => {
+                format!("{} {}.", MISSING_QUERY_PARMETER, m)
+            }
             ErrorMessage::CannotParseBody(ref m, ref n) => format!("{} {}.", m, n),
         }
     }
@@ -63,6 +68,8 @@ pub enum Error {
     RioHttpClient(rioos_http::Error),
     RioosAranCommon(common::Error),
     ReqwestError(reqwest::Error),
+    OpenIOCredentialsError(aws::errors::creds::CredentialsError),
+    OpenIOS3Error(aws::errors::s3::S3Error),
     HTTP(reqwest::StatusCode),
     UrlParseError(url::ParseError),
     IO(io::Error),
@@ -86,14 +93,20 @@ impl fmt::Display for Error {
             Error::RioHttpClient(ref e) => format!("{}", e),
             Error::RioosAranCommon(ref e) => format!("{}", e),
             Error::ReqwestError(ref e) => format!("{}", e),
+            Error::OpenIOCredentialsError(ref e) => format!("{}", e),
+            Error::OpenIOS3Error(ref e) => format!("{}", e),
             Error::UrlParseError(ref e) => format!("{}", e),
             Error::HTTP(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
             Error::UNKNOWSECRET => format!("SecretType not found"),
-            Error::SetupNotDone => format!("Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"),
-            Error::SyncNotDone => format!("Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start"),
+            Error::SetupNotDone => format!(
+                "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"
+            ),
+            Error::SyncNotDone => format!(
+                "Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start"
+            ),
             Error::Yaml(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
@@ -113,14 +126,20 @@ impl error::Error for Error {
             Error::RioosBodyError(ref err) => err.description(),
             Error::RioosAranCommon(ref err) => err.description(),
             Error::ReqwestError(ref err) => err.description(),
+            Error::OpenIOCredentialsError(ref err) => err.description(),
+            Error::OpenIOS3Error(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::UrlParseError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
             Error::Utf8Error(ref err) => err.description(),
             Error::UNKNOWSECRET => "Unknown SecretType",
-            Error::SetupNotDone => "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start",
-            Error::SyncNotDone => "Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start",
+            Error::SetupNotDone => {
+                "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"
+            }
+            Error::SyncNotDone => {
+                "Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start"
+            }
 
             Error::Yaml(ref err) => err.description(),
         }

@@ -1,36 +1,26 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api assembly_factory
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
 use common::ui;
 use config::Config;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
-
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-
-use protocol::api::devtool::ImageMarks;
-use devtooling::models::image_marks;
-
-use protocol::api::base::MetaFields;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-
+use devtooling::models::image_marks;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::MetaFields;
+use protocol::api::devtool::ImageMarks;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct ImageMarksApi {
@@ -46,7 +36,6 @@ pub struct ImageMarksApi {
 /// PUT: /imagemarks/:id,
 //GET: /imagemarks/builds/:id
 
-
 impl ImageMarksApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
         ImageMarksApi { conn: datastore }
@@ -55,9 +44,8 @@ impl ImageMarksApi {
     //POST: /imagemarks
     //Input: Body of structure devtooling::ImageMarksApi
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<ImageMarks>(
-            req.get::<bodyparser::Struct<ImageMarks>>()?,
-        )?;
+        let mut unmarshall_body =
+            self.validate::<ImageMarks>(req.get::<bodyparser::Struct<ImageMarks>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -162,44 +150,37 @@ impl Api for ImageMarksApi {
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
-        let list_by_build = move |req: &mut Request| -> AranResult<Response> { _self.list_by_build(req) };
+        let list_by_build =
+            move |req: &mut Request| -> AranResult<Response> { _self.list_by_build(req) };
 
         router.post(
             "/imagemarks",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "image_marks",
         );
 
         router.get(
             "/imagemarks/:id",
-            XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.get".to_string(),&*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "image_marks_show",
         );
         router.get(
             "/imagemarks",
-            XHandler::new(C { inner: list })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.get".to_string(),&*config)),
+            XHandler::new(C { inner: list }).before(basic.clone()),
             "image_marks_list",
         );
 
         router.put(
             "/imagemarks/:id",
-            XHandler::new(C { inner: update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.put".to_string(),&*config)),
+            XHandler::new(C { inner: update }).before(basic.clone()),
             "image_marks_update",
         );
 
         router.get(
             "/imagemarks/builds/:id",
-            XHandler::new(C { inner: list_by_build })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagemark.get".to_string(),&*config)),
+            XHandler::new(C {
+                inner: list_by_build,
+            }).before(basic.clone()),
             "image_marks_list_by_build",
         );
     }
@@ -227,8 +208,10 @@ impl Validator for ImageMarks {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }
@@ -237,8 +220,9 @@ impl Validator for ImageMarks {
             return Ok(Box::new(self));
         }
 
-        Err(bad_request(
-            &MissingParameter(format!("{:?} -> {}", s, "must have => ")),
-        ))
+        Err(bad_request(&MissingParameter(format!(
+            "{:?} -> {}",
+            s, "must have => "
+        ))))
     }
 }

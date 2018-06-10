@@ -1,14 +1,13 @@
 // Copyright 2018 The Rio Advancement Inc
 use std::collections::BTreeMap;
 
-use api::base::{TypeMeta, ObjectMeta, IdGet, Status, MetaFields, ChildTypeMeta};
+use api::base::{ChildTypeMeta, IdGet, MetaFields, ObjectMeta, Status, TypeMeta};
 use api::blueprint::Plan;
-use api::volume::Volumes;
 use api::endpoints::EndPoints;
 use api::linker::Services;
-
-
-use cache::inject::{BlockchainFactoryFeeder, PlanFeeder, FactoryFeeder, EndPointsFeeder, VolumeFeeder, MetricFeeder, ServicesFeeder};
+use api::volume::Volumes;
+use cache::inject::{BlockchainFactoryFeeder, EndPointsFeeder, FactoryFeeder, MetricsFeeder,
+                    PlanFeeder, ServicesFeeder, VolumesFeeder};
 
 pub const PHASE_PENDING: &'static str = "Pending";
 pub const PHASE_STAND_STILL: &'static str = "StandStill";
@@ -16,15 +15,14 @@ pub const PHASE_STAND_STILL: &'static str = "StandStill";
 pub const NEW_REPLICA_INITALIZING_MSG: &'static str = "Initializing replicas...Brew some coffee!!!";
 pub const NEW_STAND_STILL_MSG: &'static str = "I'm in sleep state. ...Wake me up!!!";
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactory {
     #[serde(default)]
     id: String, // Id an unique identifier in systems of record. Generated during creation of the AssemblyFactory
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: AssemblyFactory
-    object_meta: ObjectMeta, ////Standard object metadata
-    replicas: u32, //Replicas is the number of desired replicas of the plan.
+    object_meta: ObjectMeta,             ////Standard object metadata
+    replicas: u32,                       //Replicas is the number of desired replicas of the plan.
     resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
     secret: Secret, //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
     plan: String, // A Plan is meta-data that provides a description of the artifacts that make up an application, the services that are required to execute or utilize those artifacts, and the relationship of the artifacts to those services. Plans are expressed as json under a /plans resource.    Here we provide the identifier as pointed to /plans
@@ -146,7 +144,6 @@ impl PlanFeeder for AssemblyFactory {
     }
 }
 
-
 // The service feeder, which gets called from an expander cache.
 // The expander cache is ttl and loads the service the first time.
 impl ServicesFeeder for AssemblyFactory {
@@ -181,15 +178,14 @@ impl ChildTypeMeta for AssemblyFactory {
     const CHILD_KIND: &'static str = "POST:assemblys";
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BlockchainFactory {
     #[serde(default)]
     id: String, // Id an unique identifier in systems of record. Generated during creation of the BlockchainFactory
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: BlockchainFactory
-    object_meta: ObjectMeta, ////Standard object metadata
-    replicas: u32, //Replicas is the number of desired replicas of the plan.
+    object_meta: ObjectMeta,             ////Standard object metadata
+    replicas: u32,                       //Replicas is the number of desired replicas of the plan.
     resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
     secret: Secret, //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
     plan: String, // A Plan is meta-data that provides a description of the artifacts that make up an application, the services that are required to execute or utilize those artifacts, and the relationship of the artifacts to those services. Plans are expressed as json under a /plans resource.    Here we provide the identifier as pointed to /plans
@@ -311,7 +307,6 @@ impl PlanFeeder for BlockchainFactory {
     }
 }
 
-
 // The service feeder, which gets called from an expander cache.
 // The expander cache is ttl and loads the service the first time.
 impl ServicesFeeder for BlockchainFactory {
@@ -432,8 +427,8 @@ impl Assembly {
     }
 
     pub fn get_category(&self) -> String {
-        if self.get_spec().get_parent().is_some() &&
-            self.get_spec()
+        if self.get_spec().get_parent().is_some()
+            && self.get_spec()
                 .get_parent()
                 .unwrap()
                 .get_spec()
@@ -493,7 +488,6 @@ impl FactoryFeeder for Assembly {
     }
 }
 
-
 impl BlockchainFactoryFeeder for Assembly {
     fn bget_id(&mut self) -> IdGet {
         IdGet::with_id_name(
@@ -522,11 +516,9 @@ impl EndPointsFeeder for Assembly {
     }
 }
 
-
-
 /// The volume feeder, which gets called from an expander cache.
 /// The expander cache is ttl and loads the volume for the assembly the first time.
-impl VolumeFeeder for Assembly {
+impl VolumesFeeder for Assembly {
     fn vget_id(&mut self) -> IdGet {
         IdGet::with_id_name(self.get_id(), "_volume".to_string())
     }
@@ -536,7 +528,7 @@ impl VolumeFeeder for Assembly {
     }
 }
 
-impl MetricFeeder for Assembly {
+impl MetricsFeeder for Assembly {
     fn mget_id(&mut self) -> IdGet {
         IdGet::with_id_name(self.get_id(), self.get_category())
     }
@@ -580,7 +572,6 @@ pub struct Spec {
     volumes: Option<Vec<Volumes>>,
 
     metrics: Option<BTreeMap<String, String>>,
-
 }
 
 impl Spec {
@@ -864,7 +855,6 @@ impl AssemblyFactorySpec {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BlockchainFactorySpec {
-
     #[serde(default)]
     tolerations: Vec<Tolerations>,
 
@@ -934,7 +924,6 @@ impl BlockchainFactorySpec {
     }
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Tolerations {
     key: String,
@@ -958,7 +947,9 @@ pub struct Affinity {
 }
 impl Affinity {
     pub fn with_affinity(assemblyfactory_affinity: &str) -> Affinity {
-        Affinity { assemblyfactory_affinity: assemblyfactory_affinity.to_string() }
+        Affinity {
+            assemblyfactory_affinity: assemblyfactory_affinity.to_string(),
+        }
     }
 }
 
@@ -1105,9 +1096,11 @@ mod test {
         assert!(assemblyfactory.resources.contains_key("compute_type"));
         assert!(assemblyfactory.resources.contains_key("stotage_type"));
         assert_eq!(assemblyfactory.metadata.len(), 2);
-        assert!(assemblyfactory.metadata.contains_key(
-            "io:rioos:orginin::name",
-        ));
+        assert!(
+            assemblyfactory
+                .metadata
+                .contains_key("io:rioos:orginin::name",)
+        );
         assert!(assemblyfactory.metadata.contains_key("io:rioos:team::name"));
     }
 
@@ -1216,9 +1209,11 @@ mod test {
         assert!(assemblyfactory.resources.contains_key("compute_type"));
         assert!(assemblyfactory.resources.contains_key("stotage_type"));
         assert_eq!(assemblyfactory.metadata.len(), 2);
-        assert!(assemblyfactory.metadata.contains_key(
-            "io:rioos:orginin::name",
-        ));
+        assert!(
+            assemblyfactory
+                .metadata
+                .contains_key("io:rioos:orginin::name",)
+        );
         assert!(assemblyfactory.metadata.contains_key("io:rioos:team::name"));
     }
 
@@ -1246,7 +1241,8 @@ mod test {
 
     #[test]
     fn decode_affinity() {
-        let affinity = r#"{"assemblyfactory_affinity": "requiredDuringSchedulingIgnoredDuringExecution"}"#;
+        let affinity =
+            r#"{"assemblyfactory_affinity": "requiredDuringSchedulingIgnoredDuringExecution"}"#;
         let affinit: Affinity = json_decode(affinity).unwrap();
         assert_eq!(
             affinit.assemblyfactory_affinity,

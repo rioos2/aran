@@ -2,35 +2,29 @@
 
 //! A collection of network functions for the HTTP server
 
-use std::sync::Arc;
-
+use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
+use bytes::Bytes;
+use common::ui;
+use config::Config;
+use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;
-use router::Router;
-use ansi_term::Colour;
-use common::ui;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
-
-use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-use error::ErrorMessage::MissingParameter;
-
 use network::network_ds::NetworkDS;
-use protocol::api::network::Network;
-
-use db::error::Error::RecordsNotFound;
-use db::data_store::DataStoreConn;
-use protocol::api::base::MetaFields;
-use bytes::Bytes;
-use serde_json;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::network::Network;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct NetworkApi {
@@ -145,7 +139,7 @@ impl NetworkApi {
 impl Api for NetworkApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
-        
+
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
@@ -161,33 +155,25 @@ impl Api for NetworkApi {
 
         router.post(
             "/networks",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.network.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "networks",
         );
 
         router.get(
             "/networks",
-            XHandler::new(C { inner: list_blank })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.network.get".to_string(),&*config)),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "networks_list_blank",
         );
 
         router.get(
             "/networks/:id",
-            XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.network.get".to_string(),&*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "networks_get",
         );
 
         router.put(
             "/networks/:id",
-            XHandler::new(C { inner: update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.network.put".to_string(),&*config)),
+            XHandler::new(C { inner: update }).before(basic.clone()),
             "networks_update",
         );
     }

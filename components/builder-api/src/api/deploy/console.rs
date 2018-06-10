@@ -1,23 +1,19 @@
-use std::sync::Arc;
-use iron::prelude::*;
-use router::Router;
-
+use api::Api;
 use config::Config;
+use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
+use deploy::models::assembly;
 use error::Error;
-
 use http_gateway::http::controller::*;
-use rioos_http::ApiClient;
-
 use http_gateway::util::errors::AranResult;
 use http_gateway::util::errors::{internal_error, not_found_error};
-
-use protocol::api::base::IdGet;
-use deploy::models::assembly;
+use iron::prelude::*;
 use iron::status;
+use protocol::api::base::IdGet;
 use protocol::api::deploy::ExecURL;
-use api::Api;
-use db::error::Error::RecordsNotFound;
-use db::data_store::DataStoreConn;
+use rioos_http::ApiClient;
+use router::Router;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Containers {
@@ -45,23 +41,29 @@ impl Containers {
         let id_get = IdGet::with_id(asm_id.to_string());
         match assembly::DataStore::new(&self.conn).show(&id_get) {
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(
-                &format!("{} for {}", Error::Db(RecordsNotFound), asm_id),
-            )),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                asm_id
+            ))),
             Ok(Some(assembly)) => {
-                if !assembly.get_metadata().contains_key("rioos_sh_vnc_host") || !assembly.get_metadata().contains_key("rioos_sh_vnc_port") {
+                if !assembly.get_metadata().contains_key("rioos_sh_vnc_host")
+                    || !assembly.get_metadata().contains_key("rioos_sh_vnc_port")
+                {
                     return Err(not_found_error(&format!(
                         "Still deploying. Must have console host and port: for {} ",
                         asm_id
                     )));
                 }
                 let vnc = &"".to_string();
-                let host = assembly.get_metadata().get("rioos_sh_vnc_host").unwrap_or(
-                    vnc,
-                );
-                let port = assembly.get_metadata().get("rioos_sh_vnc_port").unwrap_or(
-                    vnc,
-                );
+                let host = assembly
+                    .get_metadata()
+                    .get("rioos_sh_vnc_host")
+                    .unwrap_or(vnc);
+                let port = assembly
+                    .get_metadata()
+                    .get("rioos_sh_vnc_port")
+                    .unwrap_or(vnc);
                 let url = format!(
                     "http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1&stdout=1&stdin=1&stderr=1",
                     host,

@@ -4,11 +4,11 @@
 
 use chrono::prelude::*;
 use error::Error;
-use protocol::api::{base, secret};
 use protocol::api::base::MetaFields;
+use protocol::api::{base, secret};
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
 use super::{SecretOutput, SecretOutputList};
@@ -74,7 +74,7 @@ impl SecretDS {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM get_secrets_by_origin_v1($1)",
+            "SELECT * FROM get_secrets_by_origin_id_v1($1)",
             &[&(get_secret.get_id() as String)],
         ).map_err(Error::SecretGetResponse)?;
 
@@ -104,7 +104,10 @@ impl SecretDS {
         }
         Ok(None)
     }
-    pub fn show_by_origin_and_name(datastore: &DataStoreConn, get_secret: &base::IdGet) -> SecretOutput {
+    pub fn show_by_origin_and_name(
+        datastore: &DataStoreConn,
+        get_secret: &base::IdGet,
+    ) -> SecretOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_secrets_by_origin_v1($1,$2)",

@@ -6,7 +6,7 @@ description = "RIO/OS Authorization library"
 workspace = "../../"
 
 [dependencies]
-
+log = "0.4.1"
 postgres = { version = "0.15.2", features = ["with-chrono"] }
 chrono = { version = "0.4.2", features = ["serde"] }
 serde = "1.0.43"

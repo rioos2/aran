@@ -1,34 +1,29 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::sync::Arc;
-use iron::prelude::*;
-use bodyparser;
-use iron::status;
-use router::Router;
-
 use ansi_term::Colour;
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier, QueryValidator};
-use protocol::api::schema::{dispatch, type_meta};
-
-use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error, badgateway_error};
-use telemetry::metrics::prometheus::PrometheusClient;
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
+use bodyparser;
 use bytes::Bytes;
-use serde_json;
-
-use nodesrv::node_ds::NodeDS;
-use protocol::api::node::{Node, NodeStatusUpdate};
-use protocol::api::base::IdGet;
-
-use db::error::Error::RecordsNotFound;
+use common::ui;
+use config::Config;
 use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, badgateway_error, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use nodesrv::node_ds::NodeDS;
+use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
+use protocol::api::node::{Node, NodeStatusUpdate};
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 #[derive(Clone)]
 pub struct NodeApi {
@@ -132,9 +127,8 @@ impl NodeApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<NodeStatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body =
+            self.validate(req.get::<bodyparser::Struct<NodeStatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         ui::rawdumpln(
@@ -189,7 +183,8 @@ impl Api for NodeApi {
         let basic = Authenticated::new(&*config);
 
         let _self = self.clone();
-        let healthz_all = move |req: &mut Request| -> AranResult<Response> { _self.healthz_all(req) };
+        let healthz_all =
+            move |req: &mut Request| -> AranResult<Response> { _self.healthz_all(req) };
 
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -201,19 +196,19 @@ impl Api for NodeApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_address = move |req: &mut Request| -> AranResult<Response> { _self.show_by_address(req) };
+        let show_by_address =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_address(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let healthz = move |req: &mut Request| -> AranResult<Response> { _self.status(req) };
 
         router.get(
             "/healthz/overall",
-            XHandler::new(C { inner: healthz_all })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.healthz.get".to_string(),&*config)),
+            XHandler::new(C { inner: healthz_all }).before(basic.clone()),
             "healthz_all",
         );
 
@@ -221,38 +216,32 @@ impl Api for NodeApi {
 
         router.post(
             "/nodes",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "nodes",
         );
         router.get(
             "/nodes",
-            XHandler::new(C { inner: list_blank })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "nodes_list",
         );
         router.get(
             "/nodes/:id",
-            XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "node_show",
         );
         router.put(
             "/nodes/:id/status",
-            XHandler::new(C { inner: status_update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.put".to_string(),&*config)),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone()),
             "node_status_update",
         );
 
         router.get(
             "/nodes/ip",
-            XHandler::new(C { inner: show_by_address })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
+            XHandler::new(C {
+                inner: show_by_address,
+            }).before(basic.clone()),
             "node_show_by_address",
         );
     }

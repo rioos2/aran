@@ -1,4 +1,4 @@
-use super::super::error::{Result, Error};
+use super::super::error::{Error, Result};
 use protocol::api::authorize::Permissions;
 
 type TrustedAccessList = Vec<TrustAccess>;
@@ -80,9 +80,7 @@ impl TrustAccess {
         }
         match flag {
             true => Ok(flag),
-            false => Err(Error::PermissionError(
-                format!("User doesn't have permission for this operation."),
-            )),
+            false => Err(Error::PermissionError(format!("User doesn't have permission for this operation."))),
         }
     }
 }

@@ -1,10 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-use std::fmt;
-
 use super::super::error::Result;
 use protocol::api::session::SessionGet;
+use std::fmt;
 
 pub trait TargetValidator: fmt::Display + Into<TokenTarget> {
     fn validate(&self) -> Result<()>;
@@ -24,11 +23,7 @@ impl TokenTarget {
     /// * InvalidEmail
     /// * InvalidApikey
     pub fn new(email: String, token: String) -> Self {
-        TokenTarget {
-            email: email,
-            token: token,
-            apikey: Default::default(),
-        }
+        TokenTarget { email: email, token: token, apikey: Default::default() }
     }
 
     pub fn get_email(&self) -> ::std::string::String {
