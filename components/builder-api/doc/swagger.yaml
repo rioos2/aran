@@ -3043,6 +3043,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
       requestBody:
         content:
           application/json:
@@ -3092,6 +3104,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
   '/jobs/{jobId}/status':
     put:
       tags:
@@ -3130,6 +3154,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
       requestBody:
         content:
           application/json:
@@ -3162,6 +3198,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
         '403':
           description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
@@ -3191,6 +3239,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
         '403':
           description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
@@ -3225,6 +3285,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
         '403':
           description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
