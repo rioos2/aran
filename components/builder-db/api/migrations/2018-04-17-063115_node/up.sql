@@ -1,4 +1,5 @@
 ---
+---
 --- Table:nodes
 ---
 CREATE SEQUENCE IF NOT EXISTS node_id_seq;

@@ -1,4 +1,5 @@
 ---
+---
 --- Table:horizontal_scalings
 ---
 CREATE SEQUENCE IF NOT EXISTS hs_id_seq;

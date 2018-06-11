@@ -1,4 +1,5 @@
 ---
+---
 --- Table:networks
 ---
 CREATE SEQUENCE IF NOT EXISTS net_id_seq;

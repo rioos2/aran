@@ -1,4 +1,5 @@
--- Your SQL goes here
+---
+--- Your SQL goes here
 
 CREATE SEQUENCE IF NOT EXISTS storage_id_seq;
 

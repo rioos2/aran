@@ -1,4 +1,5 @@
 ---
+---
 --- Table:assemblys
 ---
 CREATE SEQUENCE IF NOT EXISTS asm_id_seq;
