@@ -1720,7 +1720,7 @@ paths:
           required: true
           schema:
             type: string
-      responses:  
+      responses:
         '200':
           description: successful operation
           content:
@@ -1890,7 +1890,7 @@ paths:
     get:
       tags:
         - horizontalscaling
-      summary: Get horizontalscaling assembly factory id
+      summary: Get horizontalscaling by assembly factory id
       parameters:
         - name: AssemblyFactoryId
           in: path
@@ -3037,6 +3037,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/400Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
       requestBody:
         content:
           application/json:
@@ -3080,6 +3098,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
   '/jobs/{jobId}/status':
     put:
       tags:
@@ -3112,6 +3148,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
       requestBody:
         content:
           application/json:
@@ -3123,7 +3177,7 @@ paths:
         - plan
       summary: Create plan factory
       responses:
-        200':
+        '200':
           description: successful creation of the plan
           content:
             application/json:
@@ -3144,6 +3198,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
       requestBody:
         content:
           application/json:
@@ -3167,6 +3239,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+
   '/plans/{id}':
     get:
       tags:
@@ -3194,6 +3285,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
   /verticalscaling:
     post:
       tags:
@@ -4362,7 +4471,7 @@ components:
             labels:
               type: object
               description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
-              
+
             annotations:
               type: object
               description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
@@ -5628,8 +5737,8 @@ components:
         created_at:
           type: string
           example: "2017-12-11T11:29:50.547529+00:00"
-        
-        
+
+
     AssemblyFactoryGet:
       type: object
       properties:
@@ -9410,6 +9519,9 @@ components:
             phase:
               type: string
               example: "ready"
+        metadata:
+          type: object
+          description: "Standard object's metadata. Can contain optional label selector team, origin"
     BlockchainPlan:
       type: object
       required:
@@ -9942,6 +10054,9 @@ components:
               items:
                 type: object
               example: []
+        metadata:
+          type: object
+          description: "Standard object's metadata. Can contain optional label selector team, origin"
         created_at:
           type: string
           example: "2017-09-21T06:51:38.763014+00:00"
