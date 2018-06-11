@@ -1,4 +1,5 @@
 ---
+---
 --- Table:jobs
 ---
 CREATE SEQUENCE IF NOT EXISTS job_id_seq;

@@ -1,4 +1,5 @@
 ---
+---
 --- Table:build_configs
 ---
 CREATE SEQUENCE IF NOT EXISTS build_config_id_seq;

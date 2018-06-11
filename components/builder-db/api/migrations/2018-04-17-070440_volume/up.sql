@@ -1,4 +1,5 @@
--- Your SQL goes here
+---
+--- Your SQL goes here
 
 CREATE SEQUENCE IF NOT EXISTS volume_id_seq;
 
