@@ -10,7 +10,7 @@ pub mod openio;
 use error::Result;
 use protocol::api::objectstorage::Bucket;
 
-use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageConn};
+use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
 
 /// Currently implemented securer backends
 
@@ -34,7 +34,7 @@ pub trait StorageClient: Send {
 }
 
 /// Create appropriate Securer variant based on configuration values.
-pub fn from_config(config: &ObjectStorageConn) -> Result<Box<StorageClient>> {
+pub fn from_config(config: &ObjectStorageCfg) -> Result<Box<StorageClient>> {
     match config.backend {
         ObjectStorageBackend::OpenIO => Ok(Box::new(openio::Storage::new(config))),
     }

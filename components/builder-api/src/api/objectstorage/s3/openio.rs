@@ -1,6 +1,6 @@
 use super::StorageClient;
 use super::{BucketOutput, BucketOutputList};
-use api::objectstorage::config::ObjectStorageConn;
+use api::objectstorage::config::ObjectStorageCfg;
 use error::{Error, Result};
 use openio_sdk_rust::aws::common::credentials::{DefaultCredentialsProvider, ParametersProvider};
 use openio_sdk_rust::aws::common::region::Region;
@@ -18,7 +18,7 @@ pub struct Storage {
 }
 
 impl Storage {
-    pub fn new(conn: &ObjectStorageConn) -> Self {
+    pub fn new(conn: &ObjectStorageCfg) -> Self {
         let params: Option<ParametersProvider> = Some(
             ParametersProvider::with_parameters(
                 conn.access_key.clone(),
@@ -57,11 +57,12 @@ impl StorageClient for Storage {
 
     fn create_bucket(&self, bucket: &Bucket) -> BucketOutput {
         let creds = self.credentials()?;
-
+        println!("+++++++++++++++++++++++++++++++++++++++++++++++");
+        println!("{:?}", self.endpoint.clone());
         let client: S3Client<DefaultCredentialsProvider, _> =
             S3Client::new(creds, self.endpoint.clone());
 
-        let bucket_name = bucket.get_name();
+        let bucket_name = format!("{}_{} ", bucket.get_account(),bucket.get_name());
         let mut bucket_req = CreateBucketRequest::default();
         bucket_req.bucket = bucket_name.clone();
 

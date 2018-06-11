@@ -14,7 +14,7 @@ use http_gateway::http::controller::*;
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 
-use api::objectstorage::config::ObjectStorageConn;
+use api::objectstorage::config::ObjectStorageCfg;
 use protocol::api::base::MetaFields;
 use protocol::api::objectstorage::Bucket;
 
@@ -26,11 +26,11 @@ use error::ErrorMessage::MissingParameter;
 
 #[derive(Clone)]
 pub struct ObjectStorageApi {
-    conn: Box<ObjectStorageConn>,
+    conn: Box<ObjectStorageCfg>,
 }
 
 impl ObjectStorageApi {
-    pub fn new(conn: Box<ObjectStorageConn>) -> Self {
+    pub fn new(conn: Box<ObjectStorageCfg>) -> Self {
         ObjectStorageApi { conn: conn }
     }
 
@@ -141,7 +141,12 @@ impl Api for ObjectStorageApi {
 
         router.post(
             "/accounts/:account_id/buckets",
-            XHandler::new(C { inner: create }).before(basic.clone()),
+            XHandler::new(C { inner: create.clone() }).before(basic.clone()),
+            "account_buckets_create",
+        );
+        router.post(
+            "/buckets",
+            XHandler::new(C { inner: create.clone() }).before(basic.clone()),
             "buckets_create",
         );
         router.get(
