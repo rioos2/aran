@@ -1,19 +1,19 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! The PostgreSQL backend for the Authorization [blockchain, blockchainfactory].
+//! The PostgreSQL backend for the StacksFactory.
 use chrono::prelude::*;
-use error::{Result, Error};
+use error::{Error, Result};
 
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::api::deploy;
-use protocol::api::base::{IdGet, StatusUpdate, MetaFields};
-use protocol::cache::{PULL_DIRECTLY, PULL_INVALDATED, PullFromCache, InMemoryExpander};
+use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 
 use serde_json;
 
-use super::super::{BlockchainFactoryOutput, BlockchainFactoryOutputList};
+use super::super::{StacksFactoryOutput, StacksFactoryOutputList};
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -28,7 +28,7 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn create(&self, factory: &deploy::BlockchainFactory) -> BlockchainFactoryOutput {
+    pub fn create(&self, factory: &deploy::StacksFactory) -> StacksFactoryOutput {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -44,34 +44,34 @@ impl<'a> DataStore<'a> {
                 &(factory.get_plan().parse::<i64>().unwrap()),
                 &(serde_json::to_value(factory.get_spec()).unwrap()),
             ],
-        ).map_err(Error::BlockchainFactoryCreate)?;
+        ).map_err(Error::StacksFactoryCreate)?;
 
         if rows.len() > 0 {
             for row in rows {
-                return Ok(Some(self.row_to_blockchain_factory(&row, PULL_DIRECTLY)?));
+                return Ok(Some(self.row_to_stacks_factory(&row, PULL_DIRECTLY)?));
             }
         }
 
         Ok(None)
     }
 
-    pub fn show(&self, get_blockchain_factory: &IdGet) -> BlockchainFactoryOutput {
+    pub fn show(&self, get_stacks_factory: &IdGet) -> StacksFactoryOutput {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
             "SELECT * FROM get_blockchain_factory_v1($1)",
-            &[&(get_blockchain_factory.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::BlockchainFactoryGet)?;
+            &[&(get_stacks_factory.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::StacksFactoryGet)?;
 
         if rows.len() > 0 {
             for row in rows {
-                return Ok(Some(self.row_to_blockchain_factory(&row, PULL_DIRECTLY)?));
+                return Ok(Some(self.row_to_stacks_factory(&row, PULL_DIRECTLY)?));
             }
         }
         Ok(None)
     }
 
-    pub fn status_update(&self, upd: &StatusUpdate) -> BlockchainFactoryOutput {
+    pub fn status_update(&self, upd: &StatusUpdate) -> StacksFactoryOutput {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -80,54 +80,58 @@ impl<'a> DataStore<'a> {
                 &(upd.get_id().parse::<i64>().unwrap()),
                 &(serde_json::to_value(upd.get_status()).unwrap()),
             ],
-        ).map_err(Error::BlockchainFactoryUpdate)?;
+        ).map_err(Error::StacksFactoryUpdate)?;
 
         if rows.len() > 0 {
             for row in rows {
-                return Ok(Some(self.row_to_blockchain_factory(&row, PULL_INVALDATED)?));
+                return Ok(Some(self.row_to_stacks_factory(&row, PULL_INVALDATED)?));
             }
         }
         Ok(None)
     }
 
-    pub fn list_blank(&self) -> BlockchainFactoryOutputList {
+    pub fn list_blank(&self) -> StacksFactoryOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query("SELECT * FROM get_blockchains_factory_v1()", &[])
-            .map_err(Error::BlockchainFactoryGet)?;
+            .map_err(Error::StacksFactoryGet)?;
 
         let mut response = Vec::new();
 
         if rows.len() > 0 {
             for row in rows {
-                response.push(self.row_to_blockchain_factory(&row, PULL_DIRECTLY)?)
+                response.push(self.row_to_stacks_factory(&row, PULL_DIRECTLY)?)
             }
             return Ok(Some(response));
         }
         Ok(None)
     }
 
-    pub fn list(&self, get_blockchain_factory: &IdGet) -> BlockchainFactoryOutputList {
+    pub fn list(&self, get_blockchain_factory: &IdGet) -> StacksFactoryOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
             "SELECT * FROM get_blockchain_factory_by_account_v1($1)",
             &[&(get_blockchain_factory.get_name() as String)],
-        ).map_err(Error::BlockchainFactoryGet)?;
+        ).map_err(Error::StacksFactoryGet)?;
 
         let mut response = Vec::new();
 
         if rows.len() > 0 {
             for row in rows {
-                response.push(self.row_to_blockchain_factory(&row, PULL_DIRECTLY)?)
+                response.push(self.row_to_stacks_factory(&row, PULL_DIRECTLY)?)
             }
             return Ok(Some(response));
         }
         Ok(None)
     }
 
-    fn row_to_blockchain_factory(&self, row: &postgres::rows::Row, how_to: PullFromCache) -> Result<deploy::BlockchainFactory> {
-        let mut blockchain_factory = deploy::BlockchainFactory::with(
+    fn row_to_stacks_factory(
+        &self,
+        row: &postgres::rows::Row,
+        how_to: PullFromCache,
+    ) -> Result<deploy::StacksFactory> {
+        let mut blockchain_factory = deploy::StacksFactory::with(
             serde_json::from_value(row.get("type_meta")).unwrap(),
             serde_json::from_value(row.get("object_meta")).unwrap(),
         );
@@ -148,12 +152,10 @@ impl<'a> DataStore<'a> {
         blockchain_factory.set_replicas(replicas as u32);
         self.expander.with_plan(&mut blockchain_factory, how_to);
 
-        //BlockchainFactory is created first, and service is created later in our process. During the creation AF sets the service to none
+        //StacksFactory is created first, and service is created later in our process. During the creation AF sets the service to none
         //Hence the cache always return none for service. To fix this the service is pulled invalidated from cache - send a live copy always
-        self.expander.with_services(
-            &mut blockchain_factory,
-            PULL_INVALDATED,
-        );
+        self.expander
+            .with_services(&mut blockchain_factory, PULL_INVALDATED);
         Ok(blockchain_factory)
     }
 }
