@@ -7,10 +7,9 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Plan {
     #[serde(default)]
-    id: String,
-    #[serde(default)]
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
+    #[serde(default)]
     metadata: BTreeMap<String, String>,
     category: String, //`Category` represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain.
     version: String, //`version` represents the version of this plan software. example : Ubuntu 14.04
@@ -34,8 +33,6 @@ pub struct Plan {
     lifecycle: LifeCycle,
     #[serde(default)]
     status: Status, //`status` : <<old status definition>> Indicates if the plan can be used are not. Default no status is available. Will be turned on when the rio.marketplace syncer gets active.
-    #[serde(default)]
-    created_at: String,
 }
 
 impl MetaFields for Plan {
@@ -69,13 +66,6 @@ impl Plan {
             object_meta: o,
             ..Default::default()
         }
-    }
-
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-    pub fn get_id(&self) -> ::std::string::String {
-        self.id.clone()
     }
 
     pub fn set_status(&mut self, v: Status) {
@@ -153,14 +143,6 @@ impl Plan {
 
     pub fn get_version(&self) -> ::std::string::String {
         self.version.clone()
-    }
-
-    pub fn set_created_at(&mut self, v: ::std::string::String) {
-        self.created_at = v;
-    }
-
-    pub fn get_created_at(&self) -> ::std::string::String {
-        self.created_at.clone()
     }
 }
 

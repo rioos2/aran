@@ -25,20 +25,11 @@ impl<'a> DataStore<'a> {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM insert_marketplace_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+            "SELECT * FROM insert_marketplace_v1($1,$2,$3)",
             &[
                 &(serde_json::to_value(marketplace.type_meta()).unwrap()),
                 &(serde_json::to_value(marketplace.object_meta()).unwrap()),
-                &(marketplace.get_category() as String),
-                &(marketplace.get_version() as String),
-                &(serde_json::to_value(marketplace.get_characteristics()).unwrap()),
-                &(marketplace.get_icon() as String),
-                &(marketplace.get_description() as String),
-                &(serde_json::to_value(marketplace.get_ports()).unwrap()),
-                &(serde_json::to_value(marketplace.get_envs()).unwrap()),
-                &(serde_json::to_value(marketplace.get_lifecycle()).unwrap()),
-                &(serde_json::to_value(marketplace.get_status()).unwrap()),
-                &(serde_json::to_value(marketplace.get_metadata()).unwrap()),
+                &(serde_json::to_value(marketplace.get_plans()).unwrap()),
             ],
         ).map_err(Error::MarketPlaceCreate)?;
 
@@ -90,18 +81,8 @@ impl<'a> DataStore<'a> {
         let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
         marketplace.set_id(id.to_string() as String);
-        marketplace.set_status(serde_json::from_value(row.get("status")).unwrap());
-        marketplace.set_category(row.get("category"));
-        marketplace.set_version(row.get("version"));
-        marketplace.set_characteristics(serde_json::from_value(row.get("characteristics")).unwrap());
-        marketplace.set_icon(row.get("icon"));
-        marketplace.set_description(row.get("description"));
-        marketplace.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
-        marketplace.set_ports(serde_json::from_value(row.get("ports")).unwrap());
-        marketplace.set_envs(serde_json::from_value(row.get("envs")).unwrap());
-        marketplace.set_lifecycle(serde_json::from_value(row.get("lifecycle")).unwrap());
-        marketplace.set_created_at(created_at.to_rfc3339());
-
+        marketplace.set_created_at(created_at.to_string() as String);
+        marketplace.set_plans(serde_json::from_value(row.get("plans")).unwrap());
         Ok(marketplace)
     }
 }

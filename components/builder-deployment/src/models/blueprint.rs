@@ -1,7 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! The PostgreSQL backend for the Authorization [assembly, assemblyfactory].
-use chrono::prelude::*;
 use error::{Result, Error};
 
 use protocol::api::blueprint;
@@ -99,10 +98,7 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<blueprint::Plan> {
         serde_json::from_value(row.get("type_meta")).unwrap(),
         serde_json::from_value(row.get("object_meta")).unwrap(),
     );
-    let id: i64 = row.get("id");
-    let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
-    plan.set_id(id.to_string() as String);
     plan.set_status(serde_json::from_value(row.get("status")).unwrap());
     plan.set_category(row.get("category"));
     plan.set_version(row.get("version"));
@@ -113,7 +109,6 @@ fn row_to_plan(row: &postgres::rows::Row) -> Result<blueprint::Plan> {
     plan.set_ports(serde_json::from_value(row.get("ports")).unwrap());
     plan.set_envs(serde_json::from_value(row.get("envs")).unwrap());
     plan.set_lifecycle(serde_json::from_value(row.get("lifecycle")).unwrap());
-    plan.set_created_at(created_at.to_rfc3339());
 
     Ok(plan)
 }
