@@ -13,7 +13,8 @@ use std::sync::Arc;
 use api;
 use serde_json;
 
-use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder, ServicesFeeder, VolumesFeeder};
+use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder,
+                    ServicesFeeder, VolumesFeeder};
 use cache::multi_cache::MultiCache;
 
 use self::flock::Cacher;
@@ -23,7 +24,7 @@ pub const PULL_INVALDATED: Option<bool> = None;
 
 pub const CACHE_PREFIX_PLAN: &'static str = "_plan";
 pub const CACHE_PREFIX_FACTORY: &'static str = "_factory";
-pub const CACHE_PREFIX_BLOCKCHAIN_FACTORY: &'static str = "_blockchain_factory";
+pub const CACHE_PREFIX_STACKS_FACTORY: &'static str = "_stacks_factory";
 pub const CACHE_PREFIX_ENDPOINT: &'static str = "_endpoint";
 pub const CACHE_PREFIX_VOLUME: &'static str = "_volume";
 pub const CACHE_PREFIX_METRIC: &'static str = "_metric";
@@ -53,7 +54,11 @@ pub struct NewCacheServiceFn {
 
 impl NewCacheServiceFn {
     pub fn new(key: String, c: LiveFn) -> Self {
-        NewCacheServiceFn { key: key, live: Arc::new(c), cacher: Cacher::new() }
+        NewCacheServiceFn {
+            key: key,
+            live: Arc::new(c),
+            cacher: Cacher::new(),
+        }
     }
 }
 
@@ -72,10 +77,18 @@ pub trait CacheService: Send + Sync {
     fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>);
 
     //The getter for the cache
-    fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>>;
+    fn get(
+        &self,
+        id: api::base::IdGet,
+        lru: &Box<MultiCache<String, String>>,
+    ) -> Option<Arc<String>>;
 
     //The invalidator for the cache
-    fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>>;
+    fn invalidate(
+        &self,
+        id: api::base::IdGet,
+        lru: &Box<MultiCache<String, String>>,
+    ) -> Option<Arc<String>>;
 
     //The cache id as its stored in the lru multi cache. This will be of the format
     // _plan_<id>
@@ -104,10 +117,15 @@ impl CacheService for NewCacheServiceFn {
 
     fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {
         info!("✔ apply cache ≈ {}", id);
-        self.cache().insert(lru, self.cache_id(id.clone()).clone(), (self.live)(id))
+        self.cache()
+            .insert(lru, self.cache_id(id.clone()).clone(), (self.live)(id))
     }
 
-    fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
+    fn get(
+        &self,
+        id: api::base::IdGet,
+        lru: &Box<MultiCache<String, String>>,
+    ) -> Option<Arc<String>> {
         let _self = self.cache();
         let _cache_id = self.cache_id(id.clone());
 
@@ -123,7 +141,11 @@ impl CacheService for NewCacheServiceFn {
         }
     }
 
-    fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
+    fn invalidate(
+        &self,
+        id: api::base::IdGet,
+        lru: &Box<MultiCache<String, String>>,
+    ) -> Option<Arc<String>> {
         info!("✔ get: invalidate ≈ {}", id);
         self.apply(id.clone(), lru);
         self.cache().get(lru, self.cache_id(id).clone())
@@ -152,7 +174,10 @@ impl InMemoryExpander {
         let cached_map = BTreeMap::new();
         let lru = MultiCache::<String, String>::new(DEFAULT_CACHE_BYTE_SIZE);
 
-        InMemoryExpander { cached: cached_map, lru: Box::new(lru) }
+        InMemoryExpander {
+            cached: cached_map,
+            lru: Box::new(lru),
+        }
     }
 
     /// Appends the NewCacheServiceFn instances inside this expander.
@@ -199,7 +224,9 @@ impl InMemoryExpander {
         debug!("» Cache Invalidate key: {:?}", key.clone());
         debug!("» Cache Invalidate id: {:?}", id);
         match self.cache_service_for(key.clone()) {
-            Some(cachefn) => cachefn.invalidate(id, _lru).map(|a| a.clone().deref().to_string()),
+            Some(cachefn) => cachefn
+                .invalidate(id, _lru)
+                .map(|a| a.clone().deref().to_string()),
             _ => None,
         }
     }
@@ -214,11 +241,13 @@ impl InMemoryExpander {
             force.map_or_else(
                 || {
                     debug!("» Plan Invalidate fn for ≈ {}", pid);
-                    self.cached_invalidate_for(CACHE_PREFIX_PLAN.to_string(), pid.clone()).clone()
+                    self.cached_invalidate_for(CACHE_PREFIX_PLAN.to_string(), pid.clone())
+                        .clone()
                 },
                 |_v| {
                     debug!("» Plan cache get fn for ≈ {}", pid);
-                    self.cached_value_for(CACHE_PREFIX_PLAN.to_string(), pid.clone()).clone()
+                    self.cached_value_for(CACHE_PREFIX_PLAN.to_string(), pid.clone())
+                        .clone()
                 },
             )
         };
@@ -240,18 +269,21 @@ impl InMemoryExpander {
             force.map_or_else(
                 || {
                     debug!("» Assemblyfactory Invalidate fn for ≈ {}", fid);
-                    self.cached_invalidate_for(CACHE_PREFIX_FACTORY.to_string(), fid.clone()).clone()
+                    self.cached_invalidate_for(CACHE_PREFIX_FACTORY.to_string(), fid.clone())
+                        .clone()
                 },
                 |_v| {
                     debug!("» Assemblyfactory cache fn for ≈ {}", fid);
-                    self.cached_value_for(CACHE_PREFIX_FACTORY.to_string(), fid.clone()).clone()
+                    self.cached_value_for(CACHE_PREFIX_FACTORY.to_string(), fid.clone())
+                        .clone()
                 },
             )
         };
 
         f.ffeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let factory: Option<api::deploy::AssemblyFactory> = serde_json::from_str(&found_as_str).ok();
+                let factory: Option<api::deploy::AssemblyFactory> =
+                    serde_json::from_str(&found_as_str).ok();
                 factory
             }
         }))
@@ -266,18 +298,21 @@ impl InMemoryExpander {
             force.map_or_else(
                 || {
                     debug!("» Endpoints Invalidate fn for ≈ {}", eid);
-                    self.cached_invalidate_for(CACHE_PREFIX_ENDPOINT.to_string(), eid.clone()).clone()
+                    self.cached_invalidate_for(CACHE_PREFIX_ENDPOINT.to_string(), eid.clone())
+                        .clone()
                 },
                 |_v| {
                     debug!("» Endpoints cache fn for ≈ {}", eid);
-                    self.cached_value_for(CACHE_PREFIX_ENDPOINT.to_string(), eid.clone()).clone()
+                    self.cached_value_for(CACHE_PREFIX_ENDPOINT.to_string(), eid.clone())
+                        .clone()
                 },
             )
         };
 
         e.efeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let endpoint: Option<api::endpoints::EndPoints> = serde_json::from_str(&found_as_str).ok();
+                let endpoint: Option<api::endpoints::EndPoints> =
+                    serde_json::from_str(&found_as_str).ok();
                 endpoint
             }
         }))
@@ -288,11 +323,23 @@ impl InMemoryExpander {
     /// If force is None, then it invalidates the cache and loads a fresh copy
     pub fn with_services<S: ServicesFeeder>(&self, s: &mut S, force: Option<bool>) {
         let sid = s.sget_id();
-        let opt_found_as_str = { force.map_or_else(|| self.cached_invalidate_for(CACHE_PREFIX_SERVICE.to_string(), sid.clone()).clone(), |_v| self.cached_value_for(CACHE_PREFIX_SERVICE.to_string(), sid.clone()).clone()) };
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    self.cached_invalidate_for(CACHE_PREFIX_SERVICE.to_string(), sid.clone())
+                        .clone()
+                },
+                |_v| {
+                    self.cached_value_for(CACHE_PREFIX_SERVICE.to_string(), sid.clone())
+                        .clone()
+                },
+            )
+        };
 
         s.sfeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let service: Option<Vec<api::linker::Services>> = serde_json::from_str(&found_as_str).ok();
+                let service: Option<Vec<api::linker::Services>> =
+                    serde_json::from_str(&found_as_str).ok();
                 service
             }
         }))
@@ -307,18 +354,21 @@ impl InMemoryExpander {
             force.map_or_else(
                 || {
                     debug!("» Volumes Invalidate fn for ≈ {}", vid);
-                    self.cached_invalidate_for(CACHE_PREFIX_VOLUME.to_string(), vid.clone()).clone()
+                    self.cached_invalidate_for(CACHE_PREFIX_VOLUME.to_string(), vid.clone())
+                        .clone()
                 },
                 |_v| {
                     debug!("» Volumes cache fn for ≈ {}", vid);
-                    self.cached_value_for(CACHE_PREFIX_VOLUME.to_string(), vid.clone()).clone()
+                    self.cached_value_for(CACHE_PREFIX_VOLUME.to_string(), vid.clone())
+                        .clone()
                 },
             )
         };
 
         v.vfeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let volume: Option<Vec<api::volume::Volumes>> = serde_json::from_str(&found_as_str).ok();
+                let volume: Option<Vec<api::volume::Volumes>> =
+                    serde_json::from_str(&found_as_str).ok();
                 volume
             }
         }))
@@ -333,18 +383,21 @@ impl InMemoryExpander {
             force.map_or_else(
                 || {
                     debug!("» Permissions Invalidate fn for ≈ {}", iid);
-                    self.cached_invalidate_for(CACHE_PREFIX_PERMISSION.to_string(), iid.clone()).clone()
+                    self.cached_invalidate_for(CACHE_PREFIX_PERMISSION.to_string(), iid.clone())
+                        .clone()
                 },
                 |_v| {
                     debug!("» Permissions cache fn for ≈ {}", iid);
-                    self.cached_value_for(CACHE_PREFIX_PERMISSION.to_string(), iid.clone()).clone()
+                    self.cached_value_for(CACHE_PREFIX_PERMISSION.to_string(), iid.clone())
+                        .clone()
                 },
             )
         };
 
         i.ifeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let perms: Option<Vec<api::authorize::Permissions>> = serde_json::from_str(&found_as_str).ok();
+                let perms: Option<Vec<api::authorize::Permissions>> =
+                    serde_json::from_str(&found_as_str).ok();
                 perms
             }
         }))
@@ -356,11 +409,23 @@ impl InMemoryExpander {
     pub fn with_metrics<M: MetricsFeeder>(&self, m: &mut M, force: Option<bool>) {
         let mid = m.mget_id();
 
-        let opt_found_as_str = { force.map_or_else(|| self.cached_invalidate_for(CACHE_PREFIX_METRIC.to_string(), mid.clone()).clone(), |_v| self.cached_value_for(CACHE_PREFIX_METRIC.to_string(), mid.clone()).clone()) };
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    self.cached_invalidate_for(CACHE_PREFIX_METRIC.to_string(), mid.clone())
+                        .clone()
+                },
+                |_v| {
+                    self.cached_value_for(CACHE_PREFIX_METRIC.to_string(), mid.clone())
+                        .clone()
+                },
+            )
+        };
 
         m.mfeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let metric: Option<BTreeMap<String, String>> = serde_json::from_str(&found_as_str).ok();
+                let metric: Option<BTreeMap<String, String>> =
+                    serde_json::from_str(&found_as_str).ok();
                 metric
             }
         }))

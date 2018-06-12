@@ -6,8 +6,8 @@ use api::blueprint::Plan;
 use api::endpoints::EndPoints;
 use api::linker::Services;
 use api::volume::Volumes;
-use cache::inject::{BlockchainFactoryFeeder, EndPointsFeeder, FactoryFeeder, MetricsFeeder,
-                    PlanFeeder, ServicesFeeder, VolumesFeeder};
+use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PlanFeeder, ServicesFeeder,
+                    StacksFeeder, VolumesFeeder};
 
 pub const PHASE_PENDING: &'static str = "Pending";
 pub const PHASE_STAND_STILL: &'static str = "StandStill";
@@ -179,11 +179,11 @@ impl ChildTypeMeta for AssemblyFactory {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct BlockchainFactory {
+pub struct StacksFactory {
     #[serde(default)]
-    id: String, // Id an unique identifier in systems of record. Generated during creation of the BlockchainFactory
+    id: String, // Id an unique identifier in systems of record. Generated during creation of the StacksFactory
     #[serde(default)]
-    type_meta: TypeMeta, //standard type metadata: kind: BlockchainFactory
+    type_meta: TypeMeta, //standard type metadata: kind: StacksFactory
     object_meta: ObjectMeta,             ////Standard object metadata
     replicas: u32,                       //Replicas is the number of desired replicas of the plan.
     resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
@@ -192,22 +192,22 @@ pub struct BlockchainFactory {
     #[serde(default)]
     status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
     #[serde(default)]
-    spec: BlockchainFactorySpec,
+    spec: StacksFactorySpec,
     #[serde(default)]
     metadata: BTreeMap<String, String>, //Standard object's metadata. Can contain optional label selector team, origin
     #[serde(default)]
     created_at: String,
 }
 
-impl BlockchainFactory {
-    pub fn new() -> BlockchainFactory {
+impl StacksFactory {
+    pub fn new() -> StacksFactory {
         ::std::default::Default::default()
     }
 
     //Create a new assemblyfactory with type_meta and object_meta
     //and other defaulted.
-    pub fn with(t: TypeMeta, o: ObjectMeta) -> BlockchainFactory {
-        BlockchainFactory {
+    pub fn with(t: TypeMeta, o: ObjectMeta) -> StacksFactory {
+        StacksFactory {
             type_meta: t,
             object_meta: o,
             ..Default::default()
@@ -268,16 +268,16 @@ impl BlockchainFactory {
         &self.resources
     }
 
-    pub fn set_spec(&mut self, v: BlockchainFactorySpec) {
+    pub fn set_spec(&mut self, v: StacksFactorySpec) {
         self.spec = v;
     }
 
-    pub fn get_spec(&self) -> &BlockchainFactorySpec {
+    pub fn get_spec(&self) -> &StacksFactorySpec {
         &self.spec
     }
 
     // Mutable pointer to the field spec.
-    pub fn mut_spec(&mut self) -> &mut BlockchainFactorySpec {
+    pub fn mut_spec(&mut self) -> &mut StacksFactorySpec {
         &mut self.spec
     }
 
@@ -290,14 +290,14 @@ impl BlockchainFactory {
     }
 }
 
-// Cache based feeders for the base BlockchainFactory
-//           BlockchainFactory
+// Cache based feeders for the base StacksFactory
+//           StacksFactory
 //              |
 //             Plan
 //
 // The plan feeder, which get a callback from an expander cache.
 // The expander cache is ttl and loads the plan the first time.
-impl PlanFeeder for BlockchainFactory {
+impl PlanFeeder for StacksFactory {
     fn pget_id(&mut self) -> IdGet {
         IdGet::with_id(self.get_plan().clone())
     }
@@ -309,7 +309,7 @@ impl PlanFeeder for BlockchainFactory {
 
 // The service feeder, which gets called from an expander cache.
 // The expander cache is ttl and loads the service the first time.
-impl ServicesFeeder for BlockchainFactory {
+impl ServicesFeeder for StacksFactory {
     fn sget_id(&mut self) -> IdGet {
         IdGet::with_id(self.get_id().clone())
     }
@@ -319,7 +319,7 @@ impl ServicesFeeder for BlockchainFactory {
     }
 }
 
-impl MetaFields for BlockchainFactory {
+impl MetaFields for StacksFactory {
     /// Returns the latest self with built ObjectMeta and Type_meta
     /// Wipes out the old meta.
     /// Should be handled externally by doing Meta::with(by mutating the old ObjectMeta)
@@ -337,7 +337,7 @@ impl MetaFields for BlockchainFactory {
     }
 }
 
-impl ChildTypeMeta for BlockchainFactory {
+impl ChildTypeMeta for StacksFactory {
     const CHILD_KIND: &'static str = "POST:assemblys";
 }
 
@@ -488,7 +488,7 @@ impl FactoryFeeder for Assembly {
     }
 }
 
-impl BlockchainFactoryFeeder for Assembly {
+impl StacksFeeder for Assembly {
     fn bget_id(&mut self) -> IdGet {
         IdGet::with_id_name(
             self.get_owner_references()
@@ -499,7 +499,7 @@ impl BlockchainFactoryFeeder for Assembly {
         )
     }
 
-    fn bfeed(&mut self, f: Option<BlockchainFactory>) {
+    fn bfeed(&mut self, f: Option<StacksFactory>) {
         self.mut_spec().set_blockchain(f);
     }
 }
@@ -565,7 +565,7 @@ impl Secret {
 pub struct Spec {
     assembly_factory: Option<AssemblyFactory>,
 
-    blockchain_factory: Option<BlockchainFactory>,
+    blockchain_factory: Option<StacksFactory>,
 
     endpoints: Option<EndPoints>,
 
@@ -586,11 +586,11 @@ impl Spec {
         self.assembly_factory.clone()
     }
 
-    pub fn set_blockchain(&mut self, factory: Option<BlockchainFactory>) {
+    pub fn set_blockchain(&mut self, factory: Option<StacksFactory>) {
         self.blockchain_factory = factory;
     }
 
-    pub fn get_blockchain(&self) -> Option<BlockchainFactory> {
+    pub fn get_blockchain(&self) -> Option<StacksFactory> {
         self.blockchain_factory.clone()
     }
 
@@ -854,7 +854,7 @@ impl AssemblyFactorySpec {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct BlockchainFactorySpec {
+pub struct StacksFactorySpec {
     #[serde(default)]
     tolerations: Vec<Tolerations>,
 
@@ -873,8 +873,8 @@ pub struct BlockchainFactorySpec {
     services: Option<Vec<Services>>,
 }
 
-impl BlockchainFactorySpec {
-    pub fn new() -> BlockchainFactorySpec {
+impl StacksFactorySpec {
+    pub fn new() -> StacksFactorySpec {
         ::std::default::Default::default()
     }
 

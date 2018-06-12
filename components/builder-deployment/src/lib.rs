@@ -3,20 +3,21 @@
 //! Libraries  module used by builder deployment
 
 extern crate chrono;
+extern crate human_size;
 extern crate petgraph;
+extern crate postgres;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
 extern crate rioos_builder_jobsrv as job;
 extern crate rioos_telemetry as telemetry;
-extern crate postgres;
 extern crate serde_json;
-extern crate human_size;
 
+pub mod assembler;
+mod builder;
 pub mod error;
 pub mod models;
-mod builder;
-pub mod assembler;
 pub mod replicas_expander;
+pub mod stacks;
 
 pub use self::error::{Error, Result};
 
@@ -27,16 +28,19 @@ const APPLICABLE_TO: &'static [&'static str] = &["blockchain_template", "contain
 const APPLICABLE_TO_STAND_STILL: &'static [&'static str] = &["blockchain_template"];
 
 // AssemblyFactory output
-pub type AssemblyFactoryOutput = Result<std::option::Option<protocol::api::deploy::AssemblyFactory>>;
+pub type AssemblyFactoryOutput =
+    Result<std::option::Option<protocol::api::deploy::AssemblyFactory>>;
 
 /// AssemblyFactory output as list
-pub type AssemblyFactoryOutputList = Result<std::option::Option<Vec<protocol::api::deploy::AssemblyFactory>>>;
+pub type AssemblyFactoryOutputList =
+    Result<std::option::Option<Vec<protocol::api::deploy::AssemblyFactory>>>;
 
-// BlockchainFactory output
-pub type BlockchainFactoryOutput = Result<std::option::Option<protocol::api::deploy::BlockchainFactory>>;
+// StacksFactory output
+pub type StacksFactoryOutput = Result<std::option::Option<protocol::api::deploy::StacksFactory>>;
 
-/// BlockchainFactory output as list
-pub type BlockchainFactoryOutputList = Result<std::option::Option<Vec<protocol::api::deploy::BlockchainFactory>>>;
+/// StacksFactory output as list
+pub type StacksFactoryOutputList =
+    Result<std::option::Option<Vec<protocol::api::deploy::StacksFactory>>>;
 
 /// Assembly output
 pub type AssemblyOutput = Result<std::option::Option<protocol::api::deploy::Assembly>>;

@@ -1,14 +1,17 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api blockchain_factory
+use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
+use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use deploy::assembler::ServicesConfig;
-use deploy::models::{blockchainfactory, blueprint, service};
+use deploy::models::{blueprint, service, stacksfactory};
+use deploy::stacks::DeployerFactory;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
@@ -16,39 +19,67 @@ use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;
-use protocol::api::base::{MetaFields, StatusUpdate};
-use protocol::api::deploy::BlockchainFactory;
-use protocol::api::schema::{dispatch, dispatch_url};
+use protocol::api::base::{MetaFields, Status, StatusUpdate};
+use protocol::api::deploy::StacksFactory;
+use protocol::api::schema::{dispatch, dispatch_url, type_meta};
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
 use router::Router;
 use std::sync::Arc;
 
 #[derive(Clone)]
-pub struct BlockchainFactoryApi {
+pub struct StacksFactoryApi {
     conn: Box<DataStoreConn>,
 }
 
-/// BlockchainFactory API:
-/// BlockchainFactoryApi provides ability to declare the blueprints and manage them.
+/// StacksFactory API:
+/// StacksFactoryApi provides ability to declare the blueprints and manage them.
 ///
 /// URL:
-/// POST:/account/:account_id/blockchainfactorys,
-/// GET: /account/:account_id/blockchainfactorys,
-/// GET: /blockchainfactorys/:id
-/// GET: /blockchainfactorys  --> list all blockchainfactorys.
-/// PUT: /blockchainfactorys/status_update
-impl BlockchainFactoryApi {
+/// POST:/account/:account_id/stacksfactorys,
+/// GET: /account/:account_id/stacksfactorys,
+/// GET: /stacksfactorys/:id
+/// GET: /stacksfactorys  --> list all stacksfactorys.
+/// PUT: /stacksfactorys/status_update
+impl StacksFactoryApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
-        BlockchainFactoryApi { conn: datastore }
+        StacksFactoryApi { conn: datastore }
     }
 
-    ///GET: /blockchainfactory/:id
+    //POST: /accounts/:account_id/stacksfactory
+    //Input: Body of structure deploy::StacksFactory
+    //Returns an updated StacksFactory with id, ObjectMeta. created_at
+    fn create(&self, req: &mut Request, _cfg: &ServicesConfig) -> AranResult<Response> {
+        let mut unmarshall_body =
+            self.validate::<StacksFactory>(req.get::<bodyparser::Struct<StacksFactory>>()?)?;
+
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            self.verify_account(req)?.get_name(),
+        );
+
+        unmarshall_body.set_meta(type_meta(req), m);
+        unmarshall_body.set_status(Status::pending());
+
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
+
+        match DeployerFactory::new(&self.conn, _cfg).mk_stacker(&unmarshall_body) {
+            Ok(factory) => Ok(render_json(status::Ok, &factory)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+        }
+    }
+
+    ///GET: /stacksfactory/:id
     ///Input: id - u64
-    ///Returns BlockchainFactory
+    ///Returns StacksFactory
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match blockchainfactory::DataStore::new(&self.conn).show(&params) {
+        match stacksfactory::DataStore::new(&self.conn).show(&params) {
             Ok(Some(factory)) => Ok(render_json(status::Ok, &factory)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -59,16 +90,16 @@ impl BlockchainFactoryApi {
         }
     }
 
-    ///PUT: /blockchainfactory/status
+    ///PUT: /stacksfactory/status
     ///Input: Status with conditions
-    ///Returns BlockchainFactory with updated status
+    ///Returns StacksFactory with updated status
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
-        match blockchainfactory::DataStore::new(&self.conn).status_update(&unmarshall_body) {
+        match stacksfactory::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(factory)) => Ok(render_json(status::Ok, &factory)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -80,13 +111,13 @@ impl BlockchainFactoryApi {
     }
 
     ///Every user will be able to list their own account_id.
-    ///GET: /accounts/:account_id/blockchainfactorys/list
+    ///GET: /accounts/:account_id/stacksfactorys/list
     ///Input: account_id
-    //Returns all the BlockchainFactorys (for that account)
+    //Returns all the StacksFactorys (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_account(req)?;
 
-        match blockchainfactory::DataStore::new(&self.conn).list(&params) {
+        match stacksfactory::DataStore::new(&self.conn).list(&params) {
             Ok(Some(factorys)) => Ok(render_json_list(status::Ok, dispatch(req), &factorys)),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for account {}",
@@ -98,10 +129,10 @@ impl BlockchainFactoryApi {
     }
 
     //Will need roles/permission to access this.
-    //GET: /blockchainfactorys
-    //Returns all the BlockchainFactorys (irrespective of accounts, origins)
+    //GET: /stacksfactorys
+    //Returns all the StacksFactorys (irrespective of accounts, origins)
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
-        match blockchainfactory::DataStore::new(&self.conn).list_blank() {
+        match stacksfactory::DataStore::new(&self.conn).list_blank() {
             Ok(Some(blockchain_factorys)) => Ok(render_json_list(
                 status::Ok,
                 dispatch(_req),
@@ -112,12 +143,12 @@ impl BlockchainFactoryApi {
         }
     }
 
-    ///GET: /blockchainfactory/:id
+    ///GET: /stacksfactory/:id
     ///Input: id - u64
-    ///Returns BlockchainFactory
+    ///Returns StacksFactory
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         self.with_cache();
-        let res = match blockchainfactory::DataStore::new(&self.conn).show(&idget) {
+        let res = match stacksfactory::DataStore::new(&self.conn).show(&idget) {
             Ok(Some(factory)) => {
                 let data = json!({
                             "type": typ,
@@ -131,13 +162,13 @@ impl BlockchainFactoryApi {
     }
 
     ///Every user will be able to list their own account_id.
-    ///GET: /accounts/:account_id/blockchainfactorys/list
+    ///GET: /accounts/:account_id/stacksfactorys/list
     ///Input: account_id
-    //Returns all the BlockchainFactorys (for that account)
+    //Returns all the StacksFactorys (for that account)
     pub fn watch_list_by_account(&mut self, params: IdGet, dispatch: String) -> Option<String> {
         self.with_cache();
         let ident = dispatch_url(dispatch);
-        match blockchainfactory::DataStore::new(&self.conn).list(&params) {
+        match stacksfactory::DataStore::new(&self.conn).list(&params) {
             Ok(Some(factorys)) => {
                 let data = json!({
                                 "api_version": ident.version,
@@ -152,20 +183,21 @@ impl BlockchainFactoryApi {
     }
 }
 
-///The Api wirer for BlockchainFactoryApi
-///Add all the api needed to be supported under `/blockchainfactory`
+///The Api wirer for StacksFactoryApi
+///Add all the api needed to be supported under `/stacksfactory`
 ///To add an api refer, comments in Api trait.
-impl Api for BlockchainFactoryApi {
+impl Api for StacksFactoryApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
 
-        //closures : blockchainfactory
+        //closures : stacksfactory
         let _config = &config;
         let _service_cfg: Box<ServicesConfig> = Box::new(_config.services.clone().into());
         self.with_cache();
 
-        // let mut _self = self.clone();
-        // let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_service_cfg) };
+        let mut _self = self.clone();
+        let create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_service_cfg) };
 
         let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
@@ -181,27 +213,33 @@ impl Api for BlockchainFactoryApi {
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
+        router.post(
+            "/accounts/:account_id/stacksfactorys",
+            XHandler::new(C { inner: create }).before(basic.clone()),
+            "stacks_factory",
+        );
+
         router.get(
-            "/accounts/:account_id/blockchainfactorys",
+            "/accounts/:account_id/stacksfactorys",
             XHandler::new(C { inner: list }).before(basic.clone()),
-            "blockchainfactorys_list",
+            "stacksfactors_list",
         );
         router.get(
-            "/blockchainfactorys/:id",
+            "/stacksfactorys/:id",
             XHandler::new(C { inner: show }).before(basic.clone()),
-            "blockchain_factorys_show",
+            "stacksfactory_show",
         );
         router.get(
-            "/blockchainfactorys",
+            "/stacksfactorys",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
-            "blockchains_factorys_list_blank",
+            "stacksfactory_list_blank",
         );
         router.put(
-            "/blockchainfactorys/:id/status",
+            "/stacksfactorys/:id/status",
             XHandler::new(C {
                 inner: status_update,
             }).before(basic.clone()),
-            "blockchain_factory_status_update",
+            "stacksfactory_status_update",
         );
     }
 }
@@ -215,7 +253,7 @@ impl Api for BlockchainFactoryApi {
 use protocol::api::base::IdGet;
 use serde_json;
 
-impl ExpanderSender for BlockchainFactoryApi {
+impl ExpanderSender for StacksFactoryApi {
     fn with_cache(&mut self) {
         let _conn = self.conn.clone();
 
@@ -245,14 +283,14 @@ impl ExpanderSender for BlockchainFactoryApi {
 }
 
 ///Convinient helpers to validating an api
-impl ApiValidator for BlockchainFactoryApi {}
+impl ApiValidator for StacksFactoryApi {}
 
 ///Convinient helpers to verify any api
-impl ParmsVerifier for BlockchainFactoryApi {}
+impl ParmsVerifier for StacksFactoryApi {}
 
 ///Called by implementing ApiValidator when validate() is invoked with the parsed body
-///Checks for required parameters in the parsed struct BlockchainFactory
-impl Validator for BlockchainFactory {
+///Checks for required parameters in the parsed struct StacksFactory
+impl Validator for StacksFactory {
     fn valid(self) -> AranValidResult<Self> {
         let mut s: Vec<String> = vec![];
 
