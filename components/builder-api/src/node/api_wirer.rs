@@ -150,9 +150,9 @@ impl HttpGateway for Wirer {
                     deploy::assembly_factory::AssemblyFactoryApi::new(Box::new(ds.clone()));
                 assembly_factory.wire(config.clone(), &mut router);
 
-                let mut blockchain_factory =
-                    deploy::blockchain_factory::BlockchainFactoryApi::new(Box::new(ds.clone()));
-                blockchain_factory.wire(config.clone(), &mut router);
+                let mut stacks_factory =
+                    deploy::stacks_factory::StacksFactoryApi::new(Box::new(ds.clone()));
+                stacks_factory.wire(config.clone(), &mut router);
 
                 //securer apis
                 let mut securer = security::auth_api::AuthenticateApi::new(Box::new(ds.clone()));

@@ -43,8 +43,8 @@ pub trait PermissionsFeeder: Send {
     fn ifeed(&mut self, v: Option<Vec<api::authorize::Permissions>>);
 }
 
-pub trait BlockchainFactoryFeeder: Send {
+pub trait StacksFeeder: Send {
     fn bget_id(&mut self) -> api::base::IdGet;
 
-    fn bfeed(&mut self, a: Option<api::deploy::BlockchainFactory>);
+    fn bfeed(&mut self, a: Option<api::deploy::StacksFactory>);
 }
