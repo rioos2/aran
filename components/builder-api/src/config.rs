@@ -11,7 +11,7 @@ use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCf
 use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
 use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
 use api::deploy::config::ServicesCfg;
-use api::objectstorage::config::ObjectStorageAuth;
+use api::objectstorage::config::ObjectStorage;
 
 use auth::config::{flow_modes, AuthenticationFlowCfg, Identity, IdentityCfg};
 use watch::config::{Streamer, StreamerCfg};
@@ -393,7 +393,7 @@ impl Mailer for Config {
 }
 
 //A delegate, that returns the securer auth config from the loaded securer auth config
-impl ObjectStorageAuth for Config {
+impl ObjectStorage for Config {
     fn storage_backend(&self) -> ObjectStorageBackend {
         self.objectstorage.backend.clone()
     }

@@ -287,6 +287,9 @@ pub trait MetaFields {
     fn get_created_at(&self) -> String {
         self.object_meta().created_at.clone()
     }
+    fn set_created_at(&self, created_at: String) {
+        self.object_meta().created_at = created_at
+    }   
 }
 
 ///Trait for all types that could be a child with typemeta

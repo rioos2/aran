@@ -1614,7 +1614,7 @@ dependencies = [
 [[package]]
 name = "openio_sdk_rust"
 version = "0.1.42"
-source = "git+https://github.com/rioadvancement/openio-sdk-rust.git#8650ecd0116eb3f9043eacaf1f191f4d17426852"
+source = "git+https://github.com/rioadvancement/openio-sdk-rust.git#7b9c6b313fa7c70d3407cefb632f91eb3508ddfc"
 dependencies = [
  "chrono 0.2.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
