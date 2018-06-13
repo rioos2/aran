@@ -79,6 +79,12 @@ impl ObjectStorageApi {
             unmarshall_body.get_account(),
         );
 
+        let file_name = match req.extensions.get::<Router>().unwrap().find("file_name") {
+            Some(name) => name,
+            None => return Err(bad_request(&MissingParameter("file name".to_string()))),
+        };
+        println!("++++++++++++++++++++++++++++++++++++++++");
+        println!("{}", file_name.clone().to_string());
         unmarshall_body.set_meta(type_meta(req), m);
 
         ui::rawdumpln(
@@ -89,7 +95,7 @@ impl ObjectStorageApi {
 
         let client = s3::from_config(&self.conn)?;
 
-        match client.upload_accessor(&unmarshall_body) {
+        match client.upload_accessor(&unmarshall_body, file_name.clone().to_string()) {
             Ok(bucket) => Ok(render_json(status::Ok, &bucket)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
@@ -151,17 +157,21 @@ impl Api for ObjectStorageApi {
         );
         router.get(
             "/accounts/:account_id/buckets",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank.clone() }).before(basic.clone()),
+            "account_buckets_list",
+        );
+        router.get(
+            "/buckets",
+            XHandler::new(C { inner: list_blank.clone() }).before(basic.clone()),
             "buckets_list",
         );
-
         router.post(
-            "/accounts/:account_id/buckets/:bucket_id/files/:file_name/upload",
+            "/accounts/:account_id/buckets/:id/files/:name/upload",
             XHandler::new(C { inner: upload }).before(basic.clone()),
             "buckets_upload",
         );
         router.get(
-            "/accounts/:account_id/buckets/:bucket_id/files/:file_name/download",
+            "/accounts/:account_id/buckets/:id/files/:name/download",
             XHandler::new(C { inner: download }).before(basic.clone()),
             "buckets_download",
         );

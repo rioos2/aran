@@ -9,7 +9,7 @@ pub mod openio;
 
 use error::Result;
 use protocol::api::objectstorage::Bucket;
-
+use protocol::api::objectstorage::BucketAccessor;
 use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
 
 /// Currently implemented securer backends
@@ -26,7 +26,7 @@ pub trait StorageClient: Send {
 
     /// Return the upload accessor signed URL.
     /// The URL returned expires after 1 minute
-    fn upload_accessor(&self, bucket: &Bucket) -> BucketOutput;
+    fn upload_accessor(&self, bucket: &Bucket, file_name: String) -> BucketAccessorOutput;
 
     /// Return the download accessor signed URL
     /// The URL returned expires after 1 minute
@@ -42,6 +42,9 @@ pub fn from_config(config: &ObjectStorageCfg) -> Result<Box<StorageClient>> {
 
 /// BucketOutput output loaded from the database
 pub type BucketOutput = Result<Option<Bucket>>;
+
+/// BucketAccessorOutput output loaded from the database
+pub type BucketAccessorOutput = Result<Option<BucketAccessor>>;
 
 /// BucketOutput output list loaded from the database
 pub type BucketOutputList = Result<Option<Vec<Bucket>>>;
