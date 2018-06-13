@@ -152,10 +152,6 @@ impl<'a> DataStore<'a> {
         blockchain_factory.set_replicas(replicas as u32);
         self.expander.with_plan(&mut blockchain_factory, how_to);
 
-        //StacksFactory is created first, and service is created later in our process. During the creation AF sets the service to none
-        //Hence the cache always return none for service. To fix this the service is pulled invalidated from cache - send a live copy always
-        self.expander
-            .with_services(&mut blockchain_factory, PULL_INVALDATED);
         Ok(blockchain_factory)
     }
 }

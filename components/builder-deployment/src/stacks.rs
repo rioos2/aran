@@ -58,7 +58,7 @@ impl<'a> StacksDeployer<'a> {
                 let assembly_factory: AssemblyFactory = self.build_assembly_factory(&stacks);
                 //Build Array of Assemblers
                 //TO-DO: Kishore fix it.
-                let _built = stacks.get_spec().get_plan().map(|_stack| {
+                let _built = stacks.get_spec().get_plan().map(|_plan| {
                     Assembler::new(&self.conn, &self.service_config).assemble(&assembly_factory)
                 });
                 Err(Error::StacksFactoryInvalidType(
@@ -92,6 +92,7 @@ impl<'a> StacksDeployer<'a> {
             parent.get_id().to_string(),
         );
         assembly_factory.set_meta(type_meta_url(parent.children()), om.clone());
+        assembly_factory.set_plan(parent.get_plan());
         assembly_factory
     }
 }

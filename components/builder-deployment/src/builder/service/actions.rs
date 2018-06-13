@@ -9,17 +9,16 @@ use std::collections::BTreeMap;
 
 use error::Result;
 
-
 use assembler::ServicesConfig;
 
-use protocol::api::schema::type_meta_url;
-use protocol::api::base::{MetaFields, WhoAmITypeMeta, Status};
-use protocol::api::linker::Services;
+use protocol::api::base::{MetaFields, Status, WhoAmITypeMeta};
 use protocol::api::deploy::AssemblyFactory;
+use protocol::api::linker::Services;
+use protocol::api::schema::type_meta_url;
 
-use builder::service::{SERVICE_TYPE_LOADBALANCER, SERVICE_TYPE_EXTERNALNAME};
 use builder::attacher::ServiceAttachAction;
-use builder::service::rules::{ServiceTallyer, ServiceRule};
+use builder::service::rules::{ServiceRule, ServiceTallyer};
+use builder::service::{SERVICE_TYPE_EXTERNALNAME, SERVICE_TYPE_LOADBALANCER};
 
 pub type AssembledMapRule = Result<(AssemblyFactory, Vec<(String, String)>, ServiceRule)>;
 
@@ -54,7 +53,10 @@ impl AttachGenerator {
     }
 
     /// Returns a `ServiceAction` representing the service that the deployment tried to link
-    fn build_loadbalancer(factory: &AssemblyFactory, config: ServicesConfig) -> ServiceAttachAction {
+    fn build_loadbalancer(
+        factory: &AssemblyFactory,
+        config: ServicesConfig,
+    ) -> ServiceAttachAction {
         let mut s: Services = Services::new();
 
         let ref mut om = s.mut_meta(
@@ -82,9 +84,11 @@ impl AttachGenerator {
     }
 
     /// Returns a `ServiceAction` representing the service that the deployment tried to link
-    fn build_internal_dns(factory: &AssemblyFactory, assembly: Vec<(String, String)>) -> ServiceAttachAction {
+    fn build_internal_dns(
+        factory: &AssemblyFactory,
+        assembly: Vec<(String, String)>,
+    ) -> ServiceAttachAction {
         let mut s: Services = Services::new();
-
 
         let ref mut om = s.mut_meta(s.object_meta(), factory.get_name(), factory.get_account());
         s.set_cluster_name(om, factory.get_cluster_name());
@@ -117,13 +121,15 @@ impl AttachGenerator {
         ampr.as_ref()
             .map(|a| {
                 let factory = &a.0;
-                factory.get_initializers().has_pending(
-                    SERVICE_TYPE_LOADBALANCER
-                        .to_string(),
-                ) &&
-                    ServiceTallyer::tally(factory.get_spec().get_plan().map_or("".to_string(), |p| {
-                        p.get_category()
-                    }))
+                factory
+                    .get_initializers()
+                    .has_pending(SERVICE_TYPE_LOADBALANCER.to_string())
+                    && ServiceTallyer::tally(
+                        factory
+                            .get_spec()
+                            .get_plan()
+                            .map_or("".to_string(), |p| p.get_category()),
+                    )
             })
             .unwrap_or(false)
     }
