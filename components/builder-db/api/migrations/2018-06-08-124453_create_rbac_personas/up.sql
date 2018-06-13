@@ -31,6 +31,7 @@ VALUES
    )
 ;
 
+
 ---
 --- Table:roles:create stub role named RIOOS:UNIVERSALSOLDIER
 --- When editing roles, use uppercase.
@@ -392,6 +393,16 @@ VALUES
          'RIOOS.AUDIT.POST',
          'Create access for audits resource.'
    )
+,
+(
+(
+      SELECT
+         id 
+      FROM
+         first_insert),
+         'RIOOS.BUCKET.*',
+         'Any access allowed for this bucket resource.'
+   )
 ;
 
 
@@ -417,6 +428,16 @@ WITH second_insert AS
 INSERT INTO
    permissions (role_id, name, description) 
 VALUES
+(
+(
+      SELECT
+         id 
+      FROM
+         second_insert),
+         'RIOOS.ACCOUNTS.BUCKET.*',
+         'Any access allowed for this bucket resource.'
+   )
+,
    (
 (
       SELECT

@@ -26,6 +26,7 @@ const DATACENTER: &'static str = "DATACENTERS";
 const NETWORK: &'static str = "NETWORKS";
 const AUDIT: &'static str = "AUDITS";
 const LOG: &'static str = "LOGS";
+const BUCKET: &'static str = "BUCKETS";
 const HEALTHZ: &'static str = "HEALTHZ";
 
 const RESOURCE_GET: &'static str = "GET";
@@ -136,6 +137,7 @@ enum TrustResource {
     Audit,
     Healthz,
     Wild,
+    Bucket,
     None,
 }
 
@@ -191,6 +193,7 @@ impl TrustResource {
             NETWORK => TrustResource::Network,
             AUDIT => TrustResource::Audit,
             LOG => TrustResource::Log,
+            BUCKET => TrustResource::Bucket,
             HEALTHZ => TrustResource::Healthz,
             _ => TrustResource::None,
         }
