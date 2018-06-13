@@ -174,7 +174,7 @@ impl Api for MarketPlaceApi {
         //     "/marketplaces/:id/download",
         //     XHandler::new(C { inner: download }),
         //     "market_download",
-        // ); 
+        // );
     }
 }
 
@@ -203,35 +203,35 @@ impl Validator for MarketPlace {
                 .collect::<Vec<_>>();
         }
 
-        // if self.get_plan().len() <= 0 {
-        //     s.push("plans".to_string());
-        // } else {
-        //     self.get_plan()
-        //         .iter()
-        //         .map(|x| {
-        //             if x.version.len() <= 0 {
-        //                 s.push("version".to_string());
-        //             }
-        //         })
-        //         .collect::<Vec<_>>();
-        // }
-        //
-        // if self.get_plan().len() <= 0 {
-        //     s.push("plans".to_string());
-        // } else {
-        //     self.get_plan()
-        //         .iter()
-        //         .map(|x| {
-        //             if x.category.len() <= 0 {
-        //                 s.push("category".to_string());
-        //             }
-        //         })
-        //         .collect::<Vec<_>>();
-        // }
-        //
-        // if self.object_meta().name.len() <= 0 {
-        //     s.push("name".to_string());
-        // }
+        if self.get_plan().len() <= 0 {
+            s.push("plans".to_string());
+        } else {
+            self.get_plan()
+                .iter()
+                .map(|x| {
+                    if x.get_version().len() <= 0 {
+                        s.push("version".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
+        }
+
+        if self.get_plan().len() <= 0 {
+            s.push("plans".to_string());
+        } else {
+            self.get_plan()
+                .iter()
+                .map(|x| {
+                    if x.get_category().len() <= 0 {
+                        s.push("category".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
+        }
+
+        if self.object_meta().name.len() <= 0 {
+            s.push("name".to_string());
+        }
 
         if s.is_empty() {
             return Ok(Box::new(self));

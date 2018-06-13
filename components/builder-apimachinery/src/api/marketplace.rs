@@ -15,8 +15,6 @@ pub struct MarketPlace {
     created_at: String,
     category: String,
     version: String,
-    #[serde(default)]
-    characteristics: BTreeMap<String, String>,
     icon: String,
     description: String,
     status: Status,

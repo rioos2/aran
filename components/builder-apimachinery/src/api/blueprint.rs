@@ -15,8 +15,6 @@ pub struct Plan {
     created_at: String,
     category: String,
     version: String,
-    #[serde(default)]
-    characteristics: BTreeMap<String, String>,
     icon: String,
     description: String,
     status: Status,
@@ -185,6 +183,14 @@ impl PlanProperties {
     pub fn get_characteristics(&self) -> &BTreeMap<String, String> {
        &self.characteristics
 
+     }
+
+     pub fn get_version(&self) -> ::std::string::String {
+         self.version.clone()
+     }
+
+     pub fn get_category(&self) -> ::std::string::String {
+         self.category.clone()
      }
 }
 
