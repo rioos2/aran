@@ -187,15 +187,49 @@ impl Validator for MarketPlace {
     fn valid(self) -> AranValidResult<Self> {
         let mut s: Vec<String> = vec![];
 
-        // if self.get_category().len() <= 0 {
-        //     s.push("category".to_string());
-        // }
-        // if self.get_version().len() <= 0 {
-        //     s.push("version".to_string());
-        // }
-        if self.object_meta().name.len() <= 0 {
-            s.push("name".to_string());
+        if self.object_meta().owner_references.len() <= 0 {
+            s.push("owner_references".to_string());
+        } else {
+            self.object_meta()
+                .owner_references
+                .iter()
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
         }
+
+        // if self.get_plan().len() <= 0 {
+        //     s.push("plans".to_string());
+        // } else {
+        //     self.get_plan()
+        //         .iter()
+        //         .map(|x| {
+        //             if x.version.len() <= 0 {
+        //                 s.push("version".to_string());
+        //             }
+        //         })
+        //         .collect::<Vec<_>>();
+        // }
+        //
+        // if self.get_plan().len() <= 0 {
+        //     s.push("plans".to_string());
+        // } else {
+        //     self.get_plan()
+        //         .iter()
+        //         .map(|x| {
+        //             if x.category.len() <= 0 {
+        //                 s.push("category".to_string());
+        //             }
+        //         })
+        //         .collect::<Vec<_>>();
+        // }
+        //
+        // if self.object_meta().name.len() <= 0 {
+        //     s.push("name".to_string());
+        // }
 
         if s.is_empty() {
             return Ok(Box::new(self));

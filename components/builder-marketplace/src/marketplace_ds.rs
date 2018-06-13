@@ -25,11 +25,16 @@ impl<'a> DataStore<'a> {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM insert_marketplace_v1($1,$2,$3)",
+            "SELECT * FROM insert_marketplace_v1($1,$2,$3,$4,$6,$7,$8)",
             &[
                 &(serde_json::to_value(marketplace.type_meta()).unwrap()),
                 &(serde_json::to_value(marketplace.object_meta()).unwrap()),
-                &(serde_json::to_value(marketplace.get_plans()).unwrap()),
+                &(serde_json::to_value(marketplace.get_plan()).unwrap()),
+                &(marketplace.get_category() as String),
+                &(marketplace.get_version() as String),
+                &(marketplace.get_icon() as String),
+                &(marketplace.get_description() as String),
+                &(serde_json::to_value(marketplace.get_status()).unwrap()),
             ],
         ).map_err(Error::MarketPlaceCreate)?;
 
@@ -80,9 +85,14 @@ impl<'a> DataStore<'a> {
         let id: i64 = row.get("id");
         let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
+        marketplace.set_status(serde_json::from_value(row.get("status")).unwrap());
+        marketplace.set_category(row.get("category"));
+        marketplace.set_version(row.get("version"));
+        marketplace.set_icon(row.get("icon"));
+        marketplace.set_description(row.get("description"));
         marketplace.set_id(id.to_string() as String);
         marketplace.set_created_at(created_at.to_string() as String);
-        marketplace.set_plans(serde_json::from_value(row.get("plans")).unwrap());
+        marketplace.set_plan(serde_json::from_value(row.get("plans")).unwrap());
         Ok(marketplace)
     }
 }

@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
-
-use api::blueprint::{Plan};
+use api::base::{TypeMeta, ObjectMeta, Status, MetaFields};
+use std::collections::BTreeMap;
+use api::blueprint::{PlanProperties};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct MarketPlace {
@@ -11,8 +11,15 @@ pub struct MarketPlace {
     #[serde(default)]
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
-    plans: Vec<Plan>,
+    plans: Vec<PlanProperties>,
     created_at: String,
+    category: String,
+    version: String,
+    #[serde(default)]
+    characteristics: BTreeMap<String, String>,
+    icon: String,
+    description: String,
+    status: Status,
 }
 
 impl MetaFields for MarketPlace {
@@ -63,12 +70,52 @@ impl MarketPlace {
         self.created_at.clone()
     }
 
-    pub fn set_plans(&mut self, v: Vec<Plan>) {
+    pub fn set_plan(&mut self, v: Vec<PlanProperties>) {
         self.plans = v;
     }
 
-    pub fn get_plans(&self) -> Vec<Plan> {
+    pub fn get_plan(&self) -> Vec<PlanProperties> {
         self.plans.clone()
+    }
+
+    pub fn get_category(&self) -> ::std::string::String {
+        self.category.clone()
+    }
+
+    pub fn set_icon(&mut self, v: ::std::string::String) {
+        self.icon = v;
+    }
+
+    pub fn get_icon(&self) -> ::std::string::String {
+        self.icon.clone()
+    }
+
+    pub fn set_status(&mut self, v: Status) {
+        self.status = v;
+    }
+
+    pub fn get_status(&self) -> &Status {
+        &self.status
+     }
+
+    pub fn set_version(&mut self, v: ::std::string::String) {
+        self.version = v;
+    }
+
+    pub fn get_version(&self) -> ::std::string::String {
+        self.version.clone()
+    }
+
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
+    }
+
+    pub fn get_description(&self) -> ::std::string::String {
+        self.description.clone()
+    }
+
+    pub fn set_category(&mut self, v: ::std::string::String) {
+        self.category = v;
     }
 }
 
