@@ -108,13 +108,12 @@ impl StorageClient for Storage {
         }
     }
 
-    fn upload_accessor(&self, bucket: &Bucket, file_name: String) -> BucketAccessorOutput {
+    fn upload_accessor(&self, bucket_name: String, file_name: String) -> BucketAccessorOutput {
         let creds = self.credentials()?;
 
         let client: S3Client<DefaultCredentialsProvider, _> =
             S3Client::new(creds, self.endpoint.clone());
 
-        let bucket_name = bucket.get_name();
         let mut put_req = GetObjectRequest::default();
         put_req.bucket = bucket_name.clone();
 
@@ -124,46 +123,49 @@ impl StorageClient for Storage {
         info!("☛ Upload bucket accessor {} ", bucket_name);
 
         let url = client.put_object_url(&put_req, None);
-
+       
         // Parse the string of data into serde_json::Value.
         let v: Value = serde_json::from_str(&url)?;
-
         //TO-DO: Stick the url received into the  below bucket
         //using set_ methods.
         let mut ba = BucketAccessor::new();
-        let ad = ba.accessor_data();
+        let mut ad = ba.accessor_data();
         ad.set_url(v["url"].to_string());
         ad.set_date(v["date"].to_string());
         ad.set_authorization(v["authorization"].to_string());
-        ad.set_content_type("application/octet-stream".to_string());        
+        ad.set_content_type(v["content_type"].to_string());        
         ba.set_accessor_data(ad);
-
         let ref mut om = ba.mut_meta(ba.object_meta(), bucket_name, "".to_string());                    
         let whoami = ba.who_am_i();
-        ba.set_meta(type_meta_url(whoami), om.clone());        
+        ba.set_meta(type_meta_url(whoami), om.clone());   
         Ok(Some(ba))
     }
 
-    fn download_accessor(&self, bucket: &Bucket) -> BucketOutput {
+    fn download_accessor(&self, bucket_name: String, file_name: String) -> BucketAccessorOutput {
         let creds = self.credentials()?;
 
         let client: S3Client<DefaultCredentialsProvider, _> =
             S3Client::new(creds, self.endpoint.clone());
 
-        let bucket_name = bucket.get_name();
         let mut get_req = GetObjectRequest::default();
         get_req.bucket = bucket_name.clone();
 
         //TO-DO: Replace with a filename key from Bucket
-        get_req.key = bucket_name.clone();
+        get_req.key = file_name.clone();
 
         info!("☛ Download bucket accessor {} ", bucket_name);
 
-        let _url = client.get_object_url(&get_req, None);
+        let url = client.get_object_url(&get_req, None);
 
         //TO-DO: Stick the url received into the  below bucket
         //using set_ methods.
-        let ba = Bucket::new();
+        let mut ba = BucketAccessor::new();
+        let mut ad = ba.accessor_data();
+        ad.set_url(url);            
+        ba.set_accessor_data(ad);
+        let ref mut om = ba.mut_meta(ba.object_meta(), bucket_name, "".to_string());                    
+        let whoami = ba.who_am_i();
+        ba.set_meta(type_meta_url(whoami), om.clone());   
         Ok(Some(ba))
     }
     

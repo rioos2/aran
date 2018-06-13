@@ -26,11 +26,11 @@ pub trait StorageClient: Send {
 
     /// Return the upload accessor signed URL.
     /// The URL returned expires after 1 minute
-    fn upload_accessor(&self, bucket: &Bucket, file_name: String) -> BucketAccessorOutput;
+    fn upload_accessor(&self, bucket: String, file_name: String) -> BucketAccessorOutput;
 
     /// Return the download accessor signed URL
     /// The URL returned expires after 1 minute
-    fn download_accessor(&self, bucket: &Bucket) -> BucketOutput;
+    fn download_accessor(&self, bucket: String, file_name: String) -> BucketAccessorOutput;
 }
 
 /// Create appropriate Securer variant based on configuration values.

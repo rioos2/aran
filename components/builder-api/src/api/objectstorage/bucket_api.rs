@@ -71,59 +71,26 @@ impl ObjectStorageApi {
     }
 
     fn upload(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Bucket>>()?)?;
-
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
-
-        let file_name = match req.extensions.get::<Router>().unwrap().find("file_name") {
-            Some(name) => name,
-            None => return Err(bad_request(&MissingParameter("file name".to_string()))),
-        };
-        println!("++++++++++++++++++++++++++++++++++++++++");
-        println!("{}", file_name.clone().to_string());
-        unmarshall_body.set_meta(type_meta(req), m);
-
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        let params_id = self.verify_id_with_name(req)?;
+        let params_name = self.verify_name(req)?;       
 
         let client = s3::from_config(&self.conn)?;
 
-        match client.upload_accessor(&unmarshall_body, file_name.clone().to_string()) {
+        match client.upload_accessor(params_id.get_id(), params_name.get_id()) {
             Ok(bucket) => Ok(render_json(status::Ok, &bucket)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
 
     fn download(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Bucket>>()?)?;
-
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
-
-        unmarshall_body.set_meta(type_meta(req), m);
-
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        let params_id = self.verify_id_with_name(req)?;
+        let params_name = self.verify_name(req)?;       
 
         let client = s3::from_config(&self.conn)?;
 
-        match client.download_accessor(&unmarshall_body) {
-            Ok(Some(buckets)) => Ok(render_json_list(status::Ok, dispatch(req), &buckets)),
+        match client.download_accessor(params_id.get_id(), params_name.get_id()) {
+            Ok(bucket) => Ok(render_json(status::Ok, &bucket)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
 }
@@ -149,12 +116,7 @@ impl Api for ObjectStorageApi {
             "/accounts/:account_id/buckets",
             XHandler::new(C { inner: create.clone() }).before(basic.clone()),
             "account_buckets_create",
-        );
-        router.post(
-            "/buckets",
-            XHandler::new(C { inner: create.clone() }).before(basic.clone()),
-            "buckets_create",
-        );
+        );        
         router.get(
             "/accounts/:account_id/buckets",
             XHandler::new(C { inner: list_blank.clone() }).before(basic.clone()),
@@ -165,7 +127,7 @@ impl Api for ObjectStorageApi {
             XHandler::new(C { inner: list_blank.clone() }).before(basic.clone()),
             "buckets_list",
         );
-        router.post(
+        router.get(
             "/accounts/:account_id/buckets/:id/files/:name/upload",
             XHandler::new(C { inner: upload }).before(basic.clone()),
             "buckets_upload",
