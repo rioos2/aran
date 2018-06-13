@@ -16,6 +16,7 @@ pub struct EmailSender {
     subject: String,
     content: String,
 }
+
 impl EmailSender {
     pub fn new(config: MailerCfg, email: String, subject: String, content: String) -> Self {
         EmailSender {
@@ -70,17 +71,17 @@ impl EmailNotifier {
 
 impl PushNotifier for EmailNotifier {
     fn should_notify(&self) -> bool {
-        match Status::from_str(&self.envelope.event.reason) {
+        match Status::from_str(&self.envelope.get_event().reason) {
             Status::DigitalCloudRunning | Status::DigitalCloudFailed => true,
             Status::None => false,
         }
     }
     fn notify(&self) {
         let data = email_generator::EmailGenerator::new(
-            self.envelope.event.object_meta().labels,
-            &self.envelope.event.message,
+            self.envelope.get_event().object_meta().labels,
+            &self.envelope.get_event().message,
         );
-        match Status::from_str(&self.envelope.event.reason) {
+        match Status::from_str(&self.envelope.get_event().reason) {
             Status::DigitalCloudRunning => {
                 let content = data.deploy_success().unwrap();
                 let mail_builder =

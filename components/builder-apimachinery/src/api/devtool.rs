@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::{TypeMeta, ObjectMeta, MetaFields, Status};
+use api::base::ObjectReference;
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
 use std::collections::BTreeMap;
-use api::audit::ObjectReference;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BuildConfig {
@@ -96,19 +96,16 @@ pub struct BuildTriggerPolicy {
     image_change: ImageChange, // ImageChange contains parameters for an ImageChange type of trigger
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct WebHook {
     hook_type: String, //web hook type
-    secret: String, // Secret is the obfuscated webhook secret that triggered a build.
+    secret: String,    // Secret is the obfuscated webhook secret that triggered a build.
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ImageChange {
     last_triggered_image_id: String,
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BuildSource {
@@ -125,19 +122,16 @@ pub struct BuildSource {
     context_dir: String,
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BinaryBuildSource {
     as_file: String, // AsFile indicates that the provided binary input should be considered a single file within the build input.
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct GitBuildSource {
     uri: String, // URI points to the source that will be built. The structure of the source will depend on the type of build to run
     reference: String, // Ref is the branch/tag/ref to build.
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ImageSource {
@@ -147,7 +141,6 @@ pub struct ImageSource {
     #[serde(default)]
     paths: Vec<ImageSourcePath>, // Paths is a list of source and destination paths to copy from the image.
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ImageSourcePath {
@@ -160,8 +153,8 @@ pub struct SpecData {
     run_policy: String, // RunPolicy describes how the new build created from this build  configuration will be scheduled for execution. This is optional, if not specified we default to "Serial".
     #[serde(default)]
     build_trigger_policys: Vec<BuildTriggerPolicy>, // Triggers determine how new Builds can be launched from a BuildConfig. If  no triggers are defined, a new build can only occur as a result of an  explicit client build creation.
-    source: BuildSource, // Source describes the SCM in use.
-    strategy: BuildStrategy, // Strategy defines how to perform a build.
+    source: BuildSource,              // Source describes the SCM in use.
+    strategy: BuildStrategy,          // Strategy defines how to perform a build.
     output: BuildOutput, // Output describes the Docker image the Strategy should produce.
     post_commit: BuildPostCommitSpec, // PostCommit is a build hook executed after the build output image is committed, before it is pushed to a registry.
     #[serde(default)]
@@ -317,7 +310,6 @@ impl MetaFields for Build {
     }
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BuildStatus {
     phase: String, // Phase is the point in the build lifecycle. Possible values are  "New", "Pending", "Running", "Complete", "Failed", "Error", and "Cancelled".
@@ -357,7 +349,6 @@ impl BuildStatusUpdate {
     }
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BuildStatusOutput {
     to: String, //To describes the status of the built image being pushed to a registry.
@@ -366,8 +357,8 @@ pub struct BuildStatusOutput {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BuildSpecData {
     triggerd_by_causes: Vec<BuildTriggerCause>, // TriggeredBy describes which triggers started the most recent update to the buildconfig and contains information about those triggers.
-    source: BuildSource, // Source describes the SCM in use.
-    strategy: BuildStrategy, // Strategy defines how to perform a build.
+    source: BuildSource,                        // Source describes the SCM in use.
+    strategy: BuildStrategy,                    // Strategy defines how to perform a build.
     output: BuildOutput, // Output describes the Docker image the Strategy should produce.
     post_commit: BuildPostCommitSpec, // PostCommit is a build hook executed after the build output image is committed, before it is pushed to a registry.
     #[serde(default)]
@@ -389,7 +380,7 @@ pub struct BuildTriggerCause {
 pub struct WebHookCause {
     hook_type: String,
     revision: SourceRevision, // Revision is an optional field that stores the git source revision information of the generic webhook trigger when it is available.
-    secret: String, // Secret is the obfuscated webhook secret that triggered a build.
+    secret: String,           // Secret is the obfuscated webhook secret that triggered a build.
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -404,10 +395,9 @@ pub struct ImageChangeCause {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct GitRevision {
-    commit: String, // Commit is the commit hash identifying a specific commit
+    commit: String,  // Commit is the commit hash identifying a specific commit
     message: String, // Message is the description of a specific commit
 }
-
 
 // ImageStream stores a mapping of tags to images, metadata overrides that are applied
 // when images are tagged in a stream, and an optional reference to a Docker image
@@ -418,8 +408,8 @@ pub struct ImageReferences {
     id: String, //Id an unique identifier in systems of record. Generated during creation of the job
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: BuildConfig
-    object_meta: ObjectMeta, //Standard object metadata
-    spec: ImageReferenceSpec, // Spec describes the desired state of this stream
+    object_meta: ObjectMeta,      //Standard object metadata
+    spec: ImageReferenceSpec,     // Spec describes the desired state of this stream
     status: ImageReferenceStatus, // Status describes the current state of this stream
     #[serde(default)]
     created_at: String,
@@ -508,7 +498,7 @@ pub struct TagEventList {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TagEventCondition {
     tag_event_condition_type: String, // Type of tag event condition, currently only ImportSuccess
-    status: String, // Status of the condition, one of True, False, Unknown.
+    status: String,                   // Status of the condition, one of True, False, Unknown.
     last_transition_time: String, // LastTransitionTIme is the time the condition transitioned from one status to another.
     reason: String, // Reason is a brief machine readable explanation for the condition's last transition.
     generation: i64, // Generation is the spec tag generation that this status corresponds to. If this value is older than the spec tag generation, the user has requested this status tag be updated.
@@ -516,7 +506,7 @@ pub struct TagEventCondition {
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TagEvent {
-    created: String, // When the TagEvent was created
+    created: String,                // When the TagEvent was created
     docker_image_reference: String, // The string that can be used to pull this image
     image: String,
     generation: i64, // Generation is the spec tag generation that resulted in this tag being updated
@@ -562,7 +552,6 @@ pub struct ImageMarks {
     #[serde(default)]
     created_at: String,
 }
-
 
 impl ImageMarks {
     pub fn new() -> ImageMarks {
@@ -663,7 +652,6 @@ pub struct ImageLayer {
     #[serde(default)]
     layers: Vec<String>, // DockerImage layers.
 }
-
 
 #[cfg(test)]
 mod test {
@@ -931,7 +919,6 @@ mod test {
             image.docker_image_reference,
             "registry.rioos.xyz/test.megam.io/ruby:latest"
         );
-
     }
 
 }
