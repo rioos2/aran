@@ -121,9 +121,13 @@ lazy_static! {
 
         map.register("POST:accountsbuckets", "Bucket");
         map.register("GET:accountsbuckets", "BucketList");
+        map.register("POST:buckets", "Bucket");
+        map.register("GET:buckets", "BucketList");
 
         map.register("POST:accountsbucketsfilesupload", "BucketAccessor");
         map.register("GET:accountsbucketsfilesdownload", "BucketAccessor");
+        map.register("POST:bucketsfilesupload", "BucketAccessor");
+        map.register("GET:bucketsfilesdownload", "BucketAccessor");
 
         map
     };

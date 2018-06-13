@@ -14,7 +14,7 @@ use http_gateway::http::controller::*;
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 
-use api::objectstorage::config::ObjectStorageConn;
+use api::objectstorage::config::ObjectStorageCfg;
 use protocol::api::base::MetaFields;
 use protocol::api::objectstorage::Bucket;
 
@@ -26,11 +26,11 @@ use error::ErrorMessage::MissingParameter;
 
 #[derive(Clone)]
 pub struct ObjectStorageApi {
-    conn: Box<ObjectStorageConn>,
+    conn: Box<ObjectStorageCfg>,
 }
 
 impl ObjectStorageApi {
-    pub fn new(conn: Box<ObjectStorageConn>) -> Self {
+    pub fn new(conn: Box<ObjectStorageCfg>) -> Self {
         ObjectStorageApi { conn: conn }
     }
 
@@ -71,53 +71,26 @@ impl ObjectStorageApi {
     }
 
     fn upload(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Bucket>>()?)?;
-
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
-
-        unmarshall_body.set_meta(type_meta(req), m);
-
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        let params_id = self.verify_id_with_name(req)?;
+        let params_name = self.verify_name(req)?;       
 
         let client = s3::from_config(&self.conn)?;
 
-        match client.upload_accessor(&unmarshall_body) {
+        match client.upload_accessor(params_id.get_id(), params_name.get_id()) {
             Ok(bucket) => Ok(render_json(status::Ok, &bucket)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
 
     fn download(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Bucket>>()?)?;
-
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
-
-        unmarshall_body.set_meta(type_meta(req), m);
-
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        let params_id = self.verify_id_with_name(req)?;
+        let params_name = self.verify_name(req)?;       
 
         let client = s3::from_config(&self.conn)?;
 
-        match client.download_accessor(&unmarshall_body) {
-            Ok(Some(buckets)) => Ok(render_json_list(status::Ok, dispatch(req), &buckets)),
+        match client.download_accessor(params_id.get_id(), params_name.get_id()) {
+            Ok(bucket) => Ok(render_json(status::Ok, &bucket)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
 }
@@ -141,22 +114,26 @@ impl Api for ObjectStorageApi {
 
         router.post(
             "/accounts/:account_id/buckets",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "buckets_create",
-        );
+            XHandler::new(C { inner: create.clone() }).before(basic.clone()),
+            "account_buckets_create",
+        );        
         router.get(
             "/accounts/:account_id/buckets",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            XHandler::new(C { inner: list_blank.clone() }).before(basic.clone()),
+            "account_buckets_list",
+        );
+        router.get(
+            "/buckets",
+            XHandler::new(C { inner: list_blank.clone() }).before(basic.clone()),
             "buckets_list",
         );
-
-        router.post(
-            "/accounts/:account_id/buckets/:bucket_id/files/:file_name/upload",
+        router.get(
+            "/accounts/:account_id/buckets/:id/files/:name/upload",
             XHandler::new(C { inner: upload }).before(basic.clone()),
             "buckets_upload",
         );
         router.get(
-            "/accounts/:account_id/buckets/:bucket_id/files/:file_name/download",
+            "/accounts/:account_id/buckets/:id/files/:name/download",
             XHandler::new(C { inner: download }).before(basic.clone()),
             "buckets_download",
         );

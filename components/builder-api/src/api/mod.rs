@@ -138,6 +138,23 @@ impl RequestVerifier for NameParmsVerifier {
     }
 }
 
+//IdWithNameParmsVerifier verifies if the request sent a parameter
+/// `id`
+/// If it doesn't then it sends an MissingParameter
+/// It is same as idparmverifier, but the difference is id verifier allow only numeric, 
+/// but in this verifier allows also string contents  
+
+struct IdWithNameParmsVerifier {}
+
+impl RequestVerifier for IdWithNameParmsVerifier {
+    fn verify(req: &Request) -> AranResult<IdGet> {
+        match req.extensions.get::<Router>().unwrap().find("id") {
+            Some(name) => Ok(IdGet::with_id(name.to_string())),
+            None => return Err(bad_request(&MissingParameter("id".to_string()))),
+        }
+    }
+}
+
 /// ParmsVerifier is a convenient method that composes any number of verifiers
 /// The current verifiers are for verifying existenace of `id` `account`
 ///
@@ -152,6 +169,10 @@ trait ParmsVerifier {
 
     fn verify_name(&self, req: &Request) -> AranResult<IdGet> {
         NameParmsVerifier::verify(req)
+    }
+
+    fn verify_id_with_name(&self, req: &Request) -> AranResult<IdGet> {
+        IdWithNameParmsVerifier::verify(req)
     }
 }
 

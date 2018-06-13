@@ -10,12 +10,12 @@ use ansi_term::Colour;
 use bodyparser;
 use iron::prelude::*;
 use iron::status;
+use rio_core::fs::rioconfig_package_path;
 use router::Router;
 use std::path::Path;
-use rio_core::fs::rioconfig_package_path;
 
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
 use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
@@ -23,9 +23,9 @@ use error::Error;
 use error::ErrorMessage::MissingParameter;
 
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::http::static_handler::Static;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
 
 use marketplace::{marketplace_ds, package_attacher};
 
@@ -88,7 +88,9 @@ impl MarketPlaceApi {
     //Will need roles/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match marketplace_ds::DataStore::new(&self.conn).list_blank() {
-            Ok(Some(marketplaces)) => Ok(render_json_list(status::Ok, dispatch(_req), &marketplaces)),
+            Ok(Some(marketplaces)) => {
+                Ok(render_json_list(status::Ok, dispatch(_req), &marketplaces))
+            }
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }

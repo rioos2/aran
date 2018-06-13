@@ -1,10 +1,10 @@
 // Copyright 2018 The Rio Advancement Inc
 use base64;
-use rio_core::crypto::{default_rioconfig_key_path, SigKeyPair};
-use rio_core::crypto::keys::{PairConf, PairSaverExtn};
-use protocol::api::secret::Secret;
 use error::{Error, Result};
 use protocol::api::base::MetaFields;
+use protocol::api::secret::Secret;
+use rio_core::crypto::keys::{PairConf, PairSaverExtn};
+use rio_core::crypto::{default_rioconfig_key_path, SigKeyPair};
 
 /// Security types
 const OPAQUE: &'static str = "opaque";

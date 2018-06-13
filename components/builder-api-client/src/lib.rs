@@ -21,17 +21,18 @@ pub use error::{Error, Result};
 use std::path::Path;
 use std::string::ToString;
 
+use reqwest::header::{Accept, Authorization, Bearer, ContentType, Headers, UserAgent};
 use reqwest::IntoUrl;
 use reqwest::{Body, StatusCode};
-use reqwest::header::{Accept, Authorization, Bearer, ContentType, Headers, UserAgent};
 
-use rioos_http::ApiClient;
 use rioos_http::api_client::err_from_response;
+use rioos_http::ApiClient;
 
 use http_gateway::http::rendering::ResponseList;
 
-use protocol::api::{blueprint, deploy, job, network, node, origin, scale, secret, session, storage, devtool};
 use protocol::api::base::{hours_ago, MetaFields};
+use protocol::api::{blueprint, deploy, devtool, job, network, node, origin, scale, secret,
+                    session, storage};
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
 const USER_AGENT: &'static str = "Rio/OS Blu";
@@ -42,7 +43,12 @@ header! { (XAuthRioOSEmail, "X-AUTH-RIOOS-EMAIL") => [String] }
 pub struct Client(ApiClient);
 
 impl Client {
-    pub fn new<U>(endpoint: U, product: &str, version: &str, fs_root_path: Option<&Path>) -> Result<Self>
+    pub fn new<U>(
+        endpoint: U,
+        product: &str,
+        version: &str,
+        fs_root_path: Option<&Path>,
+    ) -> Result<Self>
     where
         U: IntoUrl,
     {
@@ -51,9 +57,12 @@ impl Client {
             endpoint.set_path(DEFAULT_API_PATH);
         }
 
-        Ok(Client(
-            ApiClient::new(endpoint, product, version, fs_root_path).map_err(Error::RioHttpClient)?,
-        ))
+        Ok(Client(ApiClient::new(
+            endpoint,
+            product,
+            version,
+            fs_root_path,
+        ).map_err(Error::RioHttpClient)?))
     }
 
     pub fn signup(&self, body: session::SessionCreate) -> Result<session::Session> {
@@ -115,7 +124,12 @@ impl Client {
         Ok(())
     }
 
-    pub fn deploy_digicloud(&self, assembly_fac: deploy::AssemblyFactory, token: &str, email: &str) -> Result<deploy::AssemblyFactory> {
+    pub fn deploy_digicloud(
+        &self,
+        assembly_fac: deploy::AssemblyFactory,
+        token: &str,
+        email: &str,
+    ) -> Result<deploy::AssemblyFactory> {
         let mut res = self.0
             .post(&format!(
                 "accounts/{}/assemblyfactorys",
@@ -158,7 +172,12 @@ impl Client {
             .collect())
     }
 
-    pub fn describe_deploy(&self, token: &str, email: &str, id: &str) -> Result<deploy::AssemblyFactory> {
+    pub fn describe_deploy(
+        &self,
+        token: &str,
+        email: &str,
+        id: &str,
+    ) -> Result<deploy::AssemblyFactory> {
         let mut res = self.0
             .get(&format!("assemblyfactorys/{}", id))
             .headers(self.add_authz(token, email))
@@ -173,7 +192,12 @@ impl Client {
         Ok(assembly)
     }
 
-    pub fn create_network(&self, network: network::Network, token: &str, email: &str) -> Result<network::Network> {
+    pub fn create_network(
+        &self,
+        network: network::Network,
+        token: &str,
+        email: &str,
+    ) -> Result<network::Network> {
         let mut res = self.0
             .post(&format!("networks"))
             .body(Body::from(serde_json::to_string(&network)?))
@@ -188,7 +212,12 @@ impl Client {
         Ok(network)
     }
 
-    pub fn create_datacenter(&self, storage: storage::DataCenter, token: &str, email: &str) -> Result<()> {
+    pub fn create_datacenter(
+        &self,
+        storage: storage::DataCenter,
+        token: &str,
+        email: &str,
+    ) -> Result<()> {
         let res = self.0
             .post(&format!("datacenters"))
             .body(Body::from(serde_json::to_string(&storage)?))
@@ -203,7 +232,13 @@ impl Client {
         Ok(())
     }
 
-    pub fn create_secret(&self, secret: secret::Secret, origin: &str, token: &str, email: &str) -> Result<()> {
+    pub fn create_secret(
+        &self,
+        secret: secret::Secret,
+        origin: &str,
+        token: &str,
+        email: &str,
+    ) -> Result<()> {
         let res = self.0
             .post(&format!("origins/{}/secrets", origin))
             .body(Body::from(serde_json::to_string(&secret)?))
@@ -218,7 +253,12 @@ impl Client {
         Ok(())
     }
 
-    pub fn create_build_config(&self, build_config: devtool::BuildConfig, token: &str, email: &str) -> Result<()> {
+    pub fn create_build_config(
+        &self,
+        build_config: devtool::BuildConfig,
+        token: &str,
+        email: &str,
+    ) -> Result<()> {
         let res = self.0
             .post(&format!("buildconfigs"))
             .body(Body::from(serde_json::to_string(&build_config)?))
@@ -232,7 +272,6 @@ impl Client {
 
         Ok(())
     }
-
 
     pub fn list_secret(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
@@ -274,7 +313,12 @@ impl Client {
         Ok(secret)
     }
 
-    pub fn create_horizontal_scaling(&self, hscale: scale::HorizontalScaling, token: &str, email: &str) -> Result<()> {
+    pub fn create_horizontal_scaling(
+        &self,
+        hscale: scale::HorizontalScaling,
+        token: &str,
+        email: &str,
+    ) -> Result<()> {
         let res = self.0
             .post(&format!("horizontalscaling"))
             .body(Body::from(serde_json::to_string(&hscale)?))
@@ -289,7 +333,12 @@ impl Client {
         Ok(())
     }
 
-    pub fn create_vertical_scaling(&self, vscale: scale::VerticalScaling, token: &str, email: &str) -> Result<()> {
+    pub fn create_vertical_scaling(
+        &self,
+        vscale: scale::VerticalScaling,
+        token: &str,
+        email: &str,
+    ) -> Result<()> {
         let res = self.0
             .post(&format!("verticalscaling"))
             .body(Body::from(serde_json::to_string(&vscale)?))
@@ -304,7 +353,12 @@ impl Client {
         Ok(())
     }
 
-    pub fn get_assembly_by_id(&self, token: &str, email: &str, id: &str) -> Result<Vec<Vec<String>>> {
+    pub fn get_assembly_by_id(
+        &self,
+        token: &str,
+        email: &str,
+        id: &str,
+    ) -> Result<Vec<Vec<String>>> {
         let mut res = self.0
             .get(&format!("assemblyfactorys/{}/describe", id))
             .headers(self.add_authz(token, email))
@@ -532,17 +586,20 @@ impl Client {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
         let result: origin::Origin = res.json()?;
-        let data = vec![
-            vec![
-                result.get_id(),
-                result.get_name(),
-                result.object_meta().account,
-                hours_ago(result.get_created_at()),
-            ],
-        ];
+        let data = vec![vec![
+            result.get_id(),
+            result.get_name(),
+            result.object_meta().account,
+            hours_ago(result.get_created_at()),
+        ]];
         Ok(data)
     }
-    pub fn datacenter_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<storage::DataCenter> {
+    pub fn datacenter_get_by_id(
+        &self,
+        token: &str,
+        email: &str,
+        id: &str,
+    ) -> Result<storage::DataCenter> {
         let mut res = self.0
             .get(&format!("/datacenters/{}", id))
             .headers(self.add_authz(token, email))
@@ -557,7 +614,12 @@ impl Client {
         Ok(dc)
     }
 
-    pub fn network_get_by_id(&self, token: &str, email: &str, id: &str) -> Result<network::Network> {
+    pub fn network_get_by_id(
+        &self,
+        token: &str,
+        email: &str,
+        id: &str,
+    ) -> Result<network::Network> {
         let mut res = self.0
             .get(&format!("/networks/{}", id))
             .headers(self.add_authz(token, email))
@@ -586,7 +648,12 @@ impl Client {
         Ok(())
     }
 
-    pub fn datacenter_update(&self, token: &str, email: &str, dc: storage::DataCenter) -> Result<()> {
+    pub fn datacenter_update(
+        &self,
+        token: &str,
+        email: &str,
+        dc: storage::DataCenter,
+    ) -> Result<()> {
         let res = self.0
             .put(&format!("datacenters/{}", dc.get_id()))
             .body(Body::from(serde_json::to_string(&dc)?))
@@ -601,7 +668,12 @@ impl Client {
         Ok(())
     }
 
-    pub fn describe_datacenter(&self, token: &str, email: &str, id: &str) -> Result<storage::DataCenter> {
+    pub fn describe_datacenter(
+        &self,
+        token: &str,
+        email: &str,
+        id: &str,
+    ) -> Result<storage::DataCenter> {
         let mut res = self.0
             .get(&format!("/datacenters/{}", id))
             .headers(self.add_authz(token, email))
@@ -616,7 +688,12 @@ impl Client {
         Ok(datacenter)
     }
 
-    pub fn get_storageconnector_by_id(&self, token: &str, email: &str, id: &str) -> Result<storage::Storage> {
+    pub fn get_storageconnector_by_id(
+        &self,
+        token: &str,
+        email: &str,
+        id: &str,
+    ) -> Result<storage::Storage> {
         let mut res = self.0
             .get(&format!("/storageconnectors/{}", id))
             .headers(self.add_authz(token, email))
@@ -645,7 +722,12 @@ impl Client {
         Ok(strcon.items)
     }
 
-    pub fn get_storagepool_by_scid(&self, token: &str, email: &str, id: &str) -> Result<Vec<storage::StoragePool>> {
+    pub fn get_storagepool_by_scid(
+        &self,
+        token: &str,
+        email: &str,
+        id: &str,
+    ) -> Result<Vec<storage::StoragePool>> {
         let mut res = self.0
             .get(&format!("/storageconnectors/{}/storagespool", id))
             .headers(self.add_authz(token, email))

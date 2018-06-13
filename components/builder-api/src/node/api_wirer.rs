@@ -7,7 +7,7 @@
 use api::audit::blockchain_api::EventLog;
 use api::audit::config::BlockchainConn;
 use api::events::EventLogger;
-use api::objectstorage::config::ObjectStorageConn;
+use api::objectstorage::config::ObjectStorageCfg;
 use api::security::config::SecurerConn;
 use api::{audit, authorize, cluster, deploy, devtooling, objectstorage, security, Api};
 use audit::config::InfluxClientConn;
@@ -126,7 +126,7 @@ impl HttpGateway for Wirer {
                 storage.wire(config.clone(), &mut router);
 
                 let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(Box::new(
-                    ObjectStorageConn::new(&*config.clone()),
+                    ObjectStorageCfg::new(&*config.clone()),
                 ));
                 s3.wire(config.clone(), &mut router);
 
