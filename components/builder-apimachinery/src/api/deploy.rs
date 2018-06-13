@@ -822,6 +822,7 @@ impl Assembly {
     }
 
     pub fn get_category(&self) -> String {
+
         if self.get_spec().get_parent().is_some()
             && self.get_spec()
                 .get_parent()

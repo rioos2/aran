@@ -21,20 +21,16 @@ impl DataStore {
         let conn = db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+            "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$6,$7,$8)",
             &[
-                &(serde_json::to_value(plan.type_meta()).unwrap()),
-                &(serde_json::to_value(plan.object_meta()).unwrap()),
-                &(serde_json::to_value(plan.get_metadata()).unwrap()),
-                &(plan.get_category() as String),
-                &(plan.get_version() as String),
-                &(serde_json::to_value(plan.get_characteristics()).unwrap()),
-                &(plan.get_icon() as String),
-                &(plan.get_description() as String),
-                &(serde_json::to_value(plan.get_ports()).unwrap()),
-                &(serde_json::to_value(plan.get_envs()).unwrap()),
-                &(serde_json::to_value(plan.get_lifecycle()).unwrap()),
-                &(serde_json::to_value(plan.get_status()).unwrap()),
+            &(serde_json::to_value(plan.type_meta()).unwrap()),
+            &(serde_json::to_value(plan.object_meta()).unwrap()),
+            &(serde_json::to_value(plan.get_plan()).unwrap()),
+            &(plan.get_category() as String),
+            &(plan.get_version() as String),
+            &(plan.get_icon() as String),
+            &(plan.get_description() as String),
+            &(serde_json::to_value(plan.get_status()).unwrap()),
             ],
         ).map_err(Error::PlanCreate)?;
 
@@ -95,25 +91,20 @@ impl DataStore {
 }
 
 fn row_to_plan(row: &postgres::rows::Row) -> Result<blueprint::Plan> {
-    let mut plan = blueprint::Plan::with(
+    let mut planfactory = blueprint::Plan::with(
         serde_json::from_value(row.get("type_meta")).unwrap(),
         serde_json::from_value(row.get("object_meta")).unwrap(),
     );
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
-    plan.set_id(id.to_string() as String);
-    plan.set_status(serde_json::from_value(row.get("status")).unwrap());
-    plan.set_category(row.get("category"));
-    plan.set_version(row.get("version"));
-    plan.set_characteristics(serde_json::from_value(row.get("characteristics")).unwrap());
-    plan.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
-    plan.set_icon(row.get("icon"));
-    plan.set_description(row.get("description"));
-    plan.set_ports(serde_json::from_value(row.get("ports")).unwrap());
-    plan.set_envs(serde_json::from_value(row.get("envs")).unwrap());
-    plan.set_lifecycle(serde_json::from_value(row.get("lifecycle")).unwrap());
-    plan.set_created_at(created_at.to_rfc3339());
-
-    Ok(plan)
+    planfactory.set_status(serde_json::from_value(row.get("status")).unwrap());
+    planfactory.set_category(row.get("category"));
+    planfactory.set_version(row.get("version"));
+    planfactory.set_icon(row.get("icon"));
+    planfactory.set_description(row.get("description"));
+    planfactory.set_id(id.to_string() as String);
+    planfactory.set_created_at(created_at.to_string() as String);
+    planfactory.set_plan(serde_json::from_value(row.get("plans")).unwrap());
+    Ok(planfactory)
 }

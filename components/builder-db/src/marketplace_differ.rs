@@ -73,16 +73,12 @@ impl MarketPlaceDiffer {
                     &[
                         &(x.object_meta().name as String),
                         &(serde_json::to_value(x.type_meta()).unwrap()),
-                        &(serde_json::to_value(x.object_meta()).unwrap()),                        
-                        &(serde_json::to_value(x.get_metadata()).unwrap()),
+                        &(serde_json::to_value(x.object_meta()).unwrap()),
+                        // &(serde_json::to_value(x.get_metadata()).unwrap()),
                         &(x.get_category() as String),
                         &(x.get_version() as String),
-                        &(serde_json::to_value(x.get_characteristics()).unwrap()),
                         &(x.get_icon() as String),
                         &(x.get_description() as String),
-                        &(serde_json::to_value(x.get_ports()).unwrap()),
-                        &(serde_json::to_value(x.get_envs()).unwrap()),
-                        &(serde_json::to_value(x.get_lifecycle()).unwrap()),
                         &(serde_json::to_value(x.get_status()).unwrap()),
                     ],
                 ).unwrap();

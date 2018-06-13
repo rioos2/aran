@@ -114,24 +114,25 @@ impl MarketPlaceApi {
 
     //GET: /marketplace/:id/download
     //Input id - u64 as input and returns a dowload url
-    fn download(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
-        match package_attacher::PackageAttacher::new(&self.conn, &params).get_package() {
-            Ok(Some(package)) => match Static::new(
-                Path::new(&rioconfig_package_path(None).join(package.get_url())),
-            ).get(req)
-            {
-                Ok(path) => Ok(path),
-                Err(err) => Err(internal_error(&format!("{}\n", err))),
-            },
-            Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
-        }
-    }
+    // fn download(&self, req: &mut Request) -> AranResult<Response> {
+    //     let params = self.verify_id(req)?;
+    //     match package_attacher::PackageAttacher::new(&self.conn, &params).get_package() {
+    //         Ok(Some(package)) => {
+    //             match Static::new(Path::new(
+    //                 &rioconfig_package_path(None).join(package.get_url()),
+    //             )).get(req) {
+    //                 Ok(path) => Ok(path),
+    //                 Err(err) => Err(internal_error(&format!("{}\n", err))),
+    //             }
+    //         }
+    //         Err(err) => Err(internal_error(&format!("{}\n", err))),
+    //         Ok(None) => Err(not_found_error(&format!(
+    //             "{} for {}",
+    //             Error::Db(RecordsNotFound),
+    //             params.get_id()
+    //         ))),
+    //     }
+    // }
 }
 
 impl Api for MarketPlaceApi {
@@ -148,8 +149,8 @@ impl Api for MarketPlaceApi {
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
-        let _self = self.clone();
-        let download = move |req: &mut Request| -> AranResult<Response> { _self.download(req) };
+        // let _self = self.clone();
+        // let download = move |req: &mut Request| -> AranResult<Response> { _self.download(req) };
 
         router.post(
             "/marketplaces",
@@ -169,11 +170,11 @@ impl Api for MarketPlaceApi {
             "market_show",
         );
 
-        router.get(
-            "/marketplaces/:id/download",
-            XHandler::new(C { inner: download }),
-            "market_download",
-        );
+        // router.get(
+        //     "/marketplaces/:id/download",
+        //     XHandler::new(C { inner: download }),
+        //     "market_download",
+        // );
     }
 }
 
@@ -188,12 +189,46 @@ impl Validator for MarketPlace {
     fn valid(self) -> AranValidResult<Self> {
         let mut s: Vec<String> = vec![];
 
-        if self.get_category().len() <= 0 {
-            s.push("category".to_string());
+        if self.object_meta().owner_references.len() <= 0 {
+            s.push("owner_references".to_string());
+        } else {
+            self.object_meta()
+                .owner_references
+                .iter()
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
         }
-        if self.get_version().len() <= 0 {
-            s.push("version".to_string());
+
+        if self.get_plan().len() <= 0 {
+            s.push("plans".to_string());
+        } else {
+            self.get_plan()
+                .iter()
+                .map(|x| {
+                    if x.get_version().len() <= 0 {
+                        s.push("version".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
         }
+
+        if self.get_plan().len() <= 0 {
+            s.push("plans".to_string());
+        } else {
+            self.get_plan()
+                .iter()
+                .map(|x| {
+                    if x.get_category().len() <= 0 {
+                        s.push("category".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
+        }
+
         if self.object_meta().name.len() <= 0 {
             s.push("name".to_string());
         }
