@@ -4,20 +4,20 @@
 ---
 
 CREATE SEQUENCE IF NOT EXISTS plan_id_seq;
-CREATE TABLE IF NOT EXISTS plan_factory (id bigint PRIMARY KEY DEFAULT next_id_v1('plan_id_seq'), type_meta JSONB, object_meta JSONB, category text, VERSION text, icon text, description text, status JSONB, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS plan_factory (id bigint PRIMARY KEY DEFAULT next_id_v1('plan_id_seq'), type_meta JSONB, object_meta JSONB, plans JSONB, category text, VERSION text, icon text, description text, status JSONB, created_at timestamptz DEFAULT now());
 
 ---
 --- Table:plan_factory:create
 ---
 CREATE
-OR REPLACE FUNCTION insert_plan_factory_v1 (type_meta JSONB, object_meta JSONB, category text, VERSION text, icon text, description text, status JSONB) RETURNS SETOF plan_factory AS $$
+OR REPLACE FUNCTION insert_plan_factory_v1 (type_meta JSONB, object_meta JSONB, plans JSONB,  category text, VERSION text, icon text, description text, status JSONB) RETURNS SETOF plan_factory AS $$
 BEGIN
    RETURN QUERY
    INSERT INTO
-      plan_factory(type_meta, object_meta, category, version, icon, description, status)
+      plan_factory(type_meta, object_meta, plans, category, version, icon, description, status)
    VALUES
       (
-         type_meta, object_meta, category, version, icon, description, status
+         type_meta, object_meta, plans, category, version, icon, description, status
       )
       RETURNING *;
 RETURN;
@@ -28,7 +28,7 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 --- Table:plan_factory:select_or_insert
 ---
 CREATE
-OR REPLACE FUNCTION select_or_insert_plan_v1 (pname text, ptype_meta JSONB, pobject_meta JSONB, pcategory text, pversion text, picon text, pdescription text, pstatus JSONB) RETURNS SETOF plan_factory AS $$
+OR REPLACE FUNCTION select_or_insert_plan_v1 (pname text, ptype_meta JSONB, pobject_meta JSONB,pplans JSONB, pcategory text, pversion text, picon text, pdescription text, pstatus JSONB) RETURNS SETOF plan_factory AS $$
 DECLARE existing_plan plan_factory % rowtype;
 BEGIN
    SELECT
@@ -44,17 +44,17 @@ THEN
    UPDATE
       plan_factory
    SET
-      type_meta = ptype_meta, object_meta = pobject_meta, category = pcategory, icon = picon, description = pdescription, updated_at = now()
+      type_meta = ptype_meta, object_meta = pobject_meta, plans = pplans, category = pcategory, icon = picon, description = pdescription, updated_at = now()
    WHERE
       object_meta ->> 'name' = pname
       AND version = pversion RETURNING *;
 ELSE
    RETURN QUERY
    INSERT INTO
-      plan_factory(type_meta, object_meta, category, version, icon, description, status)
+      plan_factory(type_meta, object_meta, plans, category, version, icon, description, status)
    VALUES
       (
-         ptype_meta, pobject_meta, pcategory, pversion, picon, pdescription, pstatus
+         ptype_meta, pobject_meta, pplans, pcategory, pversion, picon, pdescription, pstatus
       )
       ON CONFLICT DO NOTHING RETURNING *;
 END

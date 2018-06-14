@@ -17,7 +17,7 @@ impl DataStore {
         let conn = db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$6,$7,$8)",
+            "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$5,$6,$7,$8)",
             &[
                 &(serde_json::to_value(plan.type_meta()).unwrap()),
                 &(serde_json::to_value(plan.object_meta()).unwrap()),

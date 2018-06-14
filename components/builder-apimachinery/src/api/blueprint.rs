@@ -12,6 +12,7 @@ pub struct Plan {
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
     plans: Vec<PlanProperties>,
+    #[serde(default)]
     created_at: String,
     category: String,
     version: String,
