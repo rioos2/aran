@@ -43,20 +43,20 @@ if (( $EUID != 0 )); then
   exit 1
 fi
 
-if [[ ! -f /usr/local/bin/hab ]]; then
-  info "Habitat CLI missing, attempting to install latest release"
+if [[ ! -f /usr/local/bin/rioos ]]; then
+  info "Rio/OS CLI missing, attempting to install latest release"
   mkdir -p /usr/local/bin
   sh $(dirname $0)/../install.sh
 fi
 
 while true; do
-  if [[ $(ls -1 /hab/cache/keys/core-*.sig.key 2> /dev/null | wc -l) -gt 0 ]]; then
+  if [[ $(ls -1 /rioos/cache/keys/core-*.sig.key 2> /dev/null | wc -l) -gt 0 ]]; then
     break
-  elif [[ -f /tmp/hab.sig.key ]]; then
-    cat /tmp/hab.sig.key | hab origin key import
-    rm -f /tmp/hab.sig.key
+  elif [[ -f /tmp/rioos.sig.key ]]; then
+    cat /tmp/rioos.sig.key | rioos origin key import
+    rm -f /tmp/rioos.sig.key
   else
-    printf ${ORIGIN_KEY} | hab origin key import
+    printf ${ORIGIN_KEY} | rioos origin key import
   fi
 done
 
@@ -79,21 +79,21 @@ if ! command -v brew >/dev/null; then
   sudo -u $SUDO_USER /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
 fi
 
-# Homebrew packages required to run `hab-plan-build.sh
+# Homebrew packages required to run `rioos-plan-build.sh
 install_if_missing coreutils
 install_if_missing gnu-tar
 install_if_missing wget
 install_if_missing bash
-install_if_missing hab-rq $(dirname $0)/homebrew/hab-rq.rb
+install_if_missing rioos-rq $(dirname $0)/homebrew/rioos-rq.rb
 
-# Homebrew packages required to build `hab`
+# Homebrew packages required to build `rioos`
 install_if_missing zlib homebrew/dupes/zlib
 install_if_missing xz
 install_if_missing bzip2 homebrew/dupes/bzip2
 install_if_missing expat
 install_if_missing openssl
 install_if_missing libsodium
-install_if_missing hab-libiconv $(dirname $0)/homebrew/hab-libiconv.rb
+install_if_missing rioos-libiconv $(dirname $0)/homebrew/rioos-libiconv.rb
 
 if ! command -v rustc >/dev/null; then
   info "Rust missing, attempting to install"
@@ -111,7 +111,7 @@ gnu_path="$gnu_path:$(brew --prefix bash)/bin"
 export PATH="$gnu_path:$PATH"
 info "Setting PATH=$PATH"
 
-program="$(dirname $0)/../../plan-build/bin/hab-plan-build.sh"
+program="$(dirname $0)/../../plan-build/bin/rioos-plan-build.sh"
 info "Executing: $program $*"
 echo
 exec $(brew --prefix bash)/bin/bash $program $*

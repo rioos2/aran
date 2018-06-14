@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta, WhoAmITypeMeta};
 use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields, WhoAmITypeMeta};
 
 pub const RIOOS_ASSEMBLY_FACTORY_ID: &'static str = "rioos_assembly_factory_id";
 
@@ -118,7 +118,12 @@ pub struct Spec {
 }
 
 impl Spec {
-    pub fn new(service_type: &str, loadbalancer_ip: &str, names: BTreeMap<String, String>, external_names: BTreeMap<String, String>) -> Spec {
+    pub fn new(
+        service_type: &str,
+        loadbalancer_ip: &str,
+        names: BTreeMap<String, String>,
+        external_names: BTreeMap<String, String>,
+    ) -> Spec {
         Spec {
             service_type: service_type.to_string(),
             loadbalancer_ip: loadbalancer_ip.to_string(),

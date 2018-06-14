@@ -6,9 +6,10 @@ extern crate chrono;
 extern crate human_size;
 extern crate petgraph;
 extern crate postgres;
+extern crate rand;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
-extern crate rioos_builder_jobsrv as job;
+extern crate rioos_builder_jobsbuilder as job;
 extern crate rioos_telemetry as telemetry;
 extern crate serde_json;
 

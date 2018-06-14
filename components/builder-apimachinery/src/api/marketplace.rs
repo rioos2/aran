@@ -1,8 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields};
-use std::collections::BTreeMap;
-use api::blueprint::{PlanProperties};
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
+use api::blueprint::PlanProperties;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct MarketPlace {
@@ -94,7 +93,7 @@ impl MarketPlace {
 
     pub fn get_status(&self) -> &Status {
         &self.status
-     }
+    }
 
     pub fn set_version(&mut self, v: ::std::string::String) {
         self.version = v;

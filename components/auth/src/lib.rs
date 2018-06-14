@@ -5,10 +5,10 @@ extern crate lazy_static;
 
 extern crate crypto;
 extern crate rioos_builder_apimachinery as protocol;
-extern crate rioos_builder_authsrv as auth;
+extern crate rioos_builder_authorizer as auth;
 extern crate rioos_builder_db as db;
-extern crate rioos_builder_servicesrv as secret;
-extern crate rioos_builder_servicesrv as serviceaccount;
+extern crate rioos_builder_services as secret;
+extern crate rioos_builder_services as serviceaccount;
 extern crate rioos_builder_session as session;
 extern crate rioos_common as common;
 
