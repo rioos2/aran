@@ -1,18 +1,14 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! The PostgreSQL backend for the Authorization [assembly, assemblyfactory].
+//! The PostgreSQL backend for the Blueprint
+use super::super::{PlanOutput, PlanOutputList};
 use chrono::prelude::*;
-use error::{Result, Error};
-
-use protocol::api::blueprint;
-use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
-
-use postgres;
 use db::data_store::DataStoreConn;
-
+use error::{Error, Result};
+use postgres;
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::blueprint;
 use serde_json;
-
-use super::super::{PlanOutputList, PlanOutput};
 
 pub struct DataStore;
 
@@ -23,14 +19,14 @@ impl DataStore {
         let rows = &conn.query(
             "SELECT * FROM insert_plan_factory_v1($1,$2,$3,$4,$6,$7,$8)",
             &[
-            &(serde_json::to_value(plan.type_meta()).unwrap()),
-            &(serde_json::to_value(plan.object_meta()).unwrap()),
-            &(serde_json::to_value(plan.get_plan()).unwrap()),
-            &(plan.get_category() as String),
-            &(plan.get_version() as String),
-            &(plan.get_icon() as String),
-            &(plan.get_description() as String),
-            &(serde_json::to_value(plan.get_status()).unwrap()),
+                &(serde_json::to_value(plan.type_meta()).unwrap()),
+                &(serde_json::to_value(plan.object_meta()).unwrap()),
+                &(serde_json::to_value(plan.get_plan()).unwrap()),
+                &(plan.get_category() as String),
+                &(plan.get_version() as String),
+                &(plan.get_icon() as String),
+                &(plan.get_description() as String),
+                &(serde_json::to_value(plan.get_status()).unwrap()),
             ],
         ).map_err(Error::PlanCreate)?;
 
@@ -59,9 +55,8 @@ impl DataStore {
     pub fn list_blank(db: &DataStoreConn) -> PlanOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_plans_v1()", &[]).map_err(
-            Error::PlanGet,
-        )?;
+        let rows = &conn.query("SELECT * FROM get_plans_v1()", &[])
+            .map_err(Error::PlanGet)?;
 
         let mut response = Vec::new();
 
@@ -90,6 +85,8 @@ impl DataStore {
     }
 }
 
+/// A convertor of postgres Row to the required structure.
+/// In this case Plan.
 fn row_to_plan(row: &postgres::rows::Row) -> Result<blueprint::Plan> {
     let mut planfactory = blueprint::Plan::with(
         serde_json::from_value(row.get("type_meta")).unwrap(),

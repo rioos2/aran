@@ -224,20 +224,20 @@ END
 $$ LANGUAGE PLPGSQL STABLE;
 
 ---
---- Table:blockchain_factory
+--- Table:stacksfactory
 ---
-CREATE SEQUENCE IF NOT EXISTS blc_fact_id_seq;
-CREATE TABLE IF NOT EXISTS blockchain_factory (id bigint PRIMARY KEY DEFAULT next_id_v1('blc_fact_id_seq'), object_meta JSONB, type_meta JSONB, replicas smallint, resources JSONB, metadata JSONB, status JSONB, secret JSONB, PLAN bigint REFERENCES plan_factory(id), spec JSONB, updated_at timestamptz, created_at timestamptz DEFAULT now());
+CREATE SEQUENCE IF NOT EXISTS stacks_factory_id_seq;
+CREATE TABLE IF NOT EXISTS stacks_factory (id bigint PRIMARY KEY DEFAULT next_id_v1('stacks_factory_id_seq'), object_meta JSONB, type_meta JSONB, replicas smallint, resources JSONB, metadata JSONB, status JSONB, secret JSONB, PLAN bigint REFERENCES plan_factory(id), spec JSONB, updated_at timestamptz, created_at timestamptz DEFAULT now());
 
 ---
---- Table:blockchain_factory:create
+--- Table:stacks_factory:create
 ---
 CREATE 
-OR REPLACE FUNCTION insert_blockchain_factory_v1 (object_meta JSONB, type_meta JSONB, replicas smallint, resources JSONB, metadata JSONB, status JSONB, secret JSONB, PLAN bigint, spec JSONB) RETURNS SETOF blockchain_factory AS $$ 
+OR REPLACE FUNCTION insert_stacks_factory_v1 (object_meta JSONB, type_meta JSONB, replicas smallint, resources JSONB, metadata JSONB, status JSONB, secret JSONB, PLAN bigint, spec JSONB) RETURNS SETOF stacks_factory AS $$ 
 BEGIN
    RETURN QUERY 
    INSERT INTO
-      blockchain_factory(object_meta, type_meta, replicas, resources, metadata, status, secret, plan, spec) 
+      stacks_factory(object_meta, type_meta, replicas, resources, metadata, status, secret, plan, spec) 
    VALUES
       (
          object_meta,
@@ -256,16 +256,16 @@ END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
 ---
---- Table:blockchain_factory:show
+--- Table:stacks_factory:show
 ---
 CREATE 
-OR REPLACE FUNCTION get_blockchain_factory_v1 (aid bigint) RETURNS SETOF blockchain_factory AS $$ 
+OR REPLACE FUNCTION get_stacks_factory_v1 (aid bigint) RETURNS SETOF stacks_factory AS $$ 
 BEGIN
    RETURN QUERY 
    SELECT
       * 
    FROM
-      blockchain_factory 
+      stacks_factory 
    WHERE
       id = aid;
 RETURN;
@@ -273,29 +273,29 @@ END
 $$ LANGUAGE PLPGSQL STABLE;
 
 ---
---- Table:blockchain_factory:list_blank
+--- Table:stacks_factory:list_blank
 ---
 CREATE 
-OR REPLACE FUNCTION get_blockchains_factory_v1() RETURNS SETOF blockchain_factory AS $$ 
+OR REPLACE FUNCTION get_stacks_factorys_v1() RETURNS SETOF stacks_factory AS $$ 
 BEGIN
    RETURN QUERY 
    SELECT
       * 
    FROM
-      blockchain_factory;
+      stacks_factory;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
 
 ---
---- Table:blockchain_factory:update_status
+--- Table:stacks_factory:update_status
 ---
 CREATE 
-OR REPLACE FUNCTION set_blockchain_factorys_status_v1 (aid bigint, asm_fac_status JSONB) RETURNS SETOF blockchain_factory AS $$ 
+OR REPLACE FUNCTION set_stacks_factorys_status_v1 (aid bigint, asm_fac_status JSONB) RETURNS SETOF stacks_factory AS $$ 
 BEGIN
    RETURN QUERY 
    UPDATE
-      blockchain_factory 
+      stacks_factory 
    SET
       status = asm_fac_status,
       updated_at = now() 
@@ -306,16 +306,16 @@ END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
 ---
---- Table:blockchain_factory:show_for_account
+--- Table:stacks_factory:show_for_account
 ---
 CREATE 
-OR REPLACE FUNCTION get_blockchain_factory_by_account_v1 (account_id text) RETURNS SETOF blockchain_factory AS $$ 
+OR REPLACE FUNCTION get_stacks_factory_by_account_v1 (account_id text) RETURNS SETOF stacks_factory AS $$ 
 BEGIN
    RETURN QUERY 
    SELECT
       * 
    FROM
-      blockchain_factory 
+      stacks_factory 
    WHERE
       object_meta ->> 'account' = account_id;
 RETURN;

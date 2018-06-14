@@ -2139,20 +2139,20 @@ dependencies = [
  "reqwest 0.8.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rioos_auth 0.0.0",
  "rioos_builder_apimachinery 0.0.0",
- "rioos_builder_asmsrv 0.0.0",
  "rioos_builder_audit 0.0.0",
- "rioos_builder_authsrv 0.0.0",
+ "rioos_builder_authorizer 0.0.0",
  "rioos_builder_db 0.0.0",
+ "rioos_builder_deployment 0.0.0",
  "rioos_builder_devtooling 0.0.0",
  "rioos_builder_diagnostics 0.0.0",
+ "rioos_builder_health_nodes 0.0.0",
  "rioos_builder_httpgateway 0.0.0",
- "rioos_builder_jobsrv 0.0.0",
- "rioos_builder_netsrv 0.0.0",
- "rioos_builder_nodesrv 0.0.0",
- "rioos_builder_scalesrv 0.0.0",
- "rioos_builder_servicesrv 0.0.0",
+ "rioos_builder_jobsbuilder 0.0.0",
+ "rioos_builder_scalers 0.0.0",
+ "rioos_builder_services 0.0.0",
  "rioos_builder_session 0.0.0",
- "rioos_builder_storagesrv 0.0.0",
+ "rioos_builder_storages 0.0.0",
+ "rioos_builder_virtual_network 0.0.0",
  "rioos_common 0.0.0",
  "rioos_core 0.0.0",
  "rioos_entitlement 0.0.0",
@@ -2209,9 +2209,9 @@ dependencies = [
  "rand 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "rioos_builder_apimachinery 0.0.0",
- "rioos_builder_authsrv 0.0.0",
+ "rioos_builder_authorizer 0.0.0",
  "rioos_builder_db 0.0.0",
- "rioos_builder_servicesrv 0.0.0",
+ "rioos_builder_services 0.0.0",
  "rioos_builder_session 0.0.0",
  "rioos_common 0.0.0",
  "rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2238,21 +2238,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rioos_builder_asmsrv"
-version = "0.0.0"
-dependencies = [
- "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "human-size 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "petgraph 0.4.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "rioos_builder_apimachinery 0.0.0",
- "rioos_builder_db 0.0.0",
- "rioos_builder_jobsrv 0.0.0",
- "rioos_telemetry 0.0.0",
- "serde_json 1.0.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "rioos_builder_audit"
 version = "0.0.0"
 dependencies = [
@@ -2265,7 +2250,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rioos_builder_authsrv"
+name = "rioos_builder_authorizer"
 version = "0.0.0"
 dependencies = [
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2304,6 +2289,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "rioos_builder_deployment"
+version = "0.0.0"
+dependencies = [
+ "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "human-size 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "petgraph 0.4.12 (registry+https://github.com/rust-lang/crates.io-index)",
+ "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.22 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rioos_builder_apimachinery 0.0.0",
+ "rioos_builder_db 0.0.0",
+ "rioos_builder_jobsbuilder 0.0.0",
+ "rioos_telemetry 0.0.0",
+ "serde_json 1.0.16 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "rioos_builder_devtooling"
 version = "0.0.0"
 dependencies = [
@@ -2321,11 +2322,24 @@ dependencies = [
  "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rioos_builder_db 0.0.0",
- "rioos_builder_nodesrv 0.0.0",
+ "rioos_builder_health_nodes 0.0.0",
  "rioos_http_client 0.0.0",
  "rioos_telemetry 0.0.0",
  "serde 1.0.43 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.43 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.16 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rioos_builder_health_nodes"
+version = "0.0.0"
+dependencies = [
+ "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "itertools 0.7.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rioos_builder_apimachinery 0.0.0",
+ "rioos_builder_db 0.0.0",
+ "rioos_telemetry 0.0.0",
  "serde_json 1.0.16 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -2350,7 +2364,7 @@ dependencies = [
  "regex 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "rioos_auth 0.0.0",
  "rioos_builder_apimachinery 0.0.0",
- "rioos_builder_authsrv 0.0.0",
+ "rioos_builder_authorizer 0.0.0",
  "rioos_builder_db 0.0.0",
  "rioos_common 0.0.0",
  "router 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2365,7 +2379,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rioos_builder_jobsrv"
+name = "rioos_builder_jobsbuilder"
 version = "0.0.0"
 dependencies = [
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2388,31 +2402,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rioos_builder_netsrv"
-version = "0.0.0"
-dependencies = [
- "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "rioos_builder_apimachinery 0.0.0",
- "rioos_builder_db 0.0.0",
- "serde_json 1.0.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "rioos_builder_nodesrv"
-version = "0.0.0"
-dependencies = [
- "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "itertools 0.7.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "rioos_builder_apimachinery 0.0.0",
- "rioos_builder_db 0.0.0",
- "rioos_telemetry 0.0.0",
- "serde_json 1.0.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "rioos_builder_scalesrv"
+name = "rioos_builder_scalers"
 version = "0.0.0"
 dependencies = [
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2424,7 +2414,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rioos_builder_servicesrv"
+name = "rioos_builder_services"
 version = "0.0.0"
 dependencies = [
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2448,7 +2438,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "rioos_builder_storagesrv"
+name = "rioos_builder_storages"
+version = "0.0.0"
+dependencies = [
+ "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rioos_builder_apimachinery 0.0.0",
+ "rioos_builder_db 0.0.0",
+ "serde_json 1.0.16 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rioos_builder_virtual_network"
 version = "0.0.0"
 dependencies = [
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",

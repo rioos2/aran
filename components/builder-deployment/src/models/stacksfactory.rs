@@ -32,7 +32,7 @@ impl<'a> DataStore<'a> {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM insert_blockchain_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            "SELECT * FROM insert_stacks_factory_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
             &[
                 &(serde_json::to_value(factory.object_meta()).unwrap()),
                 &(serde_json::to_value(factory.type_meta()).unwrap()),
@@ -59,7 +59,7 @@ impl<'a> DataStore<'a> {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM get_blockchain_factory_v1($1)",
+            "SELECT * FROM get_stacks_factory_v1($1)",
             &[&(get_stacks_factory.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::StacksFactoryGet)?;
 
@@ -75,7 +75,7 @@ impl<'a> DataStore<'a> {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM set_blockchain_factorys_status_v1($1, $2)",
+            "SELECT * FROM set_stacks_factorys_status_v1($1, $2)",
             &[
                 &(upd.get_id().parse::<i64>().unwrap()),
                 &(serde_json::to_value(upd.get_status()).unwrap()),
@@ -93,7 +93,7 @@ impl<'a> DataStore<'a> {
     pub fn list_blank(&self) -> StacksFactoryOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_blockchains_factory_v1()", &[])
+        let rows = &conn.query("SELECT * FROM get_stacks_factorys_v1()", &[])
             .map_err(Error::StacksFactoryGet)?;
 
         let mut response = Vec::new();
@@ -107,12 +107,12 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn list(&self, get_blockchain_factory: &IdGet) -> StacksFactoryOutputList {
+    pub fn list(&self, get_stacks_factory: &IdGet) -> StacksFactoryOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM get_blockchain_factory_by_account_v1($1)",
-            &[&(get_blockchain_factory.get_name() as String)],
+            "SELECT * FROM get_stacks_factory_by_account_v1($1)",
+            &[&(get_stacks_factory.get_name() as String)],
         ).map_err(Error::StacksFactoryGet)?;
 
         let mut response = Vec::new();
@@ -131,7 +131,7 @@ impl<'a> DataStore<'a> {
         row: &postgres::rows::Row,
         how_to: PullFromCache,
     ) -> Result<deploy::StacksFactory> {
-        let mut blockchain_factory = deploy::StacksFactory::with(
+        let mut stacks_factory = deploy::StacksFactory::with(
             serde_json::from_value(row.get("type_meta")).unwrap(),
             serde_json::from_value(row.get("object_meta")).unwrap(),
         );
@@ -141,17 +141,17 @@ impl<'a> DataStore<'a> {
         let created_at = row.get::<&str, DateTime<Utc>>("created_at");
         let plan: i64 = row.get("plan");
 
-        blockchain_factory.set_id(id.to_string());
-        blockchain_factory.set_created_at(created_at.to_rfc3339());
-        blockchain_factory.set_status(serde_json::from_value(row.get("status")).unwrap());
-        blockchain_factory.set_resources(serde_json::from_value(row.get("resources")).unwrap());
-        blockchain_factory.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
-        blockchain_factory.set_secret(serde_json::from_value(row.get("secret")).unwrap());
-        blockchain_factory.set_plan(plan.to_string());
-        blockchain_factory.set_spec(serde_json::from_value(row.get("spec")).unwrap());
-        blockchain_factory.set_replicas(replicas as u32);
-        self.expander.with_plan(&mut blockchain_factory, how_to);
+        stacks_factory.set_id(id.to_string());
+        stacks_factory.set_created_at(created_at.to_rfc3339());
+        stacks_factory.set_status(serde_json::from_value(row.get("status")).unwrap());
+        stacks_factory.set_resources(serde_json::from_value(row.get("resources")).unwrap());
+        stacks_factory.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
+        stacks_factory.set_secret(serde_json::from_value(row.get("secret")).unwrap());
+        stacks_factory.set_plan(plan.to_string());
+        stacks_factory.set_spec(serde_json::from_value(row.get("spec")).unwrap());
+        stacks_factory.set_replicas(replicas as u32);
+        self.expander.with_plan(&mut stacks_factory, how_to);
 
-        Ok(blockchain_factory)
+        Ok(stacks_factory)
     }
 }

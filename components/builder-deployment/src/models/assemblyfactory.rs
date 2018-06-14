@@ -1,19 +1,15 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! The PostgreSQL backend for the Authorization [assembly, assemblyfactory].
-use chrono::prelude::*;
-use error::{Result, Error};
-
-use protocol::api::deploy;
-use protocol::api::base::{IdGet, StatusUpdate, MetaFields};
-use protocol::cache::{PULL_DIRECTLY, PULL_INVALDATED, PullFromCache, InMemoryExpander};
-
-use postgres;
-use db::data_store::DataStoreConn;
-
-use serde_json;
-
+//! The PostgreSQL backend for the Deployment - AssemblyFactory
 use super::super::{AssemblyFactoryOutput, AssemblyFactoryOutputList};
+use chrono::prelude::*;
+use db::data_store::DataStoreConn;
+use error::{Error, Result};
+use postgres;
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::deploy;
+use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
+use serde_json;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -126,7 +122,13 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    fn row_to_assembly_factory(&self, row: &postgres::rows::Row, how_to: PullFromCache) -> Result<deploy::AssemblyFactory> {
+    /// A private convertor of postgres Row to the required structure.
+    /// In this case AssemblyFactory.
+    fn row_to_assembly_factory(
+        &self,
+        row: &postgres::rows::Row,
+        how_to: PullFromCache,
+    ) -> Result<deploy::AssemblyFactory> {
         let mut assembly_factory = deploy::AssemblyFactory::with(
             serde_json::from_value(row.get("type_meta")).unwrap(),
             serde_json::from_value(row.get("object_meta")).unwrap(),
@@ -148,12 +150,12 @@ impl<'a> DataStore<'a> {
         assembly_factory.set_replicas(replicas as u32);
         self.expander.with_plan(&mut assembly_factory, how_to);
 
-        //AssemblyFactory is created first, and service is created later in our process. During the creation AF sets the service to none
-        //Hence the cache always return none for service. To fix this the service is pulled invalidated from cache - send a live copy always
-        self.expander.with_services(
-            &mut assembly_factory,
-            PULL_INVALDATED,
-        );
+        // AssemblyFactory is created first, and service is created later in our process.
+        // During the creation AF sets the service to none
+        // Hence the cache always return none for service.
+        // HACK: To fix this the service is pulled invalidated from cache - send a LIVE copy always.
+        self.expander
+            .with_services(&mut assembly_factory, PULL_INVALDATED);
         Ok(assembly_factory)
     }
 }
