@@ -25,8 +25,9 @@ pub fn start(
     ui.br()?;
     let file = open_from(Path::new(cache_path))?;
     let content: DeployData = serde_yaml::from_reader(file)?;
-    let assembly_fac: deploy::AssemblyFactory =
-        rio_client.deploy_digicloud(content.assembly_factory.clone(), token, email)?;
+    let assembly_fac: deploy::StacksFactory =
+        rio_client.deploy_digicloud(content.stacks_factory.clone(), token, email)?;
+
     if let Some(i) = content.horizontal_scaling {
         let mut hscale: scale::HorizontalScaling = i;
         let ref mut object_data = hscale.mut_meta(
@@ -98,7 +99,7 @@ pub fn start(
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 struct DeployData {
-    assembly_factory: deploy::AssemblyFactory,
+    stacks_factory: deploy::StacksFactory,
     horizontal_scaling: Option<scale::HorizontalScaling>,
     vertical_scaling: Option<scale::VerticalScaling>,
     buildconfig: Option<devtool::BuildConfig>,

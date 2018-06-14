@@ -3,21 +3,21 @@
 
 // Import necessary types from crates.
 
-use iron::Handler;
-use iron::prelude::*;
 use bodyparser;
+use iron::prelude::*;
+use iron::Handler;
 use router::Router;
 
 use api::StorageInternalValue;
 
 use exonum::api::{Api, ApiError};
-use exonum::blockchain::{Blockchain, Service, Transaction, ApiContext, gen_prefix};
-use exonum::crypto::{PublicKey, SecretKey, Hash};
+use exonum::blockchain::{gen_prefix, ApiContext, Blockchain, Service, Transaction};
+use exonum::crypto::{Hash, PublicKey, SecretKey};
 use exonum::encoding;
 use exonum::encoding::serialize::json::reexport as serde_json;
 use exonum::messages::{Message, RawTransaction};
+use exonum::node::{ApiSender, TransactionSend};
 use exonum::storage::{Fork, ProofListIndex, ProofMapIndex, Snapshot};
-use exonum::node::{TransactionSend, ApiSender};
 
 use protocol::api::audit::Envelope;
 
@@ -80,7 +80,9 @@ where
 
     /// Returns table that represents a map of hashed event
     /// Refer  propose_data_by_audit_hash_mut
-    pub fn propose_data_by_audit_hash(&self) -> ProofMapIndex<&T, Hash, StorageValueEnvlProposeData> {
+    pub fn propose_data_by_audit_hash(
+        &self,
+    ) -> ProofMapIndex<&T, Hash, StorageValueEnvlProposeData> {
         ProofMapIndex::new("habitat.audit_proposes", &self.view)
     }
 
@@ -100,7 +102,9 @@ where
             .into_iter()
             .map(|envl_hash| {
                 self.propose_data_by_audit_hash().get(&envl_hash).map(|p| {
-                    let cfg = <Envelope as StorageInternalValue>::from_bytes(p.tx_propose().envl().as_bytes().into());
+                    let cfg = <Envelope as StorageInternalValue>::from_bytes(
+                        p.tx_propose().envl().as_bytes().into(),
+                    );
                     cfg
                 })
             })
@@ -119,7 +123,9 @@ impl<'a> HabitatSchema<&'a mut Fork> {
     /// Mutable version of `propose_data_by_audit_hash` index.
     /// [(hash1, storage_value_envl)]
     /// This is a map of every hashed envelop key has its value of StorageValueProposedData (envelope)
-    pub fn propose_data_by_audit_hash_mut(&mut self) -> ProofMapIndex<&mut Fork, Hash, StorageValueEnvlProposeData> {
+    pub fn propose_data_by_audit_hash_mut(
+        &mut self,
+    ) -> ProofMapIndex<&mut Fork, Hash, StorageValueEnvlProposeData> {
         ProofMapIndex::new("habitat.audit_proposes", &mut self.view)
     }
 
@@ -139,7 +145,8 @@ impl<'a> HabitatSchema<&'a mut Fork> {
     /// Push [hash_of envelope] into ProofListIndex(account_id)
     /// Refer propose_data_audit_hash_mut, audit_txs_mut for more information.
     pub fn push_audit(&mut self, tx_propose: TxCreateEnvelope) -> bool {
-        let cfg = <Envelope as StorageInternalValue>::from_bytes(tx_propose.envl().as_bytes().into());
+        let cfg =
+            <Envelope as StorageInternalValue>::from_bytes(tx_propose.envl().as_bytes().into());
         let cfg_hash = &StorageInternalValue::hash(&cfg);
 
         let propose_data_by_audit = StorageValueEnvlProposeData::new(tx_propose);
@@ -150,9 +157,8 @@ impl<'a> HabitatSchema<&'a mut Fork> {
             propose_data_by_audit_hash_table.put(cfg_hash, propose_data_by_audit);
         }
 
-        self.audit_txs_mut(AccountHeight(cfg.account)).push(
-            *cfg_hash,
-        );
+        self.audit_txs_mut(AccountHeight(cfg.get_account()))
+            .push(*cfg_hash);
         true
     }
 }
@@ -219,16 +225,14 @@ impl HabitatApi {
 
         let id: Result<String, ApiError> = {
             match req.extensions.get::<Router>().unwrap().find("account_id") {
-                Some(account) => {
-                    match account.parse::<u64>() {
-                        Ok(account) => Ok(account.to_string()),
-                        Err(_) => {
-                            return Err(ApiError::IncorrectRequest(
-                                "account_id must be numeric".into(),
-                            ))?
-                        }
+                Some(account) => match account.parse::<u64>() {
+                    Ok(account) => Ok(account.to_string()),
+                    Err(_) => {
+                        return Err(ApiError::IncorrectRequest(
+                            "account_id must be numeric".into(),
+                        ))?
                     }
-                }
+                },
                 None => return Err(ApiError::IncorrectRequest("Empty account_id".into()))?,
             }
         };
