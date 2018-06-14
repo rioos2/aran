@@ -188,11 +188,13 @@ impl ParmsVerifier for MarketPlaceApi {}
 impl Validator for MarketPlace {
     fn valid(self) -> AranValidResult<Self> {
         let mut s: Vec<String> = vec![];
+        let plans = self.get_plan();
+        plans.iter().map(|y| {
 
-        if self.object_meta().owner_references.len() <= 0 {
+        if y.object_meta().owner_references.len() <= 0 {
             s.push("owner_references".to_string());
         } else {
-            self.object_meta()
+            y.object_meta()
                 .owner_references
                 .iter()
                 .map(|x| {
@@ -202,7 +204,9 @@ impl Validator for MarketPlace {
                 })
                 .collect::<Vec<_>>();
         }
-
+    })
+    .collect::<Vec<_>>();
+    
         if self.get_plan().len() <= 0 {
             s.push("plans".to_string());
         } else {

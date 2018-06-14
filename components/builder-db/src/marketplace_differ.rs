@@ -69,12 +69,12 @@ impl MarketPlaceDiffer {
             .iter()
             .map(|x| {
                 &conn.query(
-                    "SELECT * FROM select_or_insert_plan_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
+                    "SELECT * FROM select_or_insert_plan_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
                     &[
                         &(x.object_meta().name as String),
                         &(serde_json::to_value(x.type_meta()).unwrap()),
                         &(serde_json::to_value(x.object_meta()).unwrap()),
-                        // &(serde_json::to_value(x.get_metadata()).unwrap()),
+                        &(serde_json::to_value(x.get_plan()).unwrap()),
                         &(x.get_category() as String),
                         &(x.get_version() as String),
                         &(x.get_icon() as String),

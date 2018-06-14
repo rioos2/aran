@@ -12,6 +12,7 @@ pub struct MarketPlace {
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
     plans: Vec<PlanProperties>,
+    #[serde(default)]
     created_at: String,
     category: String,
     version: String,
@@ -60,11 +61,10 @@ impl MarketPlace {
         self.id.clone()
     }
 
-    pub fn set_created_at(&mut self, v: ::std::string::String) {
+    pub fn set_createdat(&mut self, v: ::std::string::String) {
         self.created_at = v;
     }
-
-    pub fn get_created_at(&self) -> ::std::string::String {
+    pub fn get_createdat(&self) -> ::std::string::String {
         self.created_at.clone()
     }
 
