@@ -126,13 +126,13 @@ impl Client {
 
     pub fn deploy_digicloud(
         &self,
-        assembly_fac: deploy::AssemblyFactory,
+        assembly_fac: deploy::StacksFactory,
         token: &str,
         email: &str,
-    ) -> Result<deploy::AssemblyFactory> {
+    ) -> Result<deploy::StacksFactory> {
         let mut res = self.0
             .post(&format!(
-                "accounts/{}/assemblyfactorys",
+                "accounts/{}/stacksfactorys",
                 assembly_fac.object_meta().account
             ))
             .body(Body::from(serde_json::to_string(&assembly_fac)?))
@@ -142,8 +142,8 @@ impl Client {
         if res.status() != StatusCode::Ok {
             return Err(Error::RioHttpClient(err_from_response(res)));
         };
-        let assembly_fat: deploy::AssemblyFactory = res.json()?;
-        Ok(assembly_fat)
+        let stacks: deploy::StacksFactory = res.json()?;
+        Ok(stacks)
     }
 
     pub fn list_deploy(&self, token: &str, email: &str, account: &str) -> Result<Vec<Vec<String>>> {

@@ -76,13 +76,11 @@ impl SystemSecret {
                     })),
                 ],
             )?;
-            println!("----- system secret ");
             append(
                 &NODELET_CONFIG_FILE,
                 &("\nsecret_name: ".to_string() + AGENT_SECRET),
             )?;
         }
-        println!("----- system secret done. ");
         Ok(())
     }
 }

@@ -42,6 +42,8 @@ impl<'a> LinkersState<'a> {
             })
             .collect::<Vec<_>>();
 
+        println!("-------- {:?}", linkers);
+
         let stats = graph.build(linkers.into_iter());
 
         LinkersState {
