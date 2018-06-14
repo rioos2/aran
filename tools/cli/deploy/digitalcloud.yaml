@@ -2,7 +2,7 @@
 # Deploy in newyork a digitalcloud by plan (freebsd)
 # ================================================================
 ---
-assembly_factory:
+stacks_factory:
   object_meta:
     name: pongo.megam.io
     account: '976712288302014464'
