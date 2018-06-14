@@ -1,5 +1,5 @@
 [package]
-name = "rioos_builder_netsrv"
+name = "rioos_builder_virtual_network"
 version = "0.0.0"
 authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>", "Suganya K <suganyakaliyamoorthy@megam.io>"]
 description = "RIO/OS Deployment library"

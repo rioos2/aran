@@ -22,7 +22,7 @@ rioos_builder_apimachinery = { path = "../builder-apimachinery" }
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
-[dependencies.rioos_builder_servicesrv]
+[dependencies.rioos_builder_services]
 path = "../builder-securer"
 
 [dependencies.rioos_builder_session]
@@ -31,7 +31,7 @@ path = "../builder-session"
 [dependencies.rioos_common]
 path = "../common"
 
-[dependencies.rioos_builder_authsrv]
+[dependencies.rioos_builder_authorizer]
 path = "../builder-authorize"
 
 [features]

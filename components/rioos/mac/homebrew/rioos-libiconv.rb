@@ -1,7 +1,7 @@
 # Forked from https://raw.githubusercontent.com/Homebrew/homebrew-dupes/master/libiconv.rb
 # On 2016-05-25
 #
-class HabLibiconv < Formula
+class RioosLibiconv < Formula
   desc "Conversion library"
   homepage "https://www.gnu.org/software/libiconv/"
   url "http://ftpmirror.gnu.org/libiconv/libiconv-1.14.tar.gz"

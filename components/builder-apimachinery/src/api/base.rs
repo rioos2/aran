@@ -251,22 +251,28 @@ pub trait MetaFields {
         self.object_meta().initializers.clone()
     }
 
-    fn set_initializers(&self, initializers: Initializers) {
-        self.object_meta().initializers = initializers
+    //TO-DO: Revamp, as its appear correct. We provide a self and object with
+    //the objectMeta to mutate.
+    fn set_initializers(&self, current: &mut ObjectMeta, initializers: Initializers) {
+        current.initializers = initializers
     }
 
     fn get_finalizers(&self) -> Vec<String> {
         self.object_meta().finalizers.clone()
     }
 
-    fn set_finalizers(&self, finalizers: Vec<String>) {
-        self.object_meta().finalizers = finalizers
+    //TO-DO: Revamp, as its appear correct. We provide a self and object with
+    //the objectMeta to mutate.
+    fn set_finalizers(&self, current: &mut ObjectMeta, finalizers: Vec<String>) {
+        current.finalizers = finalizers;
     }
 
     fn get_owner_references(&self) -> Vec<OwnerReferences> {
         self.object_meta().owner_references.clone()
     }
 
+    //TO-DO: Revamp, as its appear correct. We provide a self and object with
+    //the objectMeta to mutate.
     fn set_owner_reference(
         &self,
         current: &mut ObjectMeta,
@@ -289,7 +295,7 @@ pub trait MetaFields {
     }
     fn set_created_at(&self, created_at: String) {
         self.object_meta().created_at = created_at
-    }   
+    }
 }
 
 ///Trait for all types that could be a child with typemeta

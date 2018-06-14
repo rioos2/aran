@@ -1,4 +1,4 @@
-class HabRq < Formula
+class RioosRq < Formula
   desc "Record Query - A tool for doing record analysis and transformation"
   homepage "https://github.com/dflemstr/rq"
   url "https://github.com/dflemstr/rq/releases/download/v0.9.2/rq-x86_64-apple-darwin"

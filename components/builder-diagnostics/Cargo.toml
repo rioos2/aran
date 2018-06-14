@@ -21,7 +21,7 @@ path = "../http-client"
 [dependencies.rioos_telemetry]
 path = "../telemetry"
 
-[dependencies.rioos_builder_nodesrv]
+[dependencies.rioos_builder_health_nodes]
 path = "../builder-node"
 
 [features]

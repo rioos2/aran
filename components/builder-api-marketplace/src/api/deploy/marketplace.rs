@@ -114,25 +114,25 @@ impl MarketPlaceApi {
 
     //GET: /marketplace/:id/download
     //Input id - u64 as input and returns a dowload url
-    // fn download(&self, req: &mut Request) -> AranResult<Response> {
-    //     let params = self.verify_id(req)?;
-    //     match package_attacher::PackageAttacher::new(&self.conn, &params).get_package() {
-    //         Ok(Some(package)) => {
-    //             match Static::new(Path::new(
-    //                 &rioconfig_package_path(None).join(package.get_url()),
-    //             )).get(req) {
-    //                 Ok(path) => Ok(path),
-    //                 Err(err) => Err(internal_error(&format!("{}\n", err))),
-    //             }
-    //         }
-    //         Err(err) => Err(internal_error(&format!("{}\n", err))),
-    //         Ok(None) => Err(not_found_error(&format!(
-    //             "{} for {}",
-    //             Error::Db(RecordsNotFound),
-    //             params.get_id()
-    //         ))),
-    //     }
-    // }
+    /*fn download(&self, req: &mut Request) -> AranResult<Response> {
+         let params = self.verify_id(req)?;
+         match package_attacher::PackageAttacher::new(&self.conn, &params).get_package() {
+             Ok(Some(package)) => {
+                 match Static::new(Path::new(
+                     &rioconfig_package_path(None).join(package.get_url()),
+                 )).get(req) {
+                     Ok(path) => Ok(path),
+                     Err(err) => Err(internal_error(&format!("{}\n", err))),
+                 }
+             }
+             Err(err) => Err(internal_error(&format!("{}\n", err))),
+             Ok(None) => Err(not_found_error(&format!(
+                 "{} for {}",
+                 Error::Db(RecordsNotFound),
+                 params.get_id()
+             ))),
+         }
+     }*/
 }
 
 impl Api for MarketPlaceApi {
