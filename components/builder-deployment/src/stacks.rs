@@ -16,8 +16,7 @@ use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::{Error, Result};
 use models::stacksfactory;
-use protocol::api::base::ChildTypeMeta;
-use protocol::api::base::MetaFields;
+use protocol::api::base::{ChildTypeMeta, MetaFields, Status};
 use protocol::api::blueprint::PlanProperties;
 use protocol::api::deploy::{AssemblyFactory, AssemblyFactorySpec, StacksFactory};
 use protocol::api::schema::type_meta_url;
@@ -126,9 +125,9 @@ impl<'a> StacksDeployer<'a> {
         spec.set_affinity(parent.get_spec().get_affinity().clone());
         //Transfer spec:restart_policy from stackfactory to assemblyfactory
         spec.set_restart_policy(parent.get_spec().get_restart_policy().to_string());
-        //Transfer the plan as what is there in parent. I think we can
+        //Don't Transfer the plan as its redundant. We can
         //set it up as None as well.
-        spec.set_plan(parent.get_spec().get_plan());
+        spec.set_plan(None);
         assembly_factory.set_spec(spec);
 
         //Transfer the stacks plan id here.
@@ -142,6 +141,7 @@ impl<'a> StacksDeployer<'a> {
             format!("{}_{}", self.pre_name(), parent.get_name().to_string()),
             parent.get_account(),
         );
+        assembly_factory.set_status(Status::pending());
         // set the parents datacenter/location or clustername
         assembly_factory.set_cluster_name(om, parent.get_cluster_name());
         assembly_factory.set_owner_reference(
@@ -151,10 +151,10 @@ impl<'a> StacksDeployer<'a> {
             parent.object_meta().name,
             parent.get_id().to_string(),
         );
-        assembly_factory.set_meta(type_meta_url(parent.children()), om.clone());
+        assembly_factory.set_labels(om, parent.get_labels());
         assembly_factory.set_initializers(om, parent.get_initializers());
         assembly_factory.set_finalizers(om, parent.get_finalizers());
-
+        assembly_factory.set_meta(type_meta_url(parent.children()), om.clone());
         // Stick the metadata with the parent's metada +
         // individual plans name as rioos_sh_blueprint_applied
         // Example  rioos_sh_blueprint_applied = "hyperledger:fabric/latest"
@@ -185,6 +185,7 @@ impl<'a> StacksDeployer<'a> {
         rand::thread_rng()
             .gen_ascii_chars()
             .take(PRE_NAME_LEN)
-            .collect()
+            .collect::<String>()
+            .to_lowercase()
     }
 }

@@ -231,12 +231,20 @@ pub trait MetaFields {
         self.object_meta().deletion_grace_period_seconds = deletion_grace_period_seconds;
     }
 
+    /*TO-DO: Revamp, as its appear correct. We provide a self and object with
+    //the objectMeta to mutate.
+    fn set_type_meta(&self, type_meta: TypeMeta) {
+        self.type_meta() = type_meta;
+    }*/
+
     fn get_labels(&self) -> BTreeMap<String, String> {
         self.object_meta().labels.clone()
     }
 
-    fn set_labels(&self, labels: BTreeMap<String, String>) {
-        self.object_meta().labels = labels
+    //TO-DO: Revamp, as its appear correct. We provide a self and object with
+    //the objectMeta to mutate.
+    fn set_labels(&self, current: &mut ObjectMeta, labels: BTreeMap<String, String>) {
+        current.labels = labels
     }
 
     fn get_annotations(&self) -> BTreeMap<String, String> {
