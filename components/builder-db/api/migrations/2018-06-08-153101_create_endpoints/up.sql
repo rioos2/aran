@@ -85,7 +85,7 @@ BEGIN
    FROM
       endpoints 
    WHERE
-      object_meta @ > json_build_object('owner_references', json_build_array(json_build_object('uid', pid)))::jsonb;
+      object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', pid)))::jsonb;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
