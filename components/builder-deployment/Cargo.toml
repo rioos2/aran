@@ -1,11 +1,12 @@
 [package]
-name = "rioos_builder_asmsrv"
+name = "rioos_builder_deployment"
 version = "0.0.0"
 authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>", "Suganya K <suganyakaliyamoorthy@megam.io>", "Rathish V <rathishvbr@megam.io>"]
 description = "RIO/OS Deployment library"
 workspace = "../../"
 
 [dependencies]
+rand = "*"
 postgres = { version = "0.15.2", features = ["with-chrono", "with-serde_json"] }
 chrono = { version = "0.4.2", features = ["serde"] }
 petgraph = "*"
@@ -21,7 +22,7 @@ path = "../builder-db"
 [dependencies.rioos_telemetry]
 path = "../telemetry"
 
-[dependencies.rioos_builder_jobsrv]
+[dependencies.rioos_builder_jobsbuilder]
 path = "../builder-job"
 
 [features]

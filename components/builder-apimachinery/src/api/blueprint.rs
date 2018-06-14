@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields};
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
 
 use std::collections::BTreeMap;
 
@@ -145,7 +145,7 @@ impl Plan {
 
     pub fn get_status(&self) -> &Status {
         &self.status
-     }
+    }
 
     pub fn set_version(&mut self, v: ::std::string::String) {
         self.version = v;
@@ -166,9 +166,7 @@ impl Plan {
     pub fn set_category(&mut self, v: ::std::string::String) {
         self.category = v;
     }
-
 }
-
 
 impl PlanProperties {
     pub fn new() -> PlanProperties {
@@ -177,30 +175,27 @@ impl PlanProperties {
 
     pub fn set_characteristics(&mut self, v: BTreeMap<String, String>) {
         self.characteristics = v;
-
-     }
+    }
 
     pub fn get_characteristics(&self) -> &BTreeMap<String, String> {
-       &self.characteristics
+        &self.characteristics
+    }
 
-     }
+    pub fn get_version(&self) -> ::std::string::String {
+        self.version.clone()
+    }
 
-     pub fn get_version(&self) -> ::std::string::String {
-         self.version.clone()
-     }
-
-     pub fn get_category(&self) -> ::std::string::String {
-         self.category.clone()
-     }
+    pub fn get_category(&self) -> ::std::string::String {
+        self.category.clone()
+    }
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Port {
     container_port: i32, //container port
-    host_ip: String, //ip address for the host
-    host_port: i32, //port of the host
-    protocol: String, //plan protocol type like tcp or udp
+    host_ip: String,     //ip address for the host
+    host_port: i32,      //port of the host
+    protocol: String,    //plan protocol type like tcp or udp
 }
 
 impl Port {
@@ -217,7 +212,7 @@ impl Port {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Envs {
     required: String, // env required or not: Must be there for this launch
-    value: String, //The default value as in the blueprint plan
+    value: String,    //The default value as in the blueprint plan
     editable: String, //Can this  field be edited by the user.
 }
 
@@ -252,14 +247,14 @@ pub struct Probe {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TcpSocket {
-    port: String,// Port to connect to.
+    port: String, // Port to connect to.
     host: String, //Host name to connect to, defaults to the pod IP.
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HttpGet {
-    path: String, //Path to access on the HTTP server.
-    port: String, //Name or number of the port to access on the container.
+    path: String,   //Path to access on the HTTP server.
+    port: String,   //Name or number of the port to access on the container.
     host: String, // Host name to connect to, defaults to the pod IP. probably want to set "Host" in httpHeaders instead.
     scheme: String, //Scheme to use for connecting to the host, defaults to HTTP.
 }
@@ -383,9 +378,7 @@ mod test {
             }"#;
         let probe: Probe = json_decode(probe_val).unwrap();
         assert!(probe.http_headers.contains_key("X-Custom-Header"));
-
     }
-
 
     #[test]
     fn decode_ports() {

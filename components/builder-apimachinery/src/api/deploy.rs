@@ -131,7 +131,13 @@ impl StacksFactory {
     }
 
     // Mutable pointer to the field spec.
+    // Deprecated: Use get_mut_spec.
     pub fn mut_spec(&mut self) -> &mut StacksFactorySpec {
+        &mut self.spec
+    }
+
+    // Mutable pointer to the field spec.
+    pub fn get_mut_spec(&mut self) -> &mut StacksFactorySpec {
         &mut self.spec
     }
 
@@ -141,6 +147,11 @@ impl StacksFactory {
 
     pub fn get_metadata(&self) -> &BTreeMap<String, String> {
         &self.metadata
+    }
+
+    // Mutable pointer to the field metadata.
+    pub fn get_mut_metadata(&mut self) -> &mut BTreeMap<String, String> {
+        &mut self.metadata
     }
 }
 
@@ -440,7 +451,13 @@ impl AssemblyFactory {
     }
 
     // Mutable pointer to the field spec.
+    // Deprecated. use get_mut_spec
     pub fn mut_spec(&mut self) -> &mut AssemblyFactorySpec {
+        &mut self.spec
+    }
+
+    // Mutable pointer to the field spec.
+    pub fn get_mut_spec(&mut self) -> &mut AssemblyFactorySpec {
         &mut self.spec
     }
 
@@ -450,6 +467,11 @@ impl AssemblyFactory {
 
     pub fn get_metadata(&self) -> &BTreeMap<String, String> {
         &self.metadata
+    }
+
+    // Mutable pointer to the field metadata.
+    pub fn get_mut_metadata(&mut self) -> &mut BTreeMap<String, String> {
+        &mut self.metadata
     }
 }
 
@@ -822,7 +844,6 @@ impl Assembly {
     }
 
     pub fn get_category(&self) -> String {
-
         if self.get_spec().get_parent().is_some()
             && self.get_spec()
                 .get_parent()

@@ -39,7 +39,7 @@ path = "../common"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
-[dependencies.rioos_builder_authsrv]
+[dependencies.rioos_builder_authorizer]
 path = "../builder-authorize"
 
 [dependencies.rioos_auth]

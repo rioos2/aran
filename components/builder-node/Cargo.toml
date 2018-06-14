@@ -1,5 +1,5 @@
 [package]
-name = "rioos_builder_nodesrv"
+name = "rioos_builder_health_nodes"
 version = "0.0.0"
 authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
 description = "RIO/OS Deployment library"
