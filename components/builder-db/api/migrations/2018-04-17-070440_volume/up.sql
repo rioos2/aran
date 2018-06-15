@@ -8,15 +8,16 @@ CREATE TABLE IF NOT EXISTS volumes (id bigint PRIMARY KEY DEFAULT next_id_v1('vo
                                                                   mount_path text, allocated text, status JSONB,
                                                                                                           object_meta JSONB,
                                                                                                                       type_meta JSONB,
+                                                                                                                            setting_map JSONB,
                                                                                                                                 updated_at timestamptz,
                                                                                                                                 created_at timestamptz DEFAULT now());
 
 
-CREATE OR REPLACE FUNCTION insert_volume_v1 (mount_path text, allocated text, status JSONB, object_meta JSONB, type_meta JSONB) RETURNS
+CREATE OR REPLACE FUNCTION insert_volume_v1 (mount_path text, allocated text, status JSONB, object_meta JSONB, type_meta JSONB, setting_map JSONB) RETURNS
 SETOF volumes AS $$
                           BEGIN
-                              RETURN QUERY INSERT INTO volumes(mount_path,allocated,status,object_meta, type_meta)
-                                  VALUES (mount_path,allocated,status, object_meta, type_meta)
+                              RETURN QUERY INSERT INTO volumes(mount_path,allocated,status,object_meta, type_meta, setting_map)
+                                  VALUES (mount_path,allocated,status, object_meta, type_meta, setting_map)
                                   RETURNING *;
                               RETURN;
                           END
@@ -51,10 +52,10 @@ SETOF volumes AS $$
                   $$ LANGUAGE PLPGSQL STABLE;
 
 
-CREATE OR REPLACE FUNCTION update_volume_v1 (vid bigint,vol_mount_path text,vol_allocated text,vol_status JSONB, vol_object_meta JSONB) RETURNS
+CREATE OR REPLACE FUNCTION update_volume_v1 (vid bigint,vol_mount_path text,vol_allocated text,vol_status JSONB, vol_object_meta JSONB, vol_setting_map JSONB) RETURNS
 SETOF volumes AS $$
                       BEGIN
-                          RETURN QUERY UPDATE volumes SET mount_path=vol_mount_path,allocated=vol_allocated,status=vol_status,object_meta = vol_object_meta,updated_at=now() WHERE id=vid
+                          RETURN QUERY UPDATE volumes SET mount_path=vol_mount_path,allocated=vol_allocated,status=vol_status,object_meta = vol_object_meta, setting_map = vol_setting_map, updated_at=now() WHERE id=vid
                           RETURNING *;
                           RETURN;
                       END
