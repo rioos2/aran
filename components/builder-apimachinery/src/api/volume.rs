@@ -4,16 +4,18 @@ use api::base::{TypeMeta, ObjectMeta, MetaFields, Status};
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Volumes {
     #[serde(default)]
-    id: String, //id an unique identifier in systems of record. Generated during creation of the Volumes
+    id: String, //id an unique identifier in systems of record. Generated during creation of the
+    //Volumes
     pub object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Volumes
     mount_path: String,          //The mount path/pool name of the block device
     allocated: String,           //The size of the storage allocated.
-    //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
+    //Most recently observed status of the service. Populated by the system. Read-only.
+    //Initially during submission, the status is "pending"
     status: Status,
     #[serde(default)]
-    setting_map: SettingMap, // The contents of the target SettingMap's Data field will be presented in a
+    source: VolumeSource, // The contents of the target SettingMap's Data field will be presented in a
 // volume as files using the keys in the Data field as the file names, unless
 // the items element is populated with specific mappings of keys to paths.
 // SettingMap volumes support ownership management and SELinux relabeling.
@@ -64,12 +66,12 @@ impl Volumes {
         &self.status
     }
 
-    pub fn set_setting_map(&mut self, v: SettingMap) {
-        self.setting_map = v;
+    pub fn set_source(&mut self, v: VolumeSource) {
+        self.source = v;
     }
 
-    pub fn get_setting_map(&self) -> &SettingMap {
-        &self.setting_map
+    pub fn get_source(&self) -> &VolumeSource {
+        &self.source
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -99,8 +101,22 @@ impl MetaFields for Volumes {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct VolumeSource {
+    #[serde(default)]
+    setting_map: SettingMap, // The name of the secret in the assembly's namespace to select from.
+    #[serde(default)]
+    nfs: Nfs,
+    #[serde(default)]
+    openio:Openio,
+    #[serde(default)]
+    iscsi:Iscsi,
+    #[serde(default)]
+    rbd:Rbd
+    }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SettingMap {
-    object_reference: ObjectReference, // The name of the secret in the assembly's namespace to select from.
+    object_ref: ObjectReference, // The name of the secret in the assembly's namespace to select from.
     #[serde(default)]
     items: Vec<Items>, //If unspecified, each key-value pair in the Data field of the referenced
     // SettingMap will be projected into the volume as a file whose name is the
@@ -111,6 +127,70 @@ pub struct SettingMap {
     optional: bool, //Specify whether the SettingMap or it's keys must be defined
 
 }
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Nfs {
+    #[serde(default)]
+    server: String,
+    #[serde(default)]
+    path: String,
+    #[serde(default)]
+    readonly: bool
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Openio {
+    #[serde(default)]
+    server: String,
+    #[serde(default)]
+    namespace: String,
+    #[serde(default)]
+    key: String,
+    #[serde(default)]
+    user: String
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Iscsi {
+    #[serde(default)]
+    target_portal: String,
+    #[serde(default)]
+    iqn: String,
+    #[serde(default)]
+    lun: String,
+    #[serde(default)]
+    iscsi_interface: String,
+    #[serde(default)]
+    fstype: String,
+    #[serde(default)]
+    readonly: bool,
+    #[serde(default)]
+    portals: Vec<String>,
+    #[serde(default)]
+    chap_auth_discovery: bool,
+    #[serde(default)]
+    chap_auth_session: bool,
+    object_ref: ObjectReference,
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Rbd {
+    #[serde(default)]
+    monitor: Vec<String>,
+    #[serde(default)]
+    image: String,
+    #[serde(default)]
+    fstype: String,
+    #[serde(default)]
+    pool: String,
+    #[serde(default)]
+    user: String,
+    #[serde(default)]
+    keyring: bool,
+    #[serde(default)]
+    readonly: Vec<String>,
+    object_ref: ObjectReference,
+}
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectReference {
     // Name of the referent.
