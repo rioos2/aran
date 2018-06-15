@@ -13,10 +13,10 @@ pub struct Volumes {
     //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
     status: Status,
     #[serde(default)]
-    setting_map: SettingMap, // The contents of the target ConfigMap's Data field will be presented in a
+    setting_map: SettingMap, // The contents of the target SettingMap's Data field will be presented in a
 // volume as files using the keys in the Data field as the file names, unless
 // the items element is populated with specific mappings of keys to paths.
-// ConfigMap volumes support ownership management and SELinux relabeling.
+// SettingMap volumes support ownership management and SELinux relabeling.
 
     #[serde(default)]
     created_at: String,
@@ -100,15 +100,15 @@ impl MetaFields for Volumes {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SettingMap {
-    object_reference: ObjectReference, // The name of the secret in the pod's namespace to select from.
+    object_reference: ObjectReference, // The name of the secret in the assembly's namespace to select from.
     #[serde(default)]
     items: Vec<Items>, //If unspecified, each key-value pair in the Data field of the referenced
-    // ConfigMap will be projected into the volume as a file whose name is the
+    // SettingMap will be projected into the volume as a file whose name is the
     // key and content is the value.
     #[serde(default)]
     default_mode: i32, //mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644
     #[serde(default)]
-    optional: bool, //Specify whether the ConfigMap or it's keys must be defined
+    optional: bool, //Specify whether the SettingMap or it's keys must be defined
 
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
