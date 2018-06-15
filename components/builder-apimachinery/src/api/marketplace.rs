@@ -2,6 +2,7 @@
 
 use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
 use api::blueprint::PlanProperties;
+use std::collections::BTreeMap;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct MarketPlace {
@@ -10,6 +11,8 @@ pub struct MarketPlace {
     #[serde(default)]
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
+    #[serde(default)]
+    meta_data: BTreeMap<String, String>,
     plans: Vec<PlanProperties>,
     #[serde(default)]
     created_at: String,
@@ -113,6 +116,14 @@ impl MarketPlace {
 
     pub fn set_category(&mut self, v: ::std::string::String) {
         self.category = v;
+    }
+
+    pub fn set_meta_data(&mut self, v: BTreeMap<String, String>) {
+        self.meta_data = v;
+    }
+
+    pub fn get_meta_data(&self) -> &BTreeMap<String, String> {
+        &self.meta_data
     }
 }
 
