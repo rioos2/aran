@@ -48,7 +48,8 @@ impl<'a> DataStore<'a> {
 
         if rows.len() > 0 {
             for row in rows {
-                return Ok(Some(self.row_to_stacks_factory(&row, PULL_DIRECTLY)?));
+                let stacks = self.collect_spec(&row, PULL_DIRECTLY)?;
+                return Ok(Some(stacks));
             }
         }
 
@@ -65,7 +66,8 @@ impl<'a> DataStore<'a> {
 
         if rows.len() > 0 {
             for row in rows {
-                return Ok(Some(self.row_to_stacks_factory(&row, PULL_DIRECTLY)?));
+                let stacks = self.collect_spec(&row, PULL_DIRECTLY)?;
+                return Ok(Some(stacks));
             }
         }
         Ok(None)
@@ -84,7 +86,8 @@ impl<'a> DataStore<'a> {
 
         if rows.len() > 0 {
             for row in rows {
-                return Ok(Some(self.row_to_stacks_factory(&row, PULL_INVALDATED)?));
+                let stacks = self.collect_spec(&row, PULL_INVALDATED)?;
+                return Ok(Some(stacks));
             }
         }
         Ok(None)
@@ -100,7 +103,7 @@ impl<'a> DataStore<'a> {
 
         if rows.len() > 0 {
             for row in rows {
-                response.push(self.row_to_stacks_factory(&row, PULL_DIRECTLY)?)
+                response.push(self.collect_spec(&row, PULL_DIRECTLY)?);
             }
             return Ok(Some(response));
         }
@@ -119,18 +122,27 @@ impl<'a> DataStore<'a> {
 
         if rows.len() > 0 {
             for row in rows {
-                response.push(self.row_to_stacks_factory(&row, PULL_DIRECTLY)?)
+                response.push(self.collect_spec(&row, PULL_DIRECTLY)?);
             }
             return Ok(Some(response));
         }
         Ok(None)
     }
 
-    fn row_to_stacks_factory(
+    /// Expands the assembly by sticking in Spec
+    ///         1. AssemblyFactory (parent information)
+    ///         2. Plan
+    fn collect_spec(
         &self,
         row: &postgres::rows::Row,
         how_to: PullFromCache,
     ) -> Result<deploy::StacksFactory> {
+        let mut stacks = self.row_to_stacks_factory(&row)?;
+        self.expander.with_plan(&mut stacks, how_to);
+        Ok(stacks)
+    }
+
+    fn row_to_stacks_factory(&self, row: &postgres::rows::Row) -> Result<deploy::StacksFactory> {
         let mut stacks_factory = deploy::StacksFactory::with(
             serde_json::from_value(row.get("type_meta")).unwrap(),
             serde_json::from_value(row.get("object_meta")).unwrap(),
@@ -148,9 +160,8 @@ impl<'a> DataStore<'a> {
         stacks_factory.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
         stacks_factory.set_secret(serde_json::from_value(row.get("secret")).unwrap());
         stacks_factory.set_plan(plan.to_string());
-        stacks_factory.set_spec(serde_json::from_value(row.get("spec")).unwrap());
         stacks_factory.set_replicas(replicas as u32);
-        self.expander.with_plan(&mut stacks_factory, how_to);
+        stacks_factory.set_spec(serde_json::from_value(row.get("spec")).unwrap());
 
         Ok(stacks_factory)
     }

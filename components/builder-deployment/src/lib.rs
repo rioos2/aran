@@ -25,8 +25,11 @@ pub use self::error::{Error, Result};
 //The plan category that applies to services.
 const APPLICABLE_TO: &'static [&'static str] = &["blockchain_template", "containers"];
 
-//The plan category that is eligible to be stand still
-const APPLICABLE_TO_STAND_STILL: &'static [&'static str] = &["blockchain_template"];
+///The plan category that is eligible to be stand still
+///The plan categories eligible to be standstill are
+/// Blockchain networks - denoted by "blockchain"
+/// Blockcahin apps     - denoted by "blockchain_template"
+const APPLICABLE_TO_STAND_STILL: &'static [&'static str] = &["blockchain_template", "blockchain"];
 
 // AssemblyFactory output
 pub type AssemblyFactoryOutput =
