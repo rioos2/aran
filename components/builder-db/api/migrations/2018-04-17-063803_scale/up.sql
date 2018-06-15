@@ -67,7 +67,7 @@ BEGIN
    FROM
       horizontal_scalings 
    where
-      object_meta @ > json_build_object('owner_references', json_build_array(json_build_object('uid', asm_fac_id)))::jsonb;
+      object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', asm_fac_id)))::jsonb;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;

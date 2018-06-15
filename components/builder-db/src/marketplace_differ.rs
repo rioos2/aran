@@ -54,9 +54,7 @@ impl MarketPlaceDiffer {
                 ),
             )));
         }
-
         let u: MarketPlaceDownload = serde_yaml::from_reader(file)?;
-
         info!("Loaded {:?}", MARKETPLACE_CACHE_FILE.to_str());
 
         elapsed_or_return(u.time_stamp);
@@ -92,7 +90,6 @@ fn elapsed_or_return(time: String) -> () {
     let now_time = DateTime::parse_from_rfc3339(&Utc::now().to_rfc3339().to_string()).unwrap();
     let time_stamp = DateTime::parse_from_rfc3339(&time.to_string()).unwrap();
     let diff = now_time.timestamp() - time_stamp.timestamp();
-
     if diff < SYNC_ELAPSED_SECONDS {
         return;
     }
