@@ -11,6 +11,7 @@ use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PlanFeeder, S
                     StacksFeeder, VolumesFeeder};
 use std::collections::BTreeMap;
 
+pub const AWAIT_PHASE_PENDING: &'static str = "AwaitPending";
 pub const PHASE_PENDING: &'static str = "Pending";
 pub const PHASE_STAND_STILL: &'static str = "StandStill";
 
@@ -305,29 +306,6 @@ impl PlanFeeder for StacksFactory {
     }
 }
 
-// Cache based feeders for the base StacksFactory
-//           StacksFactory
-//              |
-//  AssemblyFactory (Parent), Endpoints, Volume, Metrics
-//
-// The assemblyfactory feeder, which gets called from an expander cache.
-// The expander cache is ttl and loads the factory the first time.
-impl FactoryFeeder for StacksFactory {
-    fn fget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(
-            self.get_owner_references()
-                .iter()
-                .map(|x| x.get_uid().to_string())
-                .collect::<String>(),
-            "_factory".to_string(),
-        )
-    }
-
-    fn ffeed(&mut self, _f: Option<AssemblyFactory>) {
-        /*self.mut_spec().set_assembly_factory(f); */
-    }
-}
-
 impl MetaFields for StacksFactory {
     /// Returns the latest self with built ObjectMeta and Type_meta
     /// Wipes out the old meta.
@@ -477,6 +455,8 @@ impl AssemblyFactory {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AssemblyFactorySpec {
+    #[serde(default)]
+    stacks_factory: Option<StacksFactory>,
     /* Tolerations:
     A toleration “matches” a taint if the keys are the same and the effects are the same, and:
     the operator is Exists (in which case no value should be specified), or
@@ -659,6 +639,14 @@ impl AssemblyFactorySpec {
         ::std::default::Default::default()
     }
 
+    pub fn set_stacks_factory(&mut self, factory: Option<StacksFactory>) {
+        self.stacks_factory = factory;
+    }
+
+    pub fn get_stacks_factory(&self) -> Option<StacksFactory> {
+        self.stacks_factory.clone()
+    }
+
     pub fn set_tolerations(&mut self, v: Vec<Tolerations>) {
         self.tolerations = v;
     }
@@ -731,6 +719,23 @@ impl ServicesFeeder for AssemblyFactory {
 
     fn sfeed(&mut self, s: Option<Vec<Services>>) {
         self.mut_spec().set_services(s);
+    }
+}
+
+///Feed the stacksfactory in Assemblyfactory
+impl StacksFeeder for AssemblyFactory {
+    fn bget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(
+            self.get_owner_references()
+                .iter()
+                .map(|x| x.get_uid().to_string())
+                .collect::<String>(),
+            "_stacks".to_string(),
+        )
+    }
+
+    fn bfeed(&mut self, f: Option<StacksFactory>) {
+        self.mut_spec().set_stacks_factory(f);
     }
 }
 
@@ -905,22 +910,6 @@ impl FactoryFeeder for Assembly {
     }
 }
 
-impl StacksFeeder for Assembly {
-    fn bget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(
-            self.get_owner_references()
-                .iter()
-                .map(|x| x.get_uid().to_string())
-                .collect::<String>(),
-            "_stacks_factory".to_string(),
-        )
-    }
-
-    fn bfeed(&mut self, f: Option<StacksFactory>) {
-        self.mut_spec().set_blockchain(f);
-    }
-}
-
 // The endpoints feeder, which gets called from an expander cache.
 // The expander cache is ttl and loads the endpoints the first time.
 impl EndPointsFeeder for Assembly {
@@ -990,8 +979,6 @@ impl Secret {
 pub struct Spec {
     assembly_factory: Option<AssemblyFactory>,
 
-    blockchain_factory: Option<StacksFactory>,
-
     endpoints: Option<EndPoints>,
 
     volumes: Option<Vec<Volumes>>,
@@ -1009,14 +996,6 @@ impl Spec {
 
     pub fn get_parent(&self) -> Option<AssemblyFactory> {
         self.assembly_factory.clone()
-    }
-
-    pub fn set_blockchain(&mut self, factory: Option<StacksFactory>) {
-        self.blockchain_factory = factory;
-    }
-
-    pub fn get_blockchain(&self) -> Option<StacksFactory> {
-        self.blockchain_factory.clone()
     }
 
     pub fn set_endpoints(&mut self, endpoints: Option<EndPoints>) {

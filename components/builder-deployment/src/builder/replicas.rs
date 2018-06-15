@@ -4,8 +4,8 @@ use error::{Error, Result};
 
 use protocol::api::base::Status;
 use protocol::api::base::{ChildTypeMeta, MetaFields};
-use protocol::api::deploy::{Assembly, AssemblyFactory, NEW_REPLICA_INITALIZING_MSG,
-                            NEW_STAND_STILL_MSG, PHASE_PENDING, PHASE_STAND_STILL};
+use protocol::api::deploy::{Assembly, AssemblyFactory, AWAIT_PHASE_PENDING,
+                            NEW_REPLICA_INITALIZING_MSG, NEW_STAND_STILL_MSG, PHASE_STAND_STILL};
 use protocol::api::schema::type_meta_url; //To access object_meta() and children() in AssemblyFactory, Assembly
 
 use models::{assembly, assemblyfactory};
@@ -221,7 +221,7 @@ impl<'a> ReplicaContext<'a> {
             );
         }
         (
-            PHASE_PENDING.to_string(),
+            AWAIT_PHASE_PENDING.to_string(),
             NEW_REPLICA_INITALIZING_MSG.to_string(),
         )
     }

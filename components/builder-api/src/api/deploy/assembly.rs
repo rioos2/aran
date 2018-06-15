@@ -11,7 +11,7 @@ use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use deploy::models::{assembly, assemblyfactory, blueprint, endpoint, stacksfactory, volume};
+use deploy::models::{assembly, assemblyfactory, blueprint, endpoint, volume};
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
@@ -24,7 +24,7 @@ use protocol::api::deploy::Assembly;
 use protocol::api::schema::{dispatch, dispatch_url, type_meta};
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_ENDPOINT,
                       CACHE_PREFIX_FACTORY, CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN,
-                      CACHE_PREFIX_STACKS_FACTORY, CACHE_PREFIX_VOLUME};
+                      CACHE_PREFIX_VOLUME};
 use router::Router;
 use telemetry::metrics::prometheus::PrometheusClient;
 
@@ -341,19 +341,6 @@ impl ExpanderSender for AssemblyApi {
             }),
         ));
 
-        let mut _conn = self.conn.clone();
-        _conn.expander.with(plan_service);
-        let blockchain_factory_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_STACKS_FACTORY.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                debug!("» Stacksfactory live load for ≈ {}", id);
-                stacksfactory::DataStore::new(&_conn)
-                    .show(&id)
-                    .ok()
-                    .and_then(|f| serde_json::to_string(&f).ok())
-            }),
-        ));
-
         let _conn = self.conn.clone();
         let endpoint_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_ENDPOINT.to_string(),
@@ -392,7 +379,6 @@ impl ExpanderSender for AssemblyApi {
         &self.conn.expander.with(endpoint_service);
         &self.conn.expander.with(volume_service);
         &self.conn.expander.with(metric_service);
-        &self.conn.expander.with(blockchain_factory_service);
     }
 }
 

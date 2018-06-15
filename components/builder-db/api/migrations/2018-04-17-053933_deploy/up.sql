@@ -174,6 +174,26 @@ END
 $$ LANGUAGE PLPGSQL STABLE;
 
 ---
+--- Table:assemblyfactorys:show_by_stacksfactory
+--- Describe all the assemblyfactorys for the stacksfactory id.
+---
+CREATE 
+OR REPLACE FUNCTION get_assemblyfactorys_by_parentid_v1 (pid text) RETURNS SETOF assembly_factory AS $$ 
+BEGIN
+   RETURN QUERY 
+   SELECT
+      * 
+   FROM
+      assembly_factory 
+   WHERE
+      object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', pid)))::jsonb;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+
+
+---
 --- Table:assembly_factory:list_blank
 ---
 CREATE 
