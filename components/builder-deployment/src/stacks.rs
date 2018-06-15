@@ -90,10 +90,10 @@ impl<'a> StacksDeployer<'a> {
                             Err(_) => acc,
                         });
 
-                    let f: &mut StacksFactory = &mut factory.clone();
+                    let f: &mut StacksFactory = &mut stacks.clone();
                     f.get_mut_spec().set_assembly_factory(assembled_factorys);
 
-                    Ok(factory.clone())
+                    Ok(f.clone())
                 }
                 None => Err(Error::StacksFactoryInvalidType(
                     "Can't invoke stacks deployer. Invoked in an incorrect way.".to_string(),

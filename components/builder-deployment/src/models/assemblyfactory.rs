@@ -67,6 +67,25 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
+    pub fn show_by_stacksfactory(&self, id: &IdGet) -> AssemblyFactoryOutputList {
+        let conn = self.db.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_assemblyfactorys_by_parentid_v1($1)",
+            &[&(id.get_id() as String)],
+        ).map_err(Error::AssemblyFactoryGet)?;
+
+        let mut response = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(self.row_to_assembly_factory(&row, PULL_DIRECTLY)?);
+            }
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
     pub fn status_update(&self, upd: &StatusUpdate) -> AssemblyFactoryOutput {
         let conn = self.db.pool.get_shard(0)?;
 
@@ -148,6 +167,9 @@ impl<'a> DataStore<'a> {
         assembly_factory.set_plan(plan.to_string());
         assembly_factory.set_spec(serde_json::from_value(row.get("spec")).unwrap());
         assembly_factory.set_replicas(replicas as u32);
+
+        // Pull the parent information - stacks
+        self.expander.with_stacks(&mut assembly_factory, how_to);
         self.expander.with_plan(&mut assembly_factory, how_to);
 
         // AssemblyFactory is created first, and service is created later in our process.
