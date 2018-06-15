@@ -84,7 +84,7 @@ impl PushNotifier for SlackNotifier {
     }
 
     fn notify(&self) {
-        if self.should_notify() {
+        if !self.should_notify() {
             return;
         }
         match Status::from_str(&self.envelope.event.reason) {

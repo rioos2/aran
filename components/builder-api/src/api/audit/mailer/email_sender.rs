@@ -66,7 +66,7 @@ impl PushNotifier for EmailNotifier {
         }
     }
     fn notify(&self) {
-        if self.should_notify() {
+        if !self.should_notify() {
             return;
         }
         let data = email_generator::EmailGenerator::new(self.envelope.event.object_meta().labels, &self.envelope.event.message);
