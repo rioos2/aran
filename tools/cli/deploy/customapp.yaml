@@ -42,6 +42,7 @@ buildconfig:
         uri: https://github.com/rioadvancement/blockchain-demo
         reference: master
       source_secret: ''
+      context_dir: web
     strategy:
       build_type: Source
       source_strategy:
