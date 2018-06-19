@@ -201,6 +201,18 @@ impl NodeStatus {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct NodeFilter {
+    #[serde(default)]
+    pub ip_address_type: String,
+    #[serde(default)]
+    pub cidrs: Vec<String>,
+    #[serde(default)]
+    pub range_address_from: String,
+    #[serde(default)]
+    range_address_to: String,
+}
+
 ///The status that is used to parse request in /status update of any api.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NodeStatusUpdate {

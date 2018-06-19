@@ -7,6 +7,7 @@ use std::fmt;
 use std::result;
 use db;
 use telemetry;
+use oping;
 
 #[derive(Debug)]
 pub enum Error {
@@ -16,6 +17,7 @@ pub enum Error {
     NodeSetStatus(postgres::error::Error),
     NodeGet(postgres::error::Error),
     PromoStatusGetError(telemetry::error::Error),
+    PingError(oping::PingError),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -55,5 +57,12 @@ impl From<db::error::Error> for Error {
 impl From<telemetry::error::Error> for Error {
     fn from(err: telemetry::error::Error) -> Error {
         Error::PromoStatusGetError(err)
+    }
+}
+
+
+impl From<oping::PingError> for Error {
+    fn from(err: oping::PingError) -> Error {
+        Error::PingError(err)
     }
 }
