@@ -9,12 +9,14 @@ use std::ops::Div;
 use std::collections::BTreeMap;
 
 use protocol::api::node;
-use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
+use protocol::api::schema::type_meta_url;
 
 use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::collector::{Collector, CollectorScope};
 
 use serde_json;
+use rand;
 
 use postgres;
 use db::data_store::DataStoreConn;
@@ -130,17 +132,20 @@ impl NodeDS {
                             .map(|y| if x.to_string() == y.get_node_ip() {
                                 response.push(y.clone());
                             } else {
-                                let mut node = node::Node::new();
-                                node.set_node_ip(x.to_string());
-                                node.set_id("name".to_string());
-                                response.push(node);
+                                response.push(make_node(x));
                             })
                             .collect::<Vec<_>>();
                     })
                     .collect::<Vec<_>>();
                 Ok(Some(response))
             }
-            Ok(None) => Ok(None),
+            Ok(None) => {
+                let mut response = Vec::new();
+                ips.iter()
+                    .map(|x| { response.push(make_node(x)); })
+                    .collect::<Vec<_>>();
+                Ok(Some(response))
+            }
             Err(_err) => Ok(None),
         }
     }
@@ -611,4 +616,14 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<node::Node> {
     node.set_status(serde_json::from_value(row.get("status")).unwrap());
     node.set_created_at(created_at.to_rfc3339());
     Ok(node)
+}
+
+fn make_node(name: &str) -> node::Node {
+    let mut node = node::Node::new();
+    let jackie = node.who_am_i();
+    let ref mut om = node.mut_meta(node.object_meta(), name.to_string(), "".to_string());
+    node.set_meta(type_meta_url(jackie), om.clone());
+    node.set_node_ip(name.to_string());
+    node.set_id(rand::random::<u64>().to_string());
+    node
 }

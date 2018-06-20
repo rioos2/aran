@@ -8,6 +8,7 @@ use std::result;
 use db;
 use telemetry;
 use oping;
+use cidr;
 
 #[derive(Debug)]
 pub enum Error {
@@ -18,6 +19,7 @@ pub enum Error {
     NodeGet(postgres::error::Error),
     PromoStatusGetError(telemetry::error::Error),
     PingError(oping::PingError),
+    NetworkError(cidr::NetworkParseError),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -31,6 +33,8 @@ impl fmt::Display for Error {
             Error::NodeSetStatus(ref e) => format!("Database error update node status, {}", e),
             Error::NodeGet(ref e) => format!("Database error get node , {}", e),
             Error::PromoStatusGetError(ref e) => format!("Prometheus connection refused , {}", e),
+            Error::PingError(ref e) => format!("PingError , {}", e),
+            Error::NetworkError(ref e) => format!("PingError , {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -45,6 +49,8 @@ impl error::Error for Error {
             Error::NodeSetStatus(ref err) => err.description(),
             Error::NodeGet(ref err) => err.description(),
             Error::PromoStatusGetError(ref err) => err.description(),
+            Error::PingError(ref err) => err.description(),
+            Error::NetworkError(ref err) => err.description(),
         }
     }
 }
@@ -64,5 +70,11 @@ impl From<telemetry::error::Error> for Error {
 impl From<oping::PingError> for Error {
     fn from(err: oping::PingError) -> Error {
         Error::PingError(err)
+    }
+}
+
+impl From<cidr::NetworkParseError> for Error {
+    fn from(err: cidr::NetworkParseError) -> Error {
+        Error::NetworkError(err)
     }
 }

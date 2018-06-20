@@ -156,8 +156,11 @@ impl NodeApi {
     fn discovery(&self, req: &mut Request) -> AranResult<Response> {
         let unmarshall_body = req.get::<bodyparser::Struct<NodeFilter>>()?;
 
-        match NodeDS::discovery(&self.conn, NodeDiscovery::new(unmarshall_body).ping_ips()) {
-            Ok(Some(node_get)) => Ok(render_json(status::Ok, &node_get)),
+        match NodeDS::discovery(
+            &self.conn,
+            NodeDiscovery::new(unmarshall_body.unwrap()).ping_ips()?,
+        ) {
+            Ok(Some(node_get)) => Ok(render_json_list(status::Ok, dispatch(req), &node_get)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
