@@ -1,3 +1,10 @@
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub enum Backend {
+    LicenseCloud,
+}
+
+
 ///// Configuration structure for validating license
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -7,6 +14,8 @@ pub struct LicensesCfg {
     pub so_file: String,
     /// The activation license code bought by the customer (or) we will assume we are on trial mode.
     pub activation_code: Option<String>,
+    pub backend: Backend,
+
 }
 
 impl Default for LicensesCfg {
@@ -14,6 +23,7 @@ impl Default for LicensesCfg {
         LicensesCfg {
             so_file: "ShaferFilechck.so".to_string(),
             activation_code: None,
+            backend: Backend::LicenseCloud,
         }
     }
 }
@@ -24,4 +34,5 @@ pub trait License {
     fn so_file(&self) -> &str;
     /// Return the license code for the site (Default is blank)
     fn activation_code(&self) -> Option<String>;
+    fn backend(&self) -> Backend;
 }
