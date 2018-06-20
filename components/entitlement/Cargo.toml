@@ -19,5 +19,8 @@ lazy_static = "*"
 [dependencies.rioos_core]
 path = "../core"
 
+[dependencies.rioos_http_client]
+path = "../http-client"
+
 [features]
 functional = []
