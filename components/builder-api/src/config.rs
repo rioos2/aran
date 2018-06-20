@@ -15,7 +15,7 @@ use api::objectstorage::config::ObjectStorage;
 
 use auth::config::{flow_modes, AuthenticationFlowCfg, Identity, IdentityCfg};
 use watch::config::{Streamer, StreamerCfg};
-use entitlement::config::{License, LicensesCfg};
+use entitlement::config::{License, LicensesCfg, Backend};
 use telemetry::config::{Telemetry, TelemetryCfg};
 
 use rio_core::config::ConfigFile;
@@ -104,6 +104,7 @@ impl Config {
         ui.para(&self.services.loadbalancer_disk)?;
         ui.heading("[licenses]")?;
         ui.para(&self.licenses.so_file)?;
+        ui.para(&format!("{:?}", &self.licenses.backend))?;
         ui.heading("[logs]")?;
         ui.para(&self.logs.influx_endpoint)?;
         ui.para(&self.logs.influx_prefix)?;
@@ -371,6 +372,9 @@ impl License for Config {
     }
     fn activation_code(&self) -> Option<String> {
         self.licenses.activation_code.clone()
+    }
+    fn backend(&self) -> Backend {
+         self.licenses.backend.clone()
     }
 }
 

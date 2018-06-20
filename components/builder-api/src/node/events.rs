@@ -47,18 +47,20 @@ impl RuntimeHandler {
 
     fn handle_internal_event(&mut self, event: &InternalEvent) {
         match *event {
-            // InternalEvent::EntitlementTimeout => match self.license.create_trial_or_verify() {
-            //     Ok(()) => info!{" ✓ All Good. You have a valid entitlement. !"},
-            //     Err(err) => {
-            //         let expiry_attempt = self.license.hard_stop();
-            //         if expiry_attempt.is_err() {
-            //             error!("{:?}", err)
-            //         }
-            //         warn!("{:?}, Message: {:?}", expiry_attempt.unwrap(), err)
-            //     }
-            // },
-            InternalEvent::EntitlementTimeout => info!{" ✓ All Good. You have a valid entitlement. !"},
+             InternalEvent::EntitlementTimeout => match self.license.create_trial_or_verify() {
+                 Ok(()) => info!{" ✓ All Good. You have a valid entitlement. !"},
+                 Err(err) => {
+                     let expiry_attempt = self.license.hard_stop();
+                     if expiry_attempt.is_err() {
+                         error!("{:?}", err)
+                     } else {
+                         warn!("{:?}, Message: {:?}", expiry_attempt.unwrap(), err)
+                     }                     
+                 }
+             },
+            //InternalEvent::EntitlementTimeout => info!{" ✓ All Good. You have a valid entitlement. !"},
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }
     }
 }
+

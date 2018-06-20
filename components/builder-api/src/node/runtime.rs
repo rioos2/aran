@@ -107,11 +107,10 @@ impl Runtime {
     /// This may be used if you want to customize api with the `ApiContext`.
     pub fn start(self) -> io::Result<()> {
         let (handler_part, internal_part) = self.into_reactor();
-
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
             let tx = Arc::new(internal_part);
-            let duration = Duration::new(3600, 0); // 10 minutes
+            let duration = Duration::new(36, 0); // 10 minutes
             let builder = tokio_timer::wheel().max_timeout(duration);
             let wakeups = builder.build().interval(duration);
             let task = wakeups.for_each(|_| {
