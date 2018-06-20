@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>rioos</id>
+    <title>rioos development build</title>
+    <version>2.0.0-alpha1</version>
+    <authors>Rio/OS  Maintainers</authors>
+    <owners>Rio/OS Maintainers</owners>
+    <summary>Pre-release build of rioos for Windows</summary>
+    <description>This is a pre-release build for testing only. 
+    </description>
+    <projectUrl>http://rio.digital</projectUrl>
+    <projectSourceUrl>https://github.com/rioadvancement/rioos</projectSourceUrl>
+    <docsUrl>http://rio.digital/docs/</docsUrl>
+    <mailingListUrl>http://rio.digital/docs</mailingListUrl>
+    <bugTrackerUrl>https://github.com/rioadvancement/rioos/issues</bugTrackerUrl>
+    <tags>riood</tags>
+    <copyright>Copyright (c) 2018 Rio Advancement Inc.</copyright>
+    <licenseUrl>http://rio.digital/docs</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <releaseNotes>This is a pre-release build for testing only.</releaseNotes>
+  </metadata>
+  <files>
+    <file src="..\..\..\target\Debug\rioos.exe" target="tools" />
+    <file src="C:\Windows\System32\vcruntime140.dll" target="tools"/>
+    <file src="C:\ProgramData\chocolatey\lib\rioos_native_dependencies\builds\bin\*.dll" target="tools" />
+  </files>
+</package>

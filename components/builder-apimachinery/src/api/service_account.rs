@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
 use super::session::Session;
+use api::base::ObjectReference;
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use std::collections::BTreeMap;
-use api::audit::ObjectReference;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ServiceAccount {
@@ -98,7 +98,6 @@ impl Into<Session> for ServiceAccount {
         session
     }
 }
-
 
 #[cfg(test)]
 mod test {

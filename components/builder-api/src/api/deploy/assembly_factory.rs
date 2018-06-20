@@ -10,7 +10,7 @@ use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use deploy::assembler::{Assembler, ServicesConfig};
-use deploy::models::{assemblyfactory, blueprint, service};
+use deploy::models::{assemblyfactory, blueprint, service, stacksfactory};
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
@@ -21,7 +21,8 @@ use iron::status;
 use protocol::api::base::{MetaFields, Status, StatusUpdate};
 use protocol::api::deploy::AssemblyFactory;
 use protocol::api::schema::{dispatch, dispatch_url, type_meta};
-use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE,
+                      CACHE_PREFIX_STACKS_FACTORY};
 use router::Router;
 use std::sync::Arc;
 
@@ -86,6 +87,25 @@ impl AssemblyFactoryApi {
                 Error::Db(RecordsNotFound),
                 params.get_id()
             ))),
+        }
+    }
+
+    ///Wide describe, that provides the full information of an assemblyfactory.
+    ///GET: /stacksfactorys/describe/:id
+    ///Input: id = u64
+    ///Returns StacksFactory with all information (plans)
+    ///This doesn't send back spec.assembly_factory
+    fn describe(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        match assemblyfactory::DataStore::new(&self.conn).show_by_stacksfactory(&params) {
+            Ok(Some(factory)) => Ok(render_json_list(status::Ok, dispatch(req), &factory)),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
 
@@ -205,6 +225,9 @@ impl Api for AssemblyFactoryApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
+        let describe = move |req: &mut Request| -> AranResult<Response> { _self.describe(req) };
+
+        let _self = self.clone();
         let status_update =
             move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
@@ -227,6 +250,11 @@ impl Api for AssemblyFactoryApi {
             "/assemblyfactorys/:id",
             XHandler::new(C { inner: show }).before(basic.clone()),
             "assembly_factorys_show",
+        );
+        router.get(
+            "/stacksfactorys/:id/describe",
+            XHandler::new(C { inner: describe }).before(basic.clone()),
+            "stacksfactorys_describe",
         );
         router.get(
             "/assemblyfactorys",
@@ -276,7 +304,20 @@ impl ExpanderSender for AssemblyFactoryApi {
             }),
         ));
 
-        &self.conn.expander.with(plan_service);
+        let mut _conn = self.conn.clone();
+        _conn.expander.with(plan_service);
+        let stacks_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_STACKS_FACTORY.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Stacksfactory live load for ≈ {}", id);
+                stacksfactory::DataStore::new(&_conn)
+                    .show(&id)
+                    .ok()
+                    .and_then(|f| serde_json::to_string(&f).ok())
+            }),
+        ));
+
+        &self.conn.expander.with(stacks_service);
         &self.conn.expander.with(services_service);
     }
 }

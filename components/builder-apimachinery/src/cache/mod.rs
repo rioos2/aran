@@ -5,26 +5,23 @@ mod flock;
 pub mod inject;
 mod multi_cache;
 
+use self::flock::Cacher;
+use api;
+use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder,
+                    ServicesFeeder, StacksFeeder, VolumesFeeder};
+use cache::multi_cache::MultiCache;
+use serde_json;
 use std::collections::BTreeMap;
 use std::fmt;
 use std::ops::Deref;
 use std::sync::Arc;
-
-use api;
-use serde_json;
-
-use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder,
-                    ServicesFeeder, VolumesFeeder};
-use cache::multi_cache::MultiCache;
-
-use self::flock::Cacher;
 
 pub const PULL_DIRECTLY: Option<bool> = Some(true);
 pub const PULL_INVALDATED: Option<bool> = None;
 
 pub const CACHE_PREFIX_PLAN: &'static str = "_plan";
 pub const CACHE_PREFIX_FACTORY: &'static str = "_factory";
-pub const CACHE_PREFIX_STACKS_FACTORY: &'static str = "_stacks_factory";
+pub const CACHE_PREFIX_STACKS_FACTORY: &'static str = "_stacks";
 pub const CACHE_PREFIX_ENDPOINT: &'static str = "_endpoint";
 pub const CACHE_PREFIX_VOLUME: &'static str = "_volume";
 pub const CACHE_PREFIX_METRIC: &'static str = "_metric";
@@ -283,6 +280,35 @@ impl InMemoryExpander {
         f.ffeed(opt_found_as_str.and_then({
             |found_as_str| {
                 let factory: Option<api::deploy::AssemblyFactory> =
+                    serde_json::from_str(&found_as_str).ok();
+                factory
+            }
+        }))
+    }
+
+    /// Expands a structure with the stacks factory information.
+    /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
+    /// If force is None, then it invalidates the cache and loads a fresh copy
+    pub fn with_stacks<F: StacksFeeder>(&self, f: &mut F, force: Option<bool>) {
+        let fid = f.bget_id();
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    debug!("» Stacksfactory Invalidate fn for ≈ {}", fid);
+                    self.cached_invalidate_for(CACHE_PREFIX_STACKS_FACTORY.to_string(), fid.clone())
+                        .clone()
+                },
+                |_v| {
+                    debug!("» Stacksfactory cache fn for ≈ {}", fid);
+                    self.cached_value_for(CACHE_PREFIX_STACKS_FACTORY.to_string(), fid.clone())
+                        .clone()
+                },
+            )
+        };
+
+        f.bfeed(opt_found_as_str.and_then({
+            |found_as_str| {
+                let factory: Option<api::deploy::StacksFactory> =
                     serde_json::from_str(&found_as_str).ok();
                 factory
             }

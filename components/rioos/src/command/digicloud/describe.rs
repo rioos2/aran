@@ -6,13 +6,16 @@ use api_client::Client;
 
 use super::super::common::pretty_table;
 
-use protocol::api::base::{MetaFields,hours_ago};
+use protocol::api::base::{hours_ago, MetaFields};
 
-pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name: String) -> Result<()> {
-    ui.begin(&format!(
-        "Constructing a {} digitalcloud for you...",
-        name
-    ))?;
+pub fn start(
+    ui: &mut UI,
+    rio_client: Client,
+    token: String,
+    email: String,
+    name: String,
+) -> Result<()> {
+    ui.begin(&format!("Constructing a {} digitalcloud for you...", name))?;
     ui.br()?;
 
     let result = rio_client.describe_deploy(&token, &email, &name)?;
@@ -20,13 +23,8 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name
     ui.heading("OverView")?;
     ui.para(&format!("Id: {}", result.get_id()))?;
     ui.para(&format!("Name: {}", result.object_meta().name))?;
-    ui.para(&format!(
-        "Replicas: {}",
-        result.get_replicas().to_string()
-    ))?;
-    ui.para(
-        &format!("Status: {}", result.get_status().get_phase()),
-    )?;
+    ui.para(&format!("Replicas: {}", result.get_replicas().to_string()))?;
+    ui.para(&format!("Status: {}", result.get_status().get_phase()))?;
 
     ui.para(&format!("Hrs ago: {}", hours_ago(result.get_created_at())))?;
 
@@ -101,11 +99,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name
 
     pretty_table(metric.to_owned(), resorce_title);*/
 
-    let replicas = rio_client.get_assembly_by_id(
-        &token,
-        &email,
-        &result.get_id(),
-    )?;
+    let replicas = rio_client.get_assembly_by_id(&token, &email, &result.get_id())?;
 
     ui.heading("Replicas")?;
     let title = row![
@@ -122,9 +116,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, name
 
     ui.br()?;
 
-    ui.end(
-        format!("{} records listed.", replicas.to_owned().len()),
-    )?;
+    ui.end(format!("{} records listed.", replicas.to_owned().len()))?;
 
     ui.para(
         "For more information on digitalclouds deployments: \

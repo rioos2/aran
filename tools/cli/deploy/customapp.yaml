@@ -2,7 +2,7 @@
 # Deploy Information
 # ================================================================
 ---
-assembly_factory:
+stacks_factory:
   object_meta:
     name: king.megam.io
     account: '976649707684110336'
@@ -42,6 +42,7 @@ buildconfig:
         uri: https://github.com/rioadvancement/blockchain-demo
         reference: master
       source_secret: ''
+      context_dir: web
     strategy:
       build_type: Source
       source_strategy:

@@ -6,9 +6,10 @@ extern crate chrono;
 extern crate human_size;
 extern crate petgraph;
 extern crate postgres;
+extern crate rand;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
-extern crate rioos_builder_jobsrv as job;
+extern crate rioos_builder_jobsbuilder as job;
 extern crate rioos_telemetry as telemetry;
 extern crate serde_json;
 
@@ -24,8 +25,11 @@ pub use self::error::{Error, Result};
 //The plan category that applies to services.
 const APPLICABLE_TO: &'static [&'static str] = &["blockchain_template", "containers"];
 
-//The plan category that is eligible to be stand still
-const APPLICABLE_TO_STAND_STILL: &'static [&'static str] = &["blockchain_template"];
+///The plan category that is eligible to be stand still
+///The plan categories eligible to be standstill are
+/// Blockchain networks - denoted by "blockchain"
+/// Blockcahin apps     - denoted by "blockchain_template"
+const APPLICABLE_TO_STAND_STILL: &'static [&'static str] = &["blockchain_template", "blockchain"];
 
 // AssemblyFactory output
 pub type AssemblyFactoryOutput =

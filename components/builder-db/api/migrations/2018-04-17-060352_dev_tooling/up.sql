@@ -67,7 +67,7 @@ BEGIN
    FROM
       build_configs 
    where
-      object_meta @ > json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
+      object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
@@ -182,7 +182,7 @@ BEGIN
    FROM
       builds 
    where
-      object_meta @ > json_build_object('owner_references', json_build_array(json_build_object('uid', bid)))::jsonb;
+      object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', bid)))::jsonb;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
@@ -281,7 +281,7 @@ BEGIN
    FROM
       image_references 
    where
-      object_meta @ > json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
+      object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
@@ -418,7 +418,7 @@ BEGIN
    FROM
       image_marks 
    where
-      object_meta @ > json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
+      object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;

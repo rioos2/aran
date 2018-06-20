@@ -1,13 +1,19 @@
+use super::super::common::condition_table;
+use api_client::Client;
+use common::ui::UI;
 #[warn(unused_assignments)]
 pub use error::{Error, Result};
-use common::ui::UI;
-use api_client::Client;
-use protocol::api::node;
-use super::super::common::condition_table;
 use human_size::Size;
-use protocol::api::base::{MetaFields,hours_ago};
+use protocol::api::base::{hours_ago, MetaFields};
+use protocol::api::node;
 
-pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: String) -> Result<()> {
+pub fn start(
+    ui: &mut UI,
+    rio_client: Client,
+    token: String,
+    email: String,
+    id: String,
+) -> Result<()> {
     ui.begin(&format!("Constructing a {} node for you...", id))?;
     ui.br()?;
 
@@ -41,8 +47,8 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         .unwrap()
         .parse::<Size>()
         .unwrap()
-        .into_bytes() -
-        result
+        .into_bytes()
+        - result
             .get_status()
             .get_allocatable()
             .get("memory")
@@ -58,8 +64,8 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         .unwrap()
         .parse::<Size>()
         .unwrap()
-        .into_bytes() -
-        result
+        .into_bytes()
+        - result
             .get_status()
             .get_allocatable()
             .get("storage")
@@ -72,19 +78,19 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         vec![
             "Cpu".to_string(),
             (result
-                 .get_status()
-                 .get_capacity()
-                 .get("cpu")
-                 .unwrap()
-                 .parse::<u8>()
-                 .unwrap() -
-                 result
-                     .get_status()
-                     .get_allocatable()
-                     .get("cpu")
-                     .unwrap()
-                     .parse::<u8>()
-                     .unwrap())
+                .get_status()
+                .get_capacity()
+                .get("cpu")
+                .unwrap()
+                .parse::<u8>()
+                .unwrap()
+                - result
+                    .get_status()
+                    .get_allocatable()
+                    .get("cpu")
+                    .unwrap()
+                    .parse::<u8>()
+                    .unwrap())
                 .to_string(),
             result
                 .get_status()
@@ -145,9 +151,7 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String, id: 
         result.get_status().get_node_info().get_os_image(),
         result.get_status().get_node_info().get_architecture()
     ))?;
-    ui.para(
-        &format!("Status: {}", result.get_status().get_phase()),
-    )?;
+    ui.para(&format!("Status: {}", result.get_status().get_phase()))?;
 
     ui.para(&format!("Hrs Ago: {}", hours_ago(result.get_created_at())))?;
 

@@ -6,9 +6,9 @@ use router::Router;
 
 use api::{Api, ParmsVerifier, QueryValidator};
 
-use protocol::api::schema::dispatch;
 use protocol::api::base::MetaFields;
 use protocol::api::log::LogQueryBuilder;
+use protocol::api::schema::dispatch;
 
 use config::Config;
 use error::Error;
@@ -18,12 +18,11 @@ use http_gateway::util::errors::AranResult;
 use http_gateway::util::errors::{internal_error, not_found_error};
 
 use audit::config::InfluxClientConn;
-use deploy::models::assembly;
 use audit::models::log;
+use deploy::models::assembly;
 
-
-use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
 
 #[derive(Clone)]
 pub struct LogApi {
@@ -39,7 +38,10 @@ pub struct LogApi {
 /// GET: /list_blank
 impl LogApi {
     pub fn new(datastore: Box<DataStoreConn>, logconn: Box<InfluxClientConn>) -> Self {
-        LogApi { logconn: logconn, conn: datastore }
+        LogApi {
+            logconn: logconn,
+            conn: datastore,
+        }
     }
 
     /// list the log for all (container and machine)
@@ -59,15 +61,23 @@ impl LogApi {
         let mut query_pairs = self.optional_validate(req)?;
         match assembly::DataStore::new(&self.conn).show(&params) {
             Ok(Some(assembly)) => {
-                query_pairs.labels.insert("name".to_string(), assembly.object_meta().name);
+                query_pairs
+                    .labels
+                    .insert("name".to_string(), assembly.object_meta().name);
                 match log::DataStore::list(&self.logconn, &LogQueryBuilder::with(query_pairs)) {
-                    Ok(Some(log_list)) => Ok(render_json_list(status::Ok, dispatch(req), &log_list)),
+                    Ok(Some(log_list)) => {
+                        Ok(render_json_list(status::Ok, dispatch(req), &log_list))
+                    }
                     Err(err) => Err(internal_error(&format!("{}\n", err))),
                     Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
                 }
             }
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
     }
 }
@@ -80,7 +90,11 @@ impl Api for LogApi {
         let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
-        router.get("/logs", XHandler::new(C { inner: list_blank }), "list_blank");
+        router.get(
+            "/logs",
+            XHandler::new(C { inner: list_blank }),
+            "list_blank",
+        );
 
         router.get("/logs/:id", XHandler::new(C { inner: list }), "list");
     }

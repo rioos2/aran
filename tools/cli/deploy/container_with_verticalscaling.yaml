@@ -2,7 +2,7 @@
 # Deploy Information
 # ================================================================
 ---
-assembly_factory:
+stacks_factory:
   object_meta:
     name: '' #assembly factory name
     account: ''  # account id

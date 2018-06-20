@@ -1,22 +1,18 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! The PostgreSQL backend for the Authorization [assembly, assemblyfactory].
-use std::collections::BTreeMap;
-
-use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::{deploy, node};
-use protocol::api::base::{IdGet, StatusUpdate, MetaFields};
-
-use protocol::cache::{PULL_DIRECTLY, PULL_INVALDATED, PullFromCache, InMemoryExpander};
-
-use telemetry::metrics::collector::{CollectorScope, Collector};
-use telemetry::metrics::prometheus::PrometheusClient;
+//! The PostgreSQL backend for the Deployment - Assembly
 use super::super::{AssemblyOutput, AssemblyOutputList};
-
-use serde_json;
-use postgres;
+use chrono::prelude::*;
 use db::data_store::DataStoreConn;
+use error::{Error, Result};
+use postgres;
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::{deploy, node};
+use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
+use serde_json;
+use std::collections::BTreeMap;
+use telemetry::metrics::collector::{Collector, CollectorScope};
+use telemetry::metrics::prometheus::PrometheusClient;
 
 const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
@@ -164,7 +160,11 @@ impl<'a> DataStore<'a> {
     }
 
     //Get the metrics as a map of assembly_id and its metric
-    pub fn show_metrics(&self, id: &IdGet, prom: &PrometheusClient) -> Result<BTreeMap<String, String>> {
+    pub fn show_metrics(
+        &self,
+        id: &IdGet,
+        prom: &PrometheusClient,
+    ) -> Result<BTreeMap<String, String>> {
         match &id.get_name()[..] {
             "machine" => {
                 let label_collection = vec![
@@ -183,11 +183,11 @@ impl<'a> DataStore<'a> {
                 Ok(Collector::new(prom, scope).metric_by_avg_for_machines()?)
             }
             "container" => {
-                let label_collection: Vec<String> = vec![
-                    format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string(),
-                ];
+                let label_collection: Vec<String> =
+                    vec![format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string()];
 
-                let container_metric_scope: Vec<String> = vec!["container_cpu_usage_seconds_total".to_string()];
+                let container_metric_scope: Vec<String> =
+                    vec!["container_cpu_usage_seconds_total".to_string()];
 
                 let scope = CollectorScope {
                     metric_names: container_metric_scope,
@@ -195,20 +195,21 @@ impl<'a> DataStore<'a> {
                     last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
                     avg_by_name: "rioos_assembly_id".to_string(),
                 };
-                Ok(Collector::new(prom, scope).metric_by_avg_for_containers(
-                    "cpu",
-                )?)
+                Ok(Collector::new(prom, scope).metric_by_avg_for_containers("cpu")?)
             }
             _ => Ok(BTreeMap::new()),
         }
-
     }
     /// Expands the assembly by sticking in Spec
     ///         1. AssemblyFactory (parent information)
     ///         2. endpoints for this assembly.
     ///         3. volumes
     ///         4. metrics
-    fn collect_spec(&self, row: &postgres::rows::Row, how_to: PullFromCache) -> Result<deploy::Assembly> {
+    fn collect_spec(
+        &self,
+        row: &postgres::rows::Row,
+        how_to: PullFromCache,
+    ) -> Result<deploy::Assembly> {
         let mut assembly = row_to_assembly(&row)?;
         self.expander.with_factory(&mut assembly, how_to);
         self.expander.with_endpoints(&mut assembly, how_to);
@@ -218,6 +219,8 @@ impl<'a> DataStore<'a> {
     }
 }
 
+/// A private convertor of postgres Row to the required structure.
+/// In this case Assembly.
 fn row_to_assembly(row: &postgres::rows::Row) -> Result<deploy::Assembly> {
     let mut assembly = deploy::Assembly::with(
         serde_json::from_value(row.get("type_meta")).unwrap(),

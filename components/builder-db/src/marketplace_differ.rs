@@ -54,9 +54,7 @@ impl MarketPlaceDiffer {
                 ),
             )));
         }
-
         let u: MarketPlaceDownload = serde_yaml::from_reader(file)?;
-
         info!("Loaded {:?}", MARKETPLACE_CACHE_FILE.to_str());
 
         elapsed_or_return(u.time_stamp);
@@ -69,20 +67,16 @@ impl MarketPlaceDiffer {
             .iter()
             .map(|x| {
                 &conn.query(
-                    "SELECT * FROM select_or_insert_plan_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
+                    "SELECT * FROM select_or_insert_plan_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
                     &[
                         &(x.object_meta().name as String),
                         &(serde_json::to_value(x.type_meta()).unwrap()),
-                        &(serde_json::to_value(x.object_meta()).unwrap()),                        
-                        &(serde_json::to_value(x.get_metadata()).unwrap()),
+                        &(serde_json::to_value(x.object_meta()).unwrap()),
+                        &(serde_json::to_value(x.get_plan()).unwrap()),
                         &(x.get_category() as String),
                         &(x.get_version() as String),
-                        &(serde_json::to_value(x.get_characteristics()).unwrap()),
                         &(x.get_icon() as String),
                         &(x.get_description() as String),
-                        &(serde_json::to_value(x.get_ports()).unwrap()),
-                        &(serde_json::to_value(x.get_envs()).unwrap()),
-                        &(serde_json::to_value(x.get_lifecycle()).unwrap()),
                         &(serde_json::to_value(x.get_status()).unwrap()),
                     ],
                 ).unwrap();
@@ -96,7 +90,6 @@ fn elapsed_or_return(time: String) -> () {
     let now_time = DateTime::parse_from_rfc3339(&Utc::now().to_rfc3339().to_string()).unwrap();
     let time_stamp = DateTime::parse_from_rfc3339(&time.to_string()).unwrap();
     let diff = now_time.timestamp() - time_stamp.timestamp();
-
     if diff < SYNC_ELAPSED_SECONDS {
         return;
     }

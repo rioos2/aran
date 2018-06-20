@@ -1,6 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields, WhoAmITypeMeta};
-use std::collections::BTreeMap;
+use api::base::{MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BucketAccessorData {
@@ -13,7 +12,7 @@ pub struct BucketAccessorData {
 impl BucketAccessorData {
     pub fn new() -> BucketAccessorData {
         ::std::default::Default::default()
-    }  
+    }
     pub fn set_url(&mut self, v: ::std::string::String) {
         self.rioos_sh_remote_url = v;
     }
@@ -30,15 +29,15 @@ impl BucketAccessorData {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct BucketAccessor {
-    type_meta: TypeMeta, //Standard type metadata: kind: EndPoints
+    type_meta: TypeMeta,     //Standard type metadata: kind: EndPoints
     object_meta: ObjectMeta, //Standard object metadata
-    data: BucketAccessorData
+    data: BucketAccessorData,
 }
 
 impl BucketAccessor {
     pub fn new() -> BucketAccessor {
         ::std::default::Default::default()
-    }    
+    }
     pub fn with(t: TypeMeta, o: ObjectMeta) -> BucketAccessor {
         BucketAccessor {
             type_meta: t,
@@ -49,8 +48,8 @@ impl BucketAccessor {
     ///  Implementing structure will send their BucketAccessorData
     pub fn accessor_data(&self) -> BucketAccessorData {
         BucketAccessorData::new()
-    }    
-    
+    }
+
     pub fn set_accessor_data(&mut self, current: BucketAccessorData) {
         self.data = current
     }
@@ -84,7 +83,7 @@ pub struct Bucket {
     id: String, // Id an unique identifier in systems of record. Generated during creation of the AssemblyFactory
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
-    type_meta: TypeMeta //standard type metadata: kind: Bucket   
+    type_meta: TypeMeta, //standard type metadata: kind: Bucket
 }
 impl Bucket {
     pub fn new() -> Bucket {
@@ -104,7 +103,7 @@ impl Bucket {
     }
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
-    }   
+    }
 }
 
 impl WhoAmITypeMeta for Bucket {
