@@ -211,6 +211,8 @@ pub struct NodeFilter {
     pub range_address_from: String,
     #[serde(default)]
     range_address_to: String,
+    #[serde(default)]
+    ip_type: String,
 }
 
 impl NodeFilter {
@@ -224,6 +226,10 @@ impl NodeFilter {
 
     pub fn get_range_address_to(&self) -> ::std::string::String {
         self.range_address_to.clone()
+    }
+
+    pub fn get_ip_type(&self) -> ::std::string::String {
+        self.ip_type.clone()
     }
 }
 

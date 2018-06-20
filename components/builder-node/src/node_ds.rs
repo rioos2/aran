@@ -132,7 +132,7 @@ impl NodeDS {
                             .map(|y| if x.to_string() == y.get_node_ip() {
                                 response.push(y.clone());
                             } else {
-                                response.push(make_node(x));
+                                response.push(mk_node(x));
                             })
                             .collect::<Vec<_>>();
                     })
@@ -142,7 +142,7 @@ impl NodeDS {
             Ok(None) => {
                 let mut response = Vec::new();
                 ips.iter()
-                    .map(|x| { response.push(make_node(x)); })
+                    .map(|x| { response.push(mk_node(x)); })
                     .collect::<Vec<_>>();
                 Ok(Some(response))
             }
@@ -618,12 +618,12 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<node::Node> {
     Ok(node)
 }
 
-fn make_node(name: &str) -> node::Node {
+fn mk_node(ip: &str) -> node::Node {
     let mut node = node::Node::new();
     let jackie = node.who_am_i();
-    let ref mut om = node.mut_meta(node.object_meta(), name.to_string(), "".to_string());
+    let ref mut om = node.mut_meta(node.object_meta(), ip.to_string(), "".to_string());
     node.set_meta(type_meta_url(jackie), om.clone());
-    node.set_node_ip(name.to_string());
+    node.set_node_ip(ip.to_string());
     node.set_id(rand::random::<u64>().to_string());
     node
 }

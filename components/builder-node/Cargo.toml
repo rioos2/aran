@@ -13,6 +13,7 @@ itertools = "*"
 cidr = "0.0.4"
 oping = "0.3.3"
 rand = "*"
+ipnet = "1.2.1"
 
 [dependencies.rioos_builder_apimachinery]
 path = "../builder-apimachinery"

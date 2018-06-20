@@ -1,3 +1,3 @@
-pub mod node_discovery;
+pub mod discover_nodes;
 pub mod cidrs;
 pub mod range;

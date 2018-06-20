@@ -16,7 +16,7 @@ use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;
 use nodesrv::node_ds::NodeDS;
-use nodesrv::models::node_discovery::NodeDiscovery;
+use nodesrv::models::discover_nodes::DiscoverNodes;
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
 use protocol::api::node::{Node, NodeStatusUpdate, NodeFilter};
@@ -158,7 +158,7 @@ impl NodeApi {
 
         match NodeDS::discovery(
             &self.conn,
-            NodeDiscovery::new(unmarshall_body.unwrap()).ping_ips()?,
+            DiscoverNodes::new(unmarshall_body.unwrap()).discovered()?,
         ) {
             Ok(Some(node_get)) => Ok(render_json_list(status::Ok, dispatch(req), &node_get)),
             Err(err) => Err(internal_error(&format!("{}", err))),

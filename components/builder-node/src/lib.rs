@@ -10,6 +10,7 @@ extern crate itertools;
 extern crate oping;
 extern crate cidr;
 extern crate rand;
+extern crate ipnet;
 
 extern crate postgres;
 extern crate serde_json;

@@ -1,25 +1,26 @@
+
 use oping::Ping;
 use super::{cidrs, range};
 use protocol::api::node::{NodeFilter, CidrItem};
 use error::Result;
 
-
-pub struct NodeDiscovery {
+pub struct DiscoverNodes {
     item: NodeFilter,
 }
 
-impl NodeDiscovery {
+impl DiscoverNodes {
     pub fn new(item: NodeFilter) -> Self {
-        NodeDiscovery { item: item }
+        DiscoverNodes { item: item }
     }
-    pub fn ping_ips(&self) -> Result<Vec<String>> {
-        let list_ip = match FilterType::conver_filter_type(self.item.get_cidrs(), self.item.get_range_address_from()) {
-            FilterType::DEFAULT => vec!["".to_string()],
-            FilterType::CIDRS => cidrs::Cidrs::new(self.item.get_cidrs()).get_ip_list(),
-            FilterType::RANGE => {
+    pub fn discovered(&self) -> Result<Vec<String>> {
+        let list_ip = match DiscoverModes::convert(self.item.get_cidrs(), self.item.get_range_address_from()) {
+            DiscoverModes::IN_MASTER_SUBNET => vec!["".to_string()],
+            DiscoverModes::IN_PROVIDED_CIDRS => cidrs::Cidrs::new(self.item.get_cidrs()).get_ip_list(),
+            DiscoverModes::IN_IP_ADDRESS_RANGE => {
                 range::Range::new(
                     self.item.get_range_address_from(),
                     self.item.get_range_address_to(),
+                    self.item.get_ip_type(),
                 ).get_ip_list()
             }
         };
@@ -38,22 +39,22 @@ impl NodeDiscovery {
     }
 }
 
-enum FilterType {
-    DEFAULT,
-    CIDRS,
-    RANGE,
+enum DiscoverModes {
+    IN_MASTER_SUBNET,
+    IN_PROVIDED_CIDRS,
+    IN_IP_ADDRESS_RANGE,
 }
 
-impl FilterType {
-    pub fn conver_filter_type(cidrs: Vec<CidrItem>, range: String) -> FilterType {
+impl DiscoverModes {
+    pub fn convert(cidrs: Vec<CidrItem>, range: String) -> DiscoverModes {
         if cidrs.len() > 0 {
-            return FilterType::CIDRS;
+            return DiscoverModes::IN_PROVIDED_CIDRS;
         }
 
         if range != "" {
-            return FilterType::RANGE;
+            return DiscoverModes::IN_IP_ADDRESS_RANGE;
         }
 
-        FilterType::DEFAULT
+        DiscoverModes::IN_MASTER_SUBNET
     }
 }

@@ -1,22 +1,54 @@
+use ipnet::{IpAddrRange, Ipv4AddrRange, Ipv6AddrRange};
+use std::net::IpAddr;
 
 pub struct Range {
     from: String,
     to: String,
+    ip_type: String,
 }
 
 impl Range {
-    pub fn new(from: String, to: String) -> Self {
-        Range { from: from, to: to }
+    pub fn new(from: String, to: String, ip_type: String) -> Self {
+        Range {
+            from: from,
+            to: to,
+            ip_type: ip_type,
+        }
     }
     pub fn get_ip_list(&self) -> Vec<String> {
-        let x1 = self.from.split('.').collect::<Vec<_>>();
-        let x2 = self.to.split('.').collect::<Vec<_>>();
-        let d1 = x1[3].parse::<i32>().unwrap();
-        let d2 = x2[3].parse::<i32>().unwrap() + 1;
-        let mut data = vec![];
-        for x in d1..d2 {
-            data.push(format!("{}.{}.{}.{}", x1[0], x1[1], x1[2], x));
+        let ips = match IpType::find(&self.ip_type) {
+            IpType::IPV4 => {
+                IpAddrRange::from(Ipv4AddrRange::new(
+                    self.from.parse().unwrap(),
+                    self.to.parse().unwrap(),
+                )).collect::<Vec<IpAddr>>()
+            }
+            IpType::IPV6 => {
+                IpAddrRange::from(Ipv6AddrRange::new(
+                    self.from.parse().unwrap(),
+                    self.to.parse().unwrap(),
+                )).collect::<Vec<IpAddr>>()
+            }
+        };
+        let mut x = vec![];
+        for d in ips {
+            x.push(format!("{}", d));
         }
-        data
+        x
+    }
+}
+
+enum IpType {
+    IPV4,
+    IPV6,
+}
+
+impl IpType {
+    pub fn find(range: &str) -> IpType {
+        match &range[..] {
+            "IPV4" => IpType::IPV4,
+            "IPV6" => IpType::IPV6,
+            _ => IpType::IPV4,
+        }
     }
 }
