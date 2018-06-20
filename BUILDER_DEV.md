@@ -10,9 +10,14 @@ This document outlines the steps to start and run a Rio/OS Aran API environment 
 
 1. Use a Linux OS - either Ubuntu or ArchLinux.
 2. Clone the aran repo to your local filesystem.
-3. The sample commands below use the `curl` tool.
+3. The sample commands below use the `curl` (or) `rioos` CLI tool.
 
-## Git hooks
+
+## Do's & Don'ts for Developers
+
+**Recommendation to developers who work on code.**
+
+### 1. Setup Git hooks
 
 After you clone  `aran.git`, please do the following.
 
@@ -21,6 +26,19 @@ After you clone  `aran.git`, please do the following.
     chmod 755 ./.git/hooks/pre-commit
 
 ```
+
+### 2. Install an editor (atom.io/vscode)
+
+### 3. Document code submitted - [example](https://gitlab.com/rioos/aran/blob/2-0-stable/components/builder-deployment/src/stacks.rs)
+
+### 4. Make sure any needed debug is logged using `info!..` macros
+
+### 5. Remove `println!` when you commit.
+
+***
+
+The below section describes setting up a development environment. 
+
 
 ## PostgreSQL - Ubuntu
 
