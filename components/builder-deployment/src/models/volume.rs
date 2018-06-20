@@ -26,7 +26,7 @@ impl DataStore {
                 &(serde_json::to_value(volume_create.get_status()).unwrap()),
                 &(serde_json::to_value(volume_create.object_meta()).unwrap()),
                 &(serde_json::to_value(volume_create.type_meta()).unwrap()),
-                &(serde_json::to_value(volume_create.get_setting_map()).unwrap()),
+                &(serde_json::to_value(volume_create.get_source()).unwrap()),
             ],
         ).map_err(Error::VolumesCreate)?;
 
@@ -95,7 +95,7 @@ impl DataStore {
                 &(volume.get_allocated() as String),
                 &(serde_json::to_value(volume.get_status()).unwrap()),
                 &(serde_json::to_value(volume.object_meta()).unwrap()),
-                &(serde_json::to_value(volume.get_setting_map()).unwrap()),
+                &(serde_json::to_value(volume.get_source()).unwrap()),
             ],
         ).map_err(Error::VolumeUpdate)?;
 
@@ -120,7 +120,7 @@ fn row_to_volumes(row: &postgres::rows::Row) -> Result<volume::Volumes> {
     volumes.set_mount_path(row.get("mount_path"));
     volumes.set_allocated(row.get("allocated"));
     volumes.set_status(serde_json::from_value(row.get("status")).unwrap());
-    volumes.set_setting_map(serde_json::from_value(row.get("setting_map")).unwrap());
+    volumes.set_source(serde_json::from_value(row.get("source")).unwrap());
 
     Ok(volumes)
 }
