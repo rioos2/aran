@@ -3,20 +3,20 @@
 --- Table:nodes
 ---
 CREATE SEQUENCE IF NOT EXISTS node_id_seq;
-CREATE TABLE IF NOT EXISTS nodes (id bigint PRIMARY KEY DEFAULT next_id_v1('node_id_seq'), node_ip text, spec JSONB, status JSONB, object_meta JSONB, type_meta JSONB, updated_at timestamptz, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS nodes (id bigint PRIMARY KEY DEFAULT next_id_v1('node_id_seq'), node_ip text, spec JSONB, status JSONB, object_meta JSONB, type_meta JSONB, metadata JSONB, updated_at timestamptz, created_at timestamptz DEFAULT now());
 
 ---
 --- Table:nodes:create
 ---
 CREATE
-OR REPLACE FUNCTION insert_node_v1 (node_ip text, spec JSONB, status JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF nodes AS $$
+OR REPLACE FUNCTION insert_node_v1 (node_ip text, spec JSONB, status JSONB, object_meta JSONB, type_meta JSONB, metadata JSONB) RETURNS SETOF nodes AS $$
 BEGIN
    RETURN QUERY
    INSERT INTO
-      nodes(node_ip, spec, status, object_meta, type_meta)
+      nodes(node_ip, spec, status, object_meta, type_meta,metadata)
    VALUES
       (
-         node_ip, spec, status, object_meta, type_meta
+         node_ip, spec, status, object_meta, type_meta, metadata
       )
       RETURNING *;
 RETURN;
@@ -91,7 +91,7 @@ END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
 CREATE
-OR REPLACE FUNCTION set_node_v1 (nid bigint, nodeip text, node_spec JSONB, node_status JSONB, node_object_meta JSONB) RETURNS SETOF nodes AS $$
+OR REPLACE FUNCTION set_node_v1 (nid bigint, nodeip text, node_spec JSONB, node_status JSONB, node_object_meta JSONB, node_metadata JSONB) RETURNS SETOF nodes AS $$
 BEGIN  RETURN QUERY  UPDATE  nodes
       SET
         id = nid,
@@ -99,6 +99,7 @@ BEGIN  RETURN QUERY  UPDATE  nodes
         spec = node_spec,
         status = node_status,
         object_meta = node_object_meta,
+        metadata= node_metadata,
         updated_at = now()
         WHERE id = nid RETURNING *;
       RETURN;

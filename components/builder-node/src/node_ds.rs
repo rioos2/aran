@@ -35,13 +35,14 @@ impl NodeDS {
     pub fn create(datastore: &DataStoreConn, node_create: &node::Node) -> NodeOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_node_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM insert_node_v1($1,$2,$3,$4,$5,$6)",
             &[
                 &(node_create.get_node_ip() as String),
                 &(serde_json::to_value(node_create.get_spec()).unwrap()),
                 &(serde_json::to_value(node_create.get_status()).unwrap()),
                 &(serde_json::to_value(node_create.object_meta()).unwrap()),
                 &(serde_json::to_value(node_create.type_meta()).unwrap()),
+                &(serde_json::to_value(node_create.get_metadata()).unwrap()),
             ],
         ).map_err(Error::NodeCreate)?;
 
@@ -126,13 +127,14 @@ impl NodeDS {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM set_node_v1($1, $2, $3, $4, $5)",
+            "SELECT * FROM set_node_v1($1, $2, $3, $4, $5, $6)",
             &[
                 &(upd_node.get_id().parse::<i64>().unwrap()),
                 &(upd_node.get_node_ip() as String),
                 &(serde_json::to_value(upd_node.get_spec()).unwrap()),
                 &(serde_json::to_value(upd_node.get_status()).unwrap()),
                 &(serde_json::to_value(upd_node.object_meta()).unwrap()),
+                &(serde_json::to_value(upd_node.get_metadata()).unwrap()),
             ],
         ).map_err(Error::NodeUpdate)?;
 
@@ -635,6 +637,7 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<node::Node> {
     node.set_node_ip(row.get("node_ip"));
     node.set_spec(serde_json::from_value(row.get("spec")).unwrap());
     node.set_status(serde_json::from_value(row.get("status")).unwrap());
+    node.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
     node.set_created_at(created_at.to_rfc3339());
     Ok(node)
 }
