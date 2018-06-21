@@ -150,6 +150,35 @@ impl NodeApi {
         }
     }
 
+    //PUT: /nodes/:id
+    //Input node  as input and returns an Nodes
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<Node>>()?,
+        )?;
+        unmarshall_body.set_id(params.get_id());
+
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
+
+        match NodeDS::update(&self.conn, &unmarshall_body) {
+            Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
+        }
+    }
+
+
+
     //List the node fitler with node ip
     //GET: /discovery/:ip
     //Input node ip returns the  node
@@ -220,6 +249,9 @@ impl Api for NodeApi {
         let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
+
+        let _self = self.clone();
         let healthz = move |req: &mut Request| -> AranResult<Response> { _self.status(req) };
 
         let _self = self.clone();
@@ -252,6 +284,12 @@ impl Api for NodeApi {
             "/nodes/:id/status",
             XHandler::new(C { inner: status_update }).before(basic.clone()),
             "node_status_update",
+        );
+
+        router.put(
+            "/nodes/:id",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "node_update",
         );
 
         router.get(

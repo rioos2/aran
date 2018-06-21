@@ -122,6 +122,27 @@ impl NodeDS {
         Ok(None)
     }
 
+    pub fn update(datastore: &DataStoreConn, upd_node: &node::Node) -> NodeOutput {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM set_node_v1($1, $2, $3, $4, $5)",
+            &[
+                &(upd_node.get_id().parse::<i64>().unwrap()),
+                &(upd_node.get_node_ip() as String),
+                &(serde_json::to_value(upd_node.get_spec()).unwrap()),
+                &(serde_json::to_value(upd_node.get_status()).unwrap()),
+                &(serde_json::to_value(upd_node.object_meta()).unwrap()),
+            ],
+        ).map_err(Error::NodeUpdate)?;
+
+        if rows.len() > 0 {
+            let node = row_to_node(&rows.get(0))?;
+            return Ok(Some(node));
+        }
+        Ok(None)
+    }
+
     pub fn discovery(datastore: &DataStoreConn, ips: Vec<String>) -> NodeOutputList {
         match Self::list_blank(datastore) {
             Ok(Some(node)) => {
