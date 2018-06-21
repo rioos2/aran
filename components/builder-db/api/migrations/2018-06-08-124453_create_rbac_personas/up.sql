@@ -90,7 +90,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.ASSEMBLYFACTORY.GET',
+         'RIOOS.ASSEMBLYFACTORYS.GET',
          'Read access for assemblyfactory resource.'
    )
 ,
@@ -100,7 +100,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.ASSEMBLYFACTORY.PUT',
+         'RIOOS.ASSEMBLYFACTORYS.PUT',
          'Edit access for assemblyfactory resource.'
    )
 ,
@@ -110,9 +110,29 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.ASSEMBLYFACTORY.DELETE',
+         'RIOOS.ASSEMBLYFACTORYS.DELETE',
          'Delete access for assemblyfactory resource.'
    )
+,
+(
+  (
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.STACKSFACTORYS.GET',
+      'Read access for stacksfactorys resource.'
+)
+,
+(
+  (
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.STACKSFACTORYS.PUT',
+      'Edit access for stacksfactorys resource.'
+)
 ,
    (
 (
@@ -190,7 +210,7 @@ VALUES
         id
       FROM
          first_insert),
-         'RIOOS.ENDPOINT.*',
+         'RIOOS.ENDPOINTS.*',
          'Any access allowed for this endpoints resource.'
    )
 ,
@@ -200,7 +220,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.JOB.*',
+         'RIOOS.JOBS.*',
          'Any access allowed for this jobs resource.'
    )
 ,
@@ -210,7 +230,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.SERVICE.*',
+         'RIOOS.SERVICES.*',
          'Any access allowed for this service resource.'
    )
 ,
@@ -220,7 +240,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.VOLUME.*',
+         'RIOOS.VOLUMES.*',
          'Any access allowed for this volumes resource.'
    )
 ,
@@ -230,7 +250,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.NODE.*',
+         'RIOOS.NODES.*',
          'Any access allowed for this nodes resource.'
    )
 ,
@@ -240,7 +260,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.STORAGECONNECTOR.*',
+         'RIOOS.STORAGECONNECTORS.*',
          'Any access allowed for this storage connectors resource.'
    )
 ,
@@ -250,7 +270,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.STORAGEPOOL.*',
+         'RIOOS.STORAGESPOOL.*',
          'Any access allowed for this storage pool resource.'
    )
 ,
@@ -270,7 +290,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.IMAGEREFERENCE.*',
+         'RIOOS.IMAGEREFERENCES.*',
          'Any access allowed for this image reference resource.'
    )
 ,
@@ -280,7 +300,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.IMAGEMARK.*',
+         'RIOOS.IMAGEMARKS.*',
          'Any access allowed for this image mark resource.'
    )
 ,
@@ -290,7 +310,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.BUILD.*',
+         'RIOOS.BUILDS.*',
          'Any access allowed for this build resource.'
    )
 ,
@@ -300,7 +320,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.BUILDCONFIG.GET',
+         'RIOOS.BUILDCONFIGS.GET',
          'Read only access for buildconfig resource.'
    )
 ,
@@ -310,7 +330,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.BUILDCONFIG.PUT',
+         'RIOOS.BUILDCONFIGS.PUT',
          'Edit only access for buildconfig resource.'
    )
 ,
@@ -340,7 +360,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.ACCOUNT.GET',
+         'RIOOS.ACCOUNTS.GET',
          'Read only access for accounts resource.'
    )
 ,
@@ -370,7 +390,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.NETWORK.GET',
+         'RIOOS.NETWORKS.GET',
          'Read only access for networks resource.'
    )
 ,
@@ -380,7 +400,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.NETWORK.PUT',
+         'RIOOS.NETWORKS.PUT',
          'Edit only access for networks resource.'
    )
 ,
@@ -390,7 +410,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.AUDIT.POST',
+         'RIOOS.AUDITS.POST',
          'Create access for audits resource.'
    )
 ,
@@ -400,7 +420,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.BUCKET.*',
+         'RIOOS.BUCKETS.*',
          'Any access allowed for this bucket resource.'
    )
 ;
@@ -464,9 +484,19 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.ACCOUNTS.*.ASSEMBLYFACTORY.*',
+         'RIOOS.ACCOUNTS.*.ASSEMBLYFACTORYS.*',
          'Any access allowed for this assemblyfactory resource.'
    )
+,
+(
+  (
+   SELECT
+      id
+   FROM
+      second_insert),
+      'RIOOS.ACCOUNTS.*.STACKSFACTORYS.*',
+      'Any access allowed for this stacksfactory resource.'
+)
 ,
    (
 (
@@ -494,7 +524,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.SECRET.*',
+         'RIOOS.SECRETS.*',
          'Any access allowed for this secrets resource.'
    )
 ,
@@ -504,7 +534,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.ENDPOINT.*',
+         'RIOOS.ENDPOINTS.*',
          'Any access allowed for this endpoints resource.'
    )
 ,
@@ -514,7 +544,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.SERVICE.*',
+         'RIOOS.SERVICES.*',
          'Any access allowed for this service resource.'
    )
 ,
@@ -524,7 +554,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.BUILDCONFIG.*',
+         'RIOOS.BUILDCONFIGS.*',
          'Any access allowed for this buildconfig resource.'
    )
 ,
@@ -534,7 +564,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.LOG.GET',
+         'RIOOS.LOGS.GET',
          'Read only access for logs resource.'
    )
 ,
@@ -544,7 +574,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.AUDIT.GET',
+         'RIOOS.AUDITS.GET',
          'Read only access for audits resource.'
    )
 ,
@@ -554,7 +584,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.VOLUME.GET',
+         'RIOOS.VOLUMES.GET',
          'Read only access for volumes resource.'
    )
 ,
@@ -564,7 +594,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.ACCOUNT.GET',
+         'RIOOS.ACCOUNTS.GET',
          'Read only access for accounts resource.'
    )
 ,
@@ -574,7 +604,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.ACCOUNT.PUT',
+         'RIOOS.ACCOUNTS.PUT',
          'Edit only access for accounts resource.'
    )
 ,
@@ -624,7 +654,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.NETWORK.GET',
+         'RIOOS.NETWORKS.GET',
          'Read only access for networks resource.'
    )
    ,
