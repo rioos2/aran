@@ -199,6 +199,9 @@ impl PlanProperties {
     pub fn get_category(&self) -> ::std::string::String {
         self.category.clone()
     }
+    pub fn get_stateful_volumes(&self) -> &Vec<StatefulVolume> {
+        &self.stateful_volumes
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -301,9 +304,33 @@ pub struct VolumeMounts {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct StatefulVolume {
-    name: String,
+    pub name: String,
     volumes: Volumes,
     volume_mounts: VolumeMounts,
+    #[serde(default)]
+    settingmap: SettingMap,
+}
+impl StatefulVolume {
+    pub fn get_settingmap(&self) -> &SettingMap {
+        &self.settingmap
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SettingMap {
+    #[serde(default)]
+    uri: String,
+    #[serde(default)]
+    uid: String,
+    #[serde(default)]
+    rioos_binder: Vec<String>,
+    map_type: String,
+}
+
+impl SettingMap {
+    pub fn set_uri(&mut self, v: String) {
+        self.uri = v;
+    }
 }
 
 #[cfg(test)]

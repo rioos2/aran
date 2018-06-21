@@ -25,6 +25,8 @@ pub struct Node {
     spec: Spec, //
     status: NodeStatus, //NodeStatus is information about the current status of a node.
     #[serde(default)]
+    metadata: BTreeMap<String, String>,
+    #[serde(default)]
     created_at: String,
 }
 
@@ -64,6 +66,13 @@ impl Node {
     }
     pub fn get_status(&self) -> &NodeStatus {
         &self.status
+    }
+    pub fn set_metadata(&mut self, v: BTreeMap<String, String>) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self) -> &BTreeMap<String, String> {
+        &self.metadata
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
