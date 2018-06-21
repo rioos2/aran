@@ -5,11 +5,11 @@
 ---
 --- Table:permissions:create stub permissions for role RIOOS:SUPERUSER
 --- When editing roles, use uppercase.
---- This is a long query. 
-WITH first_insert AS 
+--- This is a long query.
+WITH first_insert AS
 (
    INSERT INTO
-      roles(name, description) 
+      roles(name, description)
    VALUES
       (
          'RIOOS:SUPERUSER',
@@ -18,12 +18,12 @@ WITH first_insert AS
       ON CONFLICT (name) DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (role_id, name, description) 
+   permissions (role_id, name, description)
 VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.*.*',
@@ -40,10 +40,10 @@ VALUES
 --- Table:permissions:create stub permissions for role RIOOS:UNIVERSALSOLDIER
 --- When editing roles, use uppercase.
 --- This is a long query.
-WITH first_insert AS 
+WITH first_insert AS
 (
    INSERT INTO
-      roles(name, description) 
+      roles(name, description)
    VALUES
       (
          'RIOOS:UNIVERSALSOLDIER',
@@ -52,42 +52,42 @@ WITH first_insert AS
       ON CONFLICT (name) DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (role_id, name, description) 
+   permissions (role_id, name, description)
 VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.ASSEMBLY.GET',
+         'RIOOS.ASSEMBLYS.GET',
          'Read access for assembly resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.ASSEMBLY.PUT',
+         'RIOOS.ASSEMBLYS.PUT',
          'Edit access for assembly resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.ASSEMBLY.DELETE',
+         'RIOOS.ASSEMBLYS.DELETE',
          'Delete access for assembly resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.ASSEMBLYFACTORY.GET',
@@ -97,7 +97,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.ASSEMBLYFACTORY.PUT',
@@ -107,7 +107,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.ASSEMBLYFACTORY.DELETE',
@@ -117,27 +117,27 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.SERVICEACCOUNT.PUT',
+         'RIOOS.SERVICEACCOUNTS.PUT',
          'Edit only access for service account resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.SERVICEACCOUNT.DELETE',
+         'RIOOS.SERVICEACCOUNTS.DELETE',
          'Delete access for service account resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.HORIZONTALSCALING.GET',
@@ -147,7 +147,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.HORIZONTALSCALING.PUT',
@@ -157,7 +157,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.VERTICALSCALING.GET',
@@ -167,7 +167,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.VERTICALSCALING.PUT',
@@ -177,17 +177,17 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.SECRET.*',
+         'RIOOS.SECRETS.*',
          'Any access allowed for this secrets resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+        id
       FROM
          first_insert),
          'RIOOS.ENDPOINT.*',
@@ -197,7 +197,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.JOB.*',
@@ -207,7 +207,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.SERVICE.*',
@@ -217,7 +217,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.VOLUME.*',
@@ -227,7 +227,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.NODE.*',
@@ -237,7 +237,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.STORAGECONNECTOR.*',
@@ -247,7 +247,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.STORAGEPOOL.*',
@@ -257,7 +257,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.SETTINGSMAP.*',
@@ -267,7 +267,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.IMAGEREFERENCE.*',
@@ -277,7 +277,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.IMAGEMARK.*',
@@ -287,7 +287,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.BUILD.*',
@@ -297,7 +297,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.BUILDCONFIG.GET',
@@ -307,7 +307,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.BUILDCONFIG.PUT',
@@ -317,27 +317,27 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.PLAN.GET',
+         'RIOOS.PLANS.GET',
          'Read only access for plans resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.PLAN.PUT',
+         'RIOOS.PLANS.PUT',
          'Edit only access for plans resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.ACCOUNT.GET',
@@ -347,27 +347,27 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.DATACENTER.GET',
+         'RIOOS.DATACENTERS.GET',
          'Read only access for datacenters resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
-         'RIOOS.DATACENTER.PUT',
+         'RIOOS.DATACENTERS.PUT',
          'Edit only access for datacenters resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.NETWORK.GET',
@@ -377,7 +377,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.NETWORK.PUT',
@@ -387,7 +387,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.AUDIT.POST',
@@ -397,7 +397,7 @@ VALUES
 (
 (
       SELECT
-         id 
+         id
       FROM
          first_insert),
          'RIOOS.BUCKET.*',
@@ -414,10 +414,10 @@ VALUES
 --- Table:permissions:create stub permissions for role RIOOS:LONERANGER
 --- When editing roles, use uppercase.
 --- This is a long query.
-WITH second_insert AS 
+WITH second_insert AS
 (
    INSERT INTO
-      roles(name, description) 
+      roles(name, description)
    VALUES
       (
          'RIOOS:LONERANGER',
@@ -426,12 +426,12 @@ WITH second_insert AS
       ON CONFLICT (name) DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (role_id, name, description) 
+   permissions (role_id, name, description)
 VALUES
 (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.ACCOUNTS.BUCKET.*',
@@ -441,27 +441,27 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
-         'RIOOS.ASSEMBLY.PUT',
+         'RIOOS.ASSEMBLYS.PUT',
          'Edit only access for assembly resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
-         'RIOOS.ACCOUNTS.*.ASSEMBLY.GET',
+         'RIOOS.ACCOUNTS.*.ASSEMBLYS.GET',
          'Read only access for assembly resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.ACCOUNTS.*.ASSEMBLYFACTORY.*',
@@ -471,7 +471,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.HORIZONTALSCALNG.*',
@@ -481,7 +481,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.VERTICALSCALING.*',
@@ -491,7 +491,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.SECRET.*',
@@ -501,7 +501,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.ENDPOINT.*',
@@ -511,7 +511,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.SERVICE.*',
@@ -521,7 +521,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.BUILDCONFIG.*',
@@ -531,7 +531,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.LOG.GET',
@@ -541,7 +541,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.AUDIT.GET',
@@ -551,7 +551,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.VOLUME.GET',
@@ -561,7 +561,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.ACCOUNT.GET',
@@ -571,7 +571,7 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.ACCOUNT.PUT',
@@ -581,40 +581,60 @@ VALUES
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
-         'RIOOS.DATACENTER.GET',
+         'RIOOS.DATACENTERS.GET',
          'Read only access for datacenters resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.HEALTHZ.GET',
          'Read only access for healthz resource.'
    )
-,
+   ,
+      (
+   (
+         SELECT
+            id
+         FROM
+            second_insert),
+            'RIOOS.HEALTHZ.OVERALL.GET',
+            'Read only access for healthz overall resource.'
+      )
+   ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
-         'RIOOS.PLANFACTORY.GET',
+         'RIOOS.PLANS.GET',
          'Read only access for plan resource.'
    )
 ,
    (
 (
       SELECT
-         id 
+         id
       FROM
          second_insert),
          'RIOOS.NETWORK.GET',
          'Read only access for networks resource.'
    )
+   ,
+      (
+   (
+         SELECT
+            id
+         FROM
+            second_insert),
+            'RIOOS.PING.POST',
+            'Create access for ping resource.'
+      )
 ;
