@@ -10,9 +10,14 @@ This document outlines the steps to start and run a Rio/OS Aran API environment 
 
 1. Use a Linux OS - either Ubuntu or ArchLinux.
 2. Clone the aran repo to your local filesystem.
-3. The sample commands below use the `curl` tool.
+3. The sample commands below use the `curl` (or) `rioos` CLI tool.
 
-## Git hooks
+
+## Do's & Don'ts for Developers
+
+**Recommendation to developers who work on code.**
+
+### 1. Setup Git hooks
 
 After you clone  `aran.git`, please do the following.
 
@@ -21,6 +26,19 @@ After you clone  `aran.git`, please do the following.
     chmod 755 ./.git/hooks/pre-commit
 
 ```
+
+### 2. Install an editor (atom.io/vscode)
+
+### 3. Document code submitted - [example](https://gitlab.com/rioos/aran/blob/2-0-stable/components/builder-deployment/src/stacks.rs)
+
+### 4. Make sure any needed debug is logged using `info!..` macros
+
+### 5. Remove `println!` when you commit.
+
+***
+
+The below section describes setting up a development environment. 
+
 
 ## PostgreSQL - Ubuntu
 
@@ -432,5 +450,28 @@ As migrations are handled by diesel-cli, install libpqdev
 Ubuntu
 ```
 sudo apt-get install libpq-dev
+
+```
+5. If you receive this error while compiling
+
+```
+error: failed to run custom build command for `oping v0.3.3`
+process didn't exit successfully: `/home/suganya/code/megam/workspace/go/src/gitlab/rioos/aran/target/debug/build/oping-5c46fd7e7432132f/build-script-build` (exit code: 101)
+--- stderr
+autogen.sh: 5: autogen.sh: autoreconf: not found
+thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }', libcore/result.rs:945:5
+note: Run with `RUST_BACKTRACE=1` for a backtrace.
+
+warning: build failed, waiting for other jobs to finish...
+error: build failed
+Makefile:171: recipe for target 'build-builder-api' failed
+make: *** [build-builder-api] Error 101
+
+```
+
+Ubuntu
+
+```
+sudo apt-get install dh-autoreconf
 
 ```

@@ -4,14 +4,22 @@ use api::base::{TypeMeta, ObjectMeta, MetaFields, Status};
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Volumes {
     #[serde(default)]
-    id: String, //id an unique identifier in systems of record. Generated during creation of the Volumes
+    id: String, //id an unique identifier in systems of record. Generated during creation of the
+    //Volumes
     pub object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Volumes
     mount_path: String,          //The mount path/pool name of the block device
     allocated: String,           //The size of the storage allocated.
-    //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
+    //Most recently observed status of the service. Populated by the system. Read-only.
+    //Initially during submission, the status is "pending"
     status: Status,
+    #[serde(default)]
+    source: VolumeSource, // The contents of the target SettingMap's Data field will be presented in a
+// volume as files using the keys in the Data field as the file names, unless
+// the items element is populated with specific mappings of keys to paths.
+// SettingMap volumes support ownership management and SELinux relabeling.
+
     #[serde(default)]
     created_at: String,
 }
@@ -58,6 +66,14 @@ impl Volumes {
         &self.status
     }
 
+    pub fn set_source(&mut self, v: VolumeSource) {
+        self.source = v;
+    }
+
+    pub fn get_source(&self) -> &VolumeSource {
+        &self.source
+    }
+
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
     }
@@ -82,6 +98,119 @@ impl MetaFields for Volumes {
     fn type_meta(&self) -> TypeMeta {
         self.type_meta.clone()
     }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct VolumeSource {
+    #[serde(default)]
+    setting_map: SettingMap, // The name of the secret in the assembly's namespace to select from.
+    #[serde(default)]
+    nfs: Nfs,
+    #[serde(default)]
+    openio:Openio,
+    #[serde(default)]
+    iscsi:Iscsi,
+    #[serde(default)]
+    rbd:Rbd
+    }
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SettingMap {
+    object_ref: ObjectReference, // The name of the secret in the assembly's namespace to select from.
+    #[serde(default)]
+    items: Vec<Items>, //If unspecified, each key-value pair in the Data field of the referenced
+    // SettingMap will be projected into the volume as a file whose name is the
+    // key and content is the value.
+    #[serde(default)]
+    default_mode: i32, //mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644
+    #[serde(default)]
+    optional: bool, //Specify whether the SettingMap or it's keys must be defined
+
+}
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Nfs {
+    #[serde(default)]
+    server: String,
+    #[serde(default)]
+    path: String,
+    #[serde(default)]
+    readonly: bool
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Openio {
+    #[serde(default)]
+    server: String,
+    #[serde(default)]
+    namespace: String,
+    #[serde(default)]
+    key: String,
+    #[serde(default)]
+    user: String
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Iscsi {
+    #[serde(default)]
+    target_portal: String,
+    #[serde(default)]
+    iqn: String,
+    #[serde(default)]
+    lun: String,
+    #[serde(default)]
+    iscsi_interface: String,
+    #[serde(default)]
+    fstype: String,
+    #[serde(default)]
+    readonly: bool,
+    #[serde(default)]
+    portals: Vec<String>,
+    #[serde(default)]
+    chap_auth_discovery: bool,
+    #[serde(default)]
+    chap_auth_session: bool,
+    object_ref: ObjectReference,
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Rbd {
+    #[serde(default)]
+    monitor: Vec<String>,
+    #[serde(default)]
+    image: String,
+    #[serde(default)]
+    fstype: String,
+    #[serde(default)]
+    pool: String,
+    #[serde(default)]
+    user: String,
+    #[serde(default)]
+    keyring: bool,
+    #[serde(default)]
+    readonly: Vec<String>,
+    object_ref: ObjectReference,
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ObjectReference {
+    // Name of the referent.
+	// More info: https://rioos.sh/docs/concepts/overview/working-with-objects/names/#names
+	// TODO: Add other useful fields. api_version, kind, uid?
+    name: String,
+}
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Items {
+    key: String, // The key to project.
+    // The relative path of the file to map the key to.
+	// May not be an absolute path.
+	// May not contain the path element '..'.
+	// May not start with the string '..'.
+    path: String,
+    //mode bits to use on this file, must be a value between 0
+	// and 0777. If not specified, the volume defaultMode will be used.
+	// This might be in conflict with other options that affect the file
+	// mode, like fsGroup, and the result can be other mode bits set.
+    mode: i64,
 }
 
 #[cfg(test)]

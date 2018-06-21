@@ -9,12 +9,14 @@ use std::ops::Div;
 use std::collections::BTreeMap;
 
 use protocol::api::node;
-use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
+use protocol::api::schema::type_meta_url;
 
 use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::collector::{Collector, CollectorScope};
 
 use serde_json;
+use rand;
 
 use postgres;
 use db::data_store::DataStoreConn;
@@ -33,13 +35,14 @@ impl NodeDS {
     pub fn create(datastore: &DataStoreConn, node_create: &node::Node) -> NodeOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_node_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM insert_node_v1($1,$2,$3,$4,$5,$6)",
             &[
                 &(node_create.get_node_ip() as String),
                 &(serde_json::to_value(node_create.get_spec()).unwrap()),
                 &(serde_json::to_value(node_create.get_status()).unwrap()),
                 &(serde_json::to_value(node_create.object_meta()).unwrap()),
                 &(serde_json::to_value(node_create.type_meta()).unwrap()),
+                &(serde_json::to_value(node_create.get_metadata()).unwrap()),
             ],
         ).map_err(Error::NodeCreate)?;
 
@@ -120,6 +123,56 @@ impl NodeDS {
         Ok(None)
     }
 
+    pub fn update(datastore: &DataStoreConn, upd_node: &node::Node) -> NodeOutput {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM set_node_v1($1, $2, $3, $4, $5, $6)",
+            &[
+                &(upd_node.get_id().parse::<i64>().unwrap()),
+                &(upd_node.get_node_ip() as String),
+                &(serde_json::to_value(upd_node.get_spec()).unwrap()),
+                &(serde_json::to_value(upd_node.get_status()).unwrap()),
+                &(serde_json::to_value(upd_node.object_meta()).unwrap()),
+                &(serde_json::to_value(upd_node.get_metadata()).unwrap()),
+            ],
+        ).map_err(Error::NodeUpdate)?;
+
+        if rows.len() > 0 {
+            let node = row_to_node(&rows.get(0))?;
+            return Ok(Some(node));
+        }
+        Ok(None)
+    }
+
+    pub fn discovery(datastore: &DataStoreConn, ips: Vec<String>) -> NodeOutputList {
+        match Self::list_blank(datastore) {
+            Ok(Some(node)) => {
+                let mut response = Vec::new();
+                ips.iter()
+                    .map(|x| {
+                        node.iter()
+                            .map(|y| if x.to_string() == y.get_node_ip() {
+                                response.push(y.clone());
+                            } else {
+                                response.push(mk_node(x));
+                            })
+                            .collect::<Vec<_>>();
+                    })
+                    .collect::<Vec<_>>();
+                Ok(Some(response))
+            }
+            Ok(None) => {
+                let mut response = Vec::new();
+                ips.iter()
+                    .map(|x| { response.push(mk_node(x)); })
+                    .collect::<Vec<_>>();
+                Ok(Some(response))
+            }
+            Err(_err) => Ok(None),
+        }
+    }
+
     pub fn healthz_all(client: &PrometheusClient) -> Result<Option<node::HealthzAllGetResponse>> {
         //Generete the collected(gauges,statistics,os utilization) for all nodes with
         //current cpu utilization of all nodes
@@ -195,16 +248,16 @@ fn get_statistics(client: &PrometheusClient, cpu_nodes_collected: Vec<node::Prom
         .map(|x| { node_statistics = x.into(); })
         .collect::<Vec<_>>();
 
-    Ok(append_disk(append_process(
+    Ok(append_disk(
+        append_process(
             append_network_speed(
                 node_statistics,
                 collect_network(client)?,
-                )?,
+            )?,
             collect_process(client)?,
         )?,
-        collect_disk_io(client)?
-        )?
-    )
+        collect_disk_io(client)?,
+    )?)
 }
 
 fn get_os_statistics(client: &PrometheusClient) -> Result<(Vec<Vec<node::Item>>, Vec<node::Counters>)> {
@@ -370,8 +423,7 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
             let mut b = Vec::new();
             network
                 .into_iter()
-                .map(|y|
-                    if x == y.metric.get("device").unwrap() {
+                .map(|y| if x == y.metric.get("device").unwrap() {
                     if y.metric.get("__name__").unwrap() == "node_network_receive_bytes_total" || y.metric.get("__name__").unwrap() == "node_network_transmit_bytes_total" {
                         a.push(y.clone())
                     } else {
@@ -483,7 +535,7 @@ fn append_disk(nodes: Vec<node::NodeStatistic>, mut disk: Vec<node::PromResponse
                     .collect::<Vec<_>>();
                 x.set_disk(group_disk(&net_collection));
                 x
-            }else {
+            } else {
                 return x;
             })
             .collect::<Vec<_>>(),
@@ -491,28 +543,33 @@ fn append_disk(nodes: Vec<node::NodeStatistic>, mut disk: Vec<node::PromResponse
 }
 fn group_disk(disk: &Vec<node::InstantVecItem>) -> Vec<BTreeMap<String, String>> {
 
-    let merged = disk
-        .iter()
+    let merged = disk.iter()
         .flat_map(|s| s.metric.get("device"))
         .collect::<Vec<_>>()
         .into_iter()
         .unique()
         .collect::<Vec<_>>();
 
-        merged
-            .into_iter()
-            .map(|x| {
-                let mut disk_metric = BTreeMap::new();
-                disk_metric.insert("name".to_string(),x.to_string());
-                disk
-                    .into_iter()
-                    .map(|y| if x == y.metric.get("device").unwrap() {
-                        disk_metric.insert(y.metric.get("__name__").unwrap_or(&"".to_string()).to_string(),y.value.clone().1);
+    merged
+        .into_iter()
+        .map(|x| {
+            let mut disk_metric = BTreeMap::new();
+            disk_metric.insert("name".to_string(), x.to_string());
+            disk.into_iter()
+                .map(|y| if x == y.metric.get("device").unwrap() {
+                    disk_metric.insert(
+                        y.metric
+                            .get("__name__")
+                            .unwrap_or(&"".to_string())
+                            .to_string(),
+                        y.value.clone().1,
+                    );
 
-                    }).collect::<Vec<_>>();
-                disk_metric
-            })
-            .collect::<_>()
+                })
+                .collect::<Vec<_>>();
+            disk_metric
+        })
+        .collect::<_>()
 
 }
 
@@ -580,6 +637,17 @@ fn row_to_node(row: &postgres::rows::Row) -> Result<node::Node> {
     node.set_node_ip(row.get("node_ip"));
     node.set_spec(serde_json::from_value(row.get("spec")).unwrap());
     node.set_status(serde_json::from_value(row.get("status")).unwrap());
+    node.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
     node.set_created_at(created_at.to_rfc3339());
     Ok(node)
+}
+
+fn mk_node(ip: &str) -> node::Node {
+    let mut node = node::Node::new();
+    let jackie = node.who_am_i();
+    let ref mut om = node.mut_meta(node.object_meta(), ip.to_string(), "".to_string());
+    node.set_meta(type_meta_url(jackie), om.clone());
+    node.set_node_ip(ip.to_string());
+    node.set_id(rand::random::<u64>().to_string());
+    node
 }

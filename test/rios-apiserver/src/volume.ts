@@ -12,7 +12,10 @@ describe('volume  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta": {"name":"", "account":globalAny.account_id,"labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB"})
+        .send({"object_meta": {"name":"", "account":globalAny.account_id,"labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1",
+        "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "",
+        "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]},
+         "mount_path": "/var/lib/path","allocated": "50 GiB","source":{"setting_map":{"object_ref":{"name":"log-config"},"items":{"key":"log_level","path":"log_level","mode":0}}}})
         .expect(200)
         .end(function(err, res) {
           globalAny.vol_id =res.body.id;
