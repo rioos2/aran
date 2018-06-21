@@ -16,9 +16,10 @@ use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;
 use nodesrv::node_ds::NodeDS;
+use nodesrv::models::discover_nodes::DiscoverNodes;
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
-use protocol::api::node::{Node, NodeStatusUpdate};
+use protocol::api::node::{Node, NodeStatusUpdate, NodeFilter};
 use protocol::api::schema::{dispatch, type_meta};
 use router::Router;
 use serde_json;
@@ -127,8 +128,9 @@ impl NodeApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body =
-            self.validate(req.get::<bodyparser::Struct<NodeStatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<NodeStatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
         ui::rawdumpln(
@@ -147,6 +149,23 @@ impl NodeApi {
             ))),
         }
     }
+
+    //List the node fitler with node ip
+    //GET: /discovery/:ip
+    //Input node ip returns the  node
+    fn discovery(&self, req: &mut Request) -> AranResult<Response> {
+        let unmarshall_body = req.get::<bodyparser::Struct<NodeFilter>>()?;
+
+        match NodeDS::discovery(
+            &self.conn,
+            DiscoverNodes::new(unmarshall_body.unwrap()).discovered()?,
+        ) {
+            Ok(Some(node_get)) => Ok(render_json_list(status::Ok, dispatch(req), &node_get)),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+        }
+    }
+
     //List the node fitler with node ip
     //GET: /node/:ip
     //Input node ip returns the  node
@@ -183,8 +202,7 @@ impl Api for NodeApi {
         let basic = Authenticated::new(&*config);
 
         let _self = self.clone();
-        let healthz_all =
-            move |req: &mut Request| -> AranResult<Response> { _self.healthz_all(req) };
+        let healthz_all = move |req: &mut Request| -> AranResult<Response> { _self.healthz_all(req) };
 
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -196,15 +214,16 @@ impl Api for NodeApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_address =
-            move |req: &mut Request| -> AranResult<Response> { _self.show_by_address(req) };
+        let show_by_address = move |req: &mut Request| -> AranResult<Response> { _self.show_by_address(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let healthz = move |req: &mut Request| -> AranResult<Response> { _self.status(req) };
+
+        let _self = self.clone();
+        let discovery = move |req: &mut Request| -> AranResult<Response> { _self.discovery(req) };
 
         router.get(
             "/healthz/overall",
@@ -231,18 +250,20 @@ impl Api for NodeApi {
         );
         router.put(
             "/nodes/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "node_status_update",
         );
 
         router.get(
             "/nodes/ip",
-            XHandler::new(C {
-                inner: show_by_address,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_address }).before(basic.clone()),
             "node_show_by_address",
+        );
+
+        router.post(
+            "/nodes/discover",
+            XHandler::new(C { inner: discovery }).before(basic.clone()),
+            "node_discovery",
         );
     }
 }
