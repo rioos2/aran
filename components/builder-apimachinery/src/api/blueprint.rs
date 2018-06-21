@@ -318,8 +318,11 @@ impl StatefulVolume {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SettingMap {
+    #[serde(default)]
     uri: String,
+    #[serde(default)]
     uid: String,
+    #[serde(default)]
     rioos_binder: Vec<String>,
     map_type: String,
 }
