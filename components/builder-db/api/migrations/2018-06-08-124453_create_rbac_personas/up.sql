@@ -74,6 +74,16 @@ VALUES
          'Edit access for assembly resource.'
    )
 ,
+(
+  (
+  SELECT
+     id
+  FROM
+     first_insert),
+     'RIOOS.ASSEMBLYS.*.STATUS.PUT',
+     'Edit access for assembly resource.'
+)
+,
    (
 (
       SELECT
@@ -393,6 +403,16 @@ VALUES
          'RIOOS.NETWORKS.GET',
          'Read only access for networks resource.'
    )
+,
+(
+  (
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.NETWORKS.*.GET',
+      'Read only access for networks resource.'
+)
 ,
    (
 (

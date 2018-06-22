@@ -16,7 +16,6 @@ use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::collector::{Collector, CollectorScope};
 
 use serde_json;
-use rand;
 
 use postgres;
 use db::data_store::DataStoreConn;
@@ -648,6 +647,6 @@ fn mk_node(ip: &str) -> node::Node {
     let ref mut om = node.mut_meta(node.object_meta(), ip.to_string(), "".to_string());
     node.set_meta(type_meta_url(jackie), om.clone());
     node.set_node_ip(ip.to_string());
-    node.set_id(rand::random::<u64>().to_string());
+    node.set_id(ip.to_string());
     node
 }
