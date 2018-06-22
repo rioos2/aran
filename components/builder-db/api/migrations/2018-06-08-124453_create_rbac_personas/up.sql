@@ -74,6 +74,16 @@ VALUES
          'Edit access for assembly resource.'
    )
 ,
+(
+  (
+  SELECT
+     id
+  FROM
+     first_insert),
+     'RIOOS.ASSEMBLYS.*.STATUS.PUT',
+     'Edit access for assembly resource.'
+)
+,
    (
 (
       SELECT
