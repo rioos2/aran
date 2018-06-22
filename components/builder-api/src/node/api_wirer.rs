@@ -12,13 +12,14 @@ use api::security::config::SecurerConn;
 use api::{audit, authorize, cluster, deploy, devtooling, objectstorage, security, Api};
 use audit::config::InfluxClientConn;
 use audit::vulnerable::vulnerablity::AnchoreClient;
-use auth::rbac::permissions;
+use auth::rbac::{permissions, license};
 use config::Config;
 use db::data_store::*;
 use error::Result;
 use http_gateway;
 use http_gateway::app::prelude::*;
 use http_gateway::http::pack;
+use http_gateway::http::middleware::EntitlementAct;
 use iron;
 use mount::Mount;
 use node::runtime::ApiSender;
@@ -44,7 +45,7 @@ impl ApiSrv {
     // A generic implementation that launches `Node` and optionally creates threads
     // for aran api handlers.
     // Aran api v1 prefix is `/api/v1`
-    pub fn start(self, api_sender: ApiSender) -> Result<()> {
+    pub fn start(self, api_sender: ApiSender, ds: Box<DataStoreConn>) -> Result<()> {
         //You are free to add move evs of type
         // persistent::Read::<EventLog>
         // However we won't be having it.
@@ -53,7 +54,7 @@ impl ApiSrv {
             &self.config.blockchain.cache_dir,
             self.config.blockchain.enabled.clone(),
         ));
-        http_gateway::app::start::<Wirer, _, _>(ev, self.config.clone());
+        http_gateway::app::start::<Wirer, _, _>(ev, self.config.clone(), ds);
 
         Ok(())
     }
@@ -66,22 +67,19 @@ impl HttpGateway for Wirer {
 
     type Config = Config;
 
-    fn add_middleware(_config: Arc<Self::Config>, chain: &mut iron::Chain) {
-        let ods = DataStoreConn::new().ok();
+    fn add_middleware(_config: Arc<Self::Config>, chain: &mut iron::Chain, ds: Box<DataStoreConn>) {
+        //let ods = DataStoreConn::new().ok();
+        let pds: DataStoreConn = *ds.clone();
+        chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(
+                    pds,
+        )));
+        let mut permissions = permissions::Permissions::new(ds.clone());
+        permissions.with_cache();
+        chain.link_before(Arc::new(RBAC::new(&*_config, permissions)));
 
-        match ods {
-            Some(ds) => {
-                chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(
-                    ds.clone(),
-                )));
-                let mut permissions = permissions::Permissions::new(Box::new(ds.clone()));
-                permissions.with_cache();
-                chain.link_before(Arc::new(RBAC::new(&*_config, permissions)));
-            }
-            None => {
-                error!("Failed to wire the api middleware, \ndatabase isn't ready.");
-            }
-        }
+        let mut license = license::LicensesFascade::new(ds.clone());
+        license.with_cache();
+        chain.link_before(Arc::new(EntitlementAct::new(&*_config, license)));
 
         chain.link_after(pack::CompressionMiddleware);
 
@@ -98,160 +96,150 @@ impl HttpGateway for Wirer {
         mount
     }
 
-    fn router(config: Arc<Self::Config>) -> Router {
+    fn router(config: Arc<Self::Config>, ds: Box<DataStoreConn>) -> Router {
         let mut router = Router::new();
+        //cluster apis
+        let mut network = cluster::network_api::NetworkApi::new(ds.clone());
+        network.wire(config.clone(), &mut router);
 
-        let ods = DataStoreConn::new().ok();
+        let mut node = cluster::node_api::NodeApi::new(
+            ds.clone(),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        node.wire(config.clone(), &mut router);
 
-        match ods {
-            Some(ds) => {
-                //cluster apis
-                let mut network = cluster::network_api::NetworkApi::new(Box::new(ds.clone()));
-                network.wire(config.clone(), &mut router);
+        let mut diagnostics = cluster::diagnostics_api::DiagnosticsApi::new(
+            ds.clone(),
+            Box::new(PrometheusClient::new(&*config.clone())),
+            config.clone(),
+        );
+        diagnostics.wire(config.clone(), &mut router);
 
-                let mut node = cluster::node_api::NodeApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*config.clone())),
-                );
-                node.wire(config.clone(), &mut router);
+        let mut storage = cluster::storage_api::StorageApi::new(ds.clone());
+        storage.wire(config.clone(), &mut router);
 
-                let mut diagnostics = cluster::diagnostics_api::DiagnosticsApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*config.clone())),
-                    config.clone(),
-                );
-                diagnostics.wire(config.clone(), &mut router);
+        let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(Box::new(
+            ObjectStorageCfg::new(&*config.clone()),
+        ));
+        s3.wire(config.clone(), &mut router);
 
-                let mut storage = cluster::storage_api::StorageApi::new(Box::new(ds.clone()));
-                storage.wire(config.clone(), &mut router);
+        let mut service = deploy::service::ServiceApi::new(ds.clone());
+        service.wire(config.clone(), &mut router);
 
-                let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(Box::new(
-                    ObjectStorageCfg::new(&*config.clone()),
-                ));
-                s3.wire(config.clone(), &mut router);
+        let mut endpoints = deploy::endpoint::EndpointApi::new(ds.clone());
+        endpoints.wire(config.clone(), &mut router);
 
-                let mut service = deploy::service::ServiceApi::new(Box::new(ds.clone()));
-                service.wire(config.clone(), &mut router);
+        let mut plan = deploy::plan_factory::PlanFactory::new(ds.clone());
+        plan.wire(config.clone(), &mut router);
 
-                let mut endpoints = deploy::endpoint::EndpointApi::new(Box::new(ds.clone()));
-                endpoints.wire(config.clone(), &mut router);
+        //deployment apis
+        let mut assembly = deploy::assembly::AssemblyApi::new(
+            ds.clone(),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        assembly.wire(config.clone(), &mut router);
 
-                let mut plan = deploy::plan_factory::PlanFactory::new(Box::new(ds.clone()));
-                plan.wire(config.clone(), &mut router);
+        let mut assembly_factory =
+            deploy::assembly_factory::AssemblyFactoryApi::new(ds.clone());
+            assembly_factory.wire(config.clone(), &mut router);
 
-                //deployment apis
-                let mut assembly = deploy::assembly::AssemblyApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*config.clone())),
-                );
-                assembly.wire(config.clone(), &mut router);
+        let mut stacks_factory =
+            deploy::stacks_factory::StacksFactoryApi::new(ds.clone());
+            stacks_factory.wire(config.clone(), &mut router);
 
-                let mut assembly_factory =
-                    deploy::assembly_factory::AssemblyFactoryApi::new(Box::new(ds.clone()));
-                assembly_factory.wire(config.clone(), &mut router);
+        //securer apis
+        let mut securer = security::auth_api::AuthenticateApi::new(ds.clone());
+        securer.wire(config.clone(), &mut router);
 
-                let mut stacks_factory =
-                    deploy::stacks_factory::StacksFactoryApi::new(Box::new(ds.clone()));
-                stacks_factory.wire(config.clone(), &mut router);
+        let mut passticket =
+            security::passticket_api::PassTicketApi::new(ds.clone());
+            passticket.wire(config.clone(), &mut router);
 
-                //securer apis
-                let mut securer = security::auth_api::AuthenticateApi::new(Box::new(ds.clone()));
-                securer.wire(config.clone(), &mut router);
+        let mut secret = security::secret_api::SecretApi::new(
+            ds.clone(),
+            Box::new(SecurerConn::new(&*config.clone())),
+        );
+        secret.wire(config.clone(), &mut router);
 
-                let mut passticket =
-                    security::passticket_api::PassTicketApi::new(Box::new(ds.clone()));
-                passticket.wire(config.clone(), &mut router);
+        let mut service_account =
+            security::service_account_api::SeriveAccountApi::new(ds.clone());
+        service_account.wire(config.clone(), &mut router);
 
-                let mut secret = security::secret_api::SecretApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(SecurerConn::new(&*config.clone())),
-                );
-                secret.wire(config.clone(), &mut router);
+        //job apis
+        let mut job = deploy::job::JobApi::new(ds.clone());
+        job.wire(config.clone(), &mut router);
 
-                let mut service_account =
-                    security::service_account_api::SeriveAccountApi::new(Box::new(ds.clone()));
-                service_account.wire(config.clone(), &mut router);
+        let mut volume = deploy::volume::VolumeApi::new(ds.clone());
+        volume.wire(config.clone(), &mut router);
 
-                //job apis
-                let mut job = deploy::job::JobApi::new(Box::new(ds.clone()));
-                job.wire(config.clone(), &mut router);
+        //scaling apis
+        let mut hscale = deploy::horizontalscaling::HorizontalScalingApi::new(
+            ds.clone(),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        hscale.wire(config.clone(), &mut router);
 
-                let mut volume = deploy::volume::VolumeApi::new(Box::new(ds.clone()));
-                volume.wire(config.clone(), &mut router);
+        let mut vscale = deploy::vertical_scaling::VerticalScalingApi::new(
+            ds.clone(),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        vscale.wire(config.clone(), &mut router);
 
-                //scaling apis
-                let mut hscale = deploy::horizontalscaling::HorizontalScalingApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*config.clone())),
-                );
-                hscale.wire(config.clone(), &mut router);
+        let mut console =
+            deploy::console::Containers::new(ds.clone(), config.clone());
+        console.wire(config.clone(), &mut router);
 
-                let mut vscale = deploy::vertical_scaling::VerticalScalingApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(PrometheusClient::new(&*config.clone())),
-                );
-                vscale.wire(config.clone(), &mut router);
+        //origin
+        let mut origin = deploy::origin::OriginApi::new(ds.clone());
+        origin.wire(config.clone(), &mut router);
 
-                let mut console =
-                    deploy::console::Containers::new(Box::new(ds.clone()), config.clone());
-                console.wire(config.clone(), &mut router);
+        let mut team = deploy::team::TeamApi::new(ds.clone());
+        team.wire(config.clone(), &mut router);
 
-                //origin
-                let mut origin = deploy::origin::OriginApi::new(Box::new(ds.clone()));
-                origin.wire(config.clone(), &mut router);
+        let mut role = authorize::role::RoleApi::new(ds.clone());
+        role.wire(config.clone(), &mut router);
 
-                let mut team = deploy::team::TeamApi::new(Box::new(ds.clone()));
-                team.wire(config.clone(), &mut router);
+        let mut permission =
+            authorize::permission::PermissionApi::new(ds.clone());
+        permission.wire(config.clone(), &mut router);
 
-                let mut role = authorize::role::RoleApi::new(Box::new(ds.clone()));
-                role.wire(config.clone(), &mut router);
+        let mut settings =
+            security::settings_map_api::SettingsMapApi::new(ds.clone());
+        settings.wire(config.clone(), &mut router);
 
-                let mut permission =
-                    authorize::permission::PermissionApi::new(Box::new(ds.clone()));
-                permission.wire(config.clone(), &mut router);
+        let mut log = audit::log_api::LogApi::new(
+            ds.clone(),
+            Box::new(InfluxClientConn::new(&*config.clone())),
+        );
+        log.wire(config.clone(), &mut router);
 
-                let mut settings =
-                    security::settings_map_api::SettingsMapApi::new(Box::new(ds.clone()));
-                settings.wire(config.clone(), &mut router);
+        let mut vuln = audit::vuln_api::VulnApi::new(
+            ds.clone(),
+            Box::new(AnchoreClient::new(&*config.clone())),
+        );
+        vuln.wire(config.clone(), &mut router);
 
-                let mut log = audit::log_api::LogApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(InfluxClientConn::new(&*config.clone())),
-                );
-                log.wire(config.clone(), &mut router);
+        let mut build_config =
+            devtooling::build_config::BuildConfigApi::new(ds.clone());
+        build_config.wire(config.clone(), &mut router);
 
-                let mut vuln = audit::vuln_api::VulnApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(AnchoreClient::new(&*config.clone())),
-                );
-                vuln.wire(config.clone(), &mut router);
+        let mut build = devtooling::build::BuildApi::new(ds.clone());
+        build.wire(config.clone(), &mut router);
 
-                let mut build_config =
-                    devtooling::build_config::BuildConfigApi::new(Box::new(ds.clone()));
-                build_config.wire(config.clone(), &mut router);
+        let mut image_references =
+            devtooling::image_references::ImageReferencesApi::new(ds.clone());
+        image_references.wire(config.clone(), &mut router);
 
-                let mut build = devtooling::build::BuildApi::new(Box::new(ds.clone()));
-                build.wire(config.clone(), &mut router);
+        let mut image_marks =
+            devtooling::image_marks::ImageMarksApi::new(ds.clone());
+        image_marks.wire(config.clone(), &mut router);
 
-                let mut image_references =
-                    devtooling::image_references::ImageReferencesApi::new(Box::new(ds.clone()));
-                image_references.wire(config.clone(), &mut router);
+        let mut block_chain = audit::blockchain_api::BlockChainApi::new(
+            ds.clone(),
+            Box::new(BlockchainConn::new(&*config.clone())),
+        );
+        block_chain.wire(config.clone(), &mut router);           
 
-                let mut image_marks =
-                    devtooling::image_marks::ImageMarksApi::new(Box::new(ds.clone()));
-                image_marks.wire(config.clone(), &mut router);
-
-                let mut block_chain = audit::blockchain_api::BlockChainApi::new(
-                    Box::new(ds.clone()),
-                    Box::new(BlockchainConn::new(&*config.clone())),
-                );
-                block_chain.wire(config.clone(), &mut router);
-            }
-            None => {
-                error!("Failed to wire the router, \ndatabase isn't ready.");
-            }
-        }
-
-        router
+    router
     }
 }

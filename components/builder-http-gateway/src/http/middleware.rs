@@ -6,6 +6,7 @@ use super::header_extracter::HeaderDecider;
 use super::rendering::*;
 use ansi_term::Colour;
 use auth::config::AuthenticationFlowCfg;
+use entitlement::config::License;
 use auth::rbac::{authorizer, permissions::Permissions};
 use auth::rioos::AuthenticateDelegate;
 use common::ui;
@@ -23,6 +24,7 @@ use router::NoRoute;
 use std::collections::HashMap;
 use unicase::UniCase;
 use util::errors::{bad_err, forbidden_error, internal_error};
+use auth::rbac::license::LicensesFascade;
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
@@ -368,6 +370,26 @@ impl BeforeMiddleware for RBAC {
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         }
+    }
+}
+
+pub struct EntitlementAct {
+   license: LicensesFascade,
+   backend: String,
+}
+
+impl EntitlementAct {
+    pub fn new<T: License>(config: &T, fascade: LicensesFascade) -> Self {
+        EntitlementAct {
+            license: fascade, 
+            backend: config.backend().to_string(),           
+        }
+    }
+}
+
+impl BeforeMiddleware for EntitlementAct {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        Ok(())
     }
 }
 

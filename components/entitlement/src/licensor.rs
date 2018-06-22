@@ -8,6 +8,9 @@ use nalperion::Nalperion;
 use licensecloud::LicenseCloud;
 use config;
 use config::{LicensesCfg, Backend};
+use db::data_store::DataStoreConn;
+use entitlement::models::license;
+use protocol::api::licenses::Licenses;
 
 const ALLOWED_EXPIRY: u32 = 5;
 
@@ -47,6 +50,7 @@ impl Client {
         let res = match self.backend {
             Backend::LicenseCloud => self.licensecloud.verify(),
         };        
+        println!("{:?}", res);
         res
     }
 
@@ -66,4 +70,12 @@ impl Client {
     pub fn hard_stop(&mut self) -> Result<String> {
         self.expiry_counter()
     }
+
+    pub fn update_license_status(&self, datastore: Box<DataStoreConn>, status: String, desc: String) {
+        let mut license = Licenses::new();
+        license.set_name(self.backend.to_string());
+        license.set_status(status);
+        license::DataStore::new(&datastore).license_create_or_update(&license);
+    }
+
 }

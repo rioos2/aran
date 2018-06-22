@@ -7,7 +7,7 @@ use std::iter;
 use std::io;
 use std::sync::{mpsc, Arc, Mutex};
 use std::rc::Rc;
-
+use serde;
 use watch::handler::LISTENERS;
 use watch::handler::WatchHandler;
 use telemetry::metrics::prometheus::PrometheusClient;
@@ -22,7 +22,6 @@ use ws;
 use openssl::ssl::{SslAcceptorBuilder, SslMethod};
 use openssl::x509::X509Ref;
 use openssl::pkcs12::Pkcs12;
-
 use http_gateway::config::prelude::TLSPair;
 
 #[derive(Debug)]
@@ -42,13 +41,14 @@ impl Websocket {
     //start websocket server
     //if rioos_home dir have apiserver.pfx file then server start using wss protocol,
     //otherwise start using ws protocol
-    pub fn start(self, tls_pair: TLSPair) -> io::Result<()> {
-        let ods = tls_pair.clone().and(DataStoreConn::new().ok());
+    pub fn start(self, tls_pair: TLSPair, ds: Box<DataStoreConn>) -> io::Result<()> {
+        //let ods = tls_pair.clone().and(DataStoreConn::new().ok());
+        let ods = tls_pair.clone().and(serde::export::Some(ds));
 
         match ods {
             Some(ds) => {
                 let mut watchhandler = WatchHandler::new(
-                    Box::new(ds),
+                    ds,
                     Box::new(PrometheusClient::new(&*self.config.clone())),
                     Box::new(SecurerConn::new(&*self.config.clone())),
                 );

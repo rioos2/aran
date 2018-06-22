@@ -8,7 +8,7 @@ mod multi_cache;
 use self::flock::Cacher;
 use api;
 use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder,
-                    ServicesFeeder, StacksFeeder, VolumesFeeder};
+                    ServicesFeeder, StacksFeeder, VolumesFeeder, LicensesFeeder};
 use cache::multi_cache::MultiCache;
 use serde_json;
 use std::collections::BTreeMap;
@@ -27,6 +27,7 @@ pub const CACHE_PREFIX_VOLUME: &'static str = "_volume";
 pub const CACHE_PREFIX_METRIC: &'static str = "_metric";
 pub const CACHE_PREFIX_SERVICE: &'static str = "_service";
 pub const CACHE_PREFIX_PERMISSION: &'static str = "_permission";
+pub const CACHE_PREFIX_LICENSE: &'static str = "_license";
 
 /// The fake type that decides how to pull the data from cache (invalidate or just from cache)
 /// PULL_DIRECTLY: This loads from the cache is present, if the copy isn't there then it applies the function closure |_v| to cache the entry
@@ -428,6 +429,33 @@ impl InMemoryExpander {
             }
         }))
     }
+
+    pub fn with_license<I: LicensesFeeder>(&self, i: &mut I, force: Option<bool>) {
+        let iid = i.iget_id();
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    debug!("» Licenses Invalidate fn for ≈ {}", iid);
+                    self.cached_invalidate_for(CACHE_PREFIX_LICENSE.to_string(), iid.clone())
+                        .clone()
+                },
+                |_v| {
+                    debug!("» Licenses cache fn for ≈ {}", iid);
+                    self.cached_value_for(CACHE_PREFIX_LICENSE.to_string(), iid.clone())
+                        .clone()
+                },
+            )
+        };
+
+        i.ifeed(opt_found_as_str.and_then({
+            |found_as_str| {
+                let license: api::licenses::Licenses = serde_json::from_str(&found_as_str).unwrap();
+                let status: String = license.get_status();
+                Some(status)
+            }
+        }))
+    }
+
 
     /// Expands a structure with the metrics information.
     /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.

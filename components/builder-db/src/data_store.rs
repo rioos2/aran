@@ -2,7 +2,7 @@
 embed_migrations!("api/migrations");
 
 use std::io;
-
+use std::sync::{Arc, RwLock};
 use super::diesel_pool::DieselPool;
 use super::migration::shard_setup;
 use config::DataStore;
@@ -26,6 +26,7 @@ impl DataStoreConn {
         let datastore = DataStore::default();
         let diesel_pool = DieselPool::new(&datastore)?;
         let pool = Pool::new(&datastore, (0..SHARD_COUNT).collect())?;
+       
         Ok(DataStoreConn {
             pool: pool,
             diesel_pool: diesel_pool,

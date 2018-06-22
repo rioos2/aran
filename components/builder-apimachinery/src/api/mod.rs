@@ -27,3 +27,4 @@ pub mod marketplace;
 pub mod audit;
 pub mod devtool;
 pub mod passticket;
+pub mod licenses;
