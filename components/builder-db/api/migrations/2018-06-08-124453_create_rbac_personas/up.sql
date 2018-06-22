@@ -374,6 +374,16 @@ VALUES
          'Read only access for accounts resource.'
    )
 ,
+(
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.ACCOUNTS.*.GET',
+      'Read only access for accounts resource.'
+)
+,
    (
 (
       SELECT
