@@ -404,6 +404,16 @@ VALUES
          'Read only access for networks resource.'
    )
 ,
+(
+  (
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.NETWORKS.*.GET',
+      'Read only access for networks resource.'
+)
+,
    (
 (
       SELECT
