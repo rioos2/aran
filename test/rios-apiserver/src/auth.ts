@@ -11,7 +11,7 @@ describe('User authenticate API', function() {
   it('returns the created user account', function(done) {
     this.timeout(4000)
     request.post('/accounts')
-      .ca(globalAny.rootCA)
+      .ca(globalAny.rootMarketplaceCA)
       .send({"email":"info@riocorp.io","roles":["RIOOS:SUPERUSER"],"first_name":"vino","last_name": "v","phone":"9994048897","company_name": "megam","password": "team4riocorp","registration_ip_address": "192.168.1.10","object_meta":{"name":"info@riocorp.io","account":"","labels":{},"annotations":{},"owner_references":[{"kind":"","api_version":"","name":"","uid":"","block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}})
       .expect(200)
       .end(function(err, res) {
