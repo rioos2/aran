@@ -25,9 +25,12 @@ pub struct SlackSender {
 
 impl SlackSender {
     pub fn new(config: SlackCfg, user: String, subject: String, content: String) -> Self {
+        println!("********new******{}****{}****", user, subject);
         SlackSender { config: config, user: user, subject: subject, content: content }
     }
     pub fn send(self) -> Result<()> {
+        println!("********new****send******{}****", self.content);
+
         let client = ApiClient::new(&format!("{}", SLACK_URL), USER_AGENT, "v1", None).unwrap();
         let body = json!({
                 "channel":"test2",
@@ -52,6 +55,8 @@ pub struct SlackNotifier {
 
 impl SlackNotifier {
     pub fn new(envelope: Envelope, config: SlackCfg) -> Self {
+        println!("*****SlackNotifier***new****send**********");
+
         SlackNotifier { envelope: envelope, config: config }
     }
     fn getlabel(&self, key: String) -> String {
@@ -74,6 +79,8 @@ impl SlackNotifier {
 
 impl PushNotifier for SlackNotifier {
     fn should_notify(&self) -> bool {
+        println!("***PushNotifier**should_notify***new****send**********");
+
         if !self.config.enabled {
             return false;
         }
@@ -87,6 +94,8 @@ impl PushNotifier for SlackNotifier {
         if !self.should_notify() {
             return;
         }
+        println!("***PushNotifier**should_notify***notify**********{}", self.envelope.event.reason);
+
         match Status::from_str(&self.envelope.event.reason) {
             // Status::KryptoniteQRCode => {
             //     let content = data.deploy_success().unwrap();

@@ -39,6 +39,7 @@ impl RuntimeHandler {
             }
             ExternalMessage::PushNotification(event_envl) => {
                 let e = event_envl.clone();
+                println!("--> ************ExternalMessage::PushNotification*************************");
                 mailer::EmailNotifier::new(e, *self.mailer.clone()).notify();
                 slack::SlackNotifier::new(event_envl, *self.slack.clone()).notify();
             }
