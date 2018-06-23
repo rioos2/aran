@@ -354,6 +354,16 @@ VALUES
          'Read only access for plans resource.'
    )
 ,
+(
+  (
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.PLANS.*.GET',
+      'Read only access for plans resource.'
+)
+,
    (
 (
       SELECT
@@ -370,7 +380,7 @@ VALUES
          id
       FROM
          first_insert),
-         'RIOOS.ACCOUNTS.GET',
+         'RIOOS.ACCOUNTS.*.GET',
          'Read only access for accounts resource.'
    )
 ,
