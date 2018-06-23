@@ -296,7 +296,7 @@ describe('Marketplace API', function() {
       .ca(globalAny.rootMarketplaceCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .send({ "object_meta": { "name": "tyk", "account": globalAny.account_id }, "plans": [{ "object_meta": { "name": "mongo", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "mongo", "uid": globalAny.mongo_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "latest", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "mongo.png", "description": "MongoDB document databases provide high availability and easy scalability.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [] }, { "object_meta": { "name": "registry.rioos.xyz:5000/rioosredis", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "redis", "uid": globalAny.redis_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "3.2.11", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "redis.png", "description": "Redis is an open source key-value store that functions as a data structure server.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [{ "container_port": 80, "host_ip": "", "host_port": 0, "protocol": "" }] }, { "object_meta": { "name": "tykio/tyk-gateway", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "tyk-gateway", "uid": globalAny.tyk_gateway_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "latest", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "tyk_gateway.png", "description": "Tyk API gateway.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [{ "container_port": 8080, "host_ip": "", "host_port": 0, "protocol": "" }], "envs": { "REDIGOCLUSTER_SHARDCOUNT": { "value": "128", "required": "true", "editable": "" } }, "stateful_volumes": [{ "name": "tyk_gateway_standalone", "volumes": { "host_path": "/var/lib/rioos/tyk-gateway/tyk.standalone.conf" }, "volume_mounts": { "mount_path": "/opt/tyk-gateway/tyk.conf" } }, { "name": "tyk_gateway", "volumes": { "host_path": "/var/lib/rioos/tyk-gateway/apps" }, "volume_mounts": { "mount_path": "/opt/tyk-gateway/apps tykio/tyk-gateway" } } ] }, { "object_meta": { "name": "tykio/tyk-dashboard", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "tyk-dashboard", "uid": globalAny.tyk_dashboard_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "latest", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "tyk_dashboard.png", "description": "Tyk API dashboard.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [{ "container_port": 3000, "host_ip": "", "host_port": 0, "protocol": "" }], "envs": { "REDIGOCLUSTER_SHARDCOUNT": { "value": "128", "required": "true", "editable": "" } } }, { "object_meta": { "name": "tykio/tyk-pump", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "tyk-pump", "uid": globalAny.tyk_pump_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "latest", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "tyk_pump.png", "description": "Tyk API pump.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [], "envs": { "REDIGOCLUSTER_SHARDCOUNT": { "value": "128", "required": "true", "editable": "" } } }], "category": "container", "version": "latest", "icon": "tyk.png", "description": "Tyk api management", "status": { "phase": "SyncPending" } })
+      .send({ "object_meta": { "name": "tyk", "account": globalAny.account_id }, "plans": [{ "object_meta": { "name": "mongo", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "mongo", "uid": globalAny.mongo_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "latest", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "mongo.png", "description": "MongoDB document databases provide high availability and easy scalability.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } },"ports":[{"container_port":27017,"host_ip":"","host_port":0,"protocol":""}],"stateful_volumes":[{"name":"mongo-data","volumes":{"host_path":"/data/db"},"volume_mounts":{"mount_path":"/data/db"},"settingmap":{"uri":"","uid":"","rioos_binder":[],"map_type":""}}]}, { "object_meta": { "name": "registry.rioos.xyz:5000/rioosredis", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "redis", "uid": globalAny.redis_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "3.2.11", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "redis.png", "description": "Redis is an open source key-value store that functions as a data structure server.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [{ "container_port": 6379, "host_ip": "", "host_port": 0, "protocol": "" }],"stateful_volumes":[{"name":"redis-data","volumes":{"host_path":"/var/lib/redis/redis-data"},"volume_mounts":{"mount_path":"/var/lib/redis/redis-data"},"settingmap":{"uri":"","uid":"","rioos_binder":[],"map_type":""}},{"name":"redis-conf","volumes":{"host_path":"/etc/redis/redis.conf"},"volume_mounts":{"mount_path":"/etc/redis/redis.conf"},"settingmap":{"uri":"https://marketplaces.rioos.xyz:6443/api/v1/marketplaces/966350214048833536/settingmap/redis-conf","uid":"8574692245852336421","rioos_binder":[],"map_type":"static"}}] }, { "object_meta": { "name": "tykio/tyk-gateway", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "tyk-gateway", "uid": globalAny.tyk_gateway_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "latest", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "tyk_gateway.png", "description": "Tyk API gateway.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [{ "container_port": 8080, "host_ip": "", "host_port": 0, "protocol": "" }], "envs": { "REDIGOCLUSTER_SHARDCOUNT": { "value": "128", "required": "true", "editable": "" } },  "stateful_volumes": [{ "name": "tyk_gateway_standalone", "volumes": { "host_path": "/var/lib/rioos/tyk-gateway/tyk.standalone.conf" }, "volume_mounts": { "mount_path": "/opt/tyk-gateway/tyk.conf" } }, { "name": "tyk_gateway", "volumes": { "host_path": "/var/lib/rioos/tyk-gateway/apps" }, "volume_mounts": { "mount_path": "/opt/tyk-gateway/apps tykio/tyk-gateway" } } ] }, { "object_meta": { "name": "tykio/tyk-dashboard", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "tyk-dashboard", "uid": globalAny.tyk_dashboard_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "latest", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "tyk_dashboard.png", "description": "Tyk API dashboard.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [{ "container_port": 3000, "host_ip": "", "host_port": 0, "protocol": "" }], "envs": { "REDIGOCLUSTER_SHARDCOUNT": { "value": "128", "required": "true", "editable": "" } } ,"stateful_volumes":[{"name":"tyk-dashboard-conf","volumes":{"host_path":"/etc/tyk-dashboard"},"volume_mounts":{"mount_path":"/etc/tyk-dashboard/tyk_analytics.conf"},"settingmap":{"uri":"https://marketplaces.rioos.xyz:6443/api/v1/marketplaces/966350214048833536/settingmap/tyk-dashboard-conf","uid":"1010057432442880000","rioos_binder":["mongo","registry.rioos.xyz:5000/rioosredis","tykio/tyk-gateway"],"map_type":"template"}}]}, { "object_meta": { "name": "tykio/tyk-pump", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "tyk-pump", "uid": globalAny.tyk_pump_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "latest", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "tyk_pump.png", "description": "Tyk API pump.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [], "envs": { "REDIGOCLUSTER_SHARDCOUNT": { "value": "128", "required": "true", "editable": "" } } ,"stateful_volumes":[{"name":"tyk-pump-conf","volumes":{"host_path":"/etc/tyk-pump/pump.conf"},"volume_mounts":{"mount_path":"/etc/tyk-pump/pump.conf"},"settingmap":{"uri":"https://marketplaces.rioos.xyz:6443/api/v1/marketplaces/966350214048833536/settingmap/tyk-pump-conf","uid":"1010054499559022592","rioos_binder":["mongo","registry.rioos.xyz:5000/rioosredis"],"map_type":"template"}}]}], "category": "container", "version": "latest", "icon": "tyk.png", "description": "Tyk api management", "status": { "phase": "SyncPending" } })
       .expect(200)
       .end(function(err, res) {
         expect(res.body.object_meta.name).to.equal("tyk");
@@ -305,59 +305,72 @@ describe('Marketplace API', function() {
         done(err);
       });
   });
-  // it('returns the created neo4j', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"neo4j","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111015","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.neo4j_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("neo4j");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
-  // it('returns the created Couchdb', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"couchdb","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111016","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.couchdb_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("couchdb");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });it('returns the created Aerospike', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"aerospike","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111017","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.aerospike_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("aerospike");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
+  it('returns the created neo4j', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/rioosneo4j", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioosneo4j","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"neo4j", "uid":globalAny.neo4j_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "3.3.1","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "neo4j.png","description": "Neo4j is a highly scalable, robust native graph database.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":
+      {"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+      "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}},"ports":[{"container_port":7687, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "3.3.1",
+       "icon": "neo4j.png", "description": "Neo4j is a highly scalable, robust native graph database.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosneo4j");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+  it('returns the created Couchdb', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/riooscouchdb", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/riooscouchdb","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"couchdb", "uid":globalAny.couchdb_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "2.1.1","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "couchdb.png",
+      "description": "CouchDB is a database that uses JSON for documents, an HTTP API, & JavaScript/declarative indexing.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get":
+      {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}},
+      "ports":[{"container_port":5984, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "2.1.1", "icon": "couchdb.png", "description": "CouchDB is a database that uses JSON for documents, an HTTP API, & JavaScript/declarative indexing.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/riooscouchdb");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+  it('returns the created Aerospike', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/rioosaerospike", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioosaerospike","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"aerospike", "uid":globalAny.aerospike_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "3.15.0.2","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "aerospike.png","description": "Aerospike is reliable, high performance, distributed database optimized for flash and RAM.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{
+      "probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}},
+       "pre_stop": {"command": []}, "post_start": {"command": []}},"ports":[{"container_port":3000, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "3.15.0.2", "icon": "aerospike.png",
+       "description": "Aerospike is reliable, high performance, distributed database optimized for flash and RAM.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosaerospike");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
   it('returns the created Redis', function(done) {
     request.post('/marketplaces')
       .ca(globalAny.rootMarketplaceCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .send({ "object_meta": { "name": "registry.rioos.xyz:5000/rioosredis", "account": globalAny.account_id }, "plans": [{ "object_meta": { "name": "registry.rioos.xyz:5000/rioosredis", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1", "name": "redis", "uid": globalAny.redis_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "3.2.11", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "redis.png", "description": "Redis is an open source key-value store that functions as a data structure server.", "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [{ "container_port": 80, "host_ip": "", "host_port": 0, "protocol": "" }] }], "category": "container", "version": "3.2.11", "icon": "redis.png", "description": "Redis is an open source key-value store that functions as a data structure server.", "status": { "phase": "SyncPending" } })
+      .send({ "object_meta": { "name": "registry.rioos.xyz:5000/rioosredis", "account": globalAny.account_id }, "plans": [{ "object_meta": { "name": "registry.rioos.xyz:5000/rioosredis", "account": globalAny.account_id, "owner_references": [{ "kind": "Package", "api_version": "v1",
+       "name": "redis", "uid": globalAny.redis_package_id, "block_owner_deletion": false }] }, "category": "container", "version": "3.2.11", "characteristics": { "rioos_sh_market_image_extension": "tar.gz" }, "icon": "redis.png", "description": "Redis is an open source key-value store that functions as a data structure server.",
+       "status": { "phase": "SyncPending" }, "metadata": { "origin": "rioos_system" }, "lifecycle": { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "",
+       "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }, "ports": [{ "container_port": 80, "host_ip": "",
+       "host_port": 0, "protocol": "" }] }], "category": "container", "version": "3.2.11", "icon": "redis.png", "description": "Redis is an open source key-value store that functions as a data structure server.", "status": { "phase": "SyncPending" } })
       .expect(200)
       .end(function(err, res) {
-        globalAny.redis_package_id =res.body.id;
         expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosredis");
         expect(res.body.type_meta.kind).to.equal(globalAny.plan);
         expect(res.body.type_meta.api_version).to.equal(globalAny.version);
@@ -365,164 +378,193 @@ describe('Marketplace API', function() {
       });
   });
 
+  it('returns the created memcached', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/rioosmemcached", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioosmemcached","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"memcached", "uid":globalAny.memcached_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "1.5.3","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "memcached.png",
+      "description": "Memcached is a general-purpose distributed memory caching system. It is often used to speed up dynamic database-driven websites by caching data and objects in RAM to reduce the number of times an external data source (such as a database or API) must be read.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "",
+      "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}}}], "category": "container",
+      "version": "1.5.3", "icon": "memcached.png", "description": "Memcached is a general-purpose distributed memory caching system. It is often used to speed up dynamic database-driven websites by caching data and objects in RAM to reduce the number of times an external data source (such as a database or API) must be read.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosmemcached");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+  it('returns the created Postgres', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/rioospostgres", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioospostgres","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"postgres", "uid":globalAny.postgres_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "10.3","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "postgres.png","description": "The PostgreSQL object-relational database system provides reliability and data integrity.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},
+      "lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+      "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}},"ports":[{"container_port":5432, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "10.3",
+      "icon": "postgres.png", "description": "The PostgreSQL object-relational database system provides reliability and data integrity.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioospostgres");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+  it('returns the created Psitrax/Powerdns', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/rioosorientdb", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioosorientdb","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"orientdb", "uid":globalAny.powerdns_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "2.0.18","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "orientdb.png",
+      "description": "OrientDB is the first Multi-Model Open Source NoSQL DBMS that combines the power of graphs and the flexibility of documents into one scalable, high-performance operational database. ","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},  "lifecycle":{"probe": {"env": {}, "exec": [],
+      "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}}, "pre_stop": {"command": []},
+      "post_start": {"command": []}},"ports":[{"container_port":2424, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "2.0.18", "icon": "orientdb.png", "description": "OrientDB is the first Multi-Model Open Source NoSQL DBMS that combines the power of graphs and the flexibility of documents into one scalable, high-performance operational database.",
+      "status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosorientdb");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
 
-  //
-  //
-  // it('returns the created memcached', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"memcached","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111019","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.memcached_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("memcached");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
-  // it('returns the created Postgres', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"postgres","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111020","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.postgres_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("postgres");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
-  // it('returns the created Psitrax/Powerdns', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"psitrax/powerdns","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111021","extension":"tar.gz"})\
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.powerdns_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("psitrax/powerdns");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
-  //
-  //
-  // it('returns the created Fluentbit', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"brycekahle/fluentbit","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111022","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.fluentbit_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("brycekahle/fluentbit");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
-  // it('returns the created Chronograf', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"chronograf","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111023","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.chronograf_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("chronograf");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
-  // it('returns the created Cassandra', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"cassandra","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111024","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.cassandra_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("cassandra");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });it('returns the created Voltdb', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"voltdb","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111025","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.voltdb_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("voltdb");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
-  // it('returns the created Elasticsearch', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"elasticsearch","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111026","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.elasticsearch_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("elasticsearch");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
-  //
-  // it('returns the created Kibana', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name":"kibana","account":globalAny.account_id,"labels":{"rioos_category":"container"}},"version_number":"11111027","extension":"tar.gz"})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.kibana_package_id =res.body.id;
-  //       expect(res.body.object_meta.name).to.equal("kibana");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
 
-  // it('returns the created MariaDB', function(done) {
-  //   request.post('/marketplaces')
-  //     .ca(globalAny.rootMarketplaceCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({ "object_meta":{ "name":"registry.rioos.xyz:5000/rioosmariadb", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioosmariadb","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"mariadb", "uid":globalAny.mariadb_package_id,"block_owner_deletion":false}]},
-  //     "category": "container","version": "10.3","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "mariadb.png","description": "MariaDB is a community-developed fork of the MySQL relational database management system intended to remain free under the GNU GPL. ","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {"MYSQL_ROOT_PASSWORD":
-  //     {"required":"true","value":"team4rio","editable":"true"}}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}},
-  //     "pre_stop": {"command": []}, "post_start": {"command": []}}}], "category": "container", "version": "10.3", "icon": "mariadb.png", "description": "MariaDB is a community-developed fork of the MySQL relational database management system intended to remain free under the GNU GPL.","status":{"phase":"SyncPending"}})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosmariadb");
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.plan);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //         done(err);
-  //     });
-  // });
+  it('returns the created Fluentbit', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/rioosfluentbit", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioosfluentbit","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"brycekahle/fluentbit", "uid":globalAny.fluentbit_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "0.12.15","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "fluentbit.png",
+      "description": "Fluent Bit is an open source and multi-platform log forwarder tool which aims to be a generic Swiss knife for log collection and distribution.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get":
+      {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}}, "pre_stop": {"command": []}, "post_start":
+      {"command": []}},"ports":[{"container_port":5170, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "0.12.15", "icon": "fluentbit.png", "description": "Fluent Bit is an open source and multi-platform log forwarder tool which aims to be a generic Swiss knife for log collection and distribution.",
+      "status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosfluentbit");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+        done(err);
+      });
+  });
+  it('returns the created Chronograf', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/riooschronograf", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/riooschronograf","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"chronograf", "uid":globalAny.chronograf_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "1.3.10.0","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "chronograf.png","description": "Chronograf is a visualization tool for time series data in InfluxDB.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},
+      "lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+      "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}},"ports":[{"container_port":8888, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "1.3.10.0",
+      "icon": "chronograf.png", "description": "Chronograf is a visualization tool for time series data in InfluxDB.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/riooschronograf");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+  it('returns the created Cassandra', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/riooscassandra", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/riooscassandra","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"cassandra", "uid":globalAny.cassandra_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "3.11.2","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "cassandra.png","description": "Apache Cassandra is an open-source distributed storage system.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},
+      "lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+       "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}},"ports":[{"container_port":9042, "host_ip":"","host_port":0,"protocol":""},{"container_port":9142,
+       "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "3.11.2", "icon": "cassandra.png", "description": "Apache Cassandra is an open-source distributed storage system.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/riooscassandra");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+  it('returns the created Voltdb', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/rioosvoltdb", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioosvoltdb","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"voltdb", "uid":globalAny.voltdb_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "7.8.2","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "voltdb.png",
+      "description": "VoltDB is horizontally-scalable, in-memory SQL RDBMS designed for apps with extreme high throughput","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get":
+      {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}},
+      "ports":[{"container_port":8080, "host_ip":"","host_port":0,"protocol":""},{"container_port":3021, "host_ip":"","host_port":0,"protocol":""},{"container_port":21211, "host_ip":"","host_port":0,"protocol":""},{"container_port":21212,
+      "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "7.8.2", "icon": "voltdb.png", "description": "VoltDB is horizontally-scalable, in-memory SQL RDBMS designed for apps with extreme high throughput","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosvoltdb");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+  it('returns the created Elasticsearch', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/riooselasticsearch", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/riooselasticsearch","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"elasticsearch", "uid":globalAny.elasticsearch_package_id,"block_owner_deletion":false}]},
+      "category": "container","version": "5.6.9","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "elasticsearch.png","description": "Elasticsearch is a powerful open source search and analytics engine that makes data easy to explore.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {},
+      "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}},
+      "ports":[{"container_port":9200, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "5.6.9", "icon": "elasticsearch.png", "description": "Elasticsearch is a powerful open source search and analytics engine that makes data easy to explore.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/riooselasticsearch");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+
+  it('returns the created Kibana', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({"object_meta":{ "name":"registry.rioos.xyz:5000/riooskibana", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/riooskibana","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"kibana", "uid":globalAny.kibana_package_id,
+      "block_owner_deletion":false}]},"category": "container","version": "5.6.9","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "kibana.png","description": "Kibana gives shape to any kind of data structured and unstructured indexed in Elasticsearch.","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},
+      "lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+      "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}},"ports":[{"container_port":5601, "host_ip":"","host_port":0,"protocol":""}]}], "category": "container", "version": "5.6.9",
+      "icon": "kibana.png", "description": "Kibana gives shape to any kind of data structured and unstructured indexed in Elasticsearch.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/riooskibana");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+          done(err);
+      });
+  });
+
+
+  it('returns the created MariaDB', function(done) {
+    request.post('/marketplaces')
+      .ca(globalAny.rootMarketplaceCA)
+      .set('Authorization', globalAny.bobo_bearer)
+      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+      .send({ "object_meta":{ "name":"registry.rioos.xyz:5000/rioosmariadb", "account":"globalAny.account_id"}, "plans":[{"object_meta":{"name":"registry.rioos.xyz:5000/rioosmariadb","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"mariadb",
+      "uid": globalAny.mariadb_package_id,"block_owner_deletion":false}]},"category": "container","version": "10.3","characteristics" :{"rioos_sh_market_image_extension": "tar.gz"},"icon" : "mariadb.png",
+      "description": "MariaDB is a community-developed fork of the MySQL relational database management system intended to remain free under the GNU GPL. ","status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"envs":{"MYSQL_ROOT_PASSWORD":{"value":"team4rio","required":"true","editable":"true"}},"lifecycle":{"probe": {"env": {},
+      "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},"http_headers": {}}, "pre_stop":
+      {"command": []}, "post_start": {"command": []}}}], "category": "container","version": "10.3", "icon": "mariadb.png", "description": "MariaDB is a community-developed fork of the MySQL relational database management system intended to remain free under the GNU GPL.","status":{"phase":"SyncPending"}})
+      .expect(200)
+      .end(function(err, res) {
+        expect(res.body.object_meta.name).to.equal("registry.rioos.xyz:5000/rioosmariadb");
+        expect(res.body.type_meta.kind).to.equal(globalAny.plan);
+        expect(res.body.type_meta.api_version).to.equal(globalAny.version);
+        done(err);
+      });
+  });
 
 
 });

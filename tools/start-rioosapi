@@ -8,7 +8,7 @@ RIOOS_MARKETPLACE_YAML=$RIOOS_CONFIG_HOME/pullcache/marketplaces.yaml
 RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
 
 	if [ ! -f $RIOOS_BIN_HOME/rioos-apiserver ]; then
-	    echo "Missing rioo-apiserver  !!!. Did you bundle it correctly ?"
+	    echo "Missing rioos-apiserver  !!!. Did you bundle it correctly ?"
 	    exit 1
     fi
 
