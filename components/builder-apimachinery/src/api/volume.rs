@@ -111,7 +111,7 @@ pub struct VolumeSource {
     #[serde(default)]
     iscsi:Iscsi, // ISCSI represents an ISCSI Disk resource that is attached to a nodelet's host machine and then exposed to the assembly.
     #[serde(default)]
-    rbd:Rbd // RBD represents a Rados Block Device mount on the host that shares a assembly's lifetime.
+    rbd:Rbd, // RBD represents a Rados Block Device mount on the host that shares a assembly's lifetime.
     #[serde(default)]
     host_path: HostPath,// HostPath represents a pre-existing file or directory on the host
 	// machine that is directly exposed to the container. This is generally
