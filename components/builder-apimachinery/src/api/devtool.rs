@@ -706,7 +706,7 @@ mod test {
                             "post_commit": {
                                 "script": "bundle exec rake test" } }
                         }"#;
-        let build: Build = json_decode(val).unwrap();
+        let _build: Build = json_decode(val).unwrap();
     }
     #[test]
     fn decode_build_status() {
@@ -844,7 +844,7 @@ mod test {
                             }
                         }
                     }"#;
-        let image_ref: ImageReferences = json_decode(val).unwrap();
+        let _image_ref: ImageReferences = json_decode(val).unwrap();
     }
 
     #[test]

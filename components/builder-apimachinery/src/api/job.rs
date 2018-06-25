@@ -139,7 +139,7 @@ mod test {
         assert_eq!(job.id, "8765431234567");
         assert_eq!(job.created_at, "2017-11-29T12:59:06.809333+00:00");
     }
-
+    #[test]
     fn decode_spec_data() {
         let val = r#"{
             "node_id": "8762345665434",
