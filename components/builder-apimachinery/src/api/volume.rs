@@ -105,13 +105,13 @@ pub struct VolumeSource {
     #[serde(default)]
     setting_map: SettingMap, // The name of the secret in the assembly's namespace to select from.
     #[serde(default)]
-    nfs: Nfs, // NFS represents an NFS mount on the host that shares a assembly's lifetime
+    nfs: NFS, // NFS represents an NFS mount on the host that shares a assembly's lifetime
     #[serde(default)]
-    openio:Openio,
+    openio: OpenIO,
     #[serde(default)]
-    iscsi:Iscsi, // ISCSI represents an ISCSI Disk resource that is attached to a nodelet's host machine and then exposed to the assembly.
+    iscsi: ISCSI, // ISCSI represents an ISCSI Disk resource that is attached to a nodelet's host machine and then exposed to the assembly.
     #[serde(default)]
-    rbd:Rbd, // RBD represents a Rados Block Device mount on the host that shares a assembly's lifetime.
+    rbd: Rbd, // RBD represents a Rados Block Device mount on the host that shares a assembly's lifetime.
     #[serde(default)]
     host_path: HostPath,// HostPath represents a pre-existing file or directory on the host
 	// machine that is directly exposed to the container. This is generally
@@ -138,7 +138,7 @@ pub struct SettingMap {
 
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Nfs {
+pub struct NFS {
     #[serde(default)]
     server: String, // Server is the hostname or IP address of the NFS server.
     #[serde(default)]
@@ -150,11 +150,9 @@ pub struct Nfs {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Openio {
+pub struct OpenIO {
     #[serde(default)]
     server: String, // // Server is the hostname or IP address of the NFS server.
-    #[serde(default)]
-    namespace: String,
     #[serde(default)]
     key: String,
     #[serde(default)]
@@ -162,7 +160,7 @@ pub struct Openio {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Iscsi {
+pub struct ISCSI {
     #[serde(default)]
     target_portal: String, // iSCSI target portal. The portal is either an IP or ip_addr:port if the port  is other than default (typically TCP ports 860 and 3260).
     #[serde(default)]
@@ -181,13 +179,13 @@ pub struct Iscsi {
     chap_auth_discovery: bool, // whether support iSCSI Discovery CHAP authentication
     #[serde(default)]
     chap_auth_session: bool, // whether support iSCSI Session CHAP authentication
-    object_ref: ObjectReference, // CHAP secret for iSCSI target and initiator authentication
+    secret_ref: ObjectReference, // CHAP secret for iSCSI target and initiator authentication
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Rbd {
     #[serde(default)]
-    monitor: Vec<String>, // A collection of Ceph monitors.
+    monitors: Vec<String>, // A collection of Ceph monitors.
     #[serde(default)]
     image: String, // The rados image name.
     #[serde(default)]
@@ -200,7 +198,7 @@ pub struct Rbd {
     keyring: String, // Keyring is the path to key ring for RBDUser. Default is /etc/ceph/keyring.
     #[serde(default)]
     readonly: bool, // ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false.
-    object_ref: ObjectReference, // SecretRef is name of the authentication secret for RBDUser. If provided overrides keyring. Default is nil.
+    secret_ref: ObjectReference, // SecretRef is name of the authentication secret for RBDUser. If provided overrides keyring. Default is nil.
 
 }
 
