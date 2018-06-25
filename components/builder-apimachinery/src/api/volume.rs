@@ -235,8 +235,7 @@ pub struct Items {
 
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode, Value};
-    use serde_json::ser::to_string;
+    use serde_json::{from_str as json_decode};
 
     use super::*;
 
