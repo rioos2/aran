@@ -96,6 +96,7 @@ impl<'a> MarketPlaceSaver<'a> {
                 let mut plan = x.get_plan();
                 plan.iter_mut().map(|y| {
                     let mut data = y.get_characteristics().clone();
+
                     let owner_reference = y.object_meta().owner_references
                         .iter_mut()
                         .map(|x| x.get_uid().to_string())
@@ -109,6 +110,20 @@ impl<'a> MarketPlaceSaver<'a> {
                         ),
                     );
                     y.set_characteristics(data);
+                    let mut volumes = y.get_stateful_volumes().clone();
+                    volumes
+                    .iter_mut()
+                    .map(|vol|{
+                        let mut setting = vol.get_settingmap().clone();
+                        setting.set_uri(
+                            format!(
+                                "{}/marketplaces/{}/settingmap/{}",
+                                endpoint.to_string(),
+                                owner_reference,
+                                vol.name
+                            )
+                        );
+                    });
                 })
                 .collect::<Vec<_>>();
             })

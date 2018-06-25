@@ -95,7 +95,9 @@ impl VolumeApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
         match volume::DataStore::status_update(&self.conn, &unmarshall_body) {
@@ -138,8 +140,7 @@ impl Api for VolumeApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
@@ -148,8 +149,7 @@ impl Api for VolumeApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_assembly =
-            move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
+        let show_by_assembly = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
 
         //volumes
         router.post(
@@ -169,16 +169,12 @@ impl Api for VolumeApi {
         );
         router.put(
             "/volumes/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "volumes_status_update",
         );
         router.get(
             "/assemblys/:id/volumes",
-            XHandler::new(C {
-                inner: show_by_assembly,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_assembly }).before(basic.clone()),
             "volumes_show_by_assembly",
         );
     }
@@ -200,9 +196,6 @@ impl Validator for Volumes {
         if self.get_mount_path().len() <= 0 {
             s.push("mount_path".to_string());
         }
-        if self.get_allocated().len() <= 0 {
-            s.push("allocated".to_string());
-        }
 
         if self.object_meta().owner_references.len() < 2 {
             s.push("owner_references".to_string());
@@ -210,10 +203,8 @@ impl Validator for Volumes {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| {
-                    if x.uid.len() <= 0 {
-                        s.push("uid".to_string());
-                    }
+                .map(|x| if x.uid.len() <= 0 {
+                    s.push("uid".to_string());
                 })
                 .collect::<Vec<_>>();
         }

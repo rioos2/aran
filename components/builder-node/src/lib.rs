@@ -7,12 +7,17 @@ extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
 extern crate rioos_telemetry as telemetry;
 extern crate itertools;
+extern crate oping;
+extern crate cidr;
+extern crate rand;
+extern crate ipnet;
 
 extern crate postgres;
 extern crate serde_json;
 
 pub mod node_ds;
 pub mod error;
+pub mod models;
 
 pub use self::error::{Error, Result};
 

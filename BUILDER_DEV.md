@@ -452,3 +452,26 @@ Ubuntu
 sudo apt-get install libpq-dev
 
 ```
+5. If you receive this error while compiling
+
+```
+error: failed to run custom build command for `oping v0.3.3`
+process didn't exit successfully: `/home/suganya/code/megam/workspace/go/src/gitlab/rioos/aran/target/debug/build/oping-5c46fd7e7432132f/build-script-build` (exit code: 101)
+--- stderr
+autogen.sh: 5: autogen.sh: autoreconf: not found
+thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }', libcore/result.rs:945:5
+note: Run with `RUST_BACKTRACE=1` for a backtrace.
+
+warning: build failed, waiting for other jobs to finish...
+error: build failed
+Makefile:171: recipe for target 'build-builder-api' failed
+make: *** [build-builder-api] Error 101
+
+```
+
+Ubuntu
+
+```
+sudo apt-get install dh-autoreconf
+
+```

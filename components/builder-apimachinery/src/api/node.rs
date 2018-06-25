@@ -25,6 +25,8 @@ pub struct Node {
     spec: Spec, //
     status: NodeStatus, //NodeStatus is information about the current status of a node.
     #[serde(default)]
+    metadata: BTreeMap<String, String>,
+    #[serde(default)]
     created_at: String,
 }
 
@@ -65,6 +67,13 @@ impl Node {
     pub fn get_status(&self) -> &NodeStatus {
         &self.status
     }
+    pub fn set_metadata(&mut self, v: BTreeMap<String, String>) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self) -> &BTreeMap<String, String> {
+        &self.metadata
+    }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
@@ -93,7 +102,9 @@ impl MetaFields for Node {
     }
 }
 
-
+impl WhoAmITypeMeta for Node {
+    const MY_KIND: &'static str = "POST:nodes";
+}
 
 /// assembly_cidr:
 //  external_id:
@@ -199,6 +210,45 @@ impl NodeStatus {
     pub fn get_allocatable(&self) -> &BTreeMap<String, String> {
         &self.allocatable
     }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct NodeFilter {
+    #[serde(default)]
+    cidrs: Vec<CidrItem>,
+    #[serde(default)]
+    pub range_address_from: String,
+    #[serde(default)]
+    range_address_to: String,
+    #[serde(default)]
+    ip_type: String,
+}
+
+impl NodeFilter {
+    pub fn get_cidrs(&self) -> Vec<CidrItem> {
+        self.cidrs.clone()
+    }
+
+    pub fn get_range_address_from(&self) -> ::std::string::String {
+        self.range_address_from.clone()
+    }
+
+    pub fn get_range_address_to(&self) -> ::std::string::String {
+        self.range_address_to.clone()
+    }
+
+    pub fn get_ip_type(&self) -> ::std::string::String {
+        self.ip_type.clone()
+    }
+}
+
+///The status that is used to parse request in /status update of any api.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CidrItem {
+    #[serde(default)]
+    pub ip: String,
+    #[serde(default)]
+    pub range: u8,
 }
 
 ///The status that is used to parse request in /status update of any api.
@@ -814,8 +864,7 @@ impl Into<HealthzAllGetResponse> for HealthzAllGet {
 
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode, Value};
-    use serde_json::ser::to_string;
+    use serde_json::{from_str as json_decode};
 
     use super::*;
     #[test]
