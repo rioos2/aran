@@ -1,18 +1,18 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::fs::File;
-use std::path::{PathBuf};
-use std::io::Read;
-use std::str;
+use base64;
+use base64::{decode_config as b64_dec, encode_config as b64_enc};
+use openssl::ec::EcKey;
 use openssl::hash::MessageDigest;
 use openssl::pkey::PKey;
 use openssl::rsa::Rsa;
 use openssl::sign::{Signer, Verifier};
-use openssl::ec::EcKey;
-use serde_json::Value as JsonValue;
-use base64;
 use serde_json;
-use base64::{encode_config as b64_enc, decode_config as b64_dec};
+use serde_json::Value as JsonValue;
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
+use std::str;
 
 pub use error::Error;
 
@@ -30,7 +30,7 @@ pub enum Algorithm {
     RS512,
     ES256,
     ES384,
-    ES512
+    ES512,
 }
 
 impl ToString for Algorithm {
@@ -44,7 +44,7 @@ impl ToString for Algorithm {
             Algorithm::RS512 => "RS512",
             Algorithm::ES256 => "ES256",
             Algorithm::ES384 => "ES384",
-            Algorithm::ES512 => "ES512"
+            Algorithm::ES512 => "ES512",
         }.to_string()
     }
 }
@@ -54,9 +54,9 @@ pub trait ToKey {
 }
 
 impl ToKey for PathBuf {
-    fn to_key(&self) -> Result<Vec<u8>, Error> {  
+    fn to_key(&self) -> Result<Vec<u8>, Error> {
         let mut file = File::open(self)?;
-        let mut buffer:Vec<u8> = Vec::new();
+        let mut buffer: Vec<u8> = Vec::new();
         file.read_to_end(&mut buffer)?;
         Ok(buffer)
     }
@@ -64,7 +64,7 @@ impl ToKey for PathBuf {
 
 impl ToKey for String {
     fn to_key(&self) -> Result<Vec<u8>, Error> {
-        Ok(self.as_bytes().to_vec())       
+        Ok(self.as_bytes().to_vec())
     }
 }
 
@@ -100,7 +100,6 @@ pub fn decode_direct(encoded_token: &String, signing_key: Vec<u8>, algorithm: Al
 }
 
 fn get_signing_input(payload: &JsonValue, header: &JsonValue) -> Result<String, Error> {
-    
     let header_json_str = serde_json::to_string(header)?;
     let encoded_header = b64_enc(header_json_str.as_bytes(), base64::URL_SAFE);
     let payload_json_str = serde_json::to_string(payload)?;
@@ -113,7 +112,7 @@ fn sign_hmac<P: ToKey>(data: &str, key_path: &P, algorithm: Algorithm) -> Result
         Algorithm::HS256 => MessageDigest::sha256(),
         Algorithm::HS384 => MessageDigest::sha384(),
         Algorithm::HS512 => MessageDigest::sha512(),
-        _  => panic!("Invalid hmac algorithm")
+        _ => panic!("Invalid hmac algorithm"),
     };
 
     let key = PKey::hmac(&key_path.to_key()?)?;
@@ -128,7 +127,7 @@ fn sign_rsa<P: ToKey>(data: &str, private_key_path: &P, algorithm: Algorithm) ->
         Algorithm::RS256 => MessageDigest::sha256(),
         Algorithm::RS384 => MessageDigest::sha384(),
         Algorithm::RS512 => MessageDigest::sha512(),
-        _  => panic!("Invalid hmac algorithm")
+        _ => panic!("Invalid hmac algorithm"),
     };
 
     let rsa = Rsa::private_key_from_pem(&private_key_path.to_key()?)?;
@@ -143,13 +142,13 @@ fn sign_es<P: ToKey>(data: &str, private_key_path: &P, algorithm: Algorithm) -> 
         Algorithm::ES256 => MessageDigest::sha256(),
         Algorithm::ES384 => MessageDigest::sha384(),
         Algorithm::ES512 => MessageDigest::sha512(),
-        _  => panic!("Invalid hmac algorithm")
+        _ => panic!("Invalid hmac algorithm"),
     };
 
     sign(data, key, stp)
 }
 
-fn sign(data: &str, private_key:PKey,digest: MessageDigest) -> Result<String, Error> {
+fn sign(data: &str, private_key: PKey, digest: MessageDigest) -> Result<String, Error> {
     let mut signer = Signer::new(digest, &private_key)?;
     signer.update(data.as_bytes())?;
     let signature = signer.sign_to_vec()?;
@@ -164,7 +163,7 @@ pub fn decode_segments(encoded_token: &String) -> Result<(JsonValue, JsonValue, 
 
     let header_segment = raw_segments[0];
     let payload_segment = raw_segments[1];
-    let crypto_segment =  raw_segments[2];
+    let crypto_segment = raw_segments[2];
     let (header, payload) = decode_header_and_payload(header_segment, payload_segment)?;
     let signature = b64_dec(crypto_segment.as_bytes(), base64::URL_SAFE)?;
     let signing_input = format!("{}.{}", header_segment, payload_segment);
@@ -172,9 +171,7 @@ pub fn decode_segments(encoded_token: &String) -> Result<(JsonValue, JsonValue, 
 }
 
 fn decode_header_and_payload(header_segment: &str, payload_segment: &str) -> Result<(JsonValue, JsonValue), Error> {
-    let b64_to_json = |seg| -> Result<JsonValue, Error> {
-        serde_json::from_slice(b64_dec(seg, base64::URL_SAFE)?.as_slice()).map_err(Error::from)
-    };
+    let b64_to_json = |seg| -> Result<JsonValue, Error> { serde_json::from_slice(b64_dec(seg, base64::URL_SAFE)?.as_slice()).map_err(Error::from) };
 
     let header_json = b64_to_json(header_segment)?;
     let payload_json = b64_to_json(payload_segment)?;
@@ -186,7 +183,7 @@ fn sign_hmac2(data: &str, key: &Vec<u8>, algorithm: Algorithm) -> Result<Vec<u8>
         Algorithm::HS256 => MessageDigest::sha256(),
         Algorithm::HS384 => MessageDigest::sha384(),
         Algorithm::HS512 => MessageDigest::sha512(),
-        _  => panic!("Invalid HMAC algorithm")
+        _ => panic!("Invalid HMAC algorithm"),
     };
 
     let pkey = PKey::hmac(key)?;
@@ -200,9 +197,9 @@ fn verify_signature_without_tokey(algorithm: Algorithm, signing_input: String, s
         Algorithm::HS256 | Algorithm::HS384 | Algorithm::HS512 => {
             let signature2 = sign_hmac2(&signing_input, &public_key, algorithm)?;
             Ok(secure_compare(signature, &signature2))
-        },
+        }
 
-        Algorithm::RS256 | Algorithm::RS384 | Algorithm::RS512  => {
+        Algorithm::RS256 | Algorithm::RS384 | Algorithm::RS512 => {
             let rsa = Rsa::public_key_from_pem(&public_key)?;
             let key = PKey::from_rsa(rsa)?;
 
@@ -210,7 +207,7 @@ fn verify_signature_without_tokey(algorithm: Algorithm, signing_input: String, s
             let mut verifier = Verifier::new(digest, &key)?;
             verifier.update(signing_input.as_bytes())?;
             verifier.verify(&signature).map_err(Error::from)
-        },
+        }
         Algorithm::ES256 | Algorithm::ES384 | Algorithm::ES512 => {
             let key = PKey::public_key_from_pem(&public_key).map_err(Error::from)?;
 
@@ -218,7 +215,7 @@ fn verify_signature_without_tokey(algorithm: Algorithm, signing_input: String, s
             let mut verifier = Verifier::new(digest, &key)?;
             verifier.update(signing_input.as_bytes())?;
             verifier.verify(&signature).map_err(Error::from)
-        },
+        }
     }
 }
 
@@ -227,9 +224,9 @@ fn verify_signature<P: ToKey>(algorithm: Algorithm, signing_input: String, signa
         Algorithm::HS256 | Algorithm::HS384 | Algorithm::HS512 => {
             let signature2 = sign_hmac2(&signing_input, &public_key.to_key()?, algorithm)?;
             Ok(secure_compare(signature, &signature2))
-        },
+        }
 
-        Algorithm::RS256 | Algorithm::RS384 | Algorithm::RS512  => {
+        Algorithm::RS256 | Algorithm::RS384 | Algorithm::RS512 => {
             let rsa = Rsa::public_key_from_pem(&public_key.to_key()?)?;
             let key = PKey::from_rsa(rsa)?;
 
@@ -237,7 +234,7 @@ fn verify_signature<P: ToKey>(algorithm: Algorithm, signing_input: String, signa
             let mut verifier = Verifier::new(digest, &key)?;
             verifier.update(signing_input.as_bytes())?;
             verifier.verify(&signature).map_err(Error::from)
-        },
+        }
         Algorithm::ES256 | Algorithm::ES384 | Algorithm::ES512 => {
             let key = PKey::public_key_from_pem(&public_key.to_key()?).map_err(Error::from)?;
 
@@ -245,7 +242,7 @@ fn verify_signature<P: ToKey>(algorithm: Algorithm, signing_input: String, signa
             let mut verifier = Verifier::new(digest, &key)?;
             verifier.update(signing_input.as_bytes())?;
             verifier.verify(&signature).map_err(Error::from)
-        },
+        }
     }
 }
 
@@ -254,13 +251,13 @@ fn get_sha_algorithm(alg: Algorithm) -> MessageDigest {
         Algorithm::RS256 | Algorithm::ES256 => MessageDigest::sha256(),
         Algorithm::RS384 | Algorithm::ES384 => MessageDigest::sha384(),
         Algorithm::RS512 | Algorithm::ES512 => MessageDigest::sha512(),
-        _  => panic!("Invalid RSA algorithm")
+        _ => panic!("Invalid RSA algorithm"),
     }
 }
 
 fn secure_compare(a: &[u8], b: &[u8]) -> bool {
     if a.len() != b.len() {
-        return false
+        return false;
     }
 
     let mut res = 0_u8;
@@ -274,7 +271,7 @@ fn secure_compare(a: &[u8], b: &[u8]) -> bool {
 #[cfg(test)]
 mod tests {
 
-    use super::{Algorithm, encode, decode, secure_compare, STANDARD_HEADER_TYPE };
+    use super::{decode, encode, secure_compare, Algorithm, STANDARD_HEADER_TYPE};
     use std::env;
     use std::path::PathBuf;
 
@@ -286,9 +283,8 @@ mod tests {
             "key3" : "val3"
         });
 
-
         let secret = "secret123".to_string();
-        let  header = json!({});
+        let header = json!({});
         let jwt1 = encode(header, &secret, &p1, Algorithm::HS256).unwrap();
         let maybe_res = decode(&jwt1, &secret, Algorithm::HS256);
         assert!(maybe_res.is_ok());
@@ -331,7 +327,7 @@ mod tests {
         });
 
         let secret = "secret123".to_string();
-        let  header = json!({});
+        let header = json!({});
         let jwt1 = encode(header, &secret, &p1, Algorithm::HS384).unwrap();
         let maybe_res = decode(&jwt1, &secret, Algorithm::HS384);
         assert!(maybe_res.is_ok());
@@ -346,7 +342,7 @@ mod tests {
         });
 
         let secret = "secret123456".to_string();
-        let  header = json!({});
+        let header = json!({});
         let jwt1 = encode(header, &secret, &p1, Algorithm::HS512).unwrap();
         let maybe_res = decode(&jwt1, &secret, Algorithm::HS512);
         assert!(maybe_res.is_ok());
@@ -359,7 +355,7 @@ mod tests {
             "key2" : "val2",
             "key3" : "val3"
         });
-        let  header = json!({}); 
+        let header = json!({});
         let mut path = env::current_dir().unwrap();
         path.push("test");
         path.push("my_rsa_2048_key.pem");
@@ -376,15 +372,15 @@ mod tests {
             "key1" : "val1",
             "key2" : "val2"
         });
-        let  header = json!({});
+        let header = json!({});
         let jwt1 = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkxIjoidmFsMSIsImtleTIiOiJ2YWwyIn0=.RQdLX70LEWL3PFePR2ec7fsBLwi29qK9GL_YfiBKcOWnWsgWMrw0PeJw8h21FloKAYYRq73GmSlF39B5TWbquscf3obfD_y3TYmSjY_STlQ1UTMBnCmwZeMgxuIlq4l7RNpGh_j-42u6YJ3b4zwFiiIGWANYTL0pzXjdIFcUhuY7yeYlFHmWgUOOfv_E_MaP0CgCK6rgeorPtFZ80Z-zYc2R7oXLylgiwJQmwLGzxAcOOcNaZurhQxUQ7GrErY9fOLxfw0vmF4FMSIhQvWIiUV9Meh3MoIwybDhuy5-Y85WZwtXYC7blAZhU0h6tFqwBozt7PS34htj8rkCIqqi0Ng==".to_string();
         let (h1, p1) = decode(&jwt1, &get_rsa_256_public_key_full_path(), Algorithm::RS256).unwrap();
-        println!("\n{}",h1);
-        println!("{}",p1);
+        println!("\n{}", h1);
+        println!("{}", p1);
         let jwt2 = encode(header, &get_rsa_256_private_key_full_path(), &p1, Algorithm::RS256).unwrap();
         let (h2, p2) = decode(&jwt2, &get_rsa_256_public_key_full_path(), Algorithm::RS256).unwrap();
-        println!("{}",h2);
-        println!("{}",p2);
+        println!("{}", h2);
+        println!("{}", p2);
         assert_eq!(jwt1, jwt2);
     }
 
@@ -414,7 +410,6 @@ mod tests {
         let jwt1 = encode(header, &get_ec_private_key_path(), &p1, Algorithm::ES512).unwrap();
         let (header, payload) = decode(&jwt1, &get_ec_public_key_path(), Algorithm::ES512).unwrap();
         assert_eq!(p1, payload);
-
     }
 
     fn get_ec_private_key_path() -> PathBuf {

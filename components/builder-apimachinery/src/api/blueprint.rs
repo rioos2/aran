@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields};
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
 
 use std::collections::BTreeMap;
 
@@ -11,6 +11,24 @@ pub struct Plan {
     #[serde(default)]
     type_meta: TypeMeta,
     object_meta: ObjectMeta,
+    #[serde(default)]
+    meta_data: BTreeMap<String, String>,
+    plans: Vec<PlanProperties>,
+    #[serde(default)]
+    created_at: String,
+    category: String,
+    version: String,
+    icon: String,
+    description: String,
+    status: Status,
+}
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PlanProperties {
+    #[serde(default)]
+    type_meta: TypeMeta,
+    object_meta: ObjectMeta,
+    #[serde(default)]
+    metadata: BTreeMap<String, String>,
     category: String, //`Category` represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain.
     version: String, //`version` represents the version of this plan software. example : Ubuntu 14.04
     #[serde(default)]
@@ -21,6 +39,8 @@ pub struct Plan {
     ports: Vec<Port>, //`ports` The default port numbers available for this plan. example, wordpress app is available in port 80
     //`envs` The required, editable environment variables for a plan. Example: In this example, "RUBY_HOME": {"required":"true","value":"/usr/lib/ruby/2.4.9","editable":"false"},"RAILS_APP_HOME":{"required":"true","value":"/home/rails/app","editable":"true"}.
     //RAILS_APP_HOME default home is /var/lib/rioos/railsapp which is a required and editable field.
+    #[serde(default)]
+    stateful_volumes: Vec<StatefulVolume>,
     #[serde(default)]
     envs: BTreeMap<String, Envs>,
     /*`Lifecycle` describes actions that the management system should take in response to lifecycle events. For the PostStart and PreStop lifecycle handlers, management of the machine/container blocks until the action is complete, unless the machine/container process fails, in which case the handler is aborted.
@@ -33,11 +53,27 @@ pub struct Plan {
     lifecycle: LifeCycle,
     #[serde(default)]
     status: Status, //`status` : <<old status definition>> Indicates if the plan can be used are not. Default no status is available. Will be turned on when the rio.marketplace syncer gets active.
-    #[serde(default)]
-    created_at: String,
 }
 
 impl MetaFields for Plan {
+    /// Returns the latest self with built ObjectMeta and Type_meta
+    /// Wipes out the old meta.
+    /// Should be handled externally by doing Meta::with(by mutating the old ObjectMeta)
+    fn set_meta(&mut self, t: TypeMeta, v: ObjectMeta) {
+        self.type_meta = t;
+        self.object_meta = v;
+    }
+
+    fn object_meta(&self) -> ObjectMeta {
+        self.object_meta.clone()
+    }
+
+    fn type_meta(&self) -> TypeMeta {
+        self.type_meta.clone()
+    }
+}
+
+impl MetaFields for PlanProperties {
     /// Returns the latest self with built ObjectMeta and Type_meta
     /// Wipes out the old meta.
     /// Should be handled externally by doing Meta::with(by mutating the old ObjectMeta)
@@ -73,8 +109,37 @@ impl Plan {
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
+
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
+
+    pub fn set_plan(&mut self, v: Vec<PlanProperties>) {
+        self.plans = v;
+    }
+
+    pub fn get_plan(&self) -> Vec<PlanProperties> {
+        self.plans.clone()
+    }
+
+    pub fn get_category(&self) -> ::std::string::String {
+        self.category.clone()
+    }
+
+    pub fn set_icon(&mut self, v: ::std::string::String) {
+        self.icon = v;
+    }
+
+    pub fn get_icon(&self) -> ::std::string::String {
+        self.icon.clone()
     }
 
     pub fn set_status(&mut self, v: Status) {
@@ -85,59 +150,6 @@ impl Plan {
         &self.status
     }
 
-    pub fn set_icon(&mut self, v: ::std::string::String) {
-        self.icon = v;
-    }
-    pub fn get_icon(&self) -> ::std::string::String {
-        self.icon.clone()
-    }
-    pub fn set_characteristics(&mut self, v: BTreeMap<String, String>) {
-        self.characteristics = v;
-    }
-
-    pub fn get_characteristics(&self) -> &BTreeMap<String, String> {
-        &self.characteristics
-    }
-
-    pub fn set_description(&mut self, v: ::std::string::String) {
-        self.description = v;
-    }
-    pub fn get_description(&self) -> ::std::string::String {
-        self.description.clone()
-    }
-
-    pub fn set_category(&mut self, v: ::std::string::String) {
-        self.category = v;
-    }
-
-    pub fn get_category(&self) -> ::std::string::String {
-        self.category.clone()
-    }
-
-    pub fn set_ports(&mut self, v: Vec<Port>) {
-        self.ports = v;
-    }
-
-    pub fn get_ports(&self) -> &Vec<Port> {
-        &self.ports
-    }
-
-    pub fn set_envs(&mut self, v: BTreeMap<String, Envs>) {
-        self.envs = v;
-    }
-
-    pub fn get_envs(&self) -> &BTreeMap<String, Envs> {
-        &self.envs
-    }
-
-    pub fn set_lifecycle(&mut self, v: LifeCycle) {
-        self.lifecycle = v;
-    }
-
-    pub fn get_lifecycle(&self) -> &LifeCycle {
-        &self.lifecycle
-    }
-
     pub fn set_version(&mut self, v: ::std::string::String) {
         self.version = v;
     }
@@ -146,21 +158,58 @@ impl Plan {
         self.version.clone()
     }
 
-    pub fn set_created_at(&mut self, v: ::std::string::String) {
-        self.created_at = v;
+    pub fn set_description(&mut self, v: ::std::string::String) {
+        self.description = v;
     }
 
-    pub fn get_created_at(&self) -> ::std::string::String {
-        self.created_at.clone()
+    pub fn get_description(&self) -> ::std::string::String {
+        self.description.clone()
+    }
+
+    pub fn set_category(&mut self, v: ::std::string::String) {
+        self.category = v;
+    }
+
+    pub fn set_meta_data(&mut self, v: BTreeMap<String, String>) {
+        self.meta_data = v;
+    }
+
+    pub fn get_meta_data(&self) -> &BTreeMap<String, String> {
+        &self.meta_data
+    }
+}
+
+impl PlanProperties {
+    pub fn new() -> PlanProperties {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_characteristics(&mut self, v: BTreeMap<String, String>) {
+        self.characteristics = v;
+    }
+
+    pub fn get_characteristics(&self) -> &BTreeMap<String, String> {
+        &self.characteristics
+    }
+
+    pub fn get_version(&self) -> ::std::string::String {
+        self.version.clone()
+    }
+
+    pub fn get_category(&self) -> ::std::string::String {
+        self.category.clone()
+    }
+    pub fn get_stateful_volumes(&self) -> &Vec<StatefulVolume> {
+        &self.stateful_volumes
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Port {
     container_port: i32, //container port
-    host_ip: String, //ip address for the host
-    host_port: i32, //port of the host
-    protocol: String, //plan protocol type like tcp or udp
+    host_ip: String,     //ip address for the host
+    host_port: i32,      //port of the host
+    protocol: String,    //plan protocol type like tcp or udp
 }
 
 impl Port {
@@ -177,7 +226,7 @@ impl Port {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Envs {
     required: String, // env required or not: Must be there for this launch
-    value: String, //The default value as in the blueprint plan
+    value: String,    //The default value as in the blueprint plan
     editable: String, //Can this  field be edited by the user.
 }
 
@@ -212,14 +261,14 @@ pub struct Probe {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TcpSocket {
-    port: String,// Port to connect to.
+    port: String, // Port to connect to.
     host: String, //Host name to connect to, defaults to the pod IP.
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HttpGet {
-    path: String, //Path to access on the HTTP server.
-    port: String, //Name or number of the port to access on the container.
+    path: String,   //Path to access on the HTTP server.
+    port: String,   //Name or number of the port to access on the container.
     host: String, // Host name to connect to, defaults to the pod IP. probably want to set "Host" in httpHeaders instead.
     scheme: String, //Scheme to use for connecting to the host, defaults to HTTP.
 }
@@ -240,6 +289,47 @@ impl Command {
 
     pub fn get_command(&self) -> &Vec<String> {
         &self.command
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Volumes {
+    host_path: String,
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct VolumeMounts {
+    mount_path: String,
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct StatefulVolume {
+    pub name: String,
+    volumes: Volumes,
+    volume_mounts: VolumeMounts,
+    #[serde(default)]
+    settingmap: SettingMap,
+}
+impl StatefulVolume {
+    pub fn get_settingmap(&self) -> &SettingMap {
+        &self.settingmap
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SettingMap {
+    #[serde(default)]
+    uri: String,
+    #[serde(default)]
+    uid: String,
+    #[serde(default)]
+    rioos_binder: Vec<String>,
+    map_type: String,
+}
+
+impl SettingMap {
+    pub fn set_uri(&mut self, v: String) {
+        self.uri = v;
     }
 }
 
@@ -326,9 +416,7 @@ mod test {
             }"#;
         let probe: Probe = json_decode(probe_val).unwrap();
         assert!(probe.http_headers.contains_key("X-Custom-Header"));
-
     }
-
 
     #[test]
     fn decode_ports() {

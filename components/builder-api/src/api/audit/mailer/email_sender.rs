@@ -9,6 +9,7 @@ use lettre::smtp::ClientSecurity;
 use lettre::smtp::ConnectionReuseParameters;
 use lettre::smtp::SmtpTransportBuilder;
 use lettre::smtp::authentication::{Credentials, Mechanism};
+
 use lettre_email::EmailBuilder;
 use protocol::api::audit::Envelope;
 use protocol::api::base::MetaFields;
@@ -31,17 +32,32 @@ impl EmailSender {
         }
     }
     pub fn send(self) {
-        let email = EmailBuilder::new().to(self.email).from(self.config.sender).subject(self.subject).html(self.content).build();
-        let mut addrs_iter = self.config.domain.to_socket_addrs().unwrap();
-        let mut mailer = SmtpTransportBuilder::new(addrs_iter.next().unwrap(), ClientSecurity::None)
-            .unwrap()
-            .credentials(Credentials::new(self.config.username.to_string(), self.config.password.to_string()))
-            .authentication_mechanism(Mechanism::Plain)
-            .connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
-            .build();
+        if self.config.enabled {
+            let email = EmailBuilder::new()
+                .to(self.email.clone())
+                .from(self.config.sender)
+                .subject(self.subject.clone())
+                .html(self.content)
+                .build();
+            let mut addrs_iter = self.config.domain.to_socket_addrs().unwrap();
+            let mut mailer =
+                SmtpTransportBuilder::new(addrs_iter.next().unwrap(), ClientSecurity::None)
+                    .unwrap()
+                    .credentials(Credentials::new(
+                        self.config.username.to_string(),
+                        self.config.password.to_string(),
+                    ))
+                    .authentication_mechanism(Mechanism::Plain)
+                    .connection_reuse(ConnectionReuseParameters::ReuseUnlimited)
+                    .build();
 
-        mailer.send(&email.unwrap());
-        mailer.close();
+            match mailer.send(&email.unwrap()) {
+                Ok(_) => info!("{} {} {} → SENT", "✔", self.email, self.subject),
+                Err(_) => info!("{} {} {} → FAIL", "✘", self.email, self.subject),
+            };
+
+            mailer.close();
+        }
     }
 }
 pub struct EmailNotifier {
@@ -60,25 +76,31 @@ impl PushNotifier for EmailNotifier {
         if !self.config.enabled {
             return false;
         }
-        match Status::from_str(&self.envelope.event.reason) {
+        match Status::from_str(&self.envelope.get_event().reason) {
             Status::DigitalCloudRunning | Status::DigitalCloudFailed => true,
             _ => false,
         }
     }
+
     fn notify(&self) {
         if !self.should_notify() {
             return;
         }
-        let data = email_generator::EmailGenerator::new(self.envelope.event.object_meta().labels, &self.envelope.event.message);
-        match Status::from_str(&self.envelope.event.reason) {
+        let data = email_generator::EmailGenerator::new(
+            self.envelope.get_event().object_meta().labels,
+            &self.envelope.get_event().message,
+        );
+        match Status::from_str(&self.envelope.get_event().reason) {
             Status::DigitalCloudRunning => {
                 let content = data.deploy_success().unwrap();
-                let mail_builder = EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
+                let mail_builder =
+                    EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
                 mail_builder.send();
             }
             Status::DigitalCloudFailed => {
                 let content = data.deploy_failed().unwrap();
-                let mail_builder = EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
+                let mail_builder =
+                    EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
                 mail_builder.send();
             }
             _ => {}

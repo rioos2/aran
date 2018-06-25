@@ -2,14 +2,12 @@
 
 //! A module containing events and logger
 
-use std::fs::{self, File};
-use std::path::{Path, PathBuf};
-
-use serde::Serialize;
-use serde_json;
-
 use node::runtime::ApiSender;
 use protocol::api::audit::{AccessedBy, AuditEvent, Envelope};
+use serde::Serialize;
+use serde_json;
+use std::fs::{self, File};
+use std::path::{Path, PathBuf};
 
 /// The records created by the Rio/OS AuditBlockchain capture information on
 /// who has performed, what action, when, and how successfully:

@@ -1,0 +1,63 @@
+# ================================================================
+# Deploy Information
+# ================================================================
+---
+stacks_factory:
+  object_meta:
+    name: '' #assembly factory name
+    account: ''  # account id
+    cluster_name: '' #los-angeles
+    labels:
+      rioos_category: machine #for container "rioos_category: container"
+  metadata:
+    rioos_sh_scheduled_node: ''  #node id
+  replicas: 1
+  resources:
+    compute_type: cpu
+    storage_type: hdd
+    cpu: '1'
+    memory: 1 GiB
+    storage: 3 GiB
+    private_ipv4: 'true'
+  secret:
+    id: ''  # secret id
+  plan: ''  # plan id
+  status:
+    phase: pending
+# ================================================================
+# vertical scaling Information
+# ================================================================
+vertical_scaling:
+  update_policy:
+    mode: auto
+  scale_type: AUTOVS
+  state: ABLETOSCALE
+  object_meta:
+    name: ''  # name of vertical scaling
+    account: '' # account id
+    cluster_name: '' #los-angeles
+  status:
+    current_resource:
+      cpu: '1'
+      ram: '1000'
+    desired_resource:
+      cpu: '2'
+      ram: '2000'
+  spec:
+    scale_up_wait_time: 5
+    scale_down_wait_time: 5
+    min_resource:
+      cpu: '1'
+      ram: '1000'
+    max_resource:
+      cpu: '4'
+      ram: '4000'
+    metrics:
+    - metric_type: Resource
+      resource:
+        name: cpu
+        min_target_value: '2'
+        max_target_value: '4'
+        metric_time_spec:
+          scale_up_by: '1'
+          scale_down_by: '1'

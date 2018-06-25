@@ -1,32 +1,27 @@
-use std::sync::Arc;
-
-use ansi_term::Colour;
-use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use protocol::api::schema::{dispatch, dispatch_url, type_meta};
-use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-use api::security::config::SecurerConn;
-
 use super::securer;
-use protocol::api::secret::Secret;
-use protocol::api::base::{IdGet, MetaFields};
-use service::secret_ds::SecretDS;
-
+use ansi_term::Colour;
+use api::security::config::SecurerConn;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use bodyparser;
+use bytes::Bytes;
+use common::ui;
+use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::schema::{dispatch, dispatch_url, type_meta};
+use protocol::api::secret::Secret;
+use router::Router;
 use serde_json;
+use service::secret_ds::SecretDS;
+use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
 /// and manage them.
@@ -56,7 +51,8 @@ impl SecretApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
+        let mut unmarshall_body =
+            self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
         ui::rawdumpln(
             Colour::White,
@@ -88,7 +84,8 @@ impl SecretApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create_by_origin(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
+        let mut unmarshall_body =
+            self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
         ui::rawdumpln(
             Colour::White,
@@ -154,7 +151,9 @@ impl SecretApi {
         let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
 
         match data.retrieve() {
-            Ok(Some(service_list)) => Ok(render_json_list(status::Ok, dispatch(req), &service_list)),
+            Ok(Some(service_list)) => {
+                Ok(render_json_list(status::Ok, dispatch(req), &service_list))
+            }
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
@@ -274,7 +273,8 @@ impl Api for SecretApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let create_by_origin = move |req: &mut Request| -> AranResult<Response> { _self.create_by_origin(req) };
+        let create_by_origin =
+            move |req: &mut Request| -> AranResult<Response> { _self.create_by_origin(req) };
 
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
@@ -286,20 +286,17 @@ impl Api for SecretApi {
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
-        let list_by_origin = move |req: &mut Request| -> AranResult<Response> { _self.list_by_origin(req) };
+        let list_by_origin =
+            move |req: &mut Request| -> AranResult<Response> { _self.list_by_origin(req) };
 
         let _self = self.clone();
-        let show_by_org_and_name = move |req: &mut Request| -> AranResult<Response> { _self.show_by_origin_and_name(req) };
+        let show_by_org_and_name =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_origin_and_name(req) };
 
         //secret API
         router.post(
             "/accounts/:account_id/secrets",
-            XHandler::new(C { inner: create })
-                .before(basic.clone())
-                .before(TrustAccessed::new(
-                    "rioos.secret.post".to_string(),
-                    &*config,
-                )),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "secrets",
         );
 
@@ -319,6 +316,7 @@ impl Api for SecretApi {
         );*/
         //TODO
         //without authentication
+
         router.get(
             "/secrets",
             XHandler::new(C { inner: list_blank }),
@@ -326,16 +324,12 @@ impl Api for SecretApi {
         );
         router.get(
             "/secrets/:id",
-            XHandler::new(C { inner: show })
-                .before(basic.clone())
-                .before(TrustAccessed::new("rioos.secret.get".to_string(), &*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "secret_show",
         );
         router.get(
             "/accounts/:account_id/secrets",
-            XHandler::new(C { inner: list })
-                .before(basic.clone())
-                .before(TrustAccessed::new("rioos.secret.get".to_string(), &*config)),
+            XHandler::new(C { inner: list }).before(basic.clone()),
             "secret_show_by_account",
         );
 

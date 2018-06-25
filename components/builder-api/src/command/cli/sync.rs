@@ -15,6 +15,7 @@ use rioos_http::api_client::err_from_response;
 use rio_core::fs::{write_to_file, rioconfig_config_path, append};
 
 use protocol::api::marketplace;
+use protocol::api::base::MetaFields;
 
 use common::ui::UI;
 
@@ -92,16 +93,39 @@ impl<'a> MarketPlaceSaver<'a> {
             .items
             .iter_mut()
             .map(|x| {
-                let mut data = x.get_characteristics().clone();
-                data.insert(
-                    IMAGE_URL.to_string(),
-                    format!(
-                        "{}/marketplaces/{}/download",
-                        endpoint.to_string(),
-                        x.get_id()
-                    ),
-                );
-                x.set_characteristics(data);
+                let mut plan = x.get_plan();
+                plan.iter_mut().map(|y| {
+                    let mut data = y.get_characteristics().clone();
+
+                    let owner_reference = y.object_meta().owner_references
+                        .iter_mut()
+                        .map(|x| x.get_uid().to_string())
+                        .collect::<String>();
+                    data.insert(
+                        IMAGE_URL.to_string(),
+                        format!(
+                            "{}/marketplaces/{}/download",
+                            endpoint.to_string(),
+                            owner_reference
+                        ),
+                    );
+                    y.set_characteristics(data);
+                    let mut volumes = y.get_stateful_volumes().clone();
+                    volumes
+                    .iter_mut()
+                    .map(|vol|{
+                        let mut setting = vol.get_settingmap().clone();
+                        setting.set_uri(
+                            format!(
+                                "{}/marketplaces/{}/settingmap/{}",
+                                endpoint.to_string(),
+                                owner_reference,
+                                vol.name
+                            )
+                        );
+                    });
+                })
+                .collect::<Vec<_>>();
             })
             .collect::<Vec<_>>();
 

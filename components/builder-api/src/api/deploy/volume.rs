@@ -1,30 +1,24 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of auth [origin] for the HTTP server
-use std::sync::Arc;
-
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
-
 use config::Config;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::models::volume;
-use protocol::api::volume::Volumes;
-use protocol::api::base::{MetaFields, StatusUpdate};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::models::volume;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{MetaFields, StatusUpdate};
+use protocol::api::schema::{dispatch, type_meta};
+use protocol::api::volume::Volumes;
+use router::Router;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct VolumeApi {
@@ -55,7 +49,11 @@ impl VolumeApi {
     pub fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Volumes>>()?)?;
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
         match volume::DataStore::create(&self.conn, &unmarshall_body) {
@@ -83,7 +81,11 @@ impl VolumeApi {
 
         match volume::DataStore::show(&self.conn, &params) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -93,13 +95,19 @@ impl VolumeApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
         match volume::DataStore::status_update(&self.conn, &unmarshall_body) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
         }
     }
 
@@ -115,7 +123,11 @@ impl VolumeApi {
         match volume::DataStore::update(&self.conn, &unmarshall_body) {
             Ok(Some(volumes)) => Ok(render_json(status::Ok, &volumes)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
     }
 }
@@ -142,40 +154,27 @@ impl Api for VolumeApi {
         //volumes
         router.post(
             "/volumes",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "volumes",
         );
         router.get(
             "/volumes/:id",
-            XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.get".to_string(),&*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "volumes_show",
         );
         router.put(
             "/volumes/:id",
-            XHandler::new(C { inner: update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.put".to_string(),&*config)),
+            XHandler::new(C { inner: update }).before(basic.clone()),
             "volumes_update",
         );
         router.put(
             "/volumes/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.put".to_string(),&*config)),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "volumes_status_update",
         );
         router.get(
             "/assemblys/:id/volumes",
-            XHandler::new(C {
-                inner: show_by_assembly,
-            }).before(basic.clone())
-            .before(TrustAccessed::new("rioos.volume.get".to_string(),&*config)),
+            XHandler::new(C { inner: show_by_assembly }).before(basic.clone()),
             "volumes_show_by_assembly",
         );
     }
@@ -197,9 +196,6 @@ impl Validator for Volumes {
         if self.get_mount_path().len() <= 0 {
             s.push("mount_path".to_string());
         }
-        if self.get_allocated().len() <= 0 {
-            s.push("allocated".to_string());
-        }
 
         if self.object_meta().owner_references.len() < 2 {
             s.push("owner_references".to_string());
@@ -207,10 +203,8 @@ impl Validator for Volumes {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| {
-                    if x.uid.len() <= 0 {
-                        s.push("uid".to_string());
-                    }
+                .map(|x| if x.uid.len() <= 0 {
+                    s.push("uid".to_string());
                 })
                 .collect::<Vec<_>>();
         }

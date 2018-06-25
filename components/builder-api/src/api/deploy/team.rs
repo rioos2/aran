@@ -1,30 +1,24 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of auth [origin] for the HTTP server
-use std::sync::Arc;
-
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::type_meta;
-
 use config::Config;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-use session::team_ds::TeamDS;
-use protocol::api::team::Team;
-use protocol::api::base::MetaFields;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::MetaFields;
+use protocol::api::schema::type_meta;
+use protocol::api::team::Team;
+use router::Router;
+use session::team_ds::TeamDS;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct TeamApi {
@@ -52,7 +46,11 @@ impl TeamApi {
     pub fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Team>>()?)?;
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
         match TeamDS::create(&self.conn, &unmarshall_body) {
@@ -71,7 +69,11 @@ impl Api for TeamApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         //Team API
-        router.post("/teams", XHandler::new(C { inner: create }).before(basic.clone()), "teams");
+        router.post(
+            "/teams",
+            XHandler::new(C { inner: create }).before(basic.clone()),
+            "teams",
+        );
     }
 }
 
@@ -90,7 +92,11 @@ impl Validator for Team {
             s.push("name".to_string());
         }
 
-        if self.get_metadata().get("origin").unwrap_or(&"".to_string()).len() <= 0 {
+        if self.get_metadata()
+            .get("origin")
+            .unwrap_or(&"".to_string())
+            .len() <= 0
+        {
             s.push("origin".to_string());
         }
 

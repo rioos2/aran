@@ -1,7 +1,7 @@
-use std::fmt;
-use std::collections::HashMap;
-use std::str::FromStr;
 use iron::prelude::*;
+use std::collections::HashMap;
+use std::fmt;
+use std::str::FromStr;
 
 use api::base::TypeMeta;
 
@@ -17,6 +17,10 @@ lazy_static! {
         map.register("GET:accountsassemblyfactorys", "AssemblyFactoryList");
         map.register("GET:assemblyfactorys", "AssemblyFactoryList");
 
+        map.register("POST:accountsstacksfactorys", "StacksFactory");
+        map.register("GET:accountsstacksfactorys", "StacksFactoryList");
+        map.register("GET:stacksfactorys", "StacksFactoryList");
+
         map.register("POST:plans", "PlanFactory");
         map.register("GET:plans", "PlanFactoryList");
 
@@ -24,9 +28,11 @@ lazy_static! {
         map.register("GET:assemblys", "AssemblyList");
         map.register("GET:accountsassemblys", "AssemblyList");
         map.register("GET:assemblyfactorysdescribe", "AssemblyList");
+        map.register("GET:stackfactorysdescribe", "StacksFactoryList");
 
         map.register("POST:nodes", "Node");
         map.register("GET:nodes", "NodeList");
+        map.register("POST:nodesdiscover", "NodeList");
 
         map.register("POST:origins", "Origin");
         map.register("GET:origins", "OriginList");
@@ -114,6 +120,16 @@ lazy_static! {
         map.register("GET:authoidcproviders", "OpenidList");
         map.register("GET:authsamlproviders", "SamlList");
 
+        map.register("POST:accountsbuckets", "Bucket");
+        map.register("GET:accountsbuckets", "BucketList");
+        map.register("POST:buckets", "Bucket");
+        map.register("GET:buckets", "BucketList");
+
+        map.register("POST:accountsbucketsfilesupload", "BucketAccessor");
+        map.register("GET:accountsbucketsfilesdownload", "BucketAccessor");
+        map.register("POST:bucketsfilesupload", "BucketAccessor");
+        map.register("GET:bucketsfilesdownload", "BucketAccessor");
+
         map
     };
 }
@@ -127,7 +143,10 @@ pub struct ApiSchema {
 
 impl Default for ApiSchema {
     fn default() -> Self {
-        ApiSchema { version: "".to_string(), kind: "None".to_string() }
+        ApiSchema {
+            version: "".to_string(),
+            kind: "None".to_string(),
+        }
     }
 }
 
@@ -193,7 +212,10 @@ impl DispatchTable {
     /// Registers a group to a given `Kind`.
     pub fn register(&mut self, group: &'static str, kind: &'static str) {
         if self.0.insert(group, kind).is_some() {
-            panic!("Attempted to register a second kind {} for group, '{}'", kind, group,);
+            panic!(
+                "Attempted to register a second kind {} for group, '{}'",
+                kind, group,
+            );
         }
     }
 }
@@ -261,7 +283,10 @@ impl FromStr for DispatchUrl {
             _ => return Err(error::Error::RequiredConfigField(value.to_string().clone())),
         };
 
-        Ok(DispatchUrl { method: method.to_string(), url: url.to_string() })
+        Ok(DispatchUrl {
+            method: method.to_string(),
+            url: url.to_string(),
+        })
     }
 }
 

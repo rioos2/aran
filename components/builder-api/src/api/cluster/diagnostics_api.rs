@@ -1,40 +1,35 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::sync::Arc;
-use std::str;
-use std::path::PathBuf;
-
+use super::super::super::VERSION;
+use api::Api;
 use chrono::Local;
-
-use iron::prelude::*;
+use config::Config;
+use db::data_store::DataStoreConn;
+use handlebars::{to_json, Handlebars, Helper, JsonRender, Output, RenderContext, RenderError};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::internal_error;
+use http_gateway::util::errors::AranResult;
 use iron::headers::ContentType;
 use iron::mime::{Mime, SubLevel, TopLevel};
 use iron::modifiers::Header;
+use iron::prelude::*;
 use iron::status;
-
-use api::Api;
-use super::super::super::VERSION;
-
-use config::Config;
-
+use rio_core::fs::{read_from_file, rioconfig_config_path};
+use rio_diago::models::diagnostics::Pinguy;
 use router::Router;
 use serde::Serialize;
 use serde_json;
 use serde_json::value::Map;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::AranResult;
-use http_gateway::util::errors::internal_error;
-
-use db::data_store::DataStoreConn;
+use std::path::PathBuf;
+use std::str;
+use std::sync::Arc;
 use telemetry::metrics::prometheus::PrometheusClient;
-use rio_diago::models::diagnostics::Pinguy;
-use rio_core::fs::{read_from_file, rioconfig_config_path};
-
-use handlebars::{to_json, Handlebars, Helper, JsonRender, Output, RenderContext, RenderError};
 
 lazy_static! {
-    static  ref RIOSTATUS_TEMPLATE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/riostatus.hbs").to_str().unwrap());
+    static ref RIOSTATUS_TEMPLATE: PathBuf = PathBuf::from(&*rioconfig_config_path(None)
+        .join("template/riostatus.hbs")
+        .to_str()
+        .unwrap());
 }
 
 #[derive(Clone)]
@@ -55,7 +50,11 @@ pub struct DiagnosticsApi {
 /// GET: /diagnostics
 
 impl DiagnosticsApi {
-    pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>, config: Arc<Config>) -> Self {
+    pub fn new(
+        datastore: Box<DataStoreConn>,
+        prom: Box<PrometheusClient>,
+        config: Arc<Config>,
+    ) -> Self {
         DiagnosticsApi {
             prom: prom,
             conn: datastore,
@@ -95,7 +94,11 @@ impl DiagnosticsApi {
         }
     }
 
-    fn render_ping_html<T: Serialize>(_status: status::Status, response: &T, _title: String) -> Response {
+    fn render_ping_html<T: Serialize>(
+        _status: status::Status,
+        response: &T,
+        _title: String,
+    ) -> Response {
         let value = serde_json::to_value(response).unwrap();
         let mut data = Map::new();
         let headers = Header(ContentType(Mime(TopLevel::Text, SubLevel::Html, vec![])));
@@ -126,7 +129,12 @@ impl DiagnosticsApi {
     }
 
     // define a custom helper
-    fn status_symbol_helper(h: &Helper, _: &Handlebars, _: &mut RenderContext, out: &mut Output) -> Result<(), RenderError> {
+    fn status_symbol_helper(
+        h: &Helper,
+        _: &Handlebars,
+        _: &mut RenderContext,
+        out: &mut Output,
+    ) -> Result<(), RenderError> {
         // get parameter from helper or throw an error
         let param = try!(h.param(0,).ok_or(RenderError::new(
             "status symbol helper is required for displaying the ping status symbol.",

@@ -9,11 +9,12 @@ To learn more about Rio/OS, please visit the [Rio/OS website](http://rio.digital
 There are a couple of different way to install Rio/OS API Server.
 
 ## Building
+
 See [BUILDING.md](BUILDING.md) for platform specific info on building Rio/OS API Server from source.
 
 ## documentation
 
-Please use the online studio to refer [API documentation](https://app.swaggerhub.com/apis/riocorp/rioos/2.0)
+Refer API documentation in SwaggerHub [API documentation](https://app.swaggerhub.com/apis/riocorp/rioos/2.0)
 
 ## Useful reference material
 
@@ -29,4 +30,4 @@ Please use the online studio to refer [API documentation](https://app.swaggerhub
 
 ## License
 
-Copyright (c) 2017 RioCorp Inc.
+Copyright (c) 2018 RioAdvancement Inc.

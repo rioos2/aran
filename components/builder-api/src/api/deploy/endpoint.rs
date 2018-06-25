@@ -1,32 +1,26 @@
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
+use bytes::Bytes;
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
 use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::models::endpoint;
-
-use protocol::api::base::MetaFields;
-use protocol::api::endpoints::EndPoints;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::models::endpoint;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
-use serde_json;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::endpoints::EndPoints;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct EndpointApi {
@@ -55,11 +49,19 @@ impl EndpointApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<EndPoints>>()?)?;
 
-        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
 
         match endpoint::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(Some(endpoints)) => Ok(render_json(status::Ok, &endpoints)),
@@ -75,7 +77,11 @@ impl EndpointApi {
 
         match endpoint::DataStore::show(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -105,7 +111,11 @@ impl EndpointApi {
         let params = self.verify_id(req)?;
         match endpoint::DataStore::show_by_assembly(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
-            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), &params.get_id()))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
@@ -134,37 +144,32 @@ impl Api for EndpointApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_assembly = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
+        let show_by_assembly =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
 
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         router.post(
             "/endpoints",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.endpoint.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "endpoints",
         );
         router.get(
             "/endpoints/:id",
-            XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.endpoint.get".to_string(),&*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "endpoint_show",
         );
         router.get(
             "/endpoints/assembly/:id",
-            XHandler::new(C { inner: show_by_assembly })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.endpoint.get".to_string(),&*config)),
+            XHandler::new(C {
+                inner: show_by_assembly,
+            }).before(basic.clone()),
             "endpoint_show_by_assembly",
         );
         router.get(
             "/endpoints",
-            XHandler::new(C { inner: list_blank })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.endpoint.get".to_string(),&*config)),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "endpoint_list_blank",
         );
     }

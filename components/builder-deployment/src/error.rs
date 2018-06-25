@@ -2,12 +2,12 @@
 
 //! A module containing the errors handling for the builder deployment
 
+use db;
+use job;
+use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use job;
-use postgres;
-use db;
 use telemetry;
 
 #[derive(Debug)]
@@ -16,6 +16,10 @@ pub enum Error {
     AssemblyFactoryCreate(postgres::error::Error),
     AssemblyFactoryGet(postgres::error::Error),
     AssemblyFactoryUpdate(postgres::error::Error),
+    StacksFactoryInvalidType(String),
+    StacksFactoryCreate(postgres::error::Error),
+    StacksFactoryGet(postgres::error::Error),
+    StacksFactoryUpdate(postgres::error::Error),
     AssemblyCreate(postgres::error::Error),
     AssemblyGet(postgres::error::Error),
     AssemblyUpdate(postgres::error::Error),
@@ -40,10 +44,28 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
-            Error::AssemblyFactoryCreate(ref e) => format!("Database error creating a new assembly factory, {}", e),
-            Error::AssemblyFactoryGet(ref e) => format!("Database error getting assembly factory, {}", e),
-            Error::AssemblyFactoryUpdate(ref e) => format!("Database error updatingassembly factory, {}", e),
-            Error::AssemblyCreate(ref e) => format!("Database error creating a new assembly, {}", e),
+            Error::AssemblyFactoryCreate(ref e) => {
+                format!("Database error creating a new assembly factory, {}", e)
+            }
+            Error::AssemblyFactoryGet(ref e) => {
+                format!("Database error getting assembly factory, {}", e)
+            }
+            Error::AssemblyFactoryUpdate(ref e) => {
+                format!("Database error updating assembly factory, {}", e)
+            }
+            Error::StacksFactoryInvalidType(ref e) => format!("{}", e),
+            Error::StacksFactoryCreate(ref e) => {
+                format!("Database error creating a new blockchain factory, {}", e)
+            }
+            Error::StacksFactoryGet(ref e) => {
+                format!("Database error getting blockchain factory, {}", e)
+            }
+            Error::StacksFactoryUpdate(ref e) => {
+                format!("Database error updating blockchain factory, {}", e)
+            }
+            Error::AssemblyCreate(ref e) => {
+                format!("Database error creating a new assembly, {}", e)
+            }
             Error::AssemblyGet(ref e) => format!("Database error getting assembly, {}", e),
             Error::AssemblyUpdate(ref e) => format!("Database error updating a assembly, {}", e),
             Error::PlanCreate(ref e) => format!("Database error creating a plan factory, {}", e),
@@ -71,6 +93,10 @@ impl error::Error for Error {
             Error::AssemblyFactoryCreate(ref err) => err.description(),
             Error::AssemblyFactoryGet(ref err) => err.description(),
             Error::AssemblyFactoryUpdate(ref err) => err.description(),
+            Error::StacksFactoryInvalidType(ref err) => err,
+            Error::StacksFactoryCreate(ref err) => err.description(),
+            Error::StacksFactoryGet(ref err) => err.description(),
+            Error::StacksFactoryUpdate(ref err) => err.description(),
             Error::AssemblyCreate(ref err) => err.description(),
             Error::AssemblyGet(ref err) => err.description(),
             Error::AssemblyUpdate(ref err) => err.description(),

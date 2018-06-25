@@ -7,12 +7,14 @@ use std::path::PathBuf;
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{Blockchain, BlockchainCfg, Mailer, Marketplaces, MarketplacesCfg, Notifications, Slack};
+use api::audit::config::{Blockchain, BlockchainCfg, Mailer, MailerCfg, Marketplaces, MarketplacesCfg, Notifications, Slack};
 use api::deploy::config::ServicesCfg;
+use api::objectstorage::config::ObjectStorage;
+use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
 use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
 
 use auth::config::{flow_modes, AuthenticationFlowCfg, Identity, IdentityCfg};
-use entitlement::config::{License, LicensesCfg};
+use entitlement::config::{Backend, License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
 use watch::config::{Streamer, StreamerCfg};
 
@@ -61,6 +63,9 @@ pub struct Config {
     pub ping: PinguyCfg,
 
     pub notifications: Notifications,
+
+    //objectstorage
+    pub objectstorage: ObjectStorageCfg,
 }
 
 /// dump the configuration
@@ -88,6 +93,7 @@ impl Config {
         ui.para(&self.services.loadbalancer_disk)?;
         ui.heading("[licenses]")?;
         ui.para(&self.licenses.so_file)?;
+        ui.para(&format!("{:?}", &self.licenses.backend))?;
         ui.heading("[logs]")?;
         ui.para(&self.logs.influx_endpoint)?;
         ui.para(&self.logs.influx_prefix)?;
@@ -101,6 +107,11 @@ impl Config {
         ui.para(&self.vulnerability.anchore_endpoint)?;
         ui.para(&self.vulnerability.anchore_username)?;
         ui.para(&self.vulnerability.anchore_password)?;
+        ui.heading("[objectstorage]")?;
+        ui.para(&format!("{:?}", &self.objectstorage.backend))?;
+        ui.para(&self.objectstorage.endpoint)?;
+        ui.para(&self.objectstorage.access_key)?;
+        ui.para(&self.objectstorage.secret_key)?;
         ui.heading("[ping]")?;
         ui.para(&self.ping.controller_endpoint.clone().unwrap_or("".to_string()))?;
         ui.para(&self.ping.scheduler_endpoint.clone().unwrap_or("".to_string()))?;
@@ -136,6 +147,7 @@ impl Default for Config {
             vulnerability: VulnerabilityCfg::default(),
             ping: PinguyCfg::default(),
             notifications: Notifications::default(),
+            objectstorage: ObjectStorageCfg::default(),
         }
     }
 }
@@ -321,6 +333,9 @@ impl License for Config {
     fn activation_code(&self) -> Option<String> {
         self.licenses.activation_code.clone()
     }
+    fn backend(&self) -> Backend {
+        self.licenses.backend.clone()
+    }
 }
 
 impl Mailer for Config {
@@ -347,6 +362,22 @@ impl Slack for Config {
     }
     fn enabled(&self) -> bool {
         self.notifications.slack.enabled
+    }
+}
+
+//A delegate, that returns the securer auth config from the loaded securer auth config
+impl ObjectStorage for Config {
+    fn storage_backend(&self) -> ObjectStorageBackend {
+        self.objectstorage.backend.clone()
+    }
+    fn storage_endpoint(&self) -> &str {
+        &self.objectstorage.endpoint
+    }
+    fn storage_access_key(&self) -> &str {
+        &self.objectstorage.access_key
+    }
+    fn storage_secret_key(&self) -> &str {
+        &self.objectstorage.secret_key
     }
 }
 

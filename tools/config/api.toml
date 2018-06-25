@@ -18,7 +18,7 @@ params = { service_account = "service-account.pub" }
 [marketplaces]
 username = "rioosdolphin@rio.company"
 token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-endpoint = "https://marketplces.rioos.xyz:6443/api/v1"
+endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
 
 [blockchain]
 endpoint = "http://localhost:7000"
@@ -49,14 +49,21 @@ anchore_password = ""
 controller_endpoint = "http://localhost:10252/"
 scheduler_endpoint = "http://localhost:10251"
 machineconsole_endpoint = "http://localhost:8005"
+
+[objectstorage]
+backend = "OpenIO"
+endpoint = "https://env.envkey.com/v1/"
+access_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+secret_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+
 [[notifications]]
-  [mailer]
+ [mailer]
   enabled = true
   username = ""
   password = ""
   domain = ""
   sender = ""
 
-  [slack]
+ [slack]
   enabled = true
   token = ""

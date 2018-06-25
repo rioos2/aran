@@ -1,16 +1,15 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use super::super::error::{self, Error, Result};
 use db::data_store::DataStoreConn;
-use session::models::{session as sessions, passticket};
-
-use util::goofy_crypto::GoofyCrypto;
 use protocol::api::session;
 use protocol::api::session::*;
-use rioos;
-use util::token_target::TokenTarget;
-use util::jwt_authenticator::JWTAuthenticator;
-use super::super::error::{self, Result, Error};
 use rand::{self, Rng};
+use rioos;
+use session::models::{passticket, session as sessions};
+use util::goofy_crypto::GoofyCrypto;
+use util::jwt_authenticator::JWTAuthenticator;
+use util::token_target::TokenTarget;
 
 const TOKEN_LEN: usize = 18;
 const LEGACYUSERACCOUNTISSUER: &'static str = "rioos_sh/useraccount";
@@ -25,12 +24,7 @@ pub struct UserAccountAuthenticate {}
 impl UserAccountAuthenticate {
     //Generates a token of 18 ascii random character
     pub fn token() -> Result<String> {
-        Ok(
-            rand::thread_rng()
-                .gen_ascii_chars()
-                .take(TOKEN_LEN)
-                .collect(),
-        )
+        Ok(rand::thread_rng().gen_ascii_chars().take(TOKEN_LEN).collect())
     }
 
     //Encrypts a password text using pbkdf2 using a random salt.
@@ -63,11 +57,7 @@ impl UserAccountAuthenticate {
             }
             Ok(None) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
-                    error: format!(
-                        "Couldn't find {} or {} token expired in session.",
-                        email,
-                        token
-                    ),
+                    error: format!("Couldn't find {} or {} token expired in session.", email, token),
                     error_description: "Unauthorized".to_string(),
                 }));
             }
@@ -80,19 +70,16 @@ impl UserAccountAuthenticate {
         }
     }
 
-
     // it authenticates passticket token values
     // it checks account is exists or not in database
     // then check valid bearer token and validate their expiry period
     // otherwise it returns error response
     pub fn from_passticket(datastore: &DataStoreConn, passticket_id: String) -> Result<bool> {
         match passticket::DataStore::get_passticket(datastore, &passticket_id) {
-            Ok(Some(passticket)) => {
-                match passticket::DataStore::remove_passticket(datastore, passticket) {
-                    Ok(_) => Ok(true),
-                    Err(err) => Err(Error::OldPassticketMustBeRemoved(format!("{}", err))),
-                }
-            }
+            Ok(Some(passticket)) => match passticket::DataStore::remove_passticket(datastore, passticket) {
+                Ok(_) => Ok(true),
+                Err(err) => Err(Error::OldPassticketMustBeRemoved(format!("{}", err))),
+            },
             Ok(None) => return Err(Error::PassticketMismatch),
             Err(err) => return Err(Error::CantVerifyPassticket(format!("{}", err))),
         }
@@ -120,27 +107,19 @@ fn get_account(conn: &DataStoreConn, account_get: AccountGet, verify_password: b
     match sessions::DataStore::get_account(&conn, &account_get) {
         Ok(Some(opt_account)) => {
             if verify_password {
-                GoofyCrypto::new()
-                    .verify_password(
-                        &opt_account.get_password().to_string(),
-                        &account_get.get_password(),
-                    )
-                    .map_err(|e| {
-                        error::Error::Auth(rioos::AuthErr {
-                            error: String::from("Password match not found"),
-                            error_description: format!("{}", e),
-                        })
-                    })?;
+                GoofyCrypto::new().verify_password(&opt_account.get_password().to_string(), &account_get.get_password()).map_err(|e| {
+                    error::Error::Auth(rioos::AuthErr {
+                        error: String::from("Password match not found"),
+                        error_description: format!("{}", e),
+                    })
+                })?;
                 return Ok(());
             }
             Ok(())
         }
         Err(err) => {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!(
-                    "Error while retriving session for {}.",
-                    account_get.get_email()
-                ),
+                error: format!("Error while retriving session for {}.", account_get.get_email()),
                 error_description: format!("{}", err),
             }))
         }

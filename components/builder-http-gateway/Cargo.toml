@@ -6,7 +6,8 @@ description = "A library for implementing API HTTP Gateways"
 workspace = "../../"
 
 [dependencies]
-regex = "*"
+lazy_static="*"
+regex ="*"
 rand = "*"
 ansi_term = "*"
  env_logger = "0.5.9"
@@ -38,7 +39,7 @@ path = "../common"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
-[dependencies.rioos_builder_authsrv]
+[dependencies.rioos_builder_authorizer]
 path = "../builder-authorize"
 
 [dependencies.rioos_auth]

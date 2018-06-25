@@ -2,8 +2,8 @@
 //
 
 use iron::prelude::*;
-use urlencoded::UrlEncodedQuery;
 use std::collections::BTreeMap;
+use urlencoded::UrlEncodedQuery;
 
 pub fn extract_query_value(req: &mut Request) -> Option<BTreeMap<String, String>> {
     let mut collections = BTreeMap::new();

@@ -26,20 +26,21 @@ extern crate urlencoded;
 
 extern crate rioos_auth as auth;
 extern crate rioos_builder_apimachinery as protocol;
-extern crate rioos_builder_asmsrv as deploy;
 extern crate rioos_builder_audit as audit;
-extern crate rioos_builder_authsrv as authorize;
+extern crate rioos_builder_authorizer as authorize;
 extern crate rioos_builder_db as db;
+// extern crate rioos_builder_netsrv as network;
+extern crate rioos_builder_deployment as deploy;
 extern crate rioos_builder_devtooling as devtooling;
 extern crate rioos_builder_diagnostics as rio_diago;
+extern crate rioos_builder_health_nodes as nodesrv;
 extern crate rioos_builder_httpgateway as http_gateway;
-extern crate rioos_builder_jobsrv as job;
-extern crate rioos_builder_netsrv as network;
-extern crate rioos_builder_nodesrv as nodesrv;
-extern crate rioos_builder_scalesrv as scale;
-extern crate rioos_builder_servicesrv as service;
+extern crate rioos_builder_jobsbuilder as job;
+extern crate rioos_builder_scalers as scale;
+extern crate rioos_builder_services as service;
 extern crate rioos_builder_session as session;
-extern crate rioos_builder_storagesrv as storage;
+extern crate rioos_builder_storages as storage;
+extern crate rioos_builder_virtual_network as network;
 extern crate rioos_common as common;
 extern crate rioos_core as rio_core;
 extern crate rioos_entitlement as entitlement;
@@ -86,6 +87,7 @@ extern crate enum_derive;
 
 extern crate lettre;
 extern crate lettre_email;
+extern crate openio_sdk_rust;
 
 pub mod config;
 pub mod error;

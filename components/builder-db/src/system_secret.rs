@@ -1,11 +1,11 @@
-use std::sync::Arc;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use base64;
 
-use rcore::fs::append;
-use rcore::crypto::{default_rioconfig_key_path, SigKeyPair};
 use rcore::crypto::keys::{PairConf, PairSaverExtn};
+use rcore::crypto::{default_rioconfig_key_path, SigKeyPair};
+use rcore::fs::{append, open_from};
 
 use error::Result;
 
@@ -14,8 +14,14 @@ use data_store::DataStoreConn;
 const AGENT_SECRET: &'static str = "agent_secret";
 
 lazy_static! {
-    static  ref AGENT_SECRET_FILE: PathBuf =  PathBuf::from(&*default_rioconfig_key_path(None).join(format!("{}.key", AGENT_SECRET)).to_str().unwrap());
-    static  ref NODELET_CONFIG_FILE: PathBuf =  PathBuf::from(&*default_rioconfig_key_path(None).join("nodelet.rioconfig").to_str().unwrap());
+    static ref AGENT_SECRET_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None)
+        .join(format!("{}.key", AGENT_SECRET))
+        .to_str()
+        .unwrap());
+    static ref NODELET_CONFIG_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None)
+        .join("nodelet.rioconfig")
+        .to_str()
+        .unwrap());
 }
 
 pub struct SystemSecret {
@@ -33,6 +39,7 @@ impl SystemSecret {
 
     fn setup_agent_secret(&self) -> Result<()> {
         let conn = self.conn.pool.get_shard(0)?;
+        open_from(&NODELET_CONFIG_FILE.as_path())?;
 
         if !(AGENT_SECRET_FILE.exists()) {
             SigKeyPair::mk_signed(
@@ -47,9 +54,8 @@ impl SystemSecret {
         )?;
         if rows.len() == 0 {
             let pairs = SigKeyPair::get_pair_for(AGENT_SECRET, &default_rioconfig_key_path(None))?;
-
-            let rsa_pub_key = SigKeyPair::get_rsa_public_key(AGENT_SECRET, &default_rioconfig_key_path(None))?;
-
+            let rsa_pub_key =
+                SigKeyPair::get_rsa_public_key(AGENT_SECRET, &default_rioconfig_key_path(None))?;
             &conn.query(
                 "SELECT * FROM insert_secret_v1($1,$2,$3,$4,$5)",
                 &[
@@ -70,7 +76,6 @@ impl SystemSecret {
                     })),
                 ],
             )?;
-
             append(
                 &NODELET_CONFIG_FILE,
                 &("\nsecret_name: ".to_string() + AGENT_SECRET),

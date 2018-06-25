@@ -10,12 +10,12 @@ use ansi_term::Colour;
 use bodyparser;
 use iron::prelude::*;
 use iron::status;
+use rio_core::fs::rioconfig_package_path;
 use router::Router;
 use std::path::Path;
-use rio_core::fs::rioconfig_package_path;
 
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
 use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
@@ -23,9 +23,9 @@ use error::Error;
 use error::ErrorMessage::MissingParameter;
 
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::http::static_handler::Static;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
 
 use marketplace::{marketplace_ds, package_attacher};
 
@@ -88,7 +88,9 @@ impl MarketPlaceApi {
     //Will need roles/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match marketplace_ds::DataStore::new(&self.conn).list_blank() {
-            Ok(Some(marketplaces)) => Ok(render_json_list(status::Ok, dispatch(_req), &marketplaces)),
+            Ok(Some(marketplaces)) => {
+                Ok(render_json_list(status::Ok, dispatch(_req), &marketplaces))
+            }
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
@@ -112,25 +114,25 @@ impl MarketPlaceApi {
 
     //GET: /marketplace/:id/download
     //Input id - u64 as input and returns a dowload url
-    fn download(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
-        match package_attacher::PackageAttacher::new(&self.conn, &params).get_package() {
-            Ok(Some(package)) => {
-                match Static::new(Path::new(
-                    &rioconfig_package_path(None).join(package.get_url()),
-                )).get(req) {
-                    Ok(path) => Ok(path),
-                    Err(err) => Err(internal_error(&format!("{}\n", err))),
-                }
-            }
-            Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
-        }
-    }
+    /*fn download(&self, req: &mut Request) -> AranResult<Response> {
+         let params = self.verify_id(req)?;
+         match package_attacher::PackageAttacher::new(&self.conn, &params).get_package() {
+             Ok(Some(package)) => {
+                 match Static::new(Path::new(
+                     &rioconfig_package_path(None).join(package.get_url()),
+                 )).get(req) {
+                     Ok(path) => Ok(path),
+                     Err(err) => Err(internal_error(&format!("{}\n", err))),
+                 }
+             }
+             Err(err) => Err(internal_error(&format!("{}\n", err))),
+             Ok(None) => Err(not_found_error(&format!(
+                 "{} for {}",
+                 Error::Db(RecordsNotFound),
+                 params.get_id()
+             ))),
+         }
+     }*/
 }
 
 impl Api for MarketPlaceApi {
@@ -147,8 +149,8 @@ impl Api for MarketPlaceApi {
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
-        let _self = self.clone();
-        let download = move |req: &mut Request| -> AranResult<Response> { _self.download(req) };
+        // let _self = self.clone();
+        // let download = move |req: &mut Request| -> AranResult<Response> { _self.download(req) };
 
         router.post(
             "/marketplaces",
@@ -168,11 +170,11 @@ impl Api for MarketPlaceApi {
             "market_show",
         );
 
-        router.get(
-            "/marketplaces/:id/download",
-            XHandler::new(C { inner: download }),
-            "market_download",
-        );
+        // router.get(
+        //     "/marketplaces/:id/download",
+        //     XHandler::new(C { inner: download }),
+        //     "market_download",
+        // );
     }
 }
 
@@ -186,13 +188,51 @@ impl ParmsVerifier for MarketPlaceApi {}
 impl Validator for MarketPlace {
     fn valid(self) -> AranValidResult<Self> {
         let mut s: Vec<String> = vec![];
+        let plans = self.get_plan();
+        plans.iter().map(|y| {
 
-        if self.get_category().len() <= 0 {
-            s.push("category".to_string());
+        if y.object_meta().owner_references.len() <= 0 {
+            s.push("owner_references".to_string());
+        } else {
+            y.object_meta()
+                .owner_references
+                .iter()
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
         }
-        if self.get_version().len() <= 0 {
-            s.push("version".to_string());
+    })
+    .collect::<Vec<_>>();
+    
+        if self.get_plan().len() <= 0 {
+            s.push("plans".to_string());
+        } else {
+            self.get_plan()
+                .iter()
+                .map(|x| {
+                    if x.get_version().len() <= 0 {
+                        s.push("version".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
         }
+
+        if self.get_plan().len() <= 0 {
+            s.push("plans".to_string());
+        } else {
+            self.get_plan()
+                .iter()
+                .map(|x| {
+                    if x.get_category().len() <= 0 {
+                        s.push("category".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
+        }
+
         if self.object_meta().name.len() <= 0 {
             s.push("name".to_string());
         }

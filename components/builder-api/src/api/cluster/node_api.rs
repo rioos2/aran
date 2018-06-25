@@ -1,34 +1,30 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::sync::Arc;
-use iron::prelude::*;
-use bodyparser;
-use iron::status;
-use router::Router;
-
 use ansi_term::Colour;
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier, QueryValidator};
-use protocol::api::schema::{dispatch, type_meta};
-
-use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error, badgateway_error};
-use telemetry::metrics::prometheus::PrometheusClient;
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
+use bodyparser;
 use bytes::Bytes;
-use serde_json;
-
-use nodesrv::node_ds::NodeDS;
-use protocol::api::node::{Node, NodeStatusUpdate};
-use protocol::api::base::IdGet;
-
-use db::error::Error::RecordsNotFound;
+use common::ui;
+use config::Config;
 use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, badgateway_error, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use nodesrv::node_ds::NodeDS;
+use nodesrv::models::discover_nodes::DiscoverNodes;
+use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
+use protocol::api::node::{Node, NodeStatusUpdate, NodeFilter};
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 #[derive(Clone)]
 pub struct NodeApi {
@@ -153,6 +149,52 @@ impl NodeApi {
             ))),
         }
     }
+
+    //PUT: /nodes/:id
+    //Input node  as input and returns an Nodes
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<Node>>()?,
+        )?;
+        unmarshall_body.set_id(params.get_id());
+
+        ui::rawdumpln(
+            Colour::White,
+            '✓',
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
+
+        match NodeDS::update(&self.conn, &unmarshall_body) {
+            Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
+        }
+    }
+
+
+
+    //List the node fitler with node ip
+    //GET: /discovery/:ip
+    //Input node ip returns the  node
+    fn discovery(&self, req: &mut Request) -> AranResult<Response> {
+        let unmarshall_body = req.get::<bodyparser::Struct<NodeFilter>>()?;
+
+        match NodeDS::discovery(
+            &self.conn,
+            DiscoverNodes::new(unmarshall_body.unwrap()).discovered()?,
+        ) {
+            Ok(Some(node_get)) => Ok(render_json_list(status::Ok, dispatch(req), &node_get)),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+        }
+    }
+
     //List the node fitler with node ip
     //GET: /node/:ip
     //Input node ip returns the  node
@@ -207,13 +249,17 @@ impl Api for NodeApi {
         let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
+
+        let _self = self.clone();
         let healthz = move |req: &mut Request| -> AranResult<Response> { _self.status(req) };
+
+        let _self = self.clone();
+        let discovery = move |req: &mut Request| -> AranResult<Response> { _self.discovery(req) };
 
         router.get(
             "/healthz/overall",
-            XHandler::new(C { inner: healthz_all })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.healthz.get".to_string(),&*config)),
+            XHandler::new(C { inner: healthz_all }).before(basic.clone()),
             "healthz_all",
         );
 
@@ -221,39 +267,41 @@ impl Api for NodeApi {
 
         router.post(
             "/nodes",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.post".to_string(),&*config)),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "nodes",
         );
         router.get(
             "/nodes",
-            XHandler::new(C { inner: list_blank })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "nodes_list",
         );
         router.get(
             "/nodes/:id",
-            XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "node_show",
         );
         router.put(
             "/nodes/:id/status",
-            XHandler::new(C { inner: status_update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.put".to_string(),&*config)),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "node_status_update",
+        );
+
+        router.put(
+            "/nodes/:id",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "node_update",
         );
 
         router.get(
             "/nodes/ip",
-            XHandler::new(C { inner: show_by_address })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.node.get".to_string(),&*config)),
+            XHandler::new(C { inner: show_by_address }).before(basic.clone()),
             "node_show_by_address",
+        );
+
+        router.post(
+            "/nodes/discover",
+            XHandler::new(C { inner: discovery }).before(basic.clone()),
+            "node_discovery",
         );
     }
 }

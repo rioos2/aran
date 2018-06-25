@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
-use rioos;
-use serviceaccount::service_account_ds::ServiceAccountDS;
-use util::jwt_authenticator::JWTAuthenticator;
 use super::super::error::{self, Result};
 use db::data_store::DataStoreConn;
-use std::path::PathBuf;
 use protocol::api::base::IdGet;
+use rioos;
+use serviceaccount::service_account_ds::ServiceAccountDS;
+use std::path::PathBuf;
+use util::jwt_authenticator::JWTAuthenticator;
 
 const LEGACYUSERACCOUNTISSUER: &'static str = "rioos_sh/serviceaccount";
 const SERVICEACCOUNTNAMECLAIM: &'static str = "rioos_sh/serviceaccount/service-account.name";

@@ -1,9 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::path::PathBuf;
-use std::collections::HashMap;
-
 use regex::Regex;
+use std::collections::HashMap;
+use std::path::PathBuf;
 
 pub const PLUGIN_PASSWORD: &'static str = "password";
 pub const PLUGIN_SERVICE_ACCOUNT: &'static str = "service_account";
@@ -73,7 +72,10 @@ pub trait AuthenticationFlowCfg {
 
 ///A public wrapper function that converts Identity into another form of a tuple.
 ///Seems like a Into function actually.
-pub fn flow_modes<I: Identity>(identity: &I, prefix_path: PathBuf) -> (Vec<String>, HashMap<String, String>) {
+pub fn flow_modes<I: Identity>(
+    identity: &I,
+    prefix_path: PathBuf,
+) -> (Vec<String>, HashMap<String, String>) {
     lazy_static! {
         static ref RE: Regex = Regex::new(r"^.*\.((pub|key|toml|hbs|cert.pem)).*$").unwrap();
     }

@@ -29,7 +29,8 @@ impl SlackSender {
         SlackSender { config: config, user: user, subject: subject, content: content }
     }
     pub fn send(self) -> Result<()> {
-        println!("********new****send******{}****", self.content);
+        // let token = self.config.token.to_string()
+        println!("********new****send****{}**{}***",SLACK_URL,  self.content);
 
         let client = ApiClient::new(&format!("{}", SLACK_URL), USER_AGENT, "v1", None).unwrap();
         let body = json!({
@@ -60,7 +61,7 @@ impl SlackNotifier {
         SlackNotifier { envelope: envelope, config: config }
     }
     fn getlabel(&self, key: String) -> String {
-        self.envelope.event.object_meta().labels.get(&key.to_string()).unwrap_or(&"".to_string()).clone()
+        self.envelope.get_event().object_meta().labels.get(&key.to_string()).unwrap_or(&"".to_string()).clone()
     }
 
     fn user(&self) -> String {
@@ -79,31 +80,33 @@ impl SlackNotifier {
 
 impl PushNotifier for SlackNotifier {
     fn should_notify(&self) -> bool {
-        println!("***PushNotifier**should_notify***new****send**********");
+        println!("***PushNotifier**should_notify***new****send********{}**", self.config.enabled);
 
         if !self.config.enabled {
             return false;
         }
-        match Status::from_str(&self.envelope.event.reason) {
+        match Status::from_str(&self.envelope.get_event().reason) {
             Status::KryptoniteQRCode | Status::KryptoniteSyncFailed => true,
             _ => false,
         }
     }
 
     fn notify(&self) {
+        println!("***PushNotifier**should_notify***notify**********{}", self.envelope.get_event().reason);
+
         if !self.should_notify() {
             return;
         }
-        println!("***PushNotifier**should_notify***notify**********{}", self.envelope.event.reason);
 
-        match Status::from_str(&self.envelope.event.reason) {
+        match Status::from_str(&self.envelope.get_event().reason) {
             // Status::KryptoniteQRCode => {
             //     let content = data.deploy_success().unwrap();
             //     let mail_builder = SlackSender::new(self.config.clone(), data.user(), content.0, content.1);
             //     mail_builder.send();
             // }
             Status::KryptoniteSyncFailed => {
-                let sender = SlackSender::new(self.config.clone(), "".to_string(), FAILED_SUBJECT.to_string(), self.envelope.event.message.to_string());
+                let sender = SlackSender::new(self.config.clone(), "".to_string(), FAILED_SUBJECT.to_string(),
+                self.envelope.get_event().message.to_string());
                 sender.send();
             }
             _ => {}

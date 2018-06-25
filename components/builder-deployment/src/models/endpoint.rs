@@ -1,13 +1,14 @@
-use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::{base, endpoints};
-use protocol::api::base::MetaFields;
+// Copyright 2018 The Rio Advancement Inc
 
-use postgres;
-use db::data_store::DataStoreConn;
-use serde_json;
-
+//! The PostgreSQL backend for the Deployment - Endpoint
 use super::super::{EndPointOutput, EndPointOutputList};
+use chrono::prelude::*;
+use db::data_store::DataStoreConn;
+use error::{Error, Result};
+use postgres;
+use protocol::api::base::MetaFields;
+use protocol::api::{base, endpoints};
+use serde_json;
 
 pub struct DataStore;
 
@@ -48,12 +49,12 @@ impl DataStore {
 
     pub fn show(db: &DataStoreConn, endpoints_get: &base::IdGet) -> EndPointOutput {
         let conn = db.pool.get_shard(0)?;
-        
+
         let rows = &conn.query(
             "SELECT * FROM get_endpoint_v1($1)",
             &[&(endpoints_get.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::EndPointsGet)?;
-        if rows.len() > 0 {            
+        if rows.len() > 0 {
             for row in rows {
                 let end = row_to_endpoints(&row)?;
                 return Ok(Some(end));

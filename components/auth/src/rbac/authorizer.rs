@@ -1,21 +1,10 @@
-use std::sync::Arc;
-use serde_json;
-
-use protocol::api::base::IdGet;
-use protocol::api::authorize::Permissions;
-use protocol::cache::{NewCacheServiceFn, CACHE_PREFIX_PERMISSION, PULL_DIRECTLY};
-use protocol::cache::inject::PermissionFeeder;
-
-use db::data_store::DataStoreConn;
-use super::roles::Roles;
-use rbac::roles::TrustAccess;
-use rbac::ExpanderSender;
 use super::super::error::{Error, Result};
-
-use auth::models::permission::DataStore;
+use protocol::api::base::IdGet;
+use rbac::permissions;
+use rbac::roles::{Roles, TrustAccess};
 
 // role type to get the permission from database
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RoleType {
     pub name: IdGet,
 }
@@ -29,60 +18,27 @@ impl RoleType {
 }
 
 //Authorization is called from middleware.rs to verify the access of user or serviceaccount
+#[derive(Clone)]
 pub struct Authorization {
-    role_type: RoleType,
-    ds: Box<DataStoreConn>,
-    permissions: Option<Vec<Permissions>>,
+    permissions: permissions::Permissions,
 }
 
 impl Authorization {
-    pub fn new(ds: Arc<DataStoreConn>, role_type: RoleType) -> Self {
+    pub fn new(permissions: permissions::Permissions) -> Self {
         Authorization {
-            role_type: role_type,
-            ds: Box::new((*ds).clone()),
-            permissions: None,
+            permissions: permissions,
         }
     }
 
-    pub fn set_permissions(&mut self, v: Option<Vec<Permissions>>) {
-        self.permissions = v;
-    }
+    pub fn verify(self, role_type: RoleType, incoming_to_trust: String) -> Result<bool> {
+        let perms_for_account = self.permissions.list_by_email(role_type.name);
 
-    pub fn verify(mut self, trusted: String) -> Result<bool> {
-        self.with_cache();
-        let conn = self.ds.clone();
-        conn.expander.with_permission(&mut self, PULL_DIRECTLY);
-        match Roles::per_type(self.permissions) {
-            Ok(data) => {
-                let access = TrustAccess::new(trusted);
-                access.is_allowed(data)
+        match Roles::per_type(perms_for_account.get_permissions()) {
+            Ok(perm_for_account) => {
+                let access = TrustAccess::new(incoming_to_trust);
+                access.is_allowed(perm_for_account)
             }
             Err(err) => Err(Error::PermissionError(format!("{}", err))),
         }
-    }
-}
-
-impl PermissionFeeder for Authorization {
-    fn p_get_id(&mut self) -> IdGet {
-        IdGet::with_id_name(self.role_type.name.get_id(), "".to_string())
-    }
-
-    fn p_feed(&mut self, m: Option<Vec<Permissions>>) {
-        self.set_permissions(m);
-    }
-}
-
-impl ExpanderSender for Authorization {
-    fn with_cache(&mut self) {
-        let _conn = self.ds.clone();
-        let permission_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_PERMISSION.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                DataStore::list_by_name(&_conn, &id)
-                    .ok()
-                    .and_then(|p| serde_json::to_string(&p).ok())
-            }),
-        ));
-        &self.ds.expander.with(permission_service);
     }
 }

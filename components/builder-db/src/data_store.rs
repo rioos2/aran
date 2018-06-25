@@ -3,14 +3,14 @@ embed_migrations!("api/migrations");
 
 use std::io;
 
-use error::Result;
-use pool::Pool;
-use config::DataStore;
-use protocol::{SHARD_COUNT, ShardId};
 use super::diesel_pool::DieselPool;
 use super::migration::shard_setup;
+use config::DataStore;
 use diesel::result::Error as Dre;
 use diesel::Connection;
+use error::Result;
+use pool::Pool;
+use protocol::{ShardId, SHARD_COUNT};
 
 use protocol::cache::InMemoryExpander;
 

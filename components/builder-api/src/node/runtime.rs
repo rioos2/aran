@@ -105,7 +105,6 @@ impl Runtime {
     /// This may be used if you want to customize api with the `ApiContext`.
     pub fn start(self) -> io::Result<()> {
         let (handler_part, internal_part) = self.into_reactor();
-
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
             let tx = Arc::new(internal_part);

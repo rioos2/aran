@@ -13,10 +13,12 @@ extern crate handlebars;
 #[macro_use]
 extern crate serde_json;
 extern crate rand;
+extern crate rioos_http_client as http_client;
 
 pub use self::error::{Error, Result};
 
 pub mod error;
 pub mod licensor;
 pub mod nalperion;
+pub mod licensecloud;
 pub mod config;

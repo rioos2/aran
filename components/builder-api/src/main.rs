@@ -151,7 +151,7 @@ fn load_config(args: &clap::ArgMatches) -> Result<Config> {
     let config = match args.value_of("config") {
         Some(cfg_path) => try!(Config::from_file(cfg_path)),
         None => {
-            let mut default_config = Config::default();
+            let mut default_config = Config::default();          
             Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(default_config)
         }
     };

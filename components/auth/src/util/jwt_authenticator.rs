@@ -1,18 +1,17 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::str;
-use std::collections::BTreeMap;
-use base64;
-use std::path::PathBuf;
-use serde_json;
-use util::jwt::{decode_segments, decode};
-use rioos;
 use super::super::error::{self, Result};
-use protocol::api::base::IdGet;
-use secret::secret_ds::SecretDS;
-use util::jwt::{Algorithm, decode_direct};
-
+use base64;
 use db::data_store::DataStoreConn;
+use protocol::api::base::IdGet;
+use rioos;
+use secret::secret_ds::SecretDS;
+use serde_json;
+use std::collections::BTreeMap;
+use std::path::PathBuf;
+use std::str;
+use util::jwt::{decode, decode_segments};
+use util::jwt::{decode_direct, Algorithm};
 
 const ISSUERCLAIM: &'static str = "iss";
 const SECRETPUBKEY: &'static str = "rioos_sh/ssh_pubkey";
@@ -53,11 +52,7 @@ impl JWTAuthenticator {
                     }
                 };
 
-                return Ok(JWTAuthenticator {
-                    token: token,
-                    header: header_claims,
-                    payload: payload_claims,
-                });
+                return Ok(JWTAuthenticator { token: token, header: header_claims, payload: payload_claims });
             }
             Err(err) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
@@ -75,11 +70,7 @@ impl JWTAuthenticator {
     pub fn has_correct_issuer(&self, issuer: &str) -> Result<bool> {
         if self.payload.get(ISSUERCLAIM) != Some(&issuer.to_string()) {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!(
-                    "Must have issuer claim {} = {}",
-                    ISSUERCLAIM,
-                    &issuer.to_string()
-                ),
+                error: format!("Must have issuer claim {} = {}", ISSUERCLAIM, &issuer.to_string()),
                 error_description: format!(""),
             }));
         }
@@ -111,11 +102,7 @@ impl JWTAuthenticator {
         let parts: Vec<_> = subject.split("::").collect();
         if parts[1] != account_name {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!(
-                    "Must have subject claim matching {} = {}",
-                    parts[1].to_string(),
-                    account_name.to_string()
-                ),
+                error: format!("Must have subject claim matching {} = {}", parts[1].to_string(), account_name.to_string()),
                 error_description: format!(""),
             }));
         }
@@ -199,12 +186,12 @@ impl JWTAuthenticator {
     }
 
     // this function decode JWT token using public key url
-    pub fn has_correct_token_from_path(&self, key_path: PathBuf) -> Result<bool> {       
+    pub fn has_correct_token_from_path(&self, key_path: PathBuf) -> Result<bool> {
         let token_data = decode(&self.token.clone(), &key_path, Algorithm::RS256);
 
         match token_data {
             Ok(_t) => return Ok(true),
-            Err(err) => {               
+            Err(err) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
                     error: format!("JWT bearer token is invalid."),
                     error_description: format!("{:?}", err),

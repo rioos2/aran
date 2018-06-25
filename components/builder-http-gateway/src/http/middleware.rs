@@ -1,31 +1,27 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
-use std::collections::HashMap;
-
-use iron::Handler;
+use super::super::util::errors::*;
+use super::header_extracter::HeaderDecider;
+use super::rendering::*;
+use ansi_term::Colour;
+use auth::config::AuthenticationFlowCfg;
+use auth::rbac::{authorizer, permissions::Permissions};
+use auth::rioos::AuthenticateDelegate;
+use common::ui;
+use db::data_store::DataStoreConn;
 use iron::headers;
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
 use iron::status::NotFound;
 use iron::typemap::Key;
-use router::NoRoute;
+use iron::Handler;
 use persistent;
-
+use regex::Regex;
+use router::NoRoute;
+use std::collections::HashMap;
 use unicase::UniCase;
-use ansi_term::Colour;
-use super::rendering::*;
-use super::super::util::errors::*;
-use super::header_extracter::HeaderDecider;
-
-use db::data_store::DataStoreConn;
-use common::ui;
-
-use auth::rioos::AuthenticateDelegate;
-use auth::rbac::authorizer;
-use auth::config::AuthenticationFlowCfg;
-
 use util::errors::{bad_err, forbidden_error, internal_error};
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
@@ -204,7 +200,11 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(req: &mut Request, plugins: Vec<String>, conf: HashMap<String, String>) -> IronResult<()> {
+    pub fn proceed(
+        req: &mut Request,
+        plugins: Vec<String>,
+        conf: HashMap<String, String>,
+    ) -> IronResult<()> {
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -212,7 +212,7 @@ impl ProceedAuthenticating {
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         };
-        
+
         let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;
 
         let delegate = AuthenticateDelegate::new(broker.clone());
@@ -227,49 +227,160 @@ impl ProceedAuthenticating {
     }
 }
 
-#[derive(Clone)]
-pub struct TrustAccessed {
-    pub trusted: String,
-    pub plugins: Vec<String>,
-    pub conf: HashMap<String, String>,
+struct URLGrabber {}
+
+impl URLGrabber {
+    const WHITE_LIST: &'static [&'static str] = &[
+        "RIOOS.ACCOUNTS.POST",
+        "RIOOS.ACCOUNTS.*.AUDITS.POST",
+        "RIOOS.ACCOUNTS.*.AUDITS.GET",
+        "RIOOS.ACCOUNTS.*.ASSEMBLYS*EXEC",
+        "RIOOS.AUTHENTICATE.POST",
+        "RIOOS.LOGOUT.POST",
+        "RIOOS.LOGS.GET",
+        "RIOOS.IMAGES.*.VULNERABILITY.GET",
+        "RIOOS.ROLES.GET",
+        "RIOOS.ROLES.POST",
+        "RIOOS.PERMISSIONS.GET",
+        "RIOOS.PERMISSIONS.POST",
+        "RIOOS.TEAMS.POST",
+        "RIOOS.ORIGINS.GET",
+        "RIOOS.ORIGINS.POST",
+        "RIOOS.ORIGINS.*.SECRETS.POST",
+        "RIOOS.ORIGINS.*.SECRETS.GET",
+        "RIOOS.ORIGINS.*.SECRETS*.POST",
+        "RIOOS.ORIGINS.*.SERVICEACCOUNTS.POST",
+        "RIOOS.ORIGINS.*.SERVICEACCOUNTS*.GET",
+        "RIOOS.ORIGINS.*.SERVICEACCOUNTS*.PUT",
+        "RIOOS.ORIGINS.*.SETTINGSMAP*.POST",
+        "RIOOS.SERVICEACCOUNTS.GET",
+        "RIOOS.SETTINGSMAP.GET",
+        "RIOOS.PING.GET",
+        "RIOOS.HEALTHZ.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.POST",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.GET",
+        "RIOOS.SECRETS.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.POST",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.CONTROLLER-SHARED-INFORMERS.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.NODELET-SHARED-INFORMERS.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.SCHEDULER-SHARED-INFORMERS.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.STORLET-SHARED-INFORMERS.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.PROMETHEUS-SHARED-INFORMERS.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.PROMETHEUS-SHARED-INFORMERS.PUT",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.CONTROLLER-SHARED-INFORMERS.PUT",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.NODELET-SHARED-INFORMERS.PUT",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.SCHEDULER-SHARED-INFORMERS.PUT",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.STORLET-SHARED-INFORMERS.PUT",
+    ];
+
+    fn grab(req: &mut Request) -> Option<String> {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^(0|[1-9][0-9]*)$").unwrap();
+        }
+
+        let system = "rioos";
+        let method = &req.method;
+        let resource = format!(
+            "{}{}.{:?}",
+            system,
+            &req.url
+                .path()
+                .into_iter()
+                .map(|p| {
+                    if RE.is_match(&p) {
+                        ".*".to_string()
+                    } else {
+                        format!(".{}", &p)
+                    }
+                })
+                .collect::<String>(),
+            method
+        ).to_uppercase();
+
+        info!("{}", format!("↑ Permission {} {}", "→", resource));
+
+        if !URLGrabber::WHITE_LIST.contains(&resource.as_str()) {
+            info!(
+                "{}",
+                format!("↑ Permission Verify {} {}", "→", resource)
+            );
+            return Some(resource.clone());
+        }
+
+        info!(
+            "{}",
+            format!("↑ Permission WHITE_LIST {} {}", "→", resource)
+        );
+
+        None
+    }
 }
 
-impl TrustAccessed {
-    pub fn new<T: AuthenticationFlowCfg>(trusted: String, config: &T) -> Self {
+#[derive(Clone)]
+pub struct RBAC {
+    pub plugins: Vec<String>,
+    pub conf: HashMap<String, String>,
+    authorizer: authorizer::Authorization,
+}
+
+impl RBAC {
+    pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions) -> Self {
         let plugins_and_its_configuration_tuple = config.modes();
-        TrustAccessed {
-            trusted: trusted,
+        RBAC {
             plugins: plugins_and_its_configuration_tuple.0,
             conf: plugins_and_its_configuration_tuple.1,
+            authorizer: authorizer::Authorization::new(permissions),
         }
     }
 
-    fn get(&self) -> String {
-        self.trusted.clone()
+    fn input_trust(&self, req: &mut Request) -> Option<String> {
+        URLGrabber::grab(req)
     }
 }
 
-impl BeforeMiddleware for TrustAccessed {
+impl BeforeMiddleware for RBAC {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
-            Ok(broker) => broker,
-            Err(err) => {
-                let err = internal_error(&format!("{}\n", err));
-                return Err(render_json_error(&bad_err(&err), err.http_code()));
-            }
-        };
+        let input_trust = self.input_trust(req);
 
-        let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
-        let roles: authorizer::RoleType = header.decide()?.into();
-        // return Ok if the request has no header with email and serviceaccount name
-        if roles.name.get_id().is_empty() {
+        if input_trust.is_none() {
             return Ok(());
         }
 
-        match authorizer::Authorization::new(broker, roles).verify(self.get()) {
+        let header =
+            HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
+        let roles: authorizer::RoleType = header.decide()?.into();
+
+        info!(
+            "↑ RBAC {} {} {:?}",
+            "→",
+            &roles.name.get_id(),
+            input_trust
+        );
+
+        if roles.name.get_id().pop().is_none() {
+            info!("↑ RBAC SKIP {} {} {:?}", "→", &roles.name, input_trust);
+            return Ok(());
+        }
+
+        match self.authorizer
+            .clone()
+            .verify(roles.clone(), input_trust.clone().unwrap())
+        {
             Ok(_validate) => Ok(()),
-            Err(err) => {
-                let err = forbidden_error(&format!("{}\n", err));
+            Err(_) => {
+                info!(
+                    "↑☒ RBAC ERROR {} {} {:?}",
+                    "→",
+                    &roles.clone().name,
+                    input_trust.clone()
+                );
+
+                let err = forbidden_error(&format!(
+                    "{}, is denied access. Must have permission for [{}].",
+                    &roles.clone().name.get_id(),
+                    input_trust.clone().unwrap_or("".to_string())
+                ));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         }

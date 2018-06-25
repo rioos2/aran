@@ -1,36 +1,26 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api assembly_factory
-use std::sync::Arc;
-
 use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
 use common::ui;
 use config::Config;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use protocol::api::schema::{dispatch, type_meta};
-
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
-
-
-use protocol::api::devtool::ImageReferences;
-use devtooling::models::image_references;
-
-use protocol::api::base::MetaFields;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-
+use devtooling::models::image_references;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::MetaFields;
+use protocol::api::devtool::ImageReferences;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct ImageReferencesApi {
@@ -46,7 +36,6 @@ pub struct ImageReferencesApi {
 /// PUT: /imagereferences/:id,
 /// PUT: /imagereferences/buildconfigs/:id,
 
-
 impl ImageReferencesApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
         ImageReferencesApi { conn: datastore }
@@ -55,9 +44,8 @@ impl ImageReferencesApi {
     //POST: /imagereferences
     //Input: Body of structure devtooling::ImageReferences
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<ImageReferences>(
-            req.get::<bodyparser::Struct<ImageReferences>>()?,
-        )?;
+        let mut unmarshall_body =
+            self.validate::<ImageReferences>(req.get::<bodyparser::Struct<ImageReferences>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -112,9 +100,7 @@ impl ImageReferencesApi {
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<ImageReferences>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<ImageReferences>>()?)?;
 
         unmarshall_body.set_id(params.get_id());
         match image_references::DataStore::update(&self.conn, &unmarshall_body) {
@@ -164,45 +150,38 @@ impl Api for ImageReferencesApi {
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
-        let show_by_build_config = move |req: &mut Request| -> AranResult<Response> { _self.show_by_build_config(req) };
+        let show_by_build_config =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_build_config(req) };
 
         router.post(
             "/imagereferences",
-            XHandler::new(C { inner: create })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.post".to_string(),&*config)),
-            "image_ref",
+            XHandler::new(C { inner: create }).before(basic.clone()),
+            "image_references",
         );
 
         router.get(
             "/imagereferences/:id",
-            XHandler::new(C { inner: show })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
-            "image_ref_show",
+            XHandler::new(C { inner: show }).before(basic.clone()),
+            "image_references_show",
         );
 
         router.get(
             "/imagereferences",
-            XHandler::new(C { inner: list })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
+            XHandler::new(C { inner: list }).before(basic.clone()),
             "image_references_list",
         );
 
         router.put(
             "/imagereferences/:id",
-            XHandler::new(C { inner: update })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.put".to_string(),&*config)),
+            XHandler::new(C { inner: update }).before(basic.clone()),
             "image_references_update",
         );
 
         router.get(
             "/imagereferences/buildconfigs/:id",
-            XHandler::new(C { inner: show_by_build_config })
-            .before(basic.clone())
-            .before(TrustAccessed::new("rioos.imagereference.get".to_string(),&*config)),
+            XHandler::new(C {
+                inner: show_by_build_config,
+            }).before(basic.clone()),
             "image_references_show_by_build_config",
         );
     }
@@ -230,8 +209,10 @@ impl Validator for ImageReferences {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }
@@ -240,8 +221,9 @@ impl Validator for ImageReferences {
             return Ok(Box::new(self));
         }
 
-        Err(bad_request(
-            &MissingParameter(format!("{:?} -> {}", s, "must have => ")),
-        ))
+        Err(bad_request(&MissingParameter(format!(
+            "{:?} -> {}",
+            s, "must have => "
+        ))))
     }
 }
