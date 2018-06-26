@@ -16,8 +16,8 @@ enabled = ["password", "service_account"]
 params = { service_account = "service-account.pub" }
 
 [marketplaces]
-username = "rioosdolphin@rio.company"
-token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+username = "info@riocorp.io"
+token = "TQXu6x1MR6WNwe0ymR"
 endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
 
 [blockchain]
