@@ -574,7 +574,7 @@ VALUES
         id
      FROM
         second_insert),
-        'RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.*.GET',
+        'RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.AGENT_SECRET.GET',
         'Access allowed for origin to get secrets resource.'
   )
 ,

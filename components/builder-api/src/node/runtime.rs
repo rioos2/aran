@@ -114,7 +114,7 @@ impl Runtime {
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
             let tx = Arc::new(internal_part);
-            let duration = Duration::new(36, 0); // 10 minutes
+            let duration = Duration::new(3600, 0); // 10 minutes
             let builder = tokio_timer::wheel().max_timeout(duration);
             let wakeups = builder.build().interval(duration);
             let task = wakeups.for_each(|_| {

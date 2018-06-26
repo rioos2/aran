@@ -51,7 +51,7 @@ impl RuntimeHandler {
     fn handle_internal_event(&mut self, event: &InternalEvent, ds: Box<DataStoreConn>) {
        
         match *event {
-             InternalEvent::EntitlementTimeout => match self.license.create_trial_or_verify() {
+             /*InternalEvent::EntitlementTimeout => match self.license.create_trial_or_verify() {
                  Ok(()) => {
                      let str = " ✓ All Good. You have a valid entitlement. !";
                      info!{" ✓ All Good. You have a valid entitlement. !"}
@@ -66,8 +66,8 @@ impl RuntimeHandler {
                          warn!("{:?}, Message: {:?}", expiry_attempt.unwrap(), err)
                      }                     
                  }
-             },
-            //InternalEvent::EntitlementTimeout => info!{" ✓ All Good. You have a valid entitlement. !"},
+             },*/
+            InternalEvent::EntitlementTimeout => info!{" ✓ All Good. You have a valid entitlement. !"},
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }
     }
