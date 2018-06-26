@@ -568,6 +568,16 @@ VALUES
          'Any access allowed for this secrets resource.'
    )
 ,
+(
+(
+     SELECT
+        id
+     FROM
+        second_insert),
+        'RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.*.GET',
+        'Access allowed for origin to get secrets resource.'
+  )
+,
    (
 (
       SELECT
