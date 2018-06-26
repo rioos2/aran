@@ -135,53 +135,58 @@ mod test {
 
     #[test]
     fn decode_marketplace() {
-        let val = r#"{
-            "object_meta":{
-                "name":"ubuntu",
-                "account":"",
-                "created_at":"",
-                "deleted_at":"",
-                "deletion_grace_period_seconds":30,
-                "labels":{},
-                "annotations":{},
-                "owner_references":[{
-                    "kind":"Package",
-                    "api_version":"v1",
-                    "name":"ubuntu",
-                    "uid":"956913916145836032",
-                    "block_owner_deletion":false}],
-                "initializers":{
-                    "pending":[],
-                    "result":{
-                        "type_meta":{"kind":"","api_version":""},
-                        "status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],"uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},
-            "category":"machine",
-            "version":"16.04",
-            "characteristics":{
-                "rioos_sh_image_extension": "raw",
-                "rioos_sh_market_image_extension": "tar.gz"
-                },
-            "icon":"ubuntu.png",
-            "description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
-            "ports":[],
-            "envs":{},
-            "lifecycle":{
-                "probe": {
-                    "env": {},
-                    "exec": [],
-                    "http_get": {
-                        "host": "",
-                        "path": "",
-                        "port": "",
-                        "scheme": ""},
-                    "tcp_socket": {
-                        "host": "",
-                        "port": ""},
-                    "http_headers": {}},
-                "pre_stop": {"command": []},
-                "post_start": {"command": []}},
-            "status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}
-            }"#;
+        let val = r#"{"object_meta":{
+             "name":"ubuntu",
+             "account":""
+             },
+             "plans":[{
+                 "object_meta":{
+                     "name":"ubuntu",
+                     "account":"",
+                     "owner_references":[{
+                         "kind":"Package",
+                         "api_version":"v1",
+                         "name":"ubuntu",
+                         "uid":"109876543212345678",
+                         "block_owner_deletion":false
+                         }]
+                    },
+                 "category": "machine",
+                 "version": "16.04",
+                 "characteristics" :{
+                     "rioos_sh_image_extension": "img",
+                     "rioos_sh_market_image_extension":  "tar.gz"
+                     },
+                 "icon" : "ubuntu.png",
+                 "description": " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+                 "status":{
+                     "phase":"SyncPending"
+                     },
+                 "metadata": {"origin": "rioos_system"},
+                 "lifecycle":{
+                     "probe": {
+                         "env": {},
+                         "exec": [],
+                         "http_get": {
+                             "host": "",
+                             "path": "",
+                             "port": "",
+                             "scheme": ""
+                             },
+                         "tcp_socket": {"host": "", "port": ""},
+                         "http_headers": {}
+                         },
+                     "pre_stop": {
+                         "command": []},
+                     "post_start": {"command": []}
+                     }
+                }],
+             "category": "machine",
+             "version": "16.04",
+             "icon": "ubuntu.png",
+             "description": "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+             "status":{"phase":"SyncPending"}
+         }"#;
         let market: MarketPlace = json_decode(val).unwrap();
         assert_eq!(market.category, "machine");
         assert_eq!(market.version, "16.04");
