@@ -48,3 +48,9 @@ pub trait StacksFeeder: Send {
 
     fn bfeed(&mut self, a: Option<api::deploy::StacksFactory>);
 }
+
+pub trait LicensesFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<String>);
+}
