@@ -4,6 +4,7 @@
 pub mod tests;
 pub mod error;
 
+use db::data_store::*;
 use futures::{Future, Async, Poll, Stream};
 use futures::sync::mpsc;
 use node::runtime::ExternalMessage;
@@ -24,22 +25,23 @@ pub enum Event {
 }
 
 pub trait EventHandler {
-    fn handle_event(&mut self, event: Event);
+    fn handle_event(&mut self, event: Event, ds: Box<DataStoreConn>);
 }
 
-#[derive(Debug)]
+
 pub struct HandlerPart<H: EventHandler> {
     pub handler: H,
     pub internal_rx: mpsc::Receiver<InternalEvent>,
     pub api_rx: mpsc::Receiver<ExternalMessage>,
+    pub datastore: Box<DataStoreConn>,
 }
 
 impl<H: EventHandler + 'static> HandlerPart<H> {
     pub fn run(self) -> Box<Future<Item = (), Error = ()>> {
         let mut handler = self.handler;
-
+        let ds = self.datastore.clone();
         let fut = EventsAggregator::new(self.internal_rx, self.api_rx).for_each(move |event| {
-            handler.handle_event(event);
+            handler.handle_event(event, ds.clone());
             Ok(())
         });
 

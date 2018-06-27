@@ -11,6 +11,7 @@ extern crate rioos_builder_services as secret;
 extern crate rioos_builder_services as serviceaccount;
 extern crate rioos_builder_session as session;
 extern crate rioos_common as common;
+extern crate rioos_builder_entitlement as entitlement;
 
 #[macro_use]
 extern crate serde_derive;

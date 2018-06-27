@@ -35,6 +35,8 @@ After you clone  `aran.git`, please do the following.
 
 ### 5. Remove `println!` when you commit.
 
+### 6. Fetch/Merge before you commit. Here is a screencast [watch](https://asciinema.org/a/a6kiuTwI2HHyAyFKI3k7UzV75)
+
 ***
 
 The below section describes setting up a development environment. 
