@@ -184,6 +184,17 @@ VALUES
          'Edit only access for horizontalscaling resource.'
    )
 ,
+ (
+(
+      SELECT
+         id
+      FROM
+         first_insert),
+         'RIOOS.HORIZONTALSCALING.*.METRICS.GET',
+         'Read only access for horizontalscaling metric resource.'
+   )
+,
+
    (
 (
       SELECT
@@ -384,16 +395,6 @@ VALUES
          'Read only access for accounts resource.'
    )
 ,
-(
-(
-   SELECT
-      id
-   FROM
-      first_insert),
-      'RIOOS.ACCOUNTS.*.GET',
-      'Read only access for accounts resource.'
-)
-,
    (
 (
       SELECT
@@ -516,6 +517,16 @@ VALUES
          second_insert),
          'RIOOS.ACCOUNTS.*.ASSEMBLYS.GET',
          'Read only access for assembly resource.'
+   )
+,
+ (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'RIOOS.ORIGINS.RIOOS_SYSTEM.SETTINGSMAP.CLUSTER_INFO.GET',
+         'Read only access for origin based settingsmap resource.'
    )
 ,
    (
