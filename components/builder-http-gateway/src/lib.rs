@@ -17,6 +17,7 @@ extern crate regex;
 extern crate rioos_auth as auth;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_authorizer as authorize;
+extern crate rioos_entitlement as entitlement;
 extern crate rioos_builder_db as db;
 extern crate rioos_common as common;
 extern crate url;
