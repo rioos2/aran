@@ -2,8 +2,8 @@
 
 //! Contains core functionality for the Application's main server.
 
-use std::sync::Arc;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::sync::Arc;
 
 use std::path::PathBuf;
 
@@ -19,7 +19,7 @@ use error::Result;
 use common::ui::UI;
 
 lazy_static! {
-    static  ref ROCKSDB_DATA_PATH: PathBuf =  PathBuf::from(&*rioconfig_blockchain_path(None));
+    static ref ROCKSDB_DATA_PATH: PathBuf = PathBuf::from(&*rioconfig_blockchain_path(None));
 }
 
 /// The main server for the Builder-API application. This should be run on the main thread.
@@ -30,7 +30,9 @@ pub struct Server {
 impl Server {
     /// Create a new `Server`
     pub fn new(config: Config) -> Self {
-        Server { config: Arc::new(config) }
+        Server {
+            config: Arc::new(config),
+        }
     }
 
     /// Runs the main server and starts and manages all supporting threads. This function will
@@ -59,9 +61,7 @@ impl Server {
         options.create_if_missing(true);
 
         let node = Node::new(
-            Box::new(
-                RocksDB::open(ROCKSDB_DATA_PATH.as_path(), &options).unwrap(),
-            ),
+            Box::new(RocksDB::open(ROCKSDB_DATA_PATH.as_path(), &options).unwrap()),
             vec![Box::new(Habitat)],
             cfg,
         );

@@ -11,9 +11,9 @@ use std::result;
 use api_client;
 use common;
 use rioos_core;
-use toml;
-use serde_yaml;
 use serde_json;
+use serde_yaml;
+use toml;
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -45,19 +45,21 @@ impl fmt::Display for Error {
             Error::APIClient(ref err) => format!("{}", err),
             Error::ArgumentError(ref e) => format!("{}", e),
             Error::EnvJoinPathsError(ref err) => format!("{}", err),
-            Error::ExecCommandNotFound(ref c) => {
-                format!(
-                    "`{}' was not found on the filesystem or in PATH",
-                    c.display()
-                )
-            }
+            Error::ExecCommandNotFound(ref c) => format!(
+                "`{}' was not found on the filesystem or in PATH",
+                c.display()
+            ),
             Error::FileNotFound(ref e) => format!("File not found at: {}", e),
             Error::HabitatCommon(ref e) => format!("{}", e),
             Error::HabitatCore(ref e) => format!("{}", e),
             Error::IO(ref err) => format!("{}", err),
             Error::PathPrefixError(ref err) => format!("{}", err),
-            Error::RootRequired => "Root or administrator permissions required to complete operation".to_string(),
-            Error::SubcommandNotSupported(ref e) => format!("Subcommand `{}' not supported on this operating system", e),
+            Error::RootRequired => {
+                "Root or administrator permissions required to complete operation".to_string()
+            }
+            Error::SubcommandNotSupported(ref e) => {
+                format!("Subcommand `{}' not supported on this operating system", e)
+            }
             Error::UnsupportedExportFormat(ref e) => format!("Unsupported export format: {}", e),
             Error::TomlDeserializeError(ref e) => format!("Can't deserialize TOML: {}", e),
             Error::TomlSerializeError(ref e) => format!("Can't serialize TOML: {}", e),
@@ -81,7 +83,9 @@ impl error::Error for Error {
             Error::HabitatCore(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::PathPrefixError(ref err) => err.description(),
-            Error::RootRequired => "Root or administrator permissions required to complete operation",
+            Error::RootRequired => {
+                "Root or administrator permissions required to complete operation"
+            }
             Error::SubcommandNotSupported(_) => "Subcommand not supported on this operating system",
             Error::UnsupportedExportFormat(_) => "Unsupported export format",
             Error::TomlDeserializeError(_) => "Can't deserialize TOML",
@@ -110,7 +114,6 @@ impl From<rioos_core::Error> for Error {
         Error::HabitatCore(err)
     }
 }
-
 
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {

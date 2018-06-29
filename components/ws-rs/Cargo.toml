@@ -8,14 +8,14 @@ workspace = "../../"
 byteorder = "1.2.1"
 bytes = "0.4.6"
 httparse = "1.2.4"
-log = "0.4.1"
+log = "0.4.2"
 mio = "0.6.*"
 mio-extras = "2.0"
 rand = "0.4.2"
 sha1 = "0.6.0"
 slab = "0.3"
 url = "1.7.0"
-openssl = "0.9"
+openssl = "0.9.24"
 
 [dependencies.libc]
 optional = true
@@ -26,7 +26,7 @@ optional = true
 version = "1.0.18"
 
 [dev-dependencies]
-clap = "2.*"
+clap = "2.32.0"
 env_logger = "0.5.*"
 term = "0.5.1"
 time = "0.1.39"

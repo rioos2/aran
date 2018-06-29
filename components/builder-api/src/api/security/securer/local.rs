@@ -2,14 +2,14 @@
 //
 //! Securer variant which stores hidden gems in the local database.
 //!
-use error::Result;
 use db::data_store::DataStoreConn;
+use error::Result;
 use protocol::api::secret::Secret;
 
 use super::Securer;
+use protocol::api::base::IdGet;
 use service::secret_ds::SecretDS;
 use service::{SecretOutput, SecretOutputList};
-use protocol::api::base::IdGet;
 
 /// Wraps a `DataStoreConn` representing the root of a local vault security.
 pub struct LocalSecurer(Box<DataStoreConn>);

@@ -41,11 +41,11 @@ impl AttachGenerator {
 
         ampr.as_ref().map(|a2pl| {
             if Self::satisfied(ampr) || ServiceTallyer::tally_rule(&a2pl.2) {
-                actions.push(Self::build_loadbalancer(&a2pl.0, config));
+                actions.push(Self::build_loadbalancer(&a2pl.0, config.clone()));
             }
 
             if !ServiceTallyer::tally_rule(&a2pl.2) {
-                actions.push(Self::build_internal_dns(&a2pl.0, a2pl.clone().1.to_vec()));
+                actions.push(Self::build_internal_dns(&a2pl.0, config, a2pl.clone().1.to_vec()));
             }
         });
 
@@ -86,6 +86,7 @@ impl AttachGenerator {
     /// Returns a `ServiceAction` representing the service that the deployment tried to link
     fn build_internal_dns(
         factory: &AssemblyFactory,
+        config: ServicesConfig,
         assembly: Vec<(String, String)>,
     ) -> ServiceAttachAction {
         let mut s: Services = Services::new();
@@ -109,9 +110,11 @@ impl AttachGenerator {
             .into_iter()
             .map(|x| names.insert(x.0, x.1))
             .collect::<Vec<_>>();
-
         s.with_type_names(SERVICE_TYPE_EXTERNALNAME.to_string(), names.clone());
 
+        //Temporary Hack, this sticks the dns name server info
+        //For now, its a hack.
+        s.set_metadata(config.as_map_deployless());
         ServiceAttachAction::InternalDNS(s)
     }
 

@@ -1,13 +1,13 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
-use std::result;
 use influx_db_client;
+use std::result;
 
+use http_client;
 use std::error;
 use std::fmt;
 use std::io;
-use http_client;
 
 use serde_json;
 
@@ -23,17 +23,17 @@ pub enum Error {
     RioHttpClient(http_client::Error),
 }
 
-
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::IO(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
-            Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
+            Error::RequiredConfigField(ref e) => {
+                format!("Missing required field in configuration, {}", e)
+            }
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
             Error::InfluxError(ref e) => format!("{}", e),
             Error::RioHttpClient(ref e) => format!("{}", e),
-
         };
         write!(f, "{}", msg)
     }
@@ -48,7 +48,6 @@ impl error::Error for Error {
             Error::RequiredConfigField(_) => "Missing required field in configuration.",
             Error::InfluxError(_) => "InfluxError",
             Error::RioHttpClient(ref err) => err.description(),
-
         }
     }
 }

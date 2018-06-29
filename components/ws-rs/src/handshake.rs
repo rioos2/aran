@@ -1,12 +1,12 @@
 use std::fmt;
 use std::io::Write;
-use std::str::from_utf8;
 use std::net::SocketAddr;
+use std::str::from_utf8;
 
-use sha1;
-use rand;
-use url;
 use httparse;
+use rand;
+use sha1;
+use url;
 
 use result::{Error, Kind, Result};
 
@@ -656,10 +656,10 @@ impl fmt::Display for Response {
 
 mod test {
     #![allow(unused_imports, unused_variables, dead_code)]
+    use super::*;
     use std::io::Write;
     use std::net::SocketAddr;
     use std::str::FromStr;
-    use super::*;
 
     #[test]
     fn remote_addr() {
@@ -714,12 +714,12 @@ mod test {
         write!(
             &mut buf,
             "GET / HTTP/1.1\r\n\
-            Connection: Upgrade\r\n\
-            Upgrade: websocket\r\n\
-            Forwarded: by=192.168.1.1; for=192.0.2.43, for=\"[2001:db8:cafe::17]\", for=unknown\r\n\
-            Sec-WebSocket-Version: 13\r\n\
-            Sec-WebSocket-Key: q16eN37NCfVwUChPvBdk4g==\r\n\r\n")
-            .unwrap();
+             Connection: Upgrade\r\n\
+             Upgrade: websocket\r\n\
+             Forwarded: by=192.168.1.1; for=192.0.2.43, for=\"[2001:db8:cafe::17]\", for=unknown\r\n\
+             Sec-WebSocket-Version: 13\r\n\
+             Sec-WebSocket-Key: q16eN37NCfVwUChPvBdk4g==\r\n\r\n"
+        ).unwrap();
         let req = Request::parse(&buf).unwrap().unwrap();
         let res = Response::from_request(&req).unwrap();
         let shake = Handshake {

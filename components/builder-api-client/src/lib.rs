@@ -31,8 +31,9 @@ use rioos_http::ApiClient;
 use http_gateway::http::rendering::ResponseList;
 
 use protocol::api::base::{hours_ago, MetaFields};
-use protocol::api::{blueprint, deploy, devtool, job, network, node, origin, scale, secret,
-                    session, storage};
+use protocol::api::{
+    blueprint, deploy, devtool, job, network, node, origin, scale, secret, session, storage,
+};
 
 const DEFAULT_API_PATH: &'static str = "/api/v1";
 const USER_AGENT: &'static str = "Rio/OS Blu";

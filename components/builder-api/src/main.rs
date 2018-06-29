@@ -15,20 +15,23 @@ extern crate log;
 #[macro_use]
 extern crate lazy_static;
 
-use std::str::FromStr;
 use std::path::PathBuf;
+use std::str::FromStr;
 
-use rio_core::config::ConfigFile;
-use rio_core::env as renv;
-use rio_core::crypto::default_rioconfig_key_path;
-use rio_core::fs::rioconfig_config_path;
 use common::ui::{Coloring, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR, UI};
+use rio_core::config::ConfigFile;
+use rio_core::crypto::default_rioconfig_key_path;
+use rio_core::env as renv;
+use rio_core::fs::rioconfig_config_path;
 
 use api::Config;
 use api::{command, Error, Result};
 
 lazy_static! {
-    static ref CFG_DEFAULT_FILE: PathBuf = PathBuf::from(&*rioconfig_config_path(None).join("api.toml").to_str().unwrap());
+    static ref CFG_DEFAULT_FILE: PathBuf = PathBuf::from(&*rioconfig_config_path(None)
+        .join("api.toml")
+        .to_str()
+        .unwrap());
 }
 
 fn main() {
@@ -63,7 +66,7 @@ fn app<'a, 'b>() -> clap::App<'a, 'b> {
         )
 
         (@subcommand sync =>
-            (about: "Sync Rio.Marketplaces with api server")
+            (about: "Sync Rio.AppStores with api server")
             (@arg config: -c --config +takes_value
                 "Filepath to configuration file. [default: /var/lib/rioos/config/api.toml]")
         )
@@ -151,7 +154,7 @@ fn load_config(args: &clap::ArgMatches) -> Result<Config> {
     let config = match args.value_of("config") {
         Some(cfg_path) => try!(Config::from_file(cfg_path)),
         None => {
-            let mut default_config = Config::default();          
+            let mut default_config = Config::default();
             Config::from_file(CFG_DEFAULT_FILE.to_str().unwrap()).unwrap_or(default_config)
         }
     };

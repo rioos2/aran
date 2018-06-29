@@ -1,9 +1,7 @@
-
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum Backend {
     LicenseCloud,
 }
-
 
 ///// Configuration structure for validating license
 
@@ -15,7 +13,6 @@ pub struct LicensesCfg {
     /// The activation license code bought by the customer (or) we will assume we are on trial mode.
     pub activation_code: Option<String>,
     pub backend: Backend,
-
 }
 
 impl Default for LicensesCfg {

@@ -1,5 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{TypeMeta, ObjectMeta, MetaFields, Status};
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Volumes {
@@ -16,10 +16,9 @@ pub struct Volumes {
     status: Status,
     #[serde(default)]
     source: VolumeSource, // The contents of the target SettingMap's Data field will be presented in a
-// volume as files using the keys in the Data field as the file names, unless
-// the items element is populated with specific mappings of keys to paths.
-// SettingMap volumes support ownership management and SELinux relabeling.
-
+    // volume as files using the keys in the Data field as the file names, unless
+    // the items element is populated with specific mappings of keys to paths.
+    // SettingMap volumes support ownership management and SELinux relabeling.
     #[serde(default)]
     created_at: String,
 }
@@ -113,16 +112,16 @@ pub struct VolumeSource {
     #[serde(default)]
     rbd: Rbd, // RBD represents a Rados Block Device mount on the host that shares a assembly's lifetime.
     #[serde(default)]
-    host_path: HostPath,// HostPath represents a pre-existing file or directory on the host
-	// machine that is directly exposed to the container. This is generally
-	// used for system agents or other privileged things that are allowed
-	// to see the host machine. Most containers will NOT need this.
-    }
+    host_path: HostPath, // HostPath represents a pre-existing file or directory on the host
+                         // machine that is directly exposed to the container. This is generally
+                         // used for system agents or other privileged things that are allowed
+                         // to see the host machine. Most containers will NOT need this.
+}
 
-    // The contents of the target SettingMap's Data field will be presented in a
-    // volume as files using the keys in the Data field as the file names, unless
-    // the items element is populated with specific mappings of keys to paths.
-    // SettingMap volumes support ownership management and SELinux relabeling.
+// The contents of the target SettingMap's Data field will be presented in a
+// volume as files using the keys in the Data field as the file names, unless
+// the items element is populated with specific mappings of keys to paths.
+// SettingMap volumes support ownership management and SELinux relabeling.
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SettingMap {
@@ -135,7 +134,6 @@ pub struct SettingMap {
     default_mode: i32, //mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644
     #[serde(default)]
     optional: bool, //Specify whether the SettingMap or it's keys must be defined
-
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NFS {
@@ -144,9 +142,9 @@ pub struct NFS {
     #[serde(default)]
     path: String, // Path that is exported by the NFS server.
     #[serde(default)]
-    readonly: bool // ReadOnly here will force
-	// the NFS export to be mounted with read-only permissions.
-	// Defaults to false.
+    readonly: bool, // ReadOnly here will force
+                    // the NFS export to be mounted with read-only permissions.
+                    // Defaults to false.
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -156,7 +154,7 @@ pub struct OpenIO {
     #[serde(default)]
     key: String,
     #[serde(default)]
-    user: String
+    user: String,
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -199,14 +197,13 @@ pub struct Rbd {
     #[serde(default)]
     readonly: bool, // ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false.
     secret_ref: ObjectReference, // SecretRef is name of the authentication secret for RBDUser. If provided overrides keyring. Default is nil.
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectReference {
     // Name of the referent.
-	// More info: https://rioos.sh/docs/concepts/overview/working-with-objects/names/#names
-	// TODO: Add other useful fields. api_version, kind, uid?
+    // More info: https://rioos.sh/docs/concepts/overview/working-with-objects/names/#names
+    // TODO: Add other useful fields. api_version, kind, uid?
     name: String,
 }
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -214,28 +211,27 @@ pub struct HostPath {
     path: String, // Path of the directory on the host.
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Items {
-#[serde(default)]
+    #[serde(default)]
     key: String, // The key to project.
     // The relative path of the file to map the key to.
-	// May not be an absolute path.
-	// May not contain the path element '..'.
-	// May not start with the string '..'.
-#[serde(default)]
+    // May not be an absolute path.
+    // May not contain the path element '..'.
+    // May not start with the string '..'.
+    #[serde(default)]
     path: String,
     //mode bits to use on this file, must be a value between 0
-	// and 0777. If not specified, the volume defaultMode will be used.
-	// This might be in conflict with other options that affect the file
-	// mode, like fsGroup, and the result can be other mode bits set.
-#[serde(default)]
+    // and 0777. If not specified, the volume defaultMode will be used.
+    // This might be in conflict with other options that affect the file
+    // mode, like fsGroup, and the result can be other mode bits set.
+    #[serde(default)]
     mode: i32,
 }
 
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode};
+    use serde_json::from_str as json_decode;
 
     use super::*;
 

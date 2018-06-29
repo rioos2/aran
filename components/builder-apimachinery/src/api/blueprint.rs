@@ -52,7 +52,7 @@ pub struct PlanProperties {
     #[serde(default)]
     lifecycle: LifeCycle,
     #[serde(default)]
-    status: Status, //`status` : <<old status definition>> Indicates if the plan can be used are not. Default no status is available. Will be turned on when the rio.marketplace syncer gets active.
+    status: Status, //`status` : <<old status definition>> Indicates if the plan can be used are not. Default no status is available. Will be turned on when the rio.appstores syncer gets active.
 }
 
 impl MetaFields for Plan {

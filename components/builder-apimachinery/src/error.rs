@@ -19,7 +19,9 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Json(ref e) => format!("{}", e),
-            Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
+            Error::RequiredConfigField(ref e) => {
+                format!("Missing required field in configuration, {}", e)
+            }
         };
         write!(f, "{}", msg)
     }

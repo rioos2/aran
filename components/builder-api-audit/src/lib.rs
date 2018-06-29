@@ -26,9 +26,9 @@ extern crate serde_json;
 
 extern crate toml;
 
-pub mod server;
 pub mod config;
 pub mod error;
+pub mod server;
 #[macro_use]
 pub mod api;
 

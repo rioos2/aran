@@ -2,12 +2,12 @@
 //
 
 use std::error;
-use std::io;
 use std::fmt;
+use std::io;
 use std::result;
 
-use rio_core;
 use reqwest;
+use rio_core;
 use serde_json;
 use url;
 

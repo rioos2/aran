@@ -15,8 +15,7 @@ pub trait Flag: fmt::Debug + Copy + Clone + Sized {
 
 /// A helper struct that can be used by all frames that do not define any flags.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum NoFlag {
-}
+pub enum NoFlag {}
 
 impl Flag for NoFlag {
     fn bitmask(&self) -> u8 {

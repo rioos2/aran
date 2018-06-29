@@ -22,14 +22,17 @@ use rio_core::config::ConfigFile;
 use rio_core::env as renv;
 use rio_core::fs::rioconfig_config_path;
 
-use common::ui::{Coloring, UI, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR};
+use common::ui::{Coloring, NOCOLORING_ENVVAR, NONINTERACTIVE_ENVVAR, UI};
 
 use blockchain::{server, Config, NodeInternalConfig, Result};
 
 const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
 
 lazy_static! {
-    static  ref CFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("blockchain.toml").to_str().unwrap());
+    static ref CFG_DEFAULT_FILE: PathBuf = PathBuf::from(&*rioconfig_config_path(None)
+        .join("blockchain.toml")
+        .to_str()
+        .unwrap());
 }
 
 fn main() {
@@ -95,7 +98,9 @@ fn sub_start_server(ui: &mut UI, matches: &clap::ArgMatches) -> Result<()> {
 ///                    load the built in defaults.
 fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
     Ok(match args.value_of("config") {
-        Some(cfg_path) => try!(NodeInternalConfig::from_file(cfg_path).and_then(|n| Ok(Config { node: n }))),
+        Some(cfg_path) => {
+            try!(NodeInternalConfig::from_file(cfg_path).and_then(|n| Ok(Config { node: n })))
+        }
         None => {
             let mut default_config = Config::default();
 

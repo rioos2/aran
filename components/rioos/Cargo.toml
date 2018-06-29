@@ -11,16 +11,16 @@ name = "rioos"
 doc = false
 
 [dependencies]
-base64 = "*"
+base64 = "0.9.2"
 clippy = {version = "*", optional = true}
-env_logger = "0.5.9"
-log = "0.4.1"
-lazy_static = "*"
-libc = "*"
-serde = "1.0.43"
-serde_derive = "*"
-serde_yaml = "0.7.3"
-serde_json = "1.0.16"
+env_logger = "0.5.10"
+log = "0.4.2"
+lazy_static = "1.0.1"
+libc = "0.2.42"
+serde = "1.0.66"
+serde_derive = "1.0.67"
+serde_yaml = "0.7.5"
+serde_json = "1.0.22"
 toml = { version = "*", default-features = false }
 url = "1.7.0"
 prettytable-rs = "*"
@@ -28,7 +28,7 @@ human-size = "0.2.0"
 rioos_builder_apimachinery = { path = "../builder-apimachinery" }
 
 [dependencies.clap]
-version = "*"
+version = "2.32.0"
 features = [ "suggestions", "color", "unstable" ]
 
 [dependencies.rioos_core]

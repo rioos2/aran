@@ -18,7 +18,7 @@ use protocol::api::schema::type_meta;
 use protocol::api::settings_map::SettingsMap;
 use router::Router;
 use serde_json;
-use service::settings_map_ds::SettingsMapDS;
+use service::models::settings_map;
 use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
@@ -62,7 +62,7 @@ impl SettingsMapApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match SettingsMapDS::create(&self.conn, &unmarshall_body) {
+        match settings_map::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(settings)) => Ok(render_json(status::Ok, &settings)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -87,7 +87,7 @@ impl SettingsMapApi {
         let mut params = IdGet::with_id(name.clone().to_string());
         params.set_name(org.clone().to_string());
 
-        match SettingsMapDS::show(&self.conn, &params) {
+        match settings_map::DataStore::new(&self.conn).show(&params) {
             Ok(Some(settings)) => Ok(render_json(status::Ok, &settings)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -103,7 +103,7 @@ impl SettingsMapApi {
     //Returns an secrets
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match SettingsMapDS::show_by_id(&self.conn, &idget) {
+        let res = match settings_map::DataStore::new(&self.conn).show_by_id(&idget) {
             Ok(Some(settings)) => {
                 let data = json!({
                             "type": typ,

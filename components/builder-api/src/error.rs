@@ -20,6 +20,8 @@ use reqwest;
 use rio_core;
 use serde_yaml;
 use service;
+use postgres;
+
 
 const MISSING_PARAMETER: &'static str = "Missing parameters: ";
 const MISSING_BODY: &'static str = "Missing body, empty: ";
@@ -76,6 +78,8 @@ pub enum Error {
     Json(serde_json::Error),
     Utf8Error(Utf8Error),
     Yaml(serde_yaml::Error),
+    Postgres(postgres::error::Error),
+    RioConfig(service::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -105,9 +109,11 @@ impl fmt::Display for Error {
                 "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"
             ),
             Error::SyncNotDone => format!(
-                "Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start"
+                "Rio.AppStore sync not done. Run `rioos-apiserver sync` before attempting start"
             ),
             Error::Yaml(ref e) => format!("{}", e),
+            Error::Postgres(ref e) => format!("{}",e),
+            Error::RioConfig(ref e) => format!("{}",e),
         };
         write!(f, "{}", msg)
     }
@@ -138,10 +144,12 @@ impl error::Error for Error {
                 "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"
             }
             Error::SyncNotDone => {
-                "Rio.Marketplace sync not done. Run `rioos-apiserver sync` before attempting start"
+                "Rio.AppStore sync not done. Run `rioos-apiserver sync` before attempting start"
             }
 
             Error::Yaml(ref err) => err.description(),
+            Error::Postgres(ref err) => err.description(),
+            Error::RioConfig(ref err) => err.description(),
         }
     }
 }
@@ -203,5 +211,17 @@ impl From<Utf8Error> for Error {
 impl From<serde_yaml::Error> for Error {
     fn from(err: serde_yaml::Error) -> Error {
         Error::Yaml(err)
+    }
+}
+
+impl From<postgres::error::Error> for Error {
+    fn from(err: postgres::error::Error) -> Self {
+        Error::Postgres(err)
+    }
+}
+
+impl From<service::Error> for Error {
+    fn from(err: service::Error) -> Self {
+        Error::RioConfig(err)
     }
 }

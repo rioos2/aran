@@ -1,5 +1,5 @@
-pub mod email_sender;
 pub mod email_generator;
+pub mod email_sender;
 
 const DIGITALCLOUDRUNNING: &'static str = "DigitalCloudRunning";
 const CONTAINERRUNNING: &'static str = "ContainerRunning";

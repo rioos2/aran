@@ -1,5 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use std::collections::BTreeMap;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -79,7 +79,7 @@ impl MetaFields for Team {
 
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode};
+    use serde_json::from_str as json_decode;
 
     use super::*;
 

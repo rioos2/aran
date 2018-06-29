@@ -1,49 +1,49 @@
-use std::collections::HashMap;
 use std::cmp;
+use std::collections::HashMap;
 
 use futures::future;
+use futures::future::loop_fn;
 use futures::future::Future;
 use futures::future::Loop;
-use futures::future::loop_fn;
 use futures::sync::mpsc::UnboundedSender;
 
 use tokio_core::reactor;
 
+use tokio_io::io as tokio_io;
 use tokio_io::io::ReadHalf;
 use tokio_io::io::WriteHalf;
 use tokio_io::AsyncRead;
 use tokio_io::AsyncWrite;
-use tokio_io::io as tokio_io;
 
-use exec::Executor;
 use exec::CpuPoolOption;
+use exec::Executor;
 
 use error;
 use error::ErrorCode;
 use result;
 
-use solicit::frame::*;
-use solicit::header::*;
-use solicit::frame::continuation::*;
-use solicit::StreamId;
-use solicit::DEFAULT_SETTINGS;
 use solicit::connection::EndStream;
 use solicit::connection::HttpConnection;
 use solicit::connection::HttpFrame;
+use solicit::frame::continuation::*;
 use solicit::frame::settings::HttpSettings;
+use solicit::frame::*;
+use solicit::header::*;
+use solicit::StreamId;
+use solicit::DEFAULT_SETTINGS;
 
-use solicit_misc::*;
 use solicit_async::*;
+use solicit_misc::*;
 
-use super::stream::*;
-use super::stream_map::*;
-use super::types::*;
 use super::conf::*;
 use super::pump_stream_to_write_loop::PumpStreamToWriteLoop;
+use super::stream::*;
 use super::stream_from_network::StreamFromNetwork;
-use super::stream_queue_sync::StreamQueueSyncReceiver;
-use super::window_size;
+use super::stream_map::*;
 use super::stream_queue_sync::stream_queue_sync;
+use super::stream_queue_sync::StreamQueueSyncReceiver;
+use super::types::*;
+use super::window_size;
 
 use stream_part::*;
 
@@ -124,7 +124,14 @@ where
     Self: ConnInner<Types = T>,
     HttpStreamCommon<T>: HttpStream,
 {
-    pub fn new(loop_handle: reactor::Handle, exec: CpuPoolOption, specific: T::ConnDataSpecific, _conf: CommonConf, sent_settings: HttpSettings, to_write_tx: UnboundedSender<T::ToWriteMessage>) -> ConnData<T> {
+    pub fn new(
+        loop_handle: reactor::Handle,
+        exec: CpuPoolOption,
+        specific: T::ConnDataSpecific,
+        _conf: CommonConf,
+        sent_settings: HttpSettings,
+        to_write_tx: UnboundedSender<T::ToWriteMessage>,
+    ) -> ConnData<T> {
         let mut conn = HttpConnection::new();
         conn.our_settings_sent = Some(sent_settings);
 
@@ -187,7 +194,12 @@ where
         (stream, stream_from_network, out_window_receiver)
     }
 
-    fn new_stream_from_network(&self, rx: StreamQueueSyncReceiver, stream_id: StreamId, in_window_size: u32) -> StreamFromNetwork<T> {
+    fn new_stream_from_network(
+        &self,
+        rx: StreamQueueSyncReceiver,
+        stream_id: StreamId,
+        in_window_size: u32,
+    ) -> StreamFromNetwork<T> {
         StreamFromNetwork {
             rx: rx,
             stream_id: stream_id,
@@ -219,7 +231,12 @@ where
         r
     }
 
-    fn write_part(&mut self, target: &mut FrameBuilder, stream_id: StreamId, part: HttpStreamCommand) {
+    fn write_part(
+        &mut self,
+        target: &mut FrameBuilder,
+        stream_id: StreamId,
+        part: HttpStreamCommand,
+    ) {
         let max_frame_size = self.conn.peer_settings.max_frame_size as usize;
 
         match part {
@@ -333,7 +350,11 @@ where
         }
     }
 
-    fn process_headers_frame(&mut self, self_rc: RcMut<Self>, frame: HeadersFrame) -> result::Result<Option<HttpStreamRef<T>>> {
+    fn process_headers_frame(
+        &mut self,
+        self_rc: RcMut<Self>,
+        frame: HeadersFrame,
+    ) -> result::Result<Option<HttpStreamRef<T>>> {
         let headers = self.conn
             .decoder
             .decode(&frame.header_fragment())
@@ -349,7 +370,10 @@ where
         self.process_headers(self_rc, frame.stream_id, end_stream, headers)
     }
 
-    fn process_priority_frame(&mut self, frame: PriorityFrame) -> result::Result<Option<HttpStreamRef<T>>> {
+    fn process_priority_frame(
+        &mut self,
+        frame: PriorityFrame,
+    ) -> result::Result<Option<HttpStreamRef<T>>> {
         Ok(self.streams.get_mut(frame.get_stream_id()))
     }
 
@@ -415,7 +439,10 @@ where
         }
     }
 
-    fn process_stream_window_update_frame(&mut self, frame: WindowUpdateFrame) -> result::Result<Option<HttpStreamRef<T>>> {
+    fn process_stream_window_update_frame(
+        &mut self,
+        frame: WindowUpdateFrame,
+    ) -> result::Result<Option<HttpStreamRef<T>>> {
         self.out_window_increased(Some(frame.stream_id))?;
 
         match self.streams.get_mut(frame.stream_id) {
@@ -475,7 +502,10 @@ where
         self.out_window_increased(None)
     }
 
-    fn process_rst_stream_frame(&mut self, frame: RstStreamFrame) -> result::Result<Option<HttpStreamRef<T>>> {
+    fn process_rst_stream_frame(
+        &mut self,
+        frame: RstStreamFrame,
+    ) -> result::Result<Option<HttpStreamRef<T>>> {
         if let Some(stream) = self.streams.get_mut(frame.get_stream_id()) {
             stream.rst_remove(frame.error_code());
         } else {
@@ -485,12 +515,19 @@ where
         Ok(None)
     }
 
-    pub fn send_rst_stream(&mut self, stream_id: StreamId, error_code: ErrorCode) -> result::Result<()> {
+    pub fn send_rst_stream(
+        &mut self,
+        stream_id: StreamId,
+        error_code: ErrorCode,
+    ) -> result::Result<()> {
         let rst_stream = RstStreamFrame::new(stream_id, error_code);
         self.send_directly_to_network(DirectlyToNetworkFrame::RstStream(rst_stream))
     }
 
-    pub fn get_stream_or_send_stream_closed(&mut self, stream_id: StreamId) -> result::Result<Option<HttpStreamRef<T>>> {
+    pub fn get_stream_or_send_stream_closed(
+        &mut self,
+        stream_id: StreamId,
+    ) -> result::Result<Option<HttpStreamRef<T>>> {
         // Another day in endless bitter war against borrow checker
         if self.streams.get_mut(stream_id).is_some() {
             return Ok(Some(self.streams.get_mut(stream_id).unwrap()));
@@ -579,7 +616,8 @@ where
 
         self.goaway_received = Some(frame);
 
-        for (stream_id, mut stream) in self.streams.remove_local_streams_with_id_gt(last_stream_id) {
+        for (stream_id, mut stream) in self.streams.remove_local_streams_with_id_gt(last_stream_id)
+        {
             debug!("removed stream {} because of GOAWAY", stream_id);
             stream.goaway_recvd(raw_error_code);
         }
@@ -596,7 +634,11 @@ where
         }
     }
 
-    fn process_stream_frame(&mut self, self_rc: RcMut<Self>, frame: HttpFrameStream) -> result::Result<()> {
+    fn process_stream_frame(
+        &mut self,
+        self_rc: RcMut<Self>,
+        frame: HttpFrameStream,
+    ) -> result::Result<()> {
         let stream_id = frame.get_stream_id();
         let end_of_stream = frame.is_end_of_stream();
 
@@ -617,8 +659,12 @@ where
             HttpFrameStream::Priority(priority) => self.process_priority_frame(priority)?,
             HttpFrameStream::RstStream(rst) => self.process_rst_stream_frame(rst)?,
             HttpFrameStream::PushPromise(_f) => unimplemented!(),
-            HttpFrameStream::WindowUpdate(window_update) => self.process_stream_window_update_frame(window_update)?,
-            HttpFrameStream::Continuation(_continuation) => unreachable!("must be joined with HEADERS before that"),
+            HttpFrameStream::WindowUpdate(window_update) => {
+                self.process_stream_window_update_frame(window_update)?
+            }
+            HttpFrameStream::Continuation(_continuation) => {
+                unreachable!("must be joined with HEADERS before that")
+            }
         };
 
         if let Some(mut stream) = stream {
@@ -677,7 +723,12 @@ where
         goaway && no_streams
     }
 
-    pub fn new_pump_stream_to_write_loop(&self, stream_id: StreamId, stream: HttpPartStream, out_window: window_size::StreamOutWindowReceiver) -> PumpStreamToWriteLoop<T> {
+    pub fn new_pump_stream_to_write_loop(
+        &self,
+        stream_id: StreamId,
+        stream: HttpPartStream,
+        out_window: window_size::StreamOutWindowReceiver,
+    ) -> PumpStreamToWriteLoop<T> {
         let stream = stream.catch_unwind();
         PumpStreamToWriteLoop {
             to_write_tx: self.to_write_tx.clone(),
@@ -687,11 +738,17 @@ where
         }
     }
 
-    pub fn pump_stream_to_write_loop(&self, stream_id: StreamId, stream: HttpPartStream, out_window: window_size::StreamOutWindowReceiver) {
+    pub fn pump_stream_to_write_loop(
+        &self,
+        stream_id: StreamId,
+        stream: HttpPartStream,
+        out_window: window_size::StreamOutWindowReceiver,
+    ) {
         let stream = stream.catch_unwind();
-        self.exec.execute(Box::new(
-            self.new_pump_stream_to_write_loop(stream_id, stream, out_window),
-        ));
+        self.exec
+            .execute(Box::new(self.new_pump_stream_to_write_loop(
+                stream_id, stream, out_window,
+            )));
     }
 
     fn increase_in_window(&mut self, stream_id: StreamId, increase: u32) -> result::Result<()> {
@@ -713,7 +770,13 @@ where
 pub trait ConnInner: Sized + 'static {
     type Types: Types;
 
-    fn process_headers(&mut self, self_rc: RcMut<Self>, stream_id: StreamId, end_stream: EndStream, headers: Headers) -> result::Result<Option<HttpStreamRef<Self::Types>>>;
+    fn process_headers(
+        &mut self,
+        self_rc: RcMut<Self>,
+        stream_id: StreamId,
+        end_stream: EndStream,
+        headers: Headers,
+    ) -> result::Result<Option<HttpStreamRef<Self::Types>>>;
 
     fn goaway_received(&mut self, stream_id: StreamId, raw_error_code: u32);
 }
@@ -894,11 +957,19 @@ where
     pub fn process_common(self, common: CommonToWriteMessage) -> HttpFuture<Self> {
         match common {
             CommonToWriteMessage::TryFlushStream(None) => self.send_outg_conn(),
-            CommonToWriteMessage::TryFlushStream(Some(stream_id)) => self.send_outg_stream(stream_id),
+            CommonToWriteMessage::TryFlushStream(Some(stream_id)) => {
+                self.send_outg_stream(stream_id)
+            }
             CommonToWriteMessage::Frame(frame) => self.write_frame(frame.into_http_frame()),
-            CommonToWriteMessage::StreamEnd(stream_id, error_code) => self.process_stream_end(stream_id, error_code),
-            CommonToWriteMessage::StreamEnqueue(stream_id, part) => self.process_stream_enqueue(stream_id, part),
-            CommonToWriteMessage::IncreaseInWindow(stream_id, increase) => self.increase_in_window(stream_id, increase),
+            CommonToWriteMessage::StreamEnd(stream_id, error_code) => {
+                self.process_stream_end(stream_id, error_code)
+            }
+            CommonToWriteMessage::StreamEnqueue(stream_id, part) => {
+                self.process_stream_enqueue(stream_id, part)
+            }
+            CommonToWriteMessage::IncreaseInWindow(stream_id, increase) => {
+                self.increase_in_window(stream_id, increase)
+            }
         }
     }
 }

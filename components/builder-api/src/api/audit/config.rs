@@ -4,10 +4,10 @@ use std::env;
 pub const DEFAULT_BLOCK_CHAIN_URL: &'static str = "http://localhost:7000";
 /// Default Influx Host url to access the log of virtual machine and container
 pub const DEFAULT_LOGS_URL: &'static str = "http://localhost:8086";
-/// host url  to get the rio marketplace
-pub const DEFAULT_RIO_MARKETPLACES_URL: &'static str = "https://localhost:6443/api/v1";
-/// a default username for marketplace
-pub const DEV_RIO_COMPANY: &'static str = "dev@rio.companyadmin";
+/// host url  to get the rio appstore
+pub const DEFAULT_RIO_APPSTORE_URL: &'static str = "https://localhost:6443/api/v1";
+/// a default username for rio appstore
+pub const DEV_RIO_COMPANY: &'static str = "dev@rio.company";
 /// a default token for the marketplace
 pub const TOKEN: &'static str = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R";
 
@@ -18,8 +18,6 @@ const PASSWORD: &'static str = "b311ed99d8d544b10ca001bd5fdbcbe1";
 const SENDER: &'static str = "info@rio.company";
 
 const DOMAIN: &'static str = "smtp.mailgun.org:587";
-
-
 
 ///// Configuration for Audits (blockchain)
 
@@ -55,11 +53,11 @@ pub trait Blockchain {
     fn cache_dir(&self) -> &str;
 }
 
-///// Configuration for rio marketplace
+///// Configuration for rio appstore
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
-pub struct MarketplacesCfg {
+pub struct AppStoresCfg {
     pub endpoint: String,
     pub sync_on_startup: bool,
     pub username: String,
@@ -67,10 +65,10 @@ pub struct MarketplacesCfg {
     pub cache_dir: String,
 }
 
-impl Default for MarketplacesCfg {
+impl Default for AppStoresCfg {
     fn default() -> Self {
-        MarketplacesCfg {
-            endpoint: DEFAULT_RIO_MARKETPLACES_URL.to_string(),
+        AppStoresCfg {
+            endpoint: DEFAULT_RIO_APPSTORE_URL.to_string(),
             sync_on_startup: false,
             username: DEV_RIO_COMPANY.to_string(),
             token: TOKEN.to_string(),
@@ -79,7 +77,7 @@ impl Default for MarketplacesCfg {
     }
 }
 
-pub trait Marketplaces {
+pub trait AppStores {
     fn endpoint(&self) -> &str;
     fn sync_on_startup(&self) -> bool;
     fn username(&self) -> &str;
@@ -134,7 +132,6 @@ pub trait Mailer {
     fn domain(&self) -> &str;
     fn sender(&self) -> &str;
 }
-
 
 #[allow(unused_variables)]
 impl MailerCfg {

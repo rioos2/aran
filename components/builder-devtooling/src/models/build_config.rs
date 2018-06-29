@@ -2,16 +2,16 @@
 
 //! The PostgreSQL backend for the Build config
 use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::devtool::BuildConfig;
-use protocol::api::base::{MetaFields, StatusUpdate};
+use error::{Error, Result};
 use protocol::api::base::IdGet;
+use protocol::api::base::{MetaFields, StatusUpdate};
+use protocol::api::devtool::BuildConfig;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
-use super::super::{BuildConfigOutputList, BuildConfigOutput};
+use super::super::{BuildConfigOutput, BuildConfigOutputList};
 
 pub struct DataStore;
 
@@ -96,7 +96,6 @@ impl DataStore {
                 &(serde_json::to_value(build_update.object_meta()).unwrap()),
             ],
         ).map_err(Error::BuildConfigUpdate)?;
-
 
         if rows.len() > 0 {
             let bc = row_to_build_config(&rows.get(0))?;

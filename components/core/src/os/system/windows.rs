@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use os::system::Uname;
 use error::Result;
+use os::system::Uname;
 
 pub fn uname() -> Result<Uname> {
     Ok(Uname {

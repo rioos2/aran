@@ -13,8 +13,8 @@ pub mod runtime;
 pub mod streamer;
 pub mod websocket;
 
-use std::sync::Arc;
 use error::Result;
+use std::sync::Arc;
 
 use config::Config;
 use watch::config::Streamer;
@@ -53,19 +53,21 @@ impl Node {
         let api_sender = rg.channel();
 
         ui.end("✓ Runtime Guard");
-      
+
         ui.begin("→ Api Srver");
         &rg.start()?;
 
         api_wirer::ApiSrv::new(self.config.clone()).start(api_sender)?;
         ui.end("✓ Api Srver");
-        
+
         ui.begin("→ Streamer");
-        streamer::Streamer::new(self.config.http2.port, self.config.clone()).start((*self.config).http2_tls_pair())?;
+        streamer::Streamer::new(self.config.http2.port, self.config.clone())
+            .start((*self.config).http2_tls_pair())?;
         ui.end("✓ Streamer");
 
         ui.begin("→ UIStreamer");
-        websocket::Websocket::new(self.config.http2.websocket, self.config.clone()).start((*self.config).http2_tls_pair())?;
+        websocket::Websocket::new(self.config.http2.websocket, self.config.clone())
+            .start((*self.config).http2_tls_pair())?;
         ui.end("✓ UIStreamer");
 
         Ok(())

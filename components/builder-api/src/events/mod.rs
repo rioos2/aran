@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
+pub mod error;
 #[cfg(any(test, feature = "long_benchmarks"))]
 pub mod tests;
-pub mod error;
 
-use futures::{Future, Async, Poll, Stream};
 use futures::sync::mpsc;
+use futures::{Async, Future, Poll, Stream};
 use node::runtime::ExternalMessage;
 
 /// This kind of events is used to schedule execution in next event-loop ticks

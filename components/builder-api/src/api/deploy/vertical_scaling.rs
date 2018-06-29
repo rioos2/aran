@@ -6,6 +6,7 @@ use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
 use bytes::Bytes;
+use clusters::models::ninja::Nodes;
 use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
@@ -19,7 +20,6 @@ use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;
-use nodesrv::node_ds::NodeDS;
 use protocol::api::base::{IdGet, MetaFields};
 use protocol::api::scale::{VerticalScaling, VerticalScalingStatusUpdate};
 use protocol::api::schema::{dispatch, type_meta};
@@ -173,7 +173,7 @@ impl VerticalScalingApi {
                     .collect::<Vec<_>>();
                 match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&af_id[0]) {
                     Ok(Some(assemblys)) => {
-                        let metrics = NodeDS::healthz_all(&self.prom)?;
+                        let metrics = Nodes::healthz_all(&self.prom)?;
                         match ReplicasExpander::new(&self.conn, assemblys, metrics, &vs).expand() {
                             Ok(Some(job)) => Ok(render_json(status::Ok, &job)),
                             Err(err) => Err(internal_error(&format!("{}\n", err))),

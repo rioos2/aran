@@ -3,8 +3,8 @@
 pub mod base;
 pub mod prelude;
 
-use std::net::IpAddr;
 use num_cpus;
+use std::net::IpAddr;
 
 use self::prelude::TLSPair;
 

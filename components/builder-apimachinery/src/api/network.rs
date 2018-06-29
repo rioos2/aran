@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
 use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Network {

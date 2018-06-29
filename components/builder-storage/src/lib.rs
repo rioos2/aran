@@ -8,8 +8,8 @@ extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
 extern crate serde_json;
 
-pub mod storage_ds;
 pub mod error;
+pub mod storage_ds;
 
 pub use self::error::{Error, Result};
 

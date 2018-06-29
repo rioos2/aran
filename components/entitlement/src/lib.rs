@@ -7,9 +7,9 @@ extern crate serde;
 extern crate serde_derive;
 #[macro_use]
 extern crate log;
+extern crate handlebars;
 extern crate libloading as lib_load;
 extern crate rioos_core as rio_core;
-extern crate handlebars;
 #[macro_use]
 extern crate serde_json;
 extern crate rand;
@@ -17,8 +17,8 @@ extern crate rioos_http_client as http_client;
 
 pub use self::error::{Error, Result};
 
+pub mod config;
 pub mod error;
+pub mod licensecloud;
 pub mod licensor;
 pub mod nalperion;
-pub mod licensecloud;
-pub mod config;

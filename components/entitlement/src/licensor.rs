@@ -3,20 +3,19 @@
 
 //! A module containing the middleware of the HTTP server
 
-use error::{Result, Error};
-use nalperion::Nalperion;
-use licensecloud::LicenseCloud;
 use config;
-use config::{LicensesCfg, Backend};
+use config::Backend;
+use error::{Error, Result};
+use licensecloud::LicenseCloud;
+use nalperion::Nalperion;
 
 const ALLOWED_EXPIRY: u32 = 5;
-
 
 pub trait LicenseClient: Send {
     // Returns the status of license verified with configured license tool
     // If there is a chance for starting a trial, then it does.
     // If there is the activation code then it used that to verify.
-    fn verify(&self) -> Result<()>;    
+    fn verify(&self) -> Result<()>;
 
     fn hard_stop(&mut self) -> Result<String>;
 }
@@ -28,7 +27,6 @@ pub struct Client {
     pub licensecloud: LicenseCloud,
     expiry_counter: u32,
 }
-
 
 impl Client {
     pub fn new<T: config::License>(config: &T) -> Self {
@@ -46,7 +44,7 @@ impl Client {
     pub fn create_trial_or_verify(&self) -> Result<()> {
         let res = match self.backend {
             Backend::LicenseCloud => self.licensecloud.verify(),
-        };        
+        };
         res
     }
 

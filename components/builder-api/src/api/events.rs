@@ -86,7 +86,11 @@ pub struct EventLogger {
 #[allow(unused_must_use)]
 impl EventLogger {
     pub fn new<T: Into<PathBuf>>(channel: ApiSender, log_dir: T, enabled: bool) -> Self {
-        EventLogger { channel: channel, log_dir: log_dir.into(), enabled: enabled }
+        EventLogger {
+            channel: channel,
+            log_dir: log_dir.into(),
+            enabled: enabled,
+        }
     }
 
     pub fn record_event(&self, event: AuditEvent, accessed_by: AccessedBy) {
@@ -115,7 +119,8 @@ mod test {
     #[test]
     fn event_logger_path() {
         let api_sender = ApiSender::new(mpsc::channel(10).0);
-        let event_logger: EventLogger = EventLogger::new(api_sender, "/var/lib/rioos/foo/var", true);
+        let event_logger: EventLogger =
+            EventLogger::new(api_sender, "/var/lib/rioos/foo/var", true);
         let expected = r#"foo"#;
         match event_logger.log_dir.to_str() {
             Some(s) => assert!(s.contains(expected)),

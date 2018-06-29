@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#Default variables
+RIOOS_HOME=/var/lib/rioos
+RIOOS_CONFIG_HOME=$RIOOS_HOME/config
+RIOOS_BIN_HOME=/usr/share/rioos/appstore/bin
+
+if [ ! -f $RIOOS_BIN_HOME/rio-appstore ]; then
+  echo "Missing rio-appstore  !!!. Did you bundle it correctly ?"
+  exit 1
+fi
+
+$RIOOS_BIN_HOME/rio-appstore migrate
+
+exec $RIOOS_BIN_HOME/entrypoint.sh appstore

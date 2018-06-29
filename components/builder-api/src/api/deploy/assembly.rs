@@ -22,9 +22,10 @@ use iron::status;
 use protocol::api::base::{MetaFields, StatusUpdate};
 use protocol::api::deploy::Assembly;
 use protocol::api::schema::{dispatch, dispatch_url, type_meta};
-use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_ENDPOINT,
-                      CACHE_PREFIX_FACTORY, CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN,
-                      CACHE_PREFIX_VOLUME};
+use protocol::cache::{
+    ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_ENDPOINT, CACHE_PREFIX_FACTORY,
+    CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN, CACHE_PREFIX_VOLUME,
+};
 use router::Router;
 use telemetry::metrics::prometheus::PrometheusClient;
 

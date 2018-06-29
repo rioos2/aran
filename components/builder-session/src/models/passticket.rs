@@ -1,16 +1,19 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! The PostgreSQL backend for the Datastore.
-use error::{Result, Error};
-use db::data_store::DataStoreConn;
-use protocol::api::passticket::PassTicket;
 use chrono::prelude::*;
+use db::data_store::DataStoreConn;
+use error::{Error, Result};
 use postgres;
+use protocol::api::passticket::PassTicket;
 
 pub struct DataStore;
 
 impl DataStore {
-    pub fn create_passticket(datastore: &DataStoreConn, passticket_id: &str) -> Result<Option<PassTicket>> {
+    pub fn create_passticket(
+        datastore: &DataStoreConn,
+        passticket_id: &str,
+    ) -> Result<Option<PassTicket>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_passticket_v1($1)",
@@ -23,7 +26,10 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn get_passticket(datastore: &DataStoreConn, passticket_id: &str) -> Result<Option<String>> {
+    pub fn get_passticket(
+        datastore: &DataStoreConn,
+        passticket_id: &str,
+    ) -> Result<Option<String>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_passticket_v1($1)",
@@ -36,7 +42,6 @@ impl DataStore {
         Ok(None)
     }
 
-
     pub fn remove_passticket(datastore: &DataStoreConn, passticket_id: String) -> Result<()> {
         let conn = datastore.pool.get_shard(0)?;
         &conn.query(
@@ -44,7 +49,6 @@ impl DataStore {
             &[&(passticket_id)],
         ).map_err(Error::PassTicketDelete)?;
         Ok(())
-
     }
 }
 

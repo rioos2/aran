@@ -2,11 +2,11 @@
 
 //! A module containing the errors handling for the builder authorize
 
+use db;
 use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use db;
 
 #[derive(Debug)]
 pub enum Error {
@@ -29,8 +29,12 @@ impl fmt::Display for Error {
             Error::RolesCreate(ref e) => format!("Database error creating a role, {}", e),
             Error::RolesGet(ref e) => format!("Database error get roles, {}", e),
             Error::RoleGet(ref e) => format!("Database error get role, {}", e),
-            Error::PermissionsCreate(ref e) => format!("Database error creating a permission, {}", e),
-            Error::RolePermissionsGet(ref e) => format!("Database error get role based permission, {}", e),
+            Error::PermissionsCreate(ref e) => {
+                format!("Database error creating a permission, {}", e)
+            }
+            Error::RolePermissionsGet(ref e) => {
+                format!("Database error get role based permission, {}", e)
+            }
             Error::PermissionsGet(ref e) => format!("Database error get permissions, {}", e),
             Error::PermissionGet(ref e) => format!("Database error get permission, {}", e),
         };

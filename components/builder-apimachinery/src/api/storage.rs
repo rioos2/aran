@@ -1,5 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields};
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
 use api::node::NodeInfo;
 use std::collections::BTreeMap;
 
@@ -10,9 +10,9 @@ pub struct Storage {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Storage
-    host_ip: String, //ip of the server
-    storage_type: String, //type of the storage server
-    storage_info: Disks, //disk detail for the storage
+    host_ip: String,         //ip of the server
+    storage_type: String,    //type of the storage server
+    storage_info: Disks,     //disk detail for the storage
     parameters: BTreeMap<String, String>,
     status: Status, //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
     node_info: NodeInfo, //Set of ids/uuids to uniquely identify the node.
@@ -71,12 +71,12 @@ impl Storage {
 
     //Convert it using Into or From<String>
     pub fn get_disks_str(&self) -> String {
-        self.get_storage_info().disks.iter().fold(
-            "".to_string(),
-            |acc, ref d| {
-                format!("{}{} → {}{}", acc,d.disk,d.size,"\n")
-            },
-        )
+        self.get_storage_info()
+            .disks
+            .iter()
+            .fold("".to_string(), |acc, ref d| {
+                format!("{}{} → {}{}", acc, d.disk, d.size, "\n")
+            })
     }
 
     pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {
@@ -135,10 +135,10 @@ impl Disks {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Disk {
-    disk: String, //name of the disk
+    disk: String,      //name of the disk
     disk_type: String, //type of the disk
-    point: String, //mount path of the disk
-    size: String, //total size of the disk
+    point: String,     //mount path of the disk
+    size: String,      //total size of the disk
     used_size: String, // used size of the disk
 }
 
@@ -167,8 +167,8 @@ pub struct DataCenter {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Datacenter
-    nodes: Vec<String>, //list of nodes to the region
-    networks: Vec<String>, //list of networks ,which network to support the datacenter
+    nodes: Vec<String>,      //list of nodes to the region
+    networks: Vec<String>,   //list of networks ,which network to support the datacenter
     enabled: bool, //used to disable the datacenter when time of may be node ar network failure
     storage: String, //which storage type to support the datacenter creation
     advanced_settings: BTreeMap<String, String>, //add some additional features for the datacenter
@@ -290,7 +290,7 @@ pub struct StoragePool {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind:StoragePool
-    connector_id: String, //id that refer the where is that storage pool locat
+    connector_id: String,    //id that refer the where is that storage pool locat
     storage_info: Disks,
     #[serde(default)]
     parameters: BTreeMap<String, String>, //Parameters holds the parameters for the provisioner that should,create volumes of this storage class.
@@ -344,12 +344,12 @@ impl StoragePool {
     }
     //Convert it using Into or From<String>
     pub fn get_disks_str(&self) -> String {
-        self.get_storage_info().disks.iter().fold(
-            "".to_string(),
-            |acc, ref d| {
-                format!("{}{} → {}{}", acc,d.disk,d.size,"\n")
-            },
-        )
+        self.get_storage_info()
+            .disks
+            .iter()
+            .fold("".to_string(), |acc, ref d| {
+                format!("{}{} → {}{}", acc, d.disk, d.size, "\n")
+            })
     }
 
     pub fn set_paramaters(&mut self, v: BTreeMap<String, String>) {
@@ -367,7 +367,6 @@ impl StoragePool {
     pub fn get_remote_storage_disks(&self) -> &BTreeMap<String, Vec<String>> {
         &self.remote_storage_disks
     }
-
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
@@ -398,7 +397,7 @@ impl MetaFields for StoragePool {
 
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode};
+    use serde_json::from_str as json_decode;
 
     use super::*;
     #[test]

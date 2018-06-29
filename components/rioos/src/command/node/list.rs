@@ -23,8 +23,6 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
          https://bit.ly/rioos_sh_usersguide",
     )?;
 
-    ui.end(
-        format!("{} records listed.", results.to_owned().len()),
-    )?;
+    ui.end(format!("{} records listed.", results.to_owned().len()))?;
     Ok(())
 }

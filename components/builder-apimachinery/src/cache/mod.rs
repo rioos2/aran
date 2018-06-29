@@ -7,8 +7,10 @@ mod multi_cache;
 
 use self::flock::Cacher;
 use api;
-use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder,
-                    ServicesFeeder, StacksFeeder, VolumesFeeder};
+use cache::inject::{
+    EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder, ServicesFeeder,
+    StacksFeeder, VolumesFeeder,
+};
 use cache::multi_cache::MultiCache;
 use serde_json;
 use std::collections::BTreeMap;

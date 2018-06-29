@@ -9,15 +9,13 @@ pub mod local;
 pub mod parse;
 pub mod vault;
 
-
 use db::data_store::DataStoreConn;
 use error::Result;
-use protocol::api::secret::Secret;
 use protocol::api::base::IdGet;
+use protocol::api::secret::Secret;
 
-use api::security::config::{SecurerConn, SecureBackend};
+use api::security::config::{SecureBackend, SecurerConn};
 use service::{SecretOutput, SecretOutputList};
-
 
 /// Currently implemented securer backends
 

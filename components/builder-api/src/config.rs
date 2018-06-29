@@ -7,23 +7,23 @@ use std::path::PathBuf;
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{Blockchain, BlockchainCfg, Marketplaces, MarketplacesCfg, Mailer, MailerCfg};
-use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
-use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
+use api::audit::config::{AppStores, AppStoresCfg, Blockchain, BlockchainCfg, Mailer, MailerCfg};
 use api::deploy::config::ServicesCfg;
 use api::objectstorage::config::ObjectStorage;
+use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
+use api::security::config::{SecureBackend, SecurerAuth, SecurerCfg};
 
 use auth::config::{flow_modes, AuthenticationFlowCfg, Identity, IdentityCfg};
-use watch::config::{Streamer, StreamerCfg};
-use entitlement::config::{License, LicensesCfg, Backend};
+use entitlement::config::{Backend, License, LicensesCfg};
 use telemetry::config::{Telemetry, TelemetryCfg};
+use watch::config::{Streamer, StreamerCfg};
 
 use rio_core::config::ConfigFile;
 use rio_core::crypto::keys::read_key_in_bytes;
 use rio_core::fs::rioconfig_config_path;
 
-use validator::ConfigValidator;
 use common::ui::UI;
+use validator::ConfigValidator;
 
 use error::{Error, Result};
 
@@ -52,8 +52,8 @@ pub struct Config {
     pub logs: LogsCfg,
     //  Blockchain API configuration.
     pub blockchain: BlockchainCfg,
-    //  Marketplaces API configuration
-    pub marketplaces: MarketplacesCfg,
+    //  AppStores API configuration
+    pub appstores: AppStoresCfg,
     //  Security and vulnerabilty checker API
     pub vulnerability: VulnerabilityCfg,
     //  Ping health checker configuration
@@ -72,23 +72,11 @@ impl Config {
     pub fn dump(&self, ui: &mut UI) -> Result<()> {
         ui.begin("Configuration")?;
         ui.heading("[https]")?;
-        ui.para(
-            &format!("{}:{}", self.https.listen, self.https.port),
-        )?;
-        ui.para(&format!(
-            "{:?} {:?}",
-            self.https.tls,
-            self.https.tls_password
-        ))?;
+        ui.para(&format!("{}:{}", self.https.listen, self.https.port))?;
+        ui.para(&format!("{:?} {:?}", self.https.tls, self.https.tls_password))?;
         ui.heading("[http2]")?;
-        ui.para(
-            &format!("{}:{}", self.http2.listener, self.http2.port),
-        )?;
-        ui.para(&format!(
-            "{:?} {:?}",
-            self.http2.tls,
-            self.http2.tls_password
-        ))?;
+        ui.para(&format!("{}:{}", self.http2.listener, self.http2.port))?;
+        ui.para(&format!("{:?} {:?}", self.http2.tls, self.http2.tls_password))?;
         ui.heading("[telemetry]")?;
         ui.para(&self.telemetry.endpoint)?;
         ui.heading("[identity]")?;
@@ -110,10 +98,10 @@ impl Config {
         ui.para(&self.logs.influx_prefix)?;
         ui.heading("[blockchain]")?;
         ui.para(&self.blockchain.endpoint)?;
-        ui.heading("[marketplaces]")?;
-        ui.para(&self.marketplaces.endpoint)?;
-        ui.para(&self.marketplaces.username)?;
-        ui.para(&self.marketplaces.token)?;
+        ui.heading("[appstores]")?;
+        ui.para(&self.appstores.endpoint)?;
+        ui.para(&self.appstores.username)?;
+        ui.para(&self.appstores.token)?;
         ui.heading("[vulnerability]")?;
         ui.para(&self.vulnerability.anchore_endpoint)?;
         ui.para(&self.vulnerability.anchore_username)?;
@@ -124,17 +112,9 @@ impl Config {
         ui.para(&self.objectstorage.access_key)?;
         ui.para(&self.objectstorage.secret_key)?;
         ui.heading("[ping]")?;
-        ui.para(&self.ping.controller_endpoint.clone().unwrap_or(
-            "".to_string(),
-        ))?;
-        ui.para(&self.ping.scheduler_endpoint.clone().unwrap_or(
-            "".to_string(),
-        ))?;
-        ui.para(
-            &self.ping.machineconsole_endpoint.clone().unwrap_or(
-                "".to_string(),
-            ),
-        )?;
+        ui.para(&self.ping.controller_endpoint.clone().unwrap_or("".to_string()))?;
+        ui.para(&self.ping.scheduler_endpoint.clone().unwrap_or("".to_string()))?;
+        ui.para(&self.ping.machineconsole_endpoint.clone().unwrap_or("".to_string()))?;
         ui.end("Loaded configuration")?;
 
         Ok(())
@@ -144,13 +124,7 @@ impl Config {
     /// Option<(tls file location, bytes loaded from the name in the config toml file,
     ///        tls password if present or empty string)>
     fn tlspair_as_bytes(tls: Option<String>, tls_password: Option<String>) -> TLSPair {
-        tls.clone().and_then(|t| {
-            read_key_in_bytes(&PathBuf::from(t.clone()))
-                .map(|p| {
-                    (t.clone(), p, tls_password.clone().unwrap_or("".to_string()))
-                })
-                .ok()
-        })
+        tls.clone().and_then(|t| read_key_in_bytes(&PathBuf::from(t.clone())).map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string()))).ok())
     }
 }
 
@@ -168,7 +142,7 @@ impl Default for Config {
             licenses: LicensesCfg::default(),
             logs: LogsCfg::default(),
             blockchain: BlockchainCfg::default(),
-            marketplaces: MarketplacesCfg::default(),
+            appstores: AppStoresCfg::default(),
             vulnerability: VulnerabilityCfg::default(),
             ping: PinguyCfg::default(),
             mailer: MailerCfg::default(),
@@ -185,26 +159,15 @@ impl AuthenticationFlowCfg for Config {
 
 impl ConfigValidator for Config {
     fn valid(&self) -> Result<()> {
-        vec![
-            self.https.valid(),
-            self.http2.valid(),
-            self.telemetry.valid(),
-            self.identity.valid(),
-            self.vaults.valid(),
-            self.licenses.valid(),
-            self.logs.valid(),
-            self.blockchain.valid(),
-            self.marketplaces.valid(),
-        ].iter()
+        vec![self.https.valid(), self.http2.valid(), self.telemetry.valid(), self.identity.valid(), self.vaults.valid(), self.licenses.valid(), self.logs.valid(), self.blockchain.valid(), self.appstores.valid()]
+            .iter()
             .fold(Ok(()), |acc, x| match x {
                 &Ok(()) => return acc,
                 &Err(ref e) => {
                     if acc.is_ok() {
                         return Err(Error::MissingConfiguration(format!("{}", e)));
                     }
-                    Err(Error::MissingConfiguration(
-                        format!("{}\n{}", e, acc.unwrap_err()),
-                    ))
+                    Err(Error::MissingConfiguration(format!("{}\n{}", e, acc.unwrap_err())))
                 }
             })
     }
@@ -230,9 +193,7 @@ impl GatewayCfg for Config {
     }
 
     fn tls(&self) -> Option<String> {
-        self.https.tls.clone().map(|n| {
-            (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string()
-        })
+        self.https.tls.clone().map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
     }
 
     fn tls_password(&self) -> Option<String> {
@@ -255,9 +216,7 @@ impl Streamer for Config {
     }
 
     fn http2_tls(&self) -> Option<String> {
-        self.http2.tls.clone().map(|n| {
-            (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string()
-        })
+        self.http2.tls.clone().map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
     }
 
     fn http2_tls_password(&self) -> Option<String> {
@@ -322,22 +281,22 @@ impl Blockchain for Config {
     }
 }
 
-//A delegate, that returns the marketplaces config from the loaded marketplace config
-impl Marketplaces for Config {
+//A delegate, that returns the appstore config from the loaded appstore config
+impl AppStores for Config {
     fn endpoint(&self) -> &str {
-        &self.marketplaces.endpoint
+        &self.appstores.endpoint
     }
     fn sync_on_startup(&self) -> bool {
-        self.marketplaces.sync_on_startup
+        self.appstores.sync_on_startup
     }
     fn username(&self) -> &str {
-        &self.marketplaces.username
+        &self.appstores.username
     }
     fn token(&self) -> &str {
-        &self.marketplaces.token
+        &self.appstores.token
     }
     fn cache_dir(&self) -> &str {
-        &self.marketplaces.cache_dir
+        &self.appstores.cache_dir
     }
 }
 
@@ -374,7 +333,7 @@ impl License for Config {
         self.licenses.activation_code.clone()
     }
     fn backend(&self) -> Backend {
-         self.licenses.backend.clone()
+        self.licenses.backend.clone()
     }
 }
 
@@ -459,8 +418,8 @@ mod tests {
         enabled = ["password", "service_account", "jwt", "passticket"]
         params = { service_account = "service_account.pub" }
 
-        [marketplaces]
-        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
+        [appstores]
+        endpoint = "https://appstores.rioos.xyz:6443/api/v1"
         username = "rioosdolphin@rio.company"
         token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 
@@ -498,17 +457,11 @@ mod tests {
         assert_eq!(config.https.tls_password, "TEAMRIOADVANCEMENT123");
 
         assert_eq!(config.http2.port, 8443);
-        assert_eq!(config.http2.websocker, 9443);
+        assert_eq!(config.http2.websocket, 9443);
 
-        assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
-        assert_eq!(
-            config.marketplaces.token,
-            "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-        );
-        assert_eq!(
-            config.marketplaces.endpoint,
-            "https://marketplces.rioos.xyz:6443/api/v1"
-        );
+        assert_eq!(config.appstores.username, "rioosdolphin@rio.company");
+        assert_eq!(config.appstores.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
+        assert_eq!(config.appstores.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
 
         assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
 
@@ -526,10 +479,7 @@ mod tests {
         assert_eq!(config.logs.influx_endpoint, "http://localhost:8086");
         assert_eq!(config.logs.influx_prefix, "rioos_logs");
 
-        assert_eq!(
-            config.vulnerability.anchore_endpoint,
-            "http://localhost:8086"
-        );
+        assert_eq!(config.vulnerability.anchore_endpoint, "http://localhost:8086");
         assert_eq!(config.vulnerability.anchore_username, "");
         assert_eq!(config.vulnerability.anchore_password, "");
     }
@@ -541,10 +491,10 @@ mod tests {
         listen = "0.0.0.0"
         port = 7443
 
-        [marketplaces]
+        [appstores]
         username = "rioosdolphin@rio.company"
         token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
+        endpoint = "https://appstores.rioos.xyz:6443/api/v1"
         "#;
 
         let config = Config::from_raw(&content).unwrap();
@@ -559,15 +509,9 @@ mod tests {
         assert_eq!(config.http2.tls, "api-server.pfx");
         assert_eq!(config.http2.tls_password, "TEAMRIOADVANCEMENT123");
 
-        assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
-        assert_eq!(
-            config.marketplaces.token,
-            "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-        );
-        assert_eq!(
-            config.marketplaces.endpoint,
-            "https://marketplces.rioos.xyz:6443/api/v1"
-        );
+        assert_eq!(config.appstores.username, "rioosdolphin@rio.company");
+        assert_eq!(config.appstores.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
+        assert_eq!(config.appstores.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
 
         assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
 
@@ -585,10 +529,7 @@ mod tests {
         assert_eq!(config.logs.endpoint, "http://localhost:8086");
         assert_eq!(config.logs.prefix, "rioos_logs");
 
-        assert_eq!(
-            config.vulnerability.anchore_endpoint,
-            "http://localhost:8086"
-        );
+        assert_eq!(config.vulnerability.anchore_endpoint, "http://localhost:8086");
         assert_eq!(config.vulnerability.anchore_username, "");
         assert_eq!(config.vulnerability.anchore_password, "");
     }
