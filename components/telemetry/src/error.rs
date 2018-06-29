@@ -1,13 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use http_client;
 use std::error;
 use std::fmt;
 use std::io;
 use std::result;
-use http_client;
 
 use serde_json;
-
 
 #[derive(Debug)]
 pub enum Error {
@@ -25,7 +24,9 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::IO(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
-            Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
+            Error::RequiredConfigField(ref e) => {
+                format!("Missing required field in configuration, {}", e)
+            }
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
             Error::RioHttpClient(ref e) => format!("{}", e),
         };

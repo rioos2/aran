@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
+use db;
 use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use db;
 
 #[derive(Debug)]
 pub enum Error {
@@ -30,9 +30,15 @@ impl fmt::Display for Error {
             Error::SecretCreate(ref e) => format!("Database error creating a secret, {}", e),
             Error::SecretGet(ref e) => format!("Database error get secret, {}", e),
             Error::SecretGetResponse(ref e) => format!("Error retrive secret_list database, {}", e),
-            Error::ServiceAccountCreate(ref e) => format!("Database error creating a service_account, {}", e),
-            Error::ServiceAccountUpdate(ref e) => format!("Database error updating a service_account, {}", e),
-            Error::SettingsMapCreate(ref e) => format!("Database error creating a settings map, {}", e),
+            Error::ServiceAccountCreate(ref e) => {
+                format!("Database error creating a service_account, {}", e)
+            }
+            Error::ServiceAccountUpdate(ref e) => {
+                format!("Database error updating a service_account, {}", e)
+            }
+            Error::SettingsMapCreate(ref e) => {
+                format!("Database error creating a settings map, {}", e)
+            }
             Error::SettingsMapGet(ref e) => format!("Database error getting a settings map, {}", e),
 
             Error::ServiceAccountGetResponse(ref e) => format!(

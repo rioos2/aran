@@ -2,12 +2,11 @@
 
 use super::super::super::APPLICABLE_TO;
 
-/// The service rules supported as events 
+/// The service rules supported as events
 pub enum ServiceRule {
     ReAssemble,
     Assemble,
 }
-
 
 pub struct ServiceTallyer {}
 

@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 //
-use futures::{Future, Sink, Stream};
 use futures::stream::Wait;
 use futures::sync::mpsc;
+use futures::{Future, Sink, Stream};
 use tokio_core::reactor::Core;
 use tokio_timer::{TimeoutStream, Timer};
 
@@ -11,10 +11,10 @@ use std::thread;
 use std::time::{self, Duration};
 
 use crypto::{gen_keypair, PublicKey, Signature};
-use messages::{Connect, Message, MessageWriter, RawMessage};
-use events::{NetworkEvent, NetworkRequest};
-use events::network::{NetworkConfiguration, NetworkPart};
 use events::error::log_error;
+use events::network::{NetworkConfiguration, NetworkPart};
+use events::{NetworkEvent, NetworkRequest};
+use messages::{Connect, Message, MessageWriter, RawMessage};
 use node::{EventsPoolCapacity, NodeChannel};
 
 #[derive(Debug)]
@@ -26,7 +26,11 @@ pub struct TestHandler {
 }
 
 impl TestHandler {
-    pub fn new(listen_address: SocketAddr, network_requests_tx: mpsc::Sender<NetworkRequest>, network_events_rx: mpsc::Receiver<NetworkEvent>) -> TestHandler {
+    pub fn new(
+        listen_address: SocketAddr,
+        network_requests_tx: mpsc::Sender<NetworkRequest>,
+        network_events_rx: mpsc::Receiver<NetworkEvent>,
+    ) -> TestHandler {
         let timer = Timer::default();
         let receiver = timer.timeout_stream(network_events_rx, Duration::from_secs(30));
         TestHandler {

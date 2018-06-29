@@ -3,25 +3,25 @@
 
 //! Streamer that does the watch for the api
 //!
-use std::iter;
 use std::io;
-use std::sync::{mpsc, Arc, Mutex};
+use std::iter;
 use std::rc::Rc;
+use std::sync::{mpsc, Arc, Mutex};
 use serde;
 use watch::handler::LISTENERS;
 use watch::handler::WatchHandler;
 use telemetry::metrics::prometheus::PrometheusClient;
 
-use db::data_store::DataStoreConn;
 use api::security::config::SecurerConn;
+use db::data_store::DataStoreConn;
 
 use config::Config;
 use watch::socket_service::{NotFound, Router};
 use ws;
 
+use openssl::pkcs12::Pkcs12;
 use openssl::ssl::{SslAcceptorBuilder, SslMethod};
 use openssl::x509::X509Ref;
-use openssl::pkcs12::Pkcs12;
 use http_gateway::config::prelude::TLSPair;
 
 #[derive(Debug)]

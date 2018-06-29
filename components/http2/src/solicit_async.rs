@@ -7,33 +7,33 @@ use futures::Async;
 use futures::Poll;
 
 use futures::future;
-use futures::future::Loop;
 use futures::future::loop_fn;
 use futures::future::Future;
+use futures::future::Loop;
 use futures::stream::Stream;
 
 use tokio_io::io::read_exact;
 use tokio_io::io::write_all;
-use tokio_io::AsyncWrite;
 use tokio_io::AsyncRead;
+use tokio_io::AsyncWrite;
 
 use error;
 use error::Error;
 use error::ErrorCode;
 use result::Result;
 
-use solicit::StreamId;
-use solicit::frame::FRAME_HEADER_LEN;
-use solicit::frame::RawFrame;
-use solicit::frame::RawFrameRef;
-use solicit::frame::FrameIR;
+use solicit::connection::HttpFrame;
 use solicit::frame::headers::HeadersFlag;
 use solicit::frame::headers::HeadersFrame;
-use solicit::frame::push_promise::PushPromiseFrame;
 use solicit::frame::push_promise::PushPromiseFlag;
-use solicit::frame::unpack_header;
+use solicit::frame::push_promise::PushPromiseFrame;
 use solicit::frame::settings::SettingsFrame;
-use solicit::connection::HttpFrame;
+use solicit::frame::unpack_header;
+use solicit::frame::FrameIR;
+use solicit::frame::RawFrame;
+use solicit::frame::RawFrameRef;
+use solicit::frame::FRAME_HEADER_LEN;
+use solicit::StreamId;
 
 use misc::BsDebug;
 
@@ -56,7 +56,10 @@ impl<T> AsMut<[T]> for VecWithPos<T> {
     }
 }
 
-pub fn recv_raw_frame<'r, R: AsyncRead + 'r>(read: R, max_frame_size: u32) -> Box<Future<Item = (R, RawFrame), Error = error::Error> + 'r> {
+pub fn recv_raw_frame<'r, R: AsyncRead + 'r>(
+    read: R,
+    max_frame_size: u32,
+) -> Box<Future<Item = (R, RawFrame), Error = error::Error> + 'r> {
     let header = read_exact(read, [0; FRAME_HEADER_LEN]).map_err(error::Error::from);
     let frame_buf = header.and_then(
         move |(read, raw_header)| -> Box<Future<Item = _, Error = _> + 'r> {
@@ -104,12 +107,21 @@ pub fn recv_raw_frame_sync(read: &mut Read, max_frame_size: u32) -> Result<RawFr
 }
 
 /// Recieve HTTP frame from reader.
-pub fn recv_http_frame<'r, R: AsyncRead + 'r>(read: R, max_frame_size: u32) -> Box<Future<Item = (R, HttpFrame), Error = Error> + 'r> {
-    Box::new(recv_raw_frame(read, max_frame_size).and_then(|(read, raw_frame)| Ok((read, HttpFrame::from_raw(&raw_frame)?))))
+pub fn recv_http_frame<'r, R: AsyncRead + 'r>(
+    read: R,
+    max_frame_size: u32,
+) -> Box<Future<Item = (R, HttpFrame), Error = Error> + 'r> {
+    Box::new(
+        recv_raw_frame(read, max_frame_size)
+            .and_then(|(read, raw_frame)| Ok((read, HttpFrame::from_raw(&raw_frame)?))),
+    )
 }
 
 /// Recieve HTTP frame, joining CONTINUATION frame with preceding HEADER frames.
-pub fn recv_http_frame_join_cont<'r, R: AsyncRead + 'r>(read: R, max_frame_size: u32) -> Box<Future<Item = (R, HttpFrame), Error = Error> + 'r> {
+pub fn recv_http_frame_join_cont<'r, R: AsyncRead + 'r>(
+    read: R,
+    max_frame_size: u32,
+) -> Box<Future<Item = (R, HttpFrame), Error = Error> + 'r> {
     enum ContinuableFrame {
         Headers(HeadersFrame),
         PushPromise(PushPromiseFrame),
@@ -126,15 +138,21 @@ pub fn recv_http_frame_join_cont<'r, R: AsyncRead + 'r>(read: R, max_frame_size:
         fn extend_header_fragment(&mut self, bytes: Bytes) {
             let header_fragment = match self {
                 &mut ContinuableFrame::Headers(ref mut headers) => &mut headers.header_fragment,
-                &mut ContinuableFrame::PushPromise(ref mut push_promise) => &mut push_promise.header_fragment,
+                &mut ContinuableFrame::PushPromise(ref mut push_promise) => {
+                    &mut push_promise.header_fragment
+                }
             };
             header_fragment.extend_from_slice(&bytes);
         }
 
         fn set_end_headers(&mut self) {
             match self {
-                &mut ContinuableFrame::Headers(ref mut headers) => headers.flags.set(HeadersFlag::EndHeaders),
-                &mut ContinuableFrame::PushPromise(ref mut push_promise) => push_promise.flags.set(PushPromiseFlag::EndHeaders),
+                &mut ContinuableFrame::Headers(ref mut headers) => {
+                    headers.flags.set(HeadersFlag::EndHeaders)
+                }
+                &mut ContinuableFrame::PushPromise(ref mut push_promise) => {
+                    push_promise.flags.set(PushPromiseFlag::EndHeaders)
+                }
             }
         }
 
@@ -207,19 +225,25 @@ pub fn recv_http_frame_join_cont<'r, R: AsyncRead + 'r>(read: R, max_frame_size:
     ))
 }
 
-pub fn recv_settings_frame<'r, R: AsyncRead + 'r>(read: R, max_frame_size: u32) -> Box<Future<Item = (R, SettingsFrame), Error = Error> + 'r> {
-    Box::new(
-        recv_http_frame(read, max_frame_size).and_then(|(read, http_frame)| match http_frame {
+pub fn recv_settings_frame<'r, R: AsyncRead + 'r>(
+    read: R,
+    max_frame_size: u32,
+) -> Box<Future<Item = (R, SettingsFrame), Error = Error> + 'r> {
+    Box::new(recv_http_frame(read, max_frame_size).and_then(
+        |(read, http_frame)| match http_frame {
             HttpFrame::Settings(f) => Ok((read, f)),
             f => Err(Error::InvalidFrame(format!(
                 "unexpected frame, expected SETTINGS, got {:?}",
                 f.frame_type()
             ))),
-        }),
-    )
+        },
+    ))
 }
 
-pub fn recv_settings_frame_ack<R: AsyncRead + Send + 'static>(read: R, max_frame_size: u32) -> HttpFuture<(R, SettingsFrame)> {
+pub fn recv_settings_frame_ack<R: AsyncRead + Send + 'static>(
+    read: R,
+    max_frame_size: u32,
+) -> HttpFuture<(R, SettingsFrame)> {
     Box::new(
         recv_settings_frame(read, max_frame_size).and_then(|(read, frame)| {
             if frame.is_ack() {
@@ -233,7 +257,10 @@ pub fn recv_settings_frame_ack<R: AsyncRead + Send + 'static>(read: R, max_frame
     )
 }
 
-pub fn recv_settings_frame_set<R: AsyncRead + Send + 'static>(read: R, max_frame_size: u32) -> HttpFuture<(R, SettingsFrame)> {
+pub fn recv_settings_frame_set<R: AsyncRead + Send + 'static>(
+    read: R,
+    max_frame_size: u32,
+) -> HttpFuture<(R, SettingsFrame)> {
     Box::new(
         recv_settings_frame(read, max_frame_size).and_then(|(read, frame)| {
             if !frame.is_ack() {
@@ -268,11 +295,17 @@ pub fn send_frame<W: AsyncWrite + Send + 'static, F: FrameIR>(write: W, frame: F
 
 static PREFACE: &'static [u8] = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
 
-fn send_settings<W: AsyncWrite + Send + 'static>(conn: W, settings: SettingsFrame) -> HttpFuture<W> {
+fn send_settings<W: AsyncWrite + Send + 'static>(
+    conn: W,
+    settings: SettingsFrame,
+) -> HttpFuture<W> {
     Box::new(send_frame(conn, settings))
 }
 
-pub fn client_handshake<I: AsyncWrite + AsyncRead + Send + 'static>(conn: I, settings: SettingsFrame) -> HttpFuture<I> {
+pub fn client_handshake<I: AsyncWrite + AsyncRead + Send + 'static>(
+    conn: I,
+    settings: SettingsFrame,
+) -> HttpFuture<I> {
     debug!("send PREFACE");
     let send_preface = write_all(conn, PREFACE)
         .map(|(conn, _)| conn)
@@ -354,7 +387,8 @@ where
                     if looks_like_http_1(&self.collected) {
                         let w = write_all(self.conn.take().unwrap(), HTTP_1_500_RESPONSE);
                         let write = w.map_err(Error::from);
-                        let write = write.then(|_| Err(Error::Other("request is made using HTTP/1")));
+                        let write =
+                            write.then(|_| Err(Error::Other("request is made using HTTP/1")));
                         return Ok(Async::Ready(Box::new(write)));
                     }
                 }

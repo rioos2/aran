@@ -44,11 +44,42 @@ impl AuthenticateDelegate {
         T: ToAuth,
     {
         match auth.to_auth() {
-            Authenticatable::UserAndPass { username: u, password: p } => UserAccountAuthenticate::from_username_and_password(&self.conn, u.to_string(), p.to_string()),
-            Authenticatable::PassTicket { token: t } => UserAccountAuthenticate::from_passticket(&self.conn, t.to_string()),
-            Authenticatable::UserEmailAndToken { email: u, token: p } => UserAccountAuthenticate::from_email_and_token(&self.conn, u.to_string(), p.to_string()),
-            Authenticatable::UserEmailAndWebtoken { email: u, webtoken: p } => UserAccountAuthenticate::from_email_and_webtoken(&self.conn, u.to_string(), p.to_string()),
-            Authenticatable::ServiceAccountNameAndWebtoken { name: u, webtoken: p, key: k } => ServiceAccountAuthenticate::from_name_and_webtoken(&self.conn, u.to_string(), p.to_string(), k),
+            Authenticatable::UserAndPass {
+                username: u,
+                password: p,
+            } => UserAccountAuthenticate::from_username_and_password(
+                &self.conn,
+                u.to_string(),
+                p.to_string(),
+            ),
+            Authenticatable::PassTicket { token: t } => {
+                UserAccountAuthenticate::from_passticket(&self.conn, t.to_string())
+            }
+            Authenticatable::UserEmailAndToken { email: u, token: p } => {
+                UserAccountAuthenticate::from_email_and_token(
+                    &self.conn,
+                    u.to_string(),
+                    p.to_string(),
+                )
+            }
+            Authenticatable::UserEmailAndWebtoken {
+                email: u,
+                webtoken: p,
+            } => UserAccountAuthenticate::from_email_and_webtoken(
+                &self.conn,
+                u.to_string(),
+                p.to_string(),
+            ),
+            Authenticatable::ServiceAccountNameAndWebtoken {
+                name: u,
+                webtoken: p,
+                key: k,
+            } => ServiceAccountAuthenticate::from_name_and_webtoken(
+                &self.conn,
+                u.to_string(),
+                p.to_string(),
+                k,
+            ),
         }
     }
 }

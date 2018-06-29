@@ -1,7 +1,7 @@
-use protocol::{sessionsrv, servicesrv, asmsrv, originsrv, constants};
 use db::data_store::DataStoreConn;
-use session::models::session;
+use protocol::{asmsrv, constants, originsrv, servicesrv, sessionsrv};
 use rand;
+use session::models::session;
 const ORIGIN: &'static str = "Origin";
 
 #[test]

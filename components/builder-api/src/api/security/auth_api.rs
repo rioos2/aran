@@ -14,8 +14,9 @@ use db::error::Error::RecordsNotFound;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, conflict_error, internal_error, not_found_error,
-                                 unauthorized_error};
+use http_gateway::util::errors::{
+    bad_request, conflict_error, internal_error, not_found_error, unauthorized_error,
+};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;

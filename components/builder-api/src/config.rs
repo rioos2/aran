@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{Blockchain, BlockchainCfg, Mailer, MailerCfg, Marketplaces, MarketplacesCfg, Notifications, Slack};
+use api::audit::config::{Blockchain, BlockchainCfg, Mailer, AppStores, AppStoresCfg, Notifications, Slack};
 use api::deploy::config::ServicesCfg;
 use api::objectstorage::config::ObjectStorage;
 use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
@@ -52,8 +52,8 @@ pub struct Config {
     pub logs: LogsCfg,
     //  Blockchain API configuration.
     pub blockchain: BlockchainCfg,
-    //  Marketplaces API configuration
-    pub marketplaces: MarketplacesCfg,
+    //  AppStores API configuration
+    pub appstores: AppStoresCfg,
     //  Security and vulnerabilty checker API
     pub vulnerability: VulnerabilityCfg,
     //  Ping health checker configuration
@@ -99,10 +99,10 @@ impl Config {
         ui.para(&self.logs.influx_prefix)?;
         ui.heading("[blockchain]")?;
         ui.para(&self.blockchain.endpoint)?;
-        ui.heading("[marketplaces]")?;
-        ui.para(&self.marketplaces.endpoint)?;
-        ui.para(&self.marketplaces.username)?;
-        ui.para(&self.marketplaces.token)?;
+        ui.heading("[appstores]")?;
+        ui.para(&self.appstores.endpoint)?;
+        ui.para(&self.appstores.username)?;
+        ui.para(&self.appstores.token)?;
         ui.heading("[vulnerability]")?;
         ui.para(&self.vulnerability.anchore_endpoint)?;
         ui.para(&self.vulnerability.anchore_username)?;
@@ -143,7 +143,7 @@ impl Default for Config {
             licenses: LicensesCfg::default(),
             logs: LogsCfg::default(),
             blockchain: BlockchainCfg::default(),
-            marketplaces: MarketplacesCfg::default(),
+            appstores: AppStoresCfg::default(),
             vulnerability: VulnerabilityCfg::default(),
             ping: PinguyCfg::default(),
             notifications: Notifications::default(),
@@ -160,7 +160,7 @@ impl AuthenticationFlowCfg for Config {
 
 impl ConfigValidator for Config {
     fn valid(&self) -> Result<()> {
-        vec![self.https.valid(), self.http2.valid(), self.telemetry.valid(), self.identity.valid(), self.vaults.valid(), self.licenses.valid(), self.logs.valid(), self.blockchain.valid(), self.marketplaces.valid()]
+        vec![self.https.valid(), self.http2.valid(), self.telemetry.valid(), self.identity.valid(), self.vaults.valid(), self.licenses.valid(), self.logs.valid(), self.blockchain.valid(), self.appstores.valid()]
             .iter()
             .fold(Ok(()), |acc, x| match x {
                 &Ok(()) => return acc,
@@ -282,22 +282,22 @@ impl Blockchain for Config {
     }
 }
 
-//A delegate, that returns the marketplaces config from the loaded marketplace config
-impl Marketplaces for Config {
+//A delegate, that returns the appstore config from the loaded appstore config
+impl AppStores for Config {
     fn endpoint(&self) -> &str {
-        &self.marketplaces.endpoint
+        &self.appstores.endpoint
     }
     fn sync_on_startup(&self) -> bool {
-        self.marketplaces.sync_on_startup
+        self.appstores.sync_on_startup
     }
     fn username(&self) -> &str {
-        &self.marketplaces.username
+        &self.appstores.username
     }
     fn token(&self) -> &str {
-        &self.marketplaces.token
+        &self.appstores.token
     }
     fn cache_dir(&self) -> &str {
-        &self.marketplaces.cache_dir
+        &self.appstores.cache_dir
     }
 }
 
@@ -428,8 +428,8 @@ mod tests {
         enabled = ["password", "service_account", "jwt", "passticket"]
         params = { service_account = "service_account.pub" }
 
-        [marketplaces]
-        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
+        [appstores]
+        endpoint = "https://appstores.rioos.xyz:6443/api/v1"
         username = "rioosdolphin@rio.company"
         token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 
@@ -467,11 +467,11 @@ mod tests {
         assert_eq!(config.https.tls_password, "TEAMRIOADVANCEMENT123");
 
         assert_eq!(config.http2.port, 8443);
-        assert_eq!(config.http2.websocker, 9443);
+        assert_eq!(config.http2.websocket, 9443);
 
-        assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
-        assert_eq!(config.marketplaces.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
-        assert_eq!(config.marketplaces.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
+        assert_eq!(config.appstores.username, "rioosdolphin@rio.company");
+        assert_eq!(config.appstores.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
+        assert_eq!(config.appstores.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
 
         assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
 
@@ -501,10 +501,10 @@ mod tests {
         listen = "0.0.0.0"
         port = 7443
 
-        [marketplaces]
+        [appstores]
         username = "rioosdolphin@rio.company"
         token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-        endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
+        endpoint = "https://appstores.rioos.xyz:6443/api/v1"
         "#;
 
         let config = Config::from_raw(&content).unwrap();
@@ -519,9 +519,9 @@ mod tests {
         assert_eq!(config.http2.tls, "api-server.pfx");
         assert_eq!(config.http2.tls_password, "TEAMRIOADVANCEMENT123");
 
-        assert_eq!(config.marketplaces.username, "rioosdolphin@rio.company");
-        assert_eq!(config.marketplaces.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
-        assert_eq!(config.marketplaces.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
+        assert_eq!(config.appstores.username, "rioosdolphin@rio.company");
+        assert_eq!(config.appstores.token, "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R");
+        assert_eq!(config.appstores.endpoint, "https://marketplces.rioos.xyz:6443/api/v1");
 
         assert_eq!(config.blockchain.endpoint, "http://localhost:7000");
 

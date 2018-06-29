@@ -1,15 +1,15 @@
 #![allow(dead_code)]
 
-use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
-use futures::Async;
-use futures::Poll;
 use futures::stream::Stream;
 use futures::sync::mpsc::unbounded;
-use futures::sync::mpsc::UnboundedSender;
 use futures::sync::mpsc::UnboundedReceiver;
+use futures::sync::mpsc::UnboundedSender;
+use futures::Async;
+use futures::Poll;
 
 use futures_misc::ResultOrEof;
 
@@ -73,7 +73,9 @@ impl Stream for StreamQueueSyncReceiver {
         let part = match self.receiver.poll() {
             Err(()) => unreachable!(),
             Ok(Async::NotReady) => return Ok(Async::NotReady),
-            Ok(Async::Ready(None)) => return Err(error::Error::Other("unexpected EOF; conn likely died")),
+            Ok(Async::Ready(None)) => {
+                return Err(error::Error::Other("unexpected EOF; conn likely died"))
+            }
             Ok(Async::Ready(Some(ResultOrEof::Error(e)))) => return Err(e),
             Ok(Async::Ready(Some(ResultOrEof::Eof))) => return Ok(Async::Ready(None)),
             Ok(Async::Ready(Some(ResultOrEof::Item(part)))) => part,

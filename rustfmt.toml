@@ -1,6 +1,6 @@
 error_on_line_overflow = true
 error_on_unformatted = true
-max_width = 400
+max_width = 150
 comment_width = 80
 newline_style = "Unix"
 brace_style = "SameLineWhere"
@@ -9,5 +9,5 @@ trailing_comma = "Vertical"
 indent_style = "Block"
 report_todo = "Always"
 report_fixme = "Never"
-# reorder_imports = false
+reorder_imports = true
 format_strings = true

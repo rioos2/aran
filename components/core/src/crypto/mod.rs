@@ -62,12 +62,9 @@ pub static PUBLIC_DSA_SUFFIX: &'static str = "dsa";
 /// The suffix on the end of a public ED25519 key file
 pub static PUBLIC_ED_SUFFIX: &'static str = "ed";
 
-
 /// The suffix on the end of a pkcs12 bundled public + private key file
 /// Both the X509 public and private RSA key combined into a pkcs12 pfx file
 pub static PUBLIC_PFX_SUFFIX: &'static str = "pfx";
-
-
 
 /// The prefix of the server root certificate authority
 pub static ROOT_CA: &'static str = "server-ca";
@@ -91,11 +88,10 @@ pub fn default_rioconfig_key_path(fs_root_path: Option<&Path>) -> PathBuf {
     }
 }
 
-
 #[cfg(test)]
 pub mod test_support {
-    use std::io::Read;
     use std::fs::File;
+    use std::io::Read;
     use std::path::PathBuf;
     use time;
 

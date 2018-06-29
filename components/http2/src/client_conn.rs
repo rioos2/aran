@@ -1,8 +1,8 @@
 //! Single client connection
 
+use std::io;
 use std::result::Result as std_Result;
 use std::sync::Arc;
-use std::io;
 
 use error;
 use error::Error;
@@ -10,10 +10,10 @@ use result;
 
 use exec::CpuPoolOption;
 
-use solicit::StreamId;
-use solicit::header::*;
 use solicit::connection::EndStream;
 use solicit::frame::settings::*;
+use solicit::header::*;
+use solicit::StreamId;
 use solicit::DEFAULT_SETTINGS;
 
 use service::Service;
@@ -21,27 +21,27 @@ use service::Service;
 use futures::future;
 use futures::future::Future;
 use futures::stream::Stream;
-use futures::sync::oneshot;
 use futures::sync::mpsc::unbounded;
 use futures::sync::mpsc::UnboundedSender;
+use futures::sync::oneshot;
 
 use tls_api::TlsConnector;
 
 use tokio_core::reactor;
-use tokio_timer::Timer;
-use tokio_io::AsyncWrite;
 use tokio_io::AsyncRead;
+use tokio_io::AsyncWrite;
+use tokio_timer::Timer;
 use tokio_tls_api;
 
 use futures_misc::*;
 
 use solicit_async::*;
 
-use common::*;
-use stream_part::*;
 use client_conf::*;
 use client_tls::*;
+use common::*;
 use socket::*;
+use stream_part::*;
 
 use rc_mut::*;
 
@@ -79,7 +79,13 @@ type ClientInner = ConnData<ClientTypes>;
 impl ConnInner for ClientInner {
     type Types = ClientTypes;
 
-    fn process_headers(&mut self, _self_rc: RcMut<Self>, stream_id: StreamId, end_stream: EndStream, headers: Headers) -> result::Result<Option<HttpStreamRef<ClientTypes>>> {
+    fn process_headers(
+        &mut self,
+        _self_rc: RcMut<Self>,
+        stream_id: StreamId,
+        end_stream: EndStream,
+        headers: Headers,
+    ) -> result::Result<Option<HttpStreamRef<ClientTypes>>> {
         if let Some(mut stream) = self.get_stream_or_send_stream_closed(stream_id)? {
             if let Some(ref mut response_handler) = stream.stream().peer_tx {
                 // TODO: reset stream on error
@@ -143,7 +149,8 @@ impl<I: AsyncWrite + Send + 'static> ClientWriteLoop<I> {
             let stream_id = inner.next_local_stream_id();
 
             let out_window = {
-                let (mut http_stream, resp_stream, out_window) = inner.new_stream_data(stream_id, ClientStreamData {});
+                let (mut http_stream, resp_stream, out_window) =
+                    inner.new_stream_data(stream_id, ClientStreamData {});
 
                 if let Err(_) = resp_tx.send(Response::from_stream(resp_stream)) {
                     warn!("caller died");
@@ -195,7 +202,12 @@ pub trait ClientConnectionCallbacks: 'static {
 }
 
 impl ClientConnection {
-    fn connected<I, C>(lh: reactor::Handle, connect: HttpFutureSend<I>, conf: ClientConf, callbacks: C) -> (Self, HttpFuture<()>)
+    fn connected<I, C>(
+        lh: reactor::Handle,
+        connect: HttpFutureSend<I>,
+        conf: ClientConf,
+        callbacks: C,
+    ) -> (Self, HttpFuture<()>)
     where
         I: AsyncWrite + AsyncRead + Send + 'static,
         C: ClientConnectionCallbacks,
@@ -203,8 +215,14 @@ impl ClientConnection {
         let (to_write_tx, to_write_rx) = unbounded();
         let (command_tx, command_rx) = unbounded();
 
-        let to_write_rx = Box::new(to_write_rx.map_err(|()| Error::IoError(io::Error::new(io::ErrorKind::Other, "to_write"))));
-        let command_rx = Box::new(command_rx.map_err(|()| Error::IoError(io::Error::new(io::ErrorKind::Other, "to_write"))));
+        let to_write_rx = Box::new(
+            to_write_rx
+                .map_err(|()| Error::IoError(io::Error::new(io::ErrorKind::Other, "to_write"))),
+        );
+        let command_rx = Box::new(
+            command_rx
+                .map_err(|()| Error::IoError(io::Error::new(io::ErrorKind::Other, "to_write"))),
+        );
 
         let c = ClientConnection {
             write_tx: to_write_tx.clone(),
@@ -250,18 +268,31 @@ impl ClientConnection {
         (c, Box::new(future))
     }
 
-    pub fn new<H, C>(lh: reactor::Handle, addr: Box<ToClientStream>, tls: ClientTlsOption<C>, conf: ClientConf, callbacks: H) -> (Self, HttpFuture<()>)
+    pub fn new<H, C>(
+        lh: reactor::Handle,
+        addr: Box<ToClientStream>,
+        tls: ClientTlsOption<C>,
+        conf: ClientConf,
+        callbacks: H,
+    ) -> (Self, HttpFuture<()>)
     where
         H: ClientConnectionCallbacks,
         C: TlsConnector + Sync,
     {
         match tls {
             ClientTlsOption::Plain => ClientConnection::new_plain(lh, addr, conf, callbacks),
-            ClientTlsOption::Tls(domain, connector) => ClientConnection::new_tls(lh, &domain, connector, addr, conf, callbacks),
+            ClientTlsOption::Tls(domain, connector) => {
+                ClientConnection::new_tls(lh, &domain, connector, addr, conf, callbacks)
+            }
         }
     }
 
-    pub fn new_plain<C>(lh: reactor::Handle, addr: Box<ToClientStream>, conf: ClientConf, callbacks: C) -> (Self, HttpFuture<()>)
+    pub fn new_plain<C>(
+        lh: reactor::Handle,
+        addr: Box<ToClientStream>,
+        conf: ClientConf,
+        callbacks: C,
+    ) -> (Self, HttpFuture<()>)
     where
         C: ClientConnectionCallbacks,
     {
@@ -289,7 +320,14 @@ impl ClientConnection {
         ClientConnection::connected(lh, connect, conf, callbacks)
     }
 
-    pub fn new_tls<H, C>(lh: reactor::Handle, domain: &str, connector: Arc<C>, addr: Box<ToClientStream>, conf: ClientConf, callbacks: H) -> (Self, HttpFuture<()>)
+    pub fn new_tls<H, C>(
+        lh: reactor::Handle,
+        domain: &str,
+        connector: Arc<C>,
+        addr: Box<ToClientStream>,
+        conf: ClientConf,
+        callbacks: H,
+    ) -> (Self, HttpFuture<()>)
     where
         H: ClientConnectionCallbacks,
         C: TlsConnector + Sync,
@@ -303,14 +341,20 @@ impl ClientConnection {
             })
             .map_err(|e| e.into());
 
-        let tls_conn = connect.and_then(move |conn| tokio_tls_api::connect_async(&*connector, &domain, conn).map_err(|e| Error::IoError(io::Error::new(io::ErrorKind::Other, e))));
+        let tls_conn = connect.and_then(move |conn| {
+            tokio_tls_api::connect_async(&*connector, &domain, conn)
+                .map_err(|e| Error::IoError(io::Error::new(io::ErrorKind::Other, e)))
+        });
 
         let tls_conn = tls_conn.map_err(Error::from);
 
         ClientConnection::connected(lh, Box::new(tls_conn), conf, callbacks)
     }
 
-    pub fn start_request_with_resp_sender(&self, start: StartRequestMessage) -> Result<(), StartRequestMessage> {
+    pub fn start_request_with_resp_sender(
+        &self,
+        start: StartRequestMessage,
+    ) -> Result<(), StartRequestMessage> {
         self.write_tx
             .unbounded_send(ClientToWriteMessage::Start(start))
             .map_err(|send_error| match send_error.into_inner() {
@@ -333,12 +377,16 @@ impl ClientConnection {
 
         self.dump_state_with_resp_sender(tx);
 
-        let rx = rx.map_err(|_| Error::from(io::Error::new(io::ErrorKind::Other, "oneshot canceled")));
+        let rx =
+            rx.map_err(|_| Error::from(io::Error::new(io::ErrorKind::Other, "oneshot canceled")));
 
         Box::new(rx)
     }
 
-    pub fn wait_for_connect_with_resp_sender(&self, tx: oneshot::Sender<result::Result<()>>) -> std_Result<(), oneshot::Sender<result::Result<()>>> {
+    pub fn wait_for_connect_with_resp_sender(
+        &self,
+        tx: oneshot::Sender<result::Result<()>>,
+    ) -> std_Result<(), oneshot::Sender<result::Result<()>>> {
         self.command_tx
             .unbounded_send(ClientCommandMessage::WaitForHandshake(tx))
             .map_err(|send_error| match send_error.into_inner() {
@@ -363,7 +411,8 @@ impl Service for ClientConnection {
             return Response::err(error::Error::Other("client died"));
         }
 
-        let resp_rx = resp_rx.map_err(|oneshot::Canceled| error::Error::Other("client likely died"));
+        let resp_rx =
+            resp_rx.map_err(|oneshot::Canceled| error::Error::Other("client likely died"));
 
         let resp_rx = resp_rx.map(|r| r.into_stream_flag());
 
@@ -374,7 +423,10 @@ impl Service for ClientConnection {
 }
 
 impl ClientCommandLoop {
-    fn process_dump_state(self, sender: oneshot::Sender<ConnectionStateSnapshot>) -> HttpFuture<Self> {
+    fn process_dump_state(
+        self,
+        sender: oneshot::Sender<ConnectionStateSnapshot>,
+    ) -> HttpFuture<Self> {
         // ignore send error, client might be already dead
         drop(sender.send(self.inner.with(|inner| inner.dump_state())));
         Box::new(future::finished(self))

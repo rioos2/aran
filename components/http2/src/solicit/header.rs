@@ -1,12 +1,12 @@
-use std::str;
-use std::str::FromStr;
 use std::fmt;
 use std::iter::FromIterator;
+use std::str;
+use std::str::FromStr;
 
 use req_resp::RequestOrResponse;
 
-use result::Result;
 use error::Error;
+use result::Result;
 
 use assert_types::*;
 
@@ -98,13 +98,13 @@ impl<'a> From<&'a [u8]> for HeaderPart {
 }
 
 macro_rules! from_static_size_array {
-    ($N:expr) => (
+    ($N:expr) => {
         impl<'a> From<&'a [u8; $N]> for HeaderPart {
             fn from(buf: &'a [u8; $N]) -> HeaderPart {
                 buf[..].into()
             }
         }
-    );
+    };
 }
 
 macro_rules! impl_from_static_size_array {
@@ -116,30 +116,7 @@ macro_rules! impl_from_static_size_array {
 }
 
 impl_from_static_size_array!(
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    15,
-    16,
-    17,
-    18,
-    19,
-    20,
-    21,
-    22,
-    23,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
 );
 
 impl From<String> for HeaderPart {

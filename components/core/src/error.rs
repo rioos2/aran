@@ -3,8 +3,8 @@
 //! A module containing the common errors
 
 use std::error;
-use std::io;
 use std::fmt;
+use std::io;
 use std::num;
 use std::path::PathBuf;
 use std::result;
@@ -109,122 +109,96 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::X509Error(ref err) => format!("{}", err),
-            Error::BadKeyPath(ref e) => {
-                format!(
-                    "Invalid keypath: {}. Specify an absolute path to a file on disk.",
-                    e
-                )
+            Error::BadKeyPath(ref e) => format!(
+                "Invalid keypath: {}. Specify an absolute path to a file on disk.",
+                e
+            ),
+            Error::ConfigFileIO(ref f, ref e) => {
+                format!("Error reading configuration file, {}, {}", f.display(), e)
             }
-            Error::ConfigFileIO(ref f, ref e) => format!("Error reading configuration file, {}, {}", f.display(), e),
-            Error::ConfigFileSyntax(ref e) => {
-                format!(
-                    "Syntax errors while parsing TOML configuration file:\n\n{}",
-                    e
-                )
-            }
-            Error::ConfigInvalidArraySocketAddr(ref f) => {
-                format!(
-                    "Invalid array value of network address pair strings config, field={}. \
+            Error::ConfigFileSyntax(ref e) => format!(
+                "Syntax errors while parsing TOML configuration file:\n\n{}",
+                e
+            ),
+            Error::ConfigInvalidArraySocketAddr(ref f) => format!(
+                "Invalid array value of network address pair strings config, field={}. \
                  (example: [\"127.0.0.1:8080\", \"10.0.0.4:22\"])",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayTableString(ref f) => {
-                format!(
-                    "Invalid array value of tables containing string fields and values in \
+                f
+            ),
+            Error::ConfigInvalidArrayTableString(ref f) => format!(
+                "Invalid array value of tables containing string fields and values in \
                  config, field={}",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayTarget(ref f) => {
-                format!(
-                    "Invalid array value of targets containing string fields and values in \
+                f
+            ),
+            Error::ConfigInvalidArrayTarget(ref f) => format!(
+                "Invalid array value of targets containing string fields and values in \
                  config, field={}",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayU16(ref f) => {
-                format!(
-                    "Invalid array value of u16 entries in config, field={}. (example: [1, 2])",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayU32(ref f) => {
-                format!(
-                    "Invalid array value of u32 entries in config, field={}. (example: [1, 2])",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayU64(ref f) => {
-                format!(
-                    "Invalid array value of u64 entries in config, field={}. (example: [1, 2])",
-                    f
-                )
-            }
-            Error::ConfigInvalidBool(ref f) => {
-                format!(
-                    "Invalid boolean value in config, field={}. (example: true)",
-                    f
-                )
-            }
-            Error::ConfigInvalidIdent(ref f) => {
-                format!(
-                    "Invalid package identifier string value in config, field={}. (example: \
+                f
+            ),
+            Error::ConfigInvalidArrayU16(ref f) => format!(
+                "Invalid array value of u16 entries in config, field={}. (example: [1, 2])",
+                f
+            ),
+            Error::ConfigInvalidArrayU32(ref f) => format!(
+                "Invalid array value of u32 entries in config, field={}. (example: [1, 2])",
+                f
+            ),
+            Error::ConfigInvalidArrayU64(ref f) => format!(
+                "Invalid array value of u64 entries in config, field={}. (example: [1, 2])",
+                f
+            ),
+            Error::ConfigInvalidBool(ref f) => format!(
+                "Invalid boolean value in config, field={}. (example: true)",
+                f
+            ),
+            Error::ConfigInvalidIdent(ref f) => format!(
+                "Invalid package identifier string value in config, field={}. (example: \
                  \"core/redis\")",
-                    f
-                )
-            }
-            Error::ConfigInvalidIpAddr(ref f) => {
-                format!(
-                    "Invalid IP address string value in config, field={}. (example: \
+                f
+            ),
+            Error::ConfigInvalidIpAddr(ref f) => format!(
+                "Invalid IP address string value in config, field={}. (example: \
                  \"127.0.0.0\")",
-                    f
-                )
-            }
-            Error::ConfigInvalidSocketAddr(ref f) => {
-                format!(
-                    "Invalid network address pair string value in config, field={}. (example: \
+                f
+            ),
+            Error::ConfigInvalidSocketAddr(ref f) => format!(
+                "Invalid network address pair string value in config, field={}. (example: \
                  \"127.0.0.0:8080\")",
-                    f
-                )
+                f
+            ),
+            Error::ConfigInvalidString(ref f) => {
+                format!("Invalid string value in config, field={}.", f)
             }
-            Error::ConfigInvalidString(ref f) => format!("Invalid string value in config, field={}.", f),
-            Error::ConfigInvalidTableString(ref f) => {
-                format!(
-                    "Invalid table value of string fields and values in config, field={}",
-                    f
-                )
-            }
-            Error::ConfigInvalidTarget(ref f) => {
-                format!(
-                    "Invalid package target string value in config, field={}. (example: \
+            Error::ConfigInvalidTableString(ref f) => format!(
+                "Invalid table value of string fields and values in config, field={}",
+                f
+            ),
+            Error::ConfigInvalidTarget(ref f) => format!(
+                "Invalid package target string value in config, field={}. (example: \
                  \"x86_64-linux\")",
-                    f
-                )
-            }
+                f
+            ),
             Error::ConfigInvalidU16(ref f) => format!("Invalid u16 value in config, field={}", f),
             Error::ConfigInvalidU32(ref f) => format!("Invalid u32 value in config, field={}", f),
             Error::ConfigInvalidU64(ref f) => format!("Invalid u64 value in config, field={}", f),
-            Error::ConfigInvalidUsize(ref f) => format!("Invalid usize value in config, field={}", f),
+            Error::ConfigInvalidUsize(ref f) => {
+                format!("Invalid usize value in config, field={}", f)
+            }
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
             Error::FileNotFound(ref e) => format!("File not found at: {}", e),
             Error::InvalidArchitecture(ref e) => format!("Invalid architecture: {}.", e),
             Error::InvalidPlatform(ref e) => format!("Invalid platform: {}.", e),
-            Error::InvalidServiceGroup(ref e) => {
-                format!(
-                    "Invalid service group: {}. A valid service group string is in the form \
+            Error::InvalidServiceGroup(ref e) => format!(
+                "Invalid service group: {}. A valid service group string is in the form \
                  service.group (example: redis.production)",
-                    e
-                )
-            }
-            Error::InvalidCertificateName(ref origin) => {
-                format!(
-                    "Invalid origin: {}. Origins must begin with a lowercase letter or number. \
+                e
+            ),
+            Error::InvalidCertificateName(ref origin) => format!(
+                "Invalid origin: {}. Origins must begin with a lowercase letter or number. \
                  Allowed characters include lowercase letters, numbers, -, and _. \
                  No more than 255 characters.",
-                    origin
-                )
-            }
+                origin
+            ),
             Error::IO(ref err) => format!("{}", err),
             Error::NoOutboundAddr => format!("Failed to discover this hosts outbound IP address"),
             Error::ParseIntError(ref e) => format!("{}", e),
@@ -233,7 +207,9 @@ impl fmt::Display for Error {
             Error::TargetMatchError(ref e) => format!("{}", e),
             Error::UnameFailed(ref e) => format!("{}", e),
             Error::WaitpidFailed(ref e) => format!("{}", e),
-            Error::SignalFailed(ref e) => format!("Failed to send a signal to the child process: {}", e),
+            Error::SignalFailed(ref e) => {
+                format!("Failed to send a signal to the child process: {}", e)
+            }
             Error::GetExitCodeProcessFailed(ref e) => format!("{}", e),
             Error::CreateToolhelp32SnapshotFailed(ref e) => format!("{}", e),
             Error::WaitForSingleObjectFailed(ref e) => format!("{}", e),
@@ -263,34 +239,58 @@ impl error::Error for Error {
                 "Invalid array value of targets containing string fields and values encountered \
                  while parsing a configuration file"
             }
-            Error::ConfigInvalidArrayU16(_) => "Invalid array value of u16 entries encountered while parsing a configuration file",
-            Error::ConfigInvalidArrayU32(_) => "Invalid array value of u32 entries encountered while parsing a configuration file",
-            Error::ConfigInvalidArrayU64(_) => "Invalid array value of u64 entries encountered while parsing a configuration file",
-            Error::ConfigInvalidBool(_) => "Invalid boolean value encountered while parsing a configuration file",
+            Error::ConfigInvalidArrayU16(_) => {
+                "Invalid array value of u16 entries encountered while parsing a configuration file"
+            }
+            Error::ConfigInvalidArrayU32(_) => {
+                "Invalid array value of u32 entries encountered while parsing a configuration file"
+            }
+            Error::ConfigInvalidArrayU64(_) => {
+                "Invalid array value of u64 entries encountered while parsing a configuration file"
+            }
+            Error::ConfigInvalidBool(_) => {
+                "Invalid boolean value encountered while parsing a configuration file"
+            }
             Error::ConfigInvalidIdent(_) => {
                 "Invalid package identifier string value encountered while parsing a configuration \
                  file"
             }
-            Error::ConfigInvalidIpAddr(_) => "Invalid IP address string value encountered while parsing a configuration file",
+            Error::ConfigInvalidIpAddr(_) => {
+                "Invalid IP address string value encountered while parsing a configuration file"
+            }
             Error::ConfigInvalidSocketAddr(_) => {
                 "Invalid network address pair string value encountered while parsing a \
                  configuration file"
             }
-            Error::ConfigInvalidString(_) => "Invalid string value encountered while parsing a configuration file",
+            Error::ConfigInvalidString(_) => {
+                "Invalid string value encountered while parsing a configuration file"
+            }
             Error::ConfigInvalidTableString(_) => {
                 "Invalid table value of string fields and values encountered while parsing a \
                  configuration file"
             }
-            Error::ConfigInvalidTarget(_) => "Invalid package target string value encountered while parsing a configuration file",
-            Error::ConfigInvalidU16(_) => "Invalid u16 value encountered while parsing a configuration file",
-            Error::ConfigInvalidU32(_) => "Invalid u32 value encountered while parsing a configuration file",
-            Error::ConfigInvalidU64(_) => "Invalid u64 value encountered while parsing a configuration file",
-            Error::ConfigInvalidUsize(_) => "Invalid usize value encountered while parsing a configuration file",
+            Error::ConfigInvalidTarget(_) => {
+                "Invalid package target string value encountered while parsing a configuration file"
+            }
+            Error::ConfigInvalidU16(_) => {
+                "Invalid u16 value encountered while parsing a configuration file"
+            }
+            Error::ConfigInvalidU32(_) => {
+                "Invalid u32 value encountered while parsing a configuration file"
+            }
+            Error::ConfigInvalidU64(_) => {
+                "Invalid u64 value encountered while parsing a configuration file"
+            }
+            Error::ConfigInvalidUsize(_) => {
+                "Invalid usize value encountered while parsing a configuration file"
+            }
             Error::CryptoError(_) => "Crypto error",
             Error::FileNotFound(_) => "File not found",
             Error::InvalidArchitecture(_) => "Unsupported target architecture supplied.",
             Error::InvalidPlatform(_) => "Unsupported target platform supplied.",
-            Error::InvalidServiceGroup(_) => "Service group strings must be in service.group format (example: redis.production)",
+            Error::InvalidServiceGroup(_) => {
+                "Service group strings must be in service.group format (example: redis.production)"
+            }
             Error::InvalidCertificateName(_) => {
                 "Origins must begin with a lowercase letter or number.  \
                  Allowed characters include a - z, 0 - 9, _, and -. No more than 255 characters."
@@ -336,7 +336,6 @@ impl From<num::ParseIntError> for Error {
         Error::ParseIntError(err)
     }
 }
-
 
 impl From<openssl::error::ErrorStack> for Error {
     fn from(err: openssl::error::ErrorStack) -> Self {

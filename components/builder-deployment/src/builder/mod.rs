@@ -1,3 +1,3 @@
 pub mod attacher;
-pub mod service;
 pub mod replicas;
+pub mod service;

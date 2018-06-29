@@ -1,9 +1,9 @@
 use std::mem;
 
-use futures::stream::Stream;
 use futures::future::Future;
-use futures::Poll;
+use futures::stream::Stream;
 use futures::Async;
+use futures::Poll;
 
 enum State<I> {
     Init,

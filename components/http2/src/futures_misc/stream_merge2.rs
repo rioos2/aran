@@ -1,5 +1,5 @@
-use futures::{Async, Poll};
 use futures::stream::{self, Stream};
+use futures::{Async, Poll};
 
 pub struct StreamMerge2<S1, S2: Stream> {
     stream1: stream::Fuse<S1>,
@@ -30,7 +30,10 @@ pub enum Merged2Item<I1, I2> {
     Second(I2),
 }
 
-fn poll2<S1, S2>(s1: &mut S1, s2: &mut S2) -> Poll<Option<Merged2Item<S1::Item, S2::Item>>, S1::Error>
+fn poll2<S1, S2>(
+    s1: &mut S1,
+    s2: &mut S2,
+) -> Poll<Option<Merged2Item<S1::Item, S2::Item>>, S1::Error>
 where
     S1: Stream,
     S2: Stream<Error = S1::Error>,
@@ -65,14 +68,16 @@ where
         let r = if self.next_try_2 {
             poll2(&mut self.stream1, &mut self.stream2)
         } else {
-            poll2(&mut self.stream2, &mut self.stream1).map(|async: Async<Option<Merged2Item<S2::Item, S1::Item>>>| {
-                async.map(|option| {
-                    option.map(|merged_item| match merged_item {
-                        Merged2Item::First(a) => Merged2Item::Second(a),
-                        Merged2Item::Second(a) => Merged2Item::First(a),
+            poll2(&mut self.stream2, &mut self.stream1).map(
+                |async: Async<Option<Merged2Item<S2::Item, S1::Item>>>| {
+                    async.map(|option| {
+                        option.map(|merged_item| match merged_item {
+                            Merged2Item::First(a) => Merged2Item::Second(a),
+                            Merged2Item::Second(a) => Merged2Item::First(a),
+                        })
                     })
-                })
-            })
+                },
+            )
         };
 
         self.next_try_2 = !self.next_try_2;

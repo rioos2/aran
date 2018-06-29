@@ -1,8 +1,8 @@
 //! The module contains the implementation of the `SETTINGS` frame and associated flags.
 
-use solicit::StreamId;
-use solicit::frame::{FrameBuilder, FrameIR, Frame, FrameHeader, RawFrame};
 use solicit::frame::flags::*;
+use solicit::frame::{Frame, FrameBuilder, FrameHeader, FrameIR, RawFrame};
+use solicit::StreamId;
 
 pub const SETTINGS_FRAME_TYPE: u8 = 0x4;
 
@@ -69,7 +69,11 @@ impl HttpSetting {
     /// Gets the setting value by unpacking it from the wrapped `u32`.
     pub fn get_val(&self) -> u32 {
         match *self {
-            HttpSetting::HeaderTableSize(val) | HttpSetting::MaxConcurrentStreams(val) | HttpSetting::InitialWindowSize(val) | HttpSetting::MaxFrameSize(val) | HttpSetting::MaxHeaderListSize(val) => val,
+            HttpSetting::HeaderTableSize(val)
+            | HttpSetting::MaxConcurrentStreams(val)
+            | HttpSetting::InitialWindowSize(val)
+            | HttpSetting::MaxFrameSize(val)
+            | HttpSetting::MaxHeaderListSize(val) => val,
             HttpSetting::EnablePush(true) => 1,
             HttpSetting::EnablePush(false) => 0,
         }
@@ -345,9 +349,9 @@ impl FrameIR for SettingsFrame {
 #[cfg(test)]
 mod tests {
     use super::{HttpSetting, SettingsFrame};
-    use solicit::tests::common::raw_frame_from_parts;
-    use solicit::frame::{pack_header, Frame, FrameHeader};
     use solicit::frame::FrameIR;
+    use solicit::frame::{pack_header, Frame, FrameHeader};
+    use solicit::tests::common::raw_frame_from_parts;
 
     /// Tests that a `SettingsFrame` correctly handles a SETTINGS frame with
     /// no ACK flag and only a single setting.

@@ -1,11 +1,11 @@
 use chrono::prelude::*;
-use error::{Result, Error};
+use error::{Error, Result};
 
-use protocol::api::origin;
 use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::origin;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
 use super::{OriginOutput, OriginOutputList};
@@ -13,7 +13,10 @@ use super::{OriginOutput, OriginOutputList};
 pub struct OriginDS;
 
 impl OriginDS {
-    pub fn create(datastore: &DataStoreConn, org_create: &origin::Origin) -> Result<Option<origin::Origin>> {
+    pub fn create(
+        datastore: &DataStoreConn,
+        org_create: &origin::Origin,
+    ) -> Result<Option<origin::Origin>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_origin_v1($1,$2,$3,$4)",

@@ -2,13 +2,13 @@
 
 //! A module containing the errors handling for the builder session
 
+use db;
+use postgres;
 use std::error;
 use std::fmt;
 use std::io;
-use std::result;
 use std::num;
-use postgres;
-use db;
+use std::result;
 
 #[derive(Debug)]
 pub enum Error {
@@ -47,28 +47,48 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
-            Error::AccountIdFromString(ref e) => format!("Cannot convert from string to Account ID, {}", e),
+            Error::AccountIdFromString(ref e) => {
+                format!("Cannot convert from string to Account ID, {}", e)
+            }
             Error::AccountCreate(ref e) => format!("Error creating account in database, {}", e),
             Error::SessionCreate(ref e) => format!("Error creating session in database, {}", e),
             Error::DeviceCreate(ref e) => format!("Error creating device in database, {}", e),
             Error::AccountGet(ref e) => format!("Error getting account from database, {}", e),
             Error::AccountGetById(ref e) => format!("Error getting account from database, {}", e),
             Error::SessionGet(ref e) => format!("Error getting session from database, {}", e),
-            Error::AccountOriginInvitationCreate(ref e) => format!("Error creating invitation in database, {}", e),
-            Error::AccountOriginInvitationList(ref e) => format!("Error listing invitation in database, {}", e),
-            Error::AccountOriginInvitationAccept(ref e) => format!("Error accepting invitation in database, {}", e),
-            Error::OriginAccountList(ref e) => format!("Error listing origins for account in database, {}", e),
-            Error::OriginCreate(ref e) => format!("Error creating origin for account in database, {}", e),
-            Error::TeamCreate(ref e) => format!("Error creating team for origin in database, {}", e),
-            Error::OriginGetResponse(ref e) => format!("Error retrive origin for account in database, {}", e),
+            Error::AccountOriginInvitationCreate(ref e) => {
+                format!("Error creating invitation in database, {}", e)
+            }
+            Error::AccountOriginInvitationList(ref e) => {
+                format!("Error listing invitation in database, {}", e)
+            }
+            Error::AccountOriginInvitationAccept(ref e) => {
+                format!("Error accepting invitation in database, {}", e)
+            }
+            Error::OriginAccountList(ref e) => {
+                format!("Error listing origins for account in database, {}", e)
+            }
+            Error::OriginCreate(ref e) => {
+                format!("Error creating origin for account in database, {}", e)
+            }
+            Error::TeamCreate(ref e) => {
+                format!("Error creating team for origin in database, {}", e)
+            }
+            Error::OriginGetResponse(ref e) => {
+                format!("Error retrive origin for account in database, {}", e)
+            }
             Error::OriginGet(ref e) => format!("Error retrive origin by name, {}", e),
             Error::LdapConfigCreate(ref e) => format!("Error creating ldap config, {}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::SamlProviderCreate(ref e) => format!("Error creating saml provider, {}", e),
             Error::OidcProviderCreate(ref e) => format!("Error creating open id provider, {}", e),
-            Error::SamlProviderGetResponse(ref e) => format!("Error get all saml provider list, {}", e),
+            Error::SamlProviderGetResponse(ref e) => {
+                format!("Error get all saml provider list, {}", e)
+            }
             Error::SamlProviderGet(ref e) => format!("Error get saml provider data, {}", e),
-            Error::OpenidProviderGetResponse(ref e) => format!("Error get all open id  provider data, {}", e),
+            Error::OpenidProviderGetResponse(ref e) => {
+                format!("Error get all open id  provider data, {}", e)
+            }
             Error::OidcProviderGet(ref e) => format!("Error get openid  provider data, {}", e),
             Error::PassTicketGet(ref e) => format!("Error get otp data, {}", e),
             Error::PassTicketDelete(ref e) => format!("Error removing otp data, {}", e),
@@ -108,7 +128,6 @@ impl error::Error for Error {
             Error::PassTicketGet(ref err) => err.description(),
             Error::PassTicketDelete(ref err) => err.description(),
             Error::PassTicketCreate(ref err) => err.description(),
-
         }
     }
 }

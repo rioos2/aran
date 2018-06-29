@@ -9,8 +9,8 @@ extern crate rioos_builder_db as db;
 extern crate postgres;
 extern crate serde_json;
 
-pub mod models;
 pub mod error;
+pub mod models;
 
 pub use self::error::{Error, Result};
 
@@ -20,7 +20,6 @@ pub type BuildConfigOutput = Result<std::option::Option<protocol::api::devtool::
 /// build config output as list
 pub type BuildConfigOutputList = Result<Option<Vec<protocol::api::devtool::BuildConfig>>>;
 
-
 /// Build output
 pub type BuildOutput = Result<std::option::Option<protocol::api::devtool::Build>>;
 
@@ -28,7 +27,8 @@ pub type BuildOutput = Result<std::option::Option<protocol::api::devtool::Build>
 pub type BuildOutputList = Result<Option<Vec<protocol::api::devtool::Build>>>;
 
 /// ImageReferences output
-pub type ImageReferencesOutput = Result<std::option::Option<protocol::api::devtool::ImageReferences>>;
+pub type ImageReferencesOutput =
+    Result<std::option::Option<protocol::api::devtool::ImageReferences>>;
 
 /// image reference output as list
 pub type ImageReferencesOutputList = Result<Option<Vec<protocol::api::devtool::ImageReferences>>>;

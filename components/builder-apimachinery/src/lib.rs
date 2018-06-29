@@ -14,14 +14,14 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate woothee;
 
+extern crate chrono_humanize;
 extern crate linked_hash_map;
 extern crate time;
-extern crate chrono_humanize;
 
 pub mod api;
-pub mod error;
 pub mod cache;
+pub mod error;
 pub mod sharding;
 pub use self::error::{Error, Result};
 
-pub use self::sharding::{ShardId, SHARD_COUNT, InstaId};
+pub use self::sharding::{InstaId, ShardId, SHARD_COUNT};

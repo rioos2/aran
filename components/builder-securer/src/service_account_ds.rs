@@ -3,12 +3,12 @@
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 
 use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::{base, service_account};
-use protocol::api::base::MetaFields;
-use protocol::api::base::IdGet;
-use postgres;
 use db::data_store::DataStoreConn;
+use error::{Error, Result};
+use postgres;
+use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::{base, service_account};
 use serde_json;
 
 use super::{ServiceAccountOutput, ServiceAccountOutputList};
@@ -16,7 +16,10 @@ use super::{ServiceAccountOutput, ServiceAccountOutputList};
 pub struct ServiceAccountDS;
 
 impl ServiceAccountDS {
-    pub fn create(datastore: &DataStoreConn, service_create: &service_account::ServiceAccount) -> ServiceAccountOutput {
+    pub fn create(
+        datastore: &DataStoreConn,
+        service_create: &service_account::ServiceAccount,
+    ) -> ServiceAccountOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_service_account_v1($1,$2,$3,$4,$5)",
@@ -35,7 +38,10 @@ impl ServiceAccountDS {
         Ok(None)
     }
 
-    pub fn update(datastore: &DataStoreConn, serviceaccount: &service_account::ServiceAccount) -> ServiceAccountOutput {
+    pub fn update(
+        datastore: &DataStoreConn,
+        serviceaccount: &service_account::ServiceAccount,
+    ) -> ServiceAccountOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM update_service_account_v1($1,$2,$3)",

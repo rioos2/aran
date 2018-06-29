@@ -21,8 +21,10 @@ use iron::status;
 use protocol::api::base::{MetaFields, Status, StatusUpdate};
 use protocol::api::deploy::AssemblyFactory;
 use protocol::api::schema::{dispatch, dispatch_url, type_meta};
-use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE,
-                      CACHE_PREFIX_STACKS_FACTORY};
+use protocol::cache::{
+    ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE,
+    CACHE_PREFIX_STACKS_FACTORY,
+};
 use router::Router;
 use std::sync::Arc;
 

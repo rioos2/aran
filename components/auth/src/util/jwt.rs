@@ -68,20 +68,35 @@ impl ToKey for String {
     }
 }
 
-pub fn encode<P: ToKey>(mut header: JsonValue, signing_key: &P, payload: &JsonValue, algorithm: Algorithm) -> Result<String, Error> {
+pub fn encode<P: ToKey>(
+    mut header: JsonValue,
+    signing_key: &P,
+    payload: &JsonValue,
+    algorithm: Algorithm,
+) -> Result<String, Error> {
     header["alg"] = JsonValue::String(algorithm.to_string());
     header["typ"] = JsonValue::String(STANDARD_HEADER_TYPE.to_owned());
     let signing_input = get_signing_input(&payload, &header)?;
     let signature = match algorithm {
-        Algorithm::HS256 | Algorithm::HS384 | Algorithm::HS512 => sign_hmac(&signing_input, signing_key, algorithm)?,
-        Algorithm::RS256 | Algorithm::RS384 | Algorithm::RS512 => sign_rsa(&signing_input, signing_key, algorithm)?,
-        Algorithm::ES256 | Algorithm::ES384 | Algorithm::ES512 => sign_es(&signing_input, signing_key, algorithm)?,
+        Algorithm::HS256 | Algorithm::HS384 | Algorithm::HS512 => {
+            sign_hmac(&signing_input, signing_key, algorithm)?
+        }
+        Algorithm::RS256 | Algorithm::RS384 | Algorithm::RS512 => {
+            sign_rsa(&signing_input, signing_key, algorithm)?
+        }
+        Algorithm::ES256 | Algorithm::ES384 | Algorithm::ES512 => {
+            sign_es(&signing_input, signing_key, algorithm)?
+        }
     };
 
     Ok(format!("{}.{}", signing_input, signature))
 }
 
-pub fn decode<P: ToKey>(encoded_token: &String, signing_key: &P, algorithm: Algorithm) -> Result<(JsonValue, JsonValue), Error> {
+pub fn decode<P: ToKey>(
+    encoded_token: &String,
+    signing_key: &P,
+    algorithm: Algorithm,
+) -> Result<(JsonValue, JsonValue), Error> {
     let (header, payload, signature, signing_input) = decode_segments(encoded_token)?;
     if !verify_signature(algorithm, signing_input, &signature, signing_key)? {
         Err(Error::SignatureInvalid)
@@ -90,7 +105,11 @@ pub fn decode<P: ToKey>(encoded_token: &String, signing_key: &P, algorithm: Algo
     }
 }
 
-pub fn decode_direct(encoded_token: &String, signing_key: Vec<u8>, algorithm: Algorithm) -> Result<(JsonValue, JsonValue), Error> {
+pub fn decode_direct(
+    encoded_token: &String,
+    signing_key: Vec<u8>,
+    algorithm: Algorithm,
+) -> Result<(JsonValue, JsonValue), Error> {
     let (header, payload, signature, signing_input) = decode_segments(encoded_token)?;
     if !verify_signature_without_tokey(algorithm, signing_input, &signature, signing_key)? {
         Err(Error::SignatureInvalid)
@@ -122,7 +141,11 @@ fn sign_hmac<P: ToKey>(data: &str, key_path: &P, algorithm: Algorithm) -> Result
     Ok(b64_enc(hmac.as_slice(), base64::URL_SAFE))
 }
 
-fn sign_rsa<P: ToKey>(data: &str, private_key_path: &P, algorithm: Algorithm) -> Result<String, Error> {
+fn sign_rsa<P: ToKey>(
+    data: &str,
+    private_key_path: &P,
+    algorithm: Algorithm,
+) -> Result<String, Error> {
     let stp = match algorithm {
         Algorithm::RS256 => MessageDigest::sha256(),
         Algorithm::RS384 => MessageDigest::sha384(),
@@ -135,7 +158,11 @@ fn sign_rsa<P: ToKey>(data: &str, private_key_path: &P, algorithm: Algorithm) ->
     sign(data, key, stp)
 }
 
-fn sign_es<P: ToKey>(data: &str, private_key_path: &P, algorithm: Algorithm) -> Result<String, Error> {
+fn sign_es<P: ToKey>(
+    data: &str,
+    private_key_path: &P,
+    algorithm: Algorithm,
+) -> Result<String, Error> {
     let ec_key = EcKey::private_key_from_pem(&private_key_path.to_key()?)?;
     let key = PKey::from_ec_key(ec_key)?;
     let stp = match algorithm {
@@ -155,7 +182,9 @@ fn sign(data: &str, private_key: PKey, digest: MessageDigest) -> Result<String, 
     Ok(b64_enc(signature.as_slice(), base64::URL_SAFE))
 }
 
-pub fn decode_segments(encoded_token: &String) -> Result<(JsonValue, JsonValue, Vec<u8>, String), Error> {
+pub fn decode_segments(
+    encoded_token: &String,
+) -> Result<(JsonValue, JsonValue, Vec<u8>, String), Error> {
     let raw_segments: Vec<&str> = encoded_token.split(".").collect();
     if raw_segments.len() != SEGMENTS_COUNT {
         return Err(Error::JWTInvalid);
@@ -170,8 +199,13 @@ pub fn decode_segments(encoded_token: &String) -> Result<(JsonValue, JsonValue, 
     Ok((header, payload, signature.clone(), signing_input))
 }
 
-fn decode_header_and_payload(header_segment: &str, payload_segment: &str) -> Result<(JsonValue, JsonValue), Error> {
-    let b64_to_json = |seg| -> Result<JsonValue, Error> { serde_json::from_slice(b64_dec(seg, base64::URL_SAFE)?.as_slice()).map_err(Error::from) };
+fn decode_header_and_payload(
+    header_segment: &str,
+    payload_segment: &str,
+) -> Result<(JsonValue, JsonValue), Error> {
+    let b64_to_json = |seg| -> Result<JsonValue, Error> {
+        serde_json::from_slice(b64_dec(seg, base64::URL_SAFE)?.as_slice()).map_err(Error::from)
+    };
 
     let header_json = b64_to_json(header_segment)?;
     let payload_json = b64_to_json(payload_segment)?;
@@ -192,7 +226,12 @@ fn sign_hmac2(data: &str, key: &Vec<u8>, algorithm: Algorithm) -> Result<Vec<u8>
     signer.sign_to_vec().map_err(Error::from)
 }
 
-fn verify_signature_without_tokey(algorithm: Algorithm, signing_input: String, signature: &[u8], public_key: Vec<u8>) -> Result<bool, Error> {
+fn verify_signature_without_tokey(
+    algorithm: Algorithm,
+    signing_input: String,
+    signature: &[u8],
+    public_key: Vec<u8>,
+) -> Result<bool, Error> {
     match algorithm {
         Algorithm::HS256 | Algorithm::HS384 | Algorithm::HS512 => {
             let signature2 = sign_hmac2(&signing_input, &public_key, algorithm)?;
@@ -219,7 +258,12 @@ fn verify_signature_without_tokey(algorithm: Algorithm, signing_input: String, s
     }
 }
 
-fn verify_signature<P: ToKey>(algorithm: Algorithm, signing_input: String, signature: &[u8], public_key: &P) -> Result<bool, Error> {
+fn verify_signature<P: ToKey>(
+    algorithm: Algorithm,
+    signing_input: String,
+    signature: &[u8],
+    public_key: &P,
+) -> Result<bool, Error> {
     match algorithm {
         Algorithm::HS256 | Algorithm::HS384 | Algorithm::HS512 => {
             let signature2 = sign_hmac2(&signing_input, &public_key.to_key()?, algorithm)?;
@@ -361,7 +405,12 @@ mod tests {
         path.push("my_rsa_2048_key.pem");
         path.to_str().unwrap().to_string();
 
-        let jwt1 = encode(header, &get_rsa_256_private_key_full_path(), &p1, Algorithm::RS256).unwrap();
+        let jwt1 = encode(
+            header,
+            &get_rsa_256_private_key_full_path(),
+            &p1,
+            Algorithm::RS256,
+        ).unwrap();
         let maybe_res = decode(&jwt1, &get_rsa_256_public_key_full_path(), Algorithm::RS256);
         assert!(maybe_res.is_ok());
     }
@@ -374,11 +423,18 @@ mod tests {
         });
         let header = json!({});
         let jwt1 = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkxIjoidmFsMSIsImtleTIiOiJ2YWwyIn0=.RQdLX70LEWL3PFePR2ec7fsBLwi29qK9GL_YfiBKcOWnWsgWMrw0PeJw8h21FloKAYYRq73GmSlF39B5TWbquscf3obfD_y3TYmSjY_STlQ1UTMBnCmwZeMgxuIlq4l7RNpGh_j-42u6YJ3b4zwFiiIGWANYTL0pzXjdIFcUhuY7yeYlFHmWgUOOfv_E_MaP0CgCK6rgeorPtFZ80Z-zYc2R7oXLylgiwJQmwLGzxAcOOcNaZurhQxUQ7GrErY9fOLxfw0vmF4FMSIhQvWIiUV9Meh3MoIwybDhuy5-Y85WZwtXYC7blAZhU0h6tFqwBozt7PS34htj8rkCIqqi0Ng==".to_string();
-        let (h1, p1) = decode(&jwt1, &get_rsa_256_public_key_full_path(), Algorithm::RS256).unwrap();
+        let (h1, p1) =
+            decode(&jwt1, &get_rsa_256_public_key_full_path(), Algorithm::RS256).unwrap();
         println!("\n{}", h1);
         println!("{}", p1);
-        let jwt2 = encode(header, &get_rsa_256_private_key_full_path(), &p1, Algorithm::RS256).unwrap();
-        let (h2, p2) = decode(&jwt2, &get_rsa_256_public_key_full_path(), Algorithm::RS256).unwrap();
+        let jwt2 = encode(
+            header,
+            &get_rsa_256_private_key_full_path(),
+            &p1,
+            Algorithm::RS256,
+        ).unwrap();
+        let (h2, p2) =
+            decode(&jwt2, &get_rsa_256_public_key_full_path(), Algorithm::RS256).unwrap();
         println!("{}", h2);
         println!("{}", p2);
         assert_eq!(jwt1, jwt2);
@@ -392,7 +448,8 @@ mod tests {
         });
         let h1 = json!({"typ" : STANDARD_HEADER_TYPE, "alg" : Algorithm::RS256.to_string()});
         let jwt1 = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkxIjoidmFsMSIsImtleTIiOiJ2YWwyIn0=.RQdLX70LEWL3PFePR2ec7fsBLwi29qK9GL_YfiBKcOWnWsgWMrw0PeJw8h21FloKAYYRq73GmSlF39B5TWbquscf3obfD_y3TYmSjY_STlQ1UTMBnCmwZeMgxuIlq4l7RNpGh_j-42u6YJ3b4zwFiiIGWANYTL0pzXjdIFcUhuY7yeYlFHmWgUOOfv_E_MaP0CgCK6rgeorPtFZ80Z-zYc2R7oXLylgiwJQmwLGzxAcOOcNaZurhQxUQ7GrErY9fOLxfw0vmF4FMSIhQvWIiUV9Meh3MoIwybDhuy5-Y85WZwtXYC7blAZhU0h6tFqwBozt7PS34htj8rkCIqqi0Ng==".to_string();
-        let (h2, p2) = decode(&jwt1, &get_rsa_256_public_key_full_path(), Algorithm::RS256).unwrap();
+        let (h2, p2) =
+            decode(&jwt1, &get_rsa_256_public_key_full_path(), Algorithm::RS256).unwrap();
         assert_eq!(h1.get("typ").unwrap(), h2.get("typ").unwrap());
         assert_eq!(h1.get("alg").unwrap(), h2.get("alg").unwrap());
         assert_eq!(p1, p2);

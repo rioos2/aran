@@ -3,25 +3,28 @@
 
 //! CLI for Rio/OS API setup
 
-use std::path::{Path, PathBuf};
-use std::fs::File;
-use std::str;
 use base64;
+use std::fs::File;
+use std::path::{Path, PathBuf};
+use std::str;
 
-use handlebars::Handlebars;
 use config::Config;
+use handlebars::Handlebars;
 
 use common::ui::UI;
 
+use rio_core::crypto::keys::{PairConf, PairSaverExtn};
 use rio_core::crypto::{SigKeyPair, ROOT_CA};
 use rio_core::fs::{read_from_file, rioconfig_config_path, write_to_file};
-use rio_core::crypto::keys::{PairConf, PairSaverExtn};
 
 use command;
 use error::{Error, Result};
 
 lazy_static! {
-    static  ref RIOCONFIG_TEMPLATE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/rioconfig.hbs").to_str().unwrap());
+    static ref RIOCONFIG_TEMPLATE: PathBuf = PathBuf::from(&*rioconfig_config_path(None)
+        .join("template/rioconfig.hbs")
+        .to_str()
+        .unwrap());
 }
 
 ///Sets up the Rio/OS infrastructure to connect via PKI.
@@ -323,7 +326,12 @@ fn ask_create_controller(ui: &mut UI, controller: &str) -> Result<bool> {
 }
 
 //redundant (create_api and create_serviceaccount)
-fn create_controller(ui: &mut UI, controller: &str, cache_path: &Path, config: &Config) -> Result<()> {
+fn create_controller(
+    ui: &mut UI,
+    controller: &str,
+    cache_path: &Path,
+    config: &Config,
+) -> Result<()> {
     let result = command::origin::key::generate::signed_with_rsa(
         ui,
         &controller,
@@ -383,7 +391,12 @@ fn ask_create_scheduler(ui: &mut UI, scheduler: &str) -> Result<bool> {
 }
 
 //redundant (create_api and create_serviceaccount)
-fn create_scheduler(ui: &mut UI, scheduler: &str, cache_path: &Path, config: &Config) -> Result<()> {
+fn create_scheduler(
+    ui: &mut UI,
+    scheduler: &str,
+    cache_path: &Path,
+    config: &Config,
+) -> Result<()> {
     let result = command::origin::key::generate::signed_with_rsa(
         ui,
         &scheduler,
@@ -438,20 +451,31 @@ fn ask_create_serviceaccount(ui: &mut UI, service_account: &str) -> Result<bool>
 }
 
 fn create_serviceaccount(ui: &mut UI, service_account: &str, cache_path: &Path) -> Result<()> {
-    command::origin::key::generate::signed_with_rsa(ui, &service_account, cache_path, PairConf::new())?;
+    command::origin::key::generate::signed_with_rsa(
+        ui,
+        &service_account,
+        cache_path,
+        PairConf::new(),
+    )?;
     ui.br()?;
     Ok(())
 }
 
-fn create_rioconfig(result: &SigKeyPair, cache_path: &Path, name: &str, config: &Config) -> Result<()> {
+fn create_rioconfig(
+    result: &SigKeyPair,
+    cache_path: &Path,
+    name: &str,
+    config: &Config,
+) -> Result<()> {
     let server_ca = SigKeyPair::get_pair_for(ROOT_CA, cache_path)?;
 
     let json = json!({
         "key":  base64::encode(&result.secret()?),
         "cert": base64::encode(&result.public()?),
         "server_ca": base64::encode(&server_ca.public()?),
-        "ip":config.https.listen,
-        "port": config.https.port,
+        "api_server":config.https.listen,
+        "https_port": config.https.port,
+        "http2_port": config.http2.port,
     });
     let r = Handlebars::new()
         .render_template(&read_from_file(&RIOCONFIG_TEMPLATE)?, &json)

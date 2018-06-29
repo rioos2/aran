@@ -15,10 +15,10 @@ tls_password = "TEAMRIOADVANCEMENT123"
 enabled = ["password", "service_account", "jwt"]
 params = { service_account = "service-account.pub" }
 
-[marketplaces]
-username = "info@riocorp.io"
-token = "TQXu6x1MR6WNwe0ymR"
-endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
+[appstores]
+username = "rioosdolphin@rio.company"
+token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+endpoint = "https://appstores.rioos.xyz:6443/api/v1"
 
 [blockchain]
 endpoint = "http://localhost:7000"

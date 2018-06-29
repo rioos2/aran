@@ -1,12 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use std::result;
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use iron::headers::UserAgent;
 use iron::prelude::*;
-use woothee::parser::{WootheeResult, Parser};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::result;
+use woothee::parser::{Parser, WootheeResult};
 pub const DEFAULT_AGENT: &'static str = "Rio Bulldog";
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SessionCreate {
@@ -16,10 +15,10 @@ pub struct SessionCreate {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //Standard type metadata: kind: SesssionCreate
-    email: String, //email of the user
+    email: String,      //email of the user
     first_name: String, //first name of the user
-    last_name: String, //last name of the user
-    phone: String, //contact number of the user
+    last_name: String,  //last name of the user
+    phone: String,      //contact number of the user
     #[serde(default)]
     avatar: Option<Vec<u8>>, //Avatar picture to identity the user
     company_name: String, //Company name is where the user works.
@@ -216,11 +215,11 @@ impl Into<Session> for SessionCreate {
 pub struct Session {
     #[serde(default)]
     id: String, //Id an unique identifier in systems of record. Generated during creation of the session.
-    email: String, //email of the user
+    email: String,      //email of the user
     first_name: String, //first name of the user
-    last_name: String, //last name of the user
+    last_name: String,  //last name of the user
     roles: Vec<String>, //Roles are Rio/OS role label that applies to the user
-    token: String, //tolen for individual user
+    token: String,      //tolen for individual user
     api_key: String, //A persistenant personal access token is required to authenticate to Rio/OS  in the following situations:  1. When you don't want to login and use the ephermeal authorization tokens. This should be used with caution.
     flags: u32,
     #[serde(default)]
@@ -381,7 +380,6 @@ impl AccountGet {
     }
 }
 
-
 #[derive(PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AccountTokenGet {
     email: String,
@@ -467,10 +465,10 @@ pub struct Account {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //Standard type metadata: kind: Account
-    email: String, //email of the user
+    email: String,      //email of the user
     first_name: String, //first name of the user
-    last_name: String, //last name of the user
-    phone: String, //contact number of the user
+    last_name: String,  //last name of the user
+    phone: String,      //contact number of the user
     #[serde(default)]
     avatar: Option<Vec<u8>>, //Avatar picture to identity the user
     company_name: String, //Company name is where the user works.
@@ -1018,7 +1016,15 @@ impl Device {
     pub fn new() -> Device {
         ::std::default::Default::default()
     }
-    pub fn with(name: String, category: String, os: String, os_version: String, browser_type: String, version: String, vendor: String) -> Device {
+    pub fn with(
+        name: String,
+        category: String,
+        os: String,
+        os_version: String,
+        browser_type: String,
+        version: String,
+        vendor: String,
+    ) -> Device {
         Device {
             name: name,
             category: category,
@@ -1052,19 +1058,17 @@ impl Into<Device> for WootheeResult {
 }
 
 pub fn user_agent(req: &Request) -> WootheeResult {
-   let default_agent = UserAgent(DEFAULT_AGENT.to_owned());
-   let user_agent = req.headers.get::<UserAgent>().unwrap_or(&default_agent);
-   let parser = Parser::new();
-   let result = parser.parse(user_agent).unwrap_or(
-       WootheeResult {
-   name: DEFAULT_AGENT.to_string(),
-   category: "cli".to_string(),
-   os: "Linux".to_string(),
-   os_version: "0".to_string(),
-   browser_type: "CLI".to_string(),
-   version: "0".to_string(),
-   vendor: "Rio/OS".to_string()
-}
-);
-   result
+    let default_agent = UserAgent(DEFAULT_AGENT.to_owned());
+    let user_agent = req.headers.get::<UserAgent>().unwrap_or(&default_agent);
+    let parser = Parser::new();
+    let result = parser.parse(user_agent).unwrap_or(WootheeResult {
+        name: DEFAULT_AGENT.to_string(),
+        category: "cli".to_string(),
+        os: "Linux".to_string(),
+        os_version: "0".to_string(),
+        browser_type: "CLI".to_string(),
+        version: "0".to_string(),
+        vendor: "Rio/OS".to_string(),
+    });
+    result
 }

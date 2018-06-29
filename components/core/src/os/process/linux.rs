@@ -2,15 +2,15 @@
 
 use libc;
 use std::ffi::OsString;
-use std::path::PathBuf;
 use std::ops::Neg;
 use std::os::unix::process::CommandExt;
+use std::path::PathBuf;
 use std::process::{self, Command};
 use time::{Duration, SteadyTime};
 
 use error::{Error, Result};
 
-use super::{HabExitStatus, ExitStatusExt, OsSignal, ShutdownMethod, Signal};
+use super::{ExitStatusExt, HabExitStatus, OsSignal, ShutdownMethod, Signal};
 
 pub type Pid = libc::pid_t;
 pub type SignalCode = libc::c_int;
@@ -166,7 +166,9 @@ impl ExitStatusExt for HabExitStatus {
         unsafe {
             match self.status {
                 None => None,
-                Some(status) if libc::WIFEXITED(status as libc::c_int) => Some(libc::WEXITSTATUS(status as libc::c_int) as u32),
+                Some(status) if libc::WIFEXITED(status as libc::c_int) => {
+                    Some(libc::WEXITSTATUS(status as libc::c_int) as u32)
+                }
                 _ => None,
             }
         }
@@ -176,7 +178,9 @@ impl ExitStatusExt for HabExitStatus {
         unsafe {
             match self.status {
                 None => None,
-                Some(status) if !libc::WIFEXITED(status as libc::c_int) => Some(libc::WTERMSIG(status as libc::c_int) as u32),
+                Some(status) if !libc::WIFEXITED(status as libc::c_int) => {
+                    Some(libc::WTERMSIG(status as libc::c_int) as u32)
+                }
                 _ => None,
             }
         }
@@ -185,9 +189,9 @@ impl ExitStatusExt for HabExitStatus {
 
 #[cfg(test)]
 mod tests {
+    use super::super::*;
     use libc;
     use std::process::Command;
-    use super::super::*;
 
     #[test]
     fn running_process_returns_no_exit_status() {

@@ -1,29 +1,29 @@
-use std::path::{PathBuf, Path};
-use std::fs;
 use std::error::Error;
 use std::fmt;
+use std::fs;
+use std::path::{Path, PathBuf};
 
-#[cfg(feature = "cache")]
-#[cfg(feature = "cache")]
-#[cfg(feature = "cache")]
-#[cfg(feature = "cache")]
-use time::{self, Timespec};
 #[cfg(feature = "cache")]
 #[cfg(feature = "cache")]
 #[cfg(feature = "cache")]
 #[cfg(feature = "cache")]
 use std::time::Duration;
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
+#[cfg(feature = "cache")]
+use time::{self, Timespec};
 
-use iron::prelude::*;
-use iron::{Url, status};
+use http::requested_path::RequestedPath;
 #[cfg(feature = "cache")]
 #[cfg(feature = "cache")]
 #[cfg(feature = "cache")]
 #[cfg(feature = "cache")]
 use iron::modifier::Modifier;
 use iron::modifiers::Redirect;
+use iron::prelude::*;
+use iron::{status, Url};
 use mount::OriginalUrl;
-use http::requested_path::RequestedPath;
 use url;
 
 /// The static file-serving `Handler`.
@@ -53,7 +53,10 @@ impl Static {
     /// If `Path::new("")` is given, files will be served from the current directory.
     #[cfg(feature = "cache")]
     pub fn new<P: Into<PathBuf>>(root: P) -> Static {
-        Static { root: root.into(), cache: None }
+        Static {
+            root: root.into(),
+            cache: None,
+        }
     }
 
     /// Create a new instance of `Static` with a given root path.
@@ -127,7 +130,11 @@ impl Static {
             original_url.path_segments_mut().unwrap().push("");
             let redirect_path = Url::from_generic_url(original_url).unwrap();
 
-            return Ok(Response::with((status::MovedPermanently, format!("Redirecting to {}", redirect_path), Redirect(redirect_path))));
+            return Ok(Response::with((
+                status::MovedPermanently,
+                format!("Redirecting to {}", redirect_path),
+                Redirect(redirect_path),
+            )));
         }
 
         match requested_path.get_file(&metadata) {
@@ -163,7 +170,7 @@ impl Cache {
     }
 
     fn handle<P: AsRef<Path>>(&self, req: &mut Request, path: P) -> IronResult<Response> {
-        use iron::headers::{IfModifiedSince, HttpDate};
+        use iron::headers::{HttpDate, IfModifiedSince};
 
         let path = path.as_ref();
 
@@ -189,11 +196,17 @@ impl Cache {
         }
     }
 
-    fn response_with_cache<P: AsRef<Path>>(&self, req: &mut Request, path: P, size: u64, modified: Timespec) -> IronResult<Response> {
-        use iron::headers::{CacheControl, LastModified, CacheDirective, HttpDate};
+    fn response_with_cache<P: AsRef<Path>>(
+        &self,
+        req: &mut Request,
+        path: P,
+        size: u64,
+        modified: Timespec,
+    ) -> IronResult<Response> {
+        use iron::headers::{CacheControl, CacheDirective, HttpDate, LastModified};
         use iron::headers::{ContentLength, ContentType, ETag, EntityTag};
         use iron::method::Method;
-        use iron::mime::{Mime, TopLevel, SubLevel};
+        use iron::mime::{Mime, SubLevel, TopLevel};
         use iron::modifiers::Header;
 
         let seconds = self.duration.as_secs() as u32;
@@ -208,14 +221,23 @@ impl Cache {
                 None => ContentType(Mime(TopLevel::Text, SubLevel::Plain, vec![])),
                 Some(t) => t.clone(),
             };
-            Response::with((status::Ok, Header(cont_type), Header(ContentLength(metadata.len()))))
+            Response::with((
+                status::Ok,
+                Header(cont_type),
+                Header(ContentLength(metadata.len())),
+            ))
         } else {
             Response::with((status::Ok, path.as_ref()))
         };
 
         response.headers.set(CacheControl(cache));
-        response.headers.set(LastModified(HttpDate(time::at(modified))));
-        response.headers.set(ETag(EntityTag::weak(format!("{0:x}-{1:x}.{2:x}", size, modified.sec, modified.nsec))));
+        response
+            .headers
+            .set(LastModified(HttpDate(time::at(modified))));
+        response.headers.set(ETag(EntityTag::weak(format!(
+            "{0:x}-{1:x}.{2:x}",
+            size, modified.sec, modified.nsec
+        ))));
 
         Ok(response)
     }
