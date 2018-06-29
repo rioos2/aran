@@ -473,8 +473,9 @@ fn create_rioconfig(
         "key":  base64::encode(&result.secret()?),
         "cert": base64::encode(&result.public()?),
         "server_ca": base64::encode(&server_ca.public()?),
-        "ip":config.https.listen,
-        "port": config.https.port,
+        "api_server":config.https.listen,
+        "https_port": config.https.port,
+        "http2_port": config.http2.port,
     });
     let r = Handlebars::new()
         .render_template(&read_from_file(&RIOCONFIG_TEMPLATE)?, &json)

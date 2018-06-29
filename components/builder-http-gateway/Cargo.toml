@@ -45,5 +45,8 @@ path = "../builder-authorize"
 [dependencies.rioos_auth]
 path = "../auth"
 
+[dependencies.rioos_entitlement]
+path = "../entitlement"
+
 [features]
 functional = []

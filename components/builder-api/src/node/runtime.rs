@@ -6,12 +6,13 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-use api::audit::config::{BlockchainConn, MailerCfg};
+use api::audit::config::{BlockchainConn, MailerCfg, SlackCfg};
 use config::Config;
 use entitlement::licensor::Client;
 use protocol::api::audit::Envelope;
 
 use events::error::{into_other, other_error};
+use db::data_store::*;
 use events::{HandlerPart, InternalEvent};
 use node::internal::InternalPart;
 
@@ -59,6 +60,7 @@ pub struct RuntimeHandler {
     pub config: Box<BlockchainConn>,
     pub license: Box<Client>,
     pub mailer: Box<MailerCfg>,
+    pub slack: Box<SlackCfg>,
 }
 
 impl fmt::Debug for RuntimeHandler {
@@ -85,7 +87,7 @@ impl ApiSender {
     }
 
     /// Add peer to peer list
-    pub fn send_email(&self, envl: Envelope) -> io::Result<()> {
+    pub fn push_notify(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PushNotification(envl);
         self.0
             .clone()
@@ -99,23 +101,28 @@ impl ApiSender {
 pub struct Runtime {
     channel: RuntimeChannel,
     handler: RuntimeHandler,
+    datastore: Box<DataStoreConn>,
 }
 
 impl Runtime {
-    pub fn new(config: Arc<Config>) -> Self {
+    pub fn new(config: Arc<Config>, ds: Box<DataStoreConn>) -> Self {
         Runtime {
             channel: RuntimeChannel::new(1024),
             handler: RuntimeHandler {
                 config: Box::new(BlockchainConn::new(&*config.clone())),
                 license: Box::new(Client::new(&*config.clone())),
                 mailer: Box::new(MailerCfg::new(&*config.clone())),
+                slack: Box::new(SlackCfg::new(&*config.clone())),
             },
+            datastore: ds,
         }
     }
+
     /// Launches omessages handler.
     /// This may be used if you want to customize api with the `ApiContext`.
     pub fn start(self) -> io::Result<()> {
         let (handler_part, internal_part) = self.into_reactor();
+
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
             let tx = Arc::new(internal_part);
@@ -155,6 +162,7 @@ impl Runtime {
             handler: self.handler,
             internal_rx,
             api_rx: self.channel.api_requests.1,
+            datastore: self.datastore,
         };
 
         let internal_part = InternalPart { internal_tx };

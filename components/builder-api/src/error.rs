@@ -58,6 +58,7 @@ impl ToString for ErrorMessage {
 #[derive(Debug)]
 pub enum Error {
     Db(db::error::Error),
+    Api(String),
     Secret(service::Error),
     BadPort(String),
     MissingConfiguration(String),
@@ -88,6 +89,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
+            Error::Api(ref e) => format!("{}", e),
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
             Error::MissingConfiguration(ref e) => format!("{},", e),
             Error::Secret(ref e) => format!("{}", e),
@@ -123,6 +125,7 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Db(ref err) => err.description(),
+            Error::Api(ref err) => err,
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
             Error::MissingConfiguration(ref err) => err,
             Error::Secret(ref err) => err.description(),

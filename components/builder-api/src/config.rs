@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{AppStores, AppStoresCfg, Blockchain, BlockchainCfg, Mailer, MailerCfg};
+use api::audit::config::{Blockchain, BlockchainCfg, Mailer, AppStores, AppStoresCfg, Notifications, Slack};
 use api::deploy::config::ServicesCfg;
 use api::objectstorage::config::ObjectStorage;
 use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
@@ -62,7 +62,8 @@ pub struct Config {
     //  controller_endpoint = https://controller.rioos.sh:8999
     pub ping: PinguyCfg,
 
-    pub mailer: MailerCfg,
+    pub notifications: Notifications,
+
     //objectstorage
     pub objectstorage: ObjectStorageCfg,
 }
@@ -145,7 +146,7 @@ impl Default for Config {
             appstores: AppStoresCfg::default(),
             vulnerability: VulnerabilityCfg::default(),
             ping: PinguyCfg::default(),
-            mailer: MailerCfg::default(),
+            notifications: Notifications::default(),
             objectstorage: ObjectStorageCfg::default(),
         }
     }
@@ -339,19 +340,28 @@ impl License for Config {
 
 impl Mailer for Config {
     fn username(&self) -> &str {
-        &self.mailer.username
+        &self.notifications.mailer.username
     }
     fn password(&self) -> &str {
-        &self.mailer.password
+        &self.notifications.mailer.password
     }
     fn domain(&self) -> &str {
-        &self.mailer.domain
+        &self.notifications.mailer.domain
     }
     fn sender(&self) -> &str {
-        &self.mailer.sender
+        &self.notifications.mailer.sender
     }
     fn enabled(&self) -> bool {
-        self.mailer.enabled
+        self.notifications.mailer.enabled
+    }
+}
+
+impl Slack for Config {
+    fn token(&self) -> &str {
+        &self.notifications.slack.token
+    }
+    fn enabled(&self) -> bool {
+        self.notifications.slack.enabled
     }
 }
 

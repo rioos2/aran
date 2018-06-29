@@ -16,9 +16,8 @@ use telemetry::metrics::prometheus::PrometheusClient;
 
 use tls_api::TlsAcceptorBuilder as tls_api_TlsAcceptorBuilder;
 use tls_api_openssl;
-
+use serde;
 use httpbis;
-
 use api::security::config::SecurerConn;
 use db::data_store::DataStoreConn;
 
@@ -36,7 +35,7 @@ impl Streamer {
         }
     }
 
-    pub fn start(self, tls_pair: TLSPair) -> io::Result<()> {
+    pub fn start(self, tls_pair: TLSPair, ds: Box<DataStoreConn>) -> io::Result<()> {
         let listeners: Vec<&str> = vec![
             "secrets",
             "networks",
@@ -59,12 +58,13 @@ impl Streamer {
             "build_configs",
         ];
 
-        let ods = tls_pair.clone().and(DataStoreConn::new().ok());
+        //let ods = tls_pair.clone().and(DataStoreConn::new().ok());
+        let ods = tls_pair.clone().and(serde::export::Some(ds));
 
         match ods {
             Some(ds) => {
                 let mut watchhandler = WatchHandler::new(
-                    Box::new(ds),
+                    ds,
                     Box::new(PrometheusClient::new(&*self.config.clone())),
                     Box::new(SecurerConn::new(&*self.config.clone())),
                 );

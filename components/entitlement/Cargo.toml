@@ -22,5 +22,14 @@ path = "../core"
 [dependencies.rioos_http_client]
 path = "../http-client"
 
+[dependencies.rioos_builder_db]
+path = "../builder-db"
+
+[dependencies.rioos_builder_entitlement]
+path = "../builder-entitlement"
+
+[dependencies.rioos_builder_apimachinery]
+path = "../builder-apimachinery"
+
 [features]
 functional = []

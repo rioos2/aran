@@ -13,9 +13,9 @@ pub mod runtime;
 pub mod streamer;
 pub mod websocket;
 
-use error::Result;
 use std::sync::Arc;
-
+use error::{Error, Result};
+use db::data_store::DataStoreConn;
 use config::Config;
 use watch::config::Streamer;
 
@@ -49,7 +49,15 @@ impl Node {
 
         ui.begin("→ Runtime Guard");
 
-        let rg = runtime::Runtime::new(self.config.clone());
+        let ods = DataStoreConn::new().ok();
+        let ds = match ods {
+            Some(ds) => Box::new(ds),           
+            None => {
+                return Err(Error::Api("Failed to wire the api middleware, \ndatabase isn't ready.".to_string()))
+            }
+        };
+
+        let rg = runtime::Runtime::new(self.config.clone(), ds.clone());
         let api_sender = rg.channel();
 
         ui.end("✓ Runtime Guard");
@@ -57,19 +65,18 @@ impl Node {
         ui.begin("→ Api Srver");
         &rg.start()?;
 
-        api_wirer::ApiSrv::new(self.config.clone()).start(api_sender)?;
+        api_wirer::ApiSrv::new(self.config.clone()).start(api_sender, ds.clone())?;
         ui.end("✓ Api Srver");
 
         ui.begin("→ Streamer");
-        streamer::Streamer::new(self.config.http2.port, self.config.clone())
-            .start((*self.config).http2_tls_pair())?;
+        streamer::Streamer::new(self.config.http2.port, self.config.clone()).start((*self.config).http2_tls_pair(), ds.clone())?;
         ui.end("✓ Streamer");
 
         ui.begin("→ UIStreamer");
-        websocket::Websocket::new(self.config.http2.websocket, self.config.clone())
-            .start((*self.config).http2_tls_pair())?;
+        websocket::Websocket::new(self.config.http2.websocket, self.config.clone()).start((*self.config).http2_tls_pair(), ds.clone())?;
         ui.end("✓ UIStreamer");
 
         Ok(())
     }
 }
+

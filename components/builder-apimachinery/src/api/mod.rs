@@ -20,10 +20,11 @@ pub mod settings_map;
 pub mod storage;
 pub mod team;
 pub mod volume;
-//For future use where we could shards in db based on routekey
 pub mod audit;
 pub mod devtool;
 pub mod marketplace;
 pub mod package;
 pub mod passticket;
 pub mod routesrv;
+pub mod licenses;
+

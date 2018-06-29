@@ -292,14 +292,7 @@ fn new_reqwest_client(url: &Url, fs_root_path: Option<&Path>) -> Result<ReqwestC
 /// * If system information cannot be obtained via `uname`
 fn user_agent(product: &str, version: &str) -> Result<UserAgent> {
     let uname = try!(sys::uname());
-    let ua = format!(
-        "{}/{} ({}-{}; {})",
-        product.trim(),
-        version.trim(),
-        uname.machine.trim().to_lowercase(),
-        uname.sys_name.trim().to_lowercase(),
-        uname.release.trim().to_lowercase()
-    );
+    let ua = format!("{}/{} ({}-{}; {})", product.trim(), version.trim(), uname.machine.trim().to_lowercase(), uname.sys_name.trim().to_lowercase(), uname.release.trim().to_lowercase());
     debug!("User-Agent: {}", &ua);
     Ok(UserAgent::new(ua))
 }

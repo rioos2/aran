@@ -97,12 +97,11 @@ use iron::prelude::*;
 
 use mount::Mount;
 use router::Router;
-
+use db::data_store::DataStoreConn;
 use self::error::AppResult;
 
 use config::GatewayCfg;
 use http::middleware::Cors;
-
 use hyper_native_tls::NativeTlsServer;
 
 /// Apply to a networked application which will act as a Gateway connecting to a RouteSrv.
@@ -112,7 +111,7 @@ pub trait HttpGateway {
     type Config: GatewayCfg;
 
     /// Callback for adding or removing middleware to the `iron::Chain` before server start.
-    fn add_middleware(Arc<Self::Config>, &mut iron::Chain) {
+    fn add_middleware(Arc<Self::Config>, &mut iron::Chain, _ds: Box<DataStoreConn>) {
         ()
     }
 
@@ -124,7 +123,7 @@ pub trait HttpGateway {
     }
 
     /// Returns the Iron Router used when starting the server.
-    fn router(Arc<Self::Config>) -> Router;
+    fn router(Arc<Self::Config>, ds: Box<DataStoreConn>) -> Router;
 }
 
 /// Runs the main server and starts and manages all supporting threads. This function will
@@ -133,14 +132,14 @@ pub trait HttpGateway {
 /// # Errors
 ///
 /// * HTTP server could not start
-pub fn start<T, B, A>(persister_event: (B, A), cfg: Arc<T::Config>) -> AppResult<()>
+pub fn start<T, B, A>(persister_event: (B, A), cfg: Arc<T::Config>, ds: Box<DataStoreConn>) -> AppResult<()>
 where
     T: HttpGateway,
     B: iron::BeforeMiddleware,
     A: iron::AfterMiddleware,
 {
-    let mut chain = Chain::new(T::router(cfg.clone()));
-    T::add_middleware(cfg.clone(), &mut chain);
+    let mut chain = Chain::new(T::router(cfg.clone(), ds.clone()));
+    T::add_middleware(cfg.clone(), &mut chain, ds.clone());
     chain.link_after(Cors);
 
     chain.link(persister_event);
