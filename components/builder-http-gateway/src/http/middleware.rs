@@ -390,8 +390,8 @@ impl BeforeMiddleware for RBAC {
 }
 
 pub struct EntitlementAct {
-   _license: LicensesFascade,
-   _backend: String,
+   license: LicensesFascade,
+   backend: String,
 }
 
 impl EntitlementAct {
