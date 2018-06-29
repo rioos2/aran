@@ -8,10 +8,10 @@ pub enum ObjectStorageBackend {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct ObjectStorageCfg {
-     pub backend: ObjectStorageBackend,
-     pub endpoint: String,
-     pub access_key: String,
-     pub secret_key: String,
+    pub backend: ObjectStorageBackend,
+    pub endpoint: String,
+    pub access_key: String,
+    pub secret_key: String,
 }
 
 impl Default for ObjectStorageCfg {

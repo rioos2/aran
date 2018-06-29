@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use libc::{self, c_int, c_char, mode_t};
+use libc::{self, c_char, c_int, mode_t};
 
-pub use std::os::unix::fs::symlink;
 use std::ffi::CString;
+pub use std::os::unix::fs::symlink;
 
-use error::{Result, Error};
+use error::{Error, Result};
 
 fn validate_raw_path(path: &str) -> Result<*mut c_char> {
     let c_path = match CString::new(path) {

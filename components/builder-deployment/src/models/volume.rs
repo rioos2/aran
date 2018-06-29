@@ -3,12 +3,12 @@
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 use chrono::prelude::*;
 
-use error::{Result, Error};
-use protocol::api::volume;
+use error::{Error, Result};
 use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::volume;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
 use super::super::{VolumeOutput, VolumeOutputList};

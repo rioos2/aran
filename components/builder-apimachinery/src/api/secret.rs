@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Secret {
@@ -65,10 +65,10 @@ impl Secret {
 
     pub fn bit_size(&self) -> Option<u32> {
         *(&self.get_data()
-              .get(Self::SSH_KEY_PAIR_SIZE)
-              .unwrap_or(&Self::DEFAULT_SSH_KEY_PAIR_SIZE.to_string())
-              .parse::<u32>()
-              .ok())
+            .get(Self::SSH_KEY_PAIR_SIZE)
+            .unwrap_or(&Self::DEFAULT_SSH_KEY_PAIR_SIZE.to_string())
+            .parse::<u32>()
+            .ok())
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {

@@ -17,13 +17,13 @@
 use rioos_http::ApiClient as ReqwestClient;
 
 use api::security::config::SecurerConn;
-use error::{Result, Error};
+use error::{Error, Result};
 
 use reqwest::IntoUrl;
 
 use super::Securer;
-use protocol::api::secret::Secret;
 use protocol::api::base::IdGet;
+use protocol::api::secret::Secret;
 
 use service::{SecretOutput, SecretOutputList};
 
@@ -59,7 +59,9 @@ impl EnvKeySecurer {
 
         let token = config.token.split("-").collect::<Vec<_>>();
 
-        Ok(EnvKeySecurer { _client: EnvKeyClient::new(&config.endpoint, token[0])? })
+        Ok(EnvKeySecurer {
+            _client: EnvKeyClient::new(&config.endpoint, token[0])?,
+        })
     }
 }
 

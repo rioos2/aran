@@ -72,7 +72,7 @@ impl ObjectStorageApi {
 
     fn upload(&self, req: &mut Request) -> AranResult<Response> {
         let params_id = self.verify_id_with_name(req)?;
-        let params_name = self.verify_name(req)?;       
+        let params_name = self.verify_name(req)?;
 
         let client = s3::from_config(&self.conn)?;
 
@@ -84,7 +84,7 @@ impl ObjectStorageApi {
 
     fn download(&self, req: &mut Request) -> AranResult<Response> {
         let params_id = self.verify_id_with_name(req)?;
-        let params_name = self.verify_name(req)?;       
+        let params_name = self.verify_name(req)?;
 
         let client = s3::from_config(&self.conn)?;
 
@@ -114,17 +114,23 @@ impl Api for ObjectStorageApi {
 
         router.post(
             "/accounts/:account_id/buckets",
-            XHandler::new(C { inner: create.clone() }).before(basic.clone()),
+            XHandler::new(C {
+                inner: create.clone(),
+            }).before(basic.clone()),
             "account_buckets_create",
-        );        
+        );
         router.get(
             "/accounts/:account_id/buckets",
-            XHandler::new(C { inner: list_blank.clone() }).before(basic.clone()),
+            XHandler::new(C {
+                inner: list_blank.clone(),
+            }).before(basic.clone()),
             "account_buckets_list",
         );
         router.get(
             "/buckets",
-            XHandler::new(C { inner: list_blank.clone() }).before(basic.clone()),
+            XHandler::new(C {
+                inner: list_blank.clone(),
+            }).before(basic.clone()),
             "buckets_list",
         );
         router.get(

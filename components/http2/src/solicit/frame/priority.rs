@@ -1,15 +1,14 @@
-use bytes::IntoBuf;
-use bytes::BigEndian;
 use bytes::Buf;
+use bytes::IntoBuf;
 
-use solicit::StreamId;
-use solicit::frame::Frame;
-use solicit::frame::FrameIR;
-use solicit::frame::FrameHeader;
-use solicit::frame::RawFrame;
 use solicit::frame::builder::FrameBuilder;
-use solicit::frame::flags::NoFlag;
 use solicit::frame::flags::Flags;
+use solicit::frame::flags::NoFlag;
+use solicit::frame::Frame;
+use solicit::frame::FrameHeader;
+use solicit::frame::FrameIR;
+use solicit::frame::RawFrame;
+use solicit::StreamId;
 
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub struct PriorityFrame {
@@ -46,7 +45,7 @@ impl Frame for PriorityFrame {
         }
 
         let mut payload = raw_frame.payload().into_buf();
-        let first = payload.get_u32::<BigEndian>();
+        let first = payload.get_u32_be();
         let exclusive = (first & 0x80000000) != 0;
         let stream_dep = first & !0x80000000;
         let weight = payload.get_u8();

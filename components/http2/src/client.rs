@@ -1,7 +1,7 @@
-use std::sync::Arc;
-use std::thread;
 use std::net::SocketAddr;
 use std::net::ToSocketAddrs;
+use std::sync::Arc;
+use std::thread;
 
 use bytes::Bytes;
 
@@ -9,8 +9,8 @@ use futures::future;
 use futures::future::Future;
 use futures::stream::Stream;
 use futures::sync::mpsc::unbounded;
-use futures::sync::mpsc::UnboundedSender;
 use futures::sync::mpsc::UnboundedReceiver;
+use futures::sync::mpsc::UnboundedSender;
 use futures::sync::oneshot;
 
 use tokio_core::reactor;
@@ -31,13 +31,13 @@ use solicit::StreamId;
 
 use solicit_async::*;
 
-use client_conn::*;
 use client_conf::*;
+use client_conn::*;
 use common::*;
-use stream_part::*;
 use service::Service;
-use socket::ToClientStream;
 use socket::AnySocketAddr;
+use socket::ToClientStream;
+use stream_part::*;
 
 pub use client_tls::ClientTlsOption;
 
@@ -220,7 +220,11 @@ impl Client {
         client.build()
     }
 
-    pub fn new_expl<C: TlsConnector>(addr: &SocketAddr, tls: ClientTlsOption<C>, conf: ClientConf) -> Result<Client> {
+    pub fn new_expl<C: TlsConnector>(
+        addr: &SocketAddr,
+        tls: ClientTlsOption<C>,
+        conf: ClientConf,
+    ) -> Result<Client> {
         let mut client = ClientBuilder::new();
         client.addr = Some(AnySocketAddr::Inet(addr.clone()));
         client.tls = tls;
@@ -293,7 +297,8 @@ impl Service for Client {
             return Response::err(error::Error::Other("client controller died"));
         }
 
-        let resp_rx = resp_rx.map_err(|oneshot::Canceled| error::Error::Other("client likely died"));
+        let resp_rx =
+            resp_rx.map_err(|oneshot::Canceled| error::Error::Other("client likely died"));
 
         let resp_rx = resp_rx.map(|r| r.into_stream_flag());
 
@@ -393,7 +398,16 @@ impl ClientConnectionCallbacks for CallbacksImpl {
 }
 
 // Event loop entry point
-fn spawn_client_event_loop<T: ToClientStream + Send + Clone + 'static, C: TlsConnector>(handle: reactor::Handle, shutdown_future: ShutdownFuture, socket_addr: T, tls: ClientTlsOption<C>, conf: ClientConf, done_tx: oneshot::Sender<()>, controller_tx: UnboundedSender<ControllerCommand>, controller_rx: UnboundedReceiver<ControllerCommand>) {
+fn spawn_client_event_loop<T: ToClientStream + Send + Clone + 'static, C: TlsConnector>(
+    handle: reactor::Handle,
+    shutdown_future: ShutdownFuture,
+    socket_addr: T,
+    tls: ClientTlsOption<C>,
+    conf: ClientConf,
+    done_tx: oneshot::Sender<()>,
+    controller_tx: UnboundedSender<ControllerCommand>,
+    controller_rx: UnboundedReceiver<ControllerCommand>,
+) {
     let (http_conn, conn_future) = ClientConnection::new(
         handle.clone(),
         Box::new(socket_addr.clone()),

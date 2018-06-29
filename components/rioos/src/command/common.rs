@@ -1,9 +1,9 @@
 pub use error::{Error, Result};
 
-use prettytable::Table;
-use prettytable::row::Row;
 use prettytable::cell::Cell;
 use prettytable::format;
+use prettytable::row::Row;
+use prettytable::Table;
 
 pub fn pretty_table(results: Vec<Vec<String>>, title: Row) {
     let rows = results

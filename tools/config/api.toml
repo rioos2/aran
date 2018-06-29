@@ -12,13 +12,13 @@ tls = "api-server.pfx"
 tls_password = "TEAMRIOADVANCEMENT123"
 
 [identity]
-enabled = ["password", "service_account"]
+enabled = ["password", "service_account", "jwt"]
 params = { service_account = "service-account.pub" }
 
-[marketplaces]
+[appstores]
 username = "rioosdolphin@rio.company"
 token = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
-endpoint = "https://marketplaces.rioos.xyz:6443/api/v1"
+endpoint = "https://appstores.rioos.xyz:6443/api/v1"
 
 [blockchain]
 endpoint = "http://localhost:7000"
@@ -50,15 +50,20 @@ controller_endpoint = "http://localhost:10252/"
 scheduler_endpoint = "http://localhost:10251"
 machineconsole_endpoint = "http://localhost:8005"
 
-[mailer]
-enabled = true
-username = ""
-password = ""
-domain = ""
-sender = ""
-
 [objectstorage]
-backend = "openio"
+backend = "OpenIO"
 endpoint = "https://env.envkey.com/v1/"
 access_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 secret_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+
+[[notifications]]
+ [mailer]
+  enabled = true
+  username = ""
+  password = ""
+  domain = ""
+  sender = ""
+
+ [slack]
+  enabled = true
+  token = ""

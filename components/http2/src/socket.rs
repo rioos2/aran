@@ -1,9 +1,9 @@
-use std::io;
-use std::net::SocketAddr;
 use std::any::Any;
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
+use std::io;
+use std::net::SocketAddr;
 
 use tokio_core::reactor;
 use tokio_io::AsyncRead;
@@ -23,7 +23,8 @@ pub trait ToSocketListener {
 #[derive(Clone)]
 pub enum AnySocketAddr {
     Inet(SocketAddr),
-    #[cfg(unix)] Unix(String),
+    #[cfg(unix)]
+    Unix(String),
 }
 
 impl Display for AnySocketAddr {
@@ -68,7 +69,10 @@ impl ToSocketListener for AnySocketAddr {
 }
 
 impl ToClientStream for AnySocketAddr {
-    fn connect(&self, handle: &reactor::Handle) -> Box<Future<Item = Box<StreamItem>, Error = io::Error> + Send> {
+    fn connect(
+        &self,
+        handle: &reactor::Handle,
+    ) -> Box<Future<Item = Box<StreamItem>, Error = io::Error> + Send> {
         match self {
             &AnySocketAddr::Inet(ref inet_addr) => inet_addr.connect(handle),
             #[cfg(unix)]
@@ -84,15 +88,19 @@ pub trait ToTokioListener {
 }
 
 pub trait ToServerStream {
-    fn incoming(self: Box<Self>) -> Box<Stream<Item = (Box<StreamItem>, Box<Any>), Error = io::Error>>;
+    fn incoming(
+        self: Box<Self>,
+    ) -> Box<Stream<Item = (Box<StreamItem>, Box<Any>), Error = io::Error>>;
 }
 
 pub trait ToClientStream: Display + Send + Sync {
-    fn connect(&self, handle: &reactor::Handle) -> Box<Future<Item = Box<StreamItem>, Error = io::Error> + Send>;
+    fn connect(
+        &self,
+        handle: &reactor::Handle,
+    ) -> Box<Future<Item = Box<StreamItem>, Error = io::Error> + Send>;
 }
 
-pub trait StreamItem
-    : AsyncRead + AsyncWrite + io::Read + io::Write + Debug + Send + Sync {
+pub trait StreamItem: AsyncRead + AsyncWrite + io::Read + io::Write + Debug + Send + Sync {
     fn is_tcp(&self) -> bool;
 
     fn set_nodelay(&self, no_delay: bool) -> io::Result<()>;

@@ -33,7 +33,6 @@ pub trait SecurerAuth {
     fn token(&self) -> &str;
 }
 
-
 #[derive(Clone)]
 pub struct SecurerConn {
     pub backend: SecureBackend,

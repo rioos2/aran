@@ -3,7 +3,7 @@
 //! Libraries  module used by builder node
 
 extern crate rioos_builder_db as db;
-extern crate rioos_builder_health_nodes as nodesrv;
+extern crate rioos_builder_health_nodes as clusters;
 extern crate rioos_http_client as rioos_http;
 extern crate rioos_telemetry as telemetry;
 

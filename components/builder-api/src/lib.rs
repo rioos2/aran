@@ -29,10 +29,11 @@ extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_audit as audit;
 extern crate rioos_builder_authorizer as authorize;
 extern crate rioos_builder_db as db;
+// extern crate rioos_builder_netsrv as network;
 extern crate rioos_builder_deployment as deploy;
 extern crate rioos_builder_devtooling as devtooling;
 extern crate rioos_builder_diagnostics as rio_diago;
-extern crate rioos_builder_health_nodes as nodesrv;
+extern crate rioos_builder_health_nodes as clusters;
 extern crate rioos_builder_httpgateway as http_gateway;
 extern crate rioos_builder_jobsbuilder as job;
 extern crate rioos_builder_scalers as scale;
@@ -95,6 +96,7 @@ pub mod api;
 
 pub mod command;
 pub mod events;
+pub mod hooks;
 pub mod node;
 pub mod server;
 pub mod validator;
@@ -106,3 +108,4 @@ pub use self::error::{Error, Result};
 extern crate bytes;
 
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
+pub const USER_AGENT: &'static str = "Rio/OS Blu";

@@ -5,8 +5,8 @@ use std::fmt;
 use std::net::{IpAddr, Ipv4Addr};
 
 use num_cpus;
-use url::percent_encoding::{utf8_percent_encode, PATH_SEGMENT_ENCODE_SET};
 use postgres::params::{ConnectParams, Host, IntoConnectParams};
+use url::percent_encoding::{utf8_percent_encode, PATH_SEGMENT_ENCODE_SET};
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]

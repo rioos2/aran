@@ -1,15 +1,15 @@
 // Copyright 2018 The Rio Advancement Inc
 //
-use std::collections::HashMap;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::iter::Iterator;
 
 use error::Result;
 
-use protocol::api::{linker, deploy};
+use protocol::api::{deploy, linker};
 
-use builder::service::{SERVICE_TYPE_LOADBALANCER, SERVICE_TYPE_EXTERNALNAME};
 use builder::service::graph::ServiceGraph;
+use builder::service::{SERVICE_TYPE_EXTERNALNAME, SERVICE_TYPE_LOADBALANCER};
 
 pub struct ServiceTreeStats {
     pub target: String,

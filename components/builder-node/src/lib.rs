@@ -3,19 +3,19 @@
 //! Libraries  module used by builder node
 
 extern crate chrono;
+extern crate cidr;
+extern crate ipnet;
+extern crate itertools;
+extern crate oping;
+extern crate rand;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
 extern crate rioos_telemetry as telemetry;
-extern crate itertools;
-extern crate oping;
-extern crate cidr;
-extern crate rand;
-extern crate ipnet;
 
 extern crate postgres;
 extern crate serde_json;
 
-pub mod node_ds;
+mod discover;
 pub mod error;
 pub mod models;
 

@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use audit::config::LogsCfg;
 use watch::config::StreamerCfg;
 
-use api::audit::config::{BlockchainCfg, MarketplacesCfg};
+use api::audit::config::{AppStoresCfg, BlockchainCfg};
 use api::deploy::config::ServicesCfg;
 use api::security::config::SecurerCfg;
 use rio_core::fs::rioconfig_config_path;
@@ -35,9 +35,10 @@ impl ConfigValidator for HttpsCfg {
             .unwrap());
 
         if !tls_location.exists() {
-            return Err(Error::MissingConfiguration(
-                format!("File Not Found at {}", tls_location.display()),
-            ));
+            return Err(Error::MissingConfiguration(format!(
+                "File Not Found at {}",
+                tls_location.display()
+            )));
         }
 
         Ok(())
@@ -89,7 +90,6 @@ impl ConfigValidator for IdentityCfg {
             s.push("enabled");
         }
 
-
         self.enabled
             .clone()
             .into_iter()
@@ -109,9 +109,10 @@ impl ConfigValidator for IdentityCfg {
 
         debug!("Error in validating identity.");
 
-        Err(Error::MissingConfiguration(
-            format!("Missing  in api.toml. [identity] → {:?}", s),
-        ))
+        Err(Error::MissingConfiguration(format!(
+            "Missing  in api.toml. [identity] → {:?}",
+            s
+        )))
     }
 }
 
@@ -149,9 +150,10 @@ impl ConfigValidator for ServicesCfg {
 
         debug!("Error in validating services.");
 
-        Err(Error::MissingConfiguration(
-            format!("Missing  in api.toml. [services] → {:?}", s),
-        ))
+        Err(Error::MissingConfiguration(format!(
+            "Missing  in api.toml. [services] → {:?}",
+            s
+        )))
     }
 }
 
@@ -172,8 +174,7 @@ impl ConfigValidator for LogsCfg {
     fn valid(&self) -> Result<()> {
         if self.influx_endpoint.is_empty() {
             return Err(Error::MissingConfiguration(
-                "Missing  in api.toml.  [logs] → influx_endpoint"
-                    .to_string(),
+                "Missing  in api.toml.  [logs] → influx_endpoint".to_string(),
             ));
         }
         Ok(())
@@ -185,16 +186,15 @@ impl ConfigValidator for BlockchainCfg {
     fn valid(&self) -> Result<()> {
         if self.endpoint.is_empty() {
             return Err(Error::MissingConfiguration(
-                "Missing  in api.toml. [blockchain] → endpoint"
-                    .to_string(),
+                "Missing  in api.toml. [blockchain] → endpoint".to_string(),
             ));
         }
         Ok(())
     }
 }
 
-/// Validate the presence of marketplace endpoint, email, token
-impl ConfigValidator for MarketplacesCfg {
+/// Validate the presence of appstore endpoint, email, token
+impl ConfigValidator for AppStoresCfg {
     fn valid(&self) -> Result<()> {
         let mut s: Vec<&str> = vec![];
 
@@ -212,8 +212,9 @@ impl ConfigValidator for MarketplacesCfg {
             return Ok(());
         }
 
-        Err(Error::MissingConfiguration(
-            format!("Missing  in api.toml. [marketplaces] → {:?}", s),
-        ))
+        Err(Error::MissingConfiguration(format!(
+            "Missing  in api.toml. [appstores] → {:?}",
+            s
+        )))
     }
 }

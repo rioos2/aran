@@ -3,11 +3,11 @@ use std::any::Any;
 use std::error::Error;
 use std::fmt;
 
-use iron::prelude::*;
 use bodyparser::BodyError;
 use bodyparser::BodyErrorCause::JsonError;
-use iron::status::Status;
 use http::rendering::render_json;
+use iron::prelude::*;
+use iron::status::Status;
 
 pub const SUCCESS: &'static str = "Success";
 pub const FAILURE: &'static str = "Failure";
@@ -159,7 +159,6 @@ impl<T: AranError> AranError for Box<T> {
 pub type AranResult<T> = Result<T, Box<AranError>>;
 
 pub type AranValidResult<T> = Result<Box<T>, Box<AranError>>;
-
 
 // =============================================================================
 // Error impls
@@ -319,7 +318,6 @@ impl fmt::Display for NotAcceptable {
     }
 }
 
-
 pub struct NotAccess(String);
 
 impl AranError for NotAccess {
@@ -397,7 +395,6 @@ impl fmt::Display for MalformedBody {
     }
 }
 
-
 pub struct Entitlement(String);
 
 impl AranError for Entitlement {
@@ -424,7 +421,6 @@ impl fmt::Display for Entitlement {
     }
 }
 
-
 pub struct BadGateway(String);
 
 impl AranError for BadGateway {
@@ -450,7 +446,6 @@ impl fmt::Display for BadGateway {
         self.0.fmt(f)
     }
 }
-
 
 pub struct Conflict(String);
 

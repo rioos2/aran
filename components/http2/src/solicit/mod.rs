@@ -1,14 +1,14 @@
 //! The module implements the framing layer of HTTP/2 and exposes an API for using it.
 
-use std::u32;
 use std::fmt;
+use std::u32;
 
 use self::frame::settings::HttpSettings;
 
-pub mod frame;
 pub mod connection;
-pub mod session;
+pub mod frame;
 pub mod header;
+pub mod session;
 
 // 6.5.2 Defined SETTINGS Parameters
 pub const DEFAULT_SETTINGS: HttpSettings = HttpSettings {

@@ -3,11 +3,11 @@
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 
 use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::scale;
-use protocol::api::base::MetaFields;
-use postgres;
 use db::data_store::DataStoreConn;
+use error::{Error, Result};
+use postgres;
+use protocol::api::base::MetaFields;
+use protocol::api::scale;
 use serde_json;
 
 use protocol::api::base::IdGet;
@@ -84,9 +84,8 @@ impl<'a> DataStore<'a> {
     pub fn list_blank(&self) -> HorizontalScalingOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_hs_v1()", &[]).map_err(
-            Error::HSGet,
-        )?;
+        let rows = &conn.query("SELECT * FROM get_hs_v1()", &[])
+            .map_err(Error::HSGet)?;
 
         let mut response = Vec::new();
 

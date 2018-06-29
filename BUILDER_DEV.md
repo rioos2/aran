@@ -35,6 +35,8 @@ After you clone  `aran.git`, please do the following.
 
 ### 5. Remove `println!` when you commit.
 
+### 6. Fetch/Merge before you commit. Here is a screencast [watch](https://asciinema.org/a/a6kiuTwI2HHyAyFKI3k7UzV75)
+
 ***
 
 The below section describes setting up a development environment. 
@@ -299,7 +301,7 @@ You should see a response similar to the following:
          "description":"Service is currently down"
       },
       {
-         "name":"Rio.Marketplace",
+         "name":"Rio.AppStore",
          "status":"down",
          "description":"Service is currently down"
       },
@@ -383,7 +385,7 @@ You must have a valid $RIOOS_HOME/config directory.
 
 ./rioos_apiserver migrate
 
-# Use the marketplaces.rioos.xyz (userid/pw)
+# Use the appstore.rioos.xyz (userid/pw)
 ./rioos_apiserver sync
 
 ./rioos_apiserver start

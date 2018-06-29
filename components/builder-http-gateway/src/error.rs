@@ -30,7 +30,9 @@ impl fmt::Display for Error {
             Error::Auth(ref e) => format!("Rio/OS authorization error, {}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
-            Error::RequiredConfigField(ref e) => format!("Missing required field in configuration, {}", e),
+            Error::RequiredConfigField(ref e) => {
+                format!("Missing required field in configuration, {}", e)
+            }
             Error::CryptoError(ref e) => format!("Crypto error: {}", e),
             Error::UrlParseError(ref e) => format!("{}", e),
             Error::Sys => format!("Internal system error"),

@@ -1,8 +1,8 @@
 //! Implements the `WINDOW_UPDATE` HTTP/2 frame.
 
-use solicit::StreamId;
-use solicit::frame::{Frame, FrameIR, FrameBuilder, FrameHeader, RawFrame};
 use solicit::frame::flags::*;
+use solicit::frame::{Frame, FrameBuilder, FrameHeader, FrameIR, RawFrame};
+use solicit::StreamId;
 
 /// The minimum size for the `WINDOW_UPDATE` frame payload.
 pub const WINDOW_UPDATE_FRAME_LEN: u32 = 4;
@@ -95,10 +95,10 @@ impl FrameIR for WindowUpdateFrame {
 mod tests {
     use super::WindowUpdateFrame;
 
-    use solicit::tests::common::raw_frame_from_parts;
     use solicit::frame::Frame;
-    use solicit::frame::FrameIR;
     use solicit::frame::FrameHeader;
+    use solicit::frame::FrameIR;
+    use solicit::tests::common::raw_frame_from_parts;
 
     #[test]
     fn test_parse_valid_connection_level() {
@@ -110,7 +110,8 @@ mod tests {
 
     #[test]
     fn test_parse_valid_max_increment() {
-        let raw = raw_frame_from_parts(FrameHeader::new(4, 0x8, 0, 0), vec![0xff, 0xff, 0xff, 0xff]);
+        let raw =
+            raw_frame_from_parts(FrameHeader::new(4, 0x8, 0, 0), vec![0xff, 0xff, 0xff, 0xff]);
         let frame = WindowUpdateFrame::from_raw(&raw).expect("valid WINDOW_UPDATE");
         // Automatically ignores the reserved bit...
         assert_eq!(frame.increment, 0x7FFFFFFF);
@@ -137,9 +138,10 @@ mod tests {
     #[test]
     fn test_serialize_connection_level() {
         let frame = WindowUpdateFrame::for_connection(10);
-        let expected: Vec<u8> = raw_frame_from_parts(FrameHeader::new(4, 0x8, 0, 0), vec![0, 0, 0, 10])
-            .as_ref()
-            .to_owned();
+        let expected: Vec<u8> =
+            raw_frame_from_parts(FrameHeader::new(4, 0x8, 0, 0), vec![0, 0, 0, 10])
+                .as_ref()
+                .to_owned();
         let serialized = frame.serialize_into_vec();
 
         assert_eq!(expected, serialized);

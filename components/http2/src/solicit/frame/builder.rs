@@ -1,7 +1,7 @@
 //! Defines the `FrameBuilder` trait and some default implementations of the trait.
 
-use solicit::frame::FrameHeader;
 use solicit::frame::pack_header;
+use solicit::frame::FrameHeader;
 use solicit::frame::FRAME_HEADER_LEN;
 
 /// A trait that provides additional methods for serializing HTTP/2 frames.

@@ -1,8 +1,8 @@
 pub use error::{Error, Result};
 
-use common::ui::UI;
-use api_client::Client;
 use super::super::common::pretty_table;
+use api_client::Client;
+use common::ui::UI;
 
 pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> Result<()> {
     ui.begin("Constructing a list of jobs for you...")?;
@@ -21,8 +21,6 @@ pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> R
          https://bit.ly/rioos_sh_usersguide",
     )?;
 
-    ui.end(
-        format!("{} records listed.", results.to_owned().len()),
-    )?;
+    ui.end(format!("{} records listed.", results.to_owned().len()))?;
     Ok(())
 }

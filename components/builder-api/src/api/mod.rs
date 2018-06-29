@@ -141,7 +141,7 @@ impl RequestVerifier for NameParmsVerifier {
 //IdWithNameParmsVerifier verifies if the request sent a parameter
 /// `id`
 /// If it doesn't then it sends an MissingParameter
-/// It is same as idparmverifier, but the difference is id verifier allow only numeric, 
+/// It is same as idparmverifier, but the difference is id verifier allow only numeric,
 /// but in this verifier allows also string contents  
 
 struct IdWithNameParmsVerifier {}

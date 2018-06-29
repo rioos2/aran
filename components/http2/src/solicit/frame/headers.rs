@@ -2,9 +2,9 @@
 
 use bytes::Bytes;
 
-use solicit::StreamId;
-use solicit::frame::{FrameBuilder, FrameIR, Frame, FrameHeader, RawFrame, parse_padded_payload};
 use solicit::frame::flags::*;
+use solicit::frame::{parse_padded_payload, Frame, FrameBuilder, FrameHeader, FrameIR, RawFrame};
+use solicit::StreamId;
 
 pub const HEADERS_FRAME_TYPE: u8 = 0x1;
 
@@ -147,7 +147,11 @@ impl HeadersFrame {
 
     /// Creates a new `HeadersFrame` with the given header fragment, stream ID
     /// and stream dependency information. No padding and no flags are set.
-    pub fn with_dependency(fragment: Vec<u8>, stream_id: StreamId, stream_dep: StreamDependency) -> HeadersFrame {
+    pub fn with_dependency(
+        fragment: Vec<u8>,
+        stream_id: StreamId,
+        stream_dep: StreamDependency,
+    ) -> HeadersFrame {
         HeadersFrame {
             header_fragment: Bytes::from(fragment),
             stream_id: stream_id,
@@ -321,12 +325,12 @@ impl FrameIR for HeadersFrame {
 
 #[cfg(test)]
 mod tests {
-    use super::{HeadersFrame, HeadersFlag, StreamDependency};
+    use super::{HeadersFlag, HeadersFrame, StreamDependency};
     use solicit::frame::tests::build_padded_frame_payload;
-    use solicit::tests::common::raw_frame_from_parts;
-    use solicit::frame::{pack_header, Frame};
     use solicit::frame::FrameHeader;
     use solicit::frame::FrameIR;
+    use solicit::frame::{pack_header, Frame};
+    use solicit::tests::common::raw_frame_from_parts;
 
     /// Tests that a stream dependency structure can be correctly parsed by the
     /// `StreamDependency::parse` method.
