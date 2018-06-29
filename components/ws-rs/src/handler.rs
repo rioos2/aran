@@ -1,11 +1,11 @@
-use url;
 use log::Level::Error as ErrorLevel;
 use openssl::ssl::{SslConnectorBuilder, SslMethod, SslStream};
+use url;
 
-use message::Message;
 use frame::Frame;
-use protocol::CloseCode;
 use handshake::{Handshake, Request, Response};
+use message::Message;
+use protocol::CloseCode;
 use result::{Error, Kind, Result};
 use util::{Timeout, Token};
 
@@ -324,13 +324,13 @@ where
 mod test {
     #![allow(unused_imports, unused_variables, dead_code)]
     use super::*;
-    use url;
-    use mio;
-    use handshake::{Handshake, Request, Response};
-    use protocol::CloseCode;
     use frame;
+    use handshake::{Handshake, Request, Response};
     use message;
+    use mio;
+    use protocol::CloseCode;
     use result::Result;
+    use url;
 
     #[derive(Debug, Eq, PartialEq)]
     struct M;

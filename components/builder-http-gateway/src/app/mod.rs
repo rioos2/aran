@@ -111,7 +111,7 @@ pub trait HttpGateway {
     type Config: GatewayCfg;
 
     /// Callback for adding or removing middleware to the `iron::Chain` before server start.
-    fn add_middleware(Arc<Self::Config>, &mut iron::Chain, ds: Box<DataStoreConn>) {
+    fn add_middleware(Arc<Self::Config>, &mut iron::Chain, _ds: Box<DataStoreConn>) {
         ()
     }
 
@@ -149,13 +149,16 @@ where
     server.threads = cfg.handler_count();
     let https_listen_addr = (cfg.listen_addr().clone(), cfg.listen_port());
 
-    let tls_tuple = cfg.tls_pair()
-        .unwrap_or(("api-server.pfx".to_string(), vec![], "".to_string()));
+    let tls_tuple =
+        cfg.tls_pair()
+            .unwrap_or(("api-server.pfx".to_string(), vec![], "".to_string()));
 
     thread::Builder::new()
         .name("http-handler".to_string())
         .spawn(move || {
-            let tls_server = NativeTlsServer::new(PathBuf::from(&tls_tuple.0.clone()), &tls_tuple.2.clone()).unwrap();
+            let tls_server =
+                NativeTlsServer::new(PathBuf::from(&tls_tuple.0.clone()), &tls_tuple.2.clone())
+                    .unwrap();
             server.https(https_listen_addr, tls_server)
         })
         .unwrap();

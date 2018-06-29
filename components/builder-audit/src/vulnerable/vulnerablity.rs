@@ -4,12 +4,12 @@
 
 use super::super::error::Result;
 
-use std::io::Read;
 use http_client::reqwest_client::http_basic_get;
+use std::io::Read;
 
-use serde_json;
-use protocol::api::imagevuln::Vulnerable;
 use config;
+use protocol::api::imagevuln::Vulnerable;
+use serde_json;
 
 /// Read the expression query language as per this link
 //https://prometheus.io/docs/querying/basics/

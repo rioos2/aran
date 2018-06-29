@@ -1,5 +1,5 @@
-use futures::executor::NotifyHandle;
 use futures::executor::Notify;
+use futures::executor::NotifyHandle;
 
 pub fn notify_noop() -> NotifyHandle {
     struct Noop;

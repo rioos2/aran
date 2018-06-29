@@ -19,7 +19,12 @@ impl ServiceAccountAuthenticate {
     // it authenticates serviceaccount name and JWT token values
     // first it validates some static header and payload claims
     // then token is valid or not
-    pub fn from_name_and_webtoken(datastore: &DataStoreConn, name: String, webtoken: String, key: PathBuf) -> error::Result<bool> {
+    pub fn from_name_and_webtoken(
+        datastore: &DataStoreConn,
+        name: String,
+        webtoken: String,
+        key: PathBuf,
+    ) -> error::Result<bool> {
         try!(get_service_account(datastore, name));
         let jwt = try!(JWTAuthenticator::new(webtoken.clone()));
         try!(jwt.has_correct_issuer(LEGACYUSERACCOUNTISSUER));

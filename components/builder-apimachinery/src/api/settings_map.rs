@@ -1,6 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
+use api::base::WhoAmITypeMeta;
 use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SettingsMap {
@@ -8,9 +9,9 @@ pub struct SettingsMap {
     id: String,
     #[serde(default)]
     type_meta: TypeMeta, //TypeMeta describes an individual object in an API response or request with strings representing the type of the object and its API schema version.
-    object_meta: ObjectMeta,            //ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.
+    object_meta: ObjectMeta, //ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.
     metadata: BTreeMap<String, String>, //describe the origin name of the settings map
-    data: BTreeMap<String, String>,     //describe the security information
+    data: BTreeMap<String, String>, //describe the security information
     #[serde(default)]
     created_at: String,
 }
@@ -59,6 +60,12 @@ impl SettingsMap {
         self.created_at.clone()
     }
 }
+
+impl WhoAmITypeMeta for SettingsMap {
+    const MY_KIND: &'static str = "POST:settingsmap";
+}
+
+
 impl MetaFields for SettingsMap {
     /// Returns the latest self with built ObjectMeta and Type_meta
     /// Wipes out the old meta.

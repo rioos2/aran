@@ -1,12 +1,12 @@
 use std::io;
 use std::io::ErrorKind::WouldBlock;
-use std::net::SocketAddr;
 use std::mem::replace;
+use std::net::SocketAddr;
 
-use mio::tcp::TcpStream;
-use openssl::ssl::{HandshakeError, MidHandshakeSslStream, SslStream};
-use openssl::ssl::Error as SslError;
 use bytes::{Buf, BufMut};
+use mio::tcp::TcpStream;
+use openssl::ssl::Error as SslError;
+use openssl::ssl::{HandshakeError, MidHandshakeSslStream, SslStream};
 
 use result::{Error, Kind, Result};
 

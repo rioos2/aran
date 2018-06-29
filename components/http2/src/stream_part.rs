@@ -1,9 +1,9 @@
 use std::io;
 use std::panic;
 
-use futures::Poll;
 use futures::stream;
 use futures::stream::Stream;
+use futures::Poll;
 
 use bytes::Bytes;
 

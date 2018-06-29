@@ -15,6 +15,7 @@ pub struct ServicesConfig {
     pub loadbalancer_cpu: String,
     pub loadbalancer_mem: String,
     pub loadbalancer_disk: String,
+    pub dns: String,
 }
 
 impl ServicesConfig {
@@ -23,6 +24,7 @@ impl ServicesConfig {
     const LOAD_BALANCER_CPU_KEY: &'static str = "rioos_sh_loadbalancer_cpu";
     const LOAD_BALANCER_MEM_KEY: &'static str = "rioos_sh_loadbalancer_mem";
     const LOAD_BALANCER_DISK_KEY: &'static str = "rioos_sh_loadbalancer_disk";
+    const DNS_NAMESERVER_KEY: &'static str = "rioos_sh_dns_nameservers";
 
     pub fn as_map(&self) -> BTreeMap<String, String> {
         vec![
@@ -45,6 +47,20 @@ impl ServicesConfig {
             (
                 Self::LOAD_BALANCER_DISK_KEY.to_string(),
                 self.loadbalancer_disk.clone(),
+            ),
+            (
+                Self::DNS_NAMESERVER_KEY.to_string(),
+                self.dns.clone(),
+            ),
+        ].into_iter()
+            .collect::<BTreeMap<_, String>>()
+    }
+
+    pub fn as_map_deployless(&self) -> BTreeMap<String, String> {
+        vec![
+            (
+                Self::DNS_NAMESERVER_KEY.to_string(),
+                self.dns.clone(),
             ),
         ].into_iter()
             .collect::<BTreeMap<_, String>>()
@@ -87,7 +103,9 @@ impl<'a> Assembler<'a> {
     ) -> Result<AssemblyFactory> {
         let amp = &self.rebuild_replicas(desired_replicas, current_replicas, factory.clone())?;
 
-        self.build_services(&Ok(amp.clone()).map(|am| (am.0, am.1.clone(), ServiceRule::ReAssemble)));
+        self.build_services(
+            &Ok(amp.clone()).map(|am| (am.0, am.1.clone(), ServiceRule::ReAssemble))
+        );
 
         Ok(amp.clone().0)
     }

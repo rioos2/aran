@@ -7,19 +7,25 @@ use openssl::bn::{BigNum, MSB_MAYBE_ZERO};
 use openssl::hash::MessageDigest;
 use openssl::pkey::{PKey, PKeyRef};
 
+use openssl::x509::extension::{
+    AuthorityKeyIdentifier, BasicConstraints, KeyUsage, SubjectAlternativeName,
+    SubjectKeyIdentifier,
+};
 use openssl::x509::{X509, X509NameBuilder, X509Req, X509ReqBuilder};
-use openssl::x509::extension::{AuthorityKeyIdentifier, BasicConstraints, KeyUsage, SubjectAlternativeName, SubjectKeyIdentifier};
 
-use openssl::rsa::Rsa;
+use crypto::keys::{PairConf, PairSaverExtn};
 use openssl::dsa::Dsa;
 use openssl::pkcs12::Pkcs12;
-use crypto::keys::{PairConf, PairSaverExtn};
+use openssl::rsa::Rsa;
 
-use error::{Error, Result};
 use error::Error::X509Error;
+use error::{Error, Result};
 
+use super::super::{
+    PUBLIC_DSA_SUFFIX, PUBLIC_KEY_SUFFIX, PUBLIC_PFX_SUFFIX, PUBLIC_RSA_SUFFIX, ROOT_CA,
+    SECRET_SIG_KEY_SUFFIX,
+};
 use super::{mk_key_filename, read_key_bytes, write_key_file, write_keypair_files, KeyPair};
-use super::super::{PUBLIC_DSA_SUFFIX, PUBLIC_KEY_SUFFIX, PUBLIC_PFX_SUFFIX, PUBLIC_RSA_SUFFIX, ROOT_CA, SECRET_SIG_KEY_SUFFIX};
 
 pub type SigKeyPair = KeyPair<Vec<u8>, Vec<u8>>;
 
@@ -62,7 +68,11 @@ impl SigKeyPair {
     //Generates the root certificate authority ca.cert.csr, ca.key
     //in /var/lib/rioos/cache/keys (or)
     // .rioos/cache/keys
-    pub fn mk_ca_cert<P: AsRef<Path> + ?Sized>(name: &str, conf: PairConf, cache_key_path: &P) -> Result<Self> {
+    pub fn mk_ca_cert<P: AsRef<Path> + ?Sized>(
+        name: &str,
+        conf: PairConf,
+        cache_key_path: &P,
+    ) -> Result<Self> {
         debug!("new root ca key name = {}", &name);
 
         let (public, secret) = try!(Self::gen_ca_pair(&name, conf, cache_key_path.as_ref()));
@@ -70,7 +80,11 @@ impl SigKeyPair {
         Ok(Self::new(name.to_string(), Some(public), Some(secret)))
     }
 
-    fn gen_ca_pair(name_with_rev: &str, conf: PairConf, cache_key_path: &Path) -> Result<(Vec<u8>, Vec<u8>)> {
+    fn gen_ca_pair(
+        name_with_rev: &str,
+        conf: PairConf,
+        cache_key_path: &Path,
+    ) -> Result<(Vec<u8>, Vec<u8>)> {
         let key = gen_key_rsa(conf.bit_len())?;
 
         let cert = gen_ca(&key)?;
@@ -79,7 +93,8 @@ impl SigKeyPair {
 
         if conf.save() {
             let public_keyfile = mk_key_filename(cache_key_path, name_with_rev, PUBLIC_KEY_SUFFIX);
-            let secret_keyfile = mk_key_filename(cache_key_path, name_with_rev, SECRET_SIG_KEY_SUFFIX);
+            let secret_keyfile =
+                mk_key_filename(cache_key_path, name_with_rev, SECRET_SIG_KEY_SUFFIX);
 
             debug!("public keyfile = {}", public_keyfile.display());
             debug!("secret keyfile = {}", secret_keyfile.display());
@@ -99,7 +114,11 @@ impl SigKeyPair {
     //$ openssl verify -verbose -CAfile ca.cert.pem  api-server.cert.pem
     //$ openssl x509 -noout -text \
     //  -in api-server.cert.pem
-    pub fn mk_signed<P: AsRef<Path> + ?Sized>(name: &str, conf: PairConf, cache_key_path: &P) -> Result<Self> {
+    pub fn mk_signed<P: AsRef<Path> + ?Sized>(
+        name: &str,
+        conf: PairConf,
+        cache_key_path: &P,
+    ) -> Result<Self> {
         debug!("new signed key name = {}", &name);
 
         let (public, secret) = try!(Self::gen_ca_signed_pair(
@@ -114,7 +133,11 @@ impl SigKeyPair {
     /// Signs certificate.
     ///
     /// CSR and PKey will be generated if it doesn't set or loaded first.
-    fn gen_ca_signed_pair(name_with_rev: &str, conf: PairConf, cache_key_path: &Path) -> Result<(Vec<u8>, Vec<u8>)> {
+    fn gen_ca_signed_pair(
+        name_with_rev: &str,
+        conf: PairConf,
+        cache_key_path: &Path,
+    ) -> Result<(Vec<u8>, Vec<u8>)> {
         let privkey = {
             match conf.save_as_extn() {
                 PairSaverExtn::PubRSA => gen_key_rsa(conf.bit_len())?,
@@ -142,7 +165,8 @@ impl SigKeyPair {
         let (public, secret) = (cert.to_pem()?, privkey.private_key_to_pem()?);
 
         if conf.save() {
-            let secret_keyfile = mk_key_filename(cache_key_path, name_with_rev, SECRET_SIG_KEY_SUFFIX);
+            let secret_keyfile =
+                mk_key_filename(cache_key_path, name_with_rev, SECRET_SIG_KEY_SUFFIX);
 
             let p = {
                 let public_pem = (cert.public_key()?.public_key_to_pem()?).clone();
@@ -150,27 +174,44 @@ impl SigKeyPair {
 
                 match conf.save_as_extn() {
                     PairSaverExtn::PubRSA => PairSavingData {
-                        public_keyfile: mk_key_filename(cache_key_path, name_with_rev, PUBLIC_RSA_SUFFIX),
+                        public_keyfile: mk_key_filename(
+                            cache_key_path,
+                            name_with_rev,
+                            PUBLIC_RSA_SUFFIX,
+                        ),
                         public: public_pem,
                         multi: Some(true),
                     },
                     PairSaverExtn::PemX509 => PairSavingData {
-                        public_keyfile: mk_key_filename(cache_key_path, name_with_rev, PUBLIC_KEY_SUFFIX),
+                        public_keyfile: mk_key_filename(
+                            cache_key_path,
+                            name_with_rev,
+                            PUBLIC_KEY_SUFFIX,
+                        ),
                         public: public.clone(),
                         multi: Some(true),
                     },
                     PairSaverExtn::PfxPKCS12 => PairSavingData {
-                        public_keyfile: mk_key_filename(cache_key_path, name_with_rev, PUBLIC_PFX_SUFFIX),
+                        public_keyfile: mk_key_filename(
+                            cache_key_path,
+                            name_with_rev,
+                            PUBLIC_PFX_SUFFIX,
+                        ),
                         public: pfx,
                         multi: None,
                     },
                     PairSaverExtn::DSA => PairSavingData {
-                        public_keyfile: mk_key_filename(cache_key_path, name_with_rev, PUBLIC_DSA_SUFFIX),
+                        public_keyfile: mk_key_filename(
+                            cache_key_path,
+                            name_with_rev,
+                            PUBLIC_DSA_SUFFIX,
+                        ),
                         public: public_pem,
                         multi: None,
                     },
                     _ => {
-                        let msg = format!("File not saved for this extension {}", conf.save_as_extn());
+                        let msg =
+                            format!("File not saved for this extension {}", conf.save_as_extn());
                         return Err(Error::CryptoError(msg));
                     }
                 }
@@ -194,7 +235,10 @@ impl SigKeyPair {
         Ok((public, secret))
     }
 
-    pub fn get_pair_for<P: AsRef<Path> + ?Sized>(name_with_rev: &str, cache_key_path: &P) -> Result<Self> {
+    pub fn get_pair_for<P: AsRef<Path> + ?Sized>(
+        name_with_rev: &str,
+        cache_key_path: &P,
+    ) -> Result<Self> {
         let pk = match Self::get_public_key(name_with_rev, cache_key_path.as_ref()) {
             Ok(k) => Some(k),
             Err(e) => {
@@ -229,7 +273,10 @@ impl SigKeyPair {
         Ok(SigKeyPair::new(name_with_rev.to_string(), pk, sk))
     }
 
-    pub fn get_public_key_path<P: AsRef<Path> + ?Sized>(key_with_rev: &str, cache_key_path: &P) -> Result<PathBuf> {
+    pub fn get_public_key_path<P: AsRef<Path> + ?Sized>(
+        key_with_rev: &str,
+        cache_key_path: &P,
+    ) -> Result<PathBuf> {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, PUBLIC_KEY_SUFFIX);
 
         if !path.is_file() {
@@ -241,7 +288,10 @@ impl SigKeyPair {
         Ok(path)
     }
 
-    pub fn get_secret_key_path<P: AsRef<Path> + ?Sized>(key_with_rev: &str, cache_key_path: &P) -> Result<PathBuf> {
+    pub fn get_secret_key_path<P: AsRef<Path> + ?Sized>(
+        key_with_rev: &str,
+        cache_key_path: &P,
+    ) -> Result<PathBuf> {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, SECRET_SIG_KEY_SUFFIX);
 
         if !path.is_file() {
@@ -377,7 +427,8 @@ fn gen_ca(privkey: &PKey) -> Result<X509> {
         .crl_sign()
         .build()?)?;
 
-    let subject_key_identifier = SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(None, None))?;
+    let subject_key_identifier =
+        SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(None, None))?;
     cert_builder.append_extension(subject_key_identifier)?;
 
     cert_builder.sign(&privkey, MessageDigest::sha256())?;
@@ -417,7 +468,8 @@ fn gen_signed(ca_cert: &X509, ca_privkey: &PKeyRef, privkey: &PKey) -> Result<X5
         .key_encipherment()
         .build()?)?;
 
-    let subject_key_identifier = SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(Some(ca_cert), None))?;
+    let subject_key_identifier =
+        SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(Some(ca_cert), None))?;
     cert_builder.append_extension(subject_key_identifier)?;
 
     let auth_key_identifier = AuthorityKeyIdentifier::new()
@@ -454,9 +506,9 @@ mod test {
 
     use tempdir::TempDir;
 
+    use super::super::super::test_support::*;
     use super::SigKeyPair;
     use crypto::keys::PairConf;
-    use super::super::super::test_support::*;
 
     static VALID_KEY: &'static str = "ca.key";
     static VALID_PUB: &'static str = "ca.cert.pem";

@@ -25,12 +25,12 @@ extern crate users as linux_users;
 pub use self::error::{Error, Result};
 
 pub mod config;
+pub mod crypto;
 pub mod env;
 pub mod error;
 pub mod fs;
-pub mod util;
-pub mod crypto;
 pub mod os;
+pub mod util;
 
 pub use os::filesystem;
 pub use os::users;

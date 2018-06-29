@@ -9,8 +9,8 @@ extern crate rioos_builder_db as db;
 extern crate postgres;
 extern crate serde_json;
 
-pub mod job_ds;
 pub mod error;
+pub mod job_ds;
 
 pub use self::error::{Error, Result};
 

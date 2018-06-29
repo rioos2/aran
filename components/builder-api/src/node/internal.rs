@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-use futures::{Future, Sink};
 use futures::sync::mpsc;
+use futures::{Future, Sink};
 
 use events::error::into_other;
 use events::InternalEvent;

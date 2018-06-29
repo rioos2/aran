@@ -33,7 +33,7 @@ extern crate rioos_builder_db as db;
 extern crate rioos_builder_deployment as deploy;
 extern crate rioos_builder_devtooling as devtooling;
 extern crate rioos_builder_diagnostics as rio_diago;
-extern crate rioos_builder_health_nodes as nodesrv;
+extern crate rioos_builder_health_nodes as clusters;
 extern crate rioos_builder_httpgateway as http_gateway;
 extern crate rioos_builder_jobsbuilder as job;
 extern crate rioos_builder_scalers as scale;
@@ -96,6 +96,7 @@ pub mod api;
 
 pub mod command;
 pub mod events;
+pub mod hooks;
 pub mod node;
 pub mod server;
 pub mod validator;

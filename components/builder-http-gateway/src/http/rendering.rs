@@ -6,12 +6,11 @@ use iron::modifiers::Header;
 use iron::prelude::*;
 use iron::status;
 
-use util::errors::Bad;
 use protocol::api::schema::ApiSchema;
+use util::errors::Bad;
 
 use serde::Serialize;
 use serde_json;
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ResponseList<T> {

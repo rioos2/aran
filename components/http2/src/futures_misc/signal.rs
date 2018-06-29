@@ -4,8 +4,8 @@ use futures::Async;
 use futures::Poll;
 
 use futures::stream::Stream;
-use futures::task::Task;
 use futures::task;
+use futures::task::Task;
 
 use void::Void;
 

@@ -1,5 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Origin {

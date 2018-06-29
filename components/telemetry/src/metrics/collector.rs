@@ -1,17 +1,17 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the health insight for the datacenter
-use std::ops::Div;
 use std::collections::BTreeMap;
+use std::ops::Div;
 
 use chrono::prelude::*;
 use metrics::prometheus::PrometheusClient;
 
 use serde_json;
 
-use protocol::api::node::{Data, PromResponse, InstantVecItem};
-use super::expression::*;
 use super::super::error::{self, Result};
+use super::expression::*;
+use protocol::api::node::{Data, InstantVecItem, PromResponse};
 
 pub const CPU_TOTAL: &'static str = "cpu_total";
 
@@ -52,7 +52,7 @@ impl<'a> Collector<'a> {
             "{}",
             MetricQueryBuilder::new(MetricQuery {
                 functions: avg,
-                by: "".to_string(),
+                by: "".to_string()
             })
         );
 
@@ -81,7 +81,7 @@ impl<'a> Collector<'a> {
             "{}",
             MetricQueryBuilder::new(MetricQuery {
                 functions: avg,
-                by: "".to_string(),
+                by: "".to_string()
             })
         );
 
@@ -176,8 +176,6 @@ impl<'a> Collector<'a> {
         Ok((gauges.unwrap(), content))
     }
 
-
-
     //metric for general
     pub fn metric_by_avg_for_machines(&mut self) -> Result<BTreeMap<String, String>> {
         let content_datas = self.avg_collect()?;
@@ -186,7 +184,6 @@ impl<'a> Collector<'a> {
     }
     //metrics for container
     pub fn metric_by_avg_for_containers(&mut self, name: &str) -> Result<BTreeMap<String, String>> {
-
         let content_datas = match name {
             "cpu" => self.container_cpu_metric()?,
             "ram" => self.container_metric()?,
@@ -198,26 +195,27 @@ impl<'a> Collector<'a> {
         Ok(metrics.unwrap())
     }
 
-
-    fn set_metric_name(&self, response: Result<Vec<PromResponse>>, name: &str) -> Result<Vec<PromResponse>> {
+    fn set_metric_name(
+        &self,
+        response: Result<Vec<PromResponse>>,
+        name: &str,
+    ) -> Result<Vec<PromResponse>> {
         match response {
             Ok(proms) => {
-                return Ok(
-                    proms
-                        .into_iter()
-                        .map(|mut p| {
-                            if let Data::Vector(ref mut instancevec) = p.data {
-                                instancevec
-                                    .iter_mut()
-                                    .map(|x| {
-                                        x.metric.insert("__name__".to_string(), name.to_string());
-                                    })
-                                    .collect::<Vec<_>>();
-                            }
-                            p
-                        })
-                        .collect::<Vec<_>>(),
-                );
+                return Ok(proms
+                    .into_iter()
+                    .map(|mut p| {
+                        if let Data::Vector(ref mut instancevec) = p.data {
+                            instancevec
+                                .iter_mut()
+                                .map(|x| {
+                                    x.metric.insert("__name__".to_string(), name.to_string());
+                                })
+                                .collect::<Vec<_>>();
+                        }
+                        p
+                    })
+                    .collect::<Vec<_>>());
             }
             _ => return Err(error::Error::CryptoError(String::new())),
         }
@@ -244,10 +242,8 @@ impl<'a> Collector<'a> {
 
             let content = self.client.pull_metrics(&data)?;
 
-
             let response: PromResponse = serde_json::from_str(&content.data).unwrap();
             content_datas.push(response);
-
         }
 
         Ok(content_datas)
@@ -269,10 +265,8 @@ impl<'a> Collector<'a> {
                 sum
             ))?;
 
-
             let response: PromResponse = serde_json::from_str(&content.data).unwrap();
             content_datas.push(response);
-
         }
 
         Ok(content_datas)
@@ -318,7 +312,6 @@ impl<'a> Collector<'a> {
 
             let response: PromResponse = serde_json::from_str(&content.data).unwrap();
             content_datas.push(response);
-
         }
 
         Ok(content_datas)
@@ -326,12 +319,10 @@ impl<'a> Collector<'a> {
     fn set_gauges(&self, response: Result<Vec<PromResponse>>) -> Result<Vec<PromResponse>> {
         match response {
             Ok(proms) => {
-                return Ok(
-                    proms
-                        .into_iter()
-                        .map(|mut p| (p.sum_group().clone()))
-                        .collect::<Vec<_>>(),
-                )
+                return Ok(proms
+                    .into_iter()
+                    .map(|mut p| (p.sum_group().clone()))
+                    .collect::<Vec<_>>())
             }
             _ => return Err(error::Error::CryptoError(String::new())),
         }
@@ -340,47 +331,51 @@ impl<'a> Collector<'a> {
     fn set_statistics(&self, response: Result<Vec<PromResponse>>) -> Result<Vec<PromResponse>> {
         match response {
             Ok(proms) => {
-                return Ok(
-                    proms
-                        .into_iter()
-                        .filter(|x| {
-                            match (*x).data {
-                                Data::Vector(ref ins) => {
-                                    return (*ins)
-                                        .clone()
-                                        .into_iter()
-                                        .find(|m| {
-                                            m.metric.get("__name__").unwrap_or(&"nop".to_string()) == CPU_TOTAL
-                                        })
-                                        .is_some()
-                                }
-                                _ => return false,
-                            };
-                        })
-                        .collect::<Vec<_>>()
-                        .to_vec(),
-                )
+                return Ok(proms
+                    .into_iter()
+                    .filter(|x| {
+                        match (*x).data {
+                            Data::Vector(ref ins) => {
+                                return (*ins)
+                                    .clone()
+                                    .into_iter()
+                                    .find(|m| {
+                                        m.metric.get("__name__").unwrap_or(&"nop".to_string())
+                                            == CPU_TOTAL
+                                    })
+                                    .is_some()
+                            }
+                            _ => return false,
+                        };
+                    })
+                    .collect::<Vec<_>>()
+                    .to_vec())
             }
             _ => return Err(error::Error::CryptoError(String::new())),
         }
     }
 
-    fn set_metrics_average(&self, response: Result<Vec<PromResponse>>) -> Result<BTreeMap<String, String>> {
+    fn set_metrics_average(
+        &self,
+        response: Result<Vec<PromResponse>>,
+    ) -> Result<BTreeMap<String, String>> {
         match response {
             Ok(proms) => {
                 let mut data = BTreeMap::new();
                 proms
                     .into_iter()
-                    .map(|mut x| if let Data::Vector(ref mut instancevec) = x.data {
-                        instancevec
-                            .iter_mut()
-                            .map(|x| {
-                                data.insert(
-                                    x.metric.get("rioos_assembly_id").unwrap().to_string(),
-                                    x.value.1.clone(),
-                                );
-                            })
-                            .collect::<Vec<_>>();
+                    .map(|mut x| {
+                        if let Data::Vector(ref mut instancevec) = x.data {
+                            instancevec
+                                .iter_mut()
+                                .map(|x| {
+                                    data.insert(
+                                        x.metric.get("rioos_assembly_id").unwrap().to_string(),
+                                        x.value.1.clone(),
+                                    );
+                                })
+                                .collect::<Vec<_>>();
+                        }
                     })
                     .collect::<Vec<_>>();
                 Ok(data)
@@ -398,12 +393,10 @@ impl SumGroup for PromResponse {
         let mut sum = Data::Vector(vec![]);
         if let Data::Vector(ref mut instancevec) = (*self).data {
             let local: DateTime<Utc> = Utc::now();
-            let initvec = vec![
-                InstantVecItem {
-                    metric: BTreeMap::new(),
-                    value: (local.timestamp() as f64, "0".to_string()),
-                },
-            ];
+            let initvec = vec![InstantVecItem {
+                metric: BTreeMap::new(),
+                value: (local.timestamp() as f64, "0".to_string()),
+            }];
             let instance_changed = instancevec.iter_mut().fold(initvec, |mut acc, ref mut x| {
                 acc.iter_mut()
                     .map(|ref mut i| {
@@ -422,23 +415,28 @@ impl SumGroup for PromResponse {
             sum = Data::Vector(
                 instance_changed
                     .iter()
-                    .map(|x| if x.value.1 != "0" {
-                        let avg_metric_val = (
-                            x.value.0,
-                            (x.value.1.trim().parse::<f64>().unwrap_or(1.0).div(
-                                (*instancevec).len() as
-                                    f64,
-                            )).to_string(),
-                        );
+                    .map(|x| {
+                        if x.value.1 != "0" {
+                            let avg_metric_val = (
+                                x.value.0,
+                                (x.value
+                                    .1
+                                    .trim()
+                                    .parse::<f64>()
+                                    .unwrap_or(1.0)
+                                    .div((*instancevec).len() as f64))
+                                    .to_string(),
+                            );
 
-                        InstantVecItem {
-                            metric: x.metric.clone(),
-                            value: avg_metric_val,
-                        }
-                    } else {
-                        InstantVecItem {
-                            metric: x.metric.clone(),
-                            value: (x.value.0, "".to_string()),
+                            InstantVecItem {
+                                metric: x.metric.clone(),
+                                value: avg_metric_val,
+                            }
+                        } else {
+                            InstantVecItem {
+                                metric: x.metric.clone(),
+                                value: (x.value.0, "".to_string()),
+                            }
                         }
                     })
                     .collect::<Vec<_>>(),

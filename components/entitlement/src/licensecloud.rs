@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-use std::io::Read;
 use config;
-use serde_json::{self, Value};
 use error::{Error, Result};
 use http_client::reqwest_client::http_bearer_get;
+use serde_json::{self, Value};
+use std::io::Read;
 
 const ENDPOINT: &'static str = "https://secure.licenseapi.com";
 const SKU: &'static str = "rioos";
@@ -42,34 +42,35 @@ struct API {
 
 impl API {
     fn new(activation_code: Option<String>) -> Self {
-        API {            
+        API {
             activation_code: activation_code,
         }
-    }   
+    }
 
     fn check_license(&self) -> Result<()> {
         let code = match self.activation_code {
             Some(ref ac) => ac,
             None => return LicenseCloudResult::from_err(CLOUD_ACTIVATION_CODE),
         };
-        Self::call_dynamic(           
-            code.clone(),
-        )?;
+        Self::call_dynamic(code.clone())?;
         Ok(())
     }
 
     fn call_dynamic(activation_code: String) -> Result<()> {
-        let url = format!("{}/?token={}&sku={}&license={}&format={}", ENDPOINT, TOKEN, SKU, activation_code, FORMAT);
+        let url = format!(
+            "{}/?token={}&sku={}&license={}&format={}",
+            ENDPOINT, TOKEN, SKU, activation_code, FORMAT
+        );
         let path = "";
         let mut rep = match http_bearer_get(&url, &path) {
             Ok(res) => res,
-            Err(err) => return LicenseCloudResult::from_err(CLOUD_LIB_OPEN),
+            Err(_) => return LicenseCloudResult::from_err(CLOUD_LIB_OPEN),
         };
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
         let v: Value = match serde_json::from_str(&body) {
             Ok(res) => res,
-            Err(err) => return LicenseCloudResult::from_err(CLOUD_LIB_OPEN),
+            Err(_) => return LicenseCloudResult::from_err(CLOUD_LIB_OPEN),
         };
         
         let error_num = v["licensecloud"]["error_num"].to_string().replace('"', "");
@@ -83,7 +84,7 @@ impl API {
 
 enum LicenseCloudResult {}
 
-impl LicenseCloudResult {  
+impl LicenseCloudResult {
     pub fn from_value(desc: String) -> Result<()> {
         // Error can Generated based on licensecloud error code refer link: https://www.licensecloud.com/api-reference/error-codes/
         Err(Error::RioosAranCore(desc))

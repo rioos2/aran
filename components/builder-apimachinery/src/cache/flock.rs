@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::fmt;
+use std::sync::Arc;
 
 use cache::multi_cache::MultiCache;
 
@@ -26,8 +26,12 @@ impl Cacher {
         lru.get(&key)
     }
 
-    pub fn insert(&self, lru: &Box<MultiCache<String, String>>, key: String, value: Option<String>) {
-
+    pub fn insert(
+        &self,
+        lru: &Box<MultiCache<String, String>>,
+        key: String,
+        value: Option<String>,
+    ) {
         if value.is_some() {
             info!("» PUT: cached ≈ {}", key);
             &mut lru.put(key, value.unwrap(), DEFAULT_VAL_STOR_SIZE);

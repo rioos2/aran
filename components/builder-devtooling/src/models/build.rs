@@ -2,16 +2,16 @@
 
 //! The PostgreSQL backend for the Build
 use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::devtool::{Build, BuildStatusUpdate};
-use protocol::api::base::MetaFields;
+use error::{Error, Result};
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::devtool::{Build, BuildStatusUpdate};
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
-use super::super::{BuildOutputList, BuildOutput};
+use super::super::{BuildOutput, BuildOutputList};
 
 pub struct DataStore;
 
@@ -38,9 +38,8 @@ impl DataStore {
     pub fn list(datastore: &DataStoreConn) -> BuildOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_builds_v1()", &[]).map_err(
-            Error::BuildGetResponse,
-        )?;
+        let rows = &conn.query("SELECT * FROM get_builds_v1()", &[])
+            .map_err(Error::BuildGetResponse)?;
 
         let mut response = Vec::new();
         if rows.len() > 0 {

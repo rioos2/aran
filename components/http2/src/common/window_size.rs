@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
-use std::sync::Arc;
-use std::sync::atomic::AtomicIsize;
 use std::sync::atomic::AtomicBool;
+use std::sync::atomic::AtomicIsize;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
 use futures::task;
 use futures::task::Task;

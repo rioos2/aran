@@ -1,7 +1,7 @@
 use iron::Request;
-use std::path::{PathBuf, Path};
-use std::fs::{self, Metadata};
 use std::convert::AsRef;
+use std::fs::{self, Metadata};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct RequestedPath {

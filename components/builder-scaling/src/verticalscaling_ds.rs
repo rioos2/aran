@@ -3,15 +3,15 @@
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 
 use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::scale;
+use error::{Error, Result};
 use protocol::api::base::MetaFields;
+use protocol::api::scale;
 
-use postgres;
-use db::data_store::DataStoreConn;
-use serde_json;
-use protocol::api::base::IdGet;
 use super::{VerticalScalingOutput, VerticalScalingOutputList};
+use db::data_store::DataStoreConn;
+use postgres;
+use protocol::api::base::IdGet;
+use serde_json;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,

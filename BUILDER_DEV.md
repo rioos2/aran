@@ -301,7 +301,7 @@ You should see a response similar to the following:
          "description":"Service is currently down"
       },
       {
-         "name":"Rio.Marketplace",
+         "name":"Rio.AppStore",
          "status":"down",
          "description":"Service is currently down"
       },
@@ -385,7 +385,7 @@ You must have a valid $RIOOS_HOME/config directory.
 
 ./rioos_apiserver migrate
 
-# Use the marketplaces.rioos.xyz (userid/pw)
+# Use the appstore.rioos.xyz (userid/pw)
 ./rioos_apiserver sync
 
 ./rioos_apiserver start

@@ -1,11 +1,11 @@
+use std::any::Any;
+use std::io;
 use std::net::SocketAddr;
 use std::net::ToSocketAddrs;
-use std::io;
-use std::any::Any;
 
-use tokio_core::reactor;
 use tokio_core::net::TcpListener;
 use tokio_core::net::TcpStream;
+use tokio_core::reactor;
 
 use futures::stream::Stream;
 use futures::Future;
@@ -15,11 +15,11 @@ use server_conf::ServerConf;
 use net2;
 
 use socket::AnySocketAddr;
+use socket::StreamItem;
+use socket::ToClientStream;
+use socket::ToServerStream;
 use socket::ToSocketListener;
 use socket::ToTokioListener;
-use socket::ToServerStream;
-use socket::ToClientStream;
-use socket::StreamItem;
 
 impl ToSocketListener for SocketAddr {
     fn to_listener(&self, conf: &ServerConf) -> Box<ToTokioListener + Send> {
@@ -68,7 +68,9 @@ impl ToTokioListener for ::std::net::TcpListener {
 }
 
 impl ToServerStream for TcpListener {
-    fn incoming(self: Box<Self>) -> Box<Stream<Item = (Box<StreamItem>, Box<Any>), Error = io::Error>> {
+    fn incoming(
+        self: Box<Self>,
+    ) -> Box<Stream<Item = (Box<StreamItem>, Box<Any>), Error = io::Error>> {
         let stream = (*self).incoming().map(|(stream, addr)| {
             (
                 Box::new(stream) as Box<StreamItem>,
@@ -80,8 +82,12 @@ impl ToServerStream for TcpListener {
 }
 
 impl ToClientStream for SocketAddr {
-    fn connect(&self, handle: &reactor::Handle) -> Box<Future<Item = Box<StreamItem>, Error = io::Error> + Send> {
-        let stream = TcpStream::connect(self, &handle).map(|stream| Box::new(stream) as Box<StreamItem>);
+    fn connect(
+        &self,
+        handle: &reactor::Handle,
+    ) -> Box<Future<Item = Box<StreamItem>, Error = io::Error> + Send> {
+        let stream =
+            TcpStream::connect(self, &handle).map(|stream| Box::new(stream) as Box<StreamItem>);
         Box::new(stream)
     }
 }

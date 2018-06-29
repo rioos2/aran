@@ -21,6 +21,7 @@ use protocol::api::blueprint::PlanProperties;
 use protocol::api::deploy::{AssemblyFactory, AssemblyFactorySpec, StacksFactory};
 use protocol::api::schema::type_meta_url;
 use rand::{self, Rng};
+use rand::distributions::Alphanumeric;
 use std::collections::BTreeMap;
 
 const PRE_NAME_LEN: usize = 5;
@@ -72,34 +73,33 @@ impl<'a> StacksDeployer<'a> {
 
     fn mk_deploy(&self, factory: &StacksFactory) -> Result<StacksFactory> {
         match self.mk_stacks_factory(&factory) {
-            Ok(Some(stacks)) => {
-                match stacks.get_spec().get_plan() {
-                    Some(plan) => {
-                        let assembled_factorys = plan.get_plan()
-                            .into_iter()
-                            .map(|plan_property| {
-                                let assembly_factory: AssemblyFactory = self.build_assembly_factory(&plan_property, &stacks);
-                                Assembler::new(&self.conn, &self.service_config).assemble(&assembly_factory)
-                            })
-                            .fold(vec![], |mut acc, x| match x {
-                                Ok(one_assembly_factory) => {
-                                    acc.push(one_assembly_factory);
-                                    acc
-                                }
-                                Err(_) => acc,
-                            });
+            Ok(Some(stacks)) => match stacks.get_spec().get_plan() {
+                Some(plan) => {
+                    let assembled_factorys = plan.get_plan()
+                        .into_iter()
+                        .map(|plan_property| {
+                            let assembly_factory: AssemblyFactory =
+                                self.build_assembly_factory(&plan_property, &stacks);
+                            Assembler::new(&self.conn, &self.service_config)
+                                .assemble(&assembly_factory)
+                        })
+                        .fold(vec![], |mut acc, x| match x {
+                            Ok(one_assembly_factory) => {
+                                acc.push(one_assembly_factory);
+                                acc
+                            }
+                            Err(_) => acc,
+                        });
 
-                        let f: &mut StacksFactory = &mut stacks.clone();
-                        f.get_mut_spec().set_assembly_factory(assembled_factorys);
+                    let f: &mut StacksFactory = &mut stacks.clone();
+                    f.get_mut_spec().set_assembly_factory(assembled_factorys);
 
-                        Ok(f.clone())
-                    }
-                    None => Err(Error::StacksFactoryInvalidType(
-                        "Can't invoke stacks deployer. Invoked in an incorrect way."
-                            .to_string(),
-                    )),
+                    Ok(f.clone())
                 }
-            }
+                None => Err(Error::StacksFactoryInvalidType(
+                    "Can't invoke stacks deployer. Invoked in an incorrect way.".to_string(),
+                )),
+            },
             Err(err) => Err(err),
             Ok(None) => Err(Error::Db(RecordsNotFound)),
         }
@@ -107,7 +107,11 @@ impl<'a> StacksDeployer<'a> {
 
     ///Build the assembly by setting up a object meta (name, account id of the parent,
     ///and its type meta from the parent)
-    fn build_assembly_factory(&self, plan_property: &PlanProperties, parent: &StacksFactory) -> AssemblyFactory {
+    fn build_assembly_factory(
+        &self,
+        plan_property: &PlanProperties,
+        parent: &StacksFactory,
+    ) -> AssemblyFactory {
         let mut assembly_factory = AssemblyFactory::new();
         let mut spec = AssemblyFactorySpec::new();
         //Transfer resources (cpu, ram, disk)  from stackfactory to assemblyfactory
@@ -180,7 +184,7 @@ impl<'a> StacksDeployer<'a> {
     //Generates a pre_name of 5 ascii random character
     fn pre_name(&self) -> String {
         rand::thread_rng()
-            .gen_ascii_chars()
+            .sample_iter(&Alphanumeric)
             .take(PRE_NAME_LEN)
             .collect::<String>()
             .to_lowercase()

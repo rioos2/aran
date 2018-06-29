@@ -4,7 +4,7 @@
 RIOOS_HOME=/var/lib/rioos
 RIOOS_CONFIG_HOME=$RIOOS_HOME/config
 RIOOS_SETUP_COMPLETE=$RIOOS_CONFIG_HOME/.rioos_setup_complete
-RIOOS_MARKETPLACE_YAML=$RIOOS_CONFIG_HOME/pullcache/marketplaces.yaml
+RIOOS_APPSTORE_YAML=$RIOOS_CONFIG_HOME/pullcache/appstores.yaml
 RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
 
 	if [ ! -f $RIOOS_BIN_HOME/rioos-apiserver ]; then
@@ -22,14 +22,14 @@ RIOOS_BIN_HOME=/usr/share/rioos/apiserver/bin
         touch $RIOOS_SETUP_COMPLETE
     fi
 
-	if [ ! -f $RIOOS_MARKETPLACE_YAML ]; then
+	if [ ! -f $RIOOS_APPSTORE_YAML ]; then
            $RIOOS_BIN_HOME/rioos-apiserver sync
           if [ $? -ne 0 ]; then
-              echo "Failed to sync the rio.marketplace with the Rio OS api server.  Rio OS api will start but will show as nothing to deploy in the UI. Try running manually rioos-apiserver sync to see the error."
+              echo "Failed to sync the rio.appstore with the Rio OS api server.  Rio OS api will start but will show as nothing to deploy in the UI. Try running manually rioos-apiserver sync to see the error."
               echo "Refer https://bit.ly/rioos_sh_admin"
               exit 1
           fi
-          touch $RIOOS_MARKETPLACE_YAML
+          touch $RIOOS_APPSTORE_YAML
     fi
 
 		$RIOOS_BIN_HOME/rioos-apiserver migrate

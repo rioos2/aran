@@ -10,7 +10,6 @@ extern crate serde_json;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_http_client as http_client;
 
-
-pub mod metrics;
 pub mod config;
 pub mod error;
+pub mod metrics;

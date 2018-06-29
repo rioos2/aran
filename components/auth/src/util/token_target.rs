@@ -23,7 +23,11 @@ impl TokenTarget {
     /// * InvalidEmail
     /// * InvalidApikey
     pub fn new(email: String, token: String) -> Self {
-        TokenTarget { email: email, token: token, apikey: Default::default() }
+        TokenTarget {
+            email: email,
+            token: token,
+            apikey: Default::default(),
+        }
     }
 
     pub fn get_email(&self) -> ::std::string::String {

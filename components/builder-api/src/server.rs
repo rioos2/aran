@@ -1,9 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! Contains core functionality for the Application's main server.
-use std::sync::Arc;
 use std::fs::File;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use config::Config;
 use error::{Error, Result};
@@ -14,8 +14,14 @@ use rio_core::crypto::default_rioconfig_key_path;
 use validator::ConfigValidator;
 
 lazy_static! {
-    static ref SETUP_COMPLETE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join(".rioos_setup_complete").to_str().unwrap());
-    static ref MARKETPLACE_CACHE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/marketplaces.yaml").to_str().unwrap());
+    static ref SETUP_COMPLETE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None)
+        .join(".rioos_setup_complete")
+        .to_str()
+        .unwrap());
+    static ref MARKETPLACE_CACHE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None)
+        .join("pullcache/appstores.yaml")
+        .to_str()
+        .unwrap());
 }
 
 /// The main server for the Builder-API application. This should be run on the main thread.
@@ -41,7 +47,7 @@ impl Server {
         let cfg1 = self.config.clone();
 
         ui.begin(
-        r#"
+            r#"
     ██████╗ ██╗ ██████╗     ██╗ ██████╗ ███████╗     █████╗ ██████╗  █████╗ ███╗   ██╗     █████╗ ██████╗ ██╗
     ██╔══██╗██║██╔═══██╗   ██╔╝██╔═══██╗██╔════╝    ██╔══██╗██╔══██╗██╔══██╗████╗  ██║    ██╔══██╗██╔══██╗██║
     ██████╔╝██║██║   ██║  ██╔╝ ██║   ██║███████╗    ███████║██████╔╝███████║██╔██╗ ██║    ███████║██████╔╝██║
@@ -49,20 +55,20 @@ impl Server {
     ██║  ██║██║╚██████╔╝██╔╝   ╚██████╔╝███████║    ██║  ██║██║  ██║██║  ██║██║ ╚████║    ██║  ██║██║     ██║
     ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═════╝ ╚══════╝    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝╚═╝     ╚═╝                                                                                                        
     "#,
-    )?;
+        )?;
         ui.para(&format!(
-            "Rio/OS {} listening on {}:{}","API",
-            self.config.https.listen, self.config.https.port
+            "Rio/OS {} listening on {}:{}",
+            "API", self.config.https.listen, self.config.https.port
         ))?;
 
         ui.para(&format!(
-            "Rio/OS {} listening on {}:{}", "Watch",
-            self.config.http2.listener, self.config.http2.port
+            "Rio/OS {} listening on {}:{}",
+            "Watch", self.config.http2.listener, self.config.http2.port
         ))?;
 
         ui.para(&format!(
-            "Rio/OS {} listening on {}:{}","Websocket",
-            self.config.http2.listener, self.config.http2.websocket
+            "Rio/OS {} listening on {}:{}",
+            "Websocket", self.config.http2.listener, self.config.http2.websocket
         ))?;
 
         let node = Node::new(cfg1);

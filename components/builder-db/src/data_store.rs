@@ -2,7 +2,6 @@
 embed_migrations!("api/migrations");
 
 use std::io;
-use std::sync::{Arc, RwLock};
 use super::diesel_pool::DieselPool;
 use super::migration::shard_setup;
 use config::DataStore;

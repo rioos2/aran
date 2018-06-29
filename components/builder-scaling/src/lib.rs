@@ -10,10 +10,10 @@ extern crate rioos_telemetry as telemetry;
 extern crate postgres;
 extern crate serde_json;
 
-pub mod horizontalscaling_ds;
-pub mod verticalscaling_ds;
 pub mod error;
+pub mod horizontalscaling_ds;
 pub mod scaling;
+pub mod verticalscaling_ds;
 
 pub use self::error::{Error, Result};
 

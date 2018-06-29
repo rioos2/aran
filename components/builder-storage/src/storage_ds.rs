@@ -3,22 +3,28 @@
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 
 use chrono::prelude::*;
-use error::{Result, Error};
+use error::{Error, Result};
 
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::api::storage;
-use protocol::api::base::{IdGet, StatusUpdate, MetaFields};
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 
 use serde_json;
 
-use super::{StorageConnectorOutput, StorageConnectorOutputList, DatacenterOutput, DatacenterOutputList, StoragePoolOutput, StoragePoolOutputList};
+use super::{
+    DatacenterOutput, DatacenterOutputList, StorageConnectorOutput, StorageConnectorOutputList,
+    StoragePoolOutput, StoragePoolOutputList,
+};
 
 pub struct StorageDS;
 
 impl StorageDS {
-    pub fn storage_create(datastore: &DataStoreConn, storage_create: &storage::Storage) -> StorageConnectorOutput {
+    pub fn storage_create(
+        datastore: &DataStoreConn,
+        storage_create: &storage::Storage,
+    ) -> StorageConnectorOutput {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -44,9 +50,8 @@ impl StorageDS {
     pub fn storage_list(datastore: &DataStoreConn) -> StorageConnectorOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_storages_v1()", &[]).map_err(
-            Error::StorageGetResponse,
-        )?;
+        let rows = &conn.query("SELECT * FROM get_storages_v1()", &[])
+            .map_err(Error::StorageGetResponse)?;
 
         let mut response = Vec::new();
         if rows.len() > 0 {
@@ -59,7 +64,10 @@ impl StorageDS {
         Ok(None)
     }
 
-    pub fn storage_get_by_ip(datastore: &DataStoreConn, get_storage: &IdGet) -> StorageConnectorOutputList {
+    pub fn storage_get_by_ip(
+        datastore: &DataStoreConn,
+        get_storage: &IdGet,
+    ) -> StorageConnectorOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -90,7 +98,10 @@ impl StorageDS {
         Ok(None)
     }
 
-    pub fn storage_status_update(datastore: &DataStoreConn, upd: &StatusUpdate) -> StorageConnectorOutput {
+    pub fn storage_status_update(
+        datastore: &DataStoreConn,
+        upd: &StatusUpdate,
+    ) -> StorageConnectorOutput {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -109,7 +120,10 @@ impl StorageDS {
         Ok(None)
     }
 
-    pub fn storage_update(datastore: &DataStoreConn, storage_create: &storage::Storage) -> StorageConnectorOutput {
+    pub fn storage_update(
+        datastore: &DataStoreConn,
+        storage_create: &storage::Storage,
+    ) -> StorageConnectorOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM update_storage_v1($1,$2,$3,$4,$5,$6,$7,$8)",
@@ -133,7 +147,10 @@ impl StorageDS {
         Ok(None)
     }
 
-    pub fn data_center_create(datastore: &DataStoreConn, dc_create: &storage::DataCenter) -> DatacenterOutput {
+    pub fn data_center_create(
+        datastore: &DataStoreConn,
+        dc_create: &storage::DataCenter,
+    ) -> DatacenterOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_dc_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
@@ -189,8 +206,10 @@ impl StorageDS {
         Ok(None)
     }
 
-
-    pub fn datacenter_update(datastore: &DataStoreConn, dc: &storage::DataCenter) -> DatacenterOutput {
+    pub fn datacenter_update(
+        datastore: &DataStoreConn,
+        dc: &storage::DataCenter,
+    ) -> DatacenterOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM update_datacenter_by_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
@@ -214,7 +233,10 @@ impl StorageDS {
         Ok(None)
     }
 
-    pub fn storage_pool_create(datastore: &DataStoreConn, storage_create: &storage::StoragePool) -> StoragePoolOutput {
+    pub fn storage_pool_create(
+        datastore: &DataStoreConn,
+        storage_create: &storage::StoragePool,
+    ) -> StoragePoolOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_storage_pool_v1($1,$2,$3,$4,$5,$6,$7)",
@@ -251,7 +273,10 @@ impl StorageDS {
         Ok(None)
     }
 
-    pub fn storage_pool_list(datastore: &DataStoreConn, get_storage: &IdGet) -> StoragePoolOutputList {
+    pub fn storage_pool_list(
+        datastore: &DataStoreConn,
+        get_storage: &IdGet,
+    ) -> StoragePoolOutputList {
         let conn = datastore.pool.get_shard(0)?;
         let connector_id = get_storage.get_id().parse::<i64>().unwrap();
         let rows = &conn.query("SELECT * FROM get_storage_pool_v1($1)", &[&connector_id])
@@ -282,8 +307,10 @@ impl StorageDS {
         Ok(None)
     }
 
-
-    pub fn storage_pool_status_update(datastore: &DataStoreConn, upd: &StatusUpdate) -> StoragePoolOutput {
+    pub fn storage_pool_status_update(
+        datastore: &DataStoreConn,
+        upd: &StatusUpdate,
+    ) -> StoragePoolOutput {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -342,9 +369,7 @@ fn row_to_dc(row: &postgres::rows::Row) -> Result<storage::DataCenter> {
     dc.set_enabled(enabled);
     dc.set_currency(row.get("currency"));
     dc.set_nodes(nodes);
-    dc.set_advanced_settings(
-        serde_json::from_value(row.get("advanced_settings")).unwrap(),
-    );
+    dc.set_advanced_settings(serde_json::from_value(row.get("advanced_settings")).unwrap());
     dc.set_status(serde_json::from_value(row.get("status")).unwrap());
     dc.set_created_at(created_at.to_rfc3339());
     Ok(dc)
@@ -363,9 +388,8 @@ fn row_to_storage_pool(row: &postgres::rows::Row) -> Result<storage::StoragePool
     storage.set_id(id.to_string());
     storage.set_connector_id(connector_id.to_string());
     storage.set_paramaters(serde_json::from_value(row.get("parameters")).unwrap());
-    storage.set_remote_storage_disks(
-        serde_json::from_value(row.get("remote_storage_disks")).unwrap(),
-    );
+    storage
+        .set_remote_storage_disks(serde_json::from_value(row.get("remote_storage_disks")).unwrap());
     storage.set_storage_info(serde_json::from_value(row.get("storage_info")).unwrap());
     storage.set_status(serde_json::from_value(row.get("status")).unwrap());
     storage.set_created_at(created_at.to_rfc3339());

@@ -33,26 +33,32 @@ impl JWTAuthenticator {
         let parsed_token_data = decode_segments(&token.clone());
         match parsed_token_data {
             Ok(payload_string) => {
-                let payload_claims: BTreeMap<String, String> = match serde_json::from_value(payload_string.1) {
-                    Ok(v) => v,
-                    Err(err) => {
-                        return Err(error::Error::Auth(rioos::AuthErr {
-                            error: format!("Couldn't parse JWT payload claims."),
-                            error_description: format!("{}", err),
-                        }))
-                    }
-                };
-                let header_claims: BTreeMap<String, String> = match serde_json::from_value(payload_string.0) {
-                    Ok(v) => v,
-                    Err(err) => {
-                        return Err(error::Error::Auth(rioos::AuthErr {
-                            error: format!("Couldn't parse JWT header claims."),
-                            error_description: format!("{}", err),
-                        }))
-                    }
-                };
+                let payload_claims: BTreeMap<String, String> =
+                    match serde_json::from_value(payload_string.1) {
+                        Ok(v) => v,
+                        Err(err) => {
+                            return Err(error::Error::Auth(rioos::AuthErr {
+                                error: format!("Couldn't parse JWT payload claims."),
+                                error_description: format!("{}", err),
+                            }))
+                        }
+                    };
+                let header_claims: BTreeMap<String, String> =
+                    match serde_json::from_value(payload_string.0) {
+                        Ok(v) => v,
+                        Err(err) => {
+                            return Err(error::Error::Auth(rioos::AuthErr {
+                                error: format!("Couldn't parse JWT header claims."),
+                                error_description: format!("{}", err),
+                            }))
+                        }
+                    };
 
-                return Ok(JWTAuthenticator { token: token, header: header_claims, payload: payload_claims });
+                return Ok(JWTAuthenticator {
+                    token: token,
+                    header: header_claims,
+                    payload: payload_claims,
+                });
             }
             Err(err) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
@@ -70,7 +76,11 @@ impl JWTAuthenticator {
     pub fn has_correct_issuer(&self, issuer: &str) -> Result<bool> {
         if self.payload.get(ISSUERCLAIM) != Some(&issuer.to_string()) {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!("Must have issuer claim {} = {}", ISSUERCLAIM, &issuer.to_string()),
+                error: format!(
+                    "Must have issuer claim {} = {}",
+                    ISSUERCLAIM,
+                    &issuer.to_string()
+                ),
                 error_description: format!(""),
             }));
         }
@@ -94,7 +104,9 @@ impl JWTAuthenticator {
         let account_name = self.payload.get(claim).unwrap();
         if account_name.is_empty() {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!("Must have an account name[email/service account name] in the claim "),
+                error: format!(
+                    "Must have an account name[email/service account name] in the claim "
+                ),
                 error_description: format!(""),
             }));
         }
@@ -102,7 +114,11 @@ impl JWTAuthenticator {
         let parts: Vec<_> = subject.split("::").collect();
         if parts[1] != account_name {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!("Must have subject claim matching {} = {}", parts[1].to_string(), account_name.to_string()),
+                error: format!(
+                    "Must have subject claim matching {} = {}",
+                    parts[1].to_string(),
+                    account_name.to_string()
+                ),
                 error_description: format!(""),
             }));
         }
@@ -140,7 +156,11 @@ impl JWTAuthenticator {
     // first get secret public key from database using secret_uid claim
     // then decode JWT token using public key, it is valid then returns true
     // otherwise it returns false
-    pub fn has_correct_token_from_secret(&self, datastore: &DataStoreConn, secret_claim: &str) -> Result<bool> {
+    pub fn has_correct_token_from_secret(
+        &self,
+        datastore: &DataStoreConn,
+        secret_claim: &str,
+    ) -> Result<bool> {
         let secret_id = match self.parse_secret_uid(secret_claim) {
             Ok(sid) => sid,
             Err(e) => {

@@ -32,9 +32,9 @@ BIN = rioos
 LIB = builder-db builder-apimachinery  builder-deployment builder-scaling common core builder-api-client http-client
 API = builder-api
 AUD = builder-api-audit
-MKT = builder-api-marketplace
+APS = builder-api-appstore
 
-ALL = $(BIN) $(LIB) $(API) $(AUD) $(MKT)
+ALL = $(BIN) $(LIB) $(API) $(AUD) $(APS)
 VERSION := $(shell cat VERSION)
 
 .DEFAULT_GOAL := buildbin
@@ -59,7 +59,7 @@ endif
 
 initialize: setup
 
-build: initialize buildbin buildlib buildapi buildaud buildmkt ## builds all the components
+build: initialize buildbin buildlib buildapi buildaud buildapp ## builds all the components
 buildall: build
 .PHONY: build buildall
 
@@ -75,8 +75,8 @@ buildapi: $(addprefix build-,$(API)) ## builds the API components
 buildaud: $(addprefix build-,$(AUD)) ## builds the audit components
 .PHONY: buildaud
 
-buildmkt: $(addprefix build-,$(MKT)) ## builds the marketplace components
-.PHONY: buildmkt
+buildapp: $(addprefix build-,$(APS)) ## builds the marketplace components
+.PHONY: buildapp
 
 unit: unit-bin unit-lib unit-srv ## executes all the components' unit test suites
 unit-all: unit

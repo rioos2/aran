@@ -2,6 +2,6 @@
 
 //! CLI for Rio/OS API service
 
+pub mod migrate;
 pub mod setup;
 pub mod sync;
-pub mod migrate;

@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::fs;
 use std::fmt;
+use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufWriter;
@@ -9,8 +9,8 @@ use std::path::{Path, PathBuf};
 use std::result;
 use std::str::FromStr;
 
-use fs::open_from;
 use error::{Error, Result};
+use fs::open_from;
 use util::perm;
 
 use super::REGULAR_KEY_PERMISSIONS;
@@ -250,7 +250,12 @@ fn write_key_file(regular_keyfile: Option<&Path>, regular_content: Option<&[u8]>
 
 ///Write a pair public and secret.
 //Calls and write_key_file for public and secret separately.
-fn write_keypair_files(public_keyfile: Option<&Path>, public_content: Option<&[u8]>, secret_keyfile: Option<&Path>, secret_content: Option<&[u8]>) -> Result<()> {
+fn write_keypair_files(
+    public_keyfile: Option<&Path>,
+    public_content: Option<&[u8]>,
+    secret_keyfile: Option<&Path>,
+    secret_content: Option<&[u8]>,
+) -> Result<()> {
     write_key_file(public_keyfile, public_content)?;
     write_key_file(secret_keyfile, secret_content)?;
     Ok(())

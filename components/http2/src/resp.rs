@@ -5,9 +5,9 @@ use futures::stream::Stream;
 
 use bytes::Bytes;
 
-use solicit_async::*;
-use solicit::header::Headers;
 use message::SimpleHttpMessage;
+use solicit::header::Headers;
+use solicit_async::*;
 
 use error::Error;
 
@@ -66,20 +66,21 @@ impl Response {
         S: Stream<Item = HttpStreamPart, Error = Error> + Send + 'static,
     {
         // Check that first frame is HEADERS
-        Response::new(
-            stream
-                .into_future()
-                .map_err(|(p, _s)| p)
-                .and_then(|(first, rem)| match first {
-                    Some(part) => match part.content {
-                        HttpStreamPartContent::Headers(headers) => Ok((headers, HttpPartStream::new(rem))),
-                        HttpStreamPartContent::Data(..) => Err(Error::InvalidFrame("data before headers".to_owned())),
-                    },
-                    None => Err(Error::InvalidFrame(
-                        "empty response, expecting headers".to_owned(),
-                    )),
-                }),
-        )
+        Response::new(stream.into_future().map_err(|(p, _s)| p).and_then(
+            |(first, rem)| match first {
+                Some(part) => match part.content {
+                    HttpStreamPartContent::Headers(headers) => {
+                        Ok((headers, HttpPartStream::new(rem)))
+                    }
+                    HttpStreamPartContent::Data(..) => {
+                        Err(Error::InvalidFrame("data before headers".to_owned()))
+                    }
+                },
+                None => Err(Error::InvalidFrame(
+                    "empty response, expecting headers".to_owned(),
+                )),
+            },
+        ))
     }
 
     pub fn err(err: Error) -> Response {

@@ -1,11 +1,10 @@
-///replicas expander
-
-use protocol::api::schema::type_meta_url;
-use protocol::api::{deploy, node, job, scale};
-use protocol::api::base::{MetaFields, WhoAmITypeMeta};
 use human_size::Size;
+use protocol::api::base::{MetaFields, WhoAmITypeMeta};
+///replicas expander
+use protocol::api::schema::type_meta_url;
+use protocol::api::{deploy, job, node, scale};
 
-use job::{JobOutput, job_ds, error};
+use job::{error, job_ds, JobOutput};
 
 use db::data_store::DataStoreConn;
 
@@ -19,7 +18,12 @@ pub struct ReplicasExpander<'a> {
 }
 
 impl<'a> ReplicasExpander<'a> {
-    pub fn new(conn: &'a DataStoreConn, assemblys: Vec<deploy::Assembly>, overall_metrics: Option<node::HealthzAllGetResponse>, scale: &'a scale::VerticalScaling) -> Self {
+    pub fn new(
+        conn: &'a DataStoreConn,
+        assemblys: Vec<deploy::Assembly>,
+        overall_metrics: Option<node::HealthzAllGetResponse>,
+        scale: &'a scale::VerticalScaling,
+    ) -> Self {
         ReplicasExpander {
             conn: &*conn,
             assemblys: assemblys,
@@ -51,7 +55,10 @@ impl<'a> ReplicasExpander<'a> {
 
     /// check the datacenter metrics and node metric of assembly
     fn satisfy_metrics(&self, assembly: &deploy::Assembly) -> bool {
-        if (self.assembly_metric(assembly) == 0 || self.average_node_metric() == 0) || (self.average_node_metric() < METRIC_LIMIT && self.assembly_metric(assembly) < METRIC_LIMIT) {
+        if (self.assembly_metric(assembly) == 0 || self.average_node_metric() == 0)
+            || (self.average_node_metric() < METRIC_LIMIT
+                && self.assembly_metric(assembly) < METRIC_LIMIT)
+        {
             return false;
         }
         return true;

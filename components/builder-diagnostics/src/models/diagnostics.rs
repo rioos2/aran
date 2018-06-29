@@ -2,11 +2,11 @@
 
 //! The Status backend for ping
 
-use rioos_http::ApiClient;
 use db::data_store::DataStoreConn;
+use rioos_http::ApiClient;
 
+use clusters::models::ninja::Nodes;
 use telemetry::metrics::prometheus::PrometheusClient;
-use nodesrv::node_ds::NodeDS;
 
 use serde_json::Value;
 
@@ -38,7 +38,11 @@ pub struct Pinguy;
 
 impl Pinguy {
     //collect service status and node status then return it.
-    pub fn status(datastore: &DataStoreConn, _prom: &PrometheusClient, config: Value) -> StatusOutput {
+    pub fn status(
+        datastore: &DataStoreConn,
+        _prom: &PrometheusClient,
+        config: Value,
+    ) -> StatusOutput {
         let mut mstatus = Vec::new();
         mstatus.push(Status {
             name: "API Server".to_string(),
@@ -87,10 +91,10 @@ impl Pinguy {
             "VNC Console".to_string(),
         ));
         mstatus.push(get_status(
-            "marketplaces",
+            "appstores",
             "endpoint".to_string(),
             config.clone(),
-            "Rio.Marketplace".to_string(),
+            "Rio.AppStore".to_string(),
         ));
         mstatus.push(get_status(
             "vaults",
@@ -117,7 +121,7 @@ impl Pinguy {
 //then generate node status structure and return it
 fn nodes_status(datastore: &DataStoreConn) -> Vec<Status> {
     let mut vec = Vec::new();
-    match NodeDS::list_blank(datastore) {
+    match Nodes::list_blank(datastore) {
         Ok(Some(node_list)) => {
             for n in &node_list {
                 let mut data = Status {

@@ -1,12 +1,12 @@
 // Copyright (c) 2017 RioCorp Inc
 
+use std::env;
 use std::error;
-use std::io;
 use std::fmt;
+use std::io;
 use std::result;
 use std::str;
 use std::string;
-use std::env;
 
 use toml;
 
@@ -31,7 +31,9 @@ impl fmt::Display for Error {
             Error::CryptoKeyError(ref s) => format!("Missing or invalid key: {}", s),
             Error::FileNameError => format!("Failed to extract a filename"),
             Error::IO(ref err) => format!("{}", err),
-            Error::RootRequired => "Root or administrator permissions required to complete operation".to_string(),
+            Error::RootRequired => {
+                "Root or administrator permissions required to complete operation".to_string()
+            }
             Error::StrFromUtf8Error(ref e) => format!("{}", e),
             Error::StringFromUtf8Error(ref e) => format!("{}", e),
             Error::TomlSerializeError(ref e) => format!("Can't serialize TOML: {}", e),
@@ -48,7 +50,9 @@ impl error::Error for Error {
             Error::CryptoKeyError(_) => "Missing or invalid key",
             Error::FileNameError => "Failed to extract a filename from a path",
             Error::IO(ref err) => err.description(),
-            Error::RootRequired => "Root or administrator permissions required to complete operation",
+            Error::RootRequired => {
+                "Root or administrator permissions required to complete operation"
+            }
             Error::StrFromUtf8Error(_) => "Failed to convert a string as UTF-8",
             Error::StringFromUtf8Error(_) => "Failed to convert a string as UTF-8",
             Error::TomlSerializeError(_) => "Can't serialize TOML",

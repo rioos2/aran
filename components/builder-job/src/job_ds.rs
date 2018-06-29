@@ -3,12 +3,12 @@
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 use chrono::prelude::*;
 
-use error::{Result, Error};
-use protocol::api::job;
+use error::{Error, Result};
 use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::job;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
 use super::{JobOutput, JobOutputList};
