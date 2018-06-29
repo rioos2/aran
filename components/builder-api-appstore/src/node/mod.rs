@@ -11,6 +11,8 @@ use std::sync::Arc;
 use common::ui::UI;
 use config::Config;
 use error::Result;
+use db::data_store::*;
+use error::Error;
 
 // Node that contains handler (`RuntimeHandler`)`.
 #[derive(Debug)]
@@ -29,6 +31,13 @@ impl Node {
     // for aran api handlers.
     // Aran api v1 prefix is `/api/v1`
     pub fn run(self, _ui: &mut UI) -> Result<()> {
-        api_wirer::ApiSrv::new(self.config.clone()).start()
+        let ods = DataStoreConn::new().ok();
+        let ds = match ods {
+            Some(ds) => Box::new(ds),           
+            None => {
+                return Err(Error::Api("Failed to wire the api middleware, \ndatabase isn't ready.".to_string()))
+            }
+        };
+        api_wirer::ApiSrv::new(self.config.clone()).start(ds.clone())
     }
 }
