@@ -111,7 +111,7 @@ pub trait HttpGateway {
     type Config: GatewayCfg;
 
     /// Callback for adding or removing middleware to the `iron::Chain` before server start.
-    fn add_middleware(Arc<Self::Config>, &mut iron::Chain, _ds: Box<DataStoreConn>) {
+    fn add_middleware(Arc<Self::Config>, &mut iron::Chain, ds: Box<DataStoreConn>) {
         ()
     }
 
