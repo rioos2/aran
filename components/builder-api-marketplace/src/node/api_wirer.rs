@@ -41,14 +41,13 @@ impl ApiSrv {
     // A generic implementation that launches `Node` and optionally creates threads
     // for aran api handlers.
     // Aran api v1 prefix is `/api/v1`
-    pub fn start(self) -> Result<()> {
-        let ds = DataStoreConn::new()?;
-
-        let dev = persistent::Read::<DataStoreBroker>::both(Arc::new(ds));
+    pub fn start(self, ds: Box<DataStoreConn>) -> Result<()> {
+        let pds: DataStoreConn = *ds.clone();
+        let dev = persistent::Read::<DataStoreBroker>::both(Arc::new(pds));
         // the thread exits faster, tries wrapping in on ther thread. So this actually runs like
         // [Main Thread] ----> Thread[0] - HttpGateway  ----> Thread[1] AppWirer(below thread)
         // But still the thread wasn't blocked
-        thread::spawn(move || http_gateway::app::start::<Wirer, _, _>(dev, self.config.clone()).map_err(Error::HttpsGateway));
+        thread::spawn(move || http_gateway::app::start::<Wirer, _, _>(dev, self.config.clone(), ds.clone()).map_err(Error::HttpsGateway));
 
         //Added park on the current thread, which is [Main Thread] in the above illustration.
         //
@@ -65,7 +64,7 @@ impl HttpGateway for Wirer {
 
     type Config = Config;
 
-    fn add_middleware(_config: Arc<Self::Config>, chain: &mut iron::Chain) {
+    fn add_middleware(_config: Arc<Self::Config>, chain: &mut iron::Chain, _ds: Box<DataStoreConn>) {
         chain.link_after(pack::CompressionMiddleware);
 
         chain.link_after(Custom404);
@@ -81,34 +80,25 @@ impl HttpGateway for Wirer {
         mount
     }
 
-    fn router(config: Arc<Self::Config>) -> Router {
+    fn router(config: Arc<Self::Config>, ds: Box<DataStoreConn>) -> Router {
         let mut router = Router::new();
 
-        let ods = DataStoreConn::new().ok();
+        //plan Api
+        let mut plan = deploy::marketplace::MarketPlaceApi::new(ds.clone());
+        plan.wire(config.clone(), &mut router);
 
-        match ods {
-            Some(ds) => {
-                //plan Api
-                let mut plan = deploy::marketplace::MarketPlaceApi::new(Box::new(ds.clone()));
-                plan.wire(config.clone(), &mut router);
+        //securer Api
+        let mut securer = security::auth_api::AuthenticateApi::new(ds.clone());
+        securer.wire(config.clone(), &mut router);
 
-                //securer Api
-                let mut securer = security::auth_api::AuthenticateApi::new(Box::new(ds.clone()));
-                securer.wire(config.clone(), &mut router);
+        //origin Api
+        let mut origin = deploy::origin::OriginApi::new(ds.clone());
+        origin.wire(config.clone(), &mut router);
 
-                //origin Api
-                let mut origin = deploy::origin::OriginApi::new(Box::new(ds.clone()));
-                origin.wire(config.clone(), &mut router);
-
-                //package Api
-                let mut package = deploy::package::PackageApi::new(Box::new(ds.clone()));
-                package.wire(config.clone(), &mut router);
-            }
-            None => {
-                error!("Failed to wire the router, \ndatabase isn't ready.");
-            }
-        }
-
+        //package Api
+        let mut package = deploy::package::PackageApi::new(ds.clone());
+        package.wire(config.clone(), &mut router);
+            
         router
     }
 }
