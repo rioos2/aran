@@ -5,7 +5,7 @@ use error::{Error, Result};
 
 use protocol::api::licenses::Licenses;
 use protocol::api::base::IdGet;
-use protocol::cache::PULL_DIRECTLY;
+use protocol::cache::{PULL_DIRECTLY, PULL_INVALDATED};
 use protocol::cache::InMemoryExpander;
 
 use postgres;
@@ -35,11 +35,15 @@ impl<'a> DataStore<'a> {
             ],
         ).map_err(Error::LicenseCreate)?;
         if rows.len() > 0 {
-            let licenses_create = row_to_licenses(&rows.get(0))?;
+            let mut licenses_create = row_to_licenses(&rows.get(0))?;
+            self.expander.with_license(
+                &mut licenses_create,
+                PULL_INVALDATED,
+            );
             return Ok(Some(licenses_create));
         }
         Ok(None)
-    }   
+    }
 
     pub fn license_show_by_name(&self, get_license: &IdGet) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
@@ -60,11 +64,9 @@ impl<'a> DataStore<'a> {
     pub fn get_by_name_fascade(&self, name: IdGet) -> Licenses {
         let mut license = Licenses::new();
         license.set_name(name.get_id());
-        self.expander
-            .with_license(&mut license, PULL_DIRECTLY);
+        self.expander.with_license(&mut license, PULL_DIRECTLY);
         license
     }
-
 }
 
 fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {
@@ -74,13 +76,10 @@ fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {
     let name: String = row.get("name");
     let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
-    let updated_at = row.get::<&str, DateTime<Utc>>("updated_at");
 
     licenses.set_id(id.to_string() as String);
     licenses.set_name(name as String);
     licenses.set_status(status as String);
     licenses.set_created_at(created_at.to_rfc3339());
-    licenses.set_updated_at(updated_at.to_rfc3339());
-
     Ok(licenses)
 }

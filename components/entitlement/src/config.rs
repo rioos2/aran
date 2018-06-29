@@ -4,6 +4,7 @@ use std::fmt;
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum Backend {
     LicenseCloud,
+    SoftwareKey,
 }
 
 
@@ -17,15 +18,14 @@ pub struct LicensesCfg {
     /// The activation license code bought by the customer (or) we will assume we are on trial mode.
     pub activation_code: Option<String>,
     pub backend: Backend,
-
 }
 
 impl Default for LicensesCfg {
     fn default() -> Self {
         LicensesCfg {
-            so_file: "ShaferFilechck.so".to_string(),
+            so_file: "libPLUSNative.so".to_string(),
             activation_code: None,
-            backend: Backend::LicenseCloud,
+            backend: Backend::SoftwareKey,
         }
     }
 }

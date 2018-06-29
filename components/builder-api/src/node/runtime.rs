@@ -4,16 +4,16 @@ use std::sync::Arc;
 use std::fmt;
 use std::io;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use config::Config;
 use api::audit::config::{BlockchainConn, MailerCfg};
 use protocol::api::audit::Envelope;
 use entitlement::licensor::Client;
-use db::data_store::*;
 use events::{HandlerPart, InternalEvent};
 use node::internal::InternalPart;
 use events::error::{into_other, other_error};
+use auth::rbac::license::LicensesFascade;
 
 use futures::{Future, Sink, Stream};
 use futures::sync::mpsc;
@@ -90,11 +90,11 @@ impl ApiSender {
 pub struct Runtime {
     channel: RuntimeChannel,
     handler: RuntimeHandler,
-    datastore: Box<DataStoreConn>,
+    datastore: LicensesFascade,
 }
 
 impl Runtime {
-    pub fn new(config: Arc<Config>, ds: Box<DataStoreConn>) -> Self {
+    pub fn new(config: Arc<Config>, ds: LicensesFascade) -> Self {
         Runtime {
             channel: RuntimeChannel::new(1024),
             handler: RuntimeHandler {
@@ -105,18 +105,19 @@ impl Runtime {
             datastore: ds,
         }
     }
-   
+
     /// Launches omessages handler.
     /// This may be used if you want to customize api with the `ApiContext`.
     pub fn start(self) -> io::Result<()> {
         let (handler_part, internal_part) = self.into_reactor();
-        
+
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
             let tx = Arc::new(internal_part);
-            let duration = Duration::new(3600, 0); // 10 minutes
+            let duration = Duration::new(2, 0); // 10 minutes
             let builder = tokio_timer::wheel().max_timeout(duration);
-            let wakeups = builder.build().interval(duration);
+            let wakeups = builder.build().interval_at(Instant::now(), duration);
+
             let task = wakeups.for_each(|_| {
                 &(*tx).clone().run();
                 Ok(())
@@ -151,7 +152,7 @@ impl Runtime {
             handler: self.handler,
             internal_rx,
             api_rx: self.channel.api_requests.1,
-            datastore: self.datastore,
+            datastore: self.datastore.conn,
         };
 
         let internal_part = InternalPart { internal_tx };

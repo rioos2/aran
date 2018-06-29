@@ -24,6 +24,7 @@ pub enum Error {
     CantVerifyPassticket(String),
     PassticketMismatch,
     PermissionError(String),
+    EntitlementError(String),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -44,6 +45,7 @@ impl fmt::Display for Error {
             Error::OldPassticketMustBeRemoved(ref e) => format!("{}", e),
             Error::CantVerifyPassticket(ref e) => format!("{}", e),
             Error::PermissionError(ref e) => format!("{}", e),
+            Error::EntitlementError(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -65,6 +67,7 @@ impl error::Error for Error {
             Error::JWTInvalid => "JWT token invalid",
             Error::IssuerInvalid => "JWT token issuer invalid",
             Error::PermissionError(ref e) => e,
+            Error::EntitlementError(ref e) => e,
         }
     }
 }

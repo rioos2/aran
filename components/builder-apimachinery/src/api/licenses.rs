@@ -6,11 +6,10 @@ use cache::inject::LicensesFeeder;
 pub struct Licenses {
     #[serde(default)]
     id: String,
-    name: String,   
-    status: String, 
+    name: String,
+    status: String,
     #[serde(default)]
     created_at: String,
-    updated_at: String,
 }
 
 impl Licenses {
@@ -48,14 +47,6 @@ impl Licenses {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
-
-    pub fn set_updated_at(&mut self, v: ::std::string::String) {
-        self.updated_at = v;
-    }
-
-    pub fn get_updated_at(&self) -> ::std::string::String {
-        self.updated_at.clone()
-    }
 }
 
 impl LicensesFeeder for Licenses {
@@ -66,7 +57,7 @@ impl LicensesFeeder for Licenses {
     fn ifeed(&mut self, m: Option<String>) {
         match m {
             Some(status) => self.set_status(status),
-            None => {},
+            None => {}
         }
     }
 }
@@ -85,7 +76,7 @@ mod test {
             }"#;
         let license: Licenses = json_decode(val).unwrap();
         assert_eq!(license.name, "LICENSECLOUD");
-        assert_eq!(license.status,"ACTIVE");
+        assert_eq!(license.status, "ACTIVE");
     }
-   
+
 }

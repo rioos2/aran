@@ -49,27 +49,30 @@ impl RuntimeHandler {
     }
 
     fn handle_internal_event(&mut self, event: &InternalEvent, ds: Box<DataStoreConn>) {
-       
         match *event {
-             /*InternalEvent::EntitlementTimeout => match self.license.create_trial_or_verify() {
-                 Ok(()) => {
+            InternalEvent::EntitlementTimeout => {
+                match self.license.create_trial_or_verify() {
+                    Ok(()) => {
                      let str = " ✓ All Good. You have a valid entitlement. !";
                      info!{" ✓ All Good. You have a valid entitlement. !"}
                      self.license.update_license_status(ds.clone(),ACTIVE.to_string(), str.to_string());
-                 },
-                 Err(err) => {                     
-                     let expiry_attempt = self.license.hard_stop();
-                     if expiry_attempt.is_err() { 
-                         self.license.update_license_status(ds.clone(),EXPIRY.to_string(), "error".to_string());                        
-                         error!("{:?}", err)
-                     } else {
-                         warn!("{:?}, Message: {:?}", expiry_attempt.unwrap(), err)
-                     }                     
                  }
-             },*/
-            InternalEvent::EntitlementTimeout => info!{" ✓ All Good. You have a valid entitlement. !"},
+                    Err(err) => {
+                        let expiry_attempt = self.license.hard_stop();
+                        if expiry_attempt.is_err() {
+                            self.license.update_license_status(
+                                ds.clone(),
+                                EXPIRY.to_string(),
+                                "error".to_string(),
+                            );
+                            error!("{:?}", err)
+                        } else {
+                            warn!("{:?}, Message: {:?}", expiry_attempt.unwrap(), err)
+                        }
+                    }
+                }
+            }
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }
     }
 }
-

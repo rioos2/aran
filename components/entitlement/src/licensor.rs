@@ -11,6 +11,7 @@ use config::{LicensesCfg, Backend};
 use db::data_store::DataStoreConn;
 use entitlement::models::license;
 use protocol::api::licenses::Licenses;
+use softwarekey::SoftwareKey;
 
 const ALLOWED_EXPIRY: u32 = 5;
 
@@ -19,7 +20,7 @@ pub trait LicenseClient: Send {
     // Returns the status of license verified with configured license tool
     // If there is a chance for starting a trial, then it does.
     // If there is the activation code then it used that to verify.
-    fn verify(&self) -> Result<()>;    
+    fn verify(&self) -> Result<()>;
 
     fn hard_stop(&mut self) -> Result<String>;
 }
@@ -29,6 +30,7 @@ pub struct Client {
     pub backend: Backend,
     pub nalp: Nalperion,
     pub licensecloud: LicenseCloud,
+    pub softwarekey: SoftwareKey,
     expiry_counter: u32,
 }
 
@@ -39,6 +41,7 @@ impl Client {
             backend: config.backend(),
             nalp: Nalperion::new(config),
             licensecloud: LicenseCloud::new(config),
+            softwarekey: SoftwareKey::new(config),
             expiry_counter: 0,
         }
     }
@@ -49,8 +52,8 @@ impl Client {
     pub fn create_trial_or_verify(&self) -> Result<()> {
         let res = match self.backend {
             Backend::LicenseCloud => self.licensecloud.verify(),
-        };        
-        println!("{:?}", res);
+            Backend::SoftwareKey => self.softwarekey.verify(),
+        };
         res
     }
 
@@ -77,5 +80,4 @@ impl Client {
         license.set_status(status);
         license::DataStore::new(&datastore).license_create_or_update(&license);
     }
-
 }

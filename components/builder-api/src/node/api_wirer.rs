@@ -37,9 +37,7 @@ pub struct ApiSrv {
 
 impl ApiSrv {
     pub fn new(config: Arc<Config>) -> Self {
-        ApiSrv {
-            config: config.clone(),
-        }
+        ApiSrv { config: config.clone() }
     }
 
     // A generic implementation that launches `Node` and optionally creates threads
@@ -70,9 +68,7 @@ impl HttpGateway for Wirer {
     fn add_middleware(_config: Arc<Self::Config>, chain: &mut iron::Chain, ds: Box<DataStoreConn>) {
         //let ods = DataStoreConn::new().ok();
         let pds: DataStoreConn = *ds.clone();
-        chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(
-                    pds,
-        )));
+        chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(pds)));
         let mut permissions = permissions::Permissions::new(ds.clone());
         permissions.with_cache();
         chain.link_before(Arc::new(RBAC::new(&*_config, permissions)));
@@ -118,9 +114,7 @@ impl HttpGateway for Wirer {
         let mut storage = cluster::storage_api::StorageApi::new(ds.clone());
         storage.wire(config.clone(), &mut router);
 
-        let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(Box::new(
-            ObjectStorageCfg::new(&*config.clone()),
-        ));
+        let mut s3 = objectstorage::bucket_api::ObjectStorageApi::new(Box::new(ObjectStorageCfg::new(&*config.clone())));
         s3.wire(config.clone(), &mut router);
 
         let mut service = deploy::service::ServiceApi::new(ds.clone());
@@ -139,30 +133,23 @@ impl HttpGateway for Wirer {
         );
         assembly.wire(config.clone(), &mut router);
 
-        let mut assembly_factory =
-            deploy::assembly_factory::AssemblyFactoryApi::new(ds.clone());
-            assembly_factory.wire(config.clone(), &mut router);
+        let mut assembly_factory = deploy::assembly_factory::AssemblyFactoryApi::new(ds.clone());
+        assembly_factory.wire(config.clone(), &mut router);
 
-        let mut stacks_factory =
-            deploy::stacks_factory::StacksFactoryApi::new(ds.clone());
-            stacks_factory.wire(config.clone(), &mut router);
+        let mut stacks_factory = deploy::stacks_factory::StacksFactoryApi::new(ds.clone());
+        stacks_factory.wire(config.clone(), &mut router);
 
         //securer apis
         let mut securer = security::auth_api::AuthenticateApi::new(ds.clone());
         securer.wire(config.clone(), &mut router);
 
-        let mut passticket =
-            security::passticket_api::PassTicketApi::new(ds.clone());
-            passticket.wire(config.clone(), &mut router);
+        let mut passticket = security::passticket_api::PassTicketApi::new(ds.clone());
+        passticket.wire(config.clone(), &mut router);
 
-        let mut secret = security::secret_api::SecretApi::new(
-            ds.clone(),
-            Box::new(SecurerConn::new(&*config.clone())),
-        );
+        let mut secret = security::secret_api::SecretApi::new(ds.clone(), Box::new(SecurerConn::new(&*config.clone())));
         secret.wire(config.clone(), &mut router);
 
-        let mut service_account =
-            security::service_account_api::SeriveAccountApi::new(ds.clone());
+        let mut service_account = security::service_account_api::SeriveAccountApi::new(ds.clone());
         service_account.wire(config.clone(), &mut router);
 
         //job apis
@@ -185,8 +172,7 @@ impl HttpGateway for Wirer {
         );
         vscale.wire(config.clone(), &mut router);
 
-        let mut console =
-            deploy::console::Containers::new(ds.clone(), config.clone());
+        let mut console = deploy::console::Containers::new(ds.clone(), config.clone());
         console.wire(config.clone(), &mut router);
 
         //origin
@@ -199,12 +185,10 @@ impl HttpGateway for Wirer {
         let mut role = authorize::role::RoleApi::new(ds.clone());
         role.wire(config.clone(), &mut router);
 
-        let mut permission =
-            authorize::permission::PermissionApi::new(ds.clone());
+        let mut permission = authorize::permission::PermissionApi::new(ds.clone());
         permission.wire(config.clone(), &mut router);
 
-        let mut settings =
-            security::settings_map_api::SettingsMapApi::new(ds.clone());
+        let mut settings = security::settings_map_api::SettingsMapApi::new(ds.clone());
         settings.wire(config.clone(), &mut router);
 
         let mut log = audit::log_api::LogApi::new(
@@ -213,33 +197,24 @@ impl HttpGateway for Wirer {
         );
         log.wire(config.clone(), &mut router);
 
-        let mut vuln = audit::vuln_api::VulnApi::new(
-            ds.clone(),
-            Box::new(AnchoreClient::new(&*config.clone())),
-        );
+        let mut vuln = audit::vuln_api::VulnApi::new(ds.clone(), Box::new(AnchoreClient::new(&*config.clone())));
         vuln.wire(config.clone(), &mut router);
 
-        let mut build_config =
-            devtooling::build_config::BuildConfigApi::new(ds.clone());
+        let mut build_config = devtooling::build_config::BuildConfigApi::new(ds.clone());
         build_config.wire(config.clone(), &mut router);
 
         let mut build = devtooling::build::BuildApi::new(ds.clone());
         build.wire(config.clone(), &mut router);
 
-        let mut image_references =
-            devtooling::image_references::ImageReferencesApi::new(ds.clone());
+        let mut image_references = devtooling::image_references::ImageReferencesApi::new(ds.clone());
         image_references.wire(config.clone(), &mut router);
 
-        let mut image_marks =
-            devtooling::image_marks::ImageMarksApi::new(ds.clone());
+        let mut image_marks = devtooling::image_marks::ImageMarksApi::new(ds.clone());
         image_marks.wire(config.clone(), &mut router);
 
-        let mut block_chain = audit::blockchain_api::BlockChainApi::new(
-            ds.clone(),
-            Box::new(BlockchainConn::new(&*config.clone())),
-        );
-        block_chain.wire(config.clone(), &mut router);           
+        let mut block_chain = audit::blockchain_api::BlockChainApi::new(ds.clone(), Box::new(BlockchainConn::new(&*config.clone())));
+        block_chain.wire(config.clone(), &mut router);
 
-    router
+        router
     }
 }
