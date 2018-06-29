@@ -4,7 +4,7 @@ clusters:
   cluster:
     certificate-authority-data: {{server_ca}}
     server: https://{{api_server}}:{{https_port}}/
-    watchserver: https://{{api_server}}:{{http2__port}}/
+    watchserver: https://{{api_server}}:{{http2_port}}/
     name: elixir_cluster
 users:
   user:
@@ -18,5 +18,6 @@ contexts:
     user: elixir_cluster
     name: elixir_cluster
 current-context: elixir_cluster
+
 
 
