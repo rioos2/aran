@@ -1,14 +1,14 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
+use cidr;
+use db;
+use oping;
 use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use db;
 use telemetry;
-use oping;
-use cidr;
 
 #[derive(Debug)]
 pub enum Error {
@@ -68,7 +68,6 @@ impl From<telemetry::error::Error> for Error {
         Error::PromoStatusGetError(err)
     }
 }
-
 
 impl From<oping::PingError> for Error {
     fn from(err: oping::PingError) -> Error {

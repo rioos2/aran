@@ -6,11 +6,11 @@ description = "RIO/OS Deployment library"
 workspace = "../../"
 
 [dependencies]
-rand = "*"
+rand = "0.5.3"
 postgres = { version = "0.15.2", features = ["with-chrono", "with-serde_json"] }
-chrono = { version = "0.4.2", features = ["serde"] }
+chrono = { version = "0.4.4", features = ["serde"] }
 petgraph = "*"
-serde_json = "1.0.16"
+serde_json = "1.0.22"
 human-size = "0.2.0"
 
 [dependencies.rioos_builder_apimachinery]

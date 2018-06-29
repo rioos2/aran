@@ -1,4 +1,3 @@
-
 /// host url  to get the audit of the client
 pub const DEFAULT_PROMETHEUS_URL: &'static str = "http://localhost:9090/api/v1";
 
@@ -10,7 +9,9 @@ pub struct TelemetryCfg {
 
 impl Default for TelemetryCfg {
     fn default() -> Self {
-        TelemetryCfg { endpoint: DEFAULT_PROMETHEUS_URL.to_string() }
+        TelemetryCfg {
+            endpoint: DEFAULT_PROMETHEUS_URL.to_string(),
+        }
     }
 }
 

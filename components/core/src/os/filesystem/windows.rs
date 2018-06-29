@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use libc::c_int;
-use std::path::Path;
 use std::io;
+use std::path::Path;
 
 use error::Result;
 

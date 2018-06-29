@@ -1,15 +1,21 @@
+use error::{Error, Result};
 use handlebars::Handlebars;
 use rio_core::fs::{read_from_file, rioconfig_config_path};
-use error::{Result, Error};
-use std::path::PathBuf;
 use serde_json;
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 const DEPLOY_SUBJECT: &'static str = "Ahoy! Deployed successfully.";
 const FAILED_SUBJECT: &'static str = "Deploy failure";
 
 lazy_static! {
-    static  ref DEPLOY_SUCCESS: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/deploy_success.hbs").to_str().unwrap());
-    static  ref DEPLOY_FAILED: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/deploy_failed.hbs").to_str().unwrap());
+    static ref DEPLOY_SUCCESS: PathBuf = PathBuf::from(&*rioconfig_config_path(None)
+        .join("template/deploy_success.hbs")
+        .to_str()
+        .unwrap());
+    static ref DEPLOY_FAILED: PathBuf = PathBuf::from(&*rioconfig_config_path(None)
+        .join("template/deploy_failed.hbs")
+        .to_str()
+        .unwrap());
 }
 
 pub struct EmailGenerator {

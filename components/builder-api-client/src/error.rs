@@ -2,16 +2,16 @@
 //
 
 use std::error;
-use std::io;
 use std::fmt;
+use std::io;
 use std::result;
 
 use reqwest;
 use serde_json;
 use url;
 
-use rioos_http;
 use http_gateway;
+use rioos_http;
 
 #[derive(Debug)]
 pub enum Error {

@@ -1,8 +1,8 @@
-use futures::Async;
-use futures::Poll;
 use futures::future::Future;
 use futures::stream::Stream;
 use futures::sync::mpsc::UnboundedSender;
+use futures::Async;
+use futures::Poll;
 
 use void::Void;
 
@@ -48,7 +48,8 @@ impl<T: Types> Future for PumpStreamToWriteLoop<T> {
                 Ok(Async::Ready(r)) => r,
                 Err(e) => {
                     warn!("stream error: {:?}", e);
-                    let stream_end = CommonToWriteMessage::StreamEnd(self.stream_id, ErrorCode::InternalError);
+                    let stream_end =
+                        CommonToWriteMessage::StreamEnd(self.stream_id, ErrorCode::InternalError);
                     if let Err(e) = self.to_write_tx.unbounded_send(stream_end.into()) {
                         warn!(
                             "failed to write to channel, probably connection is closed: {:?}",

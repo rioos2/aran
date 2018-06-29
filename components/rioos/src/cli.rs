@@ -332,7 +332,6 @@ fn sub_digitalcloud_list() -> App<'static, 'static> {
     )
 }
 
-
 fn file_exists(val: String) -> result::Result<(), String> {
     if Path::new(&val).is_file() {
         Ok(())

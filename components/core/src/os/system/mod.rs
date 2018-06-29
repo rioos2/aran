@@ -1,9 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use error::Error;
 use std::fmt;
 use std::result;
 use std::str::FromStr;
-use error::Error;
 #[cfg(windows)]
 mod windows;
 

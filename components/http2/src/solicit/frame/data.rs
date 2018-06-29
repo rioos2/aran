@@ -1,9 +1,9 @@
 //! The module contains the implementation of the `DATA` frame and associated flags.
 
-use std::borrow::Cow;
-use solicit::StreamId;
-use solicit::frame::{FrameBuilder, FrameIR, Frame, FrameHeader, RawFrame, parse_padded_payload};
 use solicit::frame::flags::*;
+use solicit::frame::{parse_padded_payload, Frame, FrameBuilder, FrameHeader, FrameIR, RawFrame};
+use solicit::StreamId;
+use std::borrow::Cow;
 
 use bytes::Bytes;
 
@@ -230,10 +230,10 @@ impl FrameIR for DataFrame {
 mod tests {
     use super::{DataFlag, DataFrame};
     use solicit::frame::tests::build_padded_frame_payload;
-    use solicit::tests::common::raw_frame_from_parts;
-    use solicit::frame::{pack_header, Frame};
-    use solicit::frame::FrameIR;
     use solicit::frame::FrameHeader;
+    use solicit::frame::FrameIR;
+    use solicit::frame::{pack_header, Frame};
+    use solicit::tests::common::raw_frame_from_parts;
 
     /// Tests that the `DataFrame` struct correctly interprets a DATA frame
     /// with no padding set.

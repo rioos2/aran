@@ -7,10 +7,10 @@
 
 pub mod openio;
 
+use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
 use error::Result;
 use protocol::api::objectstorage::Bucket;
 use protocol::api::objectstorage::BucketAccessor;
-use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
 
 /// Currently implemented securer backends
 

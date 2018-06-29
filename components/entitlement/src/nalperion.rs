@@ -2,8 +2,8 @@
 //
 
 //! A module containing the middleware of the HTTP server
-use std::str;
 use std::path::PathBuf;
+use std::str;
 
 use error::{Error, Result};
 use handlebars::Handlebars;
@@ -15,7 +15,11 @@ use config;
 use lib_load;
 
 lazy_static! {
-    static  ref NALPERION_SHAFER_FILECHK_XML_TEMPLATE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/shafer_filechk.xml").to_str().unwrap());
+    static ref NALPERION_SHAFER_FILECHK_XML_TEMPLATE: PathBuf =
+        PathBuf::from(&*rioconfig_config_path(None)
+            .join("template/shafer_filechk.xml")
+            .to_str()
+            .unwrap());
 }
 
 /// These are the security values stamped into your library.
@@ -86,7 +90,11 @@ impl API {
         Ok(())
     }
 
-    fn call_dynamic(so_file: String, secret_offset: (u32, u32), activation_code: Option<String>) -> Result<()> {
+    fn call_dynamic(
+        so_file: String,
+        secret_offset: (u32, u32),
+        activation_code: Option<String>,
+    ) -> Result<()> {
         let lib = lib_load::Library::new(&rioconfig_license_path(None).join(so_file))?;
 
         unsafe {
@@ -109,7 +117,9 @@ impl API {
             }
 
             //check the status of the license (license status has negative value return the error)
-            let get_license_fn = lib.get::<fn(Option<String>, *mut i32, Option<String>) -> i32>(NALP_GET_LIBRARY.as_bytes())?;
+            let get_license_fn = lib.get::<fn(Option<String>, *mut i32, Option<String>) -> i32>(
+                NALP_GET_LIBRARY.as_bytes(),
+            )?;
             let x: &mut i32 = &mut 0;
             let ret_val = get_license_fn(activation_code, x, None);
             debug!("=> get_license_status: {:?}", ret_val);

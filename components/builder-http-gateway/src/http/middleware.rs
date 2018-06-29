@@ -390,21 +390,21 @@ impl BeforeMiddleware for RBAC {
 }
 
 pub struct EntitlementAct {
-   license: LicensesFascade,
-   backend: String,
+   _license: LicensesFascade,
+   _backend: String,
 }
 
 impl EntitlementAct {
     pub fn new<T: License>(config: &T, fascade: LicensesFascade) -> Self {
         EntitlementAct {
-            license: fascade, 
-            backend: config.backend().to_string(),           
+            _license: fascade, 
+            _backend: config.backend().to_string(),           
         }
     }
 }
 
 impl BeforeMiddleware for EntitlementAct {
-    fn before(&self, req: &mut Request) -> IronResult<()> {
+    fn before(&self, _req: &mut Request) -> IronResult<()> {
         Ok(())
     }
 }

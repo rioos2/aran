@@ -7,26 +7,25 @@ use iron::status;
 use router::Router;
 use typemap;
 
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use api::events::EventLogger;
 use api::audit::config::BlockchainConn;
-
+use api::events::EventLogger;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use common::ui;
 
 use config::Config;
 use error::Error;
 
 use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, badgateway_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, not_found_error, badgateway_error};
 
 use super::ledger;
-use protocol::api::base::MetaFields;
 use protocol::api::audit::AuditEvent;
+use protocol::api::base::MetaFields;
 use protocol::api::schema::{dispatch, type_meta};
 
-use db::error::Error::RecordsNotFound;
 use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
 
 define_event_log!();
@@ -62,9 +61,8 @@ impl BlockChainApi {
     //- created_at is not available for this, as the AuditEvent is converted to
     //- an envelope which has the timestamp.
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<AuditEvent>(
-            req.get::<bodyparser::Struct<AuditEvent>>()?,
-        )?;
+        let mut unmarshall_body =
+            self.validate::<AuditEvent>(req.get::<bodyparser::Struct<AuditEvent>>()?)?;
 
         ui::rawdumpln(
             Colour::White,

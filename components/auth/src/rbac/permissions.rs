@@ -33,7 +33,12 @@ impl ExpanderSender for Permissions {
         let _conn = self.conn.clone();
         let permission_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PERMISSION.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> { permission::DataStore::new(&_conn).list_by_email(&id).ok().and_then(|p| serde_json::to_string(&p).ok()) }),
+            Box::new(move |id: IdGet| -> Option<String> {
+                permission::DataStore::new(&_conn)
+                    .list_by_email(&id)
+                    .ok()
+                    .and_then(|p| serde_json::to_string(&p).ok())
+            }),
         ));
 
         &self.conn.expander.with(permission_service);

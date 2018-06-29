@@ -48,24 +48,23 @@ extern crate fnv;
 
 #[macro_use]
 extern crate log;
+extern crate base64;
+extern crate chrono;
+extern crate diesel;
 extern crate num_cpus;
 extern crate postgres;
 extern crate r2d2;
+extern crate r2d2_diesel;
 extern crate r2d2_postgres;
 extern crate rand;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_core as rcore;
 extern crate serde;
-extern crate base64;
-extern crate chrono;
-extern crate diesel;
-extern crate r2d2_diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
 extern crate serde_json;
 extern crate serde_yaml;
 extern crate url;
@@ -73,13 +72,11 @@ extern crate url;
 #[macro_use]
 extern crate lazy_static;
 
+pub mod appstore;
 pub mod config;
+pub mod data_store;
+pub mod diesel_pool;
 pub mod error;
+pub mod migration;
 pub mod pool;
 pub mod test;
-pub mod diesel_pool;
-pub mod migration;
-pub mod data_store;
-pub mod marketplace_differ;
-pub mod system_secret;
-pub mod mkt_data_store;

@@ -1,0 +1,61 @@
+[package]
+name = "rio_appstore_api"
+version = "0.0.0"
+authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
+description = "RIO App Store Gateway"
+build = "../build-builder.rs"
+workspace = "../../"
+
+[[bin]]
+name = "rio-appstore"
+path = "src/main.rs"
+doc = false
+
+[dependencies]
+regex="1.0.1"
+rand = "0.5.3"
+ansi_term = "*"
+env_logger = "0.5.10"
+bodyparser = "0.8.0"
+router = "0.6.0"
+persistent = "*"
+iron = "0.6.0"
+mount = "*"
+lazy_static = "1.0.1"
+serde = "1.0.66"
+serde_derive = "1.0.67"
+serde_json = "1.0.22"
+toml = { version = "0.4.6", default-features = false }
+url = "1.7.0"
+log = "0.4.2"
+
+[dependencies.clap]
+version = "2.32.0"
+features = [ "suggestions", "color", "unstable" ]
+
+[dependencies.rioos_core]
+path = "../core"
+
+[dependencies.rioos_common]
+path = "../common"
+
+[dependencies.rioos_builder_apimachinery]
+path = "../builder-apimachinery"
+
+[dependencies.rioos_builder_httpgateway]
+path = "../builder-http-gateway"
+
+[dependencies.rio_appstore_storage]
+path = "../builder-appstore"
+
+[dependencies.rioos_builder_session]
+path = "../builder-session"
+
+[dependencies.rioos_builder_db]
+path = "../builder-db"
+
+[dependencies.rioos_auth]
+path = "../auth"
+
+[features]
+functional = []

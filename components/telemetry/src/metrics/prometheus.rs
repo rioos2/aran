@@ -6,8 +6,8 @@ use super::super::error::Result;
 
 use std::io::Read;
 
-use http_client::reqwest_client::http_bearer_get;
 use chrono::prelude::*;
+use http_client::reqwest_client::http_bearer_get;
 
 use config;
 
@@ -20,7 +20,9 @@ pub struct PrometheusClient {
 
 impl PrometheusClient {
     pub fn new<T: config::Telemetry>(config: &T) -> Self {
-        PrometheusClient { url: config.endpoint().to_string() }
+        PrometheusClient {
+            url: config.endpoint().to_string(),
+        }
     }
 
     /// Returns the instant vector metric for all nodes
@@ -49,8 +51,7 @@ impl PrometheusClient {
     ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
     pub fn pull_osusage(&self, path: &str) -> Result<Contents> {
         let utc: DateTime<Utc> = Utc::now();
-        let url =
-            format!(
+        let url = format!(
             "{}/query_range?query={}&start={}&end={}&step=15s",
             self.url,
             path,
@@ -61,7 +62,6 @@ impl PrometheusClient {
         let mut rep = http_bearer_get(&url, path)?;
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
-
 
         let contents: Contents = Contents { data: body };
 

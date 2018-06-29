@@ -1,16 +1,16 @@
 use solicit::StreamId;
-use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::collections::hash_map::OccupiedEntry;
+use std::collections::HashMap;
 
 use error::ErrorCode;
 
-use solicit::session::StreamState;
-use solicit::WindowSize;
-use super::stream::HttpStreamCommon;
 use super::stream::HttpStreamCommand;
+use super::stream::HttpStreamCommon;
 use super::stream::HttpStreamStateSnapshot;
 use super::types::Types;
+use solicit::session::StreamState;
+use solicit::WindowSize;
 
 pub struct StreamMap<T: Types> {
     pub map: HashMap<StreamId, HttpStreamCommon<T>>,
@@ -47,7 +47,10 @@ impl<T: Types> StreamMap<T> {
     }
 
     /// Remove locally initiated streams with id > given.
-    pub fn remove_local_streams_with_id_gt(&mut self, id: StreamId) -> Vec<(StreamId, HttpStreamCommon<T>)> {
+    pub fn remove_local_streams_with_id_gt(
+        &mut self,
+        id: StreamId,
+    ) -> Vec<(StreamId, HttpStreamCommon<T>)> {
         let stream_ids: Vec<StreamId> = self.map
             .keys()
             .cloned()
@@ -98,7 +101,10 @@ impl<'m, T: Types + 'm> HttpStreamRef<'m, T> {
         }
     }
 
-    pub fn pop_outg_all_maybe_remove(mut self, conn_out_window_size: &mut WindowSize) -> Vec<HttpStreamCommand> {
+    pub fn pop_outg_all_maybe_remove(
+        mut self,
+        conn_out_window_size: &mut WindowSize,
+    ) -> Vec<HttpStreamCommand> {
         let mut r = Vec::new();
         loop {
             if let Some(c) = self.stream().pop_outg(conn_out_window_size) {

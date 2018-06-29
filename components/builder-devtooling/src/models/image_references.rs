@@ -2,13 +2,13 @@
 
 //! The PostgreSQL backend for the Build config
 use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::devtool::ImageReferences;
-use protocol::api::base::MetaFields;
+use error::{Error, Result};
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::devtool::ImageReferences;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
 use super::super::{ImageReferencesOutput, ImageReferencesOutputList};
@@ -16,7 +16,10 @@ use super::super::{ImageReferencesOutput, ImageReferencesOutputList};
 pub struct DataStore;
 
 impl DataStore {
-    pub fn create(datastore: &DataStoreConn, image_create: &ImageReferences) -> ImageReferencesOutput {
+    pub fn create(
+        datastore: &DataStoreConn,
+        image_create: &ImageReferences,
+    ) -> ImageReferencesOutput {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -79,14 +82,16 @@ impl DataStore {
             ],
         ).map_err(Error::ImageRefUpdate)?;
 
-
         if rows.len() > 0 {
             let image = row_to_image_ref(&rows.get(0))?;
             return Ok(Some(image));
         }
         Ok(None)
     }
-    pub fn show_by_build_config(datastore: &DataStoreConn, img_get: &IdGet) -> ImageReferencesOutput {
+    pub fn show_by_build_config(
+        datastore: &DataStoreConn,
+        img_get: &IdGet,
+    ) -> ImageReferencesOutput {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(

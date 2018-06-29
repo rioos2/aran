@@ -61,13 +61,13 @@ impl Node {
         let api_sender = rg.channel();
 
         ui.end("✓ Runtime Guard");
-      
+
         ui.begin("→ Api Srver");
         &rg.start()?;
 
         api_wirer::ApiSrv::new(self.config.clone()).start(api_sender, ds.clone())?;
         ui.end("✓ Api Srver");
-        
+
         ui.begin("→ Streamer");
         streamer::Streamer::new(self.config.http2.port, self.config.clone()).start((*self.config).http2_tls_pair(), ds.clone())?;
         ui.end("✓ Streamer");

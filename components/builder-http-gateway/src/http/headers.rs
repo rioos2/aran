@@ -1,12 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use error::Error;
+use iron::error::HttpError;
+use iron::headers::parsing::from_one_raw_str;
+use iron::headers::{Header, HeaderFormat};
 use std::fmt;
 use std::result;
 use std::str::FromStr;
-use error::Error;
-use iron::headers::{Header, HeaderFormat};
-use iron::error::HttpError;
-use iron::headers::parsing::from_one_raw_str;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct XAuthRioOSEmail(pub String);

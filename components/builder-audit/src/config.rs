@@ -1,4 +1,3 @@
-
 ///host url to check the vulnerability of the container
 pub const DEFAULT_ANCHORE_URL: &'static str = "http://localhost:8228/v1";
 
@@ -14,7 +13,6 @@ pub trait Logs {
     /// Includes the prefix of the database,table,path in influx
     fn influx_prefix(&self) -> &str;
 }
-
 
 ///// Configuration for Logs
 
@@ -34,7 +32,6 @@ impl Default for LogsCfg {
     }
 }
 
-
 #[derive(Clone)]
 pub struct InfluxClientConn {
     pub endpoint: String,
@@ -45,7 +42,7 @@ pub struct InfluxClientConn {
 impl InfluxClientConn {
     pub fn new<T: Logs>(config: &T) -> Self {
         InfluxClientConn {
-           endpoint: config.influx_endpoint().to_string(),
+            endpoint: config.influx_endpoint().to_string(),
             prefix: config.influx_prefix().to_string(),
         }
     }
@@ -61,7 +58,6 @@ impl InfluxClientConn {
         self.prefix.clone() + "Path"
     }
 }
-
 
 ///// Configuration for security vulnerability
 

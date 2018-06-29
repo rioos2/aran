@@ -64,13 +64,7 @@ impl Containers {
                     .get_metadata()
                     .get("rioos_sh_vnc_port")
                     .unwrap_or(vnc);
-                let url = format!(
-                    "http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1&stdout=1&stdin=1&stderr=1",
-                    host,
-                    port,
-                    acc,
-                    asm_id
-                );
+                let url = format!("http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1&stdout=1&stdin=1&stderr=1", host, port, acc, asm_id);
 
                 let client = ApiClient::new(&url, "", "v1", None)?;
                 let res = client.get("").send();

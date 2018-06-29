@@ -1,11 +1,11 @@
-use std::collections::BTreeMap;
 use error::Result;
+use std::collections::BTreeMap;
 
-use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::collector::{Collector, CollectorScope};
+use telemetry::metrics::prometheus::PrometheusClient;
 
-use protocol::api::{scale, node};
 use protocol::api::base::QueryInput;
+use protocol::api::{node, scale};
 
 const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
 const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
@@ -19,7 +19,11 @@ impl<'a> Client<'a> {
     pub fn new(prom: &'a PrometheusClient) -> Self {
         Client { prom: prom }
     }
-    pub fn metrics(&self, af_id: &str, querypair: QueryInput) -> Result<Option<Vec<scale::ScalingGetResponse>>> {
+    pub fn metrics(
+        &self,
+        af_id: &str,
+        querypair: QueryInput,
+    ) -> Result<Option<Vec<scale::ScalingGetResponse>>> {
         let metric_response = match &format!("job={}", querypair.get("job"))[..] {
             node::CONTAINER_JOBS => self.container_metric(&af_id),
             _ => self.assembly_metric(&af_id, querypair),
@@ -29,8 +33,11 @@ impl<'a> Client<'a> {
         Ok(Some(vec![response]))
     }
 
-
-    fn assembly_metric(&self, af_id: &str, querypair: QueryInput) -> Result<BTreeMap<String, BTreeMap<String, String>>> {
+    fn assembly_metric(
+        &self,
+        af_id: &str,
+        querypair: QueryInput,
+    ) -> Result<BTreeMap<String, BTreeMap<String, String>>> {
         let mut data = BTreeMap::new();
         let label_collection: Vec<String> = vec![
             format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id).to_string(),
@@ -46,17 +53,15 @@ impl<'a> Client<'a> {
         );
         data.insert(
             "cpu".to_string(),
-            Collector::new(self.prom, assembly_cpu_scope)
-                .metric_by_avg_for_machines()?,
+            Collector::new(self.prom, assembly_cpu_scope).metric_by_avg_for_machines()?,
         );
         Ok(data)
     }
 
     fn container_metric(&self, af_id: &str) -> Result<BTreeMap<String, BTreeMap<String, String>>> {
         let mut data = BTreeMap::new();
-        let label_collection: Vec<String> = vec![
-            format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id).to_string(),
-        ];
+        let label_collection: Vec<String> =
+            vec![format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, af_id).to_string()];
 
         let container_cpu_scope = collect_scope(
             vec!["container_cpu_usage_seconds_total".to_string()],
@@ -86,8 +91,7 @@ impl<'a> Client<'a> {
         );
         data.insert(
             "cpu".to_string(),
-            Collector::new(self.prom, container_cpu_scope)
-                .metric_by_avg_for_containers("cpu")?,
+            Collector::new(self.prom, container_cpu_scope).metric_by_avg_for_containers("cpu")?,
         );
         data.insert(
             "memory".to_string(),
@@ -103,8 +107,12 @@ impl<'a> Client<'a> {
     }
 }
 
-
-fn collect_scope(metric_scope: Vec<String>, labels: Vec<String>, duration: &str, avg_by: &str) -> CollectorScope {
+fn collect_scope(
+    metric_scope: Vec<String>,
+    labels: Vec<String>,
+    duration: &str,
+    avg_by: &str,
+) -> CollectorScope {
     CollectorScope {
         metric_names: metric_scope,
         labels: labels,

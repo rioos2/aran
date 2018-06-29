@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
-use futures::Async;
-use futures::Poll;
 use futures::stream::Stream;
 use futures::sync::mpsc::UnboundedSender;
+use futures::Async;
+use futures::Poll;
 
 use stream_part::*;
 
@@ -13,8 +13,8 @@ use solicit::DEFAULT_SETTINGS;
 use error;
 
 use super::conn::CommonToWriteMessage;
-use super::types::Types;
 use super::stream_queue_sync::StreamQueueSyncReceiver;
+use super::types::Types;
 
 /// Stream that provides data from network.
 /// Most importantly, it increases WINDOW.

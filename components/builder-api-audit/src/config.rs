@@ -1,14 +1,14 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! Configuration for a Rio/OS Audits Blockchain API service
-use std::net::SocketAddr;
 use std::collections::BTreeMap;
+use std::net::SocketAddr;
 
 use exonum;
 use exonum::blockchain::{GenesisConfig, ValidatorKeys};
 use exonum::crypto::{PublicKey, SecretKey};
-use exonum::node::{Whitelist, NodeApiConfig, NodeConfig, MemoryPoolConfig};
 use exonum::events::NetworkConfiguration;
+use exonum::node::{MemoryPoolConfig, NodeApiConfig, NodeConfig, Whitelist};
 use toml::Value;
 
 use rio_core::config::ConfigFile;

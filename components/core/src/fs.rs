@@ -1,10 +1,10 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use std::env;
-use std::path::{Path, PathBuf};
 use std::fs::File;
-use std::io::{BufWriter, Read, Write};
 use std::fs::OpenOptions;
+use std::io::{BufWriter, Read, Write};
+use std::path::{Path, PathBuf};
 
 use error::{Error, Result};
 
@@ -25,7 +25,7 @@ pub const BLOCKCHAIN_PATH: &'static str = "blockchain";
 /// The default path where license (.so) file is place. This is used to connect to nalperion.
 pub const LICENSE_PATH: &'static str = "license";
 
-/// The default path where packages from rio.marketplaces are placed
+/// The default path where packages from rio.appstores are placed
 pub const PACKAGE_PATH: &'static str = "etc/packages";
 /// The environment variable pointing to the filesystem root. This exists for internal
 /// team usage and is not intended to be used by consumers.
@@ -109,7 +109,7 @@ pub fn rioconfig_etc_path(fs_root_path: Option<&Path>) -> PathBuf {
     }
 }
 
-/// Returns the path to the packages from rio.marketplace, optionally taking a custom filesystem root.
+/// Returns the path to the packages from rio.appstores, optionally taking a custom filesystem root.
 pub fn rioconfig_package_path(fs_root_path: Option<&Path>) -> PathBuf {
     match fs_root_path {
         Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_PACKAGE_PATH),
@@ -143,7 +143,11 @@ pub fn am_i_root() -> bool {
 pub fn open_from(path: &Path) -> Result<File> {
     match File::open(path) {
         Ok(f) => Ok(f),
-        Err(e) => Err(Error::FileNotFound(format!("{}\n{:?}", format!("{}",e), path))),
+        Err(e) => Err(Error::FileNotFound(format!(
+            "{}\n{:?}",
+            format!("{}", e),
+            path
+        ))),
     }
 }
 
@@ -267,10 +271,10 @@ fn find_command_with_pathext(candidate: &PathBuf) -> Option<PathBuf> {
 #[cfg(test)]
 mod test_find_command {
 
+    pub use super::find_command;
     use std::env;
     use std::fs;
     use std::path::PathBuf;
-    pub use super::find_command;
 
     #[allow(dead_code)]
     fn setup_pathext() {
@@ -294,8 +298,8 @@ mod test_find_command {
     }
 
     mod without_pathext_set {
-        use super::{setup_empty_pathext, setup_path};
         pub use super::find_command;
+        use super::{setup_empty_pathext, setup_path};
 
         fn setup_environment() {
             setup_path();
@@ -328,8 +332,8 @@ mod test_find_command {
         }
 
         mod argument_with_extension {
-            use std::fs::canonicalize;
             use super::{find_command, setup_environment};
+            use std::fs::canonicalize;
 
             #[test]
             fn command_exists() {
@@ -365,8 +369,8 @@ mod test_find_command {
 
     #[cfg(target_os = "windows")]
     mod with_pathext_set {
-        use super::{setup_path, setup_pathext};
         pub use super::find_command;
+        use super::{setup_path, setup_pathext};
 
         fn setup_environment() {
             setup_path();
@@ -408,8 +412,8 @@ mod test_find_command {
         }
 
         mod argument_with_extension {
-            use std::fs::canonicalize;
             use super::{find_command, setup_environment};
+            use std::fs::canonicalize;
 
             #[test]
             fn command_exists() {

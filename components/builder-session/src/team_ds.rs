@@ -1,16 +1,19 @@
 use chrono::prelude::*;
-use error::{Result, Error};
+use error::{Error, Result};
 
-use protocol::api::team;
 use protocol::api::base::MetaFields;
+use protocol::api::team;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 pub struct TeamDS;
 
 impl TeamDS {
-    pub fn create(datastore: &DataStoreConn, team_create: &team::Team) -> Result<Option<team::Team>> {
+    pub fn create(
+        datastore: &DataStoreConn,
+        team_create: &team::Team,
+    ) -> Result<Option<team::Team>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_team_v1($1,$2,$3,$4,$5,$6)",

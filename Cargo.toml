@@ -26,7 +26,7 @@ members = [
   "components/builder-securer",
   "components/builder-network",
   "components/builder-storage",
-  "components/builder-marketplace",
+  "components/builder-appstore",
   "components/builder-devtooling",
   "components/common",
   "components/core",
@@ -35,6 +35,6 @@ members = [
   "components/entitlement",
   "components/rioos",
   "components/ws-rs",
-  "components/builder-api-marketplace",
+  "components/builder-api-appstore",
   "components/telemetry",
 ]
