@@ -56,14 +56,14 @@ endpoint = "https://env.envkey.com/v1/"
 access_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 secret_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 
-[[notifications]]
- [mailer]
+[notifications]
+ [notifications.mailer]
   enabled = true
   username = ""
   password = ""
   domain = ""
   sender = ""
 
- [slack]
+ [notifications.slack]
   enabled = true
   token = ""
