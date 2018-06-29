@@ -37,7 +37,9 @@ impl Ninja {
         let settings = settings_map::DataStore::new(&self.conn);
 
         match settings.show(&id)  {
-            Ok(_) => {
+            Ok(old_ninja) => {
+             //Only if the old_ninja value doesn't exists then insert a new copy.   
+             if(old_ninja.is_none()) {
                let mut s = SettingsMap::new();
                let ref mut om = s.mut_meta(s.object_meta(), NAME_NINJA_RIOCONFIG.to_string(), "rioos_system".to_string());
 
@@ -56,7 +58,7 @@ impl Ninja {
                 s.set_metadata(metadata);
 
                 settings.create(&s)?;
-
+               }
                 Ok(())
             },
             Err(e) => Err(Error::Secret(e)),

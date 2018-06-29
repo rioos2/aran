@@ -38,7 +38,7 @@ pub fn start(ui: &mut UI, config: &Config) -> Result<()> {
     ui.br()?;
 
     ui.para(&format!(
-        "Sync from Rio MarketPlace - {} ...",
+        "Sync from Rio AppStore - {} ...",
         &config.appstores.endpoint
     ))?;
 
@@ -49,7 +49,7 @@ pub fn start(ui: &mut UI, config: &Config) -> Result<()> {
         Some(&SERVER_CERTIFICATE),
     ).map_err(Error::RioHttpClient)?;
 
-    let url = format!("appstores");
+    let url = format!("marketplaces");
 
     let mut res = client
         .get(&url)
