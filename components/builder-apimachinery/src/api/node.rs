@@ -111,13 +111,13 @@ impl WhoAmITypeMeta for Node {
 //  unschedulable:   True: Indicates .. False: .. Who is responsible for doing so ?
 /// Taints:
 /// Places a taint on node node1. The taint has key key, value value, and taint effect NoSchedule.
-/// This means that no pod will be able to schedule onto node1 unless it has a matching toleration.
+/// This means that no assembly will be able to schedule onto node1 unless it has a matching toleration.
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Spec {
     assembly_cidr: String,
     external_id: String, //External ID of the node assigned by some machine database
     provider_id: String, //ID of the node assigned by the cloud provider
-    unschedulable: bool, //Unschedulable controls node schedulability of new pods. By default, node is schedulable.
+    unschedulable: bool, //Unschedulable controls node schedulability of new assemblys. By default, node is schedulable.
     taints: Vec<Taints>, //If specified, the node's taints.
 }
 
@@ -896,8 +896,8 @@ mod test {
         {
         "node_ip": "private_ipv4",
         "status":{
-            "capacity": {"cpu":"4","memory":"16331164 MiB","pods":"110","storage":"1633 MiB"} ,
-            "allocatable": {"cpu":"4","memory":"16228764 KiB","pods":"110","storage":"161 MiB"},
+            "capacity": {"cpu":"4","memory":"16331164 MiB","assemblys":"110","storage":"1633 MiB"} ,
+            "allocatable": {"cpu":"4","memory":"16228764 KiB","assemblys":"110","storage":"161 MiB"},
             "phase": "pending",
             "conditions": [{"message":"nodelet has sufficient disk space available","reason":"NodeletHasSufficientDisk","status":"False","last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z","condition_type":"OutOfDisk","last_update_time": ""}],
             "addresses": [{"node_type":"InternalIP","address":"192.168.2.47"},{"node_type":"Hostname","address":"rajesh"}],
@@ -962,8 +962,8 @@ mod test {
     #[test]
     fn decode_node_status() {
         let val = r#"{
-            "capacity": {"cpu":"4","memory":"16331164 MiB","pods":"110","storage":"1633 MiB"} ,
-            "allocatable": {"cpu":"4","memory":"16228764 KiB","pods":"110","storage":"161 MiB"},
+            "capacity": {"cpu":"4","memory":"16331164 MiB","assemblys":"110","storage":"1633 MiB"} ,
+            "allocatable": {"cpu":"4","memory":"16228764 KiB","assemblys":"110","storage":"161 MiB"},
             "phase": "pending",
             "conditions": [{"message":"nodelet has sufficient disk space available","reason":"NodeletHasSufficientDisk","status":"False","last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z","condition_type":"OutOfDisk","last_update_time": ""}],
             "addresses": [{"node_type":"InternalIP","address":"192.168.2.47"},{"node_type":"Hostname","address":"rajesh"}],

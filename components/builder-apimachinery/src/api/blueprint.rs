@@ -262,14 +262,14 @@ pub struct Probe {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TcpSocket {
     port: String, // Port to connect to.
-    host: String, //Host name to connect to, defaults to the pod IP.
+    host: String, //Host name to connect to, defaults to the assembly IP.
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HttpGet {
     path: String,   //Path to access on the HTTP server.
     port: String,   //Name or number of the port to access on the container.
-    host: String, // Host name to connect to, defaults to the pod IP. probably want to set "Host" in httpHeaders instead.
+    host: String, // Host name to connect to, defaults to the assembly IP. probably want to set "Host" in httpHeaders instead.
     scheme: String, //Scheme to use for connecting to the host, defaults to HTTP.
 }
 

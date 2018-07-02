@@ -97,10 +97,10 @@ pub struct ObjectMeta {
     /// As long as the finalizers list contains items, deletion is blocked.
     /// Once the deleted_at is set, this value may not be unset or be set further into the
     /// future, although it may be shortened or the resource may be deleted prior to this time.
-    /// For example, a user may request that a pod is deleted in 30 seconds. The Kubelet will react
-    /// by sending a graceful termination signal to the containers in the pod. After that 30 seconds,
-    /// the Kubelet will send a hard termination signal (SIGKILL) to the container and after cleanup,
-    /// remove the pod from the API. In the presence of network partitions, this object may still
+    /// For example, a user may request that a assembly is deleted in 30 seconds. The nodelet will react
+    /// by sending a graceful termination signal to the containers in the assembly. After that 30 seconds,
+    /// the Nodelet will send a hard termination signal (SIGKILL) to the container and after cleanup,
+    /// remove the assembly from the API. In the presence of network partitions, this object may still
     /// exist after this timestamp, until an administrator or automated process can determine the
     /// resource is fully terminated.
     /// If not set, graceful deletion of the object has not been requested.
