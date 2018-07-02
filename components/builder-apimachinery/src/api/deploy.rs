@@ -482,7 +482,7 @@ pub struct AssemblyFactorySpec {
       ]
     }
     /// Places a taint on node node1. The taint has key key, value value, and taint effect NoSchedule.
-    /// This means that no pod will be able to schedule onto node1 unless it has a matching toleration.
+    /// This means that no assembly will be able to schedule onto node1 unless it has a matching toleration.
     {
       "tolerations": [
         {
@@ -498,34 +498,34 @@ pub struct AssemblyFactorySpec {
     tolerations: Vec<Tolerations>,
 
     /*"restartPolicy": String
-    Always: Restart Container; Pod phase stays Running.
-    OnFailure: Restart Container; Pod phase stays Running.
-    Never: Pod phase becomes Failed.*/
+    Always: Restart Container; assembly phase stays Running.
+    OnFailure: Restart Container; assembly phase stays Running.
+    Never: assembly phase becomes Failed.*/
     restart_policy: String,
     /*The affinity/anti-affinity feature, expands the types of constraints you can express.
-    You can indicate that the rule is “soft”/”preference” rather than a hard requirement, so if the scheduler can’t satisfy it, the pod will still be scheduled
-    you can constrain against labels on other pods running on the node (or other topological domain),
-    rather than against labels on the node itself, which allows rules about which pods can and cannot be co-located
+    You can indicate that the rule is “soft”/”preference” rather than a hard requirement, so if the scheduler can’t satisfy it, the assembly will still be scheduled
+    you can constrain against labels on other assemblys running on the node (or other topological domain),
+    rather than against labels on the node itself, which allows rules about which assemblys can and cannot be co-located
 
     “node affinity” and
-    “inter-pod affinity/anti-affinity.
+    “inter-assembly affinity/anti-affinity.
 
     Node affinity is conceptually similar to nodeSelector:  it allows you to constrain which nodes your
-    pod is eligible to schedule on, based on labels on the node.
+    assembly is eligible to schedule on, based on labels on the node.
 
     - You can think of them as “hard” and “soft” respectively, in the sense that the former specifies rules
-    that must be met for a pod to schedule onto a node (just like nodeSelector but using a more expressive
+    that must be met for a assembly to schedule onto a node (just like nodeSelector but using a more expressive
     syntax), while the latter specifies preferences that the scheduler will try to enforce but will not
     guarantee.
     The “IgnoredDuringExecution” part of the names means that, similar to how nodeSelector works,
-     if labels on a node change at runtime such that the affinity rules on a pod are no longer met,
-     the pod will still continue to run on the node. In the future we plan to offer
+     if labels on a node change at runtime such that the affinity rules on a assembly are no longer met,
+     the assembly will still continue to run on the node. In the future we plan to offer
      requiredDuringSchedulingRequiredDuringExecution which will be just like
-     requiredDuringSchedulingIgnoredDuringExecution except that it will evict pods from nodes that cease to
-     satisfy the pods’ node affinity requirements.
+     requiredDuringSchedulingIgnoredDuringExecution except that it will evict assemblys from nodes that cease to
+     satisfy the assemblys’ node affinity requirements.
 
-    - requiredDuringSchedulingIgnoredDuringExecution would be “only run the pod on nodes with Intel CPUs”
-    - preferredDuringSchedulingIgnoredDuringExecution would be “try to run this set of pods in availability zone XYZ, but if it’s not possible, then allow some to run elsewhere”.
+    - requiredDuringSchedulingIgnoredDuringExecution would be “only run the assembly on nodes with Intel CPUs”
+    - preferredDuringSchedulingIgnoredDuringExecution would be “try to run this set of assemblys in availability zone XYZ, but if it’s not possible, then allow some to run elsewhere”.
 
 
     {
@@ -536,7 +536,7 @@ pub struct AssemblyFactorySpec {
               {
                 "matchExpressions": [
                   {
-                    "key": "kubernetes.io/e2e-az-name",
+                    "key": "rioos_sh/e2e-az-name",
                     "operator": "In",
                     "values": [
                       "e2e-az1",
@@ -567,11 +567,11 @@ pub struct AssemblyFactorySpec {
       }
     }
 
-    An example of requiredDuringSchedulingIgnoredDuringExecution affinity would be “co-locate the pods
+    An example of requiredDuringSchedulingIgnoredDuringExecution affinity would be “co-locate the assemblys
     of service A and service B in the same zone, since they communicate a lot with each other”
-    and an example preferredDuringSchedulingIgnoredDuringExecution anti-affinity would be “spread the pods
+    and an example preferredDuringSchedulingIgnoredDuringExecution anti-affinity would be “spread the assemblys
     from this service across zones”
-    (a hard requirement wouldn’t make sense, since you probably have more pods than zones).
+    (a hard requirement wouldn’t make sense, since you probably have more assemblys than zones).
 
     {
       "affinity": {

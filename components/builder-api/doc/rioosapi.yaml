@@ -6410,7 +6410,7 @@ components:
             restart_policy:
               type: string
               example: ""
-              description: "Always: Restart Container; Pod phase stays Running. OnFailure: Restart Container; Pod phase stays Running."
+              description: "Always: Restart Container; assembly phase stays Running. OnFailure: Restart Container; assembly phase stays Running."
             node_selector:
               type: object
               description: "nodeSelector is the simplest form of constraint. It specifies a map of key-value pairs. "
@@ -6627,7 +6627,7 @@ components:
             restart_policy:
               type: string
               example: ""
-              description: "Always: Restart Container; Pod phase stays Running. OnFailure: Restart Container; Pod phase stays Running."
+              description: "Always: Restart Container; assembly phase stays Running. OnFailure: Restart Container; assembly phase stays Running."
             node_selector:
               type: object
               description: "nodeSelector is the simplest form of constraint. It specifies a map of key-value pairs. "
@@ -7829,7 +7829,7 @@ components:
             restart_policy:
               type: string
               example: ""
-              description: "Always: Restart Container; Pod phase stays Running. OnFailure: Restart Container; Pod phase stays Running."
+              description: "Always: Restart Container; assembly phase stays Running. OnFailure: Restart Container; assembly phase stays Running."
             node_selector:
               type: object
               description: "nodeSelector is the simplest form of constraint. It specifies a map of key-value pairs. "
@@ -8046,7 +8046,7 @@ components:
             restart_policy:
               type: string
               example: ""
-              description: "Always: Restart Container; Pod phase stays Running. OnFailure: Restart Container; Pod phase stays Running."
+              description: "Always: Restart Container; assembly phase stays Running. OnFailure: Restart Container; assembly phase stays Running."
             node_selector:
               type: object
               description: "nodeSelector is the simplest form of constraint. It specifies a map of key-value pairs. "
@@ -9683,7 +9683,7 @@ components:
               example: ""
             unschedulable:
               type: boolean
-              description: "unschedulable controls node schedulability of new pods. By default, node is schedulable."
+              description: "unschedulable controls node schedulability of new assemblys. By default, node is schedulable."
               example: false
             taints:
               type: array
@@ -9921,7 +9921,7 @@ components:
               example: ""
             unschedulable:
               type: boolean
-              description: "unschedulable controls node schedulability of new pods. By default, node is schedulable."
+              description: "unschedulable controls node schedulability of new assemblys. By default, node is schedulable."
               example: false
             taints:
               type: array
@@ -13533,7 +13533,7 @@ components:
                   example: "bundle exec rake test"
             node_selector:
               type: object
-              description: "node selector is a selector which must be true for the build pod to fit on a node"
+              description: "node selector is a selector which must be true for the build assembly to fit on a node"
             last_version:
               type: integer
               example: 10
@@ -13791,7 +13791,7 @@ components:
                   example: "bundle exec rake test"
             node_selector:
               type: object
-              description: "node selector is a selector which must be true for the build pod to fit on a node"
+              description: "node selector is a selector which must be true for the build assembly to fit on a node"
             last_version:
               type: integer
               example: 10
@@ -13883,11 +13883,11 @@ components:
             start_timestamp:
               type: string
               example: ""
-              description: "starttimestamp is a timestamp representing the server time when this Build started running in a Pod."
+              description: "starttimestamp is a timestamp representing the server time when this Build started running in a assembly."
             completion_timestamp:
               type: string
               example: ""
-              description: "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the Pod running the Build terminated."
+              description: "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the assembly running the Build terminated."
             duration:
               type: string
               example: ""
@@ -14086,7 +14086,7 @@ components:
                   example: "bundle exec rake test"
             node_selector:
               type: object
-              description: "node selector is a selector which must be true for the build pod to fit on a node"
+              description: "node selector is a selector which must be true for the build assembly to fit on a node"
     BuildResponse:
       type: object
       properties:
@@ -14175,11 +14175,11 @@ components:
             start_timestamp:
               type: string
               example: ""
-              description: "starttimestamp is a timestamp representing the server time when this Build started running in a Pod."
+              description: "starttimestamp is a timestamp representing the server time when this Build started running in a assembly."
             completion_timestamp:
               type: string
               example: ""
-              description: "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the Pod running the Build terminated."
+              description: "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the assembly running the Build terminated."
             duration:
               type: string
               example: ""
@@ -14378,7 +14378,7 @@ components:
                   example: "bundle exec rake test"
             node_selector:
               type: object
-              description: "node selector is a selector which must be true for the build pod to fit on a node"
+              description: "node selector is a selector which must be true for the build assembly to fit on a node"
         created_at:
           type: string
           example: "2017-12-12T11:29:50.547529+00:00"
