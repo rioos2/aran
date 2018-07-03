@@ -36,6 +36,8 @@ tags:
     description: Everything about permissions
   - name: nodes
     description: Everything about nodes
+  - name: senseis
+    description: Everything about senseis
   - name: secrets
     description: Everything about secrets
   - name: networks
@@ -2949,6 +2951,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+
   '/nodes/{nodeid}':
     get:
       tags:
@@ -2990,6 +2993,98 @@ paths:
                 $ref: '#/components/schemas/403Error'
         '404':
           description: permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  /senseis:
+    post:
+      tags:
+        - senseis
+      summary: Create new sensei
+      responses:
+        '200':
+          description: successful creation of the sensei
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenseisResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Senseis'
+    get:
+      tags:
+        - senseis
+      summary: Returns all senseis
+      operationId: find senseis
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenseisList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: nodes not found
           content:
             application/json:
               schema:
@@ -6410,7 +6505,7 @@ components:
             restart_policy:
               type: string
               example: ""
-              description: "Always: Restart Container; assembly phase stays Running. OnFailure: Restart Container; assembly phase stays Running."
+              description: "Always: Restart Container; Pod phase stays Running. OnFailure: Restart Container; Pod phase stays Running."
             node_selector:
               type: object
               description: "nodeSelector is the simplest form of constraint. It specifies a map of key-value pairs. "
@@ -6627,7 +6722,7 @@ components:
             restart_policy:
               type: string
               example: ""
-              description: "Always: Restart Container; assembly phase stays Running. OnFailure: Restart Container; assembly phase stays Running."
+              description: "Always: Restart Container; Pod phase stays Running. OnFailure: Restart Container; Pod phase stays Running."
             node_selector:
               type: object
               description: "nodeSelector is the simplest form of constraint. It specifies a map of key-value pairs. "
@@ -7829,7 +7924,7 @@ components:
             restart_policy:
               type: string
               example: ""
-              description: "Always: Restart Container; assembly phase stays Running. OnFailure: Restart Container; assembly phase stays Running."
+              description: "Always: Restart Container; Pod phase stays Running. OnFailure: Restart Container; Pod phase stays Running."
             node_selector:
               type: object
               description: "nodeSelector is the simplest form of constraint. It specifies a map of key-value pairs. "
@@ -8046,7 +8141,7 @@ components:
             restart_policy:
               type: string
               example: ""
-              description: "Always: Restart Container; assembly phase stays Running. OnFailure: Restart Container; assembly phase stays Running."
+              description: "Always: Restart Container; Pod phase stays Running. OnFailure: Restart Container; Pod phase stays Running."
             node_selector:
               type: object
               description: "nodeSelector is the simplest form of constraint. It specifies a map of key-value pairs. "
@@ -9683,7 +9778,7 @@ components:
               example: ""
             unschedulable:
               type: boolean
-              description: "unschedulable controls node schedulability of new assemblys. By default, node is schedulable."
+              description: "unschedulable controls node schedulability of new pods. By default, node is schedulable."
               example: false
             taints:
               type: array
@@ -9921,7 +10016,7 @@ components:
               example: ""
             unschedulable:
               type: boolean
-              description: "unschedulable controls node schedulability of new assemblys. By default, node is schedulable."
+              description: "unschedulable controls node schedulability of new pods. By default, node is schedulable."
               example: false
             taints:
               type: array
@@ -10164,6 +10259,513 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/NodesResponse'
+    Senseis:
+      type: object
+      required:
+        - node_ip
+        - name
+      properties:
+        node_ip:
+          type: string
+          description: " ip address of the node"
+          example: "72.65.143.2"
+        spec:
+          type: object
+          properties:
+            assembly_cidr:
+              type: string
+              example: ""
+            external_id:
+              type: string
+              description: "external ID of the node assigned by some machine database"
+              example: ""
+            provider_id:
+              type: string
+              description: "id of the node assigned by the cloud provider"
+              example: ""
+            unschedulable:
+              type: boolean
+              description: "unschedulable controls node schedulability of new pods. By default, node is schedulable."
+              example: false
+            taints:
+              type: array
+              description: "places a taint on node node1. The taint has key key, value value, and taint effect NoSchedule."
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: ""
+                  value:
+                    type: string
+                    example: ""
+                  effect:
+                    type: string
+                    example: ""
+                  time_added:
+                    type: string
+                    example: ""
+        status:
+          type: object
+          properties:
+            capacity:
+              type: object
+              description: "Capacity represents the total resources of a node."
+              properties:
+                cpu:
+                  type: string
+                  example: "4"
+                memory:
+                  type: string
+                  example: "16331164 KiB"
+                storage:
+                  type: string
+                  example: "16228764 MiB"
+            allocatable:
+              type: object
+              description: "allocatable represents the resources of a node that are available for scheduling. Defaults to Capacity."
+              properties:
+                cpu:
+                  type: string
+                  example: "4"
+                memory:
+                  type: string
+                  example: "1633116 KiB"
+                storage:
+                  type: string
+                  example: "16228764 MiB"
+            phase:
+              type: string
+              description: "node phase is the recently observed lifecycle phase of the node."
+              example: "pending"
+            addresses:
+              type: array
+              description: "list of addresses reachable to the node."
+              items:
+                type: object
+                properties:
+                  node_type:
+                    type: string
+                    example: "InternalIP"
+                  address:
+                    type: string
+                    example: "192.168.2.1"
+            node_info:
+              type: object
+              description: "set of ids/uuids to uniquely identify the node."
+              properties:
+                machine_id:
+                  type: string
+                  description: "machineID reported by the node. For unique machine identification in the cluster this field is preferred."
+                  example: "589f17c8cc084c078c5d364241433afc"
+                system_uuid:
+                  type: string
+                  description: "systemUUID reported by the node. For unique machine identification"
+                  example: "85EE9345-A1AF-11E3-BE7C-28E347559DE7"
+                kernel_version:
+                  type: string
+                  description: "kernel version reported by the node from 'uname -r' (e.g. 3.16.0-0.bpo.4-amd64)."
+                  example: "4.4.0-93-generic"
+                os_image:
+                  type: string
+                  description: "os image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy))."
+                  example: "Ubuntu 16.04.3 LTS"
+                architecture:
+                  type: string
+                  description: "The Architecture reported by the node"
+                  example: "amd64"
+                bridges:
+                  type: array
+                  description: "list of virtual networking bridge that are created by RioOS"
+                  items:
+                    type: object
+                    properties:
+                      bridge_name:
+                        type: string
+                        description: "name of the bridge to be used for virtual networking"
+                        example: "riopriv"
+                      physical_device:
+                        type: string
+                        description: "physical network interface that are connected to this bridge"
+                        example: "eth0"
+                      bridge_type:
+                        type: string
+                        description: "configured Which type of network to this bridge"
+                        example: "linux"
+                      network_types:
+                        type: array
+                        description: "supported networks"
+                        items:
+                          type: string
+                          example: "private_ipv4"
+            conditions:
+              type: array
+              description: "conditions is an array of current observed node conditions."
+              items:
+                type: object
+                properties:
+                  condition_type:
+                    type: string
+                    description: "Type of condition."
+                    example: "OutOfDisk"
+                  status:
+                    type: string
+                    description: "status of the condition, one of True, False, Unknown."
+                    example: "False"
+                  last_probe_time:
+                    type: string
+                    description: "last time the condition was checked."
+                    example: ""
+                  last_update_time:
+                    type: string
+                    description: "the last time this condition was updated."
+                    example: ""
+                  last_transition_time:
+                    type: string
+                    description: "last time the condition transitioned from one status to another."
+                    example: "2017-09-21T06:35:16Z"
+                  reason:
+                    type: string
+                    description: "the reason for the condition's last transition. (camelcased reason like NotReadyNode)"
+                    example: "NodeletHasSufficientDisk"
+                  message:
+                    type: string
+                    description: "a human readable message indicating details about the transition."
+                    example: "nodelet has sufficient disk space available"
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "private"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "870109412813971456"
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2017-12-11T11:29:50.547529+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                    example: ""
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                    example: ""
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                    example: ""
+                  uid:
+                    type: string
+                    description: "UID of the referent."
+                    example: ""
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                    example: false
+    SenseisResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "918760340378886145"
+        node_ip:
+          type: string
+          description: " ip address of the node"
+          example: "72.65.143.2"
+        spec:
+          type: object
+          properties:
+            assembly_cidr:
+              type: string
+              example: ""
+            external_id:
+              type: string
+              description: "external ID of the node assigned by some machine database"
+              example: ""
+            provider_id:
+              type: string
+              description: "id of the node assigned by the cloud provider"
+              example: ""
+            unschedulable:
+              type: boolean
+              description: "unschedulable controls node schedulability of new pods. By default, node is schedulable."
+              example: false
+            taints:
+              type: array
+              description: "places a taint on node node1. The taint has key key, value value, and taint effect NoSchedule."
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: ""
+                  value:
+                    type: string
+                    example: ""
+                  effect:
+                    type: string
+                    example: ""
+                  time_added:
+                    type: string
+                    example: ""
+        status:
+          type: object
+          properties:
+            capacity:
+              type: object
+              description: "Capacity represents the total resources of a node."
+              properties:
+                cpu:
+                  type: string
+                  example: "4"
+                memory:
+                  type: string
+                  example: "16331164 KiB"
+                storage:
+                  type: string
+                  example: "16228764 MiB"
+            allocatable:
+              type: object
+              description: "allocatable represents the resources of a node that are available for scheduling. Defaults to Capacity."
+              properties:
+                cpu:
+                  type: string
+                  example: "4"
+                memory:
+                  type: string
+                  example: "1633116 KiB"
+                storage:
+                  type: string
+                  example: "16228764 MiB"
+            phase:
+              type: string
+              description: "node phase is the recently observed lifecycle phase of the node."
+              example: "pending"
+            addresses:
+              type: array
+              description: "list of addresses reachable to the node."
+              items:
+                type: object
+                properties:
+                  node_type:
+                    type: string
+                    example: "InternalIP"
+                  address:
+                    type: string
+                    example: "192.168.2.1"
+            node_info:
+              type: object
+              description: "set of ids/uuids to uniquely identify the node."
+              properties:
+                machine_id:
+                  type: string
+                  description: "machineID reported by the node. For unique machine identification in the cluster this field is preferred."
+                  example: "589f17c8cc084c078c5d364241433afc"
+                system_uuid:
+                  type: string
+                  description: "systemUUID reported by the node. For unique machine identification"
+                  example: "85EE9345-A1AF-11E3-BE7C-28E347559DE7"
+                kernel_version:
+                  type: string
+                  description: "kernel version reported by the node from 'uname -r' (e.g. 3.16.0-0.bpo.4-amd64)."
+                  example: "4.4.0-93-generic"
+                os_image:
+                  type: string
+                  description: "os image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy))."
+                  example: "Ubuntu 16.04.3 LTS"
+                architecture:
+                  type: string
+                  description: "The Architecture reported by the node"
+                  example: "amd64"
+                bridges:
+                  type: array
+                  description: "list of virtual networking bridge that are created by RioOS"
+                  items:
+                    type: object
+                    properties:
+                      bridge_name:
+                        type: string
+                        description: "name of the bridge to be used for virtual networking"
+                        example: "riopriv"
+                      physical_device:
+                        type: string
+                        description: "physical network interface that are connected to this bridge"
+                        example: "eth0"
+                      bridge_type:
+                        type: string
+                        description: "configured Which type of network to this bridge"
+                        example: "linux"
+                      network_types:
+                        type: array
+                        description: "supported networks"
+                        items:
+                          type: string
+                          example: "private_ipv4"
+            conditions:
+              type: array
+              description: "conditions is an array of current observed node conditions."
+              items:
+                type: object
+                properties:
+                  condition_type:
+                    type: string
+                    description: "Type of condition."
+                    example: "OutOfDisk"
+                  status:
+                    type: string
+                    description: "status of the condition, one of True, False, Unknown."
+                    example: "False"
+                  last_probe_time:
+                    type: string
+                    description: "last time the condition was checked."
+                    example: ""
+                  last_update_time:
+                    type: string
+                    description: "the last time this condition was updated."
+                    example: ""
+                  last_transition_time:
+                    type: string
+                    description: "last time the condition transitioned from one status to another."
+                    example: "2017-09-21T06:35:16Z"
+                  reason:
+                    type: string
+                    description: "the reason for the condition's last transition. (camelcased reason like NotReadyNode)"
+                    example: "NodeletHasSufficientDisk"
+                  message:
+                    type: string
+                    description: "a human readable message indicating details about the transition."
+                    example: "nodelet has sufficient disk space available"
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "private"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "870109412813971456"
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2017-12-11T11:29:50.547529+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              $ref: '#/components/schemas/Initializers'
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                    example: ""
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                    example: ""
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                    example: ""
+                  uid:
+                    type: string
+                    description: "UID of the referent."
+                    example: ""
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                    example: false
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              description: "kind is a string value representing the REST resource this object represents."
+              example: Sensei
+            api_version:
+              type: string
+              description: "api version defines the versioned schema of this representation of an object"
+              example: v1
+        created_at:
+          type: string
+          example:  "2017-09-21T06:51:38.763014+00:00"
+    SenseisList:
+      type: object
+      properties:
+        kind:
+          type: string
+          description: "kind is a string value representing the REST resource this object represents."
+          example: SenseiList
+        api_version:
+          type: string
+          description: "api version defines the versioned schema of this representation of an object"
+          example: v1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SenseisResponse'
     Saml:
       type: object
       properties:
@@ -11341,7 +11943,7 @@ components:
                 title:
                   type: string
                   example: "Statistics"
-                nodes:
+                ninja:
                   type: array
                   items:
                     type: object
@@ -11373,7 +11975,136 @@ components:
                       health:
                         type: string
                         example: ""
-
+                      network:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "br-69321116170b"
+                            error:
+                              type: array
+                              items:
+                                type: array
+                                example:
+                                  - "05:07:40"
+                                  - 0
+                                  - 0
+                      process:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            node_process_cpu:
+                              type: array
+                              items:
+                                $ref: '#/components/schemas/ProcessNodeCpu'
+                            node_process_mem:
+                              type: array
+                              items:
+                                $ref: '#/components/schemas/ProcessNodeMem'
+                      disk:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "sda"
+                            node_disk_io_now:
+                              type: string
+                              example: "0"
+                            node_disk_mega_bytes_io_total:
+                              type: string
+                              example: "23634885633.834904"
+                            node_disk_mega_bytes_read:
+                              type: string
+                              example: "23634885632"
+                            node_disk_mega_bytes_written:
+                              type: string
+                              example: "1.834902137419699"
+                sensei:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "rioosmaster"
+                      kind:
+                        type: string
+                        example: "Node"
+                      api_version:
+                        type: string
+                        example: "v1"
+                      name:
+                        type: string
+                        example: "rioosmaster"
+                      description:
+                        type: string
+                        example: ""
+                      cpu:
+                        type: string
+                        example: ""
+                      counter:
+                        type: string
+                        example: "19.304252570041308"
+                      cost_of_consumption:
+                        type: string
+                        example: ""
+                      health:
+                        type: string
+                        example: ""
+                      network:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "br-69321116170b"
+                            error:
+                              type: array
+                              items:
+                                type: array
+                                example:
+                                  - "05:07:40"
+                                  - 0
+                                  - 0
+                      process:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            node_process_cpu:
+                              type: array
+                              items:
+                                $ref: '#/components/schemas/ProcessNodeCpu'
+                            node_process_mem:
+                              type: array
+                              items:
+                                $ref: '#/components/schemas/ProcessNodeMem'
+                      disk:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "sda"
+                            node_disk_io_now:
+                              type: string
+                              example: "0"
+                            node_disk_mega_bytes_io_total:
+                              type: string
+                              example: "23634885633.834904"
+                            node_disk_mega_bytes_read:
+                              type: string
+                              example: "23634885632"
+                            node_disk_mega_bytes_written:
+                              type: string
+                              example: "1.834902137419699"
             osusages:
               type: object
               properties:
@@ -11402,6 +12133,30 @@ components:
                   type: array
                   items:
                     type: string
+    ProcessNodeCpu:
+      type: object
+      properties:
+        command:
+          type: string
+          example: "beam.smp"
+        pid:
+          type: string
+          example: "17836"
+        value:
+          type: string
+          example: "0.18942659328019415"
+    ProcessNodeMem:
+      type: object
+      properties:
+        command:
+          type: string
+          example: "beam.smp"
+        pid:
+          type: string
+          example: "17836"
+        value:
+          type: string
+          example: "0.78942659328019415"
     AuthenticateResponse:
       type: object
       properties:
@@ -13533,7 +14288,7 @@ components:
                   example: "bundle exec rake test"
             node_selector:
               type: object
-              description: "node selector is a selector which must be true for the build assembly to fit on a node"
+              description: "node selector is a selector which must be true for the build pod to fit on a node"
             last_version:
               type: integer
               example: 10
@@ -13791,7 +14546,7 @@ components:
                   example: "bundle exec rake test"
             node_selector:
               type: object
-              description: "node selector is a selector which must be true for the build assembly to fit on a node"
+              description: "node selector is a selector which must be true for the build pod to fit on a node"
             last_version:
               type: integer
               example: 10
@@ -13883,11 +14638,11 @@ components:
             start_timestamp:
               type: string
               example: ""
-              description: "starttimestamp is a timestamp representing the server time when this Build started running in a assembly."
+              description: "starttimestamp is a timestamp representing the server time when this Build started running in a Pod."
             completion_timestamp:
               type: string
               example: ""
-              description: "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the assembly running the Build terminated."
+              description: "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the Pod running the Build terminated."
             duration:
               type: string
               example: ""
@@ -14086,7 +14841,7 @@ components:
                   example: "bundle exec rake test"
             node_selector:
               type: object
-              description: "node selector is a selector which must be true for the build assembly to fit on a node"
+              description: "node selector is a selector which must be true for the build pod to fit on a node"
     BuildResponse:
       type: object
       properties:
@@ -14175,11 +14930,11 @@ components:
             start_timestamp:
               type: string
               example: ""
-              description: "starttimestamp is a timestamp representing the server time when this Build started running in a assembly."
+              description: "starttimestamp is a timestamp representing the server time when this Build started running in a Pod."
             completion_timestamp:
               type: string
               example: ""
-              description: "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the assembly running the Build terminated."
+              description: "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the Pod running the Build terminated."
             duration:
               type: string
               example: ""
@@ -14378,7 +15133,7 @@ components:
                   example: "bundle exec rake test"
             node_selector:
               type: object
-              description: "node selector is a selector which must be true for the build assembly to fit on a node"
+              description: "node selector is a selector which must be true for the build pod to fit on a node"
         created_at:
           type: string
           example: "2017-12-12T11:29:50.547529+00:00"
@@ -14713,6 +15468,10 @@ components:
               type: string
               description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
               example: "bucket"
+            error:
+              - "7.1"
+              - 0
+              - 0
             account:
               type: string
               description: "account  defines the id the user account"
