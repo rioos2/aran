@@ -14,11 +14,19 @@ use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
 
-pub struct SenseisDS;
+pub struct DataStore<'a> {
+    db: &'a DataStoreConn,
+}
 
-impl SenseisDS {
-    pub fn create(datastore: &DataStoreConn, sensei_create: &Senseis) -> SenseiOutput {
-        let conn = datastore.pool.get_shard(0)?;
+impl<'a> DataStore<'a> {
+    pub fn new(db: &'a DataStoreConn) -> Self {
+        DataStore {
+            db: db
+        }
+    }
+
+    pub fn create(&self, sensei_create: &Senseis) -> SenseiOutput {
+        let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_senseis_v1($1,$2,$3,$4,$5,$6)",
             &[
@@ -39,8 +47,8 @@ impl SenseisDS {
         Ok(None)
     }
 
-    pub fn show(datastore: &DataStoreConn, sensei_get: &IdGet) -> SenseiOutput {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn show(&self, sensei_get: &IdGet) -> SenseiOutput {
+        let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * from get_sensei_v1($1)",
             &[&(sensei_get.get_id().parse::<i64>().unwrap())],
@@ -53,8 +61,8 @@ impl SenseisDS {
         Ok(None)
     }
 
-    pub fn list_blank(datastore: &DataStoreConn) -> SenseiOutputList {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn list_blank(&self) -> SenseiOutputList {
+        let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query("SELECT * FROM get_senseis_v1()", &[])
             .map_err(Error::SenseiGet)?;

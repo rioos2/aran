@@ -4,7 +4,7 @@ use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
 use bytes::Bytes;
-use clusters::models::senseis::SenseisDS;
+use clusters::models::senseis::DataStore;
 use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
@@ -64,7 +64,7 @@ impl SenseisApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match SenseisDS::create(&self.conn, &unmarshall_body) {
+        match DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(sensei)) => Ok(render_json(status::Ok, &sensei)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -74,7 +74,7 @@ impl SenseisApi {
     //Blank origin: Returns all the senseis (irrespective of namespaces)
     //Will need roles/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
-        match SenseisDS::list_blank(&self.conn) {
+        match DataStore::new(&self.conn).list_blank() {
             Ok(Some(sensei_list)) => Ok(render_json_list(status::Ok, dispatch(_req), &sensei_list)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -83,7 +83,7 @@ impl SenseisApi {
 
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match SenseisDS::show(&self.conn, &idget) {
+        let res = match DataStore::new(&self.conn).show(&idget) {
             Ok(Some(senseis)) => {
                 let data = json!({
                             "type": typ,
