@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use api::audit::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{Blockchain, BlockchainCfg, Mailer, AppStores, AppStoresCfg, Notifications, Slack};
+use api::audit::config::{AppStores, AppStoresCfg, Blockchain, BlockchainCfg, Mailer, Notifications, Slack};
 use api::deploy::config::ServicesCfg;
 use api::objectstorage::config::ObjectStorage;
 use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};
@@ -125,7 +125,11 @@ impl Config {
     /// Option<(tls file location, bytes loaded from the name in the config toml file,
     ///        tls password if present or empty string)>
     fn tlspair_as_bytes(tls: Option<String>, tls_password: Option<String>) -> TLSPair {
-        tls.clone().and_then(|t| read_key_in_bytes(&PathBuf::from(t.clone())).map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string()))).ok())
+        tls.clone().and_then(|t| {
+            read_key_in_bytes(&PathBuf::from(t.clone()))
+                .map(|p| (t.clone(), p, tls_password.clone().unwrap_or("".to_string())))
+                .ok()
+        })
     }
 }
 
@@ -160,8 +164,17 @@ impl AuthenticationFlowCfg for Config {
 
 impl ConfigValidator for Config {
     fn valid(&self) -> Result<()> {
-        vec![self.https.valid(), self.http2.valid(), self.telemetry.valid(), self.identity.valid(), self.vaults.valid(), self.licenses.valid(), self.logs.valid(), self.blockchain.valid(), self.appstores.valid()]
-            .iter()
+        vec![
+            self.https.valid(),
+            self.http2.valid(),
+            self.telemetry.valid(),
+            self.identity.valid(),
+            self.vaults.valid(),
+            self.licenses.valid(),
+            self.logs.valid(),
+            self.blockchain.valid(),
+            self.appstores.valid(),
+        ].iter()
             .fold(Ok(()), |acc, x| match x {
                 &Ok(()) => return acc,
                 &Err(ref e) => {
@@ -194,7 +207,10 @@ impl GatewayCfg for Config {
     }
 
     fn tls(&self) -> Option<String> {
-        self.https.tls.clone().map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
+        self.https
+            .tls
+            .clone()
+            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
     }
 
     fn tls_password(&self) -> Option<String> {
@@ -217,7 +233,10 @@ impl Streamer for Config {
     }
 
     fn http2_tls(&self) -> Option<String> {
-        self.http2.tls.clone().map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
+        self.http2
+            .tls
+            .clone()
+            .map(|n| (&*rioconfig_config_path(None).join(n).to_str().unwrap()).to_string())
     }
 
     fn http2_tls_password(&self) -> Option<String> {
