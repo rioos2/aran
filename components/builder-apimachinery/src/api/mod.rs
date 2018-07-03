@@ -27,4 +27,4 @@ pub mod package;
 pub mod passticket;
 pub mod routesrv;
 pub mod licenses;
-
+pub mod senseis;

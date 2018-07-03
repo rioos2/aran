@@ -108,6 +108,10 @@ impl HttpGateway for Wirer {
         );
         node.wire(config.clone(), &mut router);
 
+        let mut sensei = cluster::senseis_api::SenseisApi::new(ds.clone());
+        sensei.wire(config.clone(), &mut router);
+
+
         let mut diagnostics = cluster::diagnostics_api::DiagnosticsApi::new(
             ds.clone(),
             Box::new(PrometheusClient::new(&*config.clone())),
@@ -238,7 +242,7 @@ impl HttpGateway for Wirer {
             ds.clone(),
             Box::new(BlockchainConn::new(&*config.clone())),
         );
-        block_chain.wire(config.clone(), &mut router);           
+        block_chain.wire(config.clone(), &mut router);
 
     router
     }
