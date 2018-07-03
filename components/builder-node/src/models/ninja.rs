@@ -22,11 +22,19 @@ const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 
 const NETWORK_DEFAULT_LAST_X_MINUTE: &'static str = "[1m]";
 
-pub struct Nodes;
+pub struct DataStore<'a> {
+    db: &'a DataStoreConn,
+}
 
-impl Nodes {
-    pub fn create(datastore: &DataStoreConn, node_create: &node::Node) -> NodeOutput {
-        let conn = datastore.pool.get_shard(0)?;
+impl<'a> DataStore<'a> {
+    pub fn new(db: &'a DataStoreConn) -> Self {
+        DataStore {
+            db: db
+        }
+    }
+
+    pub fn create(&self, node_create: &node::Node) -> NodeOutput {
+        let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_node_v1($1,$2,$3,$4,$5,$6)",
             &[
@@ -47,8 +55,9 @@ impl Nodes {
         Ok(None)
     }
 
-    pub fn show(datastore: &DataStoreConn, node_get: &IdGet) -> NodeOutput {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn show(&self, node_get: &IdGet) -> NodeOutput {
+        let conn = self.db.pool.get_shard(0)?;
+
         let rows = &conn.query(
             "SELECT * from get_node_v1($1)",
             &[&(node_get.get_id().parse::<i64>().unwrap())],
@@ -61,8 +70,8 @@ impl Nodes {
         Ok(None)
     }
 
-    pub fn show_by_node_ip(datastore: &DataStoreConn, node_get: &IdGet) -> NodeOutputList {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn show_by_node_ip(&self, node_get: &IdGet) -> NodeOutputList {
+        let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
             "SELECT * FROM get_nodes_by_node_ip_v1($1)",
@@ -80,8 +89,8 @@ impl Nodes {
         Ok(None)
     }
 
-    pub fn list_blank(datastore: &DataStoreConn) -> NodeOutputList {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn list_blank(&self) -> NodeOutputList {
+        let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query("SELECT * FROM get_nodes_v1()", &[])
             .map_err(Error::NodeList)?;
@@ -97,8 +106,8 @@ impl Nodes {
         Ok(None)
     }
 
-    pub fn status_update(datastore: &DataStoreConn, upd: &node::NodeStatusUpdate) -> NodeOutput {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn status_update(&self, upd: &node::NodeStatusUpdate) -> NodeOutput {
+        let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
             "SELECT * FROM set_node_status_v1($1, $2)",
@@ -115,8 +124,8 @@ impl Nodes {
         Ok(None)
     }
 
-    pub fn update(datastore: &DataStoreConn, upd_node: &node::Node) -> NodeOutput {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn update(&self, upd_node: &node::Node) -> NodeOutput {
+        let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
             "SELECT * FROM set_node_v1($1, $2, $3, $4, $5, $6)",
@@ -137,10 +146,10 @@ impl Nodes {
         Ok(None)
     }
 
-    pub fn discovery(datastore: &DataStoreConn, filters: &node::NodeFilter) -> NodeOutputList {
+    pub fn discovery(&self, filters: &node::NodeFilter) -> NodeOutputList {
         let ips = search::Nodes::new(filters.clone()).discovered()?;
 
-        match Self::list_blank(datastore) {
+        match Self::list_blank(self) {
             Ok(Some(node)) => {
                 let mut response = Vec::new();
                 ips.iter()

@@ -12,7 +12,7 @@ use watch::handler::WatchHandler;
 use watch::handler::LISTENERS;
 use ws;
 
-use clusters::models::ninja::Nodes;
+use clusters::models::ninja::DataStore;
 use mio::tcp::TcpStream;
 use openssl::ssl::{SslAcceptor, SslStream};
 
@@ -187,7 +187,7 @@ impl ws::Handler for Metrics {
 
         let tick = schedule_recv::periodic_ms(10000);
         thread::spawn(move || loop {
-            match Nodes::healthz_all(&prom) {
+            match DataStore::healthz_all(&prom) {
                 Ok(Some(health_all)) => {
                     let res = serde_json::to_string(&health_all).unwrap();
                     match sender.send(res) {
