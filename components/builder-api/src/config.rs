@@ -116,6 +116,13 @@ impl Config {
         ui.para(&self.ping.controller_endpoint.clone().unwrap_or("".to_string()))?;
         ui.para(&self.ping.scheduler_endpoint.clone().unwrap_or("".to_string()))?;
         ui.para(&self.ping.machineconsole_endpoint.clone().unwrap_or("".to_string()))?;
+        ui.heading("[notifications]")?;
+        ui.para(&format!("{}", self.notifications.mailer.enabled))?;
+        ui.para(&self.notifications.mailer.domain)?;
+        ui.para(&self.notifications.mailer.username)?;
+        ui.para(&self.notifications.mailer.password)?;
+        ui.para(&format!("{}", self.notifications.slack.enabled))?;
+        ui.para(&self.notifications.slack.token)?;
         ui.end("Loaded configuration")?;
 
         Ok(())

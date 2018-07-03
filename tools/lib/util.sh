@@ -93,7 +93,7 @@ EOF
 
     # flatten the rioconfig files to make them self contained
     username=$(whoami)
-    ${sudo} /bin/bash -e <<EOF 
+    ${sudo} /bin/bash -e <<EOF
     chown ${username} "${dest_dir}/${client_id}.rioconfig"
 EOF
 }
@@ -156,7 +156,7 @@ rioos::util::trap_add() {
 # Create a temp dir that'll be deleted at the end of this bash session.
 #
 # Vars set:
-#   KUBE_TEMP
+#   RIO_TEMP
 rioos::util::ensure-temp-dir() {
   if [[ -z ${RIOOS_TEMP-} ]]; then
     RIOOS_TEMP=$(mktemp -d 2>/dev/null || mktemp -d -t rioos.XXXXXX)

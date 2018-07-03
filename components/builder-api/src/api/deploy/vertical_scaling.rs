@@ -6,7 +6,7 @@ use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
 use bytes::Bytes;
-use clusters::models::ninja::Nodes;
+use clusters::models::ninja::DataStore;
 use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
@@ -173,7 +173,7 @@ impl VerticalScalingApi {
                     .collect::<Vec<_>>();
                 match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&af_id[0]) {
                     Ok(Some(assemblys)) => {
-                        let metrics = Nodes::healthz_all(&self.prom)?;
+                        let metrics = DataStore::healthz_all(&self.prom)?;
                         match ReplicasExpander::new(&self.conn, assemblys, metrics, &vs).expand() {
                             Ok(Some(job)) => Ok(render_json(status::Ok, &job)),
                             Err(err) => Err(internal_error(&format!("{}\n", err))),

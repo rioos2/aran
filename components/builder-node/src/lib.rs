@@ -26,3 +26,8 @@ pub use self::error::{Error, Result};
 pub type NodeOutputList = Result<Option<Vec<protocol::api::node::Node>>>;
 
 pub type NodeOutput = Result<Option<protocol::api::node::Node>>;
+
+//sensei type of outputs
+pub type SenseiOutputList = Result<Option<Vec<protocol::api::senseis::Senseis>>>;
+
+pub type SenseiOutput = Result<Option<protocol::api::senseis::Senseis>>;

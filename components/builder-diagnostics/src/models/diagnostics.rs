@@ -5,7 +5,7 @@
 use db::data_store::DataStoreConn;
 use rioos_http::ApiClient;
 
-use clusters::models::ninja::Nodes;
+use clusters::models::ninja::DataStore;
 use telemetry::metrics::prometheus::PrometheusClient;
 
 use serde_json::Value;
@@ -121,7 +121,7 @@ impl Pinguy {
 //then generate node status structure and return it
 fn nodes_status(datastore: &DataStoreConn) -> Vec<Status> {
     let mut vec = Vec::new();
-    match Nodes::list_blank(datastore) {
+    match DataStore::new(datastore).list_blank() {
         Ok(Some(node_list)) => {
             for n in &node_list {
                 let mut data = Status {

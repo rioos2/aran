@@ -145,7 +145,22 @@ impl Api for MarketPlaceApi {
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
-        // let _self = self.clone();        // let download = move |req: &mut Request| -> AranResult<Response> { _self.download(req) };        router.post("/marketplaces", XHandler::new(C { inner: create }).before(basic.clone()), "markets");        router.get("/marketplaces", XHandler::new(C { inner: list_blank }).before(basic.clone()), "market_list");        router.get("/marketplaces/:id", XHandler::new(C { inner: show }).before(basic.clone()), "market_show");        // router.get(        //     "/marketplaces/:id/download",
+        // let _self = self.clone();
+        // let download = move |req: &mut Request| -> AranResult<Response> { _self.download(req) };
+
+        router.post("/marketplaces",
+            XHandler::new(C { inner: create }).before(basic.clone()),
+            "markets"
+        );
+        router.get("/marketplaces",
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
+            "market_list"
+        );
+        router.get("/marketplaces/:id",
+            XHandler::new(C { inner: show }).before(basic.clone()),
+            "market_show"
+        );        
+        // router.get("/marketplaces/:id/download",
         //     XHandler::new(C { inner: download }),
         //     "market_download",
         // );

@@ -18,7 +18,7 @@ use std::path::PathBuf;
 // The time in seconds to perform a sync again. Default is 3 minutes
 const SYNC_ELAPSED_SECONDS: i64 = 180;
 
-//The location of the downloaded appstores file 
+//The location of the downloaded appstores file
 lazy_static! {
     static ref APPSTORE_CACHE_FILE: PathBuf = PathBuf::from(&*default_rioconfig_key_path(None).join("pullcache/appstores.yaml").to_str().unwrap());
 }
@@ -40,8 +40,8 @@ impl AppStore {
         AppStore { conn: conn }
     }
 
-    //TO-DO: This must be written like settings.rs. 
-    //The DB connection shouldn't be used here. 
+    //TO-DO: This must be written like settings.rs.
+    //The DB connection shouldn't be used here.
     //Baseically the file pullcache/appstores.yaml is verified for length and loaded as a secret
     fn diff_and_create(&self) -> Result<()> {
         let conn = self.conn.pool.get_shard(0)?;
