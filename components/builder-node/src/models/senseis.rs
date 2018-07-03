@@ -28,7 +28,7 @@ impl<'a> DataStore<'a> {
     pub fn create(&self, sensei_create: &Senseis) -> SenseiOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_senseis_v1($1,$2,$3,$4,$5,$6)",
+            "SELECT * FROM insert_or_update_senseis_v1($1,$2,$3,$4,$5,$6)",
             &[
                 &(sensei_create.get_node_ip() as String),
                 &(serde_json::to_value(sensei_create.get_spec()).unwrap()),
