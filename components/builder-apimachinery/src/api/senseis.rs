@@ -5,6 +5,8 @@ use api::node::{Spec, NodeStatus};
 use std::collections::BTreeMap;
 use serde_json;
 
+pub const SENSEI_JOBS: &'static str = "job=rioos-masters";
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Senseis {
     #[serde(default)]

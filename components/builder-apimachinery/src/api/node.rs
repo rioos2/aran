@@ -8,7 +8,7 @@ use serde_json;
 
 pub const ASSEMBLY_JOBS: &'static str = "job=rioos_sh_machines";
 pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
-pub const NODE_JOBS: &'static str = "job=rioos_sh_nodes";
+pub const NODE_JOBS: &'static str = "job=rioos-nodes";
 pub const IDLEMODE: &'static str = "mode=idle";
 
 pub type SpeedSummary = (String, i32, i32);
@@ -460,7 +460,8 @@ impl Counters {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Statistics {
     title: String,
-    nodes: Vec<NodeStatistic>,
+    ninjas: Vec<NodeStatistic>,
+    senseis: Vec<NodeStatistic>,
 }
 impl Statistics {
     pub fn new() -> Statistics {
@@ -469,10 +470,14 @@ impl Statistics {
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
-    pub fn set_nodes(&mut self, v: Vec<NodeStatistic>) {
-        self.nodes = v;
+    pub fn set_ninjas(&mut self, v: Vec<NodeStatistic>) {
+        self.ninjas = v;
+    }
+    pub fn set_senseis(&mut self, v: Vec<NodeStatistic>) {
+        self.senseis = v;
     }
 }
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeStatistic {
