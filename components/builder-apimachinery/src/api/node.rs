@@ -8,6 +8,7 @@ use serde_json;
 
 pub const ASSEMBLY_JOBS: &'static str = "job=rioos_sh_machines";
 pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
+//Rioos prometheus tool automatically allocated "rioos-nodes" job, so we use it
 pub const NODE_JOBS: &'static str = "job=rioos-nodes";
 pub const IDLEMODE: &'static str = "mode=idle";
 
