@@ -39,7 +39,7 @@ impl Default for DataStore {
             }
         }; */
 
-        let pool_factor = num_cpus::get();
+        let pool_factor = num_cpus::get()*10;
 
         println!("--> pool factor = {}", pool_factor);
 
