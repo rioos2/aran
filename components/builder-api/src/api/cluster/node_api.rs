@@ -197,33 +197,12 @@ impl NodeApi {
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
-
-    //metrics of the overall node from prometheus
-    fn healthz_all(&self, _req: &mut Request) -> AranResult<Response> {
-        match DataStore::healthz_all(&self.prom) {
-            Ok(Some(health_all)) => Ok(render_json(status::Ok, &health_all)),
-            Err(err) => Err(badgateway_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-        }
-    }
-
-    /// Endpoint for determining availability of builder-api components.
-    /// Returns a status 200 on success. Any non-200 responses are an outage or a partial outage.
-    fn status(&self, _req: &mut Request) -> AranResult<Response> {
-        Ok(render_json(
-            status::Ok,
-            &format!("code:{},version:{}", "200", "rioos-2.0"),
-        ))
-    }
+    
 }
 
 impl Api for NodeApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
-
-        let _self = self.clone();
-        let healthz_all =
-            move |req: &mut Request| -> AranResult<Response> { _self.healthz_all(req) };
 
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -246,18 +225,7 @@ impl Api for NodeApi {
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         let _self = self.clone();
-        let healthz = move |req: &mut Request| -> AranResult<Response> { _self.status(req) };
-
-        let _self = self.clone();
-        let discovery = move |req: &mut Request| -> AranResult<Response> { _self.discovery(req) };
-
-        router.get(
-            "/healthz/overall",
-            XHandler::new(C { inner: healthz_all }).before(basic.clone()),
-            "healthz_all",
-        );
-
-        router.get("/healthz", XHandler::new(C { inner: healthz }), "healthz");
+        let discovery = move |req: &mut Request| -> AranResult<Response> { _self.discovery(req) };        
 
         router.post(
             "/nodes",

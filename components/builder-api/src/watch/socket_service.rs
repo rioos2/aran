@@ -12,7 +12,7 @@ use watch::handler::WatchHandler;
 use watch::handler::LISTENERS;
 use ws;
 
-use clusters::models::ninja::DataStore;
+use clusters::models::healthz::DataStore;
 use mio::tcp::TcpStream;
 use openssl::ssl::{SslAcceptor, SslStream};
 
