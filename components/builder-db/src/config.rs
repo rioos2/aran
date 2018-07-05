@@ -31,13 +31,17 @@ impl Default for DataStore {
         // If the cpus are more then 4, then we round it up to 12 .
         // This make sure the max_connections in close to 100 in postgres.
         // If you still find issues, increase it by configuring postgres.
-        let pool_factor = {
+        /* let pool_factor = {
             if num_cpus::get() <= 4 {
                 num_cpus::get() * 3
             } else {
                 12
             }
-        };
+        }; */
+
+        let pool_factor = num_cpus::get()*5;
+
+        println!("--> pool factor = {}", pool_factor);
 
         DataStore {
             host: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
