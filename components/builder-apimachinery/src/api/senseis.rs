@@ -1,9 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::{MetaFields, ObjectMeta, TypeMeta};
-use api::node::{Spec, NodeStatus};
+use api::base::{MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
+use api::node::{NodeStatus, Spec};
 use std::collections::BTreeMap;
-use serde_json;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Senseis {
@@ -73,6 +72,10 @@ impl Senseis {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
+}
+
+impl WhoAmITypeMeta for Senseis {
+    const MY_KIND: &'static str = "POST:senseis";
 }
 
 impl MetaFields for Senseis {

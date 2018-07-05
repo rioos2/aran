@@ -8,11 +8,10 @@ use db::data_store::DataStoreConn;
 use error::{Error, Result};
 use postgres;
 use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
-use protocol::api::senseis::Senseis;
 use protocol::api::schema::type_meta_url;
+use protocol::api::senseis::Senseis;
 use serde_json;
 use std::collections::BTreeMap;
-use std::ops::Div;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -20,9 +19,7 @@ pub struct DataStore<'a> {
 
 impl<'a> DataStore<'a> {
     pub fn new(db: &'a DataStoreConn) -> Self {
-        DataStore {
-            db: db
-        }
+        DataStore { db: db }
     }
 
     pub fn create(&self, sensei_create: &Senseis) -> SenseiOutput {
@@ -49,10 +46,8 @@ impl<'a> DataStore<'a> {
 
     pub fn show(&self, sensei_get: &IdGet) -> SenseiOutput {
         let conn = self.db.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * from get_sensei_v1($1)",
-            &[&(sensei_get.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::SenseiGet)?;
+        let rows = &conn.query("SELECT * from get_sensei_v1($1)", &[&(sensei_get.get_id().parse::<i64>().unwrap())])
+            .map_err(Error::SenseiGet)?;
 
         if rows.len() > 0 {
             let sensei = row_to_sensei(&rows.get(0))?;
@@ -64,8 +59,7 @@ impl<'a> DataStore<'a> {
     pub fn list_blank(&self) -> SenseiOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_senseis_v1()", &[])
-            .map_err(Error::SenseiGet)?;
+        let rows = &conn.query("SELECT * FROM get_senseis_v1()", &[]).map_err(Error::SenseiGet)?;
 
         let mut response = Vec::new();
 

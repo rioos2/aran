@@ -10,12 +10,7 @@ use error::{Error, Result};
 fn validate_raw_path(path: &str) -> Result<*mut c_char> {
     let c_path = match CString::new(path) {
         Ok(c) => c,
-        Err(e) => {
-            return Err(Error::PermissionFailed(format!(
-                "Can't create string from path {:?}: {}",
-                path, e
-            )))
-        }
+        Err(e) => return Err(Error::PermissionFailed(format!("Can't create string from path {:?}: {}", path, e))),
     };
     Ok(c_path.into_raw())
 }
@@ -36,12 +31,7 @@ pub fn chown(path: &str, uid: u32, gid: u32) -> Result<c_int> {
 pub fn chmod(path: &str, mode: u32) -> Result<c_int> {
     let c_path = match CString::new(path) {
         Ok(c) => c,
-        Err(e) => {
-            return Err(Error::PermissionFailed(format!(
-                "Can't create string from path {:?}: {}",
-                path, e
-            )))
-        }
+        Err(e) => return Err(Error::PermissionFailed(format!("Can't create string from path {:?}: {}", path, e))),
     };
     let r_path = c_path.into_raw();
 

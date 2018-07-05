@@ -29,7 +29,6 @@ extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_audit as audit;
 extern crate rioos_builder_authorizer as authorize;
 extern crate rioos_builder_db as db;
-// extern crate rioos_builder_netsrv as network;
 extern crate rioos_builder_deployment as deploy;
 extern crate rioos_builder_devtooling as devtooling;
 extern crate rioos_builder_diagnostics as rio_diago;

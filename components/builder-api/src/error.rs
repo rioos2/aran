@@ -2,26 +2,25 @@
 
 //! A module containing the errors handling for the builder api
 
+use bodyparser;
+use clusters;
+use common;
+use db;
 use httpbis;
+use openio_sdk_rust::aws;
+use postgres;
+use reqwest;
+use rio_core;
 use rioos_http;
 use serde_json;
+use serde_yaml;
+use service;
 use std::error;
 use std::fmt;
 use std::io;
 use std::result;
 use std::str::Utf8Error;
 use url;
-
-use bodyparser;
-use common;
-use db;
-use openio_sdk_rust::aws;
-use reqwest;
-use rio_core;
-use serde_yaml;
-use service;
-use postgres;
-
 
 const MISSING_PARAMETER: &'static str = "Missing parameters: ";
 const MISSING_BODY: &'static str = "Missing body, empty: ";
@@ -42,14 +41,10 @@ impl ToString for ErrorMessage {
     fn to_string(&self) -> String {
         match *self {
             ErrorMessage::MissingParameter(ref m) => format!("{} {}.", MISSING_PARAMETER, m),
-            ErrorMessage::MissingBody => {
-                format!("{} {}.", MISSING_BODY, "forgot the payload json ?")
-            }
+            ErrorMessage::MissingBody => format!("{} {}.", MISSING_BODY, "forgot the payload json ?"),
             ErrorMessage::MustBeNumeric(ref m) => format!("{} {}.", MUST_BE_NUMERIC, m),
             ErrorMessage::MustBeAlphanumeric(ref m) => format!("{} {}.", MUST_BE_ALPHANUMERIC, m),
-            ErrorMessage::MissingQueryParameter(ref m) => {
-                format!("{} {}.", MISSING_QUERY_PARMETER, m)
-            }
+            ErrorMessage::MissingQueryParameter(ref m) => format!("{} {}.", MISSING_QUERY_PARMETER, m),
             ErrorMessage::CannotParseBody(ref m, ref n) => format!("{} {}.", m, n),
         }
     }
@@ -80,7 +75,9 @@ pub enum Error {
     Utf8Error(Utf8Error),
     Yaml(serde_yaml::Error),
     Postgres(postgres::error::Error),
+    //Hook errors
     RioConfig(service::Error),
+    SenseiHook(clusters::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -107,15 +104,12 @@ impl fmt::Display for Error {
             Error::IO(ref e) => format!("{}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
             Error::UNKNOWSECRET => format!("SecretType not found"),
-            Error::SetupNotDone => format!(
-                "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"
-            ),
-            Error::SyncNotDone => format!(
-                "Rio.AppStore sync not done. Run `rioos-apiserver sync` before attempting start"
-            ),
+            Error::SetupNotDone => format!("Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"),
+            Error::SyncNotDone => format!("Rio.AppStore sync not done. Run `rioos-apiserver sync` before attempting start"),
             Error::Yaml(ref e) => format!("{}", e),
-            Error::Postgres(ref e) => format!("{}",e),
-            Error::RioConfig(ref e) => format!("{}",e),
+            Error::Postgres(ref e) => format!("{}", e),
+            Error::RioConfig(ref e) => format!("{}", e),
+            Error::SenseiHook(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -143,16 +137,12 @@ impl error::Error for Error {
             Error::Json(ref err) => err.description(),
             Error::Utf8Error(ref err) => err.description(),
             Error::UNKNOWSECRET => "Unknown SecretType",
-            Error::SetupNotDone => {
-                "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"
-            }
-            Error::SyncNotDone => {
-                "Rio.AppStore sync not done. Run `rioos-apiserver sync` before attempting start"
-            }
-
+            Error::SetupNotDone => "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start",
+            Error::SyncNotDone => "Rio.AppStore sync not done. Run `rioos-apiserver sync` before attempting start",
             Error::Yaml(ref err) => err.description(),
             Error::Postgres(ref err) => err.description(),
             Error::RioConfig(ref err) => err.description(),
+            Error::SenseiHook(ref err) => err.description(),
         }
     }
 }
@@ -226,5 +216,11 @@ impl From<postgres::error::Error> for Error {
 impl From<service::Error> for Error {
     fn from(err: service::Error) -> Self {
         Error::RioConfig(err)
+    }
+}
+
+impl From<clusters::Error> for Error {
+    fn from(err: clusters::Error) -> Self {
+        Error::SenseiHook(err)
     }
 }
