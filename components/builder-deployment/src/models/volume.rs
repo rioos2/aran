@@ -39,10 +39,8 @@ impl DataStore {
 
     pub fn show(db: &DataStoreConn, get_vol: &IdGet) -> VolumeOutput {
         let conn = db.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * FROM get_volume_v1($1)",
-            &[&(get_vol.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::VolumesGet)?;
+        let rows = &conn.query("SELECT * FROM get_volume_v1($1)", &[&(get_vol.get_id().parse::<i64>().unwrap())])
+            .map_err(Error::VolumesGet)?;
         if rows.len() > 0 {
             let volumes = row_to_volumes(&rows.get(0))?;
             return Ok(Some(volumes));
@@ -69,10 +67,8 @@ impl DataStore {
     pub fn show_by_assembly(db: &DataStoreConn, vol_get: &IdGet) -> VolumeOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn.query(
-            "SELECT * FROM get_volumes_by_assembly_v1($1)",
-            &[&(vol_get.get_id() as String)],
-        ).map_err(Error::VolumesGet)?;
+        let rows = &conn.query("SELECT * FROM get_volumes_by_assembly_v1($1)", &[&(vol_get.get_id() as String)])
+            .map_err(Error::VolumesGet)?;
 
         let mut response = Vec::new();
 

@@ -13,10 +13,12 @@ extern crate rand;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate get_if_addrs;
+extern crate humansize;
 extern crate num_cpus;
 extern crate regex;
 extern crate serde_json;
-extern crate systemstat;
+extern crate sys_info;
 #[cfg(test)]
 extern crate tempdir;
 extern crate time;

@@ -35,8 +35,7 @@ impl<'a> LinkersState<'a> {
             .iter()
             .map(|id| {
                 let id_get = IdGet::with_id(id.to_string());
-                let assemblys =
-                    try!(assembly::DataStore::new(conn).show_by_assemblyfactory(&id_get,));
+                let assemblys = try!(assembly::DataStore::new(conn).show_by_assemblyfactory(&id_get,));
                 let services = try!(service::DataStore::list_by_assembly_factory(conn, &id_get));
                 Ok(services.map(|s| (s, assemblys.unwrap())))
             })
@@ -53,49 +52,25 @@ impl<'a> LinkersState<'a> {
 
     /// Return list of connected loadbalancers
     pub fn _loadbalancers_connections(&self) -> Vec<&ServiceGraph> {
-        self._state
-            .graphs
-            .get(SERVICE_TYPE_LOADBALANCER)
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>()
+        self._state.graphs.get(SERVICE_TYPE_LOADBALANCER).iter().cloned().collect::<Vec<_>>()
     }
     /// Return list of our connected dns
     pub fn _dns_connections(&self) -> Vec<&ServiceGraph> {
-        self._state
-            .graphs
-            .get(SERVICE_TYPE_EXTERNALNAME)
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>()
+        self._state.graphs.get(SERVICE_TYPE_EXTERNALNAME).iter().cloned().collect::<Vec<_>>()
     }
     /// add loadbalancer links if none of the nodes exists of type LoadBalancer exists
     /// [LoadBalancer] = node_count=0
 
-    pub fn add_loadbalancer_connection(
-        &self,
-        service: &linker::Services,
-    ) -> Result<Option<linker::Services>> {
-        if self.stats
-            .get(SERVICE_TYPE_LOADBALANCER)
-            .unwrap()
-            .node_count <= 0
-        {
+    pub fn add_loadbalancer_connection(&self, service: &linker::Services) -> Result<Option<linker::Services>> {
+        if self.stats.get(SERVICE_TYPE_LOADBALANCER).unwrap().node_count <= 0 {
             service::DataStore::create(self.conn, &service)?;
         }
         Ok(None)
     }
     /// add dns connection if none of the nodes exists of type ExternalName
     /// [ExternalName] = node_count=0
-    pub fn add_dns_connection(
-        &self,
-        service: &linker::Services,
-    ) -> Result<Option<linker::Services>> {
-        if self.stats
-            .get(SERVICE_TYPE_EXTERNALNAME)
-            .unwrap()
-            .node_count <= 0
-        {
+    pub fn add_dns_connection(&self, service: &linker::Services) -> Result<Option<linker::Services>> {
+        if self.stats.get(SERVICE_TYPE_EXTERNALNAME).unwrap().node_count <= 0 {
             service::DataStore::create(self.conn, &service)?;
         }
         Ok(None)

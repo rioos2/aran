@@ -2,6 +2,8 @@
 
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 
+use super::ninja;
+use super::senseis as db_senseis;
 use chrono::prelude::*;
 use db::data_store::DataStoreConn;
 use discover::search;
@@ -10,15 +12,13 @@ use itertools::Itertools;
 use postgres;
 use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
 use protocol::api::node;
-use protocol::api::senseis;
 use protocol::api::schema::type_meta_url;
+use protocol::api::senseis;
 use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
 use telemetry::metrics::collector::{Collector, CollectorScope};
 use telemetry::metrics::prometheus::PrometheusClient;
-use super::ninja;
-use super::senseis as db_senseis;
 
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 
@@ -30,10 +30,8 @@ pub struct DataStore<'a> {
 
 impl<'a> DataStore<'a> {
     pub fn new(db: &'a DataStoreConn) -> Self {
-        DataStore {
-            db: db
-        }
-    }    
+        DataStore { db: db }
+    }
 
     pub fn healthz_all(&self, client: &PrometheusClient) -> Result<Option<node::HealthzAllGetResponse>> {
         //Generete the collected(gauges,statistics,os utilization) for all nodes with
@@ -41,16 +39,21 @@ impl<'a> DataStore<'a> {
         //current ram utilization of all nodes
         //current disk utilization of all nodes
         let sensei_gauges_collected = get_gauges(client, senseis::SENSEI_JOBS.to_string())?;
-        let ninja_gauges_collected = get_gauges(client, node::NODE_JOBS.to_string())?;        
+        let ninja_gauges_collected = get_gauges(client, node::NODE_JOBS.to_string())?;
         let mut guages = node::Guages::new();
         guages.set_title("Cumulative operations counter".to_string());
         guages.set_counters(ninja_gauges_collected.0);
         //current statistic of each node contains(cpu,network)
         let mut statistics = node::Statistics::new();
         statistics.set_title("Statistics".to_string());
-        let ninja_stats = 
-        statistics.set_ninjas(append_unhealthy_ninjas(self.db, get_statistics(client, ninja_gauges_collected.1, node::NODE_JOBS.to_string())?));
-        statistics.set_senseis(append_unhealthy_senseis(self.db, get_statistics(client, sensei_gauges_collected.1, senseis::SENSEI_JOBS.to_string())?));
+        let ninja_stats = statistics.set_ninjas(append_unhealthy_ninjas(
+            self.db,
+            get_statistics(client, ninja_gauges_collected.1, node::NODE_JOBS.to_string())?,
+        ));
+        statistics.set_senseis(append_unhealthy_senseis(
+            self.db,
+            get_statistics(client, sensei_gauges_collected.1, senseis::SENSEI_JOBS.to_string())?,
+        ));
         //Collect the overall utilization of os in all machines
         let os_statistics = get_os_statistics(client)?;
         let mut metrics = node::OSUsages::new();
@@ -78,7 +81,7 @@ fn append_unhealthy_ninjas(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>
                 .map(|x| {
                     if res.is_empty() {
                         response.push(mk_ninja_statistics(x));
-                    }                   
+                    }
                     res.iter()
                         .map(|y| {
                             if x.get_id() == y.get_id() {
@@ -94,15 +97,15 @@ fn append_unhealthy_ninjas(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>
         }
         Ok(None) => res,
         Err(_err) => res,
-    }      
+    }
 }
 
-fn append_unhealthy_senseis(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic>  {
+fn append_unhealthy_senseis(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
     match db_senseis::DataStore::new(db).list_blank() {
         Ok(Some(node)) => {
             let mut response = Vec::new();
             node.iter()
-                .map(|x| {                   
+                .map(|x| {
                     if res.is_empty() {
                         response.push(mk_sensei_statistics(x));
                     }
@@ -121,12 +124,12 @@ fn append_unhealthy_senseis(db: &DataStoreConn, mut res: Vec<node::NodeStatistic
         }
         Ok(None) => res,
         Err(_err) => res,
-    }   
+    }
 }
 
 fn mk_ninja_statistics(node: &node::Node) -> node::NodeStatistic {
     let mut ns = node::NodeStatistic::new();
-    ns.set_id(node.get_id());    
+    ns.set_id(node.get_id());
     ns.set_kind(node.type_meta().kind);
     ns.set_api_version(node.type_meta().api_version);
     ns.set_name(node.get_name());
@@ -175,11 +178,7 @@ fn get_gauges(client: &PrometheusClient, job: String) -> Result<(Vec<node::Count
     Ok((counters, cpu_response.1))
 }
 
-fn get_statistics(
-    client: &PrometheusClient,
-    cpu_nodes_collected: Vec<node::PromResponse>,
-    job: String
-) -> Result<Vec<node::NodeStatistic>> {
+fn get_statistics(client: &PrometheusClient, cpu_nodes_collected: Vec<node::PromResponse>, job: String) -> Result<Vec<node::NodeStatistic>> {
     //Statistics metric of the each node
     if cpu_nodes_collected.len() == 0 {
         return Ok(vec![]);
@@ -202,9 +201,7 @@ fn get_statistics(
     )?)
 }
 
-fn get_os_statistics(
-    client: &PrometheusClient,
-) -> Result<(Vec<Vec<node::Item>>, Vec<node::Counters>)> {
+fn get_os_statistics(client: &PrometheusClient) -> Result<(Vec<Vec<node::Item>>, Vec<node::Counters>)> {
     let os_response = collect_os_usage(client)?;
     let os_usages = os_response
         .1
@@ -246,10 +243,7 @@ fn collect_ram(client: &PrometheusClient, job: String) -> Result<Vec<node::PromR
 fn collect_disk(client: &PrometheusClient, job: String) -> Result<Vec<node::PromResponse>> {
     // collect the overall usage of memory mteric of the all node
     let disk_scope = collect_scope(
-        vec![
-            "node_filesystem_size".to_string(),
-            "node_filesystem_free".to_string(),
-        ],
+        vec!["node_filesystem_size".to_string(), "node_filesystem_free".to_string()],
         vec![job],
         "",
         "",
@@ -257,10 +251,7 @@ fn collect_disk(client: &PrometheusClient, job: String) -> Result<Vec<node::Prom
     Ok(Collector::new(client, disk_scope).average_disk()?)
 }
 
-fn collect_cpu(
-    client: &PrometheusClient,
-    job: String
-) -> Result<(Vec<node::PromResponse>, Vec<node::PromResponse>)> {
+fn collect_cpu(client: &PrometheusClient, job: String) -> Result<(Vec<node::PromResponse>, Vec<node::PromResponse>)> {
     //collect the average node cpu and statistic of each node
     let node_scope = collect_scope(
         vec!["node_cpu".to_string()],
@@ -305,21 +296,11 @@ fn collect_disk_io(client: &PrometheusClient, job: String) -> Result<Vec<node::P
 
 fn collect_process(client: &PrometheusClient, job: String) -> Result<Vec<node::PromResponse>> {
     //collect the process_metric for node
-    let process_scope = collect_scope(
-        vec![
-            "node_process_cpu".to_string(),
-            "node_process_mem".to_string(),
-        ],
-        vec![job],
-        "",
-        "",
-    );
+    let process_scope = collect_scope(vec!["node_process_cpu".to_string(), "node_process_mem".to_string()], vec![job], "", "");
     Ok(Collector::new(client, process_scope).process_metric()?)
 }
 
-fn collect_os_usage(
-    client: &PrometheusClient,
-) -> Result<(Vec<node::PromResponse>, Vec<node::PromResponse>)> {
+fn collect_os_usage(client: &PrometheusClient) -> Result<(Vec<node::PromResponse>, Vec<node::PromResponse>)> {
     //collect the average node cpu  of  os
     let os_scope = collect_scope(
         vec!["node_cpu".to_string()],
@@ -330,10 +311,7 @@ fn collect_os_usage(
     Ok(Collector::new(client, os_scope).metric_by_os_usage()?)
 }
 
-fn append_network_speed(
-    nodes: Vec<node::NodeStatistic>,
-    mut networks: Vec<node::PromResponse>,
-) -> Result<Vec<node::NodeStatistic>> {
+fn append_network_speed(nodes: Vec<node::NodeStatistic>, mut networks: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
     Ok(nodes
         .into_iter()
         .map(|mut x| {
@@ -342,10 +320,7 @@ fn append_network_speed(
                 instancevec
                     .iter()
                     .map(|y| {
-                        let instance = y.metric
-                            .get("instance")
-                            .unwrap_or(&"".to_string())
-                            .to_owned();
+                        let instance = y.metric.get("instance").unwrap_or(&"".to_string()).to_owned();
                         let ins: Vec<&str> = instance.split("-").collect();
                         if x.get_id() == ins[0].to_string() {
                             net_collection.push(y.clone())
@@ -381,8 +356,7 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
                 .map(|y| {
                     if x == y.metric.get("device").unwrap() {
                         if y.metric.get("__name__").unwrap() == "node_network_receive_bytes_total"
-                            || y.metric.get("__name__").unwrap()
-                                == "node_network_transmit_bytes_total"
+                            || y.metric.get("__name__").unwrap() == "node_network_transmit_bytes_total"
                         {
                             a.push(y.clone())
                         } else {
@@ -454,10 +428,7 @@ fn group_network(network: &Vec<node::MatrixItem>) -> Vec<node::NetworkSpeed> {
         .collect::<Vec<_>>()
 }
 
-fn append_process(
-    nodes: Vec<node::NodeStatistic>,
-    mut process: Vec<node::PromResponse>,
-) -> Result<Vec<node::NodeStatistic>> {
+fn append_process(nodes: Vec<node::NodeStatistic>, mut process: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
     Ok(nodes
         .into_iter()
         .map(|mut x| {
@@ -466,11 +437,8 @@ fn append_process(
                 instancevec
                     .iter()
                     .map(|y| {
-                        let instance = y.metric
-                            .get("instance")
-                            .unwrap_or(&"".to_string())
-                            .to_owned();
-                        let ins: Vec<&str> = instance.split("-").collect();                       
+                        let instance = y.metric.get("instance").unwrap_or(&"".to_string()).to_owned();
+                        let ins: Vec<&str> = instance.split("-").collect();
                         if x.get_id() == ins[0].to_string() {
                             net_collection.push(y.clone())
                         }
@@ -485,10 +453,7 @@ fn append_process(
         .collect::<Vec<_>>())
 }
 
-fn append_disk(
-    nodes: Vec<node::NodeStatistic>,
-    mut disk: Vec<node::PromResponse>,
-) -> Result<Vec<node::NodeStatistic>> {
+fn append_disk(nodes: Vec<node::NodeStatistic>, mut disk: Vec<node::PromResponse>) -> Result<Vec<node::NodeStatistic>> {
     Ok(nodes
         .into_iter()
         .map(|mut x| {
@@ -497,11 +462,8 @@ fn append_disk(
                 instancevec
                     .iter()
                     .map(|y| {
-                        let instance = y.metric
-                            .get("instance")
-                            .unwrap_or(&"".to_string())
-                            .to_owned();
-                        let ins: Vec<&str> = instance.split("-").collect();                        
+                        let instance = y.metric.get("instance").unwrap_or(&"".to_string()).to_owned();
+                        let ins: Vec<&str> = instance.split("-").collect();
                         if x.get_id() == ins[0].to_string() {
                             net_collection.push(y.clone())
                         }
@@ -531,13 +493,7 @@ fn group_disk(disk: &Vec<node::InstantVecItem>) -> Vec<BTreeMap<String, String>>
             disk.into_iter()
                 .map(|y| {
                     if x == y.metric.get("device").unwrap() {
-                        disk_metric.insert(
-                            y.metric
-                                .get("__name__")
-                                .unwrap_or(&"".to_string())
-                                .to_string(),
-                            y.value.clone().1,
-                        );
+                        disk_metric.insert(y.metric.get("__name__").unwrap_or(&"".to_string()).to_string(), y.value.clone().1);
                     }
                 })
                 .collect::<Vec<_>>();
@@ -546,9 +502,7 @@ fn group_disk(disk: &Vec<node::InstantVecItem>) -> Vec<BTreeMap<String, String>>
         .collect::<_>()
 }
 
-fn group_process(
-    process: &Vec<node::InstantVecItem>,
-) -> Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>> {
+fn group_process(process: &Vec<node::InstantVecItem>) -> Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>> {
     let merged = process
         .iter()
         .flat_map(|s| s.metric.get("__name__"))
@@ -567,17 +521,8 @@ fn group_process(
                 .map(|y| {
                     if x == y.metric.get("__name__").unwrap() {
                         let mut group = BTreeMap::new();
-                        group.insert(
-                            "pid".to_string(),
-                            y.metric.get("pid").unwrap_or(&"".to_string()).to_string(),
-                        );
-                        group.insert(
-                            "command".to_string(),
-                            y.metric
-                                .get("command")
-                                .unwrap_or(&"".to_string())
-                                .to_string(),
-                        );
+                        group.insert("pid".to_string(), y.metric.get("pid").unwrap_or(&"".to_string()).to_string());
+                        group.insert("command".to_string(), y.metric.get("command").unwrap_or(&"".to_string()).to_string());
                         group.insert("value".to_string(), y.value.clone().1);
                         a.push(group)
                     }
@@ -589,12 +534,7 @@ fn group_process(
         .collect::<_>()
 }
 
-fn collect_scope(
-    metric_scope: Vec<String>,
-    labels: Vec<String>,
-    duration: &str,
-    avg_by: &str,
-) -> CollectorScope {
+fn collect_scope(metric_scope: Vec<String>, labels: Vec<String>, duration: &str, avg_by: &str) -> CollectorScope {
     CollectorScope {
         metric_names: metric_scope,
         labels: labels,
@@ -602,5 +542,3 @@ fn collect_scope(
         avg_by_name: avg_by.to_string(),
     }
 }
-
-

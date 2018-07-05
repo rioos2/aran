@@ -18,7 +18,7 @@ use std::collections::BTreeMap;
 
 pub const CAPACITY_CPU: &'static str = "cpu";
 pub const CAPACITY_MEMORY: &'static str = "memory";
-pub const CAPACITY_STORAGE: &'static str = "memory";
+pub const CAPACITY_STORAGE: &'static str = "storage";
 
 pub struct Sensei {
     conn: Box<DataStoreConn>,
@@ -45,10 +45,10 @@ impl Sensei {
         status.set_phase(PHASE_RUNNING.to_string());
 
         let mut ni = NodeInfo::new();
-        ni.set_machine_id(uname.machine);
-        ni.set_system_uuid(uname.sys_name);
-        ni.set_kernel_version(uname.version);
-        ni.set_os_image(uname.release);
+        ni.set_machine_id(uname.sys_name.clone());
+        ni.set_system_uuid(uname.version);
+        ni.set_kernel_version(uname.release);
+        ni.set_os_image(uname.sys_name);
         ni.set_architecture(pr.get_arch());
         ni.set_bridges(
             pr.get_bridges()
@@ -59,7 +59,7 @@ impl Sensei {
 
         let mut cap = BTreeMap::new();
         cap.insert(CAPACITY_CPU.to_string(), pr.get_cpu());
-        cap.insert(CAPACITY_MEMORY.to_string(), pr.get_memory());
+        cap.insert(CAPACITY_MEMORY.to_string(), pr.get_memory().get_total());
         cap.insert(CAPACITY_STORAGE.to_string(), pr.get_storage().get_total());
         status.set_capacity(cap);
         status.set_node_info(ni);

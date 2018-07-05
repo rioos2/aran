@@ -12,7 +12,7 @@ use db::error::Error::RecordsNotFound;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, badgateway_error, internal_error, not_found_error};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;
@@ -42,10 +42,7 @@ pub struct NodeApi {
 /// GET: /node/:ip
 impl NodeApi {
     pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
-        NodeApi {
-            prom: prom,
-            conn: datastore,
-        }
+        NodeApi { prom: prom, conn: datastore }
     }
 
     //POST: /nodes
@@ -57,19 +54,11 @@ impl NodeApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Node>>()?)?;
 
-        let m = unmarshall_body.mut_meta(
-            unmarshall_body.object_meta(),
-            unmarshall_body.get_name(),
-            unmarshall_body.get_account(),
-        );
+        let m = unmarshall_body.mut_meta(unmarshall_body.object_meta(), unmarshall_body.get_name(), unmarshall_body.get_account());
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
@@ -96,11 +85,7 @@ impl NodeApi {
         match DataStore::new(&self.conn).show(&params) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 
@@ -127,24 +112,15 @@ impl NodeApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body =
-            self.validate(req.get::<bodyparser::Struct<NodeStatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<NodeStatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 
@@ -156,20 +132,12 @@ impl NodeApi {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Node>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?} ", unmarshall_body),
-        );
+        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
 
         match DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{} for {}", Error::Db(RecordsNotFound), params.get_id()))),
         }
     }
 
@@ -197,7 +165,6 @@ impl NodeApi {
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
-    
 }
 
 impl Api for NodeApi {
@@ -214,53 +181,31 @@ impl Api for NodeApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_address =
-            move |req: &mut Request| -> AranResult<Response> { _self.show_by_address(req) };
+        let show_by_address = move |req: &mut Request| -> AranResult<Response> { _self.show_by_address(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         let _self = self.clone();
-        let discovery = move |req: &mut Request| -> AranResult<Response> { _self.discovery(req) };        
+        let discovery = move |req: &mut Request| -> AranResult<Response> { _self.discovery(req) };
 
-        router.post(
-            "/nodes",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "nodes",
-        );
-        router.get(
-            "/nodes",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
-            "nodes_list",
-        );
-        router.get(
-            "/nodes/:id",
-            XHandler::new(C { inner: show }).before(basic.clone()),
-            "node_show",
-        );
+        router.post("/nodes", XHandler::new(C { inner: create }).before(basic.clone()), "nodes");
+        router.get("/nodes", XHandler::new(C { inner: list_blank }).before(basic.clone()), "nodes_list");
+        router.get("/nodes/:id", XHandler::new(C { inner: show }).before(basic.clone()), "node_show");
         router.put(
             "/nodes/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "node_status_update",
         );
 
-        router.put(
-            "/nodes/:id",
-            XHandler::new(C { inner: update }).before(basic.clone()),
-            "node_update",
-        );
+        router.put("/nodes/:id", XHandler::new(C { inner: update }).before(basic.clone()), "node_update");
 
         router.get(
             "/nodes/ip",
-            XHandler::new(C {
-                inner: show_by_address,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_address }).before(basic.clone()),
             "node_show_by_address",
         );
 

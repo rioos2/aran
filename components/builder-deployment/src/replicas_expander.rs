@@ -39,10 +39,7 @@ impl<'a> ReplicasExpander<'a> {
             return Err(error::Error::METRICLIMITERROR);
             // assembly::DataStore::new(&self.conn).status_update(&self.build_assembly_status());
         }
-        job_ds::JobDS::create(
-            &self.conn,
-            &self.build_job(&qualified_assembly, &self.get_scale_type()),
-        )
+        job_ds::JobDS::create(&self.conn, &self.build_job(&qualified_assembly, &self.get_scale_type()))
     }
 
     // should return the least resource utilies assembly
@@ -56,8 +53,7 @@ impl<'a> ReplicasExpander<'a> {
     /// check the datacenter metrics and node metric of assembly
     fn satisfy_metrics(&self, assembly: &deploy::Assembly) -> bool {
         if (self.assembly_metric(assembly) == 0 || self.average_node_metric() == 0)
-            || (self.average_node_metric() < METRIC_LIMIT
-                && self.assembly_metric(assembly) < METRIC_LIMIT)
+            || (self.average_node_metric() < METRIC_LIMIT && self.assembly_metric(assembly) < METRIC_LIMIT)
         {
             return false;
         }
@@ -76,11 +72,7 @@ impl<'a> ReplicasExpander<'a> {
     fn build_job(&self, assembly: &deploy::Assembly, scale_type: &str) -> job::Jobs {
         let mut job_create = job::Jobs::new();
 
-        let ref mut om = job_create.mut_meta(
-            job_create.object_meta(),
-            assembly.get_name(),
-            assembly.get_account(),
-        );
+        let ref mut om = job_create.mut_meta(job_create.object_meta(), assembly.get_name(), assembly.get_account());
         job_create.set_owner_reference(
             om,
             assembly.type_meta().kind,
@@ -93,10 +85,7 @@ impl<'a> ReplicasExpander<'a> {
         job_create.set_meta(type_meta_url(jackie), om.clone());
 
         job_create.set_spec(job::SpecData::with(
-            assembly
-                .get_metadata()
-                .get("rioos_sh_scheduled_node")
-                .unwrap_or(&"".to_string()),
+            assembly.get_metadata().get("rioos_sh_scheduled_node").unwrap_or(&"".to_string()),
             "assembly",
             scale_type,
         ));
