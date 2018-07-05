@@ -63,6 +63,10 @@ impl WatchHandler {
         self.prom.clone()
     }
 
+    pub fn datastore(&self) -> Box<DataStoreConn> {
+        self.datastore.clone()
+    }
+
     //start listening all psql triggers
     //when listener get the data from triggers then send it to the handler channel
     //listener notifies any datas(like secrets, jobs,...) send to the channel
