@@ -1,11 +1,12 @@
 use common::ui::UI;
 use db::data_store;
 use error::Result;
-use hooks::BeforeHook;
-use hooks::before::{AHooks, HookServiceFn, DIFFER_HOOK, NINJA_HOOK, SECRET_HOOK};
+use hooks::before::{AHooks, HookServiceFn, DIFFER_HOOK, NINJA_HOOK, SECRET_HOOK, SENSEI_HOOK};
 use hooks::differ::AppStore;
+use hooks::register::Sensei;
 use hooks::secrets::ForGulpd;
 use hooks::settings::Ninja;
+use hooks::BeforeHook;
 
 pub fn start(ui: &mut UI) -> Result<()> {
     ui.title("Rio/OS Migration for database")?;
@@ -13,7 +14,7 @@ pub fn start(ui: &mut UI) -> Result<()> {
     let ds = data_store::DataStoreConn::new()?;
     ds.setup()?;
 
-    let box_ds = Box::new(ds.clone());    
+    let box_ds = Box::new(ds.clone());
 
     ui.para("Before Hooks")?;
     let mut ah = AHooks::new();
@@ -36,9 +37,16 @@ pub fn start(ui: &mut UI) -> Result<()> {
         Box::new(move || -> Option<()> { Ninja::new(box_ds3.clone()).before().ok() }),
     ));
 
+    let box_ds4 = box_ds.clone();
+    let fnsensei = Box::new(HookServiceFn::new(
+        SENSEI_HOOK.to_string(),
+        Box::new(move || -> Option<()> { Sensei::new(box_ds4.clone()).before().ok() }),
+    ));
+
     ah.register(fndiffer);
     ah.register(fnsecret);
     ah.register(fnninja);
+    ah.register(fnsensei);
 
     ah.setup();
 

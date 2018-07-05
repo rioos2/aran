@@ -70,10 +70,8 @@ impl<'a> DataStore<'a> {
     pub fn show_by_stacksfactory(&self, id: &IdGet) -> AssemblyFactoryOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query(
-            "SELECT * FROM get_assemblyfactorys_by_parentid_v1($1)",
-            &[&(id.get_id() as String)],
-        ).map_err(Error::AssemblyFactoryGet)?;
+        let rows = &conn.query("SELECT * FROM get_assemblyfactorys_by_parentid_v1($1)", &[&(id.get_id() as String)])
+            .map_err(Error::AssemblyFactoryGet)?;
 
         let mut response = Vec::new();
 
@@ -143,11 +141,7 @@ impl<'a> DataStore<'a> {
 
     /// A private convertor of postgres Row to the required structure.
     /// In this case AssemblyFactory.
-    fn row_to_assembly_factory(
-        &self,
-        row: &postgres::rows::Row,
-        how_to: PullFromCache,
-    ) -> Result<deploy::AssemblyFactory> {
+    fn row_to_assembly_factory(&self, row: &postgres::rows::Row, how_to: PullFromCache) -> Result<deploy::AssemblyFactory> {
         let mut assembly_factory = deploy::AssemblyFactory::with(
             serde_json::from_value(row.get("type_meta")).unwrap(),
             serde_json::from_value(row.get("object_meta")).unwrap(),
@@ -176,8 +170,7 @@ impl<'a> DataStore<'a> {
         // During the creation AF sets the service to none
         // Hence the cache always return none for service.
         // HACK: To fix this the service is pulled invalidated from cache - send a LIVE copy always.
-        self.expander
-            .with_services(&mut assembly_factory, PULL_INVALDATED);
+        self.expander.with_services(&mut assembly_factory, PULL_INVALDATED);
         Ok(assembly_factory)
     }
 }

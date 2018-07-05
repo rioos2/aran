@@ -4,6 +4,7 @@ pub mod before;
 pub mod differ;
 pub mod secrets;
 pub mod settings;
+pub mod register;
 
 
 use error::Result;

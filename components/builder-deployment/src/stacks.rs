@@ -20,8 +20,8 @@ use protocol::api::base::{ChildTypeMeta, MetaFields, Status};
 use protocol::api::blueprint::PlanProperties;
 use protocol::api::deploy::{AssemblyFactory, AssemblyFactorySpec, StacksFactory};
 use protocol::api::schema::type_meta_url;
-use rand::{self, Rng};
 use rand::distributions::Alphanumeric;
+use rand::{self, Rng};
 use std::collections::BTreeMap;
 
 const PRE_NAME_LEN: usize = 5;
@@ -78,10 +78,8 @@ impl<'a> StacksDeployer<'a> {
                     let assembled_factorys = plan.get_plan()
                         .into_iter()
                         .map(|plan_property| {
-                            let assembly_factory: AssemblyFactory =
-                                self.build_assembly_factory(&plan_property, &stacks);
-                            Assembler::new(&self.conn, &self.service_config)
-                                .assemble(&assembly_factory)
+                            let assembly_factory: AssemblyFactory = self.build_assembly_factory(&plan_property, &stacks);
+                            Assembler::new(&self.conn, &self.service_config).assemble(&assembly_factory)
                         })
                         .fold(vec![], |mut acc, x| match x {
                             Ok(one_assembly_factory) => {
@@ -107,11 +105,7 @@ impl<'a> StacksDeployer<'a> {
 
     ///Build the assembly by setting up a object meta (name, account id of the parent,
     ///and its type meta from the parent)
-    fn build_assembly_factory(
-        &self,
-        plan_property: &PlanProperties,
-        parent: &StacksFactory,
-    ) -> AssemblyFactory {
+    fn build_assembly_factory(&self, plan_property: &PlanProperties, parent: &StacksFactory) -> AssemblyFactory {
         let mut assembly_factory = AssemblyFactory::new();
         let mut spec = AssemblyFactorySpec::new();
         //Transfer resources (cpu, ram, disk)  from stackfactory to assemblyfactory
@@ -171,10 +165,7 @@ impl<'a> StacksDeployer<'a> {
             })
             .collect::<BTreeMap<String, String>>();
 
-        b.insert(
-            RIOOS_SH_BLUEPRINT_APPLIED.to_string(),
-            plan_property.get_name(),
-        );
+        b.insert(RIOOS_SH_BLUEPRINT_APPLIED.to_string(), plan_property.get_name());
 
         assembly_factory.set_metadata(b);
 

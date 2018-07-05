@@ -32,19 +32,16 @@ const APPLICABLE_TO: &'static [&'static str] = &["blockchain_template", "contain
 const APPLICABLE_TO_STAND_STILL: &'static [&'static str] = &["blockchain_template", "blockchain"];
 
 // AssemblyFactory output
-pub type AssemblyFactoryOutput =
-    Result<std::option::Option<protocol::api::deploy::AssemblyFactory>>;
+pub type AssemblyFactoryOutput = Result<std::option::Option<protocol::api::deploy::AssemblyFactory>>;
 
 /// AssemblyFactory output as list
-pub type AssemblyFactoryOutputList =
-    Result<std::option::Option<Vec<protocol::api::deploy::AssemblyFactory>>>;
+pub type AssemblyFactoryOutputList = Result<std::option::Option<Vec<protocol::api::deploy::AssemblyFactory>>>;
 
 // StacksFactory output
 pub type StacksFactoryOutput = Result<std::option::Option<protocol::api::deploy::StacksFactory>>;
 
 /// StacksFactory output as list
-pub type StacksFactoryOutputList =
-    Result<std::option::Option<Vec<protocol::api::deploy::StacksFactory>>>;
+pub type StacksFactoryOutputList = Result<std::option::Option<Vec<protocol::api::deploy::StacksFactory>>>;
 
 /// Assembly output
 pub type AssemblyOutput = Result<std::option::Option<protocol::api::deploy::Assembly>>;
