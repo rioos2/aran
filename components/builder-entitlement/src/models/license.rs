@@ -4,13 +4,14 @@ use chrono::prelude::*;
 use error::{Error, Result};
 
 use protocol::api::licenses::Licenses;
-use protocol::api::base::IdGet;
+use protocol::api::base::{IdGet,MetaFields};
 use protocol::cache::PULL_DIRECTLY;
 use protocol::cache::InMemoryExpander;
 
 use postgres;
 use db::data_store::DataStoreConn;
-use super::super::LicenseOutput;
+use super::super::{LicenseOutput,LicenseOutputList};
+use serde_json;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -25,13 +26,17 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn license_create_or_update(&self, license: &Licenses) -> LicenseOutput {
+    pub fn create_or_update(&self, license: &Licenses) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_or_update_license_v1 ($1,$2)",
+            "SELECT * FROM insert_or_update_license_v1 ($1,$2,$3,$4,$5,$6)",
             &[
-                &(license.get_name() as String),
+                &(serde_json::to_value(license.object_meta()).unwrap()),
+                &(serde_json::to_value(license.type_meta()).unwrap()),
                 &(license.get_status() as String),
+                &(license.get_product() as String),
+                &(license.get_activation_code() as String),
+                &(license.get_expired() as String),
             ],
         ).map_err(Error::LicenseCreate)?;
         if rows.len() > 0 {
@@ -39,7 +44,7 @@ impl<'a> DataStore<'a> {
             return Ok(Some(licenses_create));
         }
         Ok(None)
-    }   
+    }
 
     pub fn license_show_by_name(&self, get_license: &IdGet) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
@@ -56,6 +61,23 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
+    pub fn list_blank(&self) -> LicenseOutputList {
+        let conn = self.db.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_license_list_by_v1()", &[])
+            .map_err(Error::LicenseGet)?;
+
+        let mut response = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_licenses(&row)?)
+            }
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
     //This is a fascade method to get_by_name.
     pub fn get_by_name_fascade(&self, name: IdGet) -> Licenses {
         let mut license = Licenses::new();
@@ -68,19 +90,20 @@ impl<'a> DataStore<'a> {
 }
 
 fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {
-    let mut licenses = Licenses::new();
+
+    let mut licenses = Licenses::with(
+        serde_json::from_value(row.get("type_meta")).unwrap(),
+        serde_json::from_value(row.get("object_meta")).unwrap(),
+    );
 
     let id: i64 = row.get("id");
-    let name: String = row.get("name");
-    let status: String = row.get("status");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
-    let updated_at = row.get::<&str, DateTime<Utc>>("updated_at");
 
     licenses.set_id(id.to_string() as String);
-    licenses.set_name(name as String);
-    licenses.set_status(status as String);
+    licenses.set_status(row.get("status"));
+    licenses.set_product(row.get("product"));
+    licenses.set_expired(row.get("expired"));
     licenses.set_created_at(created_at.to_rfc3339());
-    licenses.set_updated_at(updated_at.to_rfc3339());
 
     Ok(licenses)
 }

@@ -3,7 +3,6 @@
 use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use api::node::{Spec, NodeStatus};
 use std::collections::BTreeMap;
-use serde_json;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Senseis {
