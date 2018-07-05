@@ -69,8 +69,6 @@ pub struct SlackNotifier {
 
 impl SlackNotifier {
     pub fn new(envelope: Envelope, config: SlackCfg) -> Self {
-        println!("*****SlackNotifier***new****send**********");
-
         SlackNotifier {
             envelope: envelope,
             config: config,

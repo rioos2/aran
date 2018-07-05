@@ -59,7 +59,6 @@ handlebars = { version = "1.0.0-beta.2", default-features = false }
 lettre = "0.8"
 lettre_email="0.8"
 openio_sdk_rust = {git = "https://github.com/rioadvancement/openio-sdk-rust.git" }
-systemstat = "0.1.2"
 
 [dependencies.clap]
 version = "2.32.0"
