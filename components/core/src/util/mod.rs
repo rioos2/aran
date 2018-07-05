@@ -1,6 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 pub mod perm;
+pub mod stat;
 pub mod sys;
 
 use std::error;
@@ -36,11 +37,7 @@ where
         {
             match FromStr::from_str(value) {
                 Ok(t) => Ok(t),
-                Err(err) => Err(R::custom(format!(
-                    "string cannot be parsed: \"{}\" ({})",
-                    value,
-                    err.description()
-                ))),
+                Err(err) => Err(R::custom(format!("string cannot be parsed: \"{}\" ({})", value, err.description()))),
             }
         }
     }

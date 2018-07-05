@@ -44,28 +44,14 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
-            Error::AssemblyFactoryCreate(ref e) => {
-                format!("Database error creating a new assembly factory, {}", e)
-            }
-            Error::AssemblyFactoryGet(ref e) => {
-                format!("Database error getting assembly factory, {}", e)
-            }
-            Error::AssemblyFactoryUpdate(ref e) => {
-                format!("Database error updating assembly factory, {}", e)
-            }
+            Error::AssemblyFactoryCreate(ref e) => format!("Database error creating a new assembly factory, {}", e),
+            Error::AssemblyFactoryGet(ref e) => format!("Database error getting assembly factory, {}", e),
+            Error::AssemblyFactoryUpdate(ref e) => format!("Database error updating assembly factory, {}", e),
             Error::StacksFactoryInvalidType(ref e) => format!("{}", e),
-            Error::StacksFactoryCreate(ref e) => {
-                format!("Database error creating a new blockchain factory, {}", e)
-            }
-            Error::StacksFactoryGet(ref e) => {
-                format!("Database error getting blockchain factory, {}", e)
-            }
-            Error::StacksFactoryUpdate(ref e) => {
-                format!("Database error updating blockchain factory, {}", e)
-            }
-            Error::AssemblyCreate(ref e) => {
-                format!("Database error creating a new assembly, {}", e)
-            }
+            Error::StacksFactoryCreate(ref e) => format!("Database error creating a new blockchain factory, {}", e),
+            Error::StacksFactoryGet(ref e) => format!("Database error getting blockchain factory, {}", e),
+            Error::StacksFactoryUpdate(ref e) => format!("Database error updating blockchain factory, {}", e),
+            Error::AssemblyCreate(ref e) => format!("Database error creating a new assembly, {}", e),
             Error::AssemblyGet(ref e) => format!("Database error getting assembly, {}", e),
             Error::AssemblyUpdate(ref e) => format!("Database error updating a assembly, {}", e),
             Error::PlanCreate(ref e) => format!("Database error creating a plan factory, {}", e),

@@ -39,10 +39,8 @@ impl DataStore {
     pub fn show(db: &DataStoreConn, get_plan_factory: &IdGet) -> PlanOutput {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn.query(
-            "SELECT * FROM get_plan_v1($1)",
-            &[&(get_plan_factory.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::PlanGet)?;
+        let rows = &conn.query("SELECT * FROM get_plan_v1($1)", &[&(get_plan_factory.get_id().parse::<i64>().unwrap())])
+            .map_err(Error::PlanGet)?;
 
         if rows.len() > 0 {
             for row in rows {
@@ -55,8 +53,7 @@ impl DataStore {
     pub fn list_blank(db: &DataStoreConn) -> PlanOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_plans_v1()", &[])
-            .map_err(Error::PlanGet)?;
+        let rows = &conn.query("SELECT * FROM get_plans_v1()", &[]).map_err(Error::PlanGet)?;
 
         let mut response = Vec::new();
 

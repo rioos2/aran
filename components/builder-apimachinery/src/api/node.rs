@@ -12,6 +12,11 @@ pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
 pub const NODE_JOBS: &'static str = "job=rioos-nodes";
 pub const IDLEMODE: &'static str = "mode=idle";
 
+// The constants to store status.capacity
+pub const CAPACITY_CPU: &'static str = "cpu";
+pub const CAPACITY_MEMORY: &'static str = "memory";
+pub const CAPACITY_STORAGE: &'static str = "storage";
+
 pub type SpeedSummary = (String, i32, i32);
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -123,13 +128,7 @@ pub struct Spec {
 }
 
 impl Spec {
-    pub fn new(
-        assembly_cidr: &str,
-        external_id: &str,
-        provider_id: &str,
-        unschedulable: bool,
-        taints: Vec<Taints>,
-    ) -> Spec {
+    pub fn new(assembly_cidr: &str, external_id: &str, provider_id: &str, unschedulable: bool, taints: Vec<Taints>) -> Spec {
         Spec {
             assembly_cidr: assembly_cidr.to_string(),
             external_id: external_id.to_string(),
@@ -177,16 +176,20 @@ impl Taints {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeStatus {
-    capacity: BTreeMap<String, String>, //Capacity represents the total resources of a node.
+    capacity: BTreeMap<String, String>,    //Capacity represents the total resources of a node.
     allocatable: BTreeMap<String, String>, // Allocatable represents the resources of a node that are available for scheduling. Defaults to Capacity.
-    phase: String, //NodePhase is the recently observed lifecycle phase of the node.
-    conditions: Vec<Condition>, //Conditions is an array of current observed node conditions.
-    addresses: Vec<Addresses>, //List of addresses reachable to the node.
-    node_info: NodeInfo, //Set of ids/uuids to uniquely identify the node.
+    phase: String,                         //NodePhase is the recently observed lifecycle phase of the node.
+    conditions: Vec<Condition>,            //Conditions is an array of current observed node conditions.
+    addresses: Vec<Addresses>,             //List of addresses reachable to the node.
+    node_info: NodeInfo,                   //Set of ids/uuids to uniquely identify the node.
 }
 
 impl NodeStatus {
-    pub fn new(
+    pub fn new() -> NodeStatus {
+        ::std::default::Default::default()
+    }
+
+    pub fn with(
         capacity: BTreeMap<String, String>,
         allocatable: BTreeMap<String, String>,
         phase: &str,
@@ -203,6 +206,11 @@ impl NodeStatus {
             node_info: node_info,
         }
     }
+
+    pub fn set_phase(&mut self, v: ::std::string::String) {
+        self.phase = v;
+    }
+
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
@@ -211,12 +219,26 @@ impl NodeStatus {
         &self.conditions
     }
 
+    pub fn set_addresses(&mut self, v: Vec<Addresses>) {
+        self.addresses = v;
+    }
+
     pub fn get_addresses(&self) -> &Vec<Addresses> {
         &self.addresses
     }
+
+    pub fn set_node_info(&mut self, v: NodeInfo) {
+        self.node_info = v;
+    }
+
     pub fn get_node_info(&self) -> &NodeInfo {
         &self.node_info
     }
+
+    pub fn set_capacity(&mut self, v: BTreeMap<String, String>) {
+        self.capacity = v;
+    }
+
     pub fn get_capacity(&self) -> &BTreeMap<String, String> {
         &self.capacity
     }
@@ -312,24 +334,21 @@ impl Addresses {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeInfo {
-    machine_id: String, //MachineID reported by the node. For unique machine identification in the cluster this field is preferred.
-    system_uuid: String, //SystemUUID reported by the node. For unique machine identification
+    machine_id: String,     //MachineID reported by the node. For unique machine identification in the cluster this field is preferred.
+    system_uuid: String,    //SystemUUID reported by the node. For unique machine identification
     kernel_version: String, //Kernel Version reported by the node from 'uname -r' (e.g. 3.16.0-0.bpo.4-amd64).
-    os_image: String, //OS Image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy)).
-    architecture: String, //The Architecture reported by the node
+    os_image: String,       //OS Image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy)).
+    architecture: String,   //The Architecture reported by the node
     #[serde(default)]
     bridges: Vec<Bridge>, // List of virtual networking bridge that are created by RioOS
 }
 
 impl NodeInfo {
-    pub fn new(
-        machine_id: &str,
-        system_uuid: &str,
-        kernel_version: &str,
-        os_image: &str,
-        architecture: &str,
-        bridges: Vec<Bridge>,
-    ) -> NodeInfo {
+    pub fn new() -> Self {
+        ::std::default::Default::default()
+    }
+
+    pub fn with(machine_id: &str, system_uuid: &str, kernel_version: &str, os_image: &str, architecture: &str, bridges: Vec<Bridge>) -> NodeInfo {
         NodeInfo {
             machine_id: machine_id.to_string(),
             system_uuid: system_uuid.to_string(),
@@ -339,29 +358,50 @@ impl NodeInfo {
             bridges: bridges,
         }
     }
+
+    pub fn set_machine_id(&mut self, v: ::std::string::String) {
+        self.machine_id = v;
+    }
+
+    pub fn set_architecture(&mut self, v: ::std::string::String) {
+        self.architecture = v;
+    }
+
     pub fn get_architecture(&self) -> ::std::string::String {
         self.architecture.clone()
     }
+
+    pub fn set_system_uuid(&mut self, v: ::std::string::String) {
+        self.system_uuid = v;
+    }
+
+    pub fn set_kernel_version(&mut self, v: ::std::string::String) {
+        self.kernel_version = v;
+    }
+
+    pub fn set_os_image(&mut self, v: ::std::string::String) {
+        self.os_image = v;
+    }
+
     pub fn get_os_image(&self) -> ::std::string::String {
         self.os_image.clone()
+    }
+
+    pub fn set_bridges(&mut self, v: Vec<Bridge>) {
+        self.bridges = v;
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Bridge {
-    bridge_name: String,     // Name of the bridge to be used for virtual networking
-    physical_device: String, // Physical network interface that are connected to this bridge
+    bridge_name: String,        // Name of the bridge to be used for virtual networking
+    physical_device: String,    // Physical network interface that are connected to this bridge
     network_types: Vec<String>, //supported networks
-    bridge_type: String,     //Configured Which type of network to this bridge
+    bridge_type: String,        //Configured Which type of network to this bridge
 }
 
 impl Bridge {
-    pub fn new(
-        bridge_name: &str,
-        physical_device: &str,
-        network_types: Vec<String>,
-        bridge_type: &str,
-    ) -> Bridge {
+    pub fn new(bridge_name: &str, physical_device: &str, network_types: Vec<String>, bridge_type: &str) -> Bridge {
         Bridge {
             bridge_name: bridge_name.to_string(),
             physical_device: physical_device.to_string(),
@@ -398,7 +438,7 @@ impl HealthzAllGet {
     pub fn set_statistics(&mut self, v: Statistics) {
         self.statistics = v;
     }
-    pub fn get_statistics(&mut self) -> Statistics{
+    pub fn get_statistics(&mut self) -> Statistics {
         self.statistics.clone()
     }
     pub fn set_osusages(&mut self, v: OSUsages) {
@@ -411,7 +451,6 @@ impl HealthzAllGet {
         self.to_date = v;
     }
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Guages {
@@ -489,7 +528,6 @@ impl Statistics {
         self.senseis.clone()
     }
 }
-
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeStatistic {
@@ -774,12 +812,7 @@ impl Into<Counters> for PromResponse {
             instancevec
                 .into_iter()
                 .map(|x| {
-                    counters.set_name(
-                        x.metric
-                            .get("__name__")
-                            .unwrap_or(&"".to_string())
-                            .to_owned(),
-                    );
+                    counters.set_name(x.metric.get("__name__").unwrap_or(&"".to_string()).to_owned());
                     counters.set_counter(x.value.1.to_owned());
                 })
                 .collect::<Vec<_>>();
@@ -797,18 +830,13 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
                 .into_iter()
                 .map(|x| {
                     let mut node = NodeStatistic::new();
-                    let instance = x.metric
-                            .get("instance")
-                            .unwrap_or(&"".to_string())
-                            .to_owned();
+
+                    let instance = x.metric.get("instance").unwrap_or(&"".to_string()).to_owned();
                     let ins: Vec<&str> = instance.split("-").collect();
                     node.set_name(ins[1].to_string());
                     node.set_counter(x.value.1.to_owned());
-                    node.set_id(
-                        ins[0].to_string()
-                            .replace(".", "_")
-                            .to_string(),
-                    );
+                    node.set_id(ins[0].to_string().replace(".", "_").to_string());
+
                     node.set_kind("Node".to_string());
                     node.set_api_version("v1".to_string());
                     node.set_health("up".to_string());
@@ -828,28 +856,14 @@ impl Into<OSUsages> for PromResponse {
                 .into_iter()
                 .map(|x| {
                     let mut item = Item::new();
-                    item.set_id(
-                        x.metric
-                            .get("rioos_assemblyfactory_id")
-                            .unwrap_or(&"none".to_string())
-                            .to_owned(),
-                    );
-                    item.set_name(
-                        x.metric
-                            .get("rioos_os_name")
-                            .unwrap_or(&"none".to_string())
-                            .to_owned(),
-                    );
+                    item.set_id(x.metric.get("rioos_assemblyfactory_id").unwrap_or(&"none".to_string()).to_owned());
+                    item.set_name(x.metric.get("rioos_os_name").unwrap_or(&"none".to_string()).to_owned());
                     let values = x.values
                         .clone()
                         .into_iter()
                         .map(|s| {
                             let mut value_data = ValueData::new();
-                            value_data.set_date(
-                                NaiveDateTime::from_timestamp(s.0.round() as i64, 0)
-                                    .to_string()
-                                    .to_owned(),
-                            );
+                            value_data.set_date(NaiveDateTime::from_timestamp(s.0.round() as i64, 0).to_string().to_owned());
                             value_data.set_value(s.1.to_owned());
                             value_data
                         })

@@ -124,12 +124,7 @@ impl FromStr for PairType {
         match value {
             "public" => Ok(PairType::Public),
             "secret" => Ok(PairType::Secret),
-            _ => {
-                return Err(Error::CryptoError(format!(
-                    "Invalid PairType conversion from {}",
-                    value
-                )))
-            }
+            _ => return Err(Error::CryptoError(format!("Invalid PairType conversion from {}", value))),
         }
     }
 }
@@ -187,8 +182,7 @@ where
     S1: AsRef<str>,
     S2: AsRef<str>,
 {
-    path.as_ref()
-        .join(format!("{}.{}", keyname.as_ref(), suffix.as_ref()))
+    path.as_ref().join(format!("{}.{}", keyname.as_ref(), suffix.as_ref()))
 }
 
 fn read_key_bytes(keyfile: &Path) -> Result<Vec<u8>> {
@@ -223,9 +217,7 @@ fn write_key_file(regular_keyfile: Option<&Path>, regular_content: Option<&[u8]>
         if let Some(pk_dir) = regular_keyfile.parent() {
             try!(fs::create_dir_all(pk_dir));
         } else {
-            return Err(Error::BadKeyPath(
-                regular_keyfile.to_string_lossy().into_owned(),
-            ));
+            return Err(Error::BadKeyPath(regular_keyfile.to_string_lossy().into_owned()));
         }
 
         if regular_keyfile.exists() {
@@ -239,10 +231,7 @@ fn write_key_file(regular_keyfile: Option<&Path>, regular_content: Option<&[u8]>
         let regular_file = try!(File::create(regular_keyfile));
         let mut regular_writer = BufWriter::new(&regular_file);
         try!(regular_writer.write_all(regular_content));
-        try!(perm::set_permissions(
-            regular_keyfile,
-            REGULAR_KEY_PERMISSIONS,
-        ));
+        try!(perm::set_permissions(regular_keyfile, REGULAR_KEY_PERMISSIONS,));
     }
 
     Ok(())

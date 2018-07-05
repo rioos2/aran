@@ -10,8 +10,8 @@ rand = "0.5.3"
 postgres = { version = "0.15.2", features = ["with-chrono", "with-serde_json"] }
 chrono = { version = "0.4.4", features = ["serde"] }
 petgraph = "*"
+human-size = "*"
 serde_json = "1.0.22"
-human-size = "0.2.0"
 
 [dependencies.rioos_builder_apimachinery]
 path = "../builder-apimachinery"

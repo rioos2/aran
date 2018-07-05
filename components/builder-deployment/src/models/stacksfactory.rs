@@ -132,11 +132,7 @@ impl<'a> DataStore<'a> {
     /// Expands the assembly by sticking in Spec
     ///         1. AssemblyFactory (parent information)
     ///         2. Plan
-    fn collect_spec(
-        &self,
-        row: &postgres::rows::Row,
-        how_to: PullFromCache,
-    ) -> Result<deploy::StacksFactory> {
+    fn collect_spec(&self, row: &postgres::rows::Row, how_to: PullFromCache) -> Result<deploy::StacksFactory> {
         let mut stacks = self.row_to_stacks_factory(&row)?;
         self.expander.with_plan(&mut stacks, how_to);
         Ok(stacks)

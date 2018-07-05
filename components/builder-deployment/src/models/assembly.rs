@@ -75,10 +75,8 @@ impl<'a> DataStore<'a> {
 
     pub fn show(&self, get_assembly: &IdGet) -> AssemblyOutput {
         let conn = self.db.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * FROM get_assembly_v1($1)",
-            &[&(get_assembly.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::AssemblyGet)?;
+        let rows = &conn.query("SELECT * FROM get_assembly_v1($1)", &[&(get_assembly.get_id().parse::<i64>().unwrap())])
+            .map_err(Error::AssemblyGet)?;
         if rows.len() > 0 {
             for row in rows {
                 let assembly = self.collect_spec(&row, PULL_DIRECTLY)?;
@@ -91,8 +89,7 @@ impl<'a> DataStore<'a> {
     pub fn list_blank(&self) -> AssemblyOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_assemblys_v1()", &[])
-            .map_err(Error::AssemblyGet)?;
+        let rows = &conn.query("SELECT * FROM get_assemblys_v1()", &[]).map_err(Error::AssemblyGet)?;
 
         let mut response = Vec::new();
 
@@ -108,10 +105,8 @@ impl<'a> DataStore<'a> {
     pub fn list(&self, assemblys_get: &IdGet) -> AssemblyOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query(
-            "SELECT * FROM get_assemblys_by_account_v1($1)",
-            &[&(assemblys_get.get_name() as String)],
-        ).map_err(Error::AssemblyGet)?;
+        let rows = &conn.query("SELECT * FROM get_assemblys_by_account_v1($1)", &[&(assemblys_get.get_name() as String)])
+            .map_err(Error::AssemblyGet)?;
 
         let mut response = Vec::new();
         if rows.len() > 0 {
@@ -143,10 +138,8 @@ impl<'a> DataStore<'a> {
     pub fn show_by_assemblyfactory(&self, id: &IdGet) -> AssemblyOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query(
-            "SELECT * FROM get_assemblys_by_parentid_v1($1)",
-            &[&(id.get_id() as String)],
-        ).map_err(Error::AssemblyGet)?;
+        let rows = &conn.query("SELECT * FROM get_assemblys_by_parentid_v1($1)", &[&(id.get_id() as String)])
+            .map_err(Error::AssemblyGet)?;
 
         let mut response = Vec::new();
 
@@ -160,11 +153,7 @@ impl<'a> DataStore<'a> {
     }
 
     //Get the metrics as a map of assembly_id and its metric
-    pub fn show_metrics(
-        &self,
-        id: &IdGet,
-        prom: &PrometheusClient,
-    ) -> Result<BTreeMap<String, String>> {
+    pub fn show_metrics(&self, id: &IdGet, prom: &PrometheusClient) -> Result<BTreeMap<String, String>> {
         match &id.get_name()[..] {
             "machine" => {
                 let label_collection = vec![
@@ -183,11 +172,9 @@ impl<'a> DataStore<'a> {
                 Ok(Collector::new(prom, scope).metric_by_avg_for_machines()?)
             }
             "container" => {
-                let label_collection: Vec<String> =
-                    vec![format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string()];
+                let label_collection: Vec<String> = vec![format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string()];
 
-                let container_metric_scope: Vec<String> =
-                    vec!["container_cpu_usage_seconds_total".to_string()];
+                let container_metric_scope: Vec<String> = vec!["container_cpu_usage_seconds_total".to_string()];
 
                 let scope = CollectorScope {
                     metric_names: container_metric_scope,
@@ -205,11 +192,7 @@ impl<'a> DataStore<'a> {
     ///         2. endpoints for this assembly.
     ///         3. volumes
     ///         4. metrics
-    fn collect_spec(
-        &self,
-        row: &postgres::rows::Row,
-        how_to: PullFromCache,
-    ) -> Result<deploy::Assembly> {
+    fn collect_spec(&self, row: &postgres::rows::Row, how_to: PullFromCache) -> Result<deploy::Assembly> {
         let mut assembly = row_to_assembly(&row)?;
         self.expander.with_factory(&mut assembly, how_to);
         self.expander.with_endpoints(&mut assembly, how_to);

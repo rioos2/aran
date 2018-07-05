@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::fmt;
 
-use api::deploy::PHASE_PENDING;
+use api::deploy::{PHASE_PENDING, PHASE_RUNNING};
 use chrono;
 use chrono::prelude::*;
 use chrono_humanize;
@@ -479,6 +479,17 @@ impl Status {
     pub fn pending() -> Status {
         Status {
             phase: PHASE_PENDING.to_string(),
+            message: "".to_string(),
+            reason: "".to_string(),
+            conditions: vec![],
+        }
+    }
+
+    /// Use this to indicate a successful Phase: Running.    
+    /// For more customized usage, try with_conditions()
+    pub fn running() -> Status {
+        Status {
+            phase: PHASE_RUNNING.to_string(),
             message: "".to_string(),
             reason: "".to_string(),
             conditions: vec![],

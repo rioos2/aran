@@ -15,6 +15,7 @@ use std::collections::BTreeMap;
 
 pub const AWAIT_PHASE_PENDING: &'static str = "AwaitPending";
 pub const PHASE_PENDING: &'static str = "Pending";
+pub const PHASE_RUNNING: &'static str = "Running";
 pub const PHASE_STAND_STILL: &'static str = "StandStill";
 
 pub const NEW_REPLICA_INITALIZING_MSG: &'static str = "Initializing replicas...Brew some coffee!!!";
