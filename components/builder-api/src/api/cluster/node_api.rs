@@ -4,7 +4,7 @@ use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
 use bytes::Bytes;
-use clusters::models::ninja::Nodes;
+use clusters::models::ninja::DataStore;
 use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
@@ -71,7 +71,7 @@ impl NodeApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match Nodes::create(&self.conn, &unmarshall_body) {
+        match DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -81,7 +81,7 @@ impl NodeApi {
     //Blank origin: Returns all the Nodes (irrespective of namespaces)
     //Will need roles/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
-        match Nodes::list_blank(&self.conn) {
+        match DataStore::new(&self.conn).list_blank() {
             Ok(Some(node_list)) => Ok(render_json_list(status::Ok, dispatch(_req), &node_list)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -93,7 +93,7 @@ impl NodeApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match Nodes::show(&self.conn, &params) {
+        match DataStore::new(&self.conn).show(&params) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -109,7 +109,7 @@ impl NodeApi {
     //Returns an nodes
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match Nodes::show(&self.conn, &idget) {
+        let res = match DataStore::new(&self.conn).show(&idget) {
             Ok(Some(node)) => {
                 let data = json!({
                             "type": typ,
@@ -137,7 +137,7 @@ impl NodeApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match Nodes::status_update(&self.conn, &unmarshall_body) {
+        match DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -162,7 +162,7 @@ impl NodeApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match Nodes::update(&self.conn, &unmarshall_body) {
+        match DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -179,7 +179,7 @@ impl NodeApi {
     fn discovery(&self, req: &mut Request) -> AranResult<Response> {
         let unmarshall_body = self.validate(req.get::<bodyparser::Struct<NodeFilter>>()?)?;
 
-        match Nodes::discovery(&self.conn, &unmarshall_body) {
+        match DataStore::new(&self.conn).discovery(&unmarshall_body) {
             Ok(Some(node_get)) => Ok(render_json_list(status::Ok, dispatch(req), &node_get)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -191,39 +191,18 @@ impl NodeApi {
     //Input node ip returns the  node
     fn show_by_address(&self, req: &mut Request) -> AranResult<Response> {
         let query_pairs = self.default_validate(req)?;
-        match Nodes::show_by_node_ip(&self.conn, &IdGet::with_id(query_pairs.get("ipaddress"))) {
+        match DataStore::new(&self.conn).show_by_node_ip(&IdGet::with_id(query_pairs.get("ipaddress"))) {
             Ok(Some(node_get)) => Ok(render_json(status::Ok, &node_get)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
-
-    //metrics of the overall node from prometheus
-    fn healthz_all(&self, _req: &mut Request) -> AranResult<Response> {
-        match Nodes::healthz_all(&self.prom) {
-            Ok(Some(health_all)) => Ok(render_json(status::Ok, &health_all)),
-            Err(err) => Err(badgateway_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-        }
-    }
-
-    /// Endpoint for determining availability of builder-api components.
-    /// Returns a status 200 on success. Any non-200 responses are an outage or a partial outage.
-    fn status(&self, _req: &mut Request) -> AranResult<Response> {
-        Ok(render_json(
-            status::Ok,
-            &format!("code:{},version:{}", "200", "rioos-2.0"),
-        ))
-    }
+    
 }
 
 impl Api for NodeApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
-
-        let _self = self.clone();
-        let healthz_all =
-            move |req: &mut Request| -> AranResult<Response> { _self.healthz_all(req) };
 
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -246,18 +225,7 @@ impl Api for NodeApi {
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         let _self = self.clone();
-        let healthz = move |req: &mut Request| -> AranResult<Response> { _self.status(req) };
-
-        let _self = self.clone();
-        let discovery = move |req: &mut Request| -> AranResult<Response> { _self.discovery(req) };
-
-        router.get(
-            "/healthz/overall",
-            XHandler::new(C { inner: healthz_all }).before(basic.clone()),
-            "healthz_all",
-        );
-
-        router.get("/healthz", XHandler::new(C { inner: healthz }), "healthz");
+        let discovery = move |req: &mut Request| -> AranResult<Response> { _self.discovery(req) };        
 
         router.post(
             "/nodes",

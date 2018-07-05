@@ -24,10 +24,10 @@ impl LicensesFascade {
 
     pub fn get_by_name(&self, name: String) -> Result<Licenses> {
         let license = license::DataStore::new(&self.conn).get_by_name_fascade(IdGet::with_id(name));
-        match LicenseStaus::status(&license.get_status()) {
-            LicenseStaus::ACTIVE => Ok(license),
-            LicenseStaus::NOTFOUND => Err(Error::EntitlementError(format!("License Not Found"))),
-            LicenseStaus::EXPIRY => Err(Error::EntitlementError(format!("License expired"))),
+        match LicenseStatus::status(&license.get_status()) {
+            LicenseStatus::ACTIVE | LicenseStatus::TRIAL => Ok(license),
+            LicenseStatus::UNKNOWN => Err(Error::EntitlementError(format!("License Not Found"))),
+            LicenseStatus::EXPIRED => Err(Error::EntitlementError(format!("License expired"))),
         }
     }
 }
@@ -50,19 +50,21 @@ impl ExpanderSender for LicensesFascade {
     }
 }
 
-enum LicenseStaus {
+enum LicenseStatus {
+    TRIAL,
     ACTIVE,
-    EXPIRY,
-    NOTFOUND,
+    EXPIRED,
+    UNKNOWN,
 }
 
-impl LicenseStaus {
-    pub fn status(status: &str) -> LicenseStaus {
+impl LicenseStatus {
+    pub fn status(status: &str) -> LicenseStatus {
         match &status[..] {
-            "active" => LicenseStaus::ACTIVE,
-            "expiry" => LicenseStaus::EXPIRY,
-            "" => LicenseStaus::NOTFOUND,
-            _ => LicenseStaus::EXPIRY,
+            "active" => LicenseStatus::ACTIVE,
+            "expiried" => LicenseStatus::EXPIRED,
+            "trial" => LicenseStatus::TRIAL,
+            "" => LicenseStatus::UNKNOWN,
+            _ => LicenseStatus::UNKNOWN,
         }
     }
 }

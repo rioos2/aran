@@ -10,7 +10,7 @@ use entitlement::licensor::LicenseStatus;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
 
-const EXPIRY: &'static str = "expiry";
+const EXPIRY: &'static str = "expiried";
 const ACTIVE: &'static str = "active";
 const TRIAL: &'static str = "trial";
 

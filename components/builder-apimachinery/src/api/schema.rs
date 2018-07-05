@@ -34,6 +34,12 @@ lazy_static! {
         map.register("GET:nodes", "NodeList");
         map.register("POST:nodesdiscover", "NodeList");
 
+        map.register("POST:senseis", "Sensei");
+        map.register("GET:senseis", "SenseiList");
+
+        map.register("POST:licenseactivate", "License");
+        map.register("GET:license", "LicenseList");
+
         map.register("POST:origins", "Origin");
         map.register("GET:origins", "OriginList");
 

@@ -10,9 +10,11 @@ use entitlement::models::license;
 use error::{Result, Error};
 use licensecloud::LicenseCloud;
 use nalperion::Nalperion;
+use protocol::api::base::{MetaFields, WhoAmITypeMeta};
 use protocol::api::licenses::Licenses;
-use softwarekey::SoftwareKey;
+use protocol::api::schema::type_meta_url;
 
+use softwarekey::SoftwareKey;
 
 const ALLOWED_EXPIRY: u32 = 5;
 
@@ -75,9 +77,20 @@ impl Client {
 
     pub fn update_license_status(&self, datastore: Box<DataStoreConn>, status: String, days: String) {
         let mut license = Licenses::new();
-        license.set_name(self.backend.to_string());
+
+        let m = license.mut_meta(
+            license.object_meta(),
+            self.backend.to_string(),
+            license.get_account(),
+        );
+
+        let jackie = license.who_am_i();
+
+        license.set_meta(type_meta_url(jackie), m);
+
         license.set_status(status);
-        license::DataStore::new(&datastore).license_create_or_update(&license);
+        license.set_expired(days);
+        license::DataStore::new(&datastore).create_or_update(&license);
     }
 }
 

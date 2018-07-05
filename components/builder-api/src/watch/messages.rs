@@ -24,6 +24,7 @@ custom_derive! {
         Endpoints,
         Origins,
         Nodes,
+        Senseis,
         Plans,
         Services,
         Serviceaccounts,
@@ -76,6 +77,10 @@ pub fn handle_nodes(
 ) -> Bytes {
     let mut node = cluster::node_api::NodeApi::new(datastore, prom);
     node.watch(idget, typ)
+}
+pub fn handle_senseis(idget: IdGet,typ: String,datastore: Box<DataStoreConn>) -> Bytes {
+    let mut sensei = cluster::senseis_api::SenseisApi::new(datastore);
+    sensei.watch(idget, typ)
 }
 
 pub fn handle_secrets(

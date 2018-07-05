@@ -323,11 +323,12 @@ impl API {
 
             debug!("=> node_get_string: {:?}", result);
 
+            // InstallationID must be empty before activating license
             if result != 0 && result != 9014 {
                 return check_resut(result, SOFT_LIB_NODE_GET_STRING, INTERNAL);
             }
 
-
+            //validate license
             if *strvaluePtr == 0 as *const c_char {
 
                 let licensePtr_2: &mut SK_XmlDoc = &mut 0;
@@ -368,6 +369,7 @@ impl API {
                 debug!("=> done trial");
 
                 return Ok((LicenseStatus::TRIAL, (*dayPtr).to_string()));
+
             }
 
             result = free_fn(SK_FLAGS_NONE, context);

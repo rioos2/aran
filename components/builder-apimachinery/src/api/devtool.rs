@@ -158,7 +158,7 @@ pub struct SpecData {
     output: BuildOutput, // Output describes the Docker image the Strategy should produce.
     post_commit: BuildPostCommitSpec, // PostCommit is a build hook executed after the build output image is committed, before it is pushed to a registry.
     #[serde(default)]
-    node_selector: BTreeMap<String, String>, // NodeSelector is a selector which must be true for the build pod to fit on a node
+    node_selector: BTreeMap<String, String>, // NodeSelector is a selector which must be true for the build assembly to fit on a node
     #[serde(default)]
     last_version: i32, //LastVersion is used to inform about number of last triggered build.
     #[serde(default)]
@@ -320,9 +320,9 @@ pub struct BuildStatus {
     #[serde(default)]
     message: String, // Message is a human-readable message indicating details about why the build has this status.
     #[serde(default)]
-    start_timestamp: String, // StartTimestamp is a timestamp representing the server time when this Build started running in a Pod.
+    start_timestamp: String, // StartTimestamp is a timestamp representing the server time when this Build started running in a assembly.
     #[serde(default)]
-    completion_timestamp: String, // CompletionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the Pod running the Build terminated.
+    completion_timestamp: String, // CompletionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the assembly running the Build terminated.
     #[serde(default)]
     duration: String, // Duration contains time.Duration object describing build time.
     #[serde(default)]
@@ -362,7 +362,7 @@ pub struct BuildSpecData {
     output: BuildOutput, // Output describes the Docker image the Strategy should produce.
     post_commit: BuildPostCommitSpec, // PostCommit is a build hook executed after the build output image is committed, before it is pushed to a registry.
     #[serde(default)]
-    node_selector: BTreeMap<String, String>, // NodeSelector is a selector which must be true for the build pod to fit on a node
+    node_selector: BTreeMap<String, String>, // NodeSelector is a selector which must be true for the build assembly to fit on a node
 }
 // BuildTriggerCause holds information about a triggered build. It is used for
 // displaying build trigger data for each build and build configuration in oc

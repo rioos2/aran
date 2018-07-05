@@ -49,6 +49,7 @@ impl Streamer {
             "endpoints",
             "origins",
             "nodes",
+            "senseis",
             "plans",
             "services",
             "serviceaccounts",

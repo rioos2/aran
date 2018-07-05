@@ -120,7 +120,7 @@ impl Runtime {
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
             let tx = Arc::new(internal_part);
-            let duration = Duration::new(2, 0); // 10 minutes
+            let duration = Duration::new(86400, 0); // 1day
             let builder = tokio_timer::wheel().max_timeout(duration);
             let wakeups = builder.build().interval_at(Instant::now(), duration);
 

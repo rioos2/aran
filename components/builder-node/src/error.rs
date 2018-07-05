@@ -21,6 +21,8 @@ pub enum Error {
     PromoStatusGetError(telemetry::error::Error),
     PingError(oping::PingError),
     NetworkError(cidr::NetworkParseError),
+    SenseiCreate(postgres::error::Error),
+    SenseiGet(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -37,6 +39,8 @@ impl fmt::Display for Error {
             Error::PromoStatusGetError(ref e) => format!("Prometheus connection refused , {}", e),
             Error::PingError(ref e) => format!("PingError , {}", e),
             Error::NetworkError(ref e) => format!("PingError , {}", e),
+            Error::SenseiCreate(ref e) => format!("Database error creating a Sensei, {}", e),
+            Error::SenseiGet(ref e) => format!("Database error get sensei , {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -54,6 +58,8 @@ impl error::Error for Error {
             Error::PromoStatusGetError(ref err) => err.description(),
             Error::PingError(ref err) => err.description(),
             Error::NetworkError(ref err) => err.description(),
+            Error::SenseiCreate(ref err) => err.description(),
+            Error::SenseiGet(ref err) => err.description(),
         }
     }
 }

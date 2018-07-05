@@ -4,12 +4,12 @@
 //! Api gets wired here for the node api server.
 //!
 
+use api::{audit, authorize, cluster, deploy, devtooling, objectstorage, security, Api, entitle};
 use api::audit::blockchain_api::EventLog;
 use api::audit::config::BlockchainConn;
 use api::events::EventLogger;
 use api::objectstorage::config::ObjectStorageCfg;
 use api::security::config::SecurerConn;
-use api::{audit, authorize, cluster, deploy, devtooling, objectstorage, security, Api};
 use audit::config::InfluxClientConn;
 use audit::vulnerable::vulnerablity::AnchoreClient;
 use auth::rbac::{permissions, license};
@@ -18,8 +18,8 @@ use db::data_store::*;
 use error::Result;
 use http_gateway;
 use http_gateway::app::prelude::*;
-use http_gateway::http::pack;
 use http_gateway::http::middleware::EntitlementAct;
+use http_gateway::http::pack;
 use iron;
 use mount::Mount;
 use node::runtime::ApiSender;
@@ -104,6 +104,16 @@ impl HttpGateway for Wirer {
         );
         node.wire(config.clone(), &mut router);
 
+        let mut healthz = cluster::healthz_api::HealthzApi::new(
+            ds.clone(),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        healthz.wire(config.clone(), &mut router);
+
+        let mut sensei = cluster::senseis_api::SenseisApi::new(ds.clone());
+        sensei.wire(config.clone(), &mut router);
+
+
         let mut diagnostics = cluster::diagnostics_api::DiagnosticsApi::new(
             ds.clone(),
             Box::new(PrometheusClient::new(&*config.clone())),
@@ -187,6 +197,9 @@ impl HttpGateway for Wirer {
 
         let mut permission = authorize::permission::PermissionApi::new(ds.clone());
         permission.wire(config.clone(), &mut router);
+
+        let mut licenses = entitle::license_api::LicenseApi::new(ds.clone());
+        licenses.wire(config.clone(), &mut router);
 
         let mut settings = security::settings_map_api::SettingsMapApi::new(ds.clone());
         settings.wire(config.clone(), &mut router);
