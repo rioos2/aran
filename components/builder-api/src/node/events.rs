@@ -1,14 +1,18 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use events::{Event, EventHandler, InternalEvent};
-use node::runtime::{RuntimeHandler, ExternalMessage};
-use db::data_store::DataStoreConn;
+
+use api::audit::PushNotifier;
 use api::audit::ledger;
-use api::audit::mailer::email_sender;
-use api::audit::mailer::PushNotifier;
+use api::audit::mailer::email_sender as mailer;
+use api::audit::slack::slack_sender as slack;
+use db::data_store::DataStoreConn;
+use entitlement::licensor::LicenseStatus;
+use events::{Event, EventHandler, InternalEvent};
+use node::runtime::{ExternalMessage, RuntimeHandler};
 
 const EXPIRY: &'static str = "expiry";
 const ACTIVE: &'static str = "active";
+const TRIAL: &'static str = "trial";
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event, ds: Box<DataStoreConn>) {
@@ -40,36 +44,48 @@ impl RuntimeHandler {
                 }
             }
             ExternalMessage::PushNotification(event_envl) => {
-                let notify = email_sender::EmailNotifier::new(event_envl, *self.mailer.clone());
-                if notify.should_notify() {
-                    notify.notify();
-                }
+                let e = event_envl.clone();
+                mailer::EmailNotifier::new(e, *self.mailer.clone()).notify();
+                slack::SlackNotifier::new(event_envl, *self.slack.clone()).notify();
             }
         }
     }
 
     fn handle_internal_event(&mut self, event: &InternalEvent, ds: Box<DataStoreConn>) {
+
         match *event {
             InternalEvent::EntitlementTimeout => {
-                match self.license.create_trial_or_verify() {
-                    Ok(()) => {
-                     let str = " ✓ All Good. You have a valid entitlement. !";
-                     info!{" ✓ All Good. You have a valid entitlement. !"}
-                     self.license.update_license_status(ds.clone(),ACTIVE.to_string(), str.to_string());
-                 }
-                    Err(err) => {
+                let get_license = self.license.create_trial_or_verify().unwrap();
+                match get_license.0 {
+                    LicenseStatus::TRIAL => {
+                        info!{" ✓ All Good. You have a valid entitlement. !"}
+                        self.license.update_license_status(
+                            ds.clone(),
+                            TRIAL.to_string(),
+                            get_license.1,
+                        );
+                    }
+                    LicenseStatus::ACTIVE => {
+                        info!{" ✓ All Good. You have a valid entitlement. !"}
+                        self.license.update_license_status(
+                            ds.clone(),
+                            ACTIVE.to_string(),
+                            get_license.1,
+                        );
+                    }
+                    LicenseStatus::EXPIRED => {
                         let expiry_attempt = self.license.hard_stop();
                         if expiry_attempt.is_err() {
                             self.license.update_license_status(
                                 ds.clone(),
                                 EXPIRY.to_string(),
-                                "error".to_string(),
+                                get_license.1,
                             );
-                            error!("{:?}", err)
                         } else {
-                            warn!("{:?}, Message: {:?}", expiry_attempt.unwrap(), err)
+                            warn!("expiry_attempt {:?}", expiry_attempt.unwrap())
                         }
                     }
+                    LicenseStatus::UNKNOWN => error!("Something going wrong with License"),
                 }
             }
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),

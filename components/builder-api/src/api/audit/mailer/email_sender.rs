@@ -1,10 +1,15 @@
+// Copyright 2018 The Rio Advancement Inc
+//
+
 use api::audit::config::MailerCfg;
-use api::audit::mailer::{email_generator, PushNotifier, Status};
-use lettre::smtp::authentication::{Credentials, Mechanism};
+use api::audit::mailer::email_generator;
+use api::audit::{PushNotifier, Status};
+use lettre::EmailTransport;
 use lettre::smtp::ClientSecurity;
 use lettre::smtp::ConnectionReuseParameters;
 use lettre::smtp::SmtpTransportBuilder;
-use lettre::EmailTransport;
+use lettre::smtp::authentication::{Credentials, Mechanism};
+
 use lettre_email::EmailBuilder;
 use protocol::api::audit::Envelope;
 use protocol::api::base::MetaFields;
@@ -26,7 +31,7 @@ impl EmailSender {
             content: content,
         }
     }
-    pub fn send_email(self) {
+    pub fn send(self) {
         if self.config.enabled {
             let email = EmailBuilder::new()
                 .to(self.email.clone())
@@ -62,21 +67,25 @@ pub struct EmailNotifier {
 
 impl EmailNotifier {
     pub fn new(envelope: Envelope, config: MailerCfg) -> Self {
-        EmailNotifier {
-            envelope: envelope,
-            config: config,
-        }
+        EmailNotifier { envelope: envelope, config: config }
     }
 }
 
 impl PushNotifier for EmailNotifier {
     fn should_notify(&self) -> bool {
+        if !self.config.enabled {
+            return false;
+        }
         match Status::from_str(&self.envelope.get_event().reason) {
             Status::DigitalCloudRunning | Status::DigitalCloudFailed => true,
-            Status::None => false,
+            _ => false,
         }
     }
+
     fn notify(&self) {
+        if !self.should_notify() {
+            return;
+        }
         let data = email_generator::EmailGenerator::new(
             self.envelope.get_event().object_meta().labels,
             &self.envelope.get_event().message,
@@ -86,15 +95,15 @@ impl PushNotifier for EmailNotifier {
                 let content = data.deploy_success().unwrap();
                 let mail_builder =
                     EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
-                mail_builder.send_email();
+                mail_builder.send();
             }
             Status::DigitalCloudFailed => {
                 let content = data.deploy_failed().unwrap();
                 let mail_builder =
                     EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
-                mail_builder.send_email();
+                mail_builder.send();
             }
-            Status::None => {}
+            _ => {}
         }
     }
 }

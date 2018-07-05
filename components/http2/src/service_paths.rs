@@ -1,11 +1,11 @@
-use std::sync::Arc;
-use std::collections::HashMap;
 use std::collections::hash_map;
+use std::collections::HashMap;
+use std::sync::Arc;
 
+use resp::Response;
 use service::Service;
 use solicit::header::Headers;
 use stream_part::HttpPartStream;
-use resp::Response;
 
 #[derive(Default)]
 struct Node {

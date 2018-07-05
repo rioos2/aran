@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 //
-use bytes::Bytes;
-use protocol::api::base::IdGet;
-use db::data_store::DataStoreConn;
-use telemetry::metrics::prometheus::PrometheusClient;
-use api::{cluster, security, deploy, devtooling};
 use api::security::config::SecurerConn;
+use api::{cluster, deploy, devtooling, security};
+use bytes::Bytes;
+use db::data_store::DataStoreConn;
+use protocol::api::base::IdGet;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 //which is help for build response structure and which type of response
 //handler handle this enum
@@ -34,12 +34,21 @@ custom_derive! {
     }
 }
 
-pub fn handle_assembly(idget: IdGet, typ: String, datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Bytes {
+pub fn handle_assembly(
+    idget: IdGet,
+    typ: String,
+    datastore: Box<DataStoreConn>,
+    prom: Box<PrometheusClient>,
+) -> Bytes {
     let mut assembly = deploy::assembly::AssemblyApi::new(datastore, prom);
     assembly.watch(idget, typ)
 }
 
-pub fn handle_assembly_list(idget: IdGet, datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Option<String> {
+pub fn handle_assembly_list(
+    idget: IdGet,
+    datastore: Box<DataStoreConn>,
+    prom: Box<PrometheusClient>,
+) -> Option<String> {
     let mut assembly = deploy::assembly::AssemblyApi::new(datastore, prom);
     assembly.watch_list_by_account(idget, "GET:accountsassemblys".to_string())
 }
@@ -59,17 +68,31 @@ pub fn handle_services(idget: IdGet, typ: String, datastore: Box<DataStoreConn>)
     services.watch(idget, typ)
 }
 
-pub fn handle_nodes(idget: IdGet, typ: String, datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Bytes {
+pub fn handle_nodes(
+    idget: IdGet,
+    typ: String,
+    datastore: Box<DataStoreConn>,
+    prom: Box<PrometheusClient>,
+) -> Bytes {
     let mut node = cluster::node_api::NodeApi::new(datastore, prom);
     node.watch(idget, typ)
 }
 
-pub fn handle_secrets(idget: IdGet, typ: String, datastore: Box<DataStoreConn>, securer: Box<SecurerConn>) -> Bytes {
+pub fn handle_secrets(
+    idget: IdGet,
+    typ: String,
+    datastore: Box<DataStoreConn>,
+    securer: Box<SecurerConn>,
+) -> Bytes {
     let mut secret = security::secret_api::SecretApi::new(datastore, securer);
     secret.watch(idget, typ)
 }
 
-pub fn handle_secrets_list(idget: IdGet, datastore: Box<DataStoreConn>, securer: Box<SecurerConn>) -> Option<String> {
+pub fn handle_secrets_list(
+    idget: IdGet,
+    datastore: Box<DataStoreConn>,
+    securer: Box<SecurerConn>,
+) -> Option<String> {
     let secret = security::secret_api::SecretApi::new(datastore, securer);
     secret.watch_list_by_account(idget, "GET:accountssecrets".to_string())
 }
@@ -79,7 +102,12 @@ pub fn handle_jobs(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> 
     job.watch(idget, typ)
 }
 
-pub fn handle_horizontalscaling(idget: IdGet, typ: String, datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Bytes {
+pub fn handle_horizontalscaling(
+    idget: IdGet,
+    typ: String,
+    datastore: Box<DataStoreConn>,
+    prom: Box<PrometheusClient>,
+) -> Bytes {
     let mut hscale = deploy::horizontalscaling::HorizontalScalingApi::new(datastore, prom);
     hscale.watch(idget, typ)
 }
@@ -104,7 +132,12 @@ pub fn handle_datacenters(idget: IdGet, typ: String, datastore: Box<DataStoreCon
     datacenters.data_center_watch(idget, typ)
 }
 
-pub fn handle_verticalscaling(idget: IdGet, typ: String, datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Bytes {
+pub fn handle_verticalscaling(
+    idget: IdGet,
+    typ: String,
+    datastore: Box<DataStoreConn>,
+    prom: Box<PrometheusClient>,
+) -> Bytes {
     let mut verticalscaling = deploy::vertical_scaling::VerticalScalingApi::new(datastore, prom);
     verticalscaling.watch(idget, typ)
 }

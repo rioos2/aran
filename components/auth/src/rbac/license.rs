@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use entitlement::models::license;
-use db::data_store::DataStoreConn;
-use protocol::api::licenses::Licenses;
-use protocol::api::base::IdGet;
-use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_LICENSE};
 use super::super::error::{Error, Result};
+use db::data_store::DataStoreConn;
+use entitlement::models::license;
+use protocol::api::base::IdGet;
+use protocol::api::licenses::Licenses;
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_LICENSE};
 
 
 /// permission fascade: Permissions provides ability to declare the Permissions
@@ -39,7 +39,6 @@ impl ExpanderSender for LicensesFascade {
         let license_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_LICENSE.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                println!("--------------license_service---------------------{:?}", id);
                 license::DataStore::new(&_conn)
                     .license_show_by_name(&id)
                     .ok()

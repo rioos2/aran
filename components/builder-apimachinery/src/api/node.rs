@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, Condition, MetaFields, WhoAmITypeMeta};
+use api::base::{Condition, MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
 use chrono::naive::NaiveDateTime;
+use std::collections::BTreeMap;
 
 use serde_json;
 
@@ -13,7 +13,6 @@ pub const IDLEMODE: &'static str = "mode=idle";
 
 pub type SpeedSummary = (String, i32, i32);
 
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
     #[serde(default)]
@@ -22,7 +21,7 @@ pub struct Node {
     object_meta: ObjectMeta,
     #[serde(default)]
     type_meta: TypeMeta,
-    spec: Spec, //
+    spec: Spec,         //
     status: NodeStatus, //NodeStatus is information about the current status of a node.
     #[serde(default)]
     metadata: BTreeMap<String, String>,
@@ -123,7 +122,13 @@ pub struct Spec {
 }
 
 impl Spec {
-    pub fn new(assembly_cidr: &str, external_id: &str, provider_id: &str, unschedulable: bool, taints: Vec<Taints>) -> Spec {
+    pub fn new(
+        assembly_cidr: &str,
+        external_id: &str,
+        provider_id: &str,
+        unschedulable: bool,
+        taints: Vec<Taints>,
+    ) -> Spec {
         Spec {
             assembly_cidr: assembly_cidr.to_string(),
             external_id: external_id.to_string(),
@@ -180,7 +185,14 @@ pub struct NodeStatus {
 }
 
 impl NodeStatus {
-    pub fn new(capacity: BTreeMap<String, String>, allocatable: BTreeMap<String, String>, phase: &str, conditions: Vec<Condition>, addresses: Vec<Addresses>, node_info: NodeInfo) -> NodeStatus {
+    pub fn new(
+        capacity: BTreeMap<String, String>,
+        allocatable: BTreeMap<String, String>,
+        phase: &str,
+        conditions: Vec<Condition>,
+        addresses: Vec<Addresses>,
+        node_info: NodeInfo,
+    ) -> NodeStatus {
         NodeStatus {
             capacity: capacity,
             allocatable: allocatable,
@@ -217,7 +229,7 @@ pub struct NodeFilter {
     #[serde(default)]
     cidrs: Vec<CidrItem>,
     #[serde(default)]
-    pub range_address_from: String,
+    range_address_from: String,
     #[serde(default)]
     range_address_to: String,
     #[serde(default)]
@@ -309,7 +321,14 @@ pub struct NodeInfo {
 }
 
 impl NodeInfo {
-    pub fn new(machine_id: &str, system_uuid: &str, kernel_version: &str, os_image: &str, architecture: &str, bridges: Vec<Bridge>) -> NodeInfo {
+    pub fn new(
+        machine_id: &str,
+        system_uuid: &str,
+        kernel_version: &str,
+        os_image: &str,
+        architecture: &str,
+        bridges: Vec<Bridge>,
+    ) -> NodeInfo {
         NodeInfo {
             machine_id: machine_id.to_string(),
             system_uuid: system_uuid.to_string(),
@@ -329,14 +348,19 @@ impl NodeInfo {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Bridge {
-    bridge_name: String, // Name of the bridge to be used for virtual networking
+    bridge_name: String,     // Name of the bridge to be used for virtual networking
     physical_device: String, // Physical network interface that are connected to this bridge
     network_types: Vec<String>, //supported networks
-    bridge_type: String, //Configured Which type of network to this bridge
+    bridge_type: String,     //Configured Which type of network to this bridge
 }
 
 impl Bridge {
-    pub fn new(bridge_name: &str, physical_device: &str, network_types: Vec<String>, bridge_type: &str) -> Bridge {
+    pub fn new(
+        bridge_name: &str,
+        physical_device: &str,
+        network_types: Vec<String>,
+        bridge_type: &str,
+    ) -> Bridge {
         Bridge {
             bridge_name: bridge_name.to_string(),
             physical_device: physical_device.to_string(),
@@ -349,9 +373,9 @@ impl Bridge {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HealthzAllGet {
     title: String,
-    guages: Guages, //average of the cpu ram disk values get from PromResponse
+    guages: Guages,         //average of the cpu ram disk values get from PromResponse
     statistics: Statistics, //ovarall cpu usage of the each node
-    osusages: OSUsages, //overall cpu usage of the each os
+    osusages: OSUsages,     //overall cpu usage of the each os
     from_date: String,
     to_date: String,
 }
@@ -771,7 +795,6 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
                     node
                 })
                 .collect::<Vec<_>>();
-
         }
         collections
     }
@@ -864,7 +887,7 @@ impl Into<HealthzAllGetResponse> for HealthzAllGet {
 
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode};
+    use serde_json::from_str as json_decode;
 
     use super::*;
     #[test]

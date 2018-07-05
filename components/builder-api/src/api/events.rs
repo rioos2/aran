@@ -64,7 +64,7 @@ macro_rules! push_notification {
         use persistent;
         let ad = format!("{}", ($req).remote_addr);
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
-        el.send_email($evt, (($evt).get_account(), ad))
+        el.push_notify($evt, (($evt).get_account(), ad))
     }};
 }
 
@@ -86,7 +86,11 @@ pub struct EventLogger {
 #[allow(unused_must_use)]
 impl EventLogger {
     pub fn new<T: Into<PathBuf>>(channel: ApiSender, log_dir: T, enabled: bool) -> Self {
-        EventLogger { channel: channel, log_dir: log_dir.into(), enabled: enabled }
+        EventLogger {
+            channel: channel,
+            log_dir: log_dir.into(),
+            enabled: enabled,
+        }
     }
 
     pub fn record_event(&self, event: AuditEvent, accessed_by: AccessedBy) {
@@ -98,10 +102,10 @@ impl EventLogger {
         }
     }
 
-    pub fn send_email(&self, event: AuditEvent, accessed_by: AccessedBy) {
+    pub fn push_notify(&self, event: AuditEvent, accessed_by: AccessedBy) {
         if self.enabled {
             let envelope = Envelope::new(&event, accessed_by);
-            self.channel.send_email(envelope);
+            self.channel.push_notify(envelope);
         }
     }
 }
@@ -115,7 +119,8 @@ mod test {
     #[test]
     fn event_logger_path() {
         let api_sender = ApiSender::new(mpsc::channel(10).0);
-        let event_logger: EventLogger = EventLogger::new(api_sender, "/var/lib/rioos/foo/var", true);
+        let event_logger: EventLogger =
+            EventLogger::new(api_sender, "/var/lib/rioos/foo/var", true);
         let expected = r#"foo"#;
         match event_logger.log_dir.to_str() {
             Some(s) => assert!(s.contains(expected)),

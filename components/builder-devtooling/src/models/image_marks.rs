@@ -2,13 +2,13 @@
 
 //! The PostgreSQL backend for the Build config
 use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::devtool::ImageMarks;
-use protocol::api::base::MetaFields;
+use error::{Error, Result};
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::devtool::ImageMarks;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
 use super::super::{ImageMarksOutput, ImageMarksOutputList};
@@ -84,7 +84,6 @@ impl DataStore {
                 &(serde_json::to_value(image_update.object_meta()).unwrap()),
             ],
         ).map_err(Error::ImageMarksUpdate)?;
-
 
         if rows.len() > 0 {
             let image = row_to_image_marks(&rows.get(0))?;

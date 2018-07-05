@@ -59,7 +59,9 @@ impl error::Error for Error {
             Error::FormatInvalid(ref err) => err.description(),
             Error::OpenSslError(ref err) => err.description(),
             Error::ProtocolError(ref err) => err.description(),
-            Error::OldPassticketMustBeRemoved(ref _e) => "Old passticket still remains after one time use.",
+            Error::OldPassticketMustBeRemoved(ref _e) => {
+                "Old passticket still remains after one time use."
+            }
             Error::CantVerifyPassticket(ref _e) => "Passticket Mismatch error",
             Error::PassticketMismatch => "Passticket mismatch",
             Error::SignatureExpired => "signature expired",

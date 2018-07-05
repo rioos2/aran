@@ -6,14 +6,15 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
 
-use rioos_core::config::ConfigFile;
-use rioos_core::fs::rioconfig_etc_path;
-use rioos_core::fs::am_i_root;
-use toml;
 use error::{Error, Result};
+use rioos_core::config::ConfigFile;
+use rioos_core::fs::am_i_root;
+use rioos_core::fs::rioconfig_etc_path;
+use toml;
 
 lazy_static! {
-    static  ref CLICFG_DEFAULT_FILE: PathBuf =  PathBuf::from(&*rioconfig_etc_path(None).join("cli.toml").to_str().unwrap());
+    static ref CLICFG_DEFAULT_FILE: PathBuf =
+        PathBuf::from(&*rioconfig_etc_path(None).join("cli.toml").to_str().unwrap());
 }
 
 //eg: If the user is not root. eg: /home/rajthilak/.rioos/etc/cli.toml

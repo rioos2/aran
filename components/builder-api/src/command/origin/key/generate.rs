@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::path::Path;
 use regex::Regex;
+use std::path::Path;
 
 use common::ui::UI;
-use rio_core::crypto::SigKeyPair;
 use rio_core::crypto::keys::{PairConf, PairSaverExtn};
+use rio_core::crypto::SigKeyPair;
 use rio_core::Error::InvalidCertificateName;
 
 use error::{Error, Result};
@@ -16,7 +16,8 @@ pub fn start(ui: &mut UI, ca: &str, cache: &Path) -> Result<()> {
         false => Err(Error::from(InvalidCertificateName(ca.to_string()))),
         true => {
             ui.begin(format!("Generating key for {}", &ca))?;
-            let pair = SigKeyPair::mk_ca_cert(ca, PairConf::with_extn(PairSaverExtn::PemX509), cache)?;
+            let pair =
+                SigKeyPair::mk_ca_cert(ca, PairConf::with_extn(PairSaverExtn::PemX509), cache)?;
             ui.end(format!("Generated key pair {}.", &pair.name))?;
             Ok(())
         }
@@ -27,7 +28,12 @@ pub fn start(ui: &mut UI, ca: &str, cache: &Path) -> Result<()> {
 //server-ca.
 //The PairConf dictates the type of extension being generated.
 //The  default is PUB_RSA
-pub fn signed_with_rsa(ui: &mut UI, name: &str, cache: &Path, pair: PairConf) -> Result<SigKeyPair> {
+pub fn signed_with_rsa(
+    ui: &mut UI,
+    name: &str,
+    cache: &Path,
+    pair: PairConf,
+) -> Result<SigKeyPair> {
     match is_valid_cert_name(name) {
         false => Err(Error::from(InvalidCertificateName(name.to_string()))),
         true => {
@@ -49,13 +55,13 @@ pub fn signed_with_pfx(ui: &mut UI, name: &str, cache: &Path) -> Result<SigKeyPa
         false => Err(Error::from(InvalidCertificateName(name.to_string()))),
         true => {
             ui.begin(format!("Generating key for {}", &name))?;
-            let pair = SigKeyPair::mk_signed(name, PairConf::with_extn(PairSaverExtn::PfxPKCS12), cache)?;
+            let pair =
+                SigKeyPair::mk_signed(name, PairConf::with_extn(PairSaverExtn::PfxPKCS12), cache)?;
             ui.end(format!("Generated key pair {}.", &pair.name))?;
             Ok(pair)
         }
     }
 }
-
 
 //Create a signed certificates X509 (cert.pem) format using the  certificate authority
 //server-ca.
@@ -65,7 +71,8 @@ pub fn signed_with_x509(ui: &mut UI, name: &str, cache: &Path) -> Result<SigKeyP
         false => Err(Error::from(InvalidCertificateName(name.to_string()))),
         true => {
             ui.begin(format!("Generating key for {}", &name))?;
-            let pair = SigKeyPair::mk_signed(name, PairConf::with_extn(PairSaverExtn::PemX509), cache)?;
+            let pair =
+                SigKeyPair::mk_signed(name, PairConf::with_extn(PairSaverExtn::PemX509), cache)?;
             ui.end(format!("Generated key pair {}.", &pair.name))?;
             Ok(pair)
         }
@@ -75,6 +82,7 @@ pub fn signed_with_x509(ui: &mut UI, name: &str, cache: &Path) -> Result<SigKeyP
 /// Retuns true if this is a valid certificatename
 /// If the string is < 255 characters and contains alphabet/numeric
 fn is_valid_cert_name(name: &str) -> bool {
-    let certificate_name_re: Regex = Regex::new(r"\A[a-z0-9][a-z0-9_-]*\z").expect("Unable to compile regex");
+    let certificate_name_re: Regex =
+        Regex::new(r"\A[a-z0-9][a-z0-9_-]*\z").expect("Unable to compile regex");
     name.chars().count() <= 255 && certificate_name_re.is_match(name)
 }

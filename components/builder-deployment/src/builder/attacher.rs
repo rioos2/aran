@@ -8,20 +8,18 @@
 
 use error::Result;
 
-use protocol::api::linker;
 use super::service::state::LinkersState;
+use protocol::api::linker;
 
 use builder::service::actions::ServiceAttachActions;
 
 use db::data_store::DataStoreConn;
-
 
 /// The adjuster that is responsible for adjusting the serviceattachaction. This is termed
 /// as adjuster since this is like "maybe  create a service".
 pub trait AttachAdjuster {
     fn do_adjust(&self, deplink: &ServiceAttachAction) -> Result<Option<linker::Services>>;
 }
-
 
 /// The attachable service actions as enum.
 pub enum ServiceAttachAction {

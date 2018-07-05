@@ -2,20 +2,25 @@
 //
 
 //! A module containing the middleware of the HTTP server
-use std::str;
-use std::path::PathBuf;
+
+
+use config;
 
 use error::{Error, Result};
 use handlebars::Handlebars;
+use lib_load;
 use rand::{self, Rng};
 
 use rio_core::fs::{read_from_file, rioconfig_config_path, rioconfig_license_path};
-
-use config;
-use lib_load;
+use std::path::PathBuf;
+use std::str;
 
 lazy_static! {
-    static  ref NALPERION_SHAFER_FILECHK_XML_TEMPLATE: PathBuf =  PathBuf::from(&*rioconfig_config_path(None).join("template/shafer_filechk.xml").to_str().unwrap());
+    static ref NALPERION_SHAFER_FILECHK_XML_TEMPLATE: PathBuf =
+        PathBuf::from(&*rioconfig_config_path(None)
+            .join("template/shafer_filechk.xml")
+            .to_str()
+            .unwrap());
 }
 
 /// These are the security values stamped into your library.
@@ -42,16 +47,14 @@ pub struct Nalperion {
 
 impl Nalperion {
     pub fn new<T: config::License>(config: &T) -> Self {
-        Nalperion {
-            fascade: API::new(config.so_file().to_string(), config.activation_code()),
-        }
+        Nalperion { fascade: API::new(config.so_file().to_string(), config.activation_code()) }
     }
 
     // Returns the status of license verified with nalperion
-    pub fn verify(&self) -> Result<()> {
-        self.fascade.check_license()?;
-        Ok(())
-    }
+    // pub fn verify(&self) -> Result<()> {
+    //     self.fascade.check_license()?;
+    //     Ok(())
+    // }
 }
 
 #[derive(Debug)]
@@ -100,7 +103,9 @@ impl API {
             }
 
             //validate the library with customer id and product id
-            let validate_fn = lib.get::<fn(u32, u32) -> i32>(NALP_VALIDATE_LIBRARY.as_bytes())?;
+            let validate_fn = lib.get::<fn(u32, u32) -> i32>(
+                NALP_VALIDATE_LIBRARY.as_bytes(),
+            )?;
             let response = validate_fn(CUSTOMER_ID, PRODUCT_ID);
             debug!("=> validate_lib: {:?}", response);
 

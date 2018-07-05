@@ -1,12 +1,10 @@
-
 use std::fmt;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum Backend {
-    LicenseCloud,
+    // LicenseCloud,
     SoftwareKey,
 }
-
 
 ///// Configuration structure for validating license
 

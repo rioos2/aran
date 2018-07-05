@@ -8,9 +8,9 @@ use error::{Error, Result};
 use protocol::api::authorize::Roles;
 use protocol::api::base::IdGet;
 
-use postgres;
+use super::super::{RolesOutput, RolesOutputList};
 use db::data_store::DataStoreConn;
-use super::super::{RolesOutputList, RolesOutput};
+use postgres;
 
 pub struct DataStore;
 
@@ -64,9 +64,8 @@ impl DataStore {
     pub fn roles_list(datastore: &DataStoreConn) -> RolesOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_roles_v1()", &[]).map_err(
-            Error::RolesGet,
-        )?;
+        let rows = &conn.query("SELECT * FROM get_roles_v1()", &[])
+            .map_err(Error::RolesGet)?;
         let mut response = Vec::new();
         if rows.len() > 0 {
             for row in rows {

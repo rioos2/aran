@@ -1,16 +1,16 @@
-use std::path::PathBuf;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use iron;
-use iron::prelude::*;
 use iron::headers::{Authorization, Bearer};
+use iron::prelude::*;
 
 use super::headers::*;
-use util::errors::{bad_err, not_acceptable_error};
 use http::rendering::render_json_error;
+use util::errors::{bad_err, not_acceptable_error};
 
-use auth::config::{PLUGIN_PASSTICKET, PLUGIN_PASSWORD, PLUGIN_SERVICE_ACCOUNT};
 use auth::config::PLUGIN_JWT;
+use auth::config::{PLUGIN_PASSTICKET, PLUGIN_PASSWORD, PLUGIN_SERVICE_ACCOUNT};
 
 use auth::util::authenticatable::Authenticatable;
 
@@ -25,7 +25,11 @@ pub trait HeaderExtracter {
         None
     }
 
-    fn extract(req: iron::Headers, token: String, config_value: Option<&String>) -> Option<Authenticatable>;
+    fn extract(
+        req: iron::Headers,
+        token: String,
+        config_value: Option<&String>,
+    ) -> Option<Authenticatable>;
 }
 
 struct EmailHeader {}
@@ -34,7 +38,11 @@ struct EmailHeader {}
 impl HeaderExtracter for EmailHeader {
     const AUTH_CONF_NAME: &'static str = "email";
 
-    fn extract(req: iron::Headers, token: String, _config_value: Option<&String>) -> Option<Authenticatable> {
+    fn extract(
+        req: iron::Headers,
+        token: String,
+        _config_value: Option<&String>,
+    ) -> Option<Authenticatable> {
         let email = req.get::<XAuthRioOSEmail>();
 
         if !email.is_none() {
@@ -53,7 +61,11 @@ struct ServiceAccountHeader {}
 impl HeaderExtracter for ServiceAccountHeader {
     const AUTH_CONF_NAME: &'static str = PLUGIN_SERVICE_ACCOUNT;
 
-    fn extract(req: iron::Headers, token: String, config_value: Option<&String>) -> Option<Authenticatable> {
+    fn extract(
+        req: iron::Headers,
+        token: String,
+        config_value: Option<&String>,
+    ) -> Option<Authenticatable> {
         let serviceaccount = req.get::<XAuthRioOSServiceAccountName>();
         if !serviceaccount.is_none() {
             return Some(Authenticatable::ServiceAccountNameAndWebtoken {
@@ -71,7 +83,11 @@ struct EmailWithJWTTokenHeader {}
 impl HeaderExtracter for EmailWithJWTTokenHeader {
     const AUTH_CONF_NAME: &'static str = "jwt";
 
-    fn extract(req: iron::Headers, token: String, _config_value: Option<&String>) -> Option<Authenticatable> {
+    fn extract(
+        req: iron::Headers,
+        token: String,
+        _config_value: Option<&String>,
+    ) -> Option<Authenticatable> {
         let useraccount = req.get::<XAuthRioOSUserAccountEmail>();
         if !useraccount.is_none() {
             return Some(Authenticatable::UserEmailAndWebtoken {
@@ -88,7 +104,11 @@ struct PassTicketHeader {}
 impl HeaderExtracter for PassTicketHeader {
     const AUTH_CONF_NAME: &'static str = "passticket";
 
-    fn extract(req: iron::Headers, _token: String, _config_value: Option<&String>) -> Option<Authenticatable> {
+    fn extract(
+        req: iron::Headers,
+        _token: String,
+        _config_value: Option<&String>,
+    ) -> Option<Authenticatable> {
         let otp = req.get::<XAuthRioOSOTP>();
         if !otp.is_none() {
             return Some(Authenticatable::PassTicket {
@@ -105,7 +125,11 @@ pub struct HeaderDecider {
 }
 
 impl HeaderDecider {
-    pub fn new(req_headers: iron::Headers, plugins: Vec<String>, conf: HashMap<String, String>) -> IronResult<Self> {
+    pub fn new(
+        req_headers: iron::Headers,
+        plugins: Vec<String>,
+        conf: HashMap<String, String>,
+    ) -> IronResult<Self> {
         let req = req_headers.clone();
 
         let token = match req.get::<Authorization<Bearer>>() {
@@ -154,9 +178,7 @@ impl HeaderDecider {
         if validate.is_some() {
             return Ok(validate.unwrap());
         }
-        let err = not_acceptable_error(&format!(
-            "Authentication not supported. You must have headers for the supported authetication. Refer https://bit.ly/rioos_sh_adminguide"
-        ));
+        let err = not_acceptable_error(&format!("Authentication not supported. You must have headers for the supported authetication. Refer https://bit.ly/rioos_sh_adminguide"));
         return Err(render_json_error(&bad_err(&err), err.http_code()));
     }
 }

@@ -29,7 +29,7 @@ unix_socket     = "0.*"
 [dev-dependencies]
 
 env_logger         = "0.*"
-regex              = "0.2"
+regex              = "1.0.1"
 tls-api-native-tls = "0.*"
 tls-api-openssl    = "0.*"
 url                = "1"

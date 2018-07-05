@@ -1,6 +1,6 @@
 use futures::stream::Stream;
-use futures::Poll;
 use futures::Async;
+use futures::Poll;
 
 #[allow(dead_code)]
 pub enum StreamWithEofMessage<T> {

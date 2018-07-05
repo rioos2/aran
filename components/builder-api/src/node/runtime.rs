@@ -1,22 +1,26 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::sync::Arc;
+
+use api::audit::config::{BlockchainConn, MailerCfg, SlackCfg};
+use auth::rbac::license::LicensesFascade;
+use config::Config;
+use db::data_store::*;
+use entitlement::licensor::Client;
+
+use events::{HandlerPart, InternalEvent};
+
+use events::error::{into_other, other_error};
+use futures::{Future, Sink, Stream};
+
+use futures::sync::mpsc;
+use node::internal::InternalPart;
+
+use protocol::api::audit::Envelope;
 use std::fmt;
 use std::io;
+use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-
-use config::Config;
-use api::audit::config::{BlockchainConn, MailerCfg};
-use protocol::api::audit::Envelope;
-use entitlement::licensor::Client;
-use events::{HandlerPart, InternalEvent};
-use node::internal::InternalPart;
-use events::error::{into_other, other_error};
-use auth::rbac::license::LicensesFascade;
-
-use futures::{Future, Sink, Stream};
-use futures::sync::mpsc;
 
 use tokio_core::reactor::Core;
 use tokio_timer;
@@ -56,6 +60,7 @@ pub struct RuntimeHandler {
     pub config: Box<BlockchainConn>,
     pub license: Box<Client>,
     pub mailer: Box<MailerCfg>,
+    pub slack: Box<SlackCfg>,
 }
 
 impl fmt::Debug for RuntimeHandler {
@@ -79,7 +84,7 @@ impl ApiSender {
     }
 
     /// Add peer to peer list
-    pub fn send_email(&self, envl: Envelope) -> io::Result<()> {
+    pub fn push_notify(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PushNotification(envl);
         self.0.clone().send(msg).wait().map(drop).map_err(
             into_other,
@@ -101,6 +106,7 @@ impl Runtime {
                 config: Box::new(BlockchainConn::new(&*config.clone())),
                 license: Box::new(Client::new(&*config.clone())),
                 mailer: Box::new(MailerCfg::new(&*config.clone())),
+                slack: Box::new(SlackCfg::new(&*config.clone())),
             },
             datastore: ds,
         }

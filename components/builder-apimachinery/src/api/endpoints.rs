@@ -1,4 +1,4 @@
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
 /*"Endpoints is a collection of endpoints that implement the actual service. Example:\n  Name: \"mysvc\",\n  Subsets: [\n    {\n      Addresses: [{\"ip\": \"10.10.1.1\"}, {\"ip\": \"10.10.2.2\"}],\n
  Ports: [{\"name\": \"a\", \"port\": 8675}, {\"name\": \"b\", \"port\": 309}]\n    },\n    {\n
  Addresses: [{\"ip\": \"10.10.3.3\"}],\n      Ports: [{\"name\": \"a\", \"port\": 93}, {\"name\": \"b\", \"port\": 76}]\n    },\n ]"*/
@@ -62,11 +62,15 @@ impl EndPoints {
 pub struct Subsets {
     addresses: Vec<Addesses>, //IP addresses which offer the related ports that are marked as ready. These endpoints should be considered safe for load balancers and clients to utilize.
     unready_addresses: Vec<Addesses>, //IP addresses which offer the related ports but are not currently marked as ready because they have not yet finished starting, have recently failed a readiness check.
-    ports: Vec<Ports>, //Port numbers available on the related IP addresses.
+    ports: Vec<Ports>,                //Port numbers available on the related IP addresses.
 }
 
 impl Subsets {
-    pub fn new(addresses: Vec<Addesses>, unready_addresses: Vec<Addesses>, ports: Vec<Ports>) -> Subsets {
+    pub fn new(
+        addresses: Vec<Addesses>,
+        unready_addresses: Vec<Addesses>,
+        ports: Vec<Ports>,
+    ) -> Subsets {
         Subsets {
             addresses: addresses,
             unready_addresses: unready_addresses,
@@ -74,7 +78,9 @@ impl Subsets {
         }
     }
     pub fn is_empty(&self) -> bool {
-        return self.addresses.is_empty() && self.unready_addresses.is_empty() && self.ports.is_empty();
+        return self.addresses.is_empty()
+            && self.unready_addresses.is_empty()
+            && self.ports.is_empty();
     }
     pub fn get_addresses(&self) -> &Vec<Addesses> {
         &self.addresses
@@ -139,8 +145,8 @@ impl MetaFields for EndPoints {
 
 #[cfg(test)]
 mod test {
-    use serde_json::from_str as json_decode;
     use super::*;
+    use serde_json::from_str as json_decode;
 
     #[test]
     fn decode_service_port() {

@@ -7,10 +7,10 @@
 
 pub mod warehouse;
 
-use error::Result;
-use protocol::api::audit::{EnvelopeResponse, Envelope};
-use protocol::api::base::IdGet;
 use api::audit::config::{AuditBackend, BlockchainConn};
+use error::Result;
+use protocol::api::audit::{Envelope, EnvelopeResponse};
+use protocol::api::base::IdGet;
 
 /// Envelope list
 pub type EnvelopeOutputList = Result<Option<Vec<EnvelopeResponse>>>;

@@ -6,25 +6,25 @@ description = "RIO/OS Aran Database Library"
 workspace = "../../"
 
 [dependencies]
-chrono = { version = "0.4.2", features = ["serde"] }
+chrono = { version = "0.4.4", features = ["serde"] }
 
-log = "0.4.1"
+log = "0.4.2"
 fnv = "*"
 diesel = { version = "*", features = ["postgres"] }
-diesel_migrations = "*"
-rand = "*"
+diesel_migrations = "1.3.0"
+rand = "0.5.3"
 
 postgres = { version = "0.15.2", features = ["with-chrono","with-serde_json","with-openssl"] }
 r2d2-diesel = "*"
 r2d2 = "0.8.2"
 r2d2_postgres = "0.14.0"
-serde = "1.0.43"
-serde_derive = "*"
-serde_json = "1.0.16"
-serde_yaml = "0.7.3"
+serde = "1.0.66"
+serde_derive = "1.0.67"
+serde_json = "1.0.22"
+serde_yaml = "0.7.5"
 num_cpus = "*"
-base64 = "*"
-lazy_static = "*"
+base64 = "0.9.2"
+lazy_static = "1.0.1"
 url = "*"
 
 

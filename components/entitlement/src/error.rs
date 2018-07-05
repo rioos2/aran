@@ -1,7 +1,7 @@
-use std::result;
-use std::io::Error as IoError;
-use std::fmt;
 use rio_core;
+use std::fmt;
+use std::io::Error as IoError;
+use std::result;
 
 macro_rules! impl_error {
     ($from:ty, $to:path) => {
@@ -10,7 +10,7 @@ macro_rules! impl_error {
                 $to(format!("{:?}", e))
             }
         }
-    }
+    };
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -30,7 +30,6 @@ pub enum Error {
 
 impl_error!{IoError, Error::IO}
 impl_error!{rio_core::Error, Error::RioosAranCore}
-
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

@@ -1,15 +1,14 @@
-use bytes::Bytes;
 use bytes::Buf;
+use bytes::Bytes;
 use bytes::IntoBuf;
-use bytes::BigEndian;
 
-use solicit::StreamId;
+use solicit::frame::builder::FrameBuilder;
+use solicit::frame::parse_padded_payload;
 use solicit::frame::Frame;
+use solicit::frame::FrameHeader;
 use solicit::frame::FrameIR;
 use solicit::frame::RawFrame;
-use solicit::frame::FrameHeader;
-use solicit::frame::parse_padded_payload;
-use solicit::frame::builder::FrameBuilder;
+use solicit::StreamId;
 
 use super::flags::Flag;
 use super::flags::Flags;
@@ -107,7 +106,7 @@ impl Frame for PushPromiseFrame {
 
         let mut buf = (&payload).into_buf();
 
-        let promised_stream_id = buf.get_u32::<BigEndian>();
+        let promised_stream_id = buf.get_u32_be();
 
         let header_fragment = payload.slice((length as usize) - buf.remaining(), payload.len());
 

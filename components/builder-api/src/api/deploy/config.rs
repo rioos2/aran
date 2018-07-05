@@ -10,6 +10,7 @@ pub struct ServicesCfg {
     pub loadbalancer_cpu: String,
     pub loadbalancer_mem: String,
     pub loadbalancer_disk: String,
+    pub dns: String,
 }
 
 impl Default for ServicesCfg {
@@ -20,6 +21,7 @@ impl Default for ServicesCfg {
             loadbalancer_cpu: "1".to_string(),
             loadbalancer_mem: "1024 MiB".to_string(),
             loadbalancer_disk: "1 GiB".to_string(),
+            dns: "107.152.143.242".to_string(),
         }
     }
 }
@@ -33,6 +35,7 @@ impl Into<AssemblerServicesConfig> for ServicesCfg {
             loadbalancer_cpu: self.loadbalancer_cpu,
             loadbalancer_mem: self.loadbalancer_mem,
             loadbalancer_disk: self.loadbalancer_disk,
+            dns: self.dns,
         }
     }
 }

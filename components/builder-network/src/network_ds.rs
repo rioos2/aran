@@ -2,13 +2,13 @@
 
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::network;
-use protocol::api::base::MetaFields;
+use error::{Error, Result};
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::network;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
 use super::{NetworkOutput, NetworkOutputList};
@@ -43,9 +43,8 @@ impl NetworkDS {
     pub fn list_blank(datastore: &DataStoreConn) -> NetworkOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_networks_v1()", &[]).map_err(
-            Error::NetworkGetResponse,
-        )?;
+        let rows = &conn.query("SELECT * FROM get_networks_v1()", &[])
+            .map_err(Error::NetworkGetResponse)?;
 
         let mut response = Vec::new();
         if rows.len() > 0 {

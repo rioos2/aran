@@ -1,14 +1,12 @@
 // Copyright (c) 2018 Rio Advancement Inc
 //
-use std::fmt;
 use std::error;
+use std::fmt;
 
 pub type AppResult<T> = Result<T, AppError>;
 
 #[derive(Debug)]
-pub enum AppError {
-
-}
+pub enum AppError {}
 
 impl fmt::Display for AppError {
     fn fmt(&self, _f: &mut fmt::Formatter) -> fmt::Result {

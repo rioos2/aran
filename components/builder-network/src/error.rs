@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
+use db;
 use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use db;
 
 #[derive(Debug)]
 pub enum Error {

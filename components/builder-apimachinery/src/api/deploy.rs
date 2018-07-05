@@ -7,8 +7,10 @@ use api::blueprint::Plan;
 use api::endpoints::EndPoints;
 use api::linker::Services;
 use api::volume::Volumes;
-use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PlanFeeder, ServicesFeeder,
-                    StacksFeeder, VolumesFeeder};
+use cache::inject::{
+    EndPointsFeeder, FactoryFeeder, MetricsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder,
+    VolumesFeeder,
+};
 use std::collections::BTreeMap;
 
 pub const AWAIT_PHASE_PENDING: &'static str = "AwaitPending";

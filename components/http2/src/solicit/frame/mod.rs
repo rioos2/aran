@@ -4,8 +4,8 @@ use std::mem;
 
 use bytes::Bytes;
 
-use solicit::StreamId;
 use solicit::frame::flags::*;
+use solicit::StreamId;
 
 /// A helper macro that unpacks a sequence of 4 bytes found in the buffer with
 /// the given identifier, starting at the given offset, into the given integer
@@ -19,12 +19,12 @@ use solicit::frame::flags::*;
 /// assert_eq!(1u32, unpack_octets_4!(buf, 0, u32));
 /// ```
 macro_rules! unpack_octets_4 {
-    ($buf:expr, $offset:expr, $tip:ty) => (
-        (($buf[$offset + 0] as $tip) << 24) |
-        (($buf[$offset + 1] as $tip) << 16) |
-        (($buf[$offset + 2] as $tip) <<  8) |
-        (($buf[$offset + 3] as $tip) <<  0)
-    );
+    ($buf:expr, $offset:expr, $tip:ty) => {
+        (($buf[$offset + 0] as $tip) << 24)
+            | (($buf[$offset + 1] as $tip) << 16)
+            | (($buf[$offset + 2] as $tip) << 8)
+            | (($buf[$offset + 3] as $tip) << 0)
+    };
 }
 
 /// Parse the next 4 octets in the given buffer, assuming they represent an HTTP/2 stream ID.
@@ -40,28 +40,28 @@ fn parse_stream_id(buf: &[u8]) -> u32 {
 pub mod builder;
 pub mod continuation;
 pub mod data;
-pub mod headers;
-pub mod rst_stream;
-pub mod priority;
-pub mod settings;
-pub mod goaway;
-pub mod ping;
-pub mod window_update;
-pub mod push_promise;
 mod flags;
+pub mod goaway;
+pub mod headers;
+pub mod ping;
+pub mod priority;
+pub mod push_promise;
+pub mod rst_stream;
+pub mod settings;
+pub mod window_update;
 
 pub use self::builder::FrameBuilder;
 
-pub use self::data::{DataFlag, DataFrame};
-pub use self::headers::{HeadersFlag, HeadersFrame};
-pub use self::priority::PriorityFrame;
-pub use self::rst_stream::RstStreamFrame;
-pub use self::settings::{SettingsFlag, SettingsFrame, HttpSetting};
-pub use self::goaway::GoawayFrame;
-pub use self::ping::PingFrame;
-pub use self::window_update::WindowUpdateFrame;
 pub use self::continuation::ContinuationFrame;
+pub use self::data::{DataFlag, DataFrame};
+pub use self::goaway::GoawayFrame;
+pub use self::headers::{HeadersFlag, HeadersFrame};
+pub use self::ping::PingFrame;
+pub use self::priority::PriorityFrame;
 pub use self::push_promise::PushPromiseFrame;
+pub use self::rst_stream::RstStreamFrame;
+pub use self::settings::{HttpSetting, SettingsFlag, SettingsFrame};
+pub use self::window_update::WindowUpdateFrame;
 
 pub const FRAME_HEADER_LEN: usize = 9;
 
@@ -375,7 +375,7 @@ impl FrameIR for RawFrame {
 
 #[cfg(test)]
 mod tests {
-    use super::{unpack_header, pack_header, RawFrame, FrameHeader};
+    use super::{pack_header, unpack_header, FrameHeader, RawFrame};
 
     /// Tests that the `unpack_header` function correctly returns the
     /// components of HTTP/2 frame headers.
@@ -388,7 +388,7 @@ mod tests {
                     length: 1,
                     frame_type: 2,
                     flags: 3,
-                    stream_id: 4,
+                    stream_id: 4
                 },
                 unpack_header(&header)
             );
@@ -400,7 +400,7 @@ mod tests {
                     length: 256,
                     frame_type: 0,
                     flags: 0,
-                    stream_id: 0,
+                    stream_id: 0
                 },
                 unpack_header(&header)
             );
@@ -412,7 +412,7 @@ mod tests {
                     length: 256 * 256,
                     frame_type: 0,
                     flags: 0,
-                    stream_id: 0,
+                    stream_id: 0
                 },
                 unpack_header(&header)
             );
@@ -424,7 +424,7 @@ mod tests {
                     length: (1 << 24) - 1,
                     frame_type: 0,
                     flags: 0,
-                    stream_id: 1,
+                    stream_id: 1
                 },
                 unpack_header(&header)
             );
@@ -449,7 +449,7 @@ mod tests {
                     length: 1,
                     frame_type: 0,
                     flags: 0,
-                    stream_id: 1,
+                    stream_id: 1
                 },
                 unpack_header(&header)
             );
@@ -497,7 +497,8 @@ mod tests {
         }
         {
             let header = [0xFF, 0xFF, 0xFF, 0, 0, 1, 1, 1, 1];
-            let header_components = FrameHeader::new((1 << 24) - 1, 0, 0, 1 + (1 << 8) + (1 << 16) + (1 << 24));
+            let header_components =
+                FrameHeader::new((1 << 24) - 1, 0, 0, 1 + (1 << 8) + (1 << 16) + (1 << 24));
             assert_eq!(pack_header(&header_components), header);
         }
     }

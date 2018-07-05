@@ -3,15 +3,15 @@
 //
 #![allow(unused_must_use)]
 
-use std::collections::HashMap;
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use protocol::api::linker;
 
-use petgraph::{Graph, Direction};
+use petgraph::algo::{connected_components, is_cyclic_directed};
 use petgraph::graph::NodeIndex;
-use petgraph::algo::{is_cyclic_directed, connected_components};
+use petgraph::{Direction, Graph};
 
 use builder::service::indent::ServiceIdent;
 

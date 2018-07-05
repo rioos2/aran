@@ -1,31 +1,32 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
-use super::super::util::errors::*;
+
 use super::header_extracter::HeaderDecider;
 use super::rendering::*;
+use super::super::util::errors::*;
 use ansi_term::Colour;
 use auth::config::AuthenticationFlowCfg;
-use entitlement::config::License;
 use auth::rbac::authorizer;
+use auth::rbac::license::LicensesFascade;
 use auth::rbac::permissions::Permissions;
 use auth::rioos::AuthenticateDelegate;
 use common::ui;
 use db::data_store::DataStoreConn;
+use entitlement::config::License;
+use iron::Handler;
 use iron::headers;
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
 use iron::status::NotFound;
 use iron::typemap::Key;
-use iron::Handler;
 use persistent;
 use regex::Regex;
 use router::NoRoute;
 use std::collections::HashMap;
 use unicase::UniCase;
 use util::errors::{bad_err, forbidden_error, internal_error, entitlement_error};
-use auth::rbac::license::LicensesFascade;
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.

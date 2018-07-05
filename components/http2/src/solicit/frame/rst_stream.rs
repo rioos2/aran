@@ -1,8 +1,8 @@
 //! The module contains the implementation of the `RST_STREAM` frame.
 
-use solicit::StreamId;
-use solicit::frame::{Frame, FrameIR, FrameBuilder, FrameHeader, RawFrame};
 use solicit::frame::flags::*;
+use solicit::frame::{Frame, FrameBuilder, FrameHeader, FrameIR, RawFrame};
+use solicit::StreamId;
 
 use error::ErrorCode;
 
@@ -110,8 +110,8 @@ mod tests {
     use super::RstStreamFrame;
 
     use error::ErrorCode;
-    use solicit::frame::{pack_header, FrameHeader, Frame};
     use solicit::frame::FrameIR;
+    use solicit::frame::{pack_header, Frame, FrameHeader};
 
     /// A helper function that creates a new Vec containing the serialized representation of the
     /// given `FrameHeader` followed by the raw provided payload.

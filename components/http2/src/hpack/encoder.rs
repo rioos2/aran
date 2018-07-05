@@ -47,8 +47,8 @@
 use std::io;
 use std::num::Wrapping;
 
-use super::STATIC_TABLE;
 use super::HeaderTable;
+use super::STATIC_TABLE;
 
 /// Encode an integer to the representation defined by HPACK, writing it into the provider
 /// `io::Write` instance. Also allows the caller to specify the leading bits of the first
@@ -89,7 +89,12 @@ use super::HeaderTable;
 ///     assert_eq!(vec, vec![31, 154, 10]);
 /// }
 /// ```
-pub fn encode_integer_into<W: io::Write>(mut value: usize, prefix_size: u8, leading_bits: u8, writer: &mut W) -> io::Result<()> {
+pub fn encode_integer_into<W: io::Write>(
+    mut value: usize,
+    prefix_size: u8,
+    leading_bits: u8,
+    writer: &mut W,
+) -> io::Result<()> {
     let Wrapping(mask) = if prefix_size >= 8 {
         Wrapping(0xFF)
     } else {
@@ -215,7 +220,11 @@ impl<'a> Encoder<'a> {
     ///
     /// Any errors are propagated, similarly to the `encode_into` method, and it is the callers
     /// responsiblity to make sure that the paired encoder sees them too.
-    pub fn encode_header_into<W: io::Write>(&mut self, header: (&[u8], &[u8]), writer: &mut W) -> io::Result<()> {
+    pub fn encode_header_into<W: io::Write>(
+        &mut self,
+        header: (&[u8], &[u8]),
+        writer: &mut W,
+    ) -> io::Result<()> {
         match self.header_table.find_header(header) {
             None => {
                 // The name of the header is in no tables: need to encode
@@ -250,7 +259,12 @@ impl<'a> Encoder<'a> {
     ///                    inserted into the dynamic table
     /// - `buf` - The buffer into which the result is placed
     ///
-    fn encode_literal<W: io::Write>(&mut self, header: &(&[u8], &[u8]), should_index: bool, buf: &mut W) -> io::Result<()> {
+    fn encode_literal<W: io::Write>(
+        &mut self,
+        header: &(&[u8], &[u8]),
+        should_index: bool,
+        buf: &mut W,
+    ) -> io::Result<()> {
         let mask = if should_index { 0x40 } else { 0x0 };
 
         buf.write_all(&[mask])?;
@@ -265,7 +279,11 @@ impl<'a> Encoder<'a> {
     /// The function does not consider Huffman encoding for now, but always
     /// produces a string literal representations, according to the HPACK spec
     /// section 5.2.
-    fn encode_string_literal<W: io::Write>(&mut self, octet_str: &[u8], buf: &mut W) -> io::Result<()> {
+    fn encode_string_literal<W: io::Write>(
+        &mut self,
+        octet_str: &[u8],
+        buf: &mut W,
+    ) -> io::Result<()> {
         encode_integer_into(octet_str.len(), 7, 0, buf)?;
         buf.write_all(octet_str)?;
         Ok(())
@@ -273,7 +291,12 @@ impl<'a> Encoder<'a> {
 
     /// Encodes a header whose name is indexed and places the result in the
     /// given buffer `buf`.
-    fn encode_indexed_name<W: io::Write>(&mut self, header: (usize, &[u8]), should_index: bool, buf: &mut W) -> io::Result<()> {
+    fn encode_indexed_name<W: io::Write>(
+        &mut self,
+        header: (usize, &[u8]),
+        should_index: bool,
+        buf: &mut W,
+    ) -> io::Result<()> {
         let (mask, prefix) = if should_index { (0x40, 6) } else { (0x0, 4) };
 
         encode_integer_into(header.0, prefix, mask, buf)?;
@@ -416,9 +439,7 @@ mod tests {
             // The rest of it correctly represents PUT?
             assert_eq!(
                 &result[1..],
-                &[
-                    11, b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'
-                ]
+                &[11, b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm']
             )
         }
     }

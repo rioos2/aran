@@ -10,9 +10,9 @@ use std::thread;
 use watch::handler::WatchHandler;
 use watch::service::ServiceImpl;
 
-use telemetry::metrics::prometheus::PrometheusClient;
 use config::Config;
 use http_gateway::config::prelude::TLSPair;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 use tls_api::TlsAcceptorBuilder as tls_api_TlsAcceptorBuilder;
 use tls_api_openssl;
@@ -88,11 +88,14 @@ impl Streamer {
 
                     let tls_tuple = tls_pair.clone().unwrap(); //no panic, as ods handles it.
 
-                    let mut tls_acceptor = tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(&tls_tuple.1, &tls_tuple.2).expect("acceptor builder");
+                    let mut tls_acceptor = tls_api_openssl::TlsAcceptorBuilder::from_pkcs12(
+                        &tls_tuple.1,
+                        &tls_tuple.2,
+                    ).expect("acceptor builder");
 
-                    tls_acceptor.set_alpn_protocols(&[b"h2"]).expect(
-                        "set_alpn_protocols",
-                    );
+                    tls_acceptor
+                        .set_alpn_protocols(&[b"h2"])
+                        .expect("set_alpn_protocols");
 
                     let mut server = httpbis::ServerBuilder::new();
 
@@ -102,7 +105,9 @@ impl Streamer {
 
                     server.service.set_service(
                         "/api/v1",
-                        Arc::new(ServiceImpl { sender: Arc::new(Mutex::new(reg_sender)) }),
+                        Arc::new(ServiceImpl {
+                            sender: Arc::new(Mutex::new(reg_sender)),
+                        }),
                     );
 
                     let running = server.build().expect("server");

@@ -8,9 +8,9 @@ use std::option::IntoIter;
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct HttpsCfg {
-    pub listen: IpAddr,               // The listen ip address for [https api, http2 streamer, wss websocket]
-    pub port: u16,                    // The https api server port
-    pub tls: Option<String>,          // The tls_pkcs12 is the pfx file that is used as security to start the server.
+    pub listen: IpAddr, // The listen ip address for [https api, http2 streamer, wss websocket]
+    pub port: u16,      // The https api server port
+    pub tls: Option<String>, // The tls_pkcs12 is the pfx file that is used as security to start the server.
     pub tls_password: Option<String>, // The tls_pkcs12_pwd  is the pfx file password.
 }
 

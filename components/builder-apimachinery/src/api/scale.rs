@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScaling {
@@ -214,7 +214,7 @@ impl MetricObject {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct MetricResource {
-    name: String, //`Name` is the name of the metric in question.
+    name: String,             //`Name` is the name of the metric in question.
     min_target_value: String, //`MinTargetValue` is the Instance Range for a range of machines allowed to run. This is the minimum allowed.
     max_target_value: String, //`MaxTargetValue` is the Instance Range for a range of machines allowed to run. This is the maximum allowed. Example minimum 2 machines shall be running, scaled up to 4 machines.
     metric_time_spec: TimeSpec,
@@ -637,7 +637,11 @@ The following will  scale for  `CumulativeAll` strategy
 }
 
 impl VerticalScalingStatus {
-    pub fn new(last_scale_time: &str, current_resource: BTreeMap<String, String>, desired_resource: BTreeMap<String, String>) -> VerticalScalingStatus {
+    pub fn new(
+        last_scale_time: &str,
+        current_resource: BTreeMap<String, String>,
+        desired_resource: BTreeMap<String, String>,
+    ) -> VerticalScalingStatus {
         VerticalScalingStatus {
             last_scale_time: last_scale_time.to_string(),
             current_resource: current_resource,
@@ -682,7 +686,7 @@ impl VerticalScalingStatusUpdate {
 
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode};
+    use serde_json::from_str as json_decode;
 
     use super::*;
 

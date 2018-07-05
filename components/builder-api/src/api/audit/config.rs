@@ -4,10 +4,10 @@ use std::env;
 pub const DEFAULT_BLOCK_CHAIN_URL: &'static str = "http://localhost:7000";
 /// Default Influx Host url to access the log of virtual machine and container
 pub const DEFAULT_LOGS_URL: &'static str = "http://localhost:8086";
-/// host url  to get the rio marketplace
-pub const DEFAULT_RIO_MARKETPLACES_URL: &'static str = "https://localhost:6443/api/v1";
-/// a default username for marketplace
-pub const DEV_RIO_COMPANY: &'static str = "dev@rio.companyadmin";
+/// host url  to get the rio appstore
+pub const DEFAULT_RIO_APPSTORE_URL: &'static str = "https://localhost:6443/api/v1";
+/// a default username for rio appstore
+pub const DEV_RIO_COMPANY: &'static str = "dev@rio.company";
 /// a default token for the marketplace
 pub const TOKEN: &'static str = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R";
 
@@ -19,7 +19,9 @@ const SENDER: &'static str = "info@rio.company";
 
 const DOMAIN: &'static str = "smtp.mailgun.org:587";
 
+pub const SLACK_URL: &'static str = "https://slack.com/api";
 
+const SLACK_API_TOKEN: &'static str = "xoxp-15643264595-15651742039-292147004003-835083f841ed3a0207a6ad46d19b7959";
 
 ///// Configuration for Audits (blockchain)
 
@@ -55,11 +57,11 @@ pub trait Blockchain {
     fn cache_dir(&self) -> &str;
 }
 
-///// Configuration for rio marketplace
+///// Configuration for rio appstore
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
-pub struct MarketplacesCfg {
+pub struct AppStoresCfg {
     pub endpoint: String,
     pub sync_on_startup: bool,
     pub username: String,
@@ -67,10 +69,10 @@ pub struct MarketplacesCfg {
     pub cache_dir: String,
 }
 
-impl Default for MarketplacesCfg {
+impl Default for AppStoresCfg {
     fn default() -> Self {
-        MarketplacesCfg {
-            endpoint: DEFAULT_RIO_MARKETPLACES_URL.to_string(),
+        AppStoresCfg {
+            endpoint: DEFAULT_RIO_APPSTORE_URL.to_string(),
             sync_on_startup: false,
             username: DEV_RIO_COMPANY.to_string(),
             token: TOKEN.to_string(),
@@ -79,7 +81,7 @@ impl Default for MarketplacesCfg {
     }
 }
 
-pub trait Marketplaces {
+pub trait AppStores {
     fn endpoint(&self) -> &str;
     fn sync_on_startup(&self) -> bool;
     fn username(&self) -> &str;
@@ -98,10 +100,19 @@ pub struct BlockchainConn {
 #[allow(unused_variables)]
 impl BlockchainConn {
     pub fn new<T: Blockchain>(config: &T) -> Self {
-        BlockchainConn {
-            backend: config.backend(),
-            url: config.endpoint().to_string(),
-        }
+        BlockchainConn { backend: config.backend(), url: config.endpoint().to_string() }
+    }
+}
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct Notifications {
+    pub mailer: MailerCfg,
+    pub slack: SlackCfg,
+}
+
+impl Default for Notifications {
+    fn default() -> Self {
+        Notifications { mailer: MailerCfg::default(), slack: SlackCfg::default() }
     }
 }
 
@@ -135,7 +146,6 @@ pub trait Mailer {
     fn sender(&self) -> &str;
 }
 
-
 #[allow(unused_variables)]
 impl MailerCfg {
     pub fn new<T: Mailer>(config: &T) -> Self {
@@ -146,5 +156,30 @@ impl MailerCfg {
             domain: config.domain().to_string(),
             sender: config.sender().to_string(),
         }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct SlackCfg {
+    pub enabled: bool,
+    pub token: String,
+}
+
+impl Default for SlackCfg {
+    fn default() -> Self {
+        SlackCfg { enabled: true, token: SLACK_API_TOKEN.to_string() }
+    }
+}
+
+pub trait Slack {
+    fn enabled(&self) -> bool;
+    fn token(&self) -> &str;
+}
+
+#[allow(unused_variables)]
+impl SlackCfg {
+    pub fn new<T: Slack>(config: &T) -> Self {
+        SlackCfg { enabled: config.enabled(), token: config.token().to_string() }
     }
 }

@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use api_client::Client;
 use common::ui::UI;
 use config;
-use api_client::Client;
 use error::Result;
 
 pub fn start(ui: &mut UI, rio_client: Client, token: String, email: String) -> Result<()> {

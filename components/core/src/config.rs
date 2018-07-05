@@ -9,8 +9,8 @@ use std::path::Path;
 use serde::de::DeserializeOwned;
 use toml;
 
-use fs::open_from;
 use error::Error;
+use fs::open_from;
 
 pub trait ConfigFile: DeserializeOwned + Sized {
     type Error: StdError + From<Error>;
@@ -23,7 +23,12 @@ pub trait ConfigFile: DeserializeOwned + Sized {
         let mut raw = String::new();
         match file.read_to_string(&mut raw) {
             Ok(_) => (),
-            Err(e) => return Err(Self::Error::from(Error::ConfigFileIO(filepath.as_ref().to_path_buf(), e))),
+            Err(e) => {
+                return Err(Self::Error::from(Error::ConfigFileIO(
+                    filepath.as_ref().to_path_buf(),
+                    e,
+                )))
+            }
         }
         Self::from_raw(&raw)
     }

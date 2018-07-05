@@ -1,13 +1,13 @@
-use std::path::Path;
 use std::fs::File;
 use std::io::Read;
+use std::path::Path;
 
-use reqwest::Url;
-use reqwest::StatusCode;
 use super::error::{Error, Result};
-use reqwest;
-use std::time::Duration;
 use api_client::err_from_response;
+use reqwest;
+use reqwest::StatusCode;
+use reqwest::Url;
+use std::time::Duration;
 
 use reqwest::header::{Authorization, Bearer, UserAgent};
 const USER_AGENT: &'static str = "Rio/OS Aran";
@@ -15,7 +15,9 @@ const HTTP_TIMEOUT: u64 = 3_000;
 
 fn reqwest_client(fs_root_path: Option<&Path>) -> Result<reqwest::Client> {
     let mut buf = Vec::new();
-    if !fs_root_path.is_none() && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok() {
+    if !fs_root_path.is_none()
+        && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok()
+    {
         Ok(reqwest::Client::builder()
             .add_root_certificate(reqwest::Certificate::from_pem(&buf)?)
             .timeout(Duration::from_millis(HTTP_TIMEOUT))

@@ -2,30 +2,26 @@
 //
 
 //! The Watch stream handler
-use std::sync::Mutex;
-use std::sync::Arc;
 use std::sync::mpsc;
+use std::sync::Arc;
+use std::sync::Mutex;
 use std::thread;
-
+use rand::RngCore;
+use error::Result;
 use watch;
 use watch::messages::Messages;
-use error::Result;
-
-use postgres::notification::Notification;
 use fallible_iterator::FallibleIterator;
-
-use db::error::Error as DbError;
+use postgres::notification::Notification;
 use db::data_store::DataStoreConn;
-
+use db::error::Error as DbError;
 use protocol::api::base::IdGet;
 use telemetry::metrics::prometheus::PrometheusClient;
-
+use api::security::config::SecurerConn;
 use bytes::Bytes;
+use rand::OsRng;
 use regex::Regex;
 use serde_json;
 use serde_json::Value;
-use api::security::config::SecurerConn;
-use rand::{OsRng, Rng};
 
 pub const LISTENERS: [&'static str; 2] = ["assemblyfactorys", "assemblys"];
 
@@ -79,9 +75,7 @@ impl WatchHandler {
             owned_string.push_str(&listener);
             owned_string.push_str(&another_owned_string);
 
-            &conn.query(&owned_string, &[]).map_err(
-                DbError::AsyncFunctionCheck,
-            );
+            &conn.query(&owned_string, &[]).map_err(DbError::AsyncFunctionCheck);
         }
 
         thread::spawn(move || {

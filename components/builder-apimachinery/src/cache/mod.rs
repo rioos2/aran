@@ -7,7 +7,8 @@ mod multi_cache;
 
 use self::flock::Cacher;
 use api;
-use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder, VolumesFeeder, LicensesFeeder};
+use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder, VolumesFeeder,
+                    LicensesFeeder};
 use cache::multi_cache::MultiCache;
 use serde_json;
 use std::collections::BTreeMap;
@@ -174,10 +175,6 @@ impl InMemoryExpander {
     /// - CACHE_PREFIX_PLAN, CACHE_PREFIX_FACTORY, CACHE_PREFIX_VOLUME, CACHE_PREFIX_ENDPOINT,
     /// - CACHE_PREFIX_METRIC
     fn cache_service_for(&self, key: String) -> ::std::option::Option<&Box<NewCacheServiceFn>> {
-        println!(
-            "==================key============================={:?}",
-            key
-        );
         self.cached.get(&key).map(|p| p)
     }
 
@@ -213,15 +210,11 @@ impl InMemoryExpander {
         debug!("» Cache Invalidate id: {:?}", id);
         match self.cache_service_for(key.clone()) {
             Some(cachefn) => {
-                println!("************SOME**************************");
                 cachefn.invalidate(id, _lru).map(|a| {
                     a.clone().deref().to_string()
                 })
             }
-            _ => {
-                println!("**************NONE************************");
-                None
-            }
+            _ => None,
         }
     }
 
