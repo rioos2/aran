@@ -16,6 +16,6 @@ pub mod models;
 
 pub use self::error::{Error, Result};
 
-/// Roles output
+/// license output
 pub type LicenseOutput = Result<std::option::Option<protocol::api::licenses::Licenses>>;
-
+pub type LicenseOutputList = Result<std::option::Option<Vec<protocol::api::licenses::Licenses>>>;

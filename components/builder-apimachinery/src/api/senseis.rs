@@ -3,7 +3,6 @@
 use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use api::node::{Spec, NodeStatus};
 use std::collections::BTreeMap;
-use serde_json;
 
 //Rioos prometheus tool automatically allocated "rioos-nodes" job, so we use it
 pub const SENSEI_JOBS: &'static str = "job=rioos-masters";

@@ -11,6 +11,7 @@ use config::Backend;
 use db::data_store::DataStoreConn;
 use entitlement::models::license;
 use protocol::api::licenses::Licenses;
+use protocol::api::base::{MetaFields};
 
 
 const ALLOWED_EXPIRY: u32 = 5;
@@ -73,7 +74,7 @@ impl Client {
         let mut license = Licenses::new();
         license.set_name(self.backend.to_string());
         license.set_status(status);
-        license::DataStore::new(&datastore).license_create_or_update(&license);
+        license::DataStore::new(&datastore).create_or_update(&license);
     }
 
 }

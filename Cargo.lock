@@ -2263,6 +2263,7 @@ dependencies = [
  "rioos_builder_deployment 0.0.0",
  "rioos_builder_devtooling 0.0.0",
  "rioos_builder_diagnostics 0.0.0",
+ "rioos_builder_entitlement 0.0.0",
  "rioos_builder_health_nodes 0.0.0",
  "rioos_builder_httpgateway 0.0.0",
  "rioos_builder_jobsbuilder 0.0.0",

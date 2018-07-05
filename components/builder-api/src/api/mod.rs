@@ -23,6 +23,7 @@ pub mod devtooling;
 mod helpers;
 pub mod objectstorage;
 pub mod security;
+pub mod entitle;
 
 use api::helpers::extract_query_value;
 use error::ErrorMessage::{MissingBody, MissingParameter, MissingQueryParameter, MustBeNumeric};
@@ -142,7 +143,7 @@ impl RequestVerifier for NameParmsVerifier {
 /// `id`
 /// If it doesn't then it sends an MissingParameter
 /// It is same as idparmverifier, but the difference is id verifier allow only numeric,
-/// but in this verifier allows also string contents  
+/// but in this verifier allows also string contents
 
 struct IdWithNameParmsVerifier {}
 
