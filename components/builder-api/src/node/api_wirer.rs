@@ -108,6 +108,12 @@ impl HttpGateway for Wirer {
         );
         node.wire(config.clone(), &mut router);
 
+        let mut healthz = cluster::healthz_api::HealthzApi::new(
+            ds.clone(),
+            Box::new(PrometheusClient::new(&*config.clone())),
+        );
+        healthz.wire(config.clone(), &mut router);
+
         let mut sensei = cluster::senseis_api::SenseisApi::new(ds.clone());
         sensei.wire(config.clone(), &mut router);
 

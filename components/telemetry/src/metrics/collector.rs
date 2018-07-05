@@ -54,8 +54,7 @@ impl<'a> Collector<'a> {
                 functions: avg,
                 by: "".to_string()
             })
-        );
-
+        );       
         let content = self.client.pull_metrics(&data)?;
 
         let response: PromResponse = serde_json::from_str(&content.data).unwrap();
@@ -83,8 +82,7 @@ impl<'a> Collector<'a> {
                 functions: avg,
                 by: "".to_string()
             })
-        );
-
+        );       
         let content = self.client.pull_metrics(&data)?;
 
         let response: PromResponse = serde_json::from_str(&content.data).unwrap();
@@ -238,8 +236,7 @@ impl<'a> Collector<'a> {
                     functions: avg,
                     by: format!("avg by ({})", self.scope.avg_by_name.clone()),
                 })
-            );
-
+            );           
             let content = self.client.pull_metrics(&data)?;
 
             let response: PromResponse = serde_json::from_str(&content.data).unwrap();
