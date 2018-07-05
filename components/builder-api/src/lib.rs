@@ -43,6 +43,7 @@ extern crate rioos_builder_virtual_network as network;
 extern crate rioos_common as common;
 extern crate rioos_core as rio_core;
 extern crate rioos_entitlement as entitlement;
+extern crate rioos_builder_entitlement as entitle;
 extern crate rioos_http2 as httpbis;
 extern crate rioos_telemetry as telemetry;
 extern crate rioos_ws as ws;

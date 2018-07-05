@@ -8,4 +8,5 @@ pub mod network_api;
 pub mod node_api;
 pub mod storage_api;
 pub mod senseis_api;
+pub mod healthz_api;
 pub use self::network_api::NetworkApi;

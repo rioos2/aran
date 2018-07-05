@@ -8,7 +8,8 @@ use serde_json;
 
 pub const ASSEMBLY_JOBS: &'static str = "job=rioos_sh_machines";
 pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
-pub const NODE_JOBS: &'static str = "job=rioos_sh_nodes";
+//Rioos prometheus tool automatically allocated "rioos-nodes" job, so we use it
+pub const NODE_JOBS: &'static str = "job=rioos-nodes";
 pub const IDLEMODE: &'static str = "mode=idle";
 
 // The constants to store status.capacity
@@ -437,6 +438,9 @@ impl HealthzAllGet {
     pub fn set_statistics(&mut self, v: Statistics) {
         self.statistics = v;
     }
+    pub fn get_statistics(&mut self) -> Statistics {
+        self.statistics.clone()
+    }
     pub fn set_osusages(&mut self, v: OSUsages) {
         self.osusages = v;
     }
@@ -500,7 +504,8 @@ impl Counters {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Statistics {
     title: String,
-    nodes: Vec<NodeStatistic>,
+    ninjas: Vec<NodeStatistic>,
+    senseis: Vec<NodeStatistic>,
 }
 impl Statistics {
     pub fn new() -> Statistics {
@@ -509,8 +514,18 @@ impl Statistics {
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
-    pub fn set_nodes(&mut self, v: Vec<NodeStatistic>) {
-        self.nodes = v;
+    pub fn set_ninjas(&mut self, v: Vec<NodeStatistic>) {
+        self.ninjas = v;
+    }
+    pub fn set_senseis(&mut self, v: Vec<NodeStatistic>) {
+        self.senseis = v;
+    }
+
+    pub fn get_ninjas(&mut self) -> Vec<NodeStatistic> {
+        self.ninjas.clone()
+    }
+    pub fn get_senseis(&mut self) -> Vec<NodeStatistic> {
+        self.senseis.clone()
     }
 }
 
@@ -536,6 +551,10 @@ impl NodeStatistic {
 
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
+    }
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
     pub fn set_name(&mut self, v: ::std::string::String) {
@@ -811,11 +830,16 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
                 .into_iter()
                 .map(|x| {
                     let mut node = NodeStatistic::new();
-                    node.set_name(x.metric.get("instance").unwrap_or(&"".to_string()).to_owned());
+
+                    let instance = x.metric.get("instance").unwrap_or(&"".to_string()).to_owned();
+                    let ins: Vec<&str> = instance.split("-").collect();
+                    node.set_name(ins[1].to_string());
                     node.set_counter(x.value.1.to_owned());
-                    node.set_id(x.metric.get("instance").unwrap_or(&"".to_string()).replace(".", "_").to_string());
+                    node.set_id(ins[0].to_string().replace(".", "_").to_string());
+
                     node.set_kind("Node".to_string());
                     node.set_api_version("v1".to_string());
+                    node.set_health("up".to_string());
                     node
                 })
                 .collect::<Vec<_>>();

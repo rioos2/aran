@@ -12,7 +12,7 @@ use watch::handler::WatchHandler;
 use watch::handler::LISTENERS;
 use ws;
 
-use clusters::models::ninja::DataStore;
+use clusters::models::healthz::DataStore;
 use mio::tcp::TcpStream;
 use openssl::ssl::{SslAcceptor, SslStream};
 
@@ -184,10 +184,11 @@ impl ws::Handler for Metrics {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
         let sender = self.ws.clone();
         let prom = self.watchhandler.prom_client();
+        let ds = self.watchhandler.datastore();
 
         let tick = schedule_recv::periodic_ms(10000);
         thread::spawn(move || loop {
-            match DataStore::healthz_all(&prom) {
+            match DataStore::new(&ds).healthz_all(&prom) {
                 Ok(Some(health_all)) => {
                     let res = serde_json::to_string(&health_all).unwrap();
                     match sender.send(res) {

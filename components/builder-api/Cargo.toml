@@ -134,5 +134,9 @@ path = "../telemetry"
 [dependencies.rioos_builder_diagnostics]
 path = "../builder-diagnostics"
 
+[dependencies.rioos_builder_entitlement]
+path = "../builder-entitlement"
+
+
 [features]
 functional = []

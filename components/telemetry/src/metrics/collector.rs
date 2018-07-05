@@ -54,10 +54,9 @@ impl<'a> Collector<'a> {
                 functions: avg,
                 by: "".to_string()
             })
-        );
-
+        );       
         let content = self.client.pull_metrics(&data)?;
-
+       
         let response: PromResponse = serde_json::from_str(&content.data).unwrap();
         content_datas.push(response);
 
@@ -65,6 +64,7 @@ impl<'a> Collector<'a> {
 
         Ok(memory_contents_data)
     }
+
 
     //collect the overall disk of all nodes
     pub fn average_disk(&self) -> Result<Vec<PromResponse>> {
@@ -83,8 +83,7 @@ impl<'a> Collector<'a> {
                 functions: avg,
                 by: "".to_string()
             })
-        );
-
+        );       
         let content = self.client.pull_metrics(&data)?;
 
         let response: PromResponse = serde_json::from_str(&content.data).unwrap();
@@ -238,8 +237,7 @@ impl<'a> Collector<'a> {
                     functions: avg,
                     by: format!("avg by ({})", self.scope.avg_by_name.clone()),
                 })
-            );
-
+            );           
             let content = self.client.pull_metrics(&data)?;
 
             let response: PromResponse = serde_json::from_str(&content.data).unwrap();
