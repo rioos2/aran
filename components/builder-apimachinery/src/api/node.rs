@@ -398,6 +398,9 @@ impl HealthzAllGet {
     pub fn set_statistics(&mut self, v: Statistics) {
         self.statistics = v;
     }
+    pub fn get_statistics(&mut self) -> Statistics{
+        self.statistics.clone()
+    }
     pub fn set_osusages(&mut self, v: OSUsages) {
         self.osusages = v;
     }
@@ -408,6 +411,7 @@ impl HealthzAllGet {
         self.to_date = v;
     }
 }
+
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Guages {
@@ -477,6 +481,13 @@ impl Statistics {
     pub fn set_senseis(&mut self, v: Vec<NodeStatistic>) {
         self.senseis = v;
     }
+
+    pub fn get_ninjas(&mut self) -> Vec<NodeStatistic> {
+        self.ninjas.clone()
+    }
+    pub fn get_senseis(&mut self) -> Vec<NodeStatistic> {
+        self.senseis.clone()
+    }
 }
 
 
@@ -502,6 +513,10 @@ impl NodeStatistic {
 
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
+    }
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
     }
 
     pub fn set_name(&mut self, v: ::std::string::String) {
@@ -782,22 +797,21 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
                 .into_iter()
                 .map(|x| {
                     let mut node = NodeStatistic::new();
-                    node.set_name(
-                        x.metric
+                    let instance = x.metric
                             .get("instance")
                             .unwrap_or(&"".to_string())
-                            .to_owned(),
-                    );
+                            .to_owned();
+                    let ins: Vec<&str> = instance.split("-").collect();
+                    node.set_name(ins[1].to_string());
                     node.set_counter(x.value.1.to_owned());
                     node.set_id(
-                        x.metric
-                            .get("instance")
-                            .unwrap_or(&"".to_string())
+                        ins[0].to_string()
                             .replace(".", "_")
                             .to_string(),
                     );
                     node.set_kind("Node".to_string());
                     node.set_api_version("v1".to_string());
+                    node.set_health("up".to_string());
                     node
                 })
                 .collect::<Vec<_>>();

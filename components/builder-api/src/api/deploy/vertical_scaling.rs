@@ -173,7 +173,7 @@ impl VerticalScalingApi {
                     .collect::<Vec<_>>();
                 match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&af_id[0]) {
                     Ok(Some(assemblys)) => {
-                        let metrics = DataStore::healthz_all(&self.prom)?;
+                        let metrics = DataStore::new(&self.conn).healthz_all(&self.prom)?;
                         match ReplicasExpander::new(&self.conn, assemblys, metrics, &vs).expand() {
                             Ok(Some(job)) => Ok(render_json(status::Ok, &job)),
                             Err(err) => Err(internal_error(&format!("{}\n", err))),

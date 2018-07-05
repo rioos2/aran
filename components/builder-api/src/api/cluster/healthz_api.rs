@@ -50,7 +50,8 @@ impl HealthzApi {
 
     //metrics of the overall node from prometheus
     fn healthz_all(&self, _req: &mut Request) -> AranResult<Response> {
-        match DataStore::healthz_all(&self.prom) {
+
+        match DataStore::new(&self.conn).healthz_all(&self.prom) {
             Ok(Some(health_all)) => Ok(render_json(status::Ok, &health_all)),
             Err(err) => Err(badgateway_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),

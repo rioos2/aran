@@ -17,6 +17,8 @@ use std::collections::BTreeMap;
 use std::ops::Div;
 use telemetry::metrics::collector::{Collector, CollectorScope};
 use telemetry::metrics::prometheus::PrometheusClient;
+use super::ninja;
+use super::senseis as db_senseis;
 
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 
@@ -33,21 +35,22 @@ impl<'a> DataStore<'a> {
         }
     }    
 
-    pub fn healthz_all(client: &PrometheusClient) -> Result<Option<node::HealthzAllGetResponse>> {
+    pub fn healthz_all(&self, client: &PrometheusClient) -> Result<Option<node::HealthzAllGetResponse>> {
         //Generete the collected(gauges,statistics,os utilization) for all nodes with
         //current cpu utilization of all nodes
         //current ram utilization of all nodes
         //current disk utilization of all nodes
         let sensei_gauges_collected = get_gauges(client, senseis::SENSEI_JOBS.to_string())?;
-        let ninja_gauges_collected = get_gauges(client, node::NODE_JOBS.to_string())?;
+        let ninja_gauges_collected = get_gauges(client, node::NODE_JOBS.to_string())?;        
         let mut guages = node::Guages::new();
         guages.set_title("Cumulative operations counter".to_string());
         guages.set_counters(ninja_gauges_collected.0);
         //current statistic of each node contains(cpu,network)
         let mut statistics = node::Statistics::new();
         statistics.set_title("Statistics".to_string());
-        statistics.set_ninjas(get_statistics(client, ninja_gauges_collected.1, node::NODE_JOBS.to_string())?);
-        statistics.set_senseis(get_statistics(client, sensei_gauges_collected.1, senseis::SENSEI_JOBS.to_string())?);
+        let ninja_stats = 
+        statistics.set_ninjas(append_unhealthy_ninjas(self.db, get_statistics(client, ninja_gauges_collected.1, node::NODE_JOBS.to_string())?));
+        statistics.set_senseis(append_unhealthy_senseis(self.db, get_statistics(client, sensei_gauges_collected.1, senseis::SENSEI_JOBS.to_string())?));
         //Collect the overall utilization of os in all machines
         let os_statistics = get_os_statistics(client)?;
         let mut metrics = node::OSUsages::new();
@@ -65,6 +68,80 @@ impl<'a> DataStore<'a> {
 
         Ok(Some(response))
     }
+}
+
+fn append_unhealthy_ninjas(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
+    match ninja::DataStore::new(db).list_blank() {
+        Ok(Some(node)) => {
+            let mut response = Vec::new();
+            node.iter()
+                .map(|x| {
+                    if res.is_empty() {
+                        response.push(mk_ninja_statistics(x));
+                    }                   
+                    res.iter()
+                        .map(|y| {
+                            if x.get_id() == y.get_id() {
+                                response.push(y.clone());
+                            } else {
+                                response.push(mk_ninja_statistics(x));
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                })
+                .collect::<Vec<_>>();
+            response
+        }
+        Ok(None) => res,
+        Err(_err) => res,
+    }      
+}
+
+fn append_unhealthy_senseis(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic>  {
+    match db_senseis::DataStore::new(db).list_blank() {
+        Ok(Some(node)) => {
+            let mut response = Vec::new();
+            node.iter()
+                .map(|x| {                   
+                    if res.is_empty() {
+                        response.push(mk_sensei_statistics(x));
+                    }
+                    res.iter()
+                        .map(|y| {
+                            if x.get_id() == y.get_id() {
+                                response.push(y.clone());
+                            } else {
+                                response.push(mk_sensei_statistics(x));
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                })
+                .collect::<Vec<_>>();
+            response
+        }
+        Ok(None) => res,
+        Err(_err) => res,
+    }   
+}
+
+fn mk_ninja_statistics(node: &node::Node) -> node::NodeStatistic {
+    let mut ns = node::NodeStatistic::new();
+    ns.set_id(node.get_id());    
+    ns.set_kind(node.type_meta().kind);
+    ns.set_api_version(node.type_meta().api_version);
+    ns.set_name(node.get_name());
+    ns.set_health("down".to_string());
+    ns
+}
+
+fn mk_sensei_statistics(node: &senseis::Senseis) -> node::NodeStatistic {
+    let mut ns = node::NodeStatistic::new();
+    ns.set_id(node.get_id());
+    ns.set_kind(node.type_meta().kind);
+    ns.set_api_version(node.type_meta().api_version);
+    ns.set_name(node.get_name());
+    ns.set_health("down".to_string());
+    ns
 }
 
 fn get_gauges(client: &PrometheusClient, job: String) -> Result<(Vec<node::Counters>, Vec<node::PromResponse>)> {
@@ -265,7 +342,12 @@ fn append_network_speed(
                 instancevec
                     .iter()
                     .map(|y| {
-                        if x.get_name() == y.metric.get("instance").unwrap().to_string() {
+                        let instance = y.metric
+                            .get("instance")
+                            .unwrap_or(&"".to_string())
+                            .to_owned();
+                        let ins: Vec<&str> = instance.split("-").collect();
+                        if x.get_id() == ins[0].to_string() {
                             net_collection.push(y.clone())
                         }
                     })
@@ -384,7 +466,12 @@ fn append_process(
                 instancevec
                     .iter()
                     .map(|y| {
-                        if x.get_name() == y.metric.get("instance").unwrap().to_string() {
+                        let instance = y.metric
+                            .get("instance")
+                            .unwrap_or(&"".to_string())
+                            .to_owned();
+                        let ins: Vec<&str> = instance.split("-").collect();                       
+                        if x.get_id() == ins[0].to_string() {
                             net_collection.push(y.clone())
                         }
                     })
@@ -410,7 +497,12 @@ fn append_disk(
                 instancevec
                     .iter()
                     .map(|y| {
-                        if x.get_name() == y.metric.get("instance").unwrap().to_string() {
+                        let instance = y.metric
+                            .get("instance")
+                            .unwrap_or(&"".to_string())
+                            .to_owned();
+                        let ins: Vec<&str> = instance.split("-").collect();                        
+                        if x.get_id() == ins[0].to_string() {
                             net_collection.push(y.clone())
                         }
                     })
