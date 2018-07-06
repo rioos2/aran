@@ -56,6 +56,14 @@ endpoint = "https://env.envkey.com/v1/"
 access_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 secret_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 
+[services]
+loadbalancer_imagein= "container"
+loadbalancer_imagename = "registry.rioos.xyz:5000/rioos/loadbalancer"
+loadbalancer_cpu= "1"
+loadbalancer_mem= "1024 MiB"
+loadbalancer_disk= "1 GiB"
+dns= "107.152.143.242"
+
 [notifications]
  [notifications.mailer]
   enabled = true
