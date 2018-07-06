@@ -25,3 +25,4 @@ pub mod error;
 pub mod licensecloud;
 pub mod licensor;
 pub mod nalperion;
+pub mod softwarekey;

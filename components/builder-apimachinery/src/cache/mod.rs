@@ -7,8 +7,8 @@ mod multi_cache;
 
 use self::flock::Cacher;
 use api;
-use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder,
-                    ServicesFeeder, StacksFeeder, VolumesFeeder, LicensesFeeder};
+use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder, VolumesFeeder,
+                    LicensesFeeder};
 use cache::multi_cache::MultiCache;
 use serde_json;
 use std::collections::BTreeMap;
@@ -75,18 +75,10 @@ pub trait CacheService: Send + Sync {
     fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>);
 
     //The getter for the cache
-    fn get(
-        &self,
-        id: api::base::IdGet,
-        lru: &Box<MultiCache<String, String>>,
-    ) -> Option<Arc<String>>;
+    fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>>;
 
     //The invalidator for the cache
-    fn invalidate(
-        &self,
-        id: api::base::IdGet,
-        lru: &Box<MultiCache<String, String>>,
-    ) -> Option<Arc<String>>;
+    fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>>;
 
     //The cache id as its stored in the lru multi cache. This will be of the format
     // _plan_<id>
@@ -115,15 +107,14 @@ impl CacheService for NewCacheServiceFn {
 
     fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {
         info!("✔ apply cache ≈ {}", id);
-        self.cache()
-            .insert(lru, self.cache_id(id.clone()).clone(), (self.live)(id))
+        self.cache().insert(
+            lru,
+            self.cache_id(id.clone()).clone(),
+            (self.live)(id),
+        )
     }
 
-    fn get(
-        &self,
-        id: api::base::IdGet,
-        lru: &Box<MultiCache<String, String>>,
-    ) -> Option<Arc<String>> {
+    fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
         let _self = self.cache();
         let _cache_id = self.cache_id(id.clone());
 
@@ -139,11 +130,7 @@ impl CacheService for NewCacheServiceFn {
         }
     }
 
-    fn invalidate(
-        &self,
-        id: api::base::IdGet,
-        lru: &Box<MultiCache<String, String>>,
-    ) -> Option<Arc<String>> {
+    fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
         info!("✔ get: invalidate ≈ {}", id);
         self.apply(id.clone(), lru);
         self.cache().get(lru, self.cache_id(id).clone())
@@ -222,9 +209,11 @@ impl InMemoryExpander {
         debug!("» Cache Invalidate key: {:?}", key.clone());
         debug!("» Cache Invalidate id: {:?}", id);
         match self.cache_service_for(key.clone()) {
-            Some(cachefn) => cachefn
-                .invalidate(id, _lru)
-                .map(|a| a.clone().deref().to_string()),
+            Some(cachefn) => {
+                cachefn.invalidate(id, _lru).map(|a| {
+                    a.clone().deref().to_string()
+                })
+            }
             _ => None,
         }
     }
@@ -280,8 +269,7 @@ impl InMemoryExpander {
 
         f.ffeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let factory: Option<api::deploy::AssemblyFactory> =
-                    serde_json::from_str(&found_as_str).ok();
+                let factory: Option<api::deploy::AssemblyFactory> = serde_json::from_str(&found_as_str).ok();
                 factory
             }
         }))
@@ -309,8 +297,7 @@ impl InMemoryExpander {
 
         f.bfeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let factory: Option<api::deploy::StacksFactory> =
-                    serde_json::from_str(&found_as_str).ok();
+                let factory: Option<api::deploy::StacksFactory> = serde_json::from_str(&found_as_str).ok();
                 factory
             }
         }))
@@ -338,8 +325,7 @@ impl InMemoryExpander {
 
         e.efeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let endpoint: Option<api::endpoints::EndPoints> =
-                    serde_json::from_str(&found_as_str).ok();
+                let endpoint: Option<api::endpoints::EndPoints> = serde_json::from_str(&found_as_str).ok();
                 endpoint
             }
         }))
@@ -365,8 +351,7 @@ impl InMemoryExpander {
 
         s.sfeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let service: Option<Vec<api::linker::Services>> =
-                    serde_json::from_str(&found_as_str).ok();
+                let service: Option<Vec<api::linker::Services>> = serde_json::from_str(&found_as_str).ok();
                 service
             }
         }))
@@ -394,8 +379,7 @@ impl InMemoryExpander {
 
         v.vfeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let volume: Option<Vec<api::volume::Volumes>> =
-                    serde_json::from_str(&found_as_str).ok();
+                let volume: Option<Vec<api::volume::Volumes>> = serde_json::from_str(&found_as_str).ok();
                 volume
             }
         }))
@@ -423,8 +407,7 @@ impl InMemoryExpander {
 
         i.ifeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let perms: Option<Vec<api::authorize::Permissions>> =
-                    serde_json::from_str(&found_as_str).ok();
+                let perms: Option<Vec<api::authorize::Permissions>> = serde_json::from_str(&found_as_str).ok();
                 perms
             }
         }))
@@ -446,10 +429,9 @@ impl InMemoryExpander {
                 },
             )
         };
-
         i.ifeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let license: api::licenses::Licenses = serde_json::from_str(&found_as_str).unwrap();
+                let license: api::licenses::Licenses = serde_json::from_str(&found_as_str).unwrap_or(api::licenses::Licenses::new());
                 let status: String = license.get_status();
                 Some(status)
             }
@@ -478,8 +460,7 @@ impl InMemoryExpander {
 
         m.mfeed(opt_found_as_str.and_then({
             |found_as_str| {
-                let metric: Option<BTreeMap<String, String>> =
-                    serde_json::from_str(&found_as_str).ok();
+                let metric: Option<BTreeMap<String, String>> = serde_json::from_str(&found_as_str).ok();
                 metric
             }
         }))

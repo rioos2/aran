@@ -1,15 +1,22 @@
 ---
 --- Table:licenses
 ---
+
 CREATE SEQUENCE IF NOT EXISTS license_id_seq;
-CREATE TABLE IF NOT EXISTS LICENSES (id bigint PRIMARY KEY DEFAULT next_id_v1('license_id_seq'), object_meta JSONB, type_meta JSONB, status text, product text,activation_code text,expired text, updated_at timestamptz, created_at timestamptz DEFAULT now());
+
+
+CREATE TABLE IF NOT EXISTS LICENSES (id bigint PRIMARY KEY DEFAULT next_id_v1('license_id_seq'),
+                                                                   object_meta JSONB,
+                                                                               type_meta JSONB,
+                                                                                         status text, product text,activation_code text,expired text, updated_at timestamptz,
+                                                                                                                                                      created_at timestamptz DEFAULT now());
 
 ---
 --- Table:licenses:create/update
 ---
-CREATE FUNCTION insert_or_update_license_v1(
-            lobject_meta JSONB, ltype_meta JSONB, lstatus text, lproduct text,lactivation_code text,lexpired text
-          )RETURNS SETOF LICENSES AS $$
+
+CREATE FUNCTION insert_or_update_license_v1( lobject_meta JSONB, ltype_meta JSONB, lstatus text, lproduct text,lactivation_code text,lexpired text )RETURNS
+SETOF LICENSES AS $$
 DECLARE this_license LICENSES % rowtype;
 BEGIN
    SELECT
@@ -44,8 +51,10 @@ $$ LANGUAGE PLPGSQL;
 ---
 --- Table:licenses:show
 ---
+
 CREATE
-OR REPLACE FUNCTION get_license_v1(lname text) RETURNS SETOF licenses AS $$
+OR REPLACE FUNCTION get_license_v1(lname text) RETURNS
+SETOF licenses AS $$
 BEGIN
    RETURN QUERY
    SELECT
@@ -61,8 +70,10 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:licenses:list
 ---
+
 CREATE
-OR REPLACE FUNCTION get_license_list_by_v1() RETURNS SETOF licenses AS $$
+OR REPLACE FUNCTION get_license_list_by_v1() RETURNS
+SETOF licenses AS $$
 BEGIN
    RETURN QUERY
    SELECT
