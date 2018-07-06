@@ -56,7 +56,7 @@ impl<'a> Collector<'a> {
             })
         );       
         let content = self.client.pull_metrics(&data)?;
-
+       
         let response: PromResponse = serde_json::from_str(&content.data).unwrap();
         content_datas.push(response);
 
@@ -64,6 +64,7 @@ impl<'a> Collector<'a> {
 
         Ok(memory_contents_data)
     }
+
 
     //collect the overall disk of all nodes
     pub fn average_disk(&self) -> Result<Vec<PromResponse>> {

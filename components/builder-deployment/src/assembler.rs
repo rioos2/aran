@@ -28,41 +28,19 @@ impl ServicesConfig {
 
     pub fn as_map(&self) -> BTreeMap<String, String> {
         vec![
-            (
-                Self::LOAD_BALANCER_IMAGEIN_KEY.to_string(),
-                self.loadbalancer_imagein.clone(),
-            ),
-            (
-                Self::LOAD_BALANCER_IMAGENAME_KEY.to_string(),
-                self.loadbalancer_imagename.clone(),
-            ),
-            (
-                Self::LOAD_BALANCER_CPU_KEY.to_string(),
-                self.loadbalancer_cpu.clone(),
-            ),
-            (
-                Self::LOAD_BALANCER_MEM_KEY.to_string(),
-                self.loadbalancer_mem.clone(),
-            ),
-            (
-                Self::LOAD_BALANCER_DISK_KEY.to_string(),
-                self.loadbalancer_disk.clone(),
-            ),
-            (
-                Self::DNS_NAMESERVER_KEY.to_string(),
-                self.dns.clone(),
-            ),
+            (Self::LOAD_BALANCER_IMAGEIN_KEY.to_string(), self.loadbalancer_imagein.clone()),
+            (Self::LOAD_BALANCER_IMAGENAME_KEY.to_string(), self.loadbalancer_imagename.clone()),
+            (Self::LOAD_BALANCER_CPU_KEY.to_string(), self.loadbalancer_cpu.clone()),
+            (Self::LOAD_BALANCER_MEM_KEY.to_string(), self.loadbalancer_mem.clone()),
+            (Self::LOAD_BALANCER_DISK_KEY.to_string(), self.loadbalancer_disk.clone()),
+            (Self::DNS_NAMESERVER_KEY.to_string(), self.dns.clone()),
         ].into_iter()
             .collect::<BTreeMap<_, String>>()
     }
 
     pub fn as_map_deployless(&self) -> BTreeMap<String, String> {
-        vec![
-            (
-                Self::DNS_NAMESERVER_KEY.to_string(),
-                self.dns.clone(),
-            ),
-        ].into_iter()
+        vec![(Self::DNS_NAMESERVER_KEY.to_string(), self.dns.clone())]
+            .into_iter()
             .collect::<BTreeMap<_, String>>()
     }
 }
@@ -95,17 +73,10 @@ impl<'a> Assembler<'a> {
     ///Returns a resassembled assembly
     /// This can be where we want to move up the desired replica count or down.
     // This applies a ServiceRuleEvent::ReAssemble
-    pub fn reassemble(
-        &self,
-        desired_replicas: u32,
-        current_replicas: u32,
-        factory: &AssemblyFactory,
-    ) -> Result<AssemblyFactory> {
+    pub fn reassemble(&self, desired_replicas: u32, current_replicas: u32, factory: &AssemblyFactory) -> Result<AssemblyFactory> {
         let amp = &self.rebuild_replicas(desired_replicas, current_replicas, factory.clone())?;
 
-        self.build_services(
-            &Ok(amp.clone()).map(|am| (am.0, am.1.clone(), ServiceRule::ReAssemble))
-        );
+        self.build_services(&Ok(amp.clone()).map(|am| (am.0, am.1.clone(), ServiceRule::ReAssemble)));
 
         Ok(amp.clone().0)
     }
@@ -118,12 +89,7 @@ impl<'a> Assembler<'a> {
 
     ///
     ///
-    fn rebuild_replicas(
-        &self,
-        desired_replicas: u32,
-        current_replicas: u32,
-        factory: AssemblyFactory,
-    ) -> AssembledMap {
+    fn rebuild_replicas(&self, desired_replicas: u32, current_replicas: u32, factory: AssemblyFactory) -> AssembledMap {
         Replicas::new(&self.conn, current_replicas, desired_replicas, &factory).upto_desired()
     }
 

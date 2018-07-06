@@ -4,10 +4,7 @@ use error::{Error, Result};
 
 use protocol::api::base::Status;
 use protocol::api::base::{ChildTypeMeta, MetaFields};
-use protocol::api::deploy::{
-    Assembly, AssemblyFactory, AWAIT_PHASE_PENDING, NEW_REPLICA_INITALIZING_MSG,
-    NEW_STAND_STILL_MSG, PHASE_STAND_STILL,
-};
+use protocol::api::deploy::{Assembly, AssemblyFactory, AWAIT_PHASE_PENDING, NEW_REPLICA_INITALIZING_MSG, NEW_STAND_STILL_MSG, PHASE_STAND_STILL};
 use protocol::api::schema::type_meta_url; //To access object_meta() and children() in AssemblyFactory, Assembly
 
 use models::{assembly, assemblyfactory};
@@ -31,12 +28,7 @@ pub struct Replicas<'a> {
 ///  eg: desired can be 5, and the current can be 4, which means we need to deploy 1 more.
 ///  eg: desired can be 5, and the current can be 6, which means we need to nuke 1.
 impl<'a> Replicas<'a> {
-    pub fn new(
-        conn: &'a DataStoreConn,
-        current: u32,
-        desired: u32,
-        request: &'a AssemblyFactory,
-    ) -> Self {
+    pub fn new(conn: &'a DataStoreConn, current: u32, desired: u32, request: &'a AssemblyFactory) -> Self {
         Replicas {
             current: current,
             desired: desired,
@@ -132,11 +124,7 @@ struct ReplicaContext<'a> {
 }
 
 impl<'a> ReplicaContext<'a> {
-    fn new(
-        response: &'a AssemblyFactory,
-        current_replicas: u32,
-        desired_replicas: u32,
-    ) -> ReplicaContext<'a> {
+    fn new(response: &'a AssemblyFactory, current_replicas: u32, desired_replicas: u32) -> ReplicaContext<'a> {
         let base_name = &response.object_meta().name;
 
         ReplicaContext {
@@ -156,12 +144,7 @@ impl<'a> ReplicaContext<'a> {
     //  set the phase as "StandStill"  for `blockchain_template`
     fn calculate(&mut self) {
         for x in self.current..self.desired {
-            let phase_msg_tuple = Self::initialize_phase_for(
-                self.parent
-                    .get_spec()
-                    .get_plan()
-                    .map_or("".to_string(), |p| p.get_category()),
-            );
+            let phase_msg_tuple = Self::initialize_phase_for(self.parent.get_spec().get_plan().map_or("".to_string(), |p| p.get_category()));
 
             let mut assembly = self.build_assembly(&x, &self.parent.get_id());
 
@@ -185,11 +168,7 @@ impl<'a> ReplicaContext<'a> {
     ///and its type meta from the parent)
     fn build_assembly(&mut self, x: &u32, id: &str) -> Assembly {
         let mut assembly = Assembly::new();
-        let ref mut om = assembly.mut_meta(
-            assembly.object_meta(),
-            self.namer.next(x + 1),
-            self.parent.get_account(),
-        );
+        let ref mut om = assembly.mut_meta(assembly.object_meta(), self.namer.next(x + 1), self.parent.get_account());
         //set the parents datacenter/location or clustername
         assembly.set_cluster_name(om, self.parent.get_cluster_name());
 
@@ -217,15 +196,9 @@ impl<'a> ReplicaContext<'a> {
     /// We will stand still if its a blockchain_template
     fn initialize_phase_for(category: String) -> (String, String) {
         if APPLICABLE_TO_STAND_STILL.contains(&category.as_str()) {
-            return (
-                PHASE_STAND_STILL.to_string(),
-                NEW_STAND_STILL_MSG.to_string(),
-            );
+            return (PHASE_STAND_STILL.to_string(), NEW_STAND_STILL_MSG.to_string());
         }
-        (
-            AWAIT_PHASE_PENDING.to_string(),
-            NEW_REPLICA_INITALIZING_MSG.to_string(),
-        )
+        (AWAIT_PHASE_PENDING.to_string(), NEW_REPLICA_INITALIZING_MSG.to_string())
     }
 }
 

@@ -1,10 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::{MetaFields, ObjectMeta, TypeMeta};
-use api::node::{Spec, NodeStatus};
+use api::base::{MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
+use api::node::{NodeStatus, Spec};
 use std::collections::BTreeMap;
 
-//Rioos prometheus tool automatically allocated "rioos-nodes" job, so we use it
+//RioOS prometheus automatically allocates "rioos-masters" job with a dash.
+//TO-DO: Usually our conventions is to use rioos_sh_masters, but in this case
+//we don't want to change prometheus.
 pub const SENSEI_JOBS: &'static str = "job=rioos-masters";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -75,6 +77,10 @@ impl Senseis {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
+}
+
+impl WhoAmITypeMeta for Senseis {
+    const MY_KIND: &'static str = "POST:senseis";
 }
 
 impl MetaFields for Senseis {

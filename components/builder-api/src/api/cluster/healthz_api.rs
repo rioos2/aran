@@ -1,27 +1,17 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use ansi_term::Colour;
-use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
-use bodyparser;
-use bytes::Bytes;
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator};
 use clusters::models::healthz::DataStore;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::Error;
-use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, badgateway_error, internal_error, not_found_error};
-use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::AranResult;
+use http_gateway::util::errors::{badgateway_error, not_found_error};
 use iron::prelude::*;
 use iron::status;
-use protocol::api::base::IdGet;
-use protocol::api::base::MetaFields;
-use protocol::api::node::{Node, NodeFilter, NodeStatusUpdate};
-use protocol::api::schema::{dispatch, type_meta};
 use router::Router;
-use serde_json;
 use std::sync::Arc;
 use telemetry::metrics::prometheus::PrometheusClient;
 
@@ -42,15 +32,12 @@ pub struct HealthzApi {
 /// GET: /node/:ip
 impl HealthzApi {
     pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
-        HealthzApi {
-            prom: prom,
-            conn: datastore,
-        }
-    }    
+        HealthzApi { prom: prom, conn: datastore }
+    }
 
     //metrics of the overall node from prometheus
     fn healthz_all(&self, _req: &mut Request) -> AranResult<Response> {
-        match DataStore::healthz_all(&self.prom) {
+        match DataStore::new(&self.conn).healthz_all(&self.prom) {
             Ok(Some(health_all)) => Ok(render_json(status::Ok, &health_all)),
             Err(err) => Err(badgateway_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -60,10 +47,7 @@ impl HealthzApi {
     /// Endpoint for determining availability of builder-api components.
     /// Returns a status 200 on success. Any non-200 responses are an outage or a partial outage.
     fn status(&self, _req: &mut Request) -> AranResult<Response> {
-        Ok(render_json(
-            status::Ok,
-            &format!("code:{},version:{}", "200", "rioos-2.0"),
-        ))
+        Ok(render_json(status::Ok, &format!("code:{},version:{}", "200", "rioos-2.0")))
     }
 }
 
@@ -72,8 +56,7 @@ impl Api for HealthzApi {
         let basic = Authenticated::new(&*config);
 
         let _self = self.clone();
-        let healthz_all =
-            move |req: &mut Request| -> AranResult<Response> { _self.healthz_all(req) };
+        let healthz_all = move |req: &mut Request| -> AranResult<Response> { _self.healthz_all(req) };
 
         let _self = self.clone();
         let healthz = move |req: &mut Request| -> AranResult<Response> { _self.status(req) };
@@ -85,7 +68,6 @@ impl Api for HealthzApi {
         );
 
         router.get("/healthz", XHandler::new(C { inner: healthz }), "healthz");
-       
     }
 }
 
@@ -94,4 +76,3 @@ impl ApiValidator for HealthzApi {}
 impl ParmsVerifier for HealthzApi {}
 
 impl QueryValidator for HealthzApi {}
-

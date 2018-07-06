@@ -143,11 +143,7 @@ pub fn am_i_root() -> bool {
 pub fn open_from(path: &Path) -> Result<File> {
     match File::open(path) {
         Ok(f) => Ok(f),
-        Err(e) => Err(Error::FileNotFound(format!(
-            "{}\n{:?}",
-            format!("{}", e),
-            path
-        ))),
+        Err(e) => Err(Error::FileNotFound(format!("{}\n{:?}", format!("{}", e), path))),
     }
 }
 

@@ -20,18 +20,16 @@ impl DataStore {
     pub fn create(db: &DataStoreConn, services_create: &linker::Services) -> ServiceOutput {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn
-            .query(
-                "SELECT * FROM insert_services_v1($1,$2,$3,$4,$5)",
-                &[
-                    &(serde_json::to_value(services_create.get_spec()).unwrap()),
-                    &(serde_json::to_value(services_create.get_metadata()).unwrap()),
-                    &(serde_json::to_value(services_create.get_status()).unwrap()),
-                    &(serde_json::to_value(services_create.object_meta()).unwrap()),
-                    &(serde_json::to_value(services_create.type_meta()).unwrap()),
-                ],
-            )
-            .map_err(Error::ServicesCreate)?;
+        let rows = &conn.query(
+            "SELECT * FROM insert_services_v1($1,$2,$3,$4,$5)",
+            &[
+                &(serde_json::to_value(services_create.get_spec()).unwrap()),
+                &(serde_json::to_value(services_create.get_metadata()).unwrap()),
+                &(serde_json::to_value(services_create.get_status()).unwrap()),
+                &(serde_json::to_value(services_create.object_meta()).unwrap()),
+                &(serde_json::to_value(services_create.type_meta()).unwrap()),
+            ],
+        ).map_err(Error::ServicesCreate)?;
 
         if rows.len() > 0 {
             for row in rows {
@@ -44,11 +42,7 @@ impl DataStore {
     pub fn show(db: &DataStoreConn, services_get: &IdGet) -> ServiceOutput {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn
-            .query(
-                "SELECT * FROM get_services_v1($1)",
-                &[&(services_get.get_id().parse::<i64>().unwrap())],
-            )
+        let rows = &conn.query("SELECT * FROM get_services_v1($1)", &[&(services_get.get_id().parse::<i64>().unwrap())])
             .map_err(Error::ServicesGet)?;
 
         if rows.len() > 0 {
@@ -62,9 +56,7 @@ impl DataStore {
     pub fn list_blank(db: &DataStoreConn) -> ServiceOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn
-            .query("SELECT * FROM get_services_list_v1()", &[])
-            .map_err(Error::ServicesGet)?;
+        let rows = &conn.query("SELECT * FROM get_services_list_v1()", &[]).map_err(Error::ServicesGet)?;
 
         let mut response = Vec::new();
 
@@ -80,12 +72,10 @@ impl DataStore {
     pub fn list_by_assembly_factory(db: &DataStoreConn, services_get: &IdGet) -> ServiceOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn
-            .query(
-                "SELECT * FROM get_services_by_assembly_factory_v1($1)",
-                &[&(services_get.get_id() as String)],
-            )
-            .map_err(Error::ServicesGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_services_by_assembly_factory_v1($1)",
+            &[&(services_get.get_id() as String)],
+        ).map_err(Error::ServicesGet)?;
 
         let mut response = Vec::new();
 
@@ -98,18 +88,13 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn list_by_blockchain_factory(
-        db: &DataStoreConn,
-        services_get: &IdGet,
-    ) -> ServiceOutputList {
+    pub fn list_by_blockchain_factory(db: &DataStoreConn, services_get: &IdGet) -> ServiceOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn
-            .query(
-                "SELECT * FROM get_services_by_blockchain_factory_v1($1)",
-                &[&(services_get.get_id() as String)],
-            )
-            .map_err(Error::ServicesGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_services_by_blockchain_factory_v1($1)",
+            &[&(services_get.get_id() as String)],
+        ).map_err(Error::ServicesGet)?;
 
         let mut response = Vec::new();
 
@@ -122,24 +107,19 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn update(
-        db: &DataStoreConn,
-        service: &linker::Services,
-    ) -> Result<Option<linker::Services>> {
+    pub fn update(db: &DataStoreConn, service: &linker::Services) -> Result<Option<linker::Services>> {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn
-            .query(
-                "SELECT * FROM update_servive_by_v1($1,$2,$3,$4,$5)",
-                &[
-                    &(service.get_id().parse::<i64>().unwrap()),
-                    &(serde_json::to_value(service.get_spec()).unwrap()),
-                    &(serde_json::to_value(service.get_metadata()).unwrap()),
-                    &(serde_json::to_value(service.get_status()).unwrap()),
-                    &(serde_json::to_value(service.object_meta()).unwrap()),
-                ],
-            )
-            .map_err(Error::ServicesUpdate)?;
+        let rows = &conn.query(
+            "SELECT * FROM update_servive_by_v1($1,$2,$3,$4,$5)",
+            &[
+                &(service.get_id().parse::<i64>().unwrap()),
+                &(serde_json::to_value(service.get_spec()).unwrap()),
+                &(serde_json::to_value(service.get_metadata()).unwrap()),
+                &(serde_json::to_value(service.get_status()).unwrap()),
+                &(serde_json::to_value(service.object_meta()).unwrap()),
+            ],
+        ).map_err(Error::ServicesUpdate)?;
 
         if rows.len() > 0 {
             for row in rows {

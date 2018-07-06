@@ -8,13 +8,13 @@ use std::sync::Arc;
 pub const DIFFER_HOOK: &'static str = "differ_hookah";
 pub const NINJA_HOOK: &'static str = "ninja_hookah";
 pub const SECRET_HOOK: &'static str = "secret_hookah";
+pub const SENSEI_HOOK: &'static str = "sensei_hookah";
 
-
-/// This is a workload hook function: is a closure that is responsible for presenting a startup 
+/// This is a workload hook function: is a closure that is responsible for presenting a startup
 /// workload hook
 type HookFn = Box<Fn() -> Option<()> + 'static + Send + Sync>;
 
-/// The hook service function wrapper that is responsible for providing the prenup startup 
+/// The hook service function wrapper that is responsible for providing the prenup startup
 /// routine workload hook encapsulation.
 /// This has the key of the registered hook function example differ_hookah
 #[derive(Clone)]
@@ -62,10 +62,10 @@ impl AHooks {
     /// Returns the hookservice for the keys
     /// The registered hooks are invoked.
     ///
-    pub fn setup(&self) -> ::std::option::Option<()> {        
+    pub fn setup(&self) -> ::std::option::Option<()> {
         let s = Some(());
         for (_, hookfn) in &self.hooks {
-           ((hookfn.hook)()).and(s) ;
+            ((hookfn.hook)()).and(s);
         }
         s
     }
