@@ -33,7 +33,7 @@ endpoint = "http://localhost:9090/api/v1"
 backend = "Local"
 
 [licenses]
-so_file = "ShaferFilechck.so"
+so_file = "libPLUSNative.so"
 activation_code = ""
 
 [logs]
