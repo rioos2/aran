@@ -1,7 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
+
+use api::base::{MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
 use api::base::IdGet;
 use cache::inject::LicensesFeeder;
-use api::base::{MetaFields, ObjectMeta, TypeMeta};
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -105,22 +106,50 @@ impl Licenses {
 
 impl LicensesFeeder for Licenses {
     fn iget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(self.get_name(), "".to_string())
+        IdGet::with_id_name(self.object_meta().name, "".to_string())
     }
 
     fn ifeed(&mut self, m: Option<String>) {
         match m {
             Some(status) => self.set_status(status),
-            None => {},
+            None => {}
         }
     }
 }
 
+impl WhoAmITypeMeta for Licenses {
+    const MY_KIND: &'static str = "POST:licenseactivate";
+}
+//TRIAL => Evaluation trial for 30 days
+//ACTIVE => License with FullNonExpiring
+//EXPIRED => License TimeLimit is exists
+//INVALID => License process failed
+
+pub enum LicenseStatus {
+    TRIAL,
+    ACTIVE,
+    EXPIRED,
+    INVALID,
+}
+
+impl LicenseStatus {
+    pub fn status(status: &str) -> LicenseStatus {
+        match &status[..] {
+            "active" => LicenseStatus::ACTIVE,
+            "expired" => LicenseStatus::EXPIRED,
+            "trial" => LicenseStatus::TRIAL,
+            "" => LicenseStatus::INVALID,
+            _ => LicenseStatus::INVALID,
+        }
+    }
+}
+
+
 #[cfg(test)]
 mod test {
-    use serde_json::from_str as json_decode;
 
     use super::*;
+    use serde_json::from_str as json_decode;
 
     #[test]
     fn decode_license() {

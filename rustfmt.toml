@@ -1,6 +1,6 @@
 error_on_line_overflow = true
 error_on_unformatted = true
-max_width = 150
+max_width = 3000
 comment_width = 80
 newline_style = "Unix"
 brace_style = "SameLineWhere"

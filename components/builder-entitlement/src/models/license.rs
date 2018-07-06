@@ -1,16 +1,16 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use super::super::{LicenseOutput, LicenseOutputList};
 use chrono::prelude::*;
+use db::data_store::DataStoreConn;
 use error::{Error, Result};
 
-use protocol::api::licenses::Licenses;
-use protocol::api::base::{IdGet,MetaFields};
-use protocol::cache::PULL_DIRECTLY;
-use protocol::cache::InMemoryExpander;
-
 use postgres;
-use db::data_store::DataStoreConn;
-use super::super::{LicenseOutput,LicenseOutputList};
+use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
+use protocol::api::licenses::Licenses;
+use protocol::api::schema::type_meta_url;
+use protocol::cache::{PULL_DIRECTLY, PULL_INVALDATED};
+use protocol::cache::InMemoryExpander;
 use serde_json;
 
 pub struct DataStore<'a> {
@@ -40,7 +40,11 @@ impl<'a> DataStore<'a> {
             ],
         ).map_err(Error::LicenseCreate)?;
         if rows.len() > 0 {
-            let licenses_create = row_to_licenses(&rows.get(0))?;
+            let mut licenses_create = row_to_licenses(&rows.get(0))?;
+            self.expander.with_license(
+                &mut licenses_create,
+                PULL_INVALDATED,
+            );
             return Ok(Some(licenses_create));
         }
         Ok(None)
@@ -81,12 +85,16 @@ impl<'a> DataStore<'a> {
     //This is a fascade method to get_by_name.
     pub fn get_by_name_fascade(&self, name: IdGet) -> Licenses {
         let mut license = Licenses::new();
-        license.set_name(name.get_id());
-        self.expander
-            .with_license(&mut license, PULL_DIRECTLY);
+
+        let m = license.mut_meta(license.object_meta(), name.get_id(), license.get_account());
+
+        let jackie = license.who_am_i();
+
+        license.set_meta(type_meta_url(jackie), m);
+
+        self.expander.with_license(&mut license, PULL_DIRECTLY);
         license
     }
-
 }
 
 fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {

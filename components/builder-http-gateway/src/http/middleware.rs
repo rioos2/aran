@@ -1,30 +1,32 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
-use super::super::util::errors::*;
+
 use super::header_extracter::HeaderDecider;
 use super::rendering::*;
+use super::super::util::errors::*;
 use ansi_term::Colour;
 use auth::config::AuthenticationFlowCfg;
-use entitlement::config::License;
-use auth::rbac::{authorizer, permissions::Permissions};
+use auth::rbac::authorizer;
+use auth::rbac::license::LicensesFascade;
+use auth::rbac::permissions::Permissions;
 use auth::rioos::AuthenticateDelegate;
 use common::ui;
 use db::data_store::DataStoreConn;
+use entitlement::config::License;
+use iron::Handler;
 use iron::headers;
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
 use iron::status::NotFound;
 use iron::typemap::Key;
-use iron::Handler;
 use persistent;
 use regex::Regex;
 use router::NoRoute;
 use std::collections::HashMap;
 use unicase::UniCase;
-use util::errors::{bad_err, forbidden_error, internal_error};
-use auth::rbac::license::LicensesFascade;
+use util::errors::{bad_err, forbidden_error, internal_error, entitlement_error};
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
@@ -52,18 +54,20 @@ where
     fn handle(&self, req: &mut Request) -> Result<Response, IronError> {
         match (&self.inner)(req) {
             Ok(resp) => Ok(resp),
-            Err(e) => match e.response() {
-                Some(response) => {
-                    println!("\n----------------\nOutput response: \n{}\n", response);
-                    Ok(response)
+            Err(e) => {
+                match e.response() {
+                    Some(response) => {
+                        println!("\n----------------\nOutput response: \n{}\n", response);
+                        Ok(response)
+                    }
+                    None => {
+                        let err = internal_error(&format!(
+                            "BUG! Report to development http://bit.ly/rioosbug"
+                        ));
+                        Err(render_json_error(&bad_err(&err), err.http_code()))
+                    }
                 }
-                None => {
-                    let err = internal_error(&format!(
-                        "BUG! Report to development http://bit.ly/rioosbug"
-                    ));
-                    Err(render_json_error(&bad_err(&err), err.http_code()))
-                }
-            },
+            }
         }
     }
 }
@@ -151,7 +155,9 @@ pub trait AuthFlow {
 
     //Tell the reason the auth flow is invalid
     fn reason(&self) -> Option<String> {
-        Some("You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`.".to_string())
+        Some(
+            "You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`.".to_string(),
+        )
     }
 }
 
@@ -182,7 +188,10 @@ impl BeforeMiddleware for Authenticated {
             '☛',
             format!(
                 "======= {}:{}:{}:{}",
-                req.version, req.method, req.url, req.headers
+                req.version,
+                req.method,
+                req.url,
+                req.headers
             ),
         );
 
@@ -202,11 +211,7 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(
-        req: &mut Request,
-        plugins: Vec<String>,
-        conf: HashMap<String, String>,
-    ) -> IronResult<()> {
+    pub fn proceed(req: &mut Request, plugins: Vec<String>, conf: HashMap<String, String>) -> IronResult<()> {
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -289,12 +294,10 @@ impl URLGrabber {
             &req.url
                 .path()
                 .into_iter()
-                .map(|p| {
-                    if RE.is_match(&p) {
-                        ".*".to_string()
-                    } else {
-                        format!(".{}", &p)
-                    }
+                .map(|p| if RE.is_match(&p) {
+                    ".*".to_string()
+                } else {
+                    format!(".{}", &p)
                 })
                 .collect::<String>(),
             method
@@ -349,8 +352,7 @@ impl BeforeMiddleware for RBAC {
             return Ok(());
         }
 
-        let header =
-            HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
+        let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
         let roles: authorizer::RoleType = header.decide()?.into();
 
         info!(
@@ -365,10 +367,10 @@ impl BeforeMiddleware for RBAC {
             return Ok(());
         }
 
-        match self.authorizer
-            .clone()
-            .verify(roles.clone(), input_trust.clone().unwrap())
-        {
+        match self.authorizer.clone().verify(
+            roles.clone(),
+            input_trust.clone().unwrap(),
+        ) {
             Ok(_validate) => Ok(()),
             Err(_) => {
                 info!(
@@ -389,23 +391,30 @@ impl BeforeMiddleware for RBAC {
     }
 }
 
+
 pub struct EntitlementAct {
-   _license: LicensesFascade,
-   _backend: String,
+    license: LicensesFascade,
+    backend: String,
 }
 
 impl EntitlementAct {
     pub fn new<T: License>(config: &T, fascade: LicensesFascade) -> Self {
         EntitlementAct {
-            _license: fascade, 
-            _backend: config.backend().to_string(),           
+            license: fascade,
+            backend: config.backend().to_string(),
         }
     }
 }
 
 impl BeforeMiddleware for EntitlementAct {
     fn before(&self, _req: &mut Request) -> IronResult<()> {
-        Ok(())
+        match self.license.clone().get_by_name(self.backend.clone()) {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                let err = entitlement_error(&format!("{}\n", err));
+                return Err(render_json_error(&bad_err(&err), err.http_code()));
+            }
+        }
     }
 }
 
@@ -414,10 +423,9 @@ pub struct Custom404;
 impl AfterMiddleware for Custom404 {
     fn catch(&self, req: &mut Request, err: IronError) -> IronResult<Response> {
         if err.error.is::<NoRoute>() {
-            Ok(Response::with((
-                NotFound,
-                format!("404: {:?}", req.url.path()),
-            )))
+            Ok(Response::with(
+                (NotFound, format!("404: {:?}", req.url.path())),
+            ))
         } else {
             Err(err)
         }
@@ -433,10 +441,9 @@ impl AfterMiddleware for Cors {
             UniCase("authorization".to_string()),
             UniCase("range".to_string()),
         ]));
-        res.headers.set(headers::AccessControlAllowMethods(vec![
-            Method::Put,
-            Method::Delete,
-        ]));
+        res.headers.set(headers::AccessControlAllowMethods(
+            vec![Method::Put, Method::Delete],
+        ));
 
         ui::rawdumpln(
             Colour::Green,

@@ -1,9 +1,9 @@
-
 use std::fmt;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum Backend {
-    LicenseCloud,
+    // LicenseCloud,
+    SoftwareKey,
 }
 
 ///// Configuration structure for validating license
@@ -21,9 +21,9 @@ pub struct LicensesCfg {
 impl Default for LicensesCfg {
     fn default() -> Self {
         LicensesCfg {
-            so_file: "ShaferFilechck.so".to_string(),
+            so_file: "libPLUSNative.so".to_string(),
             activation_code: None,
-            backend: Backend::LicenseCloud,
+            backend: Backend::SoftwareKey,
         }
     }
 }
