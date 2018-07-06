@@ -4,7 +4,7 @@ use super::super::error::{Error, Result};
 use db::data_store::DataStoreConn;
 use entitlement::models::license;
 use protocol::api::base::IdGet;
-use protocol::api::licenses::Licenses;
+use protocol::api::licenses::{Licenses, LicenseStatus};
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_LICENSE};
 
 
@@ -26,7 +26,7 @@ impl LicensesFascade {
         let license = license::DataStore::new(&self.conn).get_by_name_fascade(IdGet::with_id(name));
         match LicenseStatus::status(&license.get_status()) {
             LicenseStatus::ACTIVE | LicenseStatus::TRIAL => Ok(license),
-            LicenseStatus::UNKNOWN => Err(Error::EntitlementError(format!("License Not Found"))),
+            LicenseStatus::INVALID => Err(Error::EntitlementError(format!("License Invalid"))),
             LicenseStatus::EXPIRED => Err(Error::EntitlementError(format!("License expired"))),
         }
     }
@@ -47,24 +47,5 @@ impl ExpanderSender for LicensesFascade {
         ));
 
         &self.conn.expander.with(license_service);
-    }
-}
-
-enum LicenseStatus {
-    TRIAL,
-    ACTIVE,
-    EXPIRED,
-    UNKNOWN,
-}
-
-impl LicenseStatus {
-    pub fn status(status: &str) -> LicenseStatus {
-        match &status[..] {
-            "active" => LicenseStatus::ACTIVE,
-            "expiried" => LicenseStatus::EXPIRED,
-            "trial" => LicenseStatus::TRIAL,
-            "" => LicenseStatus::UNKNOWN,
-            _ => LicenseStatus::UNKNOWN,
-        }
     }
 }

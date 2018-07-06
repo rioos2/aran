@@ -11,7 +11,7 @@ use error::{Result, Error};
 use licensecloud::LicenseCloud;
 use nalperion::Nalperion;
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
-use protocol::api::licenses::Licenses;
+use protocol::api::licenses::{Licenses, LicenseStatus};
 use protocol::api::schema::type_meta_url;
 
 use softwarekey::SoftwareKey;
@@ -92,11 +92,4 @@ impl Client {
         license.set_expired(days);
         license::DataStore::new(&datastore).create_or_update(&license);
     }
-}
-
-pub enum LicenseStatus {
-    TRIAL,
-    ACTIVE,
-    EXPIRED,
-    UNKNOWN,
 }

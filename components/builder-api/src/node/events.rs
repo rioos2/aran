@@ -6,11 +6,11 @@ use api::audit::ledger;
 use api::audit::mailer::email_sender as mailer;
 use api::audit::slack::slack_sender as slack;
 use db::data_store::DataStoreConn;
-use entitlement::licensor::LicenseStatus;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
+use protocol::api::licenses::LicenseStatus;
 
-const EXPIRY: &'static str = "expiried";
+const EXPIRY: &'static str = "expired";
 const ACTIVE: &'static str = "active";
 const TRIAL: &'static str = "trial";
 
@@ -58,7 +58,7 @@ impl RuntimeHandler {
                 let get_license = self.license.create_trial_or_verify().unwrap();
                 match get_license.0 {
                     LicenseStatus::TRIAL => {
-                        info!{" ✓ All Good. You have a valid entitlement. !"}
+                        info!{" ✓ All Good. You have a trial entitlement. !"}
                         self.license.update_license_status(
                             ds.clone(),
                             TRIAL.to_string(),
@@ -66,7 +66,7 @@ impl RuntimeHandler {
                         );
                     }
                     LicenseStatus::ACTIVE => {
-                        info!{" ✓ All Good. You have a valid entitlement. !"}
+                        info!{" ✓ All Good. You have Rio/OS - Sensei entitlement. !"}
                         self.license.update_license_status(
                             ds.clone(),
                             ACTIVE.to_string(),
@@ -82,10 +82,15 @@ impl RuntimeHandler {
                                 get_license.1,
                             );
                         } else {
-                            warn!("expiry_attempt {:?}", expiry_attempt.unwrap())
+                            warn!("Expired, attempt: {:?}", expiry_attempt.unwrap())
                         }
                     }
-                    LicenseStatus::UNKNOWN => error!("Something going wrong with License"),
+                    LicenseStatus::INVALID => {
+                        error!(
+                            "Something going wrong with License,License Error:{:?}",
+                            get_license.1
+                        )
+                    }
                 }
             }
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),

@@ -120,6 +120,29 @@ impl LicensesFeeder for Licenses {
 impl WhoAmITypeMeta for Licenses {
     const MY_KIND: &'static str = "POST:licenseactivate";
 }
+//TRIAL => Evaluation trial for 30 days
+//ACTIVE => License with FullNonExpiring
+//EXPIRED => License TimeLimit is exists
+//INVALID => License process failed
+
+pub enum LicenseStatus {
+    TRIAL,
+    ACTIVE,
+    EXPIRED,
+    INVALID,
+}
+
+impl LicenseStatus {
+    pub fn status(status: &str) -> LicenseStatus {
+        match &status[..] {
+            "active" => LicenseStatus::ACTIVE,
+            "expired" => LicenseStatus::EXPIRED,
+            "trial" => LicenseStatus::TRIAL,
+            "" => LicenseStatus::INVALID,
+            _ => LicenseStatus::INVALID,
+        }
+    }
+}
 
 
 #[cfg(test)]

@@ -25,6 +25,8 @@ use std::time::{Duration, Instant};
 use tokio_core::reactor::Core;
 use tokio_timer;
 
+const DURATION: u64 = 86400;
+
 /// External messages.
 #[derive(Debug)]
 pub enum ExternalMessage {
@@ -120,7 +122,7 @@ impl Runtime {
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
             let tx = Arc::new(internal_part);
-            let duration = Duration::new(86400, 0); // 1day
+            let duration = Duration::new(DURATION, 0); // 1day
             let builder = tokio_timer::wheel().max_timeout(duration);
             let wakeups = builder.build().interval_at(Instant::now(), duration);
 

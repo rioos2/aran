@@ -5,10 +5,10 @@
 
 
 use config;
-use error::{Error, Result};
+use error::{Error, Result, ResultCode};
 use handlebars::Handlebars;
 use lib_load;
-use licensor::LicenseStatus;
+use protocol::api::licenses::LicenseStatus;
 use rand::{self, Rng};
 
 use rio_core::fs::{read_from_file, rioconfig_config_path, rioconfig_license_path};
@@ -66,9 +66,6 @@ const SK_FLAGS_USE_ENCRYPTION: c_int = 0x00010000;
 const SK_FLAGS_USE_SIGNATURE: c_int = 0x00020000;
 const SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
 
-const INTERNAL: &'static str = "Internal_error";
-const LICENSE_ERROR: &'static str = "License_error";
-
 #[derive(Debug)]
 pub struct SoftwareKey {
     fascade: API,
@@ -115,7 +112,7 @@ impl API {
             let licensePtr: &mut SK_XmlDoc = &mut 0;
             let valuePtr: &mut c_int = &mut 0;
 
-            let mut license_type = 0;
+            let mut license_type = LicenseType::Unlicensed;
 
             // open the softewarekey library and initialize the lib
             let init_fn = lib.get::<fn(c_int,
@@ -181,10 +178,9 @@ impl API {
 
             debug!("=> open_lib: {:?}", result);
 
-            if result != 0 {
-                return check_resut(result, SOFT_LIB_INIT, INTERNAL);
+            if result != ResultCode::SK_ERROR_NONE as i32 {
+                return check_resut(result, SOFT_LIB_INIT);
             }
-
             //set the ENVELOPE_KEY to the api_context
             result = set_fn_str(
                 *context,
@@ -194,8 +190,8 @@ impl API {
             );
 
 
-            if result != 0 && result != 9019 {
-                return check_resut(result, SOFT_LIB_SET, INTERNAL);
+            if result != ResultCode::SK_ERROR_NONE as i32 && result != ResultCode::SK_ERROR_PLUS_EVALUATION_WARNING as i32 {
+                return SoftWareKeyResult::from_err(result, SOFT_LIB_SET);
             }
 
             try!(File::create(
@@ -205,11 +201,9 @@ impl API {
             result = set_fn_int(*context, SK_FLAGS_NONE, 4, 0);
 
             debug!("=> set_fn_int: {:?}", result);
-
-            if result != 0 {
-                return check_resut(result, SOFT_LIB_SET_INT, INTERNAL);
+            if result != ResultCode::SK_ERROR_NONE as i32 {
+                return check_resut(result, SOFT_LIB_SET_INT);
             }
-
             result = license_load_fn(
                 *context,
                 SK_FLAGS_NONE,
@@ -220,14 +214,14 @@ impl API {
 
             debug!("=> before set write access license_load_fn: {:?}", result);
 
-            if result == 9200 || result == 9005 {
+            if result == ResultCode::SK_ERROR_COULD_NOT_LOAD_LICENSE as i32 || result == ResultCode::SK_ERROR_VERIFICATION_FAILED as i32 {
 
                 result = set_fn_int(*context, SK_FLAGS_NONE, 4, 1);
 
                 debug!("=> set_fn_int: {:?}", result);
 
-                if result != 0 {
-                    return check_resut(result, SOFT_LIB_SET_INT, INTERNAL);
+                if result != ResultCode::SK_ERROR_NONE as i32 {
+                    return check_resut(result, SOFT_LIB_SET_INT);
                 }
 
                 result = license_load_fn(
@@ -240,13 +234,13 @@ impl API {
 
                 debug!("=> after set write access license_load_fn: {:?}", result);
 
-                if result == 9200 {
+                if result == ResultCode::SK_ERROR_COULD_NOT_LOAD_LICENSE as i32 {
                     let license_create_fn = lib.get::<fn(SK_ApiContext, c_int, c_int, *mut SK_XmlDoc) -> c_int>(SOFT_LIB_CREATE_NEW_LICENSE.as_bytes())?;
                     result = license_create_fn(*context, SK_FLAGS_NONE, 30, license);
                     debug!("=> license_create_fn: {:?}", result);
 
-                    if result != 0 {
-                        return check_resut(result, SOFT_LIB_CREATE_NEW_LICENSE, INTERNAL);
+                    if result != ResultCode::SK_ERROR_NONE as i32 {
+                        return check_resut(result, SOFT_LIB_CREATE_NEW_LICENSE);
                     }
 
                     result = license_save_fn(
@@ -260,12 +254,12 @@ impl API {
 
                     debug!("=> license_save_fn: {:?}", result);
 
-                    if result != 0 {
-                        return check_resut(result, SOFT_LIB_SAVE, INTERNAL);
+                    if result != ResultCode::SK_ERROR_NONE as i32 {
+                        return check_resut(result, SOFT_LIB_SAVE);
                     }
                 }
-                if result != 0 {
-                    return check_resut(result, SOFT_LIB_LOAD_LICENSE, INTERNAL);
+                if result != ResultCode::SK_ERROR_NONE as i32 {
+                    return check_resut(result, SOFT_LIB_LOAD_LICENSE);
                 }
             }
 
@@ -274,8 +268,8 @@ impl API {
 
             debug!("=> license_get_xml_doc: {:?}", result);
 
-            if result != 0 {
-                return check_resut(result, SOFT_LIB_GET_LICENSE, INTERNAL);
+            if result != ResultCode::SK_ERROR_NONE as i32 {
+                return check_resut(result, SOFT_LIB_GET_LICENSE);
             }
 
 
@@ -291,13 +285,16 @@ impl API {
 
             debug!("=> node_get_int: {:?}", result);
 
-            if result != 0 {
-                license_type = 0
+            if result != ResultCode::SK_ERROR_NONE as i32 {
+                license_type = LicenseType::Unlicensed;
             }
 
-            // if LicenseType::TimeLimited as u32 == license_type {
-            //
-            // }
+            license_type = match *valuePtr {
+
+                1 | 18 | 28 => LicenseType::FullNonExpiring,
+                10 | 11 | 29 => LicenseType::TimeLimited,
+                _ => LicenseType::Unlicensed,
+            };
 
             let licensePtr_1: &mut SK_XmlDoc = &mut 0;
 
@@ -307,8 +304,8 @@ impl API {
 
             debug!("=> license_get_xml_doc: {:?}", result);
 
-            if result != 0 {
-                return check_resut(result, SOFT_LIB_GET_LICENSE, INTERNAL);
+            if result != ResultCode::SK_ERROR_NONE as i32 {
+                return check_resut(result, SOFT_LIB_GET_LICENSE);
             }
 
             result = node_get_string(
@@ -324,12 +321,12 @@ impl API {
             debug!("=> node_get_string: {:?}", result);
 
             // InstallationID must be empty before activating license
-            if result != 0 && result != 9014 {
-                return check_resut(result, SOFT_LIB_NODE_GET_STRING, INTERNAL);
+            if result != ResultCode::SK_ERROR_NONE as i32 && result != ResultCode::SK_ERROR_XML_NODE_MISSING as i32 {
+                return SoftWareKeyResult::from_err(result, SOFT_LIB_NODE_GET_STRING);
             }
 
             //validate license
-            if *strvaluePtr == 0 as *const c_char {
+            if *strvaluePtr == 0 as *const c_char || license_type as u32 == LicenseType::TimeLimited as u32 {
 
                 let licensePtr_2: &mut SK_XmlDoc = &mut 0;
 
@@ -339,8 +336,8 @@ impl API {
 
                 debug!("=> license_get_xml_doc: {:?}", result);
 
-                if result != 0 {
-                    return check_resut(result, SOFT_LIB_GET_LICENSE, INTERNAL);
+                if result != ResultCode::SK_ERROR_NONE as i32 {
+                    return check_resut(result, SOFT_LIB_GET_LICENSE);
                 }
 
                 result = node_get_date(
@@ -354,16 +351,16 @@ impl API {
 
                 debug!("=> node_get_int: {:?}", result);
 
-                if result != 0 {
-                    return check_resut(result, SOFT_LIB_NODE_GET_DATE, INTERNAL);
+                if result != ResultCode::SK_ERROR_NONE as i32 {
+                    return check_resut(result, SOFT_LIB_NODE_GET_DATE);
                 }
 
                 let dayPtr: &mut c_int = &mut 0;
 
                 result = license_remaining_day(SK_FLAGS_NONE, *datevaluePtr, dayPtr);
 
-                if result != 0 {
-                    return check_resut(result, SOFT_LIB_DATEREMAINING, INTERNAL);
+                if result != ResultCode::SK_ERROR_NONE as i32 {
+                    return check_resut(result, SOFT_LIB_DATEREMAINING);
                 }
 
                 debug!("=> done trial");
@@ -376,9 +373,10 @@ impl API {
 
             debug!("=> free_lib: {:?}", result);
 
-            if result != 0 {
-                return check_resut(result, SOFT_LIB_GET_LICENSE, INTERNAL);
+            if result != ResultCode::SK_ERROR_NONE as i32 {
+                return check_resut(result, SOFT_LIB_GET_LICENSE);
             }
+
 
             Ok((LicenseStatus::ACTIVE, "".to_string()))
 
@@ -389,39 +387,30 @@ impl API {
 enum SoftWareKeyResult {}
 
 impl SoftWareKeyResult {
-    pub fn from_err(value: i32, name: &str, err_type: &str) -> Result<(LicenseStatus, String)> {
-        match ErrorType::get_error_type(err_type) {
-            ErrorType::INTERNAL => {
-                match name {
-                    SOFT_LIB_INIT |
-                    SOFT_LIB_DISPOSE |
-                    SOFT_LIB_SET |
-                    SOFT_LIB_GET_LICENSE |
-                    SOFT_LIB_LOAD_LICENSE |
-                    SOFT_LIB_SET_INT |
-                    SOFT_LIB_CREATE_NEW_LICENSE |
-                    SOFT_LIB_SAVE |
-                    SOFT_LIB_NODE_GET_STRING |
-                    SOFT_LIB_NODE_GET_DATE |
-                    SOFT_LIB_DATEREMAINING => {
-                        debug!(
-                            "=> Internal Error in Processing SoftwareKey License. Error Code : {}",
-                            value
-                        );
-                        Ok((LicenseStatus::UNKNOWN, "".to_string()))
-                    }
-                    _ => Ok((LicenseStatus::UNKNOWN, "".to_string())),
-                }
+    pub fn from_err(value: i32, name: &str) -> Result<(LicenseStatus, String)> {
+        match name {
+            SOFT_LIB_INIT |
+            SOFT_LIB_DISPOSE |
+            SOFT_LIB_SET |
+            SOFT_LIB_GET_LICENSE |
+            SOFT_LIB_LOAD_LICENSE |
+            SOFT_LIB_SET_INT |
+            SOFT_LIB_CREATE_NEW_LICENSE |
+            SOFT_LIB_SAVE |
+            SOFT_LIB_NODE_GET_STRING |
+            SOFT_LIB_NODE_GET_DATE |
+            SOFT_LIB_DATEREMAINING => {
+                debug!(
+                    "=> Internal Error in Processing SoftwareKey License. Error Code : {}",
+                    ResultCode::err_description(value)
+                );
+                Ok((
+                    LicenseStatus::INVALID,
+                    ResultCode::err_description(value).to_string(),
+                ))
             }
-            ErrorType::LICENSE_ERROR => {
-                match name {
-                    _ => Ok((LicenseStatus::UNKNOWN, "".to_string())),
-                }
-            }
-
+            _ => Ok((LicenseStatus::INVALID, "Invalid Error Code".to_string())),
         }
-
-
     }
 }
 
@@ -431,21 +420,6 @@ enum LicenseType {
     TimeLimited = 10,
 }
 
-fn check_resut(value: i32, name: &str, err_type: &str) -> Result<(LicenseStatus, String)> {
-    return SoftWareKeyResult::from_err(value, name, err_type);
-}
-
-enum ErrorType {
-    INTERNAL,
-    LICENSE_ERROR,
-}
-
-impl ErrorType {
-    fn get_error_type(err_type: &str) -> ErrorType {
-        match err_type {
-            INTERNAL => ErrorType::INTERNAL,
-            LICENSE_ERROR => ErrorType::LICENSE_ERROR,
-            _ => ErrorType::INTERNAL,
-        }
-    }
+fn check_resut(value: i32, name: &str) -> Result<(LicenseStatus, String)> {
+    return SoftWareKeyResult::from_err(value, name);
 }
