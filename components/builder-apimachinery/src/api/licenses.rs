@@ -15,7 +15,7 @@ pub struct Licenses {
     product: String,
     activation_code: String,
     #[serde(default)]
-    expired: String,
+    expired_at: String,
     #[serde(default)]
     created_at: String,
 }
@@ -87,11 +87,11 @@ impl Licenses {
     }
 
     pub fn set_expired(&mut self, v: ::std::string::String) {
-        self.expired = v;
+        self.expired_at = v;
     }
 
     pub fn get_expired(&self) -> ::std::string::String {
-        self.expired.clone()
+        self.expired_at.clone()
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -122,15 +122,21 @@ mod test {
 
     use super::*;
 
-    // #[test]
-    fn decode_roles() {
+    #[test]
+    fn decode_license() {
         let val = r#"{
-            "name": "LICENSECLOUD",
-            "description":"superuser of RIO/OS. God given powers.  instance"
-            }"#;
+            "object_meta":{
+                "name":"SoftwareKey"
+                },
+            "status":"trial",
+            "product":"Rio/OS",
+            "activation_code":"ertyuicvbnm456789dfghjk456789",
+            "expired_at":"30"}"#;
         let license: Licenses = json_decode(val).unwrap();
-        assert_eq!(license.name, "LICENSECLOUD");
-        assert_eq!(license.status,"ACTIVE");
+        assert_eq!(license.status, "trial");
+        assert_eq!(license.product, "Rio/OS");
+        assert_eq!(license.expired_at,"30");
+        assert_eq!(license.activation_code,"ertyuicvbnm456789dfghjk456789");
     }
 
 }

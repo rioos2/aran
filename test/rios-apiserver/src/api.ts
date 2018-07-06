@@ -4,6 +4,7 @@ import "./helpers";
 import "./auth";
 import "./package";
 import "./marketplace";
+import "./license";
 // import "./origin";
 // import "./team";
 // import "./roles";
