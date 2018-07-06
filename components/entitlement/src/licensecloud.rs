@@ -23,16 +23,14 @@ pub struct LicenseCloud {
 
 impl LicenseCloud {
     pub fn new<T: config::License>(config: &T) -> Self {
-        LicenseCloud {
-            fascade: API::new(config.activation_code()),
-        }
+        LicenseCloud { fascade: API::new(config.activation_code()) }
     }
 
     // Returns the status of license verified with LicenseCloud
-    pub fn verify(&self) -> Result<()> {
-        self.fascade.check_license()?;
-        Ok(())
-    }
+    // pub fn verify(&self) -> Result<()> {
+    //     self.fascade.check_license()?;
+    //     Ok(())
+    // }
 }
 
 #[derive(Debug)]
@@ -42,9 +40,7 @@ struct API {
 
 impl API {
     fn new(activation_code: Option<String>) -> Self {
-        API {
-            activation_code: activation_code,
-        }
+        API { activation_code: activation_code }
     }
 
     fn check_license(&self) -> Result<()> {
@@ -59,7 +55,11 @@ impl API {
     fn call_dynamic(activation_code: String) -> Result<()> {
         let url = format!(
             "{}/?token={}&sku={}&license={}&format={}",
-            ENDPOINT, TOKEN, SKU, activation_code, FORMAT
+            ENDPOINT,
+            TOKEN,
+            SKU,
+            activation_code,
+            FORMAT
         );
         let path = "";
         let mut rep = match http_bearer_get(&url, &path) {
@@ -72,13 +72,15 @@ impl API {
             Ok(res) => res,
             Err(_) => return LicenseCloudResult::from_err(CLOUD_LIB_OPEN),
         };
-        
+
         let error_num = v["licensecloud"]["error_num"].to_string().replace('"', "");
         if error_num != "0".to_string() {
             return LicenseCloudResult::from_value(v["licensecloud"]["error_desc"].to_string());
         }
-       
-        return LicenseCloudResult::from_err(&v["licensecloud"]["license"]["status"].to_string().replace('"', ""))
+
+        return LicenseCloudResult::from_err(&v["licensecloud"]["license"]["status"]
+            .to_string()
+            .replace('"', ""));
     }
 }
 
@@ -88,8 +90,8 @@ impl LicenseCloudResult {
     pub fn from_value(desc: String) -> Result<()> {
         // Error can Generated based on licensecloud error code refer link: https://www.licensecloud.com/api-reference/error-codes/
         Err(Error::RioosAranCore(desc))
-    }  
-    pub fn from_err(name: &str) -> Result<()> {       
+    }
+    pub fn from_err(name: &str) -> Result<()> {
         match name {
             CLOUD_LIB_OPEN => Err(Error::LicenseAPINotFound),
             CLOUD_EXPIRED => Err(Error::ProductExpired),
@@ -97,6 +99,4 @@ impl LicenseCloudResult {
             _ => Ok(()),
         }
     }
-
-   
 }

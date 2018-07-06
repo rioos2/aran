@@ -1,7 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
+
+use api::base::{MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
 use api::base::IdGet;
 use cache::inject::LicensesFeeder;
-use api::base::{MetaFields, ObjectMeta, TypeMeta};
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -15,7 +16,7 @@ pub struct Licenses {
     product: String,
     activation_code: String,
     #[serde(default)]
-    expired: String,
+    expired_at: String,
     #[serde(default)]
     created_at: String,
 }
@@ -87,11 +88,11 @@ impl Licenses {
     }
 
     pub fn set_expired(&mut self, v: ::std::string::String) {
-        self.expired = v;
+        self.expired_at = v;
     }
 
     pub fn get_expired(&self) -> ::std::string::String {
-        self.expired.clone()
+        self.expired_at.clone()
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -105,22 +106,50 @@ impl Licenses {
 
 impl LicensesFeeder for Licenses {
     fn iget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(self.get_name(), "".to_string())
+        IdGet::with_id_name(self.object_meta().name, "".to_string())
     }
 
     fn ifeed(&mut self, m: Option<String>) {
         match m {
             Some(status) => self.set_status(status),
-            None => {},
+            None => {}
         }
     }
 }
 
+impl WhoAmITypeMeta for Licenses {
+    const MY_KIND: &'static str = "POST:licenseactivate";
+}
+//TRIAL => Evaluation trial for 30 days
+//ACTIVE => License with FullNonExpiring
+//EXPIRED => License TimeLimit is exists
+//INVALID => License process failed
+
+pub enum LicenseStatus {
+    TRIAL,
+    ACTIVE,
+    EXPIRED,
+    INVALID,
+}
+
+impl LicenseStatus {
+    pub fn status(status: &str) -> LicenseStatus {
+        match &status[..] {
+            "active" => LicenseStatus::ACTIVE,
+            "expired" => LicenseStatus::EXPIRED,
+            "trial" => LicenseStatus::TRIAL,
+            "" => LicenseStatus::INVALID,
+            _ => LicenseStatus::INVALID,
+        }
+    }
+}
+
+
 #[cfg(test)]
 mod test {
-    use serde_json::from_str as json_decode;
 
     use super::*;
+    use serde_json::from_str as json_decode;
 
     // #[test]
     fn decode_roles() {
@@ -130,7 +159,7 @@ mod test {
             }"#;
         let license: Licenses = json_decode(val).unwrap();
         assert_eq!(license.name, "LICENSECLOUD");
-        assert_eq!(license.status,"ACTIVE");
+        assert_eq!(license.status, "ACTIVE");
     }
 
 }

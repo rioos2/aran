@@ -18,6 +18,8 @@ use error::{Error, Result};
 use db::data_store::DataStoreConn;
 use config::Config;
 use watch::config::Streamer;
+use protocol::cache::ExpanderSender;
+use auth::rbac::license;
 
 use common::ui::UI;
 
@@ -37,9 +39,7 @@ pub struct Node {
 impl Node {
     // Creates node for the given api and node configuration.
     pub fn new(config: Arc<Config>) -> Self {
-        Node {
-            config: config.clone(),
-        }
+        Node { config: config.clone() }
     }
 
     // A generic implementation that launches a `Node`
@@ -51,13 +51,20 @@ impl Node {
 
         let ods = DataStoreConn::new().ok();
         let ds = match ods {
-            Some(ds) => Box::new(ds),           
+            Some(ds) => Box::new(ds),
             None => {
-                return Err(Error::Api("Failed to wire the api middleware, \ndatabase isn't ready.".to_string()))
+                return Err(Error::Api(
+                    "Failed to wire the api middleware, \ndatabase isn't ready."
+                        .to_string(),
+                ))
             }
         };
 
-        let rg = runtime::Runtime::new(self.config.clone(), ds.clone());
+        let mut license = license::LicensesFascade::new(ds.clone());
+        license.with_cache();
+
+        let rg = runtime::Runtime::new(self.config.clone(), license);
+
         let api_sender = rg.channel();
 
         ui.end("✓ Runtime Guard");
@@ -65,18 +72,22 @@ impl Node {
         ui.begin("→ Api Srver");
         &rg.start()?;
 
-        api_wirer::ApiSrv::new(self.config.clone()).start(api_sender, ds.clone())?;
+        api_wirer::ApiSrv::new(self.config.clone()).start(
+            api_sender,
+            ds.clone(),
+        )?;
         ui.end("✓ Api Srver");
 
         ui.begin("→ Streamer");
-        streamer::Streamer::new(self.config.http2.port, self.config.clone()).start((*self.config).http2_tls_pair(), ds.clone())?;
+        streamer::Streamer::new(self.config.http2.port, self.config.clone())
+            .start((*self.config).http2_tls_pair(), ds.clone())?;
         ui.end("✓ Streamer");
 
         ui.begin("→ UIStreamer");
-        websocket::Websocket::new(self.config.http2.websocket, self.config.clone()).start((*self.config).http2_tls_pair(), ds.clone())?;
+        websocket::Websocket::new(self.config.http2.websocket, self.config.clone())
+            .start((*self.config).http2_tls_pair(), ds.clone())?;
         ui.end("✓ UIStreamer");
 
         Ok(())
     }
 }
-
