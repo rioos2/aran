@@ -70,3 +70,7 @@ pub type VolumeOutput = Result<std::option::Option<protocol::api::volume::Volume
 
 /// volume output as list
 pub type VolumeOutputList = Result<std::option::Option<Vec<protocol::api::volume::Volumes>>>;
+
+
+/// ingress output
+pub type IngressOutput = Result<std::option::Option<protocol::api::ingress::Ingress>>;
