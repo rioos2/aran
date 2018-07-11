@@ -8,7 +8,7 @@ const request = supertest.agent(globalAny.apiServer);
 describe('License  API', function() {
 
   it('returns all licenses', function(done) {
-    request.get('/license')
+    request.get('/licenses')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -22,7 +22,7 @@ describe('License  API', function() {
   });
 
     it('returns the update license', function(done) {
-      request.post('/license/activate')
+      request.post('/licenses/activate')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -38,7 +38,7 @@ describe('License  API', function() {
     });
 
     it('returns the create licenses missing status', function(done) {
-      request.post('/license/activate')
+      request.post('/licenses/activate')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -51,7 +51,7 @@ describe('License  API', function() {
     });
 
     it('returns the create licenses missing status', function(done) {
-      request.post('/license/activate')
+      request.post('/licenses/activate')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -64,7 +64,7 @@ describe('License  API', function() {
     });
 
     it('returns the created job missing activation_code', function(done) {
-      request.post('/license/activate')
+      request.post('/licenses/activate')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -77,7 +77,7 @@ describe('License  API', function() {
     });
 
     it('returns the created job missing product', function(done) {
-      request.post('/license/activate')
+      request.post('/licenses/activate')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -90,7 +90,7 @@ describe('License  API', function() {
     });
 
     it('invalid url for all license get', function(done) {
-      request.get('/licenses')
+      request.get('/license')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -110,7 +110,7 @@ describe('License  API', function() {
           globalAny.license_name =res.body.object_meta.name;
           expect(res.body.kind).to.equal(globalAny.License);
           expect(res.body.api_version).to.equal(globalAny.version);
-          
+
           expect(res.body);
           done(err);
         });
