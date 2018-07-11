@@ -8,7 +8,7 @@ const request = supertest.agent(globalAny.apiServer);
 describe('Ingress  API', function() {
 
     it('returns the created ingress', function(done) {
-      request.post('/ingress')
+      request.post('/ingresses')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -25,7 +25,7 @@ describe('Ingress  API', function() {
     });
 
     it('update ingress ', function(done) {
-      request.put('/ingress/'+globalAny.ingress_id )
+      request.put('/ingresses/'+globalAny.ingress_id )
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -42,7 +42,7 @@ describe('Ingress  API', function() {
 
 
     it('update ingress status', function(done) {
-      request.put('/ingress/'+globalAny.ingress_id+'/status' )
+      request.put('/ingresses/'+globalAny.ingress_id+'/status' )
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -54,7 +54,7 @@ describe('Ingress  API', function() {
     });
 
     it('returns the created ingress missing type name', function(done) {
-      request.post('/ingress')
+      request.post('/ingresses')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -69,7 +69,7 @@ describe('Ingress  API', function() {
     });
 
     it('returns the created ingress missing owner_references', function(done) {
-      request.post('/ingress')
+      request.post('/ingresses')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -84,7 +84,7 @@ describe('Ingress  API', function() {
     });
 
     it('returns the ingress by assemblyfactorys', function(done) {
-      request.get('/assemblyfactorys/'+globalAny.asm_fac_id+'/ingress')
+      request.get('/assemblyfactorys/'+globalAny.asm_fac_id+'/ingresses')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -96,7 +96,7 @@ describe('Ingress  API', function() {
 
 
     it('returns the ingress by assemblyfactorys wrong id', function(done) {
-      request.get('/assemblyfactorys/89756784567/ingress')
+      request.get('/assemblyfactorys/89756784567/ingresses')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)

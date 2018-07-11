@@ -36,7 +36,7 @@ impl IngressApi {
         IngressApi { conn: datastore }
     }
 
-    //POST: /ingress
+    //POST: /ingresses
     //The body has the input ingress
     //Returns a mutated Ingress with
     //- id
@@ -66,7 +66,7 @@ impl IngressApi {
         }
     }
 
-    //PUT: /ingress/:id/status
+    //PUT: /ingresses/:id/status
     //Input status  as input and returns an updated Ingress
     //Will need roles/permission to access others ingress
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
@@ -86,7 +86,7 @@ impl IngressApi {
         }
     }
 
-    //GET: /assemblyfactorys/:id/ingress
+    //GET: /assemblyfactorys/:id/ingresses
     //Input assembly factory id Returns ingress
     //Will need roles/permission to access others ingress
     fn show_by_assembly_factory(&self, req: &mut Request) -> AranResult<Response> {
@@ -103,7 +103,7 @@ impl IngressApi {
         }
     }
 
-    //PUT: /ingress/:id
+    //PUT: /ingresses/:id
     //Input ingress id and returns updated ingress
     //Will need roles/permission to access others ingress
     fn update(&self, req: &mut Request) -> AranResult<Response> {
@@ -124,7 +124,7 @@ impl IngressApi {
         }
     }
 
-    //GET: /ingress/:id
+    //GET: /ingresses/:id
     //Input id - u64 as input
     //Returns an ingress
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
@@ -160,27 +160,27 @@ impl Api for IngressApi {
             move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly_factory(req) };
 
         router.post(
-            "/ingress",
+            "/ingresses",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "ingress_create",
         );
 
         router.put(
-            "ingress/:id",
+            "ingresses/:id",
             XHandler::new(C {
                 inner: update,
             }).before(basic.clone()),
             "ingress_update",
         );
         router.put(
-            "/ingress/:id/status",
+            "/ingresses/:id/status",
             XHandler::new(C {
                 inner: status_update,
             }).before(basic.clone()),
             "ingress_status_update",
         );
         router.get(
-            "/assemblyfactorys/:id/ingress",
+            "/assemblyfactorys/:id/ingresses",
             XHandler::new(C {
                 inner: show_by_assembly_factory,
             }).before(basic.clone()),
