@@ -25,6 +25,7 @@ import "./license";
 // import "./service";
 // import "./endpoints";
 // import "./scaling";
+//import ".ingress";
 // import "./job";
 // import "./volume";
 // import "./vertical_scaling";

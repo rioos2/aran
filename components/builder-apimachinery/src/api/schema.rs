@@ -136,6 +136,8 @@ lazy_static! {
         map.register("POST:bucketsfilesupload", "BucketAccessor");
         map.register("GET:bucketsfilesdownload", "BucketAccessor");
 
+        map.register("POST:ingress", "Ingress");
+
         map
     };
 }

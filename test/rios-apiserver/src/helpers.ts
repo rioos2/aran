@@ -29,3 +29,4 @@ globalAny.License ="License";
 globalAny.permissionlist= "PermissionList";
 globalAny.rolelist= "RoleList";
 globalAny.pending= "Pending";
+globalAny.ingress= "Ingress";
