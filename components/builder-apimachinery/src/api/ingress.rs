@@ -211,7 +211,7 @@ pub struct LoadBalancerIngress {
 ///The status that is used to parse request in /status update of any api.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StatusUpdate {
-    pub status: LoadBalancerStatus,
+     status: LoadBalancerStatus,
     #[serde(default)]
     id: String,
 }
