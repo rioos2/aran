@@ -36,6 +36,9 @@ pub enum Error {
     Jobs(job::error::Error),
     PromoStatusGetError(telemetry::error::Error),
     PlanSetStatus(postgres::error::Error),
+    IngressCreate(postgres::error::Error),
+    IngressGet(postgres::error::Error),
+    IngressUpdate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -67,6 +70,9 @@ impl fmt::Display for Error {
             Error::VolumeUpdate(ref e) => format!("Error updating volume, {}", e),
             Error::PlanSetStatus(ref e) => format!("Error updating plan status, {}", e),
             Error::Jobs(ref e) => format!("{}", e),
+            Error::IngressCreate(ref e) => format!("Error creating ingress, {}", e),
+            Error::IngressGet(ref e) => format!("Error get ingress, {}", e),
+            Error::IngressUpdate(ref e) => format!("Error update ingress, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -99,6 +105,9 @@ impl error::Error for Error {
             Error::Jobs(ref err) => err.description(),
             Error::PlanSetStatus(ref err) => err.description(),
             Error::PromoStatusGetError(ref err) => err.description(),
+            Error::IngressCreate(ref err) => err.description(),
+            Error::IngressGet(ref err) => err.description(),
+            Error::IngressUpdate(ref err) => err.description(),
         }
     }
 }

@@ -130,6 +130,9 @@ impl HttpGateway for Wirer {
         let mut service = deploy::service::ServiceApi::new(ds.clone());
         service.wire(config.clone(), &mut router);
 
+        let mut ingress = deploy::ingress::IngressApi::new(ds.clone());
+        ingress.wire(config.clone(), &mut router);
+
         let mut endpoints = deploy::endpoint::EndpointApi::new(ds.clone());
         endpoints.wire(config.clone(), &mut router);
 

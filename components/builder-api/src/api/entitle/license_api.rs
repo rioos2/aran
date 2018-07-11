@@ -103,19 +103,19 @@ impl Api for LicenseApi {
 
 
         router.get(
-            "/license/:name",
+            "/licenses/:name",
             XHandler::new(C { inner: show }).before(basic.clone()),
             "license_show_by_name",
         );
 
         router.post(
-            "/license/activate",
+            "/licenses/activate",
             XHandler::new(C { inner: create_or_update }).before(basic.clone()),
             "license_create_or_update",
         );
 
         router.get(
-            "/license",
+            "/licenses",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "license_list",
         );

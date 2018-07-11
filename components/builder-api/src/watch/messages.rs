@@ -32,6 +32,7 @@ custom_derive! {
         Assemblys,
         Builds,
         Buildconfigs,
+        Ingress,
     }
 }
 
@@ -155,6 +156,11 @@ pub fn handle_settingsmap(idget: IdGet, typ: String, datastore: Box<DataStoreCon
 pub fn handle_endpoints(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
     let mut endpoints = deploy::endpoint::EndpointApi::new(datastore);
     endpoints.watch(idget, typ)
+}
+
+pub fn handle_ingress(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
+    let mut ingress = deploy::ingress::IngressApi::new(datastore);
+    ingress.watch(idget, typ)
 }
 
 pub fn handle_origins(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
