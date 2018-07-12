@@ -16,7 +16,7 @@ pub struct Licenses {
     product: String,
     activation_code: String,
     #[serde(default)]
-    product_options: BTreeMap<String, AllowActiveProducts>,
+    product_options: BTreeMap<String, AllowActive>,
     #[serde(default)]
     expired_at: String,
     #[serde(default)]
@@ -44,7 +44,7 @@ impl MetaFields for Licenses {
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct AllowActiveProducts {
+pub struct AllowActive {
     maximum: i32,
     current: i32,
 }
@@ -102,11 +102,11 @@ impl Licenses {
         self.expired_at.clone()
     }
 
-    pub fn set_product_options(&mut self, v: BTreeMap<String, AllowActiveProducts>) {
+    pub fn set_product_options(&mut self, v: BTreeMap<String, AllowActive>) {
         self.product_options = v;
     }
 
-    pub fn get_product_options(&self) -> &BTreeMap<String, AllowActiveProducts> {
+    pub fn get_product_options(&self) -> &BTreeMap<String, AllowActive> {
         &self.product_options
     }
 

@@ -106,7 +106,7 @@ impl<'a> DataStore<'a> {
     }
 
     //This is a fascade method to get_by_name.
-    pub fn get_by_name_fascade(&self, name: IdGet) -> Licenses {
+    pub fn show(&self, name: IdGet) -> Licenses {
         let mut license = Licenses::new();
 
         let m = license.mut_meta(license.object_meta(), name.get_id(), license.get_account());
