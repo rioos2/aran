@@ -23,7 +23,7 @@ impl LicensesFascade {
     }
 
     pub fn get_by_name(&self, name: String) -> Result<Licenses> {
-        let license = license::DataStore::new(&self.conn).get_by_name_fascade(IdGet::with_id(name));
+        let license = license::DataStore::new(&self.conn).show(IdGet::with_id(name));
         match LicenseStatus::status(&license.get_status()) {
             LicenseStatus::ACTIVE | LicenseStatus::TRIAL => Ok(license),
             LicenseStatus::INVALID => Err(Error::EntitlementError(format!("License Invalid"))),

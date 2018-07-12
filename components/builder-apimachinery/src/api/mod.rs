@@ -28,3 +28,4 @@ pub mod passticket;
 pub mod routesrv;
 pub mod licenses;
 pub mod senseis;
+pub mod ingress;
