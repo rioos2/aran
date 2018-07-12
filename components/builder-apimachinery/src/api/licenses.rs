@@ -45,8 +45,8 @@ impl MetaFields for Licenses {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AllowActive {
-    maximum: i32,
-    current: i32,
+    pub maximum: i32,
+    pub current: i32,
 }
 impl Licenses {
     pub fn new() -> Licenses {

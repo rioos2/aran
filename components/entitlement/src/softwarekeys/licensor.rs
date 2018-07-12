@@ -6,9 +6,10 @@ use lib_load;
 use lib_load::{Symbol, Library};
 
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
-use protocol::api::licenses::Licenses;
+use protocol::api::licenses::{Licenses, AllowActive};
 use protocol::api::schema::type_meta_url;
 use rio_core::fs::rioconfig_license_path;
+use std::collections::BTreeMap;
 use std::ffi::{CString, CStr};
 use std::fs::File;
 use std::os::raw::*;
@@ -50,6 +51,7 @@ pub struct NativeSDK {
     isLoaded: bool,
     isWritable: bool,
     licenseFilePath: String,
+    provider: String,
 }
 
 impl NativeSDK {
@@ -62,6 +64,7 @@ impl NativeSDK {
             isLoaded: false,
             isWritable: false,
             licenseFilePath: "".to_string(),
+            provider: "SoftwareKey".to_string(),
         }
     }
     pub fn initialize_license(&mut self) -> Result<()> {
@@ -540,7 +543,7 @@ impl NativeSDK {
 
         let m = license.mut_meta(
             license.object_meta(),
-            "SoftwareKey".to_string(),
+            self.provider.clone(),
             license.get_account(),
         );
 
@@ -550,6 +553,24 @@ impl NativeSDK {
 
         license.set_status(status);
         license.set_expired(days);
+        //temp fix
+        let mut product_options = BTreeMap::new();
+        product_options.insert(
+            "ninja".to_string(),
+            AllowActive {
+                maximum: 10,
+                current: 1,
+            },
+        );
+
+        product_options.insert(
+            "sensei".to_string(),
+            AllowActive {
+                maximum: 5,
+                current: 1,
+            },
+        );
+        license.set_product_options(product_options);
         license::DataStore::new(&self.datastore.conn).create_or_update(&license);
     }
 
