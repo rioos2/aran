@@ -9,6 +9,7 @@ use ansi_term::Colour;
 use auth::config::AuthenticationFlowCfg;
 use auth::rbac::authorizer;
 use auth::rbac::license::LicensesFascade;
+use auth::rbac::account::{AccountsFascade, ServiceAccountsFascade};
 use auth::rbac::permissions::Permissions;
 use auth::rioos::AuthenticateDelegate;
 use common::ui;
@@ -275,6 +276,8 @@ impl URLGrabber {
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.STORLET-SHARED-INFORMERS.GET",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.PROMETHEUS-SHARED-INFORMERS.GET",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.PROMETHEUS-SHARED-INFORMERS.PUT",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.TRAEFIK-SHARED-INFORMERS.GET",
+        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.TRAEFIK-SHARED-INFORMERS.PUT",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.CONTROLLER-SHARED-INFORMERS.PUT",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.NODELET-SHARED-INFORMERS.PUT",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.SCHEDULER-SHARED-INFORMERS.PUT",
@@ -330,12 +333,12 @@ pub struct RBAC {
 }
 
 impl RBAC {
-    pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions) -> Self {
-        let plugins_and_its_configuration_tuple = config.modes();
+    pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions, accounts: AccountsFascade, service_accounts: ServiceAccountsFascade) -> Self {
+        let plugins_and_its_configuration_tuple = config.modes();        
         RBAC {
             plugins: plugins_and_its_configuration_tuple.0,
             conf: plugins_and_its_configuration_tuple.1,
-            authorizer: authorizer::Authorization::new(permissions),
+            authorizer: authorizer::Authorization::new(permissions, accounts, service_accounts),
         }
     }
 
@@ -358,11 +361,11 @@ impl BeforeMiddleware for RBAC {
         info!(
             "↑ RBAC {} {} {:?}",
             "→",
-            &roles.name.get_id(),
+            &roles.name,
             input_trust
         );
 
-        if roles.name.get_id().pop().is_none() {
+        if roles.name.is_empty() {
             info!("↑ RBAC SKIP {} {} {:?}", "→", &roles.name, input_trust);
             return Ok(());
         }
@@ -382,7 +385,7 @@ impl BeforeMiddleware for RBAC {
 
                 let err = forbidden_error(&format!(
                     "{}, is denied access. Must have permission for [{}].",
-                    &roles.clone().name.get_id(),
+                    &roles.clone().name,
                     input_trust.clone().unwrap_or("".to_string())
                 ));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
@@ -408,13 +411,14 @@ impl EntitlementAct {
 
 impl BeforeMiddleware for EntitlementAct {
     fn before(&self, _req: &mut Request) -> IronResult<()> {
-        match self.license.clone().get_by_name(self.backend.clone()) {
+        /*match self.license.clone().get_by_name(self.backend.clone()) {
             Ok(_) => Ok(()),
             Err(err) => {
                 let err = entitlement_error(&format!("{}\n", err));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
-        }
+        }*/
+        Ok(())
     }
 }
 

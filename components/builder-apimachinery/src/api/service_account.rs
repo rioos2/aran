@@ -3,6 +3,8 @@ use super::session::Session;
 use api::base::ObjectReference;
 use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use std::collections::BTreeMap;
+use cache::inject::ServiceAccountFeeder;
+use api::base::IdGet;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ServiceAccount {
@@ -96,6 +98,47 @@ impl Into<Session> for ServiceAccount {
         session.set_id(self.get_id());
         session.set_meta(self.type_meta(), self.object_meta());
         session
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ServiceAccountRoles {
+    name: String,
+    roles: Vec<String>,
+}
+
+impl ServiceAccountRoles {
+    pub fn new() -> ServiceAccountRoles {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }    
+
+    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
+        self.roles = v;
+    }
+
+    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
+        self.roles.clone()
+    }
+}
+
+impl ServiceAccountFeeder for ServiceAccountRoles {
+    fn iget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(self.get_name(), "_service_account".to_string())
+    }
+
+    fn ifeed(&mut self, m: Option<Vec<String>>) {
+        match m {
+            Some(roles) => self.set_roles(roles),
+            None => {}
+        }
     }
 }
 
