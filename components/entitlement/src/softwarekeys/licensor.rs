@@ -79,33 +79,29 @@ impl NativeSDK {
             let set_fn_str = *self.lib
                 .get::<fn(SK_ApiContext, c_int, c_int, *const c_char) -> c_int>(SK_SET.as_bytes())?;
 
-            let mut result = init_fn(
-                SK_FLAGS_USE_SSL | SK_FLAGS_USE_ENCRYPTION | SK_FLAGS_USE_SIGNATURE,
+            self.check_resut(init_fn(
+                SK_FLAGS_USE_SSL | SK_FLAGS_USE_ENCRYPTION |
+                    SK_FLAGS_USE_SIGNATURE,
                 false,
                 PRODUCT_ID,
                 PRODUCT_OPTION_ID,
                 CString::new(VERSION).unwrap().into_raw(),
                 CString::new(ENVELOPE).unwrap().into_raw(),
                 context,
-            );
-            debug!("=> open_lib: {:?}", result);
+            ))?;
 
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
             //set the ENVELOPE_KEY to the api_context
-            result = set_fn_str(
+            let result = set_fn_str(
                 *context,
                 SK_FLAGS_NONE,
                 1,
                 CString::new(ENVELOPE_KEY).unwrap().into_raw(),
             );
-            debug!("=> set_fn_str: {:?}", result);
 
             self.context = *context;
 
             if result != ResultCode::SK_ERROR_NONE as i32 && result != ResultCode::SK_ERROR_PLUS_EVALUATION_WARNING as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
+                self.check_resut(result)?;
             }
             self.initialize_system_identitifers()?;
             Ok(())
@@ -124,56 +120,35 @@ impl NativeSDK {
             //system_identifiers
             let countPtr: &mut c_int = &mut 0;
             // Make sure we have a computer name identifier
-            let mut result = system_identifiers(
+            self.check_resut(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
                 20,
                 0 as *const c_char,
                 countPtr,
-            );
-            debug!("=> computer name identifier: {:?}", result);
-
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
+            ))?;
 
             if 0 == *countPtr {
-                return Err(Error::EntitlementError(
-                    check_resut(ResultCode::SK_ERROR_INVALID_DATA as i32),
-                ));
-
+                return self.check_resut(ResultCode::SK_ERROR_INVALID_DATA as i32);
             }
             // Make sure we have a hard disk volume serial identifier
-            result = system_identifiers(
+            self.check_resut(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
                 30,
                 0 as *const c_char,
                 countPtr,
-            );
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
-            debug!("=> hard disk volume serial identifier: {:?}", result);
-
+            ))?;
             if 0 == *countPtr {
-                return Err(Error::EntitlementError(
-                    check_resut(ResultCode::SK_ERROR_INVALID_DATA as i32),
-                ));
-
+                return self.check_resut(ResultCode::SK_ERROR_INVALID_DATA as i32);
             }
-
-            result = system_identifiers(
+            self.check_resut(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
                 10,
                 0 as *const c_char,
                 countPtr,
-            );
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-
-            }
+            ))?;
             Ok(())
         }
     }
@@ -222,7 +197,7 @@ impl NativeSDK {
             } else if result == ResultCode::SK_ERROR_NONE as i32 {
                 self.isLoaded = true;
             } else {
-                return Err(Error::EntitlementError(check_resut(result)));
+                return self.check_resut(result);
             }
             self.live_verify()?;
         }
@@ -230,9 +205,10 @@ impl NativeSDK {
     }
 
     fn set_writable(&mut self, isWritable: bool) -> Result<()> {
-        self.isWritable = isWritable;
-        let mut val: c_int = 0;
         unsafe {
+            self.isWritable = isWritable;
+            let mut val: c_int = 0;
+
             let set_fn_int = self.lib
                 .get::<fn(SK_ApiContext, c_int, c_int, c_int) -> c_int>(SK_SET_INT.as_bytes())?;
 
@@ -242,13 +218,12 @@ impl NativeSDK {
                 val = 0;
             }
 
-            let result = set_fn_int(self.context, SK_FLAGS_NONE, 4, val);
+            self.check_resut(
+                set_fn_int(self.context, SK_FLAGS_NONE, 4, val),
+            )?;
 
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
+            Ok(())
         }
-        Ok(())
     }
 
     //create 30 days of trial
@@ -261,25 +236,22 @@ impl NativeSDK {
             let license_save_fn = self.lib
                 .get::<fn(SK_ApiContext, c_int, *const c_char, SK_XmlDoc) -> c_int>(SK_SAVE.as_bytes())?;
 
-            let mut result = license_create_fn(self.context, SK_FLAGS_NONE, days, license);
-            debug!("=> license_create_fn: {:?}", result);
+            self.check_resut(license_create_fn(
+                self.context,
+                SK_FLAGS_NONE,
+                days,
+                license,
+            ))?;
 
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
-
-            result = license_save_fn(
+            self.check_resut(license_save_fn(
                 self.context,
                 SK_FLAGS_NONE,
                 CString::new(self.licenseFilePath.clone())
                     .unwrap()
                     .into_raw(),
                 *license,
-            );
+            ))?;
 
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
             self.isLoaded = true;
             self.license_file = *license;
 
@@ -292,8 +264,8 @@ impl NativeSDK {
         let licenseValid: bool = self.validate()?;
         if self.is_evaluation()? {
             if licenseValid {
-                let days = self.get_days_remaining()?.to_string();
-                self.update_license_status(TRIAL.to_string(), days);
+
+                self.update_license_status(TRIAL.to_string(), self.get_days_remaining()?.to_string());
             } else {
                 self.update_license_status(EXPIRY.to_string(), "".to_string());
             }
@@ -301,8 +273,7 @@ impl NativeSDK {
         }
         if licenseValid {
             if self.get_type()? as i32 == LicenseType::TimeLimited as i32 {
-                let days = self.get_days_remaining()?.to_string();
-                self.update_license_status(ACTIVE.to_string(), days);
+                self.update_license_status(ACTIVE.to_string(), self.get_days_remaining()?.to_string());
             } else {
                 self.update_license_status(ACTIVE.to_string(), "".to_string());
             }
@@ -324,10 +295,6 @@ impl NativeSDK {
 
             let date_time_validate = *self.lib
                 .get::<fn(c_int, c_int, c_int, *mut SK_IntPointer) -> c_int>(SK_DATETIME_VALIDATE.as_bytes())?;
-            let mut result = date_time_validate(SK_FLAGS_NONE, 0, 0, valuePtr);
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
 
             let compare_system_identifier = *self.lib.get::<fn(SK_ApiContext,
                        c_int,
@@ -335,16 +302,19 @@ impl NativeSDK {
                        *mut SK_IntPointer,
                        *mut SK_IntPointer)
                        -> c_int>(SK_SYSTEM_IDENTIFIER_COMPARE.as_bytes())?;
-            result = compare_system_identifier(
+
+            self.check_resut(
+                date_time_validate(SK_FLAGS_NONE, 0, 0, valuePtr),
+            )?;
+
+            self.check_resut(compare_system_identifier(
                 self.context,
                 SK_FLAGS_NONE,
                 CString::new("").unwrap().into_raw(),
                 countPtr,
                 matchesPtr,
-            );
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
+            ))?;
+
             if *matchesPtr < 1 {
                 return Ok(false);
             }
@@ -354,7 +324,7 @@ impl NativeSDK {
             {
                 debug!(
                     "{:?}",
-                    check_resut(ResultCode::SK_ERROR_LICENSE_NOT_EFFECTIVE_YET as i32)
+                    ResultCode::err_description(ResultCode::SK_ERROR_LICENSE_NOT_EFFECTIVE_YET as i32)
                 );
                 return Ok(false);
             }
@@ -365,14 +335,16 @@ impl NativeSDK {
                 {
                     debug!(
                         "{:?}",
-                        check_resut(ResultCode::SK_ERROR_LICENSE_NOT_EFFECTIVE_YET as i32)
+                        ResultCode::err_description(ResultCode::SK_ERROR_LICENSE_NOT_EFFECTIVE_YET as i32).to_string()
                     );
                     return Ok(false);
                 }
                 if self.get_days_remaining()? <= 0 {
                     debug!(
                         "{:?}",
-                        check_resut(ResultCode::SK_ERROR_LICENSE_EXPIRED as i32)
+                            ResultCode::err_description(
+                                ResultCode::SK_ERROR_LICENSE_EXPIRED as i32,
+                            ).to_string(),
                     );
                     return Ok(false);
                 }
@@ -400,27 +372,22 @@ impl NativeSDK {
             let current_datetime = *self.lib.get::<fn(c_int, *mut SK_StringPointer) -> c_int>(
                 SK_DATETIME_GET_CURRENT_STRING.as_bytes(),
             )?;
-            let mut result = current_datetime(SK_FLAGS_NONE, nowPtr);
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
             let compare_datetime = *self.lib.get::<fn(c_int,
                        *const c_char,
                        SK_StringPointer,
                        *mut SK_IntPointer)
                        -> c_int>(SK_DATETIME_COMPARE_STRING.as_bytes())?;
-            result = compare_datetime(
+
+            self.check_resut(current_datetime(SK_FLAGS_NONE, nowPtr))?;
+
+            self.check_resut(compare_datetime(
                 SK_FLAGS_NONE,
                 CString::new(self.get_date_time_string_value(xpath)?)
                     .unwrap()
                     .into_raw(),
                 *nowPtr,
                 comparisonPrt,
-            );
-
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
+            ))?;
 
             if *comparisonPrt <= 0 {
                 ret_val = true;
@@ -432,7 +399,7 @@ impl NativeSDK {
         }
     }
 
-    fn get_date_time_string_value(&mut self, xpath: &str) -> Result<String> {
+    fn get_date_time_string_value(&self, xpath: &str) -> Result<String> {
         unsafe {
             if !self.isLoaded {
                 return Ok("".to_string());
@@ -443,31 +410,22 @@ impl NativeSDK {
             let license_get_xml_doc = self.lib
                 .get::<fn(SK_ApiContext, c_int, *mut SK_XmlDoc) -> c_int>(SK_GET_LICENSE.as_bytes())?;
 
-            let mut result = license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr);
-            debug!("=> license_get_xml_doc: {:?}", result);
-
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
-
             let node_get_date = self.lib.get::<fn(c_int,
                        SK_XmlDoc,
                        *const c_char,
                        *mut SK_DatePointer)
                        -> c_int>(SK_NODE_GET_DATE.as_bytes())?;
 
-            result = node_get_date(
-                SK_FLAGS_NONE,
-                *licensePtr,
-                CString::new(xpath).unwrap().into_raw(),
-                valuePtr,
-            );
-
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
-            // SK_XmlDocumentDispose(SK_FLAGS_NONE, licensePtr);
-            if result == ResultCode::SK_ERROR_NONE as i32 {
+            if self.check_resut(license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr))
+                .is_ok() &&
+                self.check_resut(node_get_date(
+                    SK_FLAGS_NONE,
+                    *licensePtr,
+                    CString::new(xpath).unwrap().into_raw(),
+                    valuePtr,
+                )).is_ok()
+            {
+                // SK_XmlDocumentDispose(SK_FLAGS_NONE, licensePtr);
                 let val = CStr::from_ptr(*valuePtr).to_str().unwrap();
                 return Ok(val.to_string());
             } else {
@@ -488,27 +446,23 @@ impl NativeSDK {
             let license_get_xml_doc = self.lib
                 .get::<fn(SK_ApiContext, c_int, *mut SK_XmlDoc) -> c_int>(SK_GET_LICENSE.as_bytes())?;
 
-            let mut result = license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr);
-            debug!("=> license_get_xml_doc: {:?}", result);
-
-
             let node_get_string = self.lib.get::<fn(c_int,
                        SK_XmlDoc,
                        *const c_char,
                        bool,
                        *mut SK_StringPointer)
                        -> c_int>(SK_NODE_GET_STRING.as_bytes())?;
-
-            result = node_get_string(
-                SK_FLAGS_NONE,
-                *licensePtr,
-                CString::new(xpath).unwrap().into_raw(),
-                false,
-                valuePtr,
-            );
-
-            // SK_XmlDocumentDispose(SK_FLAGS_NONE, licensePtr);
-            if result == ResultCode::SK_ERROR_NONE as i32 {
+            if self.check_resut(license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr))
+                .is_ok() &&
+                self.check_resut(node_get_string(
+                    SK_FLAGS_NONE,
+                    *licensePtr,
+                    CString::new(xpath).unwrap().into_raw(),
+                    false,
+                    valuePtr,
+                )).is_ok()
+            {
+                // SK_XmlDocumentDispose(SK_FLAGS_NONE, licensePtr);
                 let val = CStr::from_ptr(*valuePtr).to_str().unwrap();
                 return Ok(val.to_string());
             } else {
@@ -523,13 +477,11 @@ impl NativeSDK {
             let licensePtr: &mut SK_XmlDoc = &mut 0;
             let license_get_xml_doc = *self.lib
                 .get::<fn(SK_ApiContext, c_int, *mut SK_XmlDoc) -> c_int>(SK_GET_LICENSE.as_bytes())?;
-            let result = license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr);
-
-            debug!("=> license_get_xml_doc: {:?}", result);
-
-            if result != ResultCode::SK_ERROR_NONE as i32 {
-                return Err(Error::EntitlementError(check_resut(result)));
-            }
+            self.check_resut(license_get_xml_doc(
+                self.context,
+                SK_FLAGS_NONE,
+                licensePtr,
+            ))?;
             license_type = self.determine_type(*licensePtr)?;
             // SK_XmlDocumentDispose(SK_FLAGS_NONE, licensePtr);
             return Ok(license_type);
@@ -565,7 +517,7 @@ impl NativeSDK {
 
     }
 
-    fn get_days_remaining(&mut self) -> Result<c_int> {
+    fn get_days_remaining(&self) -> Result<c_int> {
         unsafe {
             let daysLeftPtr: &mut SK_IntPointer = &mut 0;
             let license_remaining_day = *self.lib
@@ -600,8 +552,13 @@ impl NativeSDK {
         license.set_expired(days);
         license::DataStore::new(&self.datastore.conn).create_or_update(&license);
     }
-}
 
-fn check_resut(value: i32) -> String {
-    ResultCode::err_description(value).to_string()
+    fn check_resut(&self, value: i32) -> Result<()> {
+        if value != ResultCode::SK_ERROR_NONE as i32 {
+            return Err(Error::EntitlementError(
+                ResultCode::err_description(value).to_string(),
+            ));
+        }
+        Ok(())
+    }
 }
