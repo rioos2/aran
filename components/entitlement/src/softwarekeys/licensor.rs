@@ -42,7 +42,7 @@ const SK_FLAGS_USE_ENCRYPTION: c_int = 0x00010000;
 const SK_FLAGS_USE_SIGNATURE: c_int = 0x00020000;
 const SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
 
-pub struct API {
+pub struct NativeSDK {
     lib: Library,
     context: SK_ApiContext,
     pub datastore: LicensesFascade,
@@ -52,9 +52,9 @@ pub struct API {
     licenseFilePath: String,
 }
 
-impl API {
-    pub fn new(lib: Library, license: LicensesFascade) -> Self {
-        API {
+impl NativeSDK {
+    pub fn new_api_context(lib: Library, license: LicensesFascade) -> Self {
+        NativeSDK {
             lib: lib,
             datastore: license,
             context: 0,
@@ -107,12 +107,12 @@ impl API {
             if result != ResultCode::SK_ERROR_NONE as i32 && result != ResultCode::SK_ERROR_PLUS_EVALUATION_WARNING as i32 {
                 return Err(Error::EntitlementError(check_resut(result)));
             }
-            self.initializeSystemIdentifiers()?;
+            self.initialize_system_identitifers()?;
             Ok(())
         }
     }
 
-    pub fn initializeSystemIdentifiers(&mut self) -> Result<()> {
+    fn initialize_system_identitifers(&mut self) -> Result<()> {
         unsafe {
             //identify the current system
             let system_identifiers = self.lib.get::<fn(SK_ApiContext,
@@ -218,13 +218,13 @@ impl API {
             }
 
             if result == ResultCode::SK_ERROR_COULD_NOT_LOAD_LICENSE as i32 {
-                self.createFreshEvaluation(30)?;
+                self.create_trial(30)?;
             } else if result == ResultCode::SK_ERROR_NONE as i32 {
                 self.isLoaded = true;
             } else {
                 return Err(Error::EntitlementError(check_resut(result)));
             }
-            self.refreshLicenseStatus()?;
+            self.live_verify()?;
         }
         Ok(())
     }
@@ -251,7 +251,8 @@ impl API {
         Ok(())
     }
 
-    fn createFreshEvaluation(&mut self, days: c_int) -> Result<()> {
+    //create 30 days of trial
+    fn create_trial(&mut self, days: c_int) -> Result<()> {
         let license: &mut SK_XmlDoc = &mut 0;
         unsafe {
             let license_create_fn = self.lib
@@ -287,11 +288,11 @@ impl API {
         }
     }
 
-    pub fn refreshLicenseStatus(&mut self) -> Result<()> {
+    pub fn live_verify(&mut self) -> Result<()> {
         let licenseValid: bool = self.validate()?;
-        if self.isEvaluation()? {
+        if self.is_evaluation()? {
             if licenseValid {
-                let days = self.getDaysRemaining()?.to_string();
+                let days = self.get_days_remaining()?.to_string();
                 self.update_license_status(TRIAL.to_string(), days);
             } else {
                 self.update_license_status(EXPIRY.to_string(), "".to_string());
@@ -299,8 +300,8 @@ impl API {
             return Ok(());
         }
         if licenseValid {
-            if self.getType()? as i32 == LicenseType::TimeLimited as i32 {
-                let days = self.getDaysRemaining()?.to_string();
+            if self.get_type()? as i32 == LicenseType::TimeLimited as i32 {
+                let days = self.get_days_remaining()?.to_string();
                 self.update_license_status(ACTIVE.to_string(), days);
             } else {
                 self.update_license_status(ACTIVE.to_string(), "".to_string());
@@ -347,7 +348,7 @@ impl API {
             if *matchesPtr < 1 {
                 return Ok(false);
             }
-            if !(self.isDateTimePast(
+            if !(self.is_date_time_past(
                 "/SoftwareKey/PrivateData/License/EffectiveStartDate",
             )?)
             {
@@ -357,8 +358,8 @@ impl API {
                 );
                 return Ok(false);
             }
-            if self.isEvaluation()? || self.getType()? as i32 == LicenseType::TimeLimited as i32 {
-                if !self.isDateTimePast(
+            if self.is_evaluation()? || self.get_type()? as i32 == LicenseType::TimeLimited as i32 {
+                if !self.is_date_time_past(
                     "/SoftwareKey/PrivateData/License/EffectiveStartDate",
                 )?
                 {
@@ -368,7 +369,7 @@ impl API {
                     );
                     return Ok(false);
                 }
-                if self.getDaysRemaining()? <= 0 {
+                if self.get_days_remaining()? <= 0 {
                     debug!(
                         "{:?}",
                         check_resut(ResultCode::SK_ERROR_LICENSE_EXPIRED as i32)
@@ -380,8 +381,8 @@ impl API {
         }
     }
 
-    fn isEvaluation(&self) -> Result<bool> {
-        if self.getStringValue(
+    fn is_evaluation(&self) -> Result<bool> {
+        if self.get_string_value(
             "/SoftwareKey/PrivateData/License/InstallationID",
         )? == "".to_string()
         {
@@ -391,7 +392,7 @@ impl API {
         }
     }
 
-    fn isDateTimePast(&mut self, xpath: &str) -> Result<bool> {
+    fn is_date_time_past(&mut self, xpath: &str) -> Result<bool> {
         let mut ret_val: bool = true;
         unsafe {
             let nowPtr: &mut SK_StringPointer = &mut (0 as *const c_char);
@@ -410,7 +411,7 @@ impl API {
                        -> c_int>(SK_DATETIME_COMPARE_STRING.as_bytes())?;
             result = compare_datetime(
                 SK_FLAGS_NONE,
-                CString::new(self.getDateTimeStringValue(xpath)?)
+                CString::new(self.get_date_time_string_value(xpath)?)
                     .unwrap()
                     .into_raw(),
                 *nowPtr,
@@ -431,7 +432,7 @@ impl API {
         }
     }
 
-    fn getDateTimeStringValue(&mut self, xpath: &str) -> Result<String> {
+    fn get_date_time_string_value(&mut self, xpath: &str) -> Result<String> {
         unsafe {
             if !self.isLoaded {
                 return Ok("".to_string());
@@ -476,7 +477,7 @@ impl API {
 
     }
 
-    fn getStringValue(&self, xpath: &str) -> Result<String> {
+    fn get_string_value(&self, xpath: &str) -> Result<String> {
         unsafe {
             if !self.isLoaded {
                 return Ok("".to_string());
@@ -516,7 +517,7 @@ impl API {
         }
     }
 
-    fn getType(&self) -> Result<LicenseType> {
+    fn get_type(&self) -> Result<LicenseType> {
         unsafe {
             let mut license_type = LicenseType::Unlicensed;
             let licensePtr: &mut SK_XmlDoc = &mut 0;
@@ -529,14 +530,14 @@ impl API {
             if result != ResultCode::SK_ERROR_NONE as i32 {
                 return Err(Error::EntitlementError(check_resut(result)));
             }
-            license_type = self.determineType(*licensePtr)?;
+            license_type = self.determine_type(*licensePtr)?;
             // SK_XmlDocumentDispose(SK_FLAGS_NONE, licensePtr);
             return Ok(license_type);
         }
 
     }
 
-    fn determineType(&self, licensePtr: SK_XmlDoc) -> Result<LicenseType> {
+    fn determine_type(&self, licensePtr: SK_XmlDoc) -> Result<LicenseType> {
         unsafe {
             let valuePtr: &mut SK_IntPointer = &mut 0;
             let node_get_int = self.lib
@@ -564,7 +565,7 @@ impl API {
 
     }
 
-    fn getDaysRemaining(&mut self) -> Result<c_int> {
+    fn get_days_remaining(&mut self) -> Result<c_int> {
         unsafe {
             let daysLeftPtr: &mut SK_IntPointer = &mut 0;
             let license_remaining_day = *self.lib
@@ -572,7 +573,7 @@ impl API {
 
             license_remaining_day(
                 SK_FLAGS_NONE,
-                CString::new(self.getDateTimeStringValue(
+                CString::new(self.get_date_time_string_value(
                     "/SoftwareKey/PrivateData/License/EffectiveEndDate",
                 )?).unwrap()
                     .into_raw(),

@@ -5,7 +5,7 @@ use api::audit::config::{BlockchainConn, MailerCfg, SlackCfg};
 use auth::rbac::license::LicensesFascade;
 use config::Config;
 use db::data_store::*;
-use entitlement::softwarekeys::load_library::API;
+use entitlement::softwarekeys::licensor::NativeSDK;
 
 use events::{HandlerPart, InternalEvent};
 
@@ -60,7 +60,7 @@ impl RuntimeChannel {
 /// Handler
 pub struct RuntimeHandler {
     pub config: Box<BlockchainConn>,
-    pub license: API,
+    pub license: NativeSDK,
     pub mailer: Box<MailerCfg>,
     pub slack: Box<SlackCfg>,
 }
@@ -100,12 +100,12 @@ pub struct Runtime {
 }
 
 impl Runtime {
-    pub fn new(config: Arc<Config>, api: API) -> Self {
+    pub fn new(config: Arc<Config>, sdk: NativeSDK) -> Self {
         Runtime {
             channel: RuntimeChannel::new(1024),
             handler: RuntimeHandler {
                 config: Box::new(BlockchainConn::new(&*config.clone())),
-                license: api,
+                license: sdk,
                 mailer: Box::new(MailerCfg::new(&*config.clone())),
                 slack: Box::new(SlackCfg::new(&*config.clone())),
             },

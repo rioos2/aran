@@ -49,7 +49,7 @@ impl RuntimeHandler {
 
     fn handle_internal_event(&mut self, event: &InternalEvent) {
         match *event {
-            InternalEvent::EntitlementTimeout => self.license.refreshLicenseStatus().unwrap(),
+            InternalEvent::EntitlementTimeToVerify => self.license.live_verify().unwrap(),
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }
     }

@@ -153,7 +153,7 @@ impl LicenseStatus {
             "active" => LicenseStatus::ACTIVE,
             "expired" => LicenseStatus::EXPIRED,
             "trial" => LicenseStatus::TRIAL,
-            "" => LicenseStatus::INVALID,
+            "invalid" => LicenseStatus::INVALID,
             _ => LicenseStatus::INVALID,
         }
     }
@@ -179,8 +179,8 @@ mod test {
         let license: Licenses = json_decode(val).unwrap();
         assert_eq!(license.status, "trial");
         assert_eq!(license.product, "Rio/OS");
-        assert_eq!(license.expired_at,"30");
-        assert_eq!(license.activation_code,"ertyuicvbnm456789dfghjk456789");
+        assert_eq!(license.expired_at, "30");
+        assert_eq!(license.activation_code, "ertyuicvbnm456789dfghjk456789");
     }
 
 }

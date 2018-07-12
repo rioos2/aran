@@ -14,7 +14,7 @@ use node::runtime::ExternalMessage;
 #[derive(Debug)]
 pub enum InternalEvent {
     /// Shutdown the node.
-    EntitlementTimeout,
+    EntitlementTimeToVerify,
     Shutdown,
 }
 
