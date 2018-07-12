@@ -38,7 +38,7 @@ lazy_static! {
         map.register("GET:senseis", "SenseiList");
 
         map.register("POST:licenseactivate", "License");
-        map.register("GET:license", "LicenseList");
+        map.register("GET:licenses", "LicenseList");
 
         map.register("POST:origins", "Origin");
         map.register("GET:origins", "OriginList");

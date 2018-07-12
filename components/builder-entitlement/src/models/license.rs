@@ -29,7 +29,7 @@ impl<'a> DataStore<'a> {
     pub fn create_or_update(&self, license: &Licenses) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_or_update_license_v1 ($1,$2,$3,$4,$5,$6)",
+            "SELECT * FROM insert_or_update_license_v1 ($1,$2,$3,$4,$5,$6,$7)",
             &[
                 &(serde_json::to_value(license.object_meta()).unwrap()),
                 &(serde_json::to_value(license.type_meta()).unwrap()),
@@ -37,6 +37,7 @@ impl<'a> DataStore<'a> {
                 &(license.get_product() as String),
                 &(license.get_activation_code() as String),
                 &(license.get_expired() as String),
+                &(serde_json::to_value(license.get_product_options()).unwrap()),
             ],
         ).map_err(Error::LicenseCreate)?;
         if rows.len() > 0 {
@@ -82,6 +83,28 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
+    pub fn update(&self, license: &Licenses) -> LicenseOutput {
+        let conn = self.db.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM update_license_v1($1,$2,$3,$4,$5,$6,$7)",
+            &[
+                &(license.get_id().parse::<i64>().unwrap()),
+                &(serde_json::to_value(license.object_meta()).unwrap()),
+                &(license.get_status() as String),
+                &(license.get_product() as String),
+                &(license.get_activation_code() as String),
+                &(license.get_expired() as String),
+                &(serde_json::to_value(license.get_product_options()).unwrap()),
+            ],
+        ).map_err(Error::LicenseUpdate)?;
+
+        if rows.len() > 0 {
+            let license = row_to_licenses(&rows.get(0))?;
+            return Ok(Some(license));
+        }
+        Ok(None)
+    }
+
     //This is a fascade method to get_by_name.
     pub fn get_by_name_fascade(&self, name: IdGet) -> Licenses {
         let mut license = Licenses::new();
@@ -111,6 +134,7 @@ fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {
     licenses.set_status(row.get("status"));
     licenses.set_product(row.get("product"));
     licenses.set_expired(row.get("expired"));
+    licenses.set_product_options(serde_json::from_value(row.get("product_options")).unwrap());
     licenses.set_created_at(created_at.to_rfc3339());
 
     Ok(licenses)

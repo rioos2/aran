@@ -13,7 +13,7 @@ pub enum Error {
     Db(db::error::Error),
     LicenseCreate(postgres::error::Error),
     LicenseUpdate(postgres::error::Error),
-    LicenseGet(postgres::error::Error),    
+    LicenseGet(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -24,7 +24,7 @@ impl fmt::Display for Error {
             Error::Db(ref e) => format!("{}", e),
             Error::LicenseCreate(ref e) => format!("Database error creating a license, {}", e),
             Error::LicenseUpdate(ref e) => format!("Database error update license status, {}", e),
-            Error::LicenseGet(ref e) => format!("Database error get license, {}", e),            
+            Error::LicenseGet(ref e) => format!("Database error get license, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -36,7 +36,7 @@ impl error::Error for Error {
             Error::Db(ref err) => err.description(),
             Error::LicenseCreate(ref err) => err.description(),
             Error::LicenseUpdate(ref err) => err.description(),
-            Error::LicenseGet(ref err) => err.description(),            
+            Error::LicenseGet(ref err) => err.description(),
         }
     }
 }
