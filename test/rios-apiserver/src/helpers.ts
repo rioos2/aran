@@ -30,3 +30,5 @@ globalAny.permissionlist= "PermissionList";
 globalAny.rolelist= "RoleList";
 globalAny.pending= "Pending";
 globalAny.ingress= "Ingress";
+globalAny.stacksfactorys = "StacksFactory";
+globalAny.stacksfactoryslist = "StacksFactoryList";

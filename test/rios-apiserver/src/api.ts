@@ -21,6 +21,7 @@ import "./networks";
 import "./storage";
 import "./storagepool";
 import "./datacenter";
+import "./stacksfactory";
 import "./assembly_fac";
 import "./assembly";
 import "./service";

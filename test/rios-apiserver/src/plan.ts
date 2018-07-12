@@ -104,7 +104,7 @@ describe('Plan Factory API', function() {
         .end(function(err, res) {
           expect(res.body.kind).to.equal(globalAny.planlist);
           expect(res.body.api_version).to.equal(globalAny.version);
-          expect(res.body.items.length).to.equal(2);
+          expect(res.body.items.length).to.equal(32);
           done(err);
         });
     });
