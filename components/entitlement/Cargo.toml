@@ -31,5 +31,8 @@ path = "../builder-entitlement"
 [dependencies.rioos_builder_apimachinery]
 path = "../builder-apimachinery"
 
+[dependencies.rioos_auth]
+path = "../auth"
+
 [features]
 functional = []

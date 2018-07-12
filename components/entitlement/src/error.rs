@@ -26,6 +26,7 @@ pub enum Error {
     TrialExpired,
     ProductExpired,
     SubscriptionExpired,
+    EntitlementError(String),
 }
 
 impl_error!{IoError, Error::IO}
@@ -43,6 +44,7 @@ impl fmt::Display for Error {
             Error::TrialExpired => format!("Entitlement trial expired. Contact sales@rio.company to buy license."),
             Error::ProductExpired => format!("Entitlement trial expired. Contact sales@rio.company to buy license."),
             Error::SubscriptionExpired => format!("Entitlement activation code invalid. Contact sales@rio.company to buy license (or) provide a valid code."),
+            Error::EntitlementError(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }

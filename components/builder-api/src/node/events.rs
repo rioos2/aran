@@ -8,18 +8,14 @@ use api::audit::slack::slack_sender as slack;
 use db::data_store::DataStoreConn;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
-use protocol::api::licenses::LicenseStatus;
 
-const EXPIRY: &'static str = "expired";
-const ACTIVE: &'static str = "active";
-const TRIAL: &'static str = "trial";
 
 impl EventHandler for RuntimeHandler {
-    fn handle_event(&mut self, event: Event, ds: Box<DataStoreConn>) {
+    fn handle_event(&mut self, event: Event) {
         match event {
             Event::Api(api) => self.handle_api_event(api),
             Event::Internal(internal) => {
-                self.handle_internal_event(&internal, ds);
+                self.handle_internal_event(&internal);
             }
         }
     }
@@ -51,48 +47,9 @@ impl RuntimeHandler {
         }
     }
 
-    fn handle_internal_event(&mut self, event: &InternalEvent, ds: Box<DataStoreConn>) {
-
+    fn handle_internal_event(&mut self, event: &InternalEvent) {
         match *event {
-            InternalEvent::EntitlementTimeout => {
-                let get_license = self.license.create_trial_or_verify().unwrap();
-                match get_license.0 {
-                    LicenseStatus::TRIAL => {
-                        info!{" ✓ All Good. You have a trial entitlement. !"}
-                        self.license.update_license_status(
-                            ds.clone(),
-                            TRIAL.to_string(),
-                            get_license.1,
-                        );
-                    }
-                    LicenseStatus::ACTIVE => {
-                        info!{" ✓ All Good. You have Rio/OS - Sensei entitlement. !"}
-                        self.license.update_license_status(
-                            ds.clone(),
-                            ACTIVE.to_string(),
-                            get_license.1,
-                        );
-                    }
-                    LicenseStatus::EXPIRED => {
-                        let expiry_attempt = self.license.hard_stop();
-                        if expiry_attempt.is_err() {
-                            self.license.update_license_status(
-                                ds.clone(),
-                                EXPIRY.to_string(),
-                                get_license.1,
-                            );
-                        } else {
-                            warn!("Expired, attempt: {:?}", expiry_attempt.unwrap())
-                        }
-                    }
-                    LicenseStatus::INVALID => {
-                        error!(
-                            "Something going wrong with License,License Error:{:?}",
-                            get_license.1
-                        )
-                    }
-                }
-            }
+            InternalEvent::EntitlementTimeToVerify => self.license.live_verify().unwrap(),
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }
     }

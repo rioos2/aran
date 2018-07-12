@@ -8,14 +8,15 @@ CREATE SEQUENCE IF NOT EXISTS license_id_seq;
 CREATE TABLE IF NOT EXISTS LICENSES (id bigint PRIMARY KEY DEFAULT next_id_v1('license_id_seq'),
                                                                    object_meta JSONB,
                                                                                type_meta JSONB,
-                                                                                         status text, product text,activation_code text,expired text, product_options JSONB, updated_at timestamptz,
-                                                                                                                                                      created_at timestamptz DEFAULT now());
+                                                                                         status text, product text,activation_code text,expired text, product_options JSONB,
+                                                                                                                                                                      updated_at timestamptz,
+                                                                                                                                                                      created_at timestamptz DEFAULT now());
 
 ---
 --- Table:licenses:create/update
 ---
 
-CREATE FUNCTION insert_or_update_license_v1( lobject_meta JSONB, ltype_meta JSONB, lstatus text, lproduct text,lactivation_code text,lexpired text, lproduct_options JSONB )RETURNS
+CREATE FUNCTION insert_or_update_license_v1(lobject_meta JSONB, ltype_meta JSONB, lstatus text, lproduct text,lactivation_code text,lexpired text, lproduct_options JSONB)RETURNS
 SETOF LICENSES AS $$
 DECLARE this_license LICENSES % rowtype;
 BEGIN
@@ -33,6 +34,7 @@ BEGIN
          status = lstatus,
          activation_code = lactivation_code,
          expired = lexpired,
+         product_options = lproduct_options,
          updated_at = now()
       WHERE
          object_meta ->> 'name' = lobject_meta ->> 'name' RETURNING *;
@@ -87,6 +89,7 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:licenses:update
 ---
+
 CREATE OR REPLACE FUNCTION update_license_v1 (lid bigint,li_object_meta JSONB, li_status text, li_product text,li_activation_code text,li_expired text, li_product_options JSONB) RETURNS
 SETOF licenses AS $$
                       BEGIN
