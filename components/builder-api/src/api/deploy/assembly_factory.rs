@@ -357,6 +357,20 @@ impl Validator for AssemblyFactory {
             s.push("plan".to_string());
         }
 
+        if self.object_meta().owner_references.len() <= 0 {
+            s.push("owner_references".to_string());
+        } else {
+            self.object_meta()
+                .owner_references
+                .iter()
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
+        }
+
         if !self.get_resources().contains_key("compute_type") {
             s.push("compute_type".to_string());
         }
