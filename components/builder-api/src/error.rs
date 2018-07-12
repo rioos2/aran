@@ -6,6 +6,7 @@ use bodyparser;
 use clusters;
 use common;
 use db;
+use entitlement;
 use httpbis;
 use openio_sdk_rust::aws;
 use postgres;
@@ -78,6 +79,7 @@ pub enum Error {
     //Hook errors
     RioConfig(service::Error),
     SenseiHook(clusters::Error),
+    EntitlementError(entitlement::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -109,6 +111,7 @@ impl fmt::Display for Error {
             Error::Yaml(ref e) => format!("{}", e),
             Error::Postgres(ref e) => format!("{}", e),
             Error::RioConfig(ref e) => format!("{}", e),
+            Error::EntitlementError(ref e) => format!("{}", e),
             Error::SenseiHook(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
@@ -142,6 +145,7 @@ impl error::Error for Error {
             Error::Yaml(ref err) => err.description(),
             Error::Postgres(ref err) => err.description(),
             Error::RioConfig(ref err) => err.description(),
+            Error::EntitlementError(ref err) => "",
             Error::SenseiHook(ref err) => err.description(),
         }
     }
@@ -216,6 +220,13 @@ impl From<postgres::error::Error> for Error {
 impl From<service::Error> for Error {
     fn from(err: service::Error) -> Self {
         Error::RioConfig(err)
+    }
+}
+
+
+impl From<entitlement::Error> for Error {
+    fn from(err: entitlement::Error) -> Self {
+        Error::EntitlementError(err)
     }
 }
 
