@@ -13,15 +13,19 @@ pub mod runtime;
 pub mod streamer;
 pub mod websocket;
 
-use std::sync::Arc;
-use error::{Error, Result};
-use db::data_store::DataStoreConn;
-use config::Config;
-use watch::config::Streamer;
-use protocol::cache::ExpanderSender;
+
 use auth::rbac::license;
 
 use common::ui::UI;
+use config::Config;
+use db::data_store::DataStoreConn;
+use entitlement::softwarekeys::load_library::API;
+use error::{Error, Result};
+use lib_load;
+use protocol::cache::ExpanderSender;
+use rio_core::fs::rioconfig_license_path;
+use std::sync::Arc;
+use watch::config::Streamer;
 
 pub enum Servers {
     APISERVER,
@@ -63,7 +67,16 @@ impl Node {
         let mut license = license::LicensesFascade::new(ds.clone());
         license.with_cache();
 
-        let rg = runtime::Runtime::new(self.config.clone(), license);
+        let so_file = self.config.licenses.so_file.clone();
+
+        let lib = lib_load::Library::new(&rioconfig_license_path(None).join(so_file))?;
+
+        let mut data = API::new(lib, license);
+        data.initialize_license()?;
+        data.load_license()?;
+
+        let rg = runtime::Runtime::new(self.config.clone(), data);
+
 
         let api_sender = rg.channel();
 
