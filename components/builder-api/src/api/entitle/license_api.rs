@@ -87,6 +87,28 @@ impl LicenseApi {
         }
     }
 
+    ///PUT: /licenses/:id
+    ///Input license id
+    ///Returns updated license
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        let mut unmarshall_body =
+            self.validate(req.get::<bodyparser::Struct<Licenses>>()?)?;
+        unmarshall_body.set_id(params.get_id());
+
+        match DataStore::new(&self.conn).update(&unmarshall_body) {
+            Ok(Some(license)) => Ok(render_json(status::Ok, &license)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
+        }
+    }
+
+
 }
 impl Api for LicenseApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
@@ -100,6 +122,10 @@ impl Api for LicenseApi {
 
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
+
+        let _self = self.clone();
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
+
 
 
         router.get(
@@ -118,6 +144,12 @@ impl Api for LicenseApi {
             "/licenses",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "license_list",
+        );
+
+        router.put(
+            "/licenses/:id",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "license_update",
         );
 
     }

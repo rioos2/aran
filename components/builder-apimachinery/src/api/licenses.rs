@@ -3,7 +3,7 @@
 use api::base::{MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
 use api::base::IdGet;
 use cache::inject::LicensesFeeder;
-
+use std::collections::BTreeMap;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Licenses {
@@ -15,6 +15,8 @@ pub struct Licenses {
     status: String,
     product: String,
     activation_code: String,
+    #[serde(default)]
+    product_options: BTreeMap<String, AllowActive>,
     #[serde(default)]
     expired_at: String,
     #[serde(default)]
@@ -41,6 +43,11 @@ impl MetaFields for Licenses {
 }
 
 
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct AllowActive {
+    maximum: i32,
+    current: i32,
+}
 impl Licenses {
     pub fn new() -> Licenses {
         ::std::default::Default::default()
@@ -93,6 +100,14 @@ impl Licenses {
 
     pub fn get_expired(&self) -> ::std::string::String {
         self.expired_at.clone()
+    }
+
+    pub fn set_product_options(&mut self, v: BTreeMap<String, AllowActive>) {
+        self.product_options = v;
+    }
+
+    pub fn get_product_options(&self) -> &BTreeMap<String, AllowActive> {
+        &self.product_options
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
