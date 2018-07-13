@@ -118,22 +118,13 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
-            }
-            info!(
-                "---------- STRT: Permission loader {} ----------",
-                email.get_id()
-            );
-            info!("Loaded ! Permissions\n{:?}", response);
-            info!(
-                "---------- DONE: Permission loader {} ----------",
-                email.get_id()
-            );
+            }            
             return Ok(Some(response));
         }
         Ok(None)
     }
 
-    //This is a fascade method to list_by_role.
+    //This is a fascade method to get permissions by role from cache.
     pub fn list_by_role_fascade(&self, role: IdGet) -> PermissionsForRole {
         let mut perms_for_role = PermissionsForRole::new();
         perms_for_role.set_role(role.get_id());
@@ -142,7 +133,8 @@ impl<'a> DataStore<'a> {
         perms_for_role
     }
 
-     pub fn list_by_role_name(&self, role_name: &IdGet) -> PermissionsOutputList {
+    //To get permissions by role name from database
+    pub fn list_by_role_name(&self, role_name: &IdGet) -> PermissionsOutputList {
         let conn = self.db.pool.get_shard(0)?;    
         let rows = &conn.query(
             "SELECT * FROM get_permissions_by_role_name_v1($1)",
@@ -154,16 +146,7 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
-            }
-            info!(
-                "---------- STRT: Permission loader {} ----------",
-                role_name.get_id()
-            );
-            info!("Loaded ! Permissions\n{:?}", response);
-            info!(
-                "---------- DONE: Permission loader {} ----------",
-                role_name.get_id()
-            );
+            }            
             return Ok(Some(response));
         }
         Ok(None)
@@ -181,16 +164,7 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
-            }
-            info!(
-                "---------- STRT: Permission loader {} ----------",
-                role_id.get_id()
-            );
-            info!("Loaded ! Permissions\n{:?}", response);
-            info!(
-                "---------- DONE: Permission loader {} ----------",
-                role_id.get_id()
-            );
+            }            
             return Ok(Some(response));
         }
         Ok(None)

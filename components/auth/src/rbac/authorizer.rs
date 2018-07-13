@@ -45,6 +45,12 @@ impl Authorization {
         }
     }
 
+    //verify method verifies account/service_account have accesibility of requested operation
+    //first it gets account/serviceaccount roles from cache.
+    //If role type does't match then it returns NONE response.
+    //And get permissions by role name and verify it.
+    //Now we assume account/service_account has only one role.
+    //In future we could extend it.
     pub fn verify(self, role_type: RoleType, incoming_to_trust: String) -> Result<bool> {   
         let role_box: Option<String> = match role_type.account {
             RoleNames::USERACCOUNT => {
@@ -60,8 +66,7 @@ impl Authorization {
             RoleNames::NONE => {
                 None
             }
-        };        
-        
+        };                
 
         let role = match role_box {
             Some(r) => r,

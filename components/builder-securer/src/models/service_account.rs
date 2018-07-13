@@ -13,16 +13,16 @@ use serde_json;
 use protocol::cache::InMemoryExpander;
 use protocol::cache::PULL_DIRECTLY;
 
-use super::{ServiceAccountOutput, ServiceAccountOutputList};
+use super::super::{ServiceAccountOutput, ServiceAccountOutputList};
 
-pub struct ServiceAccountDS<'a> {
+pub struct DataStore<'a> {
     db: &'a DataStoreConn,
     expander: &'a InMemoryExpander,
 }
 
-impl<'a> ServiceAccountDS<'a> {
+impl<'a> DataStore<'a> {
     pub fn new(db: &'a DataStoreConn) -> Self {
-        ServiceAccountDS {
+        DataStore {
             db: db,
             expander: &db.expander,
         }

@@ -3,16 +3,17 @@
 use super::super::error::{Error, Result};
 use db::data_store::DataStoreConn;
 use session::models::{session as sessions};
-use protocol::api::{session, service_account};
+use protocol;
+use protocol::api::session;
 use protocol::api::base::IdGet;
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_ACCOUNT, CACHE_PREFIX_SERVICEACCOUNT};
-use serviceaccount::service_account_ds::ServiceAccountDS;
+use serviceaccount::models::service_account;
 use serde_json;
 
 
-/// permission fascade: Permissions provides ability to declare the Permissions
-/// and manage them.
-/// Needs a Datastore mapper, hence a DataStoreConn needs to be sent in.
+/// Account fascade: In this fascade declare the cache service fn for getting accounts from database 
+/// and store it to inmemory cache.
+/// Then RBAC middleware get account from cache for verify account accesibility.
 //
 #[derive(Clone)]
 pub struct AccountsFascade {
@@ -48,6 +49,10 @@ impl ExpanderSender for AccountsFascade {
 }
 
 
+/// ServiceAccount fascade: In this fascade declare the cache service fn for getting service_accounts from database 
+/// and store it to inmemory cache.
+/// Then RBAC middleware get service_account role from cache for verify account accesibility.
+//
 #[derive(Clone)]
 pub struct ServiceAccountsFascade {
     pub conn: Box<DataStoreConn>,
@@ -58,8 +63,8 @@ impl ServiceAccountsFascade {
         ServiceAccountsFascade { conn: datastore }
     }
 
-     pub fn get_by_name(&self, account: IdGet) -> service_account::ServiceAccountRoles {
-        ServiceAccountDS::new(&self.conn).get_service_account_by_name_fascade(&account)
+     pub fn get_by_name(&self, account: IdGet) -> protocol::api::service_account::ServiceAccountRoles {
+        service_account::DataStore::new(&self.conn).get_service_account_by_name_fascade(&account)
     }
 }
 
@@ -69,7 +74,7 @@ impl ExpanderSender for ServiceAccountsFascade {
         let account_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_SERVICEACCOUNT.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {               
-                ServiceAccountDS::show(&_conn, &id)
+                service_account::DataStore::show(&_conn, &id)
                     .ok()
                     .and_then(|p| serde_json::to_string(&p).ok())
             }),

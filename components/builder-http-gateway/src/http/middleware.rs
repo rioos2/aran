@@ -411,14 +411,13 @@ impl EntitlementAct {
 
 impl BeforeMiddleware for EntitlementAct {
     fn before(&self, _req: &mut Request) -> IronResult<()> {
-        /*match self.license.clone().get_by_name(self.backend.clone()) {
+        match self.license.clone().get_by_name(self.backend.clone()) {
             Ok(_) => Ok(()),
             Err(err) => {
                 let err = entitlement_error(&format!("{}\n", err));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
-        }*/
-        Ok(())
+        }
     }
 }
 

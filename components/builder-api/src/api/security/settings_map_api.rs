@@ -118,7 +118,8 @@ impl SettingsMapApi {
 }
 
 impl Api for SettingsMapApi {
-    fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
+    fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
+        let basic = Authenticated::new(&*config);
         //closures : secrets
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -134,7 +135,7 @@ impl Api for SettingsMapApi {
         );
         router.get(
             "/origins/:origin/settingsmap/:name",
-            XHandler::new(C { inner: show }),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "settingsmap_show",
         );
     }

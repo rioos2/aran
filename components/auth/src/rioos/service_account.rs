@@ -3,7 +3,7 @@ use super::super::error::{self, Result};
 use db::data_store::DataStoreConn;
 use protocol::api::base::IdGet;
 use rioos;
-use serviceaccount::service_account_ds::ServiceAccountDS;
+use serviceaccount::models::service_account;
 use std::path::PathBuf;
 use util::jwt_authenticator::JWTAuthenticator;
 
@@ -37,7 +37,7 @@ impl ServiceAccountAuthenticate {
 }
 
 fn get_service_account(conn: &DataStoreConn, name: String) -> Result<()> {
-    match ServiceAccountDS::show(&conn, &IdGet::with_id(name.clone())) {
+    match service_account::DataStore::show(&conn, &IdGet::with_id(name.clone())) {
         Ok(_account) => Ok(()),
         Err(err) => {
             return Err(error::Error::Auth(rioos::AuthErr {

@@ -19,7 +19,7 @@ use protocol::api::schema::{dispatch, type_meta};
 use protocol::api::service_account::ServiceAccount;
 use router::Router;
 use serde_json;
-use service::service_account_ds::ServiceAccountDS;
+use service::models::service_account;
 use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
@@ -65,7 +65,7 @@ impl SeriveAccountApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match ServiceAccountDS::create(&self.conn, &unmarshall_body) {
+        match service_account::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
             Err(err) => Err(internal_error(&format!("{}", err))),
@@ -75,7 +75,7 @@ impl SeriveAccountApi {
     //Blank origin: Returns all the serviceaccount(irrespective of namespaces)
     //Will need roles/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match ServiceAccountDS::list_blank(&self.conn) {
+        match service_account::DataStore::list_blank(&self.conn) {
             Ok(Some(service_list)) => {
                 Ok(render_json_list(status::Ok, dispatch(req), &service_list))
             }
@@ -94,7 +94,7 @@ impl SeriveAccountApi {
         };
 
         ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", name));
-        match ServiceAccountDS::show(&self.conn, &IdGet::with_id(name.clone().to_string())) {
+        match service_account::DataStore::show(&self.conn, &IdGet::with_id(name.clone().to_string())) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -125,7 +125,7 @@ impl SeriveAccountApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match ServiceAccountDS::update(&self.conn, &unmarshall_body) {
+        match service_account::DataStore::update(&self.conn, &unmarshall_body) {
             Ok(Some(serviceaccount)) => Ok(render_json(status::Ok, &serviceaccount)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -141,7 +141,7 @@ impl SeriveAccountApi {
     //Returns an serviceaccount
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match ServiceAccountDS::show_by_id(&self.conn, &idget) {
+        let res = match service_account::DataStore::show_by_id(&self.conn, &idget) {
             Ok(Some(sa)) => {
                 let data = json!({
                             "type": typ,
