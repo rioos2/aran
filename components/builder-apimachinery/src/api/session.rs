@@ -1078,7 +1078,7 @@ pub struct Wizard {
     object_meta: ObjectMeta, //Standard object metadata
     type_meta: TypeMeta, //Standard type metadata: kind: SesssionCreate
     registered: bool,
-    license: bool,
+    licensed: bool,
 }
 
 impl MetaFields for Wizard {
@@ -1108,7 +1108,7 @@ impl Wizard {
     }
 
     pub fn set_license(&mut self, v: bool) {
-        self.license = v;
+        self.licensed = v;
     }
 
     pub fn set_registered(&mut self, v: bool) {
