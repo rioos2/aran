@@ -4,7 +4,7 @@
 ---
 
 CREATE SEQUENCE IF NOT EXISTS plan_id_seq;
-CREATE TABLE IF NOT EXISTS plan_factory (id bigint PRIMARY KEY DEFAULT next_id_v1('plan_id_seq'), type_meta JSONB, object_meta JSONB, plans JSONB, category text, VERSION text, icon text, description text, status JSONB, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS plan_factory (id bigint PRIMARY KEY DEFAULT next_id_v1('plan_id_seq'), type_meta JSONB, object_meta JSONB, plans JSONB, category text, VERSION text, icon text, description text, status JSONB, updated_at timestamptz, created_at timestamptz DEFAULT now());
 
 ---
 --- Table:plan_factory:create

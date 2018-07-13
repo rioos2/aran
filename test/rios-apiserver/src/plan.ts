@@ -11,12 +11,11 @@ describe('Plan Factory API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"ubuntu","account":"","created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Package","api_version":"v1","name":"ubuntu","uid":"956913916145836032",
-        "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
-        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"category":"machine","version":"16.04","characteristics":{"rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz","rioos_sh_image_url":"https://localhost:6443/api/v1/marketplaces/956914125793927168/download"},
-        "icon":"ubuntu.png","description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","ports":[],"envs":{},"lifecycle":{"probe": {"env": {}, "exec": [],
-        "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""}, "http_headers": {}}, "pre_stop": {"command": []},
-        "post_start": {"command": []}},"status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}})
+        .send({"object_meta":{ "name":"ubuntu", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"ubuntu","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"ubuntu", "uid":"1024473253563072512","block_owner_deletion":false}]},
+        "category": "machine","version": "16.04","characteristics" :{"rioos_sh_image_extension": "img", "rioos_sh_market_image_extension":  "tar.gz"},"icon" : "ubuntu.png","description": " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+        "status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+        "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}}}],
+        "category": "machine", "version": "14.04", "icon": "ubuntu.png", "description": "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","status":{"phase":"SyncPending"}})
         .expect(200)
         .end(function(err, res) {
           expect(res.body);
@@ -33,10 +32,11 @@ describe('Plan Factory API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"ubuntu","account":"","created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Package","api_version":"v1","name":"ubuntu","uid":"956913916145836032",
-        "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
-        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"category":"","version":"16.04","characteristics":{"rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz","rioos_sh_image_url":"https://localhost:6443/api/v1/marketplaces/956914125793927168/download"},
-        "icon":"ubuntu.png","description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","ports":[],"envs":{},"lifecycle":{},"status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}})
+        .send({"object_meta":{ "name":"ubuntu", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"ubuntu","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"ubuntu", "uid":"1024473253563072512","block_owner_deletion":false}]},
+        "category": "machine","version": "16.04","characteristics" :{"rioos_sh_image_extension": "img", "rioos_sh_market_image_extension":  "tar.gz"},"icon" : "ubuntu.png","description": " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+        "status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+        "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}}}],
+        "category": "", "version": "16.04", "icon": "ubuntu.png", "description": "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","status":{"phase":"SyncPending"}})
       .expect(400)
         .end(function(err, res) {
           expect(res.body);
@@ -50,10 +50,11 @@ describe('Plan Factory API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"ubuntu","account":"","created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Package","api_version":"v1","name":"ubuntu","uid":"956913916145836032",
-        "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
-        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"version":"16.04","characteristics":{"rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz","rioos_sh_image_url":"https://localhost:6443/api/v1/marketplaces/956914125793927168/download"},
-        "icon":"ubuntu.png","description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","ports":[],"envs":{},"lifecycle":{},"status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}})
+        .send({"object_meta":{ "name":"ubuntu", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"ubuntu","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"ubuntu", "uid":"1024473253563072512","block_owner_deletion":false}]},
+        "category": "machine","version": "16.04","characteristics" :{"rioos_sh_image_extension": "img", "rioos_sh_market_image_extension":  "tar.gz"},"icon" : "ubuntu.png","description": " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+        "status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+        "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}}}],
+        "version": "16.04", "icon": "ubuntu.png", "description": "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","status":{"phase":"SyncPending"}})
         .expect(400)
         .end(function(err, res) {
           expect(res.body);
@@ -66,10 +67,11 @@ describe('Plan Factory API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"ubuntu","account":"","created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Package","api_version":"v1","name":"ubuntu","uid":"956913916145836032",
-        "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
-        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"category":"machine","version":"","characteristics":{"rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz","rioos_sh_image_url":"https://localhost:6443/api/v1/marketplaces/956914125793927168/download"},
-        "icon":"ubuntu.png","description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","ports":[],"envs":{},"lifecycle":{},"status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}})
+        .send({"object_meta":{ "name":"ubuntu", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"ubuntu","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"ubuntu", "uid":"1024473253563072512","block_owner_deletion":false}]},
+        "category": "machine","version": "16.04","characteristics" :{"rioos_sh_image_extension": "img", "rioos_sh_market_image_extension":  "tar.gz"},"icon" : "ubuntu.png","description": " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+        "status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+        "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}}}],
+        "category": "machine", "version": "", "icon": "ubuntu.png", "description": "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","status":{"phase":"SyncPending"}})
       .expect(400)
         .end(function(err, res) {
           expect(res.body);
@@ -81,11 +83,12 @@ describe('Plan Factory API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"","account":"","created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Package","api_version":"v1","name":"ubuntu","uid":"956913916145836032",
-        "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
-        "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"category":"machine","version":"16.04","characteristics":{"rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz","rioos_sh_image_url":"https://localhost:6443/api/v1/marketplaces/956914125793927168/download"},
-        "icon":"ubuntu.png","description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","ports":[],"envs":{},"lifecycle":{},"status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}})
-      .expect(400)
+        .send({"object_meta":{ "name":"", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"ubuntu","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"ubuntu", "uid":"1024473253563072512","block_owner_deletion":false}]},
+        "category": "machine","version": "16.04","characteristics" :{"rioos_sh_image_extension": "img", "rioos_sh_market_image_extension":  "tar.gz"},"icon" : "ubuntu.png","description": " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+        "status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+        "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}}}],
+        "category": "machine", "version": "16.04", "icon": "ubuntu.png", "description": "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","status":{"phase":"SyncPending"}})
+        .expect(400)
         .end(function(err, res) {
           expect(res.body);
           done(err);
@@ -101,7 +104,7 @@ describe('Plan Factory API', function() {
         .end(function(err, res) {
           expect(res.body.kind).to.equal(globalAny.planlist);
           expect(res.body.api_version).to.equal(globalAny.version);
-          expect(res.body.items.length).to.equal(2);
+          expect(res.body.items.length).to.equal(32);
           done(err);
         });
     });
@@ -134,11 +137,12 @@ describe('Plan Factory API', function() {
     it('returns  unauthorized error created plan factory', function(done) {
       request.post('/plans')
       .ca(globalAny.rootCA)
-      .send({"object_meta":{"name":"ubuntu","account":"","created_at":"","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Package","api_version":"v1","name":"ubuntu","uid":"956913916145836032",
-      "block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"","details":{"name":"","group":"","kind":"","causes":[],
-      "uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"category":"machine","version":"16.04","characteristics":{"rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz","rioos_sh_image_url":"https://localhost:6443/api/v1/marketplaces/956914125793927168/download"},
-      "icon":"ubuntu.png","description":" Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","ports":[],"envs":{},"lifecycle":{},"status":{"phase":"SyncPending","message":"","reason":"","conditions":[]}})
-      .expect(406)
+      .send({"object_meta":{ "name":"ubuntu", "account":globalAny.account_id}, "plans":[{"object_meta":{"name":"ubuntu","account":globalAny.account_id,"owner_references":[{"kind":"Package", "api_version":"v1","name":"ubuntu", "uid":"1024473253563072512","block_owner_deletion":false}]},
+      "category": "machine","version": "16.04","characteristics" :{"rioos_sh_image_extension": "img", "rioos_sh_market_image_extension":  "tar.gz"},"icon" : "ubuntu.png","description": " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ",
+      "status":{"phase":"SyncPending"},"metadata": {"origin": "rioos_system"},"lifecycle":{"probe": {"env": {}, "exec": [], "http_get": {"host": "", "path": "", "port": "", "scheme": ""}, "tcp_socket": {"host": "", "port": ""},
+      "http_headers": {}}, "pre_stop": {"command": []}, "post_start": {"command": []}}}],
+      "category": "machine", "version": "16.04", "icon": "ubuntu.png", "description": "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things ","status":{"phase":"SyncPending"}})
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });

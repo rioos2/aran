@@ -31,8 +31,8 @@ describe('License  API', function() {
         .end(function(err, res) {
           globalAny.license_id =res.body.id;
           globalAny.license_name =res.body.object_meta.name;
-          expect(res.body.kind).to.equal(globalAny.License);
-          expect(res.body.api_version).to.equal(globalAny.version);
+          expect(res.body.type_meta.kind).to.equal(globalAny.License);
+          expect(res.body.type_meta.api_version).to.equal(globalAny.version);
           done(err);
         });
     });
@@ -43,19 +43,6 @@ describe('License  API', function() {
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .send({"object_meta":{"name":"SoftwareKey"},"status":"","product":"Rio/OS","activation_code":"ertyuicvbnm456789dfghjk456789","expired_at":"30"})
-        .expect(400)
-        .end(function(err, res) {
-          expect(res.body);
-          done(err);
-        });
-    });
-
-    it('returns the create licenses missing status', function(done) {
-      request.post('/licenses/activate')
-      .ca(globalAny.rootCA)
-        .set('Authorization', globalAny.bobo_bearer)
-        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"SoftwareKey"},"status":"trial","product":"Rio/OS","activation_code":"ertyuicvbnm456789dfghjk456789","expired_at":"30"})
         .expect(400)
         .end(function(err, res) {
           expect(res.body);
@@ -105,12 +92,11 @@ describe('License  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(404)
+        .expect(200)
         .end(function(err, res) {
           globalAny.license_name =res.body.object_meta.name;
-          expect(res.body.kind).to.equal(globalAny.License);
-          expect(res.body.api_version).to.equal(globalAny.version);
-
+          expect(res.body.type_meta.kind).to.equal(globalAny.License);
+          expect(res.body.type_meta.api_version).to.equal(globalAny.version);
           expect(res.body);
           done(err);
         });
