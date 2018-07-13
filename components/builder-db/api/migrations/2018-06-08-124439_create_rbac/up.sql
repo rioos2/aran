@@ -181,6 +181,33 @@ END
 $$ LANGUAGE PLPGSQL STABLE;
 
 ---
+--- Table:permissions:show_permissions_for_a_role
+---
+CREATE 
+OR REPLACE FUNCTION get_permissions_by_role_name_v1 (rname text) RETURNS SETOF permissions AS $$ 
+BEGIN
+   RETURN QUERY 
+   SELECT
+      * 
+   FROM
+      permissions 
+   WHERE
+      role_id IN
+      (
+         SELECT
+            id 
+         FROM
+            roles 
+         WHERE
+            name = rname
+      )
+   ORDER BY
+      name ASC;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+---
 --- Table:permissions:show_permissions_for_an_user (account - email)
 ---
 CREATE 

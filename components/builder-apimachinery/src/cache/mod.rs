@@ -8,7 +8,7 @@ mod multi_cache;
 use self::flock::Cacher;
 use api;
 use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder, VolumesFeeder,
-                    LicensesFeeder};
+                    LicensesFeeder, AccountsFeeder, ServiceAccountFeeder};
 use cache::multi_cache::MultiCache;
 use serde_json;
 use std::collections::BTreeMap;
@@ -28,6 +28,8 @@ pub const CACHE_PREFIX_METRIC: &'static str = "_metric";
 pub const CACHE_PREFIX_SERVICE: &'static str = "_service";
 pub const CACHE_PREFIX_PERMISSION: &'static str = "_permission";
 pub const CACHE_PREFIX_LICENSE: &'static str = "_license";
+pub const CACHE_PREFIX_ACCOUNT: &'static str = "_account";
+pub const CACHE_PREFIX_SERVICEACCOUNT: &'static str = "_service_account";
 
 /// The fake type that decides how to pull the data from cache (invalidate or just from cache)
 /// PULL_DIRECTLY: This loads from the cache is present, if the copy isn't there then it applies the function closure |_v| to cache the entry
@@ -434,6 +436,56 @@ impl InMemoryExpander {
                 let license: api::licenses::Licenses = serde_json::from_str(&found_as_str).unwrap_or(api::licenses::Licenses::new());
                 let status: String = license.get_status();
                 Some(status)
+            }
+        }))
+    }
+
+    pub fn with_account<I: AccountsFeeder>(&self, i: &mut I, force: Option<bool>) {
+        let iid = i.iget_id();
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    debug!("» Accounts Invalidate fn for ≈ {}", iid);
+                    self.cached_invalidate_for(CACHE_PREFIX_ACCOUNT.to_string(), iid.clone())
+                        .clone()
+                },
+                |_v| {
+                    debug!("» Accounts cache fn for ≈ {}", iid);
+                    self.cached_value_for(CACHE_PREFIX_ACCOUNT.to_string(), iid.clone())
+                        .clone()
+                },
+            )
+        };
+        i.ifeed(opt_found_as_str.and_then({
+            |found_as_str| {                
+                let account: api::session::Account = serde_json::from_str(&found_as_str).unwrap_or(api::session::Account::new());
+                let roles: Vec<String> = account.get_roles();
+                Some(roles)
+            }
+        }))
+    }
+
+    pub fn with_service_account<I: ServiceAccountFeeder>(&self, i: &mut I, force: Option<bool>) {
+        let iid = i.iget_id();
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    debug!("» ServiceAccount Invalidate fn for ≈ {}", iid);
+                    self.cached_invalidate_for(CACHE_PREFIX_SERVICEACCOUNT.to_string(), iid.clone())
+                        .clone()
+                },
+                |_v| {
+                    debug!("» ServiceAccount cache fn for ≈ {}", iid);
+                    self.cached_value_for(CACHE_PREFIX_SERVICEACCOUNT.to_string(), iid.clone())
+                        .clone()
+                },
+            )
+        };
+        i.ifeed(opt_found_as_str.and_then({
+            |found_as_str| {               
+                let account: api::service_account::ServiceAccount = serde_json::from_str(&found_as_str).unwrap_or(api::service_account::ServiceAccount::new());
+                let roles: Vec<String> = account.get_roles();
+                Some(roles)
             }
         }))
     }

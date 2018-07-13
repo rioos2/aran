@@ -10,8 +10,6 @@ extern crate serde_json;
 
 pub mod error;
 pub mod models;
-pub mod secret_ds;
-pub mod service_account_ds;
 
 pub use self::error::{Error, Result};
 

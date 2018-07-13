@@ -10,12 +10,24 @@ use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
 use protocol::api::{base, service_account};
 use serde_json;
+use protocol::cache::InMemoryExpander;
+use protocol::cache::PULL_DIRECTLY;
 
-use super::{ServiceAccountOutput, ServiceAccountOutputList};
+use super::super::{ServiceAccountOutput, ServiceAccountOutputList};
 
-pub struct ServiceAccountDS;
+pub struct DataStore<'a> {
+    db: &'a DataStoreConn,
+    expander: &'a InMemoryExpander,
+}
 
-impl ServiceAccountDS {
+impl<'a> DataStore<'a> {
+    pub fn new(db: &'a DataStoreConn) -> Self {
+        DataStore {
+            db: db,
+            expander: &db.expander,
+        }
+    }
+
     pub fn create(
         datastore: &DataStoreConn,
         service_create: &service_account::ServiceAccount,
@@ -59,6 +71,14 @@ impl ServiceAccountDS {
             }
         }
         Ok(None)
+    }
+
+    pub fn get_service_account_by_name_fascade(&self, get_service: &base::IdGet) -> service_account::ServiceAccountRoles {
+        let mut account = service_account::ServiceAccountRoles::new();
+        account.set_name(get_service.get_id().clone());       
+        self.expander
+            .with_service_account(&mut account, PULL_DIRECTLY);
+        account
     }
 
     pub fn show(datastore: &DataStoreConn, get_service: &base::IdGet) -> ServiceAccountOutput {

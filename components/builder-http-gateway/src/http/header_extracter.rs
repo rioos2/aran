@@ -66,7 +66,7 @@ impl HeaderExtracter for ServiceAccountHeader {
         token: String,
         config_value: Option<&String>,
     ) -> Option<Authenticatable> {
-        let serviceaccount = req.get::<XAuthRioOSServiceAccountName>();
+        let serviceaccount = req.get::<XAuthRioOSServiceAccountName>();       
         if !serviceaccount.is_none() {
             return Some(Authenticatable::ServiceAccountNameAndWebtoken {
                 name: serviceaccount.unwrap().0.clone(),
@@ -139,7 +139,7 @@ impl HeaderDecider {
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         };
-
+        
         let scrappers = plugins
             .into_iter()
             .map(|p| match p.as_str() {
@@ -166,7 +166,7 @@ impl HeaderDecider {
                 &_ => None,
             })
             .collect();
-
+            
         Ok(HeaderDecider {
             extractables: scrappers,
         })
@@ -183,7 +183,7 @@ impl HeaderDecider {
     }
 }
 
-fn valid_header(authenticatables: &Vec<Option<Authenticatable>>) -> Option<Authenticatable> {
+fn valid_header(authenticatables: &Vec<Option<Authenticatable>>) -> Option<Authenticatable> {   
     authenticatables
         .iter()
         .fold(None, |acc, x| acc.or(x.clone()).clone())
