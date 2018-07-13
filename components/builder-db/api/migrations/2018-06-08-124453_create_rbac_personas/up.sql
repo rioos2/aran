@@ -505,7 +505,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.ASSEMBLYS.PUT',
+         'RIOOS.ASSEMBLYS.*.PUT',
          'Edit only access for assembly resource.'
    )
 ,

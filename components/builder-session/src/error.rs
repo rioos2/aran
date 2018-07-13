@@ -9,6 +9,7 @@ use std::fmt;
 use std::io;
 use std::num;
 use std::result;
+use entitlement;
 
 #[derive(Debug)]
 pub enum Error {
@@ -39,6 +40,8 @@ pub enum Error {
     PassTicketGet(postgres::error::Error),
     PassTicketDelete(postgres::error::Error),
     PassTicketCreate(postgres::error::Error),
+    WizardGet(postgres::error::Error),
+    EntitlementError(entitlement::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -93,6 +96,8 @@ impl fmt::Display for Error {
             Error::PassTicketGet(ref e) => format!("Error get otp data, {}", e),
             Error::PassTicketDelete(ref e) => format!("Error removing otp data, {}", e),
             Error::PassTicketCreate(ref e) => format!("Error creating otp data, {}", e),
+            Error::WizardGet(ref e) => format!("Error getting license from database for wizard , {}", e),
+            Error::EntitlementError(ref e) => format!("Error for license get, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -128,6 +133,8 @@ impl error::Error for Error {
             Error::PassTicketGet(ref err) => err.description(),
             Error::PassTicketDelete(ref err) => err.description(),
             Error::PassTicketCreate(ref err) => err.description(),
+            Error::WizardGet(ref err) => err.description(),
+            Error::EntitlementError(ref err) => err.description(),
         }
     }
 }
@@ -147,5 +154,11 @@ impl From<io::Error> for Error {
 impl From<num::ParseIntError> for Error {
     fn from(err: num::ParseIntError) -> Self {
         Error::AccountIdFromString(err)
+    }
+}
+
+impl From<entitlement::Error> for Error {
+    fn from(err: entitlement::Error) -> Self {
+        Error::EntitlementError(err)
     }
 }

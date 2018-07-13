@@ -180,6 +180,15 @@ impl AuthenticateApi {
         }
     }
 
+    //GET : wizard
+    fn wizard(&self, req: &mut Request) -> AranResult<Response> {
+
+        match sessions::DataStore::wizard(&self.conn) {
+            Ok(wizard) => Ok(render_json(status::Ok, &wizard)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+        }
+    }
+
     //POST: ldap/configd",
     //Input LdapConfig as body json, and returns LDAPConfgit as the response
     fn config_ldap(&self, req: &mut Request) -> AranResult<Response> {
@@ -326,6 +335,9 @@ impl Api for AuthenticateApi {
         let authenticate_ldap =
             move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
 
+        let _self = self.clone();
+        let wizard = move |req: &mut Request| -> AranResult<Response> { _self.wizard(req) };
+
         //closures: ldap
         let _self = self.clone();
         let config_ldap =
@@ -400,6 +412,15 @@ impl Api for AuthenticateApi {
             }).before(basic.clone()),
             "account_logout",
         );
+        router.get(
+            "/wizard",
+            XHandler::new(C {
+                inner: wizard,
+            }),
+            "wizard",
+        );
+
+
 
         router.post(
             "/authenticate/ldap/:code",

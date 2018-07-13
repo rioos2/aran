@@ -22,5 +22,8 @@ path = "../builder-db"
 [dependencies.ldap3]
 version = "*"
 
+[dependencies.rioos_builder_entitlement]
+path = "../builder-entitlement"
+
 [features]
 functional = []

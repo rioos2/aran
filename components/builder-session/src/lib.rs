@@ -6,6 +6,7 @@ extern crate chrono;
 extern crate ldap3;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
+extern crate rioos_builder_entitlement as entitlement;
 
 extern crate postgres;
 extern crate rand;

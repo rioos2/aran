@@ -139,6 +139,8 @@ lazy_static! {
         map.register("POST:ingresses", "Ingress");
         map.register("GET:ingresses", "IngressList");
 
+        map.register("GET:wizard", "Wizard");
+
         map
     };
 }
