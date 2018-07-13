@@ -106,4 +106,16 @@ describe('Ingress  API', function() {
         });
     });
 
+    it('returns the list of ingress', function(done) {
+      request.get('/ingresses')
+      .ca(globalAny.rootCA)
+        .set('Authorization', globalAny.bobo_bearer)
+        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
+        .expect(200)
+        .end(function(err, res) {
+          expect(res.body.items.length).to.equal(1);
+          done(err);
+        });
+    });
+
   });

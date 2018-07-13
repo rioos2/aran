@@ -8,17 +8,6 @@ const request = supertest.agent(globalAny.apiServer);
 describe('Deployment API', function() {
 
 describe('Assembly_factory API', function() {
-  // it('returns error for no record found to list assemblys_factory', function(done) {
-  //   request.get('/assemblyfactorys')
-  //   .ca(globalAny.rootCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .expect(404)
-  //     .end(function(err, res) {
-  //       done()
-  //     });
-  // });
-
   it('returns the assemblys_factorys by account', function(done) {
     this.timeout(4000)
     request.get('/accounts/'+globalAny.account_id+'/assemblyfactorys')
@@ -33,25 +22,6 @@ describe('Assembly_factory API', function() {
         done(err);
       });
   });
-  // it('returns the assembly_factorys with one replicas', function(done) {
-  //   request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
-  //   .ca(globalAny.rootCA)
-  //     .set('Authorization', globalAny.bobo_bearer)
-  //     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-  //     .send({"object_meta": {"name": "levi.megam.io","account": globalAny.account_id,"cluster_name": "chennai","labels": {"rioos_category": "machine"},"owner_references":[{"kind":"StacksFactory", "api_version":"v1","name":"stacks", "uid":"876543245676543456","block_owner_deletion":false}]},
-  //     "replicas": 1,"resources": {"compute_type": "cpu","storage_type": "hdd","cpu": "1",
-  //     "memory": "1 GiB","storage": "3 GiB","private_ipv4": "true"},"secret": {"id": globalAny.secrets_id},"plan": globalAny.plan_id})
-  //     .expect(200)
-  //     .end(function(err, res) {
-  //       globalAny.asm_fac_id =res.body.id;
-  //       globalAny.replicas = res.body.replicas;
-  //       expect(res.body.type_meta.kind).to.equal(globalAny.assemblyfactory);
-  //       expect(res.body.type_meta.api_version).to.equal(globalAny.version);
-  //       expect(res.body.status.phase).to.equal(globalAny.pending);
-  //       done(err);
-  //     });
-  // });
-
   it('returns the assembly_factorys_status_update by id', function(done) {
     request.put('/assemblyfactorys/'+globalAny.asm_fac_id+'/status')
     .ca(globalAny.rootCA)
