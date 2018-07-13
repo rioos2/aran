@@ -27,10 +27,10 @@ impl LicenseCloud {
     }
 
     // Returns the status of license verified with LicenseCloud
-    // pub fn verify(&self) -> Result<()> {
-    //     self.fascade.check_license()?;
-    //     Ok(())
-    // }
+    pub fn verify(&self) -> Result<()> {
+        self.fascade.check_license()?;
+        Ok(())
+    }
 }
 
 #[derive(Debug)]

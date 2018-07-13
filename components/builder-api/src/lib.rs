@@ -23,6 +23,7 @@ extern crate rand;
 extern crate regex;
 extern crate tempdir;
 extern crate urlencoded;
+extern crate libloading as lib_load;
 
 extern crate rioos_auth as auth;
 extern crate rioos_builder_apimachinery as protocol;
