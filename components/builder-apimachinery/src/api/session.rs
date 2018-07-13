@@ -1,10 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{MetaFields, ObjectMeta, TypeMeta,WhoAmITypeMeta};
+use api::base::{MetaFields, ObjectMeta, TypeMeta,WhoAmITypeMeta,IdGet};
 use iron::headers::UserAgent;
 use iron::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::result;
 use woothee::parser::{Parser, WootheeResult};
+use cache::inject::AccountsFeeder;
 pub const DEFAULT_AGENT: &'static str = "Rio Bulldog";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -659,6 +660,19 @@ impl Account {
 
     pub fn get_avatar(&self) -> &Option<Vec<u8>> {
         &self.avatar
+    }
+}
+
+impl AccountsFeeder for Account {
+    fn iget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(self.get_email(), "".to_string())
+    }
+
+   fn ifeed(&mut self, m: Option<Vec<String>>) {
+       match m {
+            Some(roles) => self.set_roles(roles),
+            None => {}
+        }
     }
 }
 

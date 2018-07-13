@@ -20,7 +20,7 @@ use protocol::api::schema::{dispatch, dispatch_url, type_meta};
 use protocol::api::secret::Secret;
 use router::Router;
 use serde_json;
-use service::secret_ds::SecretDS;
+use service::models::secret;
 use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
@@ -115,7 +115,7 @@ impl SecretApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match SecretDS::show(&self.conn, &params) {
+        match secret::DataStore::show(&self.conn, &params) {
             Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -131,7 +131,7 @@ impl SecretApi {
     //Returns an secrets
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match SecretDS::show(&self.conn, &idget) {
+        let res = match secret::DataStore::show(&self.conn, &idget) {
             Ok(Some(secrets)) => {
                 let data = json!({
                             "type": typ,
@@ -223,7 +223,7 @@ impl SecretApi {
         let mut params = IdGet::with_id(org.clone().to_string());
         params.set_name(name.clone().to_string());
 
-        match SecretDS::list_by_origin(&self.conn, &params) {
+        match secret::DataStore::list_by_origin(&self.conn, &params) {
             Ok(Some(secrets)) => Ok(render_json_list(status::Ok, dispatch(req), &secrets)),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for account {}",
@@ -252,7 +252,7 @@ impl SecretApi {
         let mut params = IdGet::with_id(name.clone().to_string());
         params.set_name(org.clone().to_string());
 
-        match SecretDS::show_by_origin_and_name(&self.conn, &params) {
+        match secret::DataStore::show_by_origin_and_name(&self.conn, &params) {
             Ok(Some(secrets)) => Ok(render_json(status::Ok, &secrets)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(

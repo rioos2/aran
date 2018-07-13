@@ -43,6 +43,18 @@ pub trait PermissionsFeeder: Send {
     fn ifeed(&mut self, v: Option<Vec<api::authorize::Permissions>>);
 }
 
+pub trait AccountsFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<Vec<String>>);
+}
+
+pub trait ServiceAccountFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<Vec<String>>);
+}
+
 pub trait StacksFeeder: Send {
     fn bget_id(&mut self) -> api::base::IdGet;
 

@@ -5,7 +5,9 @@ use chrono::prelude::*;
 use error::{Error, Result};
 
 use protocol::api::base::{IdGet, MetaFields,WhoAmITypeMeta};
+use protocol::cache::PULL_DIRECTLY;
 use protocol::api::session;
+use protocol::cache::InMemoryExpander;
 
 use db;
 use db::data_store::DataStoreConn;
@@ -18,12 +20,20 @@ pub const ACTIVE: &'static str = "active";
 
 use super::super::{OpenIdOutputList, SamlOutputList};
 use ldap::{LDAPClient, LDAPUser};
-
 use entitlement::models::license;
 
-pub struct DataStore;
+pub struct DataStore<'a> {
+    db: &'a DataStoreConn,
+    expander: &'a InMemoryExpander,
+}
 
-impl DataStore {
+impl<'a> DataStore<'a> {
+    pub fn new(db: &'a DataStoreConn) -> Self {
+        DataStore {
+            db: db,
+            expander: &db.expander,
+        }
+    }
     pub fn find_account(
         datastore: &DataStoreConn,
         session_create: &session::SessionCreate,
@@ -132,6 +142,14 @@ impl DataStore {
         } else {
             return Err(Error::Db(db::error::Error::RecordsNotFound));
         }
+    }
+
+    pub fn get_account_by_email_fascade(&self, account_get: session::AccountGet) -> session::Account {
+        let mut account = session::Account::new();
+        account.set_email(account_get.get_email());
+        self.expander
+            .with_account(&mut account, PULL_DIRECTLY);
+        account
     }
 
     pub fn get_account(
