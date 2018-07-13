@@ -1,5 +1,5 @@
 -- You---
---- Your SQL goes here 
+--- Your SQL goes here
 
 CREATE SEQUENCE IF NOT EXISTS ingress_id_seq;
 
@@ -57,3 +57,18 @@ SETOF ingress AS $$
                           RETURN;
                       END
                    $$ LANGUAGE PLPGSQL VOLATILE;
+
+---
+--- Table:ingresses:list_blank
+---
+CREATE
+OR REPLACE FUNCTION get_ingresses_v1() RETURNS SETOF ingress AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      ingress;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;

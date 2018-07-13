@@ -168,7 +168,7 @@ describe('User Permission API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.items.length).to.equal(54);
+          expect(res.body.items.length).to.equal(67);
           done(err);
         });
     });
