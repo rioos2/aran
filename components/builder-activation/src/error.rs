@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! A module containing the errors handling for the builder session
+//! A module containing the errors handling for the builder activation
 
 use db;
 use postgres;

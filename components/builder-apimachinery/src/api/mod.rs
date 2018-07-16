@@ -29,3 +29,4 @@ pub mod routesrv;
 pub mod licenses;
 pub mod senseis;
 pub mod ingress;
+pub mod activation;

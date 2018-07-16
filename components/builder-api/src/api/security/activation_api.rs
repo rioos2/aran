@@ -1,6 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! A collection of auth [accounts, login, roles, permissions,] for the HTTP server
 use api::Api;
 use config::Config;
 use db::data_store::DataStoreConn;
