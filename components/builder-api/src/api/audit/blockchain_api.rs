@@ -64,9 +64,7 @@ impl BlockChainApi {
         let mut unmarshall_body =
             self.validate::<AuditEvent>(req.get::<bodyparser::Struct<AuditEvent>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 

@@ -48,9 +48,7 @@ impl SettingsMapApi {
         let mut unmarshall_body =
             self.validate::<SettingsMap>(req.get::<bodyparser::Struct<SettingsMap>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -79,9 +77,7 @@ impl SettingsMapApi {
             (org_name, set_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?}{} ", org, name),
         );
         let mut params = IdGet::with_id(name.clone().to_string());

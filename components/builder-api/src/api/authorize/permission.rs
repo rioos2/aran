@@ -56,9 +56,7 @@ impl PermissionApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let unmarshall_body =
             self.validate::<Permissions>(req.get::<bodyparser::Struct<Permissions>>()?)?;
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 

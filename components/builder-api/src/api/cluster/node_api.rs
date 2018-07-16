@@ -58,7 +58,7 @@ impl NodeApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        debug!("{} ✓", format!("======= parsed {:?} ", unmarshall_body));
 
         match DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
@@ -115,7 +115,7 @@ impl NodeApi {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<NodeStatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        debug!("{} ✓", format!("======= parsed {:?} ", unmarshall_body));
 
         match DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),
@@ -132,7 +132,7 @@ impl NodeApi {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Node>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", unmarshall_body));
+        debug!("{} ✓", format!("======= parsed {:?} ", unmarshall_body));
 
         match DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(node)) => Ok(render_json(status::Ok, &node)),

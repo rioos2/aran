@@ -55,9 +55,7 @@ impl RoleApi {
     //- created_at
     fn role_create(&self, req: &mut Request) -> AranResult<Response> {
         let unmarshall_body = self.validate::<Roles>(req.get::<bodyparser::Struct<Roles>>()?)?;
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
         match role::DataStore::roles_create(&self.conn, &unmarshall_body) {

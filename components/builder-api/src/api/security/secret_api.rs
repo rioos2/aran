@@ -54,9 +54,7 @@ impl SecretApi {
         let mut unmarshall_body =
             self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -87,9 +85,7 @@ impl SecretApi {
         let mut unmarshall_body =
             self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -215,9 +211,7 @@ impl SecretApi {
             (org_name, ser_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?}{} ", org, name),
         );
         let mut params = IdGet::with_id(org.clone().to_string());
@@ -244,9 +238,7 @@ impl SecretApi {
             (org_name, set_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?}{} ", org, name),
         );
         let mut params = IdGet::with_id(name.clone().to_string());

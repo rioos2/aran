@@ -103,26 +103,18 @@ impl XHandler {
 
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
-        ///// Maybe move this Request to a seperate method.
-        ui::rawdumpln(
-            Colour::Green,
-            '→',
-            "------------------------------------------------------------------------------------",
-        );
-        ui::rawdumpln(
-            Colour::Cyan,
-            ' ',
-            format!("======= {}:{}:{}", req.version, req.method, req.url),
-        );
-        ui::rawdumpln(Colour::Blue, ' ', "Headers:");
-        ui::rawdumpln(Colour::White, ' ', "========");
+        ///// Maybe move this Request to a seperate method.        
+        debug!("{}", format!("→ ------------------------------------------------------------------------------------"));
+        debug!("{}", format!("======= {}:{}:{}", req.version, req.method, req.url));
+        debug!("{}", "Headers:");
+        debug!("{}", "========");
 
         for hv in req.headers.iter() {
-            ui::rawdump(Colour::Purple, ' ', hv);
+            debug!("{}", hv);
         }
-        ui::rawdumpln(Colour::Blue, ' ', "Body");
-        ui::rawdumpln(Colour::White, ' ', "========");
-        ui::rawdumpln(Colour::Purple, ' ', "»");
+        debug!("{}", "Body");
+        debug!("{}", "========");
+        debug!("{}", "»");
 
         //// dump ends.
 
@@ -184,9 +176,7 @@ impl Authenticated {
 /// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        ui::rawdumpln(
-            Colour::Yellow,
-            '☛',
+        debug!("{} ☛",
             format!(
                 "======= {}:{}:{}:{}",
                 req.version,
@@ -306,17 +296,17 @@ impl URLGrabber {
             method
         ).to_uppercase();
 
-        info!("{}", format!("↑ Permission {} {}", "→", resource));
+        debug!("{}", format!("↑ Permission {} {}", "→", resource));
 
         if !URLGrabber::WHITE_LIST.contains(&resource.as_str()) {
-            info!(
+            debug!(
                 "{}",
                 format!("↑ Permission Verify {} {}", "→", resource)
             );
             return Some(resource.clone());
         }
 
-        info!(
+        debug!(
             "{}",
             format!("↑ Permission WHITE_LIST {} {}", "→", resource)
         );
@@ -358,7 +348,7 @@ impl BeforeMiddleware for RBAC {
         let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
         let roles: authorizer::RoleType = header.decide()?.into();
 
-        info!(
+        debug!(
             "↑ RBAC {} {} {:?}",
             "→",
             &roles.name,
@@ -366,7 +356,7 @@ impl BeforeMiddleware for RBAC {
         );
 
         if roles.name.is_empty() {
-            info!("↑ RBAC SKIP {} {} {:?}", "→", &roles.name, input_trust);
+            debug!("↑ RBAC SKIP {} {} {:?}", "→", &roles.name, input_trust);
             return Ok(());
         }
 
@@ -376,7 +366,7 @@ impl BeforeMiddleware for RBAC {
         ) {
             Ok(_validate) => Ok(()),
             Err(_) => {
-                info!(
+                debug!(
                     "↑☒ RBAC ERROR {} {} {:?}",
                     "→",
                     &roles.clone().name,
@@ -448,16 +438,12 @@ impl AfterMiddleware for Cors {
             vec![Method::Put, Method::Delete],
         ));
 
-        ui::rawdumpln(
-            Colour::Green,
-            ' ',
+        debug!("{}",
             format!("Response {}:{}:{}", _req.version, _req.method, _req.url),
         );
-        ui::rawdumpln(Colour::White, ' ', "========");
-        ui::rawdumpln(Colour::Purple, ' ', res.to_string());
-        ui::rawdumpln(
-            Colour::Cyan,
-            '✓',
+        debug!("{}", "========");
+        debug!("{}", res.to_string());
+        debug!("✓{}",
             "------------------------------------------------------------------------------------",
         );
 

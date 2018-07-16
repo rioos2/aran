@@ -22,7 +22,7 @@ impl Cacher {
     }
 
     pub fn get(&self, lru: &Box<MultiCache<String, String>>, key: String) -> Option<Arc<String>> {
-        info!("« GET: cached ≈ {}", key);
+        debug!("« GET: cached ≈ {}", key);
         lru.get(&key)
     }
 
@@ -33,7 +33,7 @@ impl Cacher {
         value: Option<String>,
     ) {
         if value.is_some() {
-            info!("» PUT: cached ≈ {}", key);
+            debug!("» PUT: cached ≈ {}", key);
             &mut lru.put(key, value.unwrap(), DEFAULT_VAL_STOR_SIZE);
         }
     }

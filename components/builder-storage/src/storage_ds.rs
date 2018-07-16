@@ -7,7 +7,7 @@ use error::{Error, Result};
 
 use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::api::storage;
-
+use std::process::exit;
 use db::data_store::DataStoreConn;
 use postgres;
 
@@ -183,6 +183,7 @@ impl StorageDS {
         let mut response = Vec::new();
 
         if rows.len() > 0 {
+            println!("-------------------------datacenter list none--------------------");          
             for row in rows {
                 response.push(row_to_dc(&row)?)
             }
@@ -198,11 +199,16 @@ impl StorageDS {
             &[&(get_dc.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::StorageGet)?;
         if rows.len() > 0 {
+            println!("-------------------------datacenter show --------------------");
+            println!("{}", get_dc.get_id());
             for row in rows {
                 let dc = row_to_dc(&row)?;
                 return Ok(Some(dc));
             }
         }
+         println!("-------------------------datacenter show none--------------------");
+        println!("{}", get_dc.get_id());
+        exit(0);
         Ok(None)
     }
 

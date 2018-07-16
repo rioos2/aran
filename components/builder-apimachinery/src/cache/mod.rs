@@ -108,7 +108,7 @@ impl CacheService for NewCacheServiceFn {
     }
 
     fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {
-        info!("✔ apply cache ≈ {}", id);
+        debug!("✔ apply cache ≈ {}", id);
         self.cache().insert(
             lru,
             self.cache_id(id.clone()).clone(),
@@ -122,18 +122,18 @@ impl CacheService for NewCacheServiceFn {
 
         match _self.get(lru, _cache_id.clone()) {
             Some(value) => {
-                info!("✔ get: cachefn ≈ {}", _cache_id.clone());
+                debug!("✔ get: cachefn ≈ {}", _cache_id.clone());
                 Some(value.to_owned())
             }
             None => {
-                info!("✘ get: cachefn ≈ {}", _cache_id.clone());
+                debug!("✘ get: cachefn ≈ {}", _cache_id.clone());
                 self.invalidate(id, lru)
             }
         }
     }
 
     fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
-        info!("✔ get: invalidate ≈ {}", id);
+        debug!("✔ get: invalidate ≈ {}", id);
         self.apply(id.clone(), lru);
         self.cache().get(lru, self.cache_id(id).clone())
     }

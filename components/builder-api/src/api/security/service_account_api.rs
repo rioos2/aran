@@ -59,9 +59,7 @@ impl SeriveAccountApi {
         unmarshall_body.set_meta(type_meta(req), m);
         unmarshall_body.set_roles(vec![BUILTIN_ROLE_RIOOS_UNIVERSALSOLDIER.to_string()]);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -93,7 +91,7 @@ impl SeriveAccountApi {
             ser_name
         };
 
-        ui::rawdumpln(Colour::White, '✓', format!("======= parsed {:?} ", name));
+        debug!("✓ {}", format!("======= parsed {:?} ", name));
         match service_account::DataStore::show(&self.conn, &IdGet::with_id(name.clone().to_string())) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}", err))),

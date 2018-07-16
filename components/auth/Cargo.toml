@@ -16,6 +16,7 @@ rand = "0.5.3"
 iron = "0.6.0"
 openssl = "0.9.24"
 base64 = "0.9.2"
+log = "0.4.2"
 
 rioos_builder_apimachinery = { path = "../builder-apimachinery" }
 
