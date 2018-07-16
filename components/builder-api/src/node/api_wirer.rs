@@ -78,7 +78,7 @@ impl HttpGateway for Wirer {
         //this for cache service account roles
         let mut service_accounts = account::ServiceAccountsFascade::new(ds.clone());
         service_accounts.with_cache();
-        
+
         chain.link_before(Arc::new(RBAC::new(&*_config, permissions, accounts, service_accounts)));
 
         let mut license = license::LicensesFascade::new(ds.clone());
@@ -172,6 +172,9 @@ impl HttpGateway for Wirer {
 
         let mut service_account = security::service_account_api::SeriveAccountApi::new(ds.clone());
         service_account.wire(config.clone(), &mut router);
+
+        let mut activation = security::activation_api::ActivationApi::new(ds.clone());
+        activation.wire(config.clone(), &mut router);
 
         //job apis
         let mut job = deploy::job::JobApi::new(ds.clone());

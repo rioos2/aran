@@ -1,6 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{MetaFields, ObjectMeta, TypeMeta};
-use api::base::IdGet;
+use api::base::{MetaFields, ObjectMeta, TypeMeta,IdGet};
 use iron::headers::UserAgent;
 use iron::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -665,7 +664,7 @@ impl Account {
 }
 
 impl AccountsFeeder for Account {
-    fn iget_id(&mut self) -> IdGet {       
+    fn iget_id(&mut self) -> IdGet {
         IdGet::with_id_name(self.get_email(), "".to_string())
     }
 

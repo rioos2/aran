@@ -269,6 +269,7 @@ impl URLGrabber {
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.GET",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.GET",
         "RIOOS.SECRETS.GET",
+        "RIOOS.WIZARDS.GET",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.POST",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.CONTROLLER-SHARED-INFORMERS.GET",
         "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.NODELET-SHARED-INFORMERS.GET",
@@ -334,7 +335,7 @@ pub struct RBAC {
 
 impl RBAC {
     pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions, accounts: AccountsFascade, service_accounts: ServiceAccountsFascade) -> Self {
-        let plugins_and_its_configuration_tuple = config.modes();        
+        let plugins_and_its_configuration_tuple = config.modes();
         RBAC {
             plugins: plugins_and_its_configuration_tuple.0,
             conf: plugins_and_its_configuration_tuple.1,

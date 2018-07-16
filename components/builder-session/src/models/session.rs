@@ -4,7 +4,7 @@
 use chrono::prelude::*;
 use error::{Error, Result};
 
-use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::base::{IdGet, MetaFields,WhoAmITypeMeta};
 use protocol::cache::PULL_DIRECTLY;
 use protocol::api::session;
 use protocol::cache::InMemoryExpander;
@@ -13,6 +13,7 @@ use db;
 use db::data_store::DataStoreConn;
 use postgres;
 use serde_json;
+use protocol::api::schema::type_meta_url;
 
 use super::super::{OpenIdOutputList, SamlOutputList};
 use ldap::{LDAPClient, LDAPUser};
