@@ -48,6 +48,8 @@ extern crate rioos_builder_entitlement as entitle;
 extern crate rioos_http2 as httpbis;
 extern crate rioos_telemetry as telemetry;
 extern crate rioos_ws as ws;
+extern crate rioos_builder_activate as activate;
+
 
 extern crate iron;
 extern crate mount;

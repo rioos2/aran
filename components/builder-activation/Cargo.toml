@@ -1,8 +1,8 @@
 [package]
-name = "rioos_builder_session"
+name = "rioos_builder_activate"
 version = "0.0.0"
-authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
-description = "RIO/OS Identity Access Manager"
+authors = ["Suganya Kaliyamoorthy  <suganyakaliyamoorthy@megam.io>"]
+description = "RIO/OS Wizard activation for Admin user"
 build = "../build-builder.rs"
 workspace = "../../"
 
@@ -18,9 +18,6 @@ path = "../builder-apimachinery"
 
 [dependencies.rioos_builder_db]
 path = "../builder-db"
-
-[dependencies.ldap3]
-version = "*"
 
 [features]
 functional = []

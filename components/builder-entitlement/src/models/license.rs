@@ -120,7 +120,7 @@ impl<'a> DataStore<'a> {
     }
 }
 
-pub fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {
+fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {
 
     let mut licenses = Licenses::with(
         serde_json::from_value(row.get("type_meta")).unwrap(),

@@ -15,12 +15,8 @@ use postgres;
 use serde_json;
 use protocol::api::schema::type_meta_url;
 
-pub const BUILTIN_ROLE_RIOOS_SUPERUSER: &'static str = "RIOOS:SUPERUSER";
-pub const ACTIVE: &'static str = "active";
-
 use super::super::{OpenIdOutputList, SamlOutputList};
 use ldap::{LDAPClient, LDAPUser};
-use entitlement::models::license;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -233,46 +229,6 @@ impl<'a> DataStore<'a> {
             Ok(None)
         }
     }
-
-    pub fn wizard(datastore: &DataStoreConn) -> Result<Option<session::Wizard>> {
-        let mut wizard = session::Wizard::new();
-        let m = wizard.mut_meta(
-            wizard.object_meta(),
-            wizard.get_name(),
-            wizard.get_account(),
-        );
-
-        let jackie = wizard.who_am_i();
-        wizard.set_meta(type_meta_url(jackie), m);
-
-        let conn = datastore.pool.get_shard(0)?;
-        let rows = conn.query("SELECT * FROM get_accounts_v1()",
-         &[]).map_err(Error::SessionGet)?;
-
-        if rows.len() > 0 {
-            let accounts: Vec<session::Account> = rows.into_iter().map(|row| row_to_account(row)).collect::<Vec<_>>();
-                for account in accounts {
-                    for role in account.get_roles() {
-                        if role == BUILTIN_ROLE_RIOOS_SUPERUSER.to_string() {
-                            wizard.set_registered(true);
-                        }
-                    }
-                }
-        }
-
-        let license_row = &conn.query("SELECT * FROM get_license_list_by_v1()", &[])
-            .map_err(Error::WizardGet)?;
-
-            if license_row.len() > 0 {
-                let license = license::row_to_licenses(&license_row.get(0))?;
-                if license.get_status() == ACTIVE.to_string(){
-                    wizard.set_license(true);
-                }
-            }
-            Ok(Some(wizard))
-    }
-
-
 
     pub fn ldap_config_create(
         datastore: &DataStoreConn,
