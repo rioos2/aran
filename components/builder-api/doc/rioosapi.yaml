@@ -14,6 +14,8 @@ info:
 servers:
   - url: https://localhost:7443/api/v1
 tags:
+  - name: wizard
+    description: Everything about wizard
   - name: accounts
     description: Everything about accounts
   - name: assemblyfactorys
@@ -1454,6 +1456,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+    put:
+      tags:
+        - services
+      summary: Update service by ID
+      description: Returns updated single service
+      operationId: updateServiceById
+      parameters:
+        - name: servicesid
+          in: path
+          description: ID of service to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesLBResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: Can't connect with database, blockchain (or) other systems for processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Services'
   '/endpoints':
     post:
       tags:
@@ -1811,6 +1878,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+    put:
+      tags:
+        - datacenters
+      summary: Update datacenter by ID
+      description: Returns updated single datacenter
+      operationId: updateDatacenterById
+      parameters:
+        - name: datacenterId
+          in: path
+          description: ID of datacenter to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatacenterResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: datacenter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: Can't connect with database, blockchain (or) other systems for processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Datacenters'
   /storagespool:
     post:
       tags:
@@ -3503,7 +3635,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: permission not found
+          description: node not found
           content:
             application/json:
               schema:
@@ -3514,6 +3646,135 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+    put:
+      tags:
+        - nodes
+      summary: update node by ID
+      description: Returns updated single node
+      operationId: updateNodeById
+      parameters:
+        - name: nodeid
+          in: path
+          description: ID of node to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodesResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: node not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Nodes'
+  '/nodes/{id}/status':
+    put:
+      tags:
+        - nodes
+      summary: update node status by ID
+      description: Returns status updated single node
+      operationId: updateNodeStatusById
+      parameters:
+        - name: id
+          in: path
+          description: ID of node to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodesResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: node not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeStatus'
   /senseis:
     post:
       tags:
@@ -3673,6 +3934,114 @@ paths:
         - name: Id
           in: path
           description: ID of account secret to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful creation of the secret
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretsList'
+
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/origins/{originName}/secrets':
+    post:
+      tags:
+        - secrets
+      summary: Create new secrets
+      description: create new secret by originName
+      parameters:
+        - name: originName
+          in: path
+          description: name of origin to create secret
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful creation of the secret
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretsResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Secrets'
+    get:
+      tags:
+        - secrets
+      summary: Returns all secrets by origin name
+      operationId: find secrets by origin name
+      parameters:
+        - name: originName
+          in: path
+          description: name of origin secret to return
           required: true
           schema:
             type: string
@@ -5169,7 +5538,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/VerticalScaling'
-  '/verticalscaling/scale/{id}':
+  '/verticalscaling/{id}/scale':
     get:
       tags:
         - verticalscaling
@@ -7154,6 +7523,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+  '/buckets':
+    get:
+      tags:
+        - buckets
+      summary: Get all buckets
+      description: Return all the buckets
+      responses:
+        '200':
+          description: successful opertaion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BucketList'
+
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: Buckets not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/ingresses':
     post:
       tags:
@@ -7204,6 +7617,47 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Ingress'
+    get:
+      tags:
+        - ingress
+      summary: list all ingress
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngressResponseList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: ingresses not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/ingresses/{id}':
     put:
       tags:
@@ -7377,6 +7831,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/wizards':
+    get:
+      tags:
+        - wizard
+      summary: Wizard Activation
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WizardResponse'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -10987,6 +11465,134 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/NodesResponse'
+    NodeStatus:
+      type: object
+      properties:
+        capacity:
+          type: object
+          description: "Capacity represents the total resources of a node."
+          properties:
+            cpu:
+              type: string
+              example: "4"
+            memory:
+              type: string
+              example: "16331164 KiB"
+            storage:
+              type: string
+              example: "16228764 MiB"
+        allocatable:
+          type: object
+          description: "allocatable represents the resources of a node that are available for scheduling. Defaults to Capacity."
+          properties:
+            cpu:
+              type: string
+              example: "4"
+            memory:
+              type: string
+              example: "1633116 KiB"
+            storage:
+              type: string
+              example: "16228764 MiB"
+        phase:
+          type: string
+          description: "node phase is the recently observed lifecycle phase of the node."
+          example: "pending"
+        addresses:
+          type: array
+          description: "list of addresses reachable to the node."
+          items:
+            type: object
+            properties:
+              node_type:
+                type: string
+                example: "InternalIP"
+              address:
+                type: string
+                example: "192.168.2.1"
+        node_info:
+          type: object
+          description: "set of ids/uuids to uniquely identify the node."
+          properties:
+            machine_id:
+              type: string
+              description: "machineID reported by the node. For unique machine identification in the cluster this field is preferred."
+              example: "589f17c8cc084c078c5d364241433afc"
+            system_uuid:
+              type: string
+              description: "systemUUID reported by the node. For unique machine identification"
+              example: "85EE9345-A1AF-11E3-BE7C-28E347559DE7"
+            kernel_version:
+              type: string
+              description: "kernel version reported by the node from 'uname -r' (e.g. 3.16.0-0.bpo.4-amd64)."
+              example: "4.4.0-93-generic"
+            os_image:
+              type: string
+              description: "os image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy))."
+              example: "Ubuntu 16.04.3 LTS"
+            architecture:
+              type: string
+              description: "The Architecture reported by the node"
+              example: "amd64"
+            bridges:
+              type: array
+              description: "list of virtual networking bridge that are created by RioOS"
+              items:
+                type: object
+                properties:
+                  bridge_name:
+                    type: string
+                    description: "name of the bridge to be used for virtual networking"
+                    example: "riopriv"
+                  physical_device:
+                    type: string
+                    description: "physical network interface that are connected to this bridge"
+                    example: "eth0"
+                  bridge_type:
+                    type: string
+                    description: "configured Which type of network to this bridge"
+                    example: "linux"
+                  network_types:
+                    type: array
+                    description: "supported networks"
+                    items:
+                      type: string
+                      example: "private_ipv4"
+        conditions:
+          type: array
+          description: "conditions is an array of current observed node conditions."
+          items:
+            type: object
+            properties:
+              condition_type:
+                type: string
+                description: "Type of condition."
+                example: "OutOfDisk"
+              status:
+                type: string
+                description: "status of the condition, one of True, False, Unknown."
+                example: "False"
+              last_probe_time:
+                type: string
+                description: "last time the condition was checked."
+                example: ""
+              last_update_time:
+                type: string
+                description: "the last time this condition was updated."
+                example: ""
+              last_transition_time:
+                type: string
+                description: "last time the condition transitioned from one status to another."
+                example: "2017-09-21T06:35:16Z"
+              reason:
+                type: string
+                description: "the reason for the condition's last transition. (camelcased reason like NotReadyNode)"
+                example: "NodeletHasSufficientDisk"
+              message:
+                type: string
+                description: "a human readable message indicating details about the transition."
+                example: "nodelet has sufficient disk space available"
+
     Senseis:
       type: object
       required:
@@ -17900,6 +18506,21 @@ components:
                     type: string
                     description: "// Hostname is set for load-balancer ingress points that are DNS based (typically AWS load-balancers)"
                     example: "suganya.rioos.xyz"
+    IngressResponseList:
+      type: object
+      properties:
+        kind:
+          type: string
+          description: "kind is a string value representing the REST resource this object represents."
+          example: IngressList
+        api_version:
+          type: string
+          description: "api version defines the versioned schema of this representation of an object"
+          example: v1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngressUpdatedResponse'
     ImageMarks:
       type: object
       properties:
@@ -18185,6 +18806,135 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ImageMarksResponse'
+    WizardResponse:
+      type: object
+      properties:
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              example: ""
+            account:
+              type: string
+              example: ""
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2018-07-11T09:06:10.430927061+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              type: object
+              description: "An initializer is a controller which enforces some system invariant at object creation time."
+              properties:
+                pending:
+                  type: array
+                  description: "Pending is a list of initializers that must execute in order before this object is visible. When the last pending initializer is removed, and no failing result is set, the initializers struct will be set to nil and the object is considered as initialized and visible to all clients."
+                  items:
+                    type: object
+                  example: []
+                result:
+                  type: object
+                  description: "If result is set with the Failure field, the object will be persisted to storage and then deleted, ensuring that other clients can observe the deletion."
+                  properties:
+                    type_meta:
+                      type: object
+                      properties:
+                        kind:
+                          type: string
+                          example: ""
+                        api_version:
+                          type: string
+                          example: ""
+                    status:
+                      type: string
+                      description: " status of the operation. One of: Success or Failure"
+                      example: ""
+                    message:
+                      type: string
+                      description: "a human-readable description of the status of this operation."
+                      example: ""
+                    reason:
+                      type: string
+                      description: "a machine-readable description of why this operation is in the Failure status. If this value is empty there is no     information available. a Reason clarifies an HTTP status  code but does not override it."
+                      example: ""
+                    details:
+                      type: object
+                      description: "atatusDetails is a set of additional properties that MAY be set by the server to provide additional information about a response"
+                      properties:
+                        name:
+                          type: string
+                          description: "the name attribute of the resource associated with the status StatusReason"
+                          example: ""
+                        group:
+                          type: string
+                          description: "the group attribute of the resource associated with the status StatusReason."
+                          example: ""
+                        kind:
+                          type: string
+                          description: "the kind attribute of the resource associated with the status StatusReason."
+                          example: ""
+                        causes:
+                          type: array
+                          description: "the Causes array includes more details associated with the StatusReason failure. Not all StatusReasons may provide detailed causes."
+                          items:
+                            type: object
+                          example: []
+                        uid:
+                          type: string
+                          description: "UID of the resource."
+                          example: ""
+                        retry_after_seconds:
+                          description: "if specified, the time in seconds before the operation should be retried."
+                          type: integer
+                          example: 0
+                    code:
+                      type: integer
+                      description: "suggested HTTP return code for this status, 0 if not set."
+                      example: 0
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+              example: []
+        type_meta:
+          properties:
+            kind:
+              type: string
+              example: "Wizard"
+            api_version:
+              type: string
+              example: "v1"
+        registered:
+          type: boolean
+          example: false
+        licensed:
+          type: boolean
+          example: false
     400Error:
       required:
         - status
