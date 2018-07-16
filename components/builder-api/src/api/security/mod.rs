@@ -9,3 +9,4 @@ pub mod secret_api;
 pub mod securer;
 pub mod service_account_api;
 pub mod settings_map_api;
+pub mod activation_api;

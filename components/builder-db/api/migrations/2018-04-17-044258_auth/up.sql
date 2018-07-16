@@ -10,12 +10,12 @@ CREATE TABLE IF NOT EXISTS accounts (id bigint UNIQUE PRIMARY KEY DEFAULT next_i
 --- Table:accounts:create
 ---
 
-CREATE 
-OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_roles text[], account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, account_avatar BYTEA) RETURNS SETOF accounts AS $$ 
+CREATE
+OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_roles text[], account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, account_avatar BYTEA) RETURNS SETOF accounts AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    INSERT INTO
-      accounts ( email, first_name, last_name, phone, api_key, password, approval, suspend, roles, registration_ip_address, trust_level, company_name, object_meta, type_meta, avatar) 
+      accounts ( email, first_name, last_name, phone, api_key, password, approval, suspend, roles, registration_ip_address, trust_level, company_name, object_meta, type_meta, avatar)
    VALUES
       (
          account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password, account_approval, account_suspend, account_roles, account_registration_ip_address, account_trust_level, account_company_name, account_object_meta, account_type_meta, account_avatar
@@ -29,14 +29,27 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 --- Table:accounts:list_blank
 ---
 
-CREATE 
-OR REPLACE FUNCTION get_accounts_v1 () RETURNS SETOF accounts AS $$ 
+CREATE
+OR REPLACE FUNCTION get_accounts_v1 () RETURNS SETOF accounts AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
       accounts;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+
+CREATE
+OR REPLACE FUNCTION get_accounts_v1_by_role (super_role text[]) RETURNS SETOF accounts AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      accounts where ROLES @> super_role::text[];
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
@@ -44,14 +57,14 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:accounts:show
 ---
-CREATE 
-OR REPLACE FUNCTION get_account_by_id_v1 (UID bigint) RETURNS SETOF accounts AS $$ 
+CREATE
+OR REPLACE FUNCTION get_account_by_id_v1 (UID bigint) RETURNS SETOF accounts AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      accounts 
+      accounts
    WHERE
       id = uid;
 RETURN;
@@ -61,14 +74,14 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:accounts:list_by_email
 ---
-CREATE 
-OR REPLACE FUNCTION get_account_by_email_v1 (account_email text) RETURNS SETOF accounts AS $$ 
+CREATE
+OR REPLACE FUNCTION get_account_by_email_v1 (account_email text) RETURNS SETOF accounts AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      accounts 
+      accounts
    WHERE
       email = account_email;
 RETURN;
@@ -84,12 +97,12 @@ CREATE TABLE IF NOT EXISTS account_sessions (account_id bigint REFERENCES accoun
 --- Table:account_sessions:create
 ---
 
-CREATE 
-OR REPLACE FUNCTION insert_account_session_v1 (a_account_id bigint, account_token text, account_provider text, device JSONB) RETURNS SETOF account_sessions AS $$ 
+CREATE
+OR REPLACE FUNCTION insert_account_session_v1 (a_account_id bigint, account_token text, account_provider text, device JSONB) RETURNS SETOF account_sessions AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    INSERT INTO
-      account_sessions (account_id, token, provider, device) 
+      account_sessions (account_id, token, provider, device)
    VALUES
       (
          a_account_id,
@@ -105,16 +118,16 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:account_sessions:list_blank
 ---
-CREATE 
-OR REPLACE FUNCTION get_session_v1 (acc_id bigint, acc_device JSONB) RETURNS SETOF account_sessions AS $$ 
+CREATE
+OR REPLACE FUNCTION get_session_v1 (acc_id bigint, acc_device JSONB) RETURNS SETOF account_sessions AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      account_sessions 
+      account_sessions
    WHERE
-      account_id = acc_id 
+      account_id = acc_id
       AND acc_device = device LIMIT 1;
 RETURN;
 END
@@ -123,38 +136,38 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:account_sessions:show
 ---
-CREATE 
-OR REPLACE FUNCTION get_account_session_by_email_token_v1 (account_email text, account_token text) RETURNS TABLE(id bigint, email text, api_key text, token text) AS $$ 
+CREATE
+OR REPLACE FUNCTION get_account_session_by_email_token_v1 (account_email text, account_token text) RETURNS TABLE(id bigint, email text, api_key text, token text) AS $$
 DECLARE this_account accounts % rowtype;
 BEGIN
    SELECT
-      * 
+      *
    FROM
-      accounts 
+      accounts
    WHERE
       accounts.email = account_email LIMIT 1 INTO this_account;
-IF FOUND 
+IF FOUND
 THEN
    DELETE
    FROM
-      account_sessions 
+      account_sessions
    WHERE
-      account_id = this_account.id 
-      AND account_sessions.token = account_token 
+      account_id = this_account.id
+      AND account_sessions.token = account_token
       AND expires_at < now();
-RETURN QUERY 
+RETURN QUERY
 SELECT
    accounts.id,
    accounts.email,
    accounts.api_key,
-   account_sessions.token 
+   account_sessions.token
 FROM
-   accounts 
+   accounts
    INNER JOIN
-      account_sessions 
-      ON accounts.id = account_sessions.account_id 
+      account_sessions
+      ON accounts.id = account_sessions.account_id
 WHERE
-   accounts.id = this_account.id 
+   accounts.id = this_account.id
    AND account_sessions.token = account_token;
 END
 IF;
@@ -167,30 +180,30 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 --- This procedure references account_sessions, hence called after account_sessions
 --- creation.
 
-CREATE 
-OR REPLACE FUNCTION get_logout_v1 (account_email text, account_token text, acc_device JSONB) RETURNS SETOF accounts AS $$ 
+CREATE
+OR REPLACE FUNCTION get_logout_v1 (account_email text, account_token text, acc_device JSONB) RETURNS SETOF accounts AS $$
 DECLARE this_account accounts % rowtype;
 BEGIN
    SELECT
-      * 
+      *
    FROM
-      accounts 
+      accounts
    WHERE
       accounts.email = account_email LIMIT 1 INTO this_account;
-IF FOUND 
+IF FOUND
 THEN
    DELETE
    FROM
-      account_sessions 
+      account_sessions
    WHERE
-      account_id = this_account.id 
-      AND account_sessions.token = account_token 
+      account_id = this_account.id
+      AND account_sessions.token = account_token
       AND account_sessions.device = acc_device;
-RETURN QUERY 
+RETURN QUERY
 SELECT
-   * 
+   *
 from
-   accounts 
+   accounts
 WHERE
    accounts.id = this_account.id;
 END
