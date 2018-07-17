@@ -119,14 +119,14 @@ impl CacheService for NewCacheServiceFn {
     fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
         let _self = self.cache();
         let _cache_id = self.cache_id(id.clone());
-
+        println!("GET -----------start--------------{}", _cache_id.clone());
         match _self.get(lru, _cache_id.clone()) {
             Some(value) => {
-                debug!("✔ get: cachefn ≈ {}", _cache_id.clone());
+                println!("✔ get: cachefn ≈ {}", _cache_id.clone());
                 Some(value.to_owned())
             }
             None => {
-                debug!("✘ get: cachefn ≈ {}", _cache_id.clone());
+                println!("✘ get: cachefn ≈ {}", _cache_id.clone());
                 self.invalidate(id, lru)
             }
         }
@@ -395,12 +395,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Permissions Invalidate fn for ≈ {}", iid);
+                    println!("» Permissions Invalidate fn for ≈ {}", iid);
                     self.cached_invalidate_for(CACHE_PREFIX_PERMISSION.to_string(), iid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Permissions cache fn for ≈ {}", iid);
+                    println!("» Permissions cache fn for ≈ {}", iid);
                     self.cached_value_for(CACHE_PREFIX_PERMISSION.to_string(), iid.clone())
                         .clone()
                 },

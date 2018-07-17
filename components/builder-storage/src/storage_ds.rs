@@ -183,12 +183,14 @@ impl StorageDS {
         let mut response = Vec::new();
 
         if rows.len() > 0 {
-            println!("-------------------------datacenter list none--------------------");          
+            println!("-------------------------datacenter list--------------------");          
             for row in rows {
                 response.push(row_to_dc(&row)?)
             }
             return Ok(Some(response));
         }
+        println!("-------------------------datacenter list none--------------------");
+        exit(0);
         Ok(None)
     }
 

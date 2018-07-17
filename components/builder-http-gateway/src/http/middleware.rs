@@ -58,7 +58,7 @@ where
             Err(e) => {
                 match e.response() {
                     Some(response) => {
-                        println!("\n----------------\nOutput response: \n{}\n", response);
+                        debug!("\n----------------\nOutput response: \n{}\n", response);
                         Ok(response)
                     }
                     None => {

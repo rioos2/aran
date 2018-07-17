@@ -22,7 +22,7 @@ impl Cacher {
     }
 
     pub fn get(&self, lru: &Box<MultiCache<String, String>>, key: String) -> Option<Arc<String>> {
-        debug!("« GET: cached ≈ {}", key);
+        println!("« GET: cached ≈ {}", key);
         lru.get(&key)
     }
 

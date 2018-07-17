@@ -66,8 +66,10 @@ impl<K, V> MultiCache<K, V> {
     where
         K: Hash + Eq,
     {
+        println!("{}-----------------------put start-----------------------", bytes);
         let mut mparts = self.parts.lock().unwrap();
         while mparts.totalsize + bytes > mparts.maxsize {
+            println!("« PUT: cacher max size reached ≈ {:?}", mparts);
             match mparts.hash.pop_front() {
                 None => break, // probably even the only item is larger than the max
                 Some(val) => {
@@ -75,9 +77,11 @@ impl<K, V> MultiCache<K, V> {
                 }
             }
         }
+        println!("« PUT: cacher mparts ≈ {:?}", mparts);
         (*mparts)
             .hash
             .insert(key, MultiCacheItem::new(value, bytes));
+        println!("{}-----------------------put end-----------------------", bytes);
         mparts.totalsize += bytes;
     }
 
@@ -87,19 +91,25 @@ impl<K, V> MultiCache<K, V> {
     where
         K: Hash + Eq,
     {
+        println!("-----------------------get start-----------------------");
+        println!("« GET: cacher wait  ≈ ");
         let mparts = &mut *(self.parts.lock().unwrap());
-
+        println!("« GET: cacher ≈ {:?}", mparts);
         if let Some(val) = mparts.hash.get_refresh(key) {
+            println!("« GET: cacher hash ≈ ");
             return Some(val.val.clone());
         }
 
         // If direct failed try an alias
         if let Some(val) = mparts.aliases.get(&key) {
+            println!("« GET: cacher aliases ≈ ");
             if let Some(val) = mparts.hash.get_refresh(&val) {
                 return Some(val.val.clone());
             }
         }
-
+        println!("« GET: cacher none ≈ ");
+        println!("« GET: cacher mparts ≈ {:?}", mparts);
+        println!("-----------------------get end-----------------------");
         None
     }
 

@@ -38,6 +38,7 @@ impl ExpanderSender for Permissions {
         let permission_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PERMISSION.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
+                println!("« GET: with cache ≈ {:?}", id);
                 permission::DataStore::new(&_conn)
                     .list_by_role_name(&id)
                     .ok()
