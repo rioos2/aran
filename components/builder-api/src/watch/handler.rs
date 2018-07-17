@@ -221,7 +221,7 @@ impl MyInner {
             Messages::Builds => None,
             Messages::Buildconfigs => None,
         };
-        println!("==> watch handler list_data >> cloned");
+        info!("==> watch handler list_data >> cloned");
         res
     }
 
@@ -255,7 +255,7 @@ impl MyInner {
             Messages::Builds => watch::messages::handle_builds(idget, typ, one_ref_ds.clone()),
             Messages::Buildconfigs => watch::messages::handle_builds_config(idget, typ, one_ref_ds.clone()),
         };
-        println!("==> watch handler get_data >> cloned");
+        info!("==> watch handler get_data >> cloned");
         return res;
     }
 

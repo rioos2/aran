@@ -49,14 +49,11 @@ impl NetworkDS {
 
         let mut response = Vec::new();
         if rows.len() > 0 {
-            println!("--------------------network list------------------------");
             for row in rows {
                 response.push(row_to_network(&row)?)
             }
             return Ok(Some(response));
-        }
-        println!("-------------------------network list none--------------------");
-        exit(0);
+        }       
         Ok(None)
     }
 
@@ -69,14 +66,9 @@ impl NetworkDS {
         ).map_err(Error::NetworksGet)?;
 
         if rows.len() > 0 {
-            let net = row_to_network(&rows.get(0))?;
-            println!("--------------------network show------------------------");
-            println!("{:?}", net);
-            println!("{}", net_get.get_id());
+            let net = row_to_network(&rows.get(0))?;            
             return Ok(Some(net));
-        }
-        println!("-------------------------network show none--------------------");
-        println!("{}", net_get.get_id());
+        }       
         exit(0);
         Ok(None)
     }

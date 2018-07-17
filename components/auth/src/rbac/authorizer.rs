@@ -64,8 +64,7 @@ impl Authorization {
                 account.pop()
             },
             RoleNames::NONE => {
-                println!("----------------role account none--------------");
-                println!("{:?}", role_type.account);
+                debug!("« Authorizer verify {:?}", role_type.account);
                 None
             }
         };                
@@ -74,8 +73,7 @@ impl Authorization {
         let role = match role_box {
             Some(r) => r,
             None => {
-                println!("-------------------------role box error----------------------");
-                println!("{:?}", role_box);
+                debug!("« Authorizer Role none : {:?}", role_box);
                 return Err(Error::PermissionError(format!(
                 "User doesn't have permission for this operation."
             )))
@@ -88,10 +86,8 @@ impl Authorization {
                 access.is_allowed(perm_for_account)
             }
             Err(err) => {
-                println!("-------------------------role per type error----------------------");
-                println!("{:?}", perms_for_account.get_permissions());
-                println!("----------role-----------");
-                println!("{}", role.to_string());
+                debug!("« Authorizer get none permissions : {:?}", perms_for_account.get_permissions());
+                debug!("« Authorizer role : {}", role.to_string());
                 Err(Error::PermissionError(format!("{}", err)))
             },
         }

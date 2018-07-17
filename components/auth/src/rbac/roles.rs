@@ -82,11 +82,7 @@ impl TrustAccess {
         }
         match flag {
             true => Ok(flag),
-            false => {
-                println!("------------------permission error---------------------");
-                println!("{:?}", self);
-                println!("-------------------------");
-                println!("{:?}", perms);
+            false => {                
                 Err(Error::PermissionError(format!(
                 "User doesn't have permission for this operation."
             )))

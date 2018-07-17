@@ -22,7 +22,7 @@ impl Cacher {
     }
 
     pub fn get(&self, lru: &Box<MultiCache<String, String>>, key: String) -> Option<Arc<String>> {
-        println!("« GET: cached ≈ {}", key);
+        debug!("« Flock GET: cached ≈ {}", key);
         lru.get(&key)
     }
 
@@ -33,7 +33,7 @@ impl Cacher {
         value: Option<String>,
     ) {
         if value.is_some() {
-            debug!("» PUT: cached ≈ {}", key);
+            debug!("» Flock PUT: cached ≈ {}", key);
             &mut lru.put(key, value.unwrap(), DEFAULT_VAL_STOR_SIZE);
         }
     }
@@ -41,6 +41,6 @@ impl Cacher {
 
 impl fmt::Display for Cacher {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Cacher => is ok.")
+        write!(f, "Flock Cacher => is ok.")
     }
 }

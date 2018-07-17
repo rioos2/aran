@@ -183,14 +183,11 @@ impl StorageDS {
         let mut response = Vec::new();
 
         if rows.len() > 0 {
-            println!("-------------------------datacenter list--------------------");          
             for row in rows {
                 response.push(row_to_dc(&row)?)
             }
             return Ok(Some(response));
-        }
-        println!("-------------------------datacenter list none--------------------");
-        exit(0);
+        }       
         Ok(None)
     }
 
@@ -200,16 +197,12 @@ impl StorageDS {
             "SELECT * FROM get_data_center_v1($1)",
             &[&(get_dc.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::StorageGet)?;
-        if rows.len() > 0 {
-            println!("-------------------------datacenter show --------------------");
-            println!("{}", get_dc.get_id());
+        if rows.len() > 0 {            
             for row in rows {
                 let dc = row_to_dc(&row)?;
                 return Ok(Some(dc));
             }
-        }
-         println!("-------------------------datacenter show none--------------------");
-        println!("{}", get_dc.get_id());
+        }        
         exit(0);
         Ok(None)
     }
