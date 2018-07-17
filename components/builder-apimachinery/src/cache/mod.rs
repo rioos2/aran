@@ -41,7 +41,7 @@ pub type PullFromCache = Option<bool>;
 type LiveFn = Box<Fn(api::base::IdGet) -> Option<String> + 'static + Send + Sync>;
 
 /// The default cache size we can accomodate. Once the cache is filled its starts to pop out the least used (LRU) principle.
-const DEFAULT_CACHE_BYTE_SIZE: usize = 4028;
+const DEFAULT_CACHE_BYTE_SIZE: usize = 8 * 1024 * 1024;
 
 /// The cache service function wrapper that is responsible for invalidating a cache item. This does a live load
 /// This has the key of the service function example _plan, _volume, _factory
