@@ -46,7 +46,6 @@ impl RuntimeHandler {
             }
 
             ExternalMessage::ActivateLicense(license_id, password) => {
-                println!("--> ActivateLicense");
                 match self.license.activate_online(license_id, &password) {
                     Ok(_) => self.license.reload().unwrap(),
                     Err(err) => {

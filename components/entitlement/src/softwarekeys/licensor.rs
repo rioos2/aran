@@ -679,6 +679,7 @@ impl NativeSDK {
                 1000,
                 1000,
                 false,
+                //The optional, human-readable name of this installation. This may be a entered by your users, or may be a value of your choosing.
                 CString::new("My Computer").unwrap().into_raw(),
                 0 as *const c_char,
                 requestPtr,

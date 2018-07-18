@@ -21,6 +21,9 @@ use protocol::api::schema::{type_meta, dispatch};
 use router::Router;
 use std::sync::Arc;
 
+const LICENSE_STATUS_ACTIVATING: &'static str = "activating";
+
+
 #[derive(Clone)]
 pub struct LicenseApi {
     conn: Box<DataStoreConn>,
@@ -47,7 +50,7 @@ impl LicenseApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        unmarshall_body.set_status("activating".to_string());
+        unmarshall_body.set_status(LICENSE_STATUS_ACTIVATING.to_string());
 
         debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
@@ -130,12 +133,6 @@ impl Api for LicenseApi {
             XHandler::new(C { inner: show }).before(basic.clone()),
             "license_show_by_name",
         );
-
-        // router.post(
-        //     "/licenses/activate",
-        //     XHandler::new(C { inner: create_or_update }).before(basic.clone()),
-        //     "license_create_or_update",
-        // );
 
         router.post(
             "/licenses/activate",
