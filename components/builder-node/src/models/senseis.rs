@@ -7,11 +7,9 @@ use chrono::prelude::*;
 use db::data_store::DataStoreConn;
 use error::{Error, Result};
 use postgres;
-use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
-use protocol::api::schema::type_meta_url;
+use protocol::api::base::{IdGet, MetaFields};
 use protocol::api::senseis::Senseis;
 use serde_json;
-use std::collections::BTreeMap;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,

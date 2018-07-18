@@ -1,14 +1,12 @@
 
 
 use super::ledger;
-
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 
 use api::audit::config::BlockchainConn;
 use api::events::EventLogger;
+
 use bodyparser;
-use common::ui;
 
 use config::Config;
 
@@ -66,9 +64,7 @@ impl BlockChainApi {
             req.get::<bodyparser::Struct<AuditEvent>>()?,
         )?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 

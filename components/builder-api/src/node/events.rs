@@ -5,7 +5,6 @@ use api::audit::PushNotifier;
 use api::audit::ledger;
 use api::audit::mailer::email_sender as mailer;
 use api::audit::slack::slack_sender as slack;
-use db::data_store::DataStoreConn;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
 const INVALID: &'static str = "invalid";
@@ -27,17 +26,17 @@ impl RuntimeHandler {
     fn handle_api_event(&mut self, event: ExternalMessage) {
         match event {
             ExternalMessage::PeerAdd(event_envl) => {
-                println!("--> ledger config is {:?}", self.config);
+                debug!("--> ledger config is {:?}", self.config);
 
                 match ledger::from_config(&self.config) {
                     Ok(ledger) => {
                         match ledger.record(&event_envl) {
-                            Ok(_) => println!("--> save success"),
+                            Ok(_) => debug!("--> save success"),
 
-                            _ => println!("--> save fail. {:?}", event_envl),
+                            _ => debug!("--> save fail. {:?}", event_envl),
                         };
                     }
-                    _ => println!("--> ledger load  fail."),
+                    _ => debug!("--> ledger load  fail."),
                 }
             }
             ExternalMessage::PushNotification(event_envl) => {

@@ -20,6 +20,8 @@ extern crate iron;
 extern crate rand;
 extern crate regex;
 extern crate serde;
+#[macro_use]
+extern crate log;
 
 extern crate openssl;
 

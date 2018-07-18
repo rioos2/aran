@@ -4,7 +4,7 @@
 
 use clusters::models;
 use db::data_store::DataStoreConn;
-use error::{Error, Result};
+use error::Result;
 use hooks::BeforeHook;
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
 use protocol::api::deploy::PHASE_RUNNING;

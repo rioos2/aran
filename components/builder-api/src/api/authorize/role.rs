@@ -9,9 +9,7 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use common::ui;
 use config::Config;
 use error::Error;
 use protocol::api::schema::dispatch;
@@ -55,9 +53,7 @@ impl RoleApi {
     //- created_at
     fn role_create(&self, req: &mut Request) -> AranResult<Response> {
         let unmarshall_body = self.validate::<Roles>(req.get::<bodyparser::Struct<Roles>>()?)?;
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
         match role::DataStore::roles_create(&self.conn, &unmarshall_body) {
