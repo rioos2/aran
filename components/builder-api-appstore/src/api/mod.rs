@@ -44,7 +44,7 @@ pub trait ApiValidator: Send + Sized + 'static {
 //  need to be validated.
 pub trait Validator: Send + Sized + 'static {
     fn results(self) {
-        println!("default results is getting called");
+        debug!("default results is getting called");
     }
     //default implementation is to bypass validation,
     fn valid(self) -> AranValidResult<Self> {

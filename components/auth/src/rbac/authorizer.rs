@@ -64,15 +64,20 @@ impl Authorization {
                 account.pop()
             },
             RoleNames::NONE => {
+                debug!("« Authorizer verify {:?}", role_type.account);
                 None
             }
         };                
 
+
         let role = match role_box {
             Some(r) => r,
-            None => return Err(Error::PermissionError(format!(
+            None => {
+                debug!("« Authorizer Role none : {:?}", role_box);
+                return Err(Error::PermissionError(format!(
                 "User doesn't have permission for this operation."
-            ))),
+            )))
+            },
         };
         let perms_for_account = self.permissions.list_by_role(IdGet::with_id(role.to_string()));
         match Roles::per_type(perms_for_account.get_permissions()) {
@@ -80,7 +85,11 @@ impl Authorization {
                 let access = TrustAccess::new(incoming_to_trust);
                 access.is_allowed(perm_for_account)
             }
-            Err(err) => Err(Error::PermissionError(format!("{}", err))),
+            Err(err) => {
+                debug!("« Authorizer get none permissions : {:?}", perms_for_account.get_permissions());
+                debug!("« Authorizer role : {}", role.to_string());
+                Err(Error::PermissionError(format!("{}", err)))
+            },
         }
     }
 }

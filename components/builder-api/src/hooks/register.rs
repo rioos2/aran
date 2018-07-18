@@ -4,7 +4,7 @@
 
 use clusters::models;
 use db::data_store::DataStoreConn;
-use error::{Error, Result};
+use error::Result;
 use hooks::BeforeHook;
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
 use protocol::api::deploy::PHASE_RUNNING;
@@ -58,9 +58,13 @@ impl Sensei {
         );
 
         let mut cap = BTreeMap::new();
+        cap.insert(CAPACITY_MEMORY.to_string(), "0".to_string());
+        //kubernetes wants "150909ki" format values,
+        //but we produce "24 Gib", so now we set memory and storage values to 0
+        cap.insert(CAPACITY_STORAGE.to_string(), "0".to_string());
         cap.insert(CAPACITY_CPU.to_string(), pr.get_cpu());
-        cap.insert(CAPACITY_MEMORY.to_string(), pr.get_memory().get_total());
-        cap.insert(CAPACITY_STORAGE.to_string(), pr.get_storage().get_total());
+        //cap.insert(CAPACITY_MEMORY.to_string(), pr.get_memory().get_total());
+        //cap.insert(CAPACITY_STORAGE.to_string(), pr.get_storage().get_total());
         status.set_capacity(cap);
         status.set_node_info(ni);
 

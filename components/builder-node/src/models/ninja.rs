@@ -7,20 +7,11 @@ use chrono::prelude::*;
 use db::data_store::DataStoreConn;
 use discover::search;
 use error::{Error, Result};
-use itertools::Itertools;
 use postgres;
 use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
 use protocol::api::node;
 use protocol::api::schema::type_meta_url;
 use serde_json;
-use std::collections::BTreeMap;
-use std::ops::Div;
-use telemetry::metrics::collector::{Collector, CollectorScope};
-use telemetry::metrics::prometheus::PrometheusClient;
-
-const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
-
-const NETWORK_DEFAULT_LAST_X_MINUTE: &'static str = "[1m]";
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,

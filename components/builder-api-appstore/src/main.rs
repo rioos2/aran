@@ -154,6 +154,6 @@ fn exit_with<T>(err: T, code: i32)
 where
     T: fmt::Display,
 {
-    println!("{}", err);
+    debug!("{}", err);
     process::exit(code)
 }
