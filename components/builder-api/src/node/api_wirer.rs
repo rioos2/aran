@@ -12,7 +12,7 @@ use api::objectstorage::config::ObjectStorageCfg;
 use api::security::config::SecurerConn;
 use audit::config::InfluxClientConn;
 use audit::vulnerable::vulnerablity::AnchoreClient;
-use auth::rbac::{permissions, license};
+use auth::rbac::{permissions, license, account};
 use config::Config;
 use db::data_store::*;
 use error::Result;
@@ -69,9 +69,17 @@ impl HttpGateway for Wirer {
         //let ods = DataStoreConn::new().ok();
         let pds: DataStoreConn = *ds.clone();
         chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(pds)));
+        //this for cache permissions by roles
         let mut permissions = permissions::Permissions::new(ds.clone());
         permissions.with_cache();
-        chain.link_before(Arc::new(RBAC::new(&*_config, permissions)));
+        //this for cache user account roles
+        let mut accounts = account::AccountsFascade::new(ds.clone());
+        accounts.with_cache();
+        //this for cache service account roles
+        let mut service_accounts = account::ServiceAccountsFascade::new(ds.clone());
+        service_accounts.with_cache();
+
+        chain.link_before(Arc::new(RBAC::new(&*_config, permissions, accounts, service_accounts)));
 
         let mut license = license::LicensesFascade::new(ds.clone());
         license.with_cache();
@@ -164,6 +172,9 @@ impl HttpGateway for Wirer {
 
         let mut service_account = security::service_account_api::SeriveAccountApi::new(ds.clone());
         service_account.wire(config.clone(), &mut router);
+
+        let mut activation = security::activation_api::ActivationApi::new(ds.clone());
+        activation.wire(config.clone(), &mut router);
 
         //job apis
         let mut job = deploy::job::JobApi::new(ds.clone());

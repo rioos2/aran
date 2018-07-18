@@ -8,7 +8,7 @@ use protocol::api::secret::Secret;
 
 use super::Securer;
 use protocol::api::base::IdGet;
-use service::secret_ds::SecretDS;
+use service::models::secret;
 use service::{SecretOutput, SecretOutputList};
 
 /// Wraps a `DataStoreConn` representing the root of a local vault security.
@@ -34,14 +34,14 @@ impl Securer for LocalSecurer {
     }
 
     fn secure(&self, secret_create: &Secret) -> SecretOutput {
-        SecretDS::create(&self.0, &secret_create)
+        secret::DataStore::create(&self.0, &secret_create)
     }
 
     fn retrieve_by(&self, id: &IdGet) -> SecretOutputList {
-        SecretDS::list(&self.0, id)
+        secret::DataStore::list(&self.0, id)
     }
 
     fn retrieve(&self) -> SecretOutputList {
-        SecretDS::list_blank(&self.0)
+        secret::DataStore::list_blank(&self.0)
     }
 }

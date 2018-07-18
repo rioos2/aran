@@ -11,7 +11,7 @@ use db::data_store::DataStoreConn;
 use postgres;
 use serde_json;
 
-use super::super::IngressOutput;
+use super::super::{IngressOutput,IngressOutputList};
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -96,6 +96,20 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             let ingress = row_to_ingress(&rows.get(0))?;
             return Ok(Some(ingress));
+        }
+        Ok(None)
+    }
+    pub fn list_blank(&self) -> IngressOutputList {
+        let conn = self.db.pool.get_shard(0)?;
+
+        let rows = &conn.query("SELECT * FROM get_ingresses_v1()", &[]).map_err(Error::IngressGet)?;
+
+        let mut response = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_ingress(&row)?)
+            }
+            return Ok(Some(response));
         }
         Ok(None)
     }

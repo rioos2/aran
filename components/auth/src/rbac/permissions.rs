@@ -4,7 +4,7 @@
 
 use auth::models::permission;
 use db::data_store::DataStoreConn;
-use protocol::api::authorize::PermissionsForAccount;
+use protocol::api::authorize::PermissionsForRole;
 use protocol::api::base::IdGet;
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PERMISSION};
 
@@ -22,8 +22,12 @@ impl Permissions {
         Permissions { conn: datastore }
     }
 
-    pub fn list_by_email(&self, email: IdGet) -> PermissionsForAccount {
+    /*pub fn list_by_email(&self, email: IdGet) -> PermissionsForAccount {
         permission::DataStore::new(&self.conn).list_by_email_fascade(email)
+    }*/
+
+    pub fn list_by_role(&self, role: IdGet) -> PermissionsForRole {
+        permission::DataStore::new(&self.conn).list_by_role_fascade(role)
     }
 }
 
@@ -35,7 +39,7 @@ impl ExpanderSender for Permissions {
             CACHE_PREFIX_PERMISSION.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 permission::DataStore::new(&_conn)
-                    .list_by_email(&id)
+                    .list_by_role_name(&id)
                     .ok()
                     .and_then(|p| serde_json::to_string(&p).ok())
             }),

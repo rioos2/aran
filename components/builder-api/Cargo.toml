@@ -137,6 +137,10 @@ path = "../builder-diagnostics"
 [dependencies.rioos_builder_entitlement]
 path = "../builder-entitlement"
 
+[dependencies.rioos_builder_activate]
+path = "../builder-activation"
+
+
 
 [features]
 functional = []

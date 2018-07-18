@@ -5,7 +5,7 @@ use base64;
 use db::data_store::DataStoreConn;
 use protocol::api::base::IdGet;
 use rioos;
-use secret::secret_ds::SecretDS;
+use secret::models::secret;
 use serde_json;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -171,7 +171,7 @@ impl JWTAuthenticator {
             }
         };
         let params = IdGet::with_id(secret_id.to_string().clone());
-        let secret = match SecretDS::show(datastore, &params) {
+        let secret = match secret::DataStore::show(datastore, &params) {
             Ok(s) => s,
             Err(e) => {
                 return Err(error::Error::Auth(rioos::AuthErr {

@@ -142,6 +142,43 @@ impl PermissionsFeeder for PermissionsForAccount {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PermissionsForRole {
+    role: String,
+    permissions: Option<Vec<Permissions>>,
+}
+
+impl PermissionsForRole {
+    pub fn new() -> PermissionsForRole {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_role(&mut self, v: ::std::string::String) {
+        self.role = v;
+    }
+
+    pub fn get_role(&self) -> ::std::string::String {
+        self.role.clone()
+    }
+
+    pub fn set_permissions(&mut self, v: Option<Vec<Permissions>>) {
+        self.permissions = v;
+    }
+    pub fn get_permissions(&self) -> Option<Vec<Permissions>> {
+        self.permissions.clone()
+    }
+}
+
+impl PermissionsFeeder for PermissionsForRole {
+    fn iget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(self.get_role(), "".to_string())
+    }
+
+    fn ifeed(&mut self, m: Option<Vec<Permissions>>) {
+        self.set_permissions(m);
+    }
+}
+
 #[cfg(test)]
 mod test {
     use serde_json::from_str as json_decode;

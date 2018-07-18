@@ -5,7 +5,7 @@
 use chrono::prelude::*;
 use error::{Error, Result};
 
-use protocol::api::authorize::{Permissions, PermissionsForAccount};
+use protocol::api::authorize::{Permissions, PermissionsForAccount, PermissionsForRole};
 use protocol::api::base::IdGet;
 
 use protocol::cache::{InMemoryExpander, PULL_DIRECTLY};
@@ -118,16 +118,35 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
-            }
-            info!(
-                "---------- STRT: Permission loader {} ----------",
-                email.get_id()
-            );
-            info!("Loaded ! Permissions\n{:?}", response);
-            info!(
-                "---------- DONE: Permission loader {} ----------",
-                email.get_id()
-            );
+            }            
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+    //This is a fascade method to get permissions by role from cache.
+    pub fn list_by_role_fascade(&self, role: IdGet) -> PermissionsForRole {
+        let mut perms_for_role = PermissionsForRole::new();
+        perms_for_role.set_role(role.get_id());
+        self.expander
+            .with_permissions(&mut perms_for_role, PULL_DIRECTLY);
+        perms_for_role
+    }
+
+    //To get permissions by role name from database
+    pub fn list_by_role_name(&self, role_name: &IdGet) -> PermissionsOutputList {
+        let conn = self.db.pool.get_shard(0)?;    
+        let rows = &conn.query(
+            "SELECT * FROM get_permissions_by_role_name_v1($1)",
+            &[&(role_name.get_id() as String)],
+        ).map_err(Error::RolePermissionsGet)?;
+
+        let mut response = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_permissions(&row)?)
+            }            
             return Ok(Some(response));
         }
         Ok(None)
@@ -135,7 +154,6 @@ impl<'a> DataStore<'a> {
 
     pub fn list_by_role(&self, role_id: &IdGet) -> PermissionsOutputList {
         let conn = self.db.pool.get_shard(0)?;
-
         let rows = &conn.query(
             "SELECT * FROM get_permissions_by_role_v1($1)",
             &[&(role_id.get_id().parse::<i64>().unwrap())],
@@ -146,7 +164,7 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
-            }
+            }            
             return Ok(Some(response));
         }
         Ok(None)

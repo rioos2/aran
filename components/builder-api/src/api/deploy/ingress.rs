@@ -124,6 +124,17 @@ impl IngressApi {
         }
     }
 
+    //GET: /ingresses
+    //Global: Returns all the ingress
+    //Will need roles/permission to access this.
+    fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
+        match DataStore::new(&self.conn).list_blank() {
+            Ok(Some(ingress)) => Ok(render_json_list(status::Ok, dispatch(req), &ingress)),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+        }
+    }
+
     //GET: /ingresses/:id
     //Input id - u64 as input
     //Returns an ingress
@@ -159,6 +170,9 @@ impl Api for IngressApi {
         let show_by_assembly_factory =
             move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly_factory(req) };
 
+        let _self = self.clone();
+        let list = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
+
         router.post(
             "/ingresses",
             XHandler::new(C { inner: create }).before(basic.clone()),
@@ -185,6 +199,14 @@ impl Api for IngressApi {
                 inner: show_by_assembly_factory,
             }).before(basic.clone()),
             "ingress_show_by_assembly_factory",
+        );
+
+        router.get(
+            "/ingresses",
+            XHandler::new(C {
+                inner: list,
+            }).before(basic.clone()),
+            "list_ingress",
         );
 
     }

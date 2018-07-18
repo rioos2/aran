@@ -9,7 +9,7 @@
 //                   password: "sdkjfhkj",
 //                };
 //let auth = delegate.authenticate(&auth_enum);
-use rbac::authorizer::RoleType;
+use rbac::authorizer::{RoleType, RoleNames};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
@@ -89,25 +89,25 @@ impl Into<RoleType> for Authenticatable {
             Authenticatable::UserAndPass {
                 username: ref u,
                 password: ref _p,
-            } => RoleType::new(u.to_string()),
+            } => RoleType::new(u.to_string(), RoleNames::USERACCOUNT),
 
             Authenticatable::ServiceAccountNameAndWebtoken {
                 name: ref u,
                 webtoken: ref _p,
                 key: ref _k,
-            } => RoleType::new(u.to_string()),
+            } => RoleType::new(u.to_string(), RoleNames::SERVICEACCOUNT),
 
             Authenticatable::UserEmailAndToken {
                 email: ref u,
                 token: ref _p,
-            } => RoleType::new(u.to_string()),
+            } => RoleType::new(u.to_string(), RoleNames::USERACCOUNT),
 
             Authenticatable::UserEmailAndWebtoken {
                 email: ref u,
                 webtoken: ref _p,
-            } => RoleType::new(u.to_string()),
+            } => RoleType::new(u.to_string(), RoleNames::USERACCOUNT),
 
-            _ => RoleType::new("".to_string()),
+            _ => RoleType::new("".to_string(), RoleNames::NONE),
         }
     }
 }
