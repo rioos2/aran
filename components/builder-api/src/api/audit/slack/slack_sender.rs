@@ -12,9 +12,10 @@ use rioos_http::ApiClient;
 use serde_json;
 use USER_AGENT;
 
-const DEPLOY_SUBJECT: &'static str = "Ahoy! Kryptonite QRCode generated successfully.";
+//TODO :- open when we used this const
+//const DEPLOY_SUBJECT: &'static str = "Ahoy! Kryptonite QRCode generated successfully.";
+//const DEFAULT_SLACK_USER: &'static str = "test2";
 const FAILED_SUBJECT: &'static str = "Kryptonite QRCode sync failure";
-const DEFAULT_SLACK_USER: &'static str = "test2";
 
 pub struct SlackSender {
     config: SlackCfg,
@@ -26,7 +27,7 @@ pub struct SlackSender {
 
 impl SlackSender {
     pub fn new(config: SlackCfg, user: String, subject: String, content: String) -> Self {
-        println!("********new******{}****{}****", user, subject);
+        debug!("« Slack sender: new {} ≈ {}", user, subject);
         SlackSender {
             config: config,
             user: user,
@@ -36,7 +37,7 @@ impl SlackSender {
     }
     pub fn send(self) -> Result<()> {
         // let token = self.config.token.to_string()
-        println!("********new****send****{}**{}***", SLACK_URL, self.content);
+        debug!("« Slack sender: send {} ≈ {}", SLACK_URL, self.content);
 
         let client = ApiClient::new(&format!("{}", SLACK_URL), USER_AGENT, "v1", None).unwrap();
         let body = json!({
@@ -100,7 +101,7 @@ impl SlackNotifier {
 
 impl PushNotifier for SlackNotifier {
     fn should_notify(&self) -> bool {
-        println!("***PushNotifier**should_notify***new****send********{}**", self.config.enabled);
+        debug!("« Slack sender: should notify ≈ {}", self.config.enabled);
 
         if !self.config.enabled {
             return false;
@@ -112,7 +113,7 @@ impl PushNotifier for SlackNotifier {
     }
 
     fn notify(&self) {
-        println!("***PushNotifier**should_notify***notify**********{}", self.envelope.get_event().reason);
+        debug!("« Slack sender: notify ≈ {}", self.envelope.get_event().reason);
 
         if !self.should_notify() {
             return;

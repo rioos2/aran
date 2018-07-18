@@ -41,7 +41,7 @@ pub type PullFromCache = Option<bool>;
 type LiveFn = Box<Fn(api::base::IdGet) -> Option<String> + 'static + Send + Sync>;
 
 /// The default cache size we can accomodate. Once the cache is filled its starts to pop out the least used (LRU) principle.
-const DEFAULT_CACHE_BYTE_SIZE: usize = 4028;
+const DEFAULT_CACHE_BYTE_SIZE: usize = 32 * 1024 * 1024;
 
 /// The cache service function wrapper that is responsible for invalidating a cache item. This does a live load
 /// This has the key of the service function example _plan, _volume, _factory
@@ -74,7 +74,7 @@ pub trait CacheService: Send + Sync {
     fn key(&self) -> String;
 
     //The invalidate apply function for the cache
-    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>);
+    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize);
 
     //The getter for the cache
     fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>>;
@@ -107,34 +107,39 @@ impl CacheService for NewCacheServiceFn {
         self.key.clone()
     }
 
-    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {
-        info!("✔ apply cache ≈ {}", id);
+    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize) {
+        debug!("✔ apply cache ≈ {}", id);
         self.cache().insert(
             lru,
             self.cache_id(id.clone()).clone(),
             (self.live)(id),
+            existing_val_size,
         )
     }
 
     fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
         let _self = self.cache();
         let _cache_id = self.cache_id(id.clone());
-
+        debug!("GET -----------start--------------{}", _cache_id.clone());
         match _self.get(lru, _cache_id.clone()) {
             Some(value) => {
-                info!("✔ get: cachefn ≈ {}", _cache_id.clone());
+                debug!("✔ get: cachefn ≈ {}", _cache_id.clone());
                 Some(value.to_owned())
             }
             None => {
-                info!("✘ get: cachefn ≈ {}", _cache_id.clone());
+                debug!("✘ get: cachefn ≈ {}", _cache_id.clone());
                 self.invalidate(id, lru)
             }
         }
     }
 
     fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
-        info!("✔ get: invalidate ≈ {}", id);
-        self.apply(id.clone(), lru);
+        debug!("✔ get: invalidate ≈ {}", id);
+        let existing_val_size = match self.cache().get(lru, self.cache_id(id.clone()).clone()) {
+            Some(v) => format!("{:?}",v).capacity(),
+            None => 0
+        };
+        self.apply(id.clone(), lru, existing_val_size);
         self.cache().get(lru, self.cache_id(id).clone())
     }
 

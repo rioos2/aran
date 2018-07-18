@@ -1,6 +1,6 @@
 use super::super::error::{Error, Result};
 use protocol::api::authorize::Permissions;
-
+use std::fmt;
 type TrustedAccessList = Vec<TrustAccess>;
 
 const ALL: &'static str = "*";
@@ -73,7 +73,7 @@ impl TrustAccess {
             return Ok(true);
         }
 
-        println!("Not ALL WILD.");
+        debug!("Not ALL WILD.");
 
         for p in perms.iter() {
             if p == self {
@@ -82,9 +82,11 @@ impl TrustAccess {
         }
         match flag {
             true => Ok(flag),
-            false => Err(Error::PermissionError(format!(
+            false => {                
+                Err(Error::PermissionError(format!(
                 "User doesn't have permission for this operation."
-            ))),
+            )))
+            },
         }
     }
 }
@@ -94,7 +96,7 @@ impl TrustAccess {
 //otherwise it will check resource and level permissions
 impl PartialEq for TrustAccess {
     fn eq(&self, other: &TrustAccess) -> bool {
-        println!(
+        debug!(
             "Comparing [{:?}={:?}] [{:?}={:?}]",
             self.0.clone(),
             other.0.clone(),

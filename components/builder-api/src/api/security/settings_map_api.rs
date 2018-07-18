@@ -1,8 +1,9 @@
-use ansi_term::Colour;
+// Copyright 2018 The Rio Advancement Inc
+//
+
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -48,9 +49,7 @@ impl SettingsMapApi {
         let mut unmarshall_body =
             self.validate::<SettingsMap>(req.get::<bodyparser::Struct<SettingsMap>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -79,9 +78,7 @@ impl SettingsMapApi {
             (org_name, set_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?}{} ", org, name),
         );
         let mut params = IdGet::with_id(name.clone().to_string());

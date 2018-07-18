@@ -6,15 +6,11 @@ use super::ninja;
 use super::senseis as db_senseis;
 use chrono::prelude::*;
 use db::data_store::DataStoreConn;
-use discover::search;
-use error::{Error, Result};
+use error::Result;
 use itertools::Itertools;
-use postgres;
-use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
+use protocol::api::base::MetaFields;
 use protocol::api::node;
-use protocol::api::schema::type_meta_url;
 use protocol::api::senseis;
-use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
 use telemetry::metrics::collector::{Collector, CollectorScope};
@@ -46,7 +42,7 @@ impl<'a> DataStore<'a> {
         //current statistic of each node contains(cpu,network)
         let mut statistics = node::Statistics::new();
         statistics.set_title("Statistics".to_string());
-        let ninja_stats = statistics.set_ninjas(append_unhealthy_ninjas(
+        let _ninja_stats = statistics.set_ninjas(append_unhealthy_ninjas(
             self.db,
             get_statistics(client, ninja_gauges_collected.1, node::NODE_JOBS.to_string())?,
         ));
@@ -73,7 +69,7 @@ impl<'a> DataStore<'a> {
     }
 }
 
-fn append_unhealthy_ninjas(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
+fn append_unhealthy_ninjas(db: &DataStoreConn, res: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
     match ninja::DataStore::new(db).list_blank() {
         Ok(Some(node)) => {
             let mut response = Vec::new();
@@ -100,7 +96,7 @@ fn append_unhealthy_ninjas(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>
     }
 }
 
-fn append_unhealthy_senseis(db: &DataStoreConn, mut res: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
+fn append_unhealthy_senseis(db: &DataStoreConn, res: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
     match db_senseis::DataStore::new(db).list_blank() {
         Ok(Some(node)) => {
             let mut response = Vec::new();

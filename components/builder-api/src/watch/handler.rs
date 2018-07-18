@@ -96,7 +96,7 @@ impl WatchHandler {
                     Ok(Some(notification)) => {
                         send_wrap.send(notification).unwrap();
                     }
-                    Err(err) => println!("Streamer: Watch handler got err {:?}", err),
+                    Err(err) => info!("Streamer: Watch handler got err {:?}", err),
                     _ => {}
                 }
             }
@@ -190,7 +190,7 @@ impl MyInner {
                 }
             }
             Err(p_err) => {
-                println!("Poison Error: {}", p_err);
+                info!("Poison, simultaneous lock detected. Unable to send the data from database to the requestor: {}", p_err);
             }
         };
     }
@@ -221,7 +221,7 @@ impl MyInner {
             Messages::Builds => None,
             Messages::Buildconfigs => None,
         };
-        println!("==> watch handler list_data >> cloned");
+        debug!("==> watch handler list_data >> cloned");
         res
     }
 
@@ -255,7 +255,7 @@ impl MyInner {
             Messages::Builds => watch::messages::handle_builds(idget, typ, one_ref_ds.clone()),
             Messages::Buildconfigs => watch::messages::handle_builds_config(idget, typ, one_ref_ds.clone()),
         };
-        println!("==> watch handler get_data >> cloned");
+        info!("==> Watch handler performed the first time List");
         return res;
     }
 

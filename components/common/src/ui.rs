@@ -736,7 +736,6 @@ impl DisplayProgress for ProgressBar {
     }
 
     fn finish(&mut self) {
-        println!("");
         io::stdout().flush().ok().expect("flush() fail");
     }
 }

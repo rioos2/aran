@@ -4,7 +4,6 @@ pub mod error;
 #[cfg(any(test, feature = "long_benchmarks"))]
 pub mod tests;
 
-use db::data_store::*;
 use futures::{Async, Future, Poll, Stream};
 use futures::sync::mpsc;
 use node::runtime::ExternalMessage;

@@ -11,6 +11,7 @@ struct MultiCacheItem<V> {
     bytes: usize,
 }
 
+
 impl<V> MultiCacheItem<V> {
     pub fn new(val: V, bytes: usize) -> MultiCacheItem<Arc<V>> {
         MultiCacheItem {
@@ -62,12 +63,17 @@ impl<K, V> MultiCache<K, V> {
     /// Add a new element by key/value with a given bytesize, if after inserting this
     /// element we would be going over the bytesize of the cache first enough elements are
     /// evicted for that to not be the case
-    pub fn put(&self, key: K, value: V, bytes: usize)
+    pub fn put(&self, key: K, value: V, bytes: usize, existing_bytes: usize)
     where
         K: Hash + Eq,
     {
-        let mut mparts = self.parts.lock().unwrap();
+        debug!("« Multi cache PUT: start");
+
+        let mut mparts = self.parts.lock().unwrap();               
+        mparts.totalsize -= existing_bytes;
+        
         while mparts.totalsize + bytes > mparts.maxsize {
+            warn!("« Multi cache PUT: cacher max size reached ≈ {:?}", mparts);
             match mparts.hash.pop_front() {
                 None => break, // probably even the only item is larger than the max
                 Some(val) => {
@@ -75,10 +81,12 @@ impl<K, V> MultiCache<K, V> {
                 }
             }
         }
+        debug!("« Multi cache PUT: cacher mparts ≈ {:?}", mparts);
         (*mparts)
             .hash
             .insert(key, MultiCacheItem::new(value, bytes));
-        mparts.totalsize += bytes;
+        debug!("« Multi cache PUT: End");
+        mparts.totalsize += bytes;        
     }
 
     /// Get an element from the cache, updating it so it's now the most recently used and
@@ -87,19 +95,23 @@ impl<K, V> MultiCache<K, V> {
     where
         K: Hash + Eq,
     {
+        debug!("« Multi cache GET: cacher wait  ≈ ");
         let mparts = &mut *(self.parts.lock().unwrap());
-
+        debug!("« Multi cache GET: cacher ≈ {:?}", mparts);
         if let Some(val) = mparts.hash.get_refresh(key) {
+            debug!("« Multi cache GET: cacher hash ≈ ");
             return Some(val.val.clone());
         }
 
         // If direct failed try an alias
         if let Some(val) = mparts.aliases.get(&key) {
+            debug!("« Multi cache GET: cacher aliases ≈ ");
             if let Some(val) = mparts.hash.get_refresh(&val) {
                 return Some(val.val.clone());
             }
         }
-
+        debug!("« Multi cache GET: cacher none ≈ ");
+        debug!("« Multi cache GET: cacher mparts ≈ {:?}", mparts);
         None
     }
 
@@ -133,7 +145,7 @@ impl<K, V> MultiCache<K, V> {
         }
 
         false
-    }
+    }    
 }
 
 #[cfg(test)]
