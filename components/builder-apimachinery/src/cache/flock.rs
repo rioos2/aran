@@ -33,7 +33,7 @@ impl Cacher {
     ) {
         if value.is_some() {
             debug!("» Flock PUT: cached ≈ {}", key);
-            let val = value.unwrap();            
+            let val = value.unwrap();                
             &mut lru.put(key, val.clone(), val.capacity(), existing_val_size);
         }
     }

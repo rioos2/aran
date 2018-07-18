@@ -190,7 +190,7 @@ impl MyInner {
                 }
             }
             Err(p_err) => {
-                info!("Poison Error: {}", p_err);
+                info!("Poison, simultaneous lock detected. Unable to send the data from database to the requestor: {}", p_err);
             }
         };
     }
@@ -255,7 +255,7 @@ impl MyInner {
             Messages::Builds => watch::messages::handle_builds(idget, typ, one_ref_ds.clone()),
             Messages::Buildconfigs => watch::messages::handle_builds_config(idget, typ, one_ref_ds.clone()),
         };
-        info!("==> watch handler get_data >> cloned");
+        info!("==> Watch handler performed the first time List");
         return res;
     }
 

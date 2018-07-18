@@ -11,6 +11,7 @@ struct MultiCacheItem<V> {
     bytes: usize,
 }
 
+
 impl<V> MultiCacheItem<V> {
     pub fn new(val: V, bytes: usize) -> MultiCacheItem<Arc<V>> {
         MultiCacheItem {
@@ -67,8 +68,10 @@ impl<K, V> MultiCache<K, V> {
         K: Hash + Eq,
     {
         debug!("« Multi cache PUT: start");
-        let mut mparts = self.parts.lock().unwrap();          
+
+        let mut mparts = self.parts.lock().unwrap();               
         mparts.totalsize -= existing_bytes;
+        
         while mparts.totalsize + bytes > mparts.maxsize {
             warn!("« Multi cache PUT: cacher max size reached ≈ {:?}", mparts);
             match mparts.hash.pop_front() {
@@ -83,7 +86,7 @@ impl<K, V> MultiCache<K, V> {
             .hash
             .insert(key, MultiCacheItem::new(value, bytes));
         debug!("« Multi cache PUT: End");
-        mparts.totalsize += bytes;
+        mparts.totalsize += bytes;        
     }
 
     /// Get an element from the cache, updating it so it's now the most recently used and
