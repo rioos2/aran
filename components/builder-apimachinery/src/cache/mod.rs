@@ -74,7 +74,7 @@ pub trait CacheService: Send + Sync {
     fn key(&self) -> String;
 
     //The invalidate apply function for the cache
-    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>);
+    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize);
 
     //The getter for the cache
     fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>>;
@@ -107,12 +107,13 @@ impl CacheService for NewCacheServiceFn {
         self.key.clone()
     }
 
-    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) {
+    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize) {
         debug!("✔ apply cache ≈ {}", id);
         self.cache().insert(
             lru,
             self.cache_id(id.clone()).clone(),
             (self.live)(id),
+            existing_val_size,
         )
     }
 
@@ -134,7 +135,11 @@ impl CacheService for NewCacheServiceFn {
 
     fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
         debug!("✔ get: invalidate ≈ {}", id);
-        self.apply(id.clone(), lru);
+        let existing_val_size = match self.cache().get(lru, self.cache_id(id.clone()).clone()) {
+            Some(v) => format!("{:?}",v).capacity(),
+            None => 0
+        };
+        self.apply(id.clone(), lru, existing_val_size);
         self.cache().get(lru, self.cache_id(id).clone())
     }
 

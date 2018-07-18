@@ -129,7 +129,6 @@ mod test {
     struct M;
     impl Handler for M {
         fn on_message(&mut self, _: message::Message) -> Result<()> {
-            println!("test");
             Ok(())
         }
 

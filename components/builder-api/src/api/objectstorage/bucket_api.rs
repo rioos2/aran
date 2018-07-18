@@ -1,3 +1,6 @@
+// Copyright 2018 The Rio Advancement Inc
+//
+
 use std::sync::Arc;
 
 use bodyparser;
@@ -19,8 +22,6 @@ use protocol::api::base::MetaFields;
 use protocol::api::objectstorage::Bucket;
 
 use super::s3;
-use ansi_term::Colour;
-use common::ui;
 use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
 

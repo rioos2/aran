@@ -9,9 +9,7 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use common::ui;
 use config::Config;
 use error::Error;
 

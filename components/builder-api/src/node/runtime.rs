@@ -2,9 +2,7 @@
 
 
 use api::audit::config::{BlockchainConn, MailerCfg, SlackCfg};
-use auth::rbac::license::LicensesFascade;
 use config::Config;
-use db::data_store::*;
 use entitlement::softwarekeys::licensor::NativeSDK;
 
 use events::{HandlerPart, InternalEvent};

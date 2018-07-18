@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use ansi_term::Colour;
 use bodyparser;
 use iron::prelude::*;
 use iron::status;
@@ -10,7 +9,6 @@ use typemap;
 use api::audit::config::BlockchainConn;
 use api::events::EventLogger;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use common::ui;
 
 use config::Config;
 use error::Error;

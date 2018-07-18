@@ -1,8 +1,9 @@
-use ansi_term::Colour;
+// Copyright 2018 The Rio Advancement Inc
+//
+
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;

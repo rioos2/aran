@@ -96,7 +96,7 @@ impl WatchHandler {
                     Ok(Some(notification)) => {
                         send_wrap.send(notification).unwrap();
                     }
-                    Err(err) => println!("Streamer: Watch handler got err {:?}", err),
+                    Err(err) => info!("Streamer: Watch handler got err {:?}", err),
                     _ => {}
                 }
             }
@@ -190,7 +190,7 @@ impl MyInner {
                 }
             }
             Err(p_err) => {
-                println!("Poison Error: {}", p_err);
+                info!("Poison Error: {}", p_err);
             }
         };
     }
@@ -221,7 +221,7 @@ impl MyInner {
             Messages::Builds => None,
             Messages::Buildconfigs => None,
         };
-        info!("==> watch handler list_data >> cloned");
+        debug!("==> watch handler list_data >> cloned");
         res
     }
 

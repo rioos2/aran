@@ -145,7 +145,7 @@ impl error::Error for Error {
             Error::Yaml(ref err) => err.description(),
             Error::Postgres(ref err) => err.description(),
             Error::RioConfig(ref err) => err.description(),
-            Error::EntitlementError(ref err) => "",
+            Error::EntitlementError(ref _err) => "",
             Error::SenseiHook(ref err) => err.description(),
         }
     }
