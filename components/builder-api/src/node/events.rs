@@ -8,6 +8,7 @@ use api::audit::slack::slack_sender as slack;
 use db::data_store::DataStoreConn;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
+const INVALID: &'static str = "invalid";
 
 
 impl EventHandler for RuntimeHandler {
@@ -44,6 +45,20 @@ impl RuntimeHandler {
                 mailer::EmailNotifier::new(e, *self.mailer.clone()).notify();
                 slack::SlackNotifier::new(event_envl, *self.slack.clone()).notify();
             }
+
+            ExternalMessage::ActivateLicense(license_id, password) => {
+                println!("--> ActivateLicense");
+                match self.license.activate_online(license_id, &password) {
+                    Ok(_) => self.license.reload().unwrap(),
+                    Err(err) => {
+                        self.license.update_license_status(
+                            INVALID.to_string(),
+                            "".to_string(),
+                        );
+                    }
+                }
+            }
+
         }
     }
 

@@ -12,9 +12,11 @@ pub struct Licenses {
     #[serde(default)]
     type_meta: TypeMeta,
     pub object_meta: ObjectMeta,
+    #[serde(default)]
     status: String,
     product: String,
-    activation_code: String,
+    license_id: String,
+    password: String,
     #[serde(default)]
     product_options: BTreeMap<String, AllowActive>,
     #[serde(default)]
@@ -86,12 +88,20 @@ impl Licenses {
         self.product.clone()
     }
 
-    pub fn set_activation_code(&mut self, v: ::std::string::String) {
-        self.activation_code = v;
+    pub fn set_password(&mut self, v: ::std::string::String) {
+        self.password = v;
     }
 
-    pub fn get_activation_code(&self) -> ::std::string::String {
-        self.activation_code.clone()
+    pub fn get_password(&self) -> ::std::string::String {
+        self.password.clone()
+    }
+
+    pub fn set_license_id(&mut self, v: String) {
+        self.license_id = v;
+    }
+
+    pub fn get_license_id(&self) -> String {
+        self.license_id.clone()
     }
 
     pub fn set_expired(&mut self, v: ::std::string::String) {

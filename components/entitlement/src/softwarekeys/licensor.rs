@@ -82,7 +82,7 @@ impl NativeSDK {
             let set_fn_str = *self.lib
                 .get::<fn(SK_ApiContext, c_int, c_int, *const c_char) -> c_int>(SK_SET.as_bytes())?;
 
-            self.check_resut(init_fn(
+            self.check_result(init_fn(
                 SK_FLAGS_USE_SSL | SK_FLAGS_USE_ENCRYPTION |
                     SK_FLAGS_USE_SIGNATURE,
                 false,
@@ -104,7 +104,7 @@ impl NativeSDK {
             self.context = *context;
 
             if result != ResultCode::SK_ERROR_NONE as i32 && result != ResultCode::SK_ERROR_PLUS_EVALUATION_WARNING as i32 {
-                self.check_resut(result)?;
+                self.check_result(result)?;
             }
             self.initialize_system_identitifers()?;
             Ok(())
@@ -123,7 +123,7 @@ impl NativeSDK {
             //system_identifiers
             let countPtr: &mut c_int = &mut 0;
             // Make sure we have a computer name identifier
-            self.check_resut(system_identifiers(
+            self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
                 20,
@@ -132,10 +132,10 @@ impl NativeSDK {
             ))?;
 
             if 0 == *countPtr {
-                return self.check_resut(ResultCode::SK_ERROR_INVALID_DATA as i32);
+                return self.check_result(ResultCode::SK_ERROR_INVALID_DATA as i32);
             }
             // Make sure we have a hard disk volume serial identifier
-            self.check_resut(system_identifiers(
+            self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
                 30,
@@ -143,9 +143,9 @@ impl NativeSDK {
                 countPtr,
             ))?;
             if 0 == *countPtr {
-                return self.check_resut(ResultCode::SK_ERROR_INVALID_DATA as i32);
+                return self.check_result(ResultCode::SK_ERROR_INVALID_DATA as i32);
             }
-            self.check_resut(system_identifiers(
+            self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
                 10,
@@ -169,7 +169,7 @@ impl NativeSDK {
         self.licenseFilePath = licenseFilePath
     }
 
-    fn reload(&mut self) -> Result<()> {
+    pub fn reload(&mut self) -> Result<()> {
         self.isLoaded = false;
         self.set_writable(false)?;
         //load the license file
@@ -200,7 +200,7 @@ impl NativeSDK {
             } else if result == ResultCode::SK_ERROR_NONE as i32 {
                 self.isLoaded = true;
             } else {
-                return self.check_resut(result);
+                return self.check_result(result);
             }
             self.live_verify()?;
         }
@@ -221,7 +221,7 @@ impl NativeSDK {
                 val = 0;
             }
 
-            self.check_resut(
+            self.check_result(
                 set_fn_int(self.context, SK_FLAGS_NONE, 4, val),
             )?;
 
@@ -239,14 +239,14 @@ impl NativeSDK {
             let license_save_fn = self.lib
                 .get::<fn(SK_ApiContext, c_int, *const c_char, SK_XmlDoc) -> c_int>(SK_SAVE.as_bytes())?;
 
-            self.check_resut(license_create_fn(
+            self.check_result(license_create_fn(
                 self.context,
                 SK_FLAGS_NONE,
                 days,
                 license,
             ))?;
 
-            self.check_resut(license_save_fn(
+            self.check_result(license_save_fn(
                 self.context,
                 SK_FLAGS_NONE,
                 CString::new(self.licenseFilePath.clone())
@@ -267,7 +267,6 @@ impl NativeSDK {
         let licenseValid: bool = self.validate()?;
         if self.is_evaluation()? {
             if licenseValid {
-
                 self.update_license_status(TRIAL.to_string(), self.get_days_remaining()?.to_string());
             } else {
                 self.update_license_status(EXPIRY.to_string(), "".to_string());
@@ -306,11 +305,11 @@ impl NativeSDK {
                        *mut SK_IntPointer)
                        -> c_int>(SK_SYSTEM_IDENTIFIER_COMPARE.as_bytes())?;
 
-            self.check_resut(
+            self.check_result(
                 date_time_validate(SK_FLAGS_NONE, 0, 0, valuePtr),
             )?;
 
-            self.check_resut(compare_system_identifier(
+            self.check_result(compare_system_identifier(
                 self.context,
                 SK_FLAGS_NONE,
                 CString::new("").unwrap().into_raw(),
@@ -381,9 +380,9 @@ impl NativeSDK {
                        *mut SK_IntPointer)
                        -> c_int>(SK_DATETIME_COMPARE_STRING.as_bytes())?;
 
-            self.check_resut(current_datetime(SK_FLAGS_NONE, nowPtr))?;
+            self.check_result(current_datetime(SK_FLAGS_NONE, nowPtr))?;
 
-            self.check_resut(compare_datetime(
+            self.check_result(compare_datetime(
                 SK_FLAGS_NONE,
                 CString::new(self.get_date_time_string_value(xpath)?)
                     .unwrap()
@@ -419,9 +418,9 @@ impl NativeSDK {
                        *mut SK_DatePointer)
                        -> c_int>(SK_NODE_GET_DATE.as_bytes())?;
 
-            if self.check_resut(license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr))
+            if self.check_result(license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr))
                 .is_ok() &&
-                self.check_resut(node_get_date(
+                self.check_result(node_get_date(
                     SK_FLAGS_NONE,
                     *licensePtr,
                     CString::new(xpath).unwrap().into_raw(),
@@ -455,9 +454,9 @@ impl NativeSDK {
                        bool,
                        *mut SK_StringPointer)
                        -> c_int>(SK_NODE_GET_STRING.as_bytes())?;
-            if self.check_resut(license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr))
+            if self.check_result(license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr))
                 .is_ok() &&
-                self.check_resut(node_get_string(
+                self.check_result(node_get_string(
                     SK_FLAGS_NONE,
                     *licensePtr,
                     CString::new(xpath).unwrap().into_raw(),
@@ -480,7 +479,7 @@ impl NativeSDK {
             let licensePtr: &mut SK_XmlDoc = &mut 0;
             let license_get_xml_doc = *self.lib
                 .get::<fn(SK_ApiContext, c_int, *mut SK_XmlDoc) -> c_int>(SK_GET_LICENSE.as_bytes())?;
-            self.check_resut(license_get_xml_doc(
+            self.check_result(license_get_xml_doc(
                 self.context,
                 SK_FLAGS_NONE,
                 licensePtr,
@@ -538,7 +537,262 @@ impl NativeSDK {
         }
     }
 
-    fn update_license_status(&self, status: String, days: String) {
+    fn manual_reponse(&mut self, activation_code: &str) -> Result<bool> {
+        unsafe {
+            let sessionCode: &mut SK_StringPointer = &mut (0 as *const c_char);
+            let response: &mut SK_XmlDoc = &mut 0;
+            let encryptedResponse: &mut SK_XmlDoc = &mut 0;
+            let license: &mut SK_XmlDoc = &mut 0;
+            let decLicense: &mut SK_XmlDoc = &mut 0;
+            let xpath = "/ActivateInstallationLicenseFile/PrivateData/SessionCode";
+            let xpath1 = "/ActivateInstallationLicenseFile/PrivateData/License";
+
+            let create_string = *self.lib
+                .get::<fn(c_int, *const c_char, *mut SK_XmlDoc) -> c_int>(SK_XML_DOC_CREATE_FROM_STRING.as_bytes())?;
+
+            let result = create_string(
+                SK_FLAGS_NONE,
+                CString::new(activation_code).unwrap().into_raw(),
+                encryptedResponse,
+            );
+
+            if ResultCode::SK_ERROR_NONE as i32 != result {
+                if ResultCode::SK_ERROR_XML_PARSER_FAILED as i32 == result {
+                    self.check_result(ResultCode::SK_ERROR_INVALID_DATA as i32)?;
+                } else {
+                    self.check_result(result)?;
+                }
+            }
+            let decrypt_doc = *self.lib.get::<fn(SK_ApiContext,
+                       c_int,
+                       bool,
+                       SK_XmlDoc,
+                       *mut SK_XmlDoc)
+                       -> c_int>(SK_XML_DOC_DECRYPT_RSA.as_bytes())?;
+
+            self.check_result(decrypt_doc(
+                self.context,
+                SK_FLAGS_NONE,
+                false,
+                *encryptedResponse,
+                response,
+            ))?;
+
+            let node_get_string = *self.lib.get::<fn(c_int,
+                       SK_XmlDoc,
+                       *const c_char,
+                       bool,
+                       *mut SK_StringPointer)
+                       -> c_int>(SK_NODE_GET_STRING.as_bytes())?;
+
+            self.check_result(node_get_string(
+                SK_FLAGS_NONE,
+                *response,
+                CString::new(xpath).unwrap().into_raw(),
+                false,
+                sessionCode,
+            ))?;
+
+            let xml_get = *self.lib
+                .get::<fn(c_int, SK_XmlDoc, *const c_char, *mut SK_XmlDoc) -> c_int>(SK_XML_NODE_GET_DOC.as_bytes())?;
+
+            self.check_result(xml_get(
+                SK_FLAGS_NONE,
+                *response,
+                CString::new(xpath1).unwrap().into_raw(),
+                license,
+            ))?;
+
+            self.check_result(decrypt_doc(
+                self.context,
+                SK_FLAGS_NONE,
+                false,
+                *license,
+                decLicense,
+            ))?;
+
+            let license_type = self.determine_type(*decLicense)? as i32;
+            self.set_writable(
+                license_type != LicenseType::FullNonExpiring as i32,
+            )?;
+
+            let license_save_fn = *self.lib
+                .get::<fn(SK_ApiContext, c_int, *const c_char, SK_XmlDoc) -> c_int>(SK_SAVE.as_bytes())?;
+
+            self.check_result(license_save_fn(
+                self.context,
+                SK_FLAGS_NONE,
+                CString::new(self.licenseFilePath.clone())
+                    .unwrap()
+                    .into_raw(),
+                *license,
+            ))?;
+
+            let dispose = *self.lib.get::<fn(c_int, *mut SK_XmlDoc) -> c_int>(
+                SK_XML_DOC_DISPOSE.as_bytes(),
+            )?;
+
+            dispose(SK_FLAGS_NONE, encryptedResponse);
+            dispose(SK_FLAGS_NONE, response);
+            dispose(SK_FLAGS_NONE, license);
+            dispose(SK_FLAGS_NONE, decLicense);
+            Ok(true)
+        }
+    }
+
+    pub fn activate_online(&mut self, license_id: u32, password: &str) -> Result<bool> {
+        debug!("activate_online");
+        debug!("{:?}", license_id);
+        debug!("{:?}", password);
+        unsafe {
+            let resultCodePtr: &mut SK_IntPointer = &mut 0;
+            let statusCodePtr: &mut SK_IntPointer = &mut 0;
+            let ptr: &mut SK_StringPointer = &mut (0 as *const c_char);
+
+            let requestPtr: &mut SK_XmlDoc = &mut 0;
+            let responsePtr: &mut SK_XmlDoc = &mut 0;
+            let licensePtr: &mut SK_XmlDoc = &mut 0;
+            let decLicensePtr: &mut SK_XmlDoc = &mut 0;
+
+            let errorMsgPtr: &mut SK_StringPointer = &mut (0 as *const c_char);
+
+            let activate_request = *self.lib.get::<fn(SK_ApiContext,
+                       c_int,
+                       c_int,
+                       *const c_char,
+                       *const c_char,
+                       c_int,
+                       c_int,
+                       bool,
+                       *const c_char,
+                       *const c_char,
+                       *mut SK_XmlDoc,
+                       *mut SK_StringPointer)
+                       -> c_int>(SK_ActivateInstallationGetRequest.as_bytes())?;
+
+            self.check_result(activate_request(
+                self.context,
+                SK_FLAGS_NONE,
+                license_id as c_int,
+                CString::new(password).unwrap().into_raw(),
+                0 as *const c_char,
+                1000,
+                1000,
+                false,
+                CString::new("My Computer").unwrap().into_raw(),
+                0 as *const c_char,
+                requestPtr,
+                ptr,
+            ))?;
+
+            debug!("activate_request");
+
+            let call_xml_service = *self.lib.get::<fn(SK_ApiContext,
+                       c_int,
+                       *const c_char,
+                       SK_XmlDoc,
+                       *mut SK_XmlDoc,
+                       *mut SK_IntPointer,
+                       *mut SK_IntPointer)
+                       -> c_int>(SK_CALL_XM_WEB_SERVICE.as_bytes())?;
+
+            let result = call_xml_service(
+                self.context,
+                SK_FLAGS_NONE,
+                CString::new(SK_CONST_WEBSERVICE_ACTIVATEINSTALLATION_URL)
+                    .unwrap()
+                    .into_raw(),
+                *requestPtr,
+                responsePtr,
+                resultCodePtr,
+                statusCodePtr,
+            );
+            debug!("call_xml_service");
+
+            if ResultCode::SK_ERROR_NONE as i32 != result {
+                if ResultCode::SK_ERROR_WEBSERVICE_RETURNED_FAILURE as i32 == result {
+                    let node_get_string = self.lib.get::<fn(c_int,
+                               SK_XmlDoc,
+                               *const c_char,
+                               bool,
+                               *mut SK_StringPointer)
+                               -> c_int>(SK_NODE_GET_STRING.as_bytes())?;
+
+                    self.check_result(node_get_string(
+                        SK_FLAGS_NONE,
+                        *responsePtr,
+                        CString::new(
+                            "/ActivateInstallationLicenseFile/PrivateData/ErrorMessage",
+                        ).unwrap()
+                            .into_raw(),
+                        false,
+                        errorMsgPtr,
+                    ))?;
+                    debug!("{:?}", *errorMsgPtr);
+                }
+                self.check_result(result);
+            }
+
+            let xml_get = *self.lib
+                .get::<fn(c_int, SK_XmlDoc, *const c_char, *mut SK_XmlDoc) -> c_int>(SK_XML_NODE_GET_DOC.as_bytes())?;
+
+            self.check_result(xml_get(
+                SK_FLAGS_NONE,
+                *responsePtr,
+                CString::new(
+                    "/ActivateInstallationLicenseFile/PrivateData/License",
+                ).unwrap()
+                    .into_raw(),
+                licensePtr,
+            ))?;
+
+            let decrypt_doc = *self.lib.get::<fn(SK_ApiContext,
+                       c_int,
+                       bool,
+                       SK_XmlDoc,
+                       *mut SK_XmlDoc)
+                       -> c_int>(SK_XML_DOC_DECRYPT_RSA.as_bytes())?;
+
+            self.check_result(decrypt_doc(
+                self.context,
+                SK_FLAGS_NONE,
+                false,
+                *licensePtr,
+                decLicensePtr,
+            ))?;
+
+
+
+            let license_type = self.determine_type(*decLicensePtr)? as i32;
+            self.set_writable(
+                license_type != LicenseType::FullNonExpiring as i32,
+            )?;
+
+            let license_save_fn = *self.lib
+                .get::<fn(SK_ApiContext, c_int, *const c_char, SK_XmlDoc) -> c_int>(SK_SAVE.as_bytes())?;
+
+            self.check_result(license_save_fn(
+                self.context,
+                SK_FLAGS_NONE,
+                CString::new(self.licenseFilePath.clone())
+                    .unwrap()
+                    .into_raw(),
+                *licensePtr,
+            ))?;
+
+            let dispose = *self.lib.get::<fn(c_int, *mut SK_XmlDoc) -> c_int>(
+                SK_XML_DOC_DISPOSE.as_bytes(),
+            )?;
+
+            dispose(SK_FLAGS_NONE, requestPtr);
+            dispose(SK_FLAGS_NONE, responsePtr);
+            dispose(SK_FLAGS_NONE, licensePtr);
+            dispose(SK_FLAGS_NONE, decLicensePtr);
+            Ok(true)
+        }
+    }
+
+    pub fn update_license_status(&self, status: String, days: String) {
         let mut license = Licenses::new();
 
         let m = license.mut_meta(
@@ -574,7 +828,7 @@ impl NativeSDK {
         license::DataStore::new(&self.datastore.conn).create_or_update(&license);
     }
 
-    fn check_resut(&self, value: i32) -> Result<()> {
+    fn check_result(&self, value: i32) -> Result<()> {
         if value != ResultCode::SK_ERROR_NONE as i32 {
             return Err(Error::EntitlementError(
                 ResultCode::err_description(value).to_string(),

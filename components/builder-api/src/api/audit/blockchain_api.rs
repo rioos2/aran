@@ -1,32 +1,33 @@
-use std::sync::Arc;
+
+
+use super::ledger;
 
 use ansi_term::Colour;
-use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-use typemap;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 
 use api::audit::config::BlockchainConn;
 use api::events::EventLogger;
-use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use bodyparser;
 use common::ui;
 
 use config::Config;
-use error::Error;
-
-use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, badgateway_error, not_found_error};
-use http_gateway::util::errors::{AranResult, AranValidResult};
-
-use super::ledger;
-use protocol::api::audit::AuditEvent;
-use protocol::api::base::MetaFields;
-use protocol::api::schema::{dispatch, type_meta};
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
+
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, badgateway_error, not_found_error};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::audit::AuditEvent;
+use protocol::api::base::MetaFields;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use std::sync::Arc;
+use typemap;
 
 define_event_log!();
 
@@ -61,8 +62,9 @@ impl BlockChainApi {
     //- created_at is not available for this, as the AuditEvent is converted to
     //- an envelope which has the timestamp.
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body =
-            self.validate::<AuditEvent>(req.get::<bodyparser::Struct<AuditEvent>>()?)?;
+        let mut unmarshall_body = self.validate::<AuditEvent>(
+            req.get::<bodyparser::Struct<AuditEvent>>()?,
+        )?;
 
         ui::rawdumpln(
             Colour::White,
