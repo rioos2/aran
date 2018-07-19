@@ -30,6 +30,7 @@ const DURATION: u64 = 86400;
 pub enum ExternalMessage {
     PeerAdd(Envelope),
     PushNotification(Envelope),
+    ActivateLicense(u32, String),
 }
 
 /// Transactions sender.
@@ -86,6 +87,14 @@ impl ApiSender {
     /// Add peer to peer list
     pub fn push_notify(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PushNotification(envl);
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
+    }
+
+    /// Add peer to peer list
+    pub fn activate_license(&self, license_id: u32, password: String) -> io::Result<()> {
+        let msg = ExternalMessage::ActivateLicense(license_id, password);
         self.0.clone().send(msg).wait().map(drop).map_err(
             into_other,
         )

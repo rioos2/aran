@@ -29,13 +29,12 @@ impl<'a> DataStore<'a> {
     pub fn create_or_update(&self, license: &Licenses) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_or_update_license_v1 ($1,$2,$3,$4,$5,$6,$7)",
+            "SELECT * FROM insert_or_update_license_v1 ($1,$2,$3,$4,$5,$6)",
             &[
                 &(serde_json::to_value(license.object_meta()).unwrap()),
                 &(serde_json::to_value(license.type_meta()).unwrap()),
                 &(license.get_status() as String),
                 &(license.get_product() as String),
-                &(license.get_activation_code() as String),
                 &(license.get_expired() as String),
                 &(serde_json::to_value(license.get_product_options()).unwrap()),
             ],
@@ -86,14 +85,9 @@ impl<'a> DataStore<'a> {
     pub fn update(&self, license: &Licenses) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM update_license_v1($1,$2,$3,$4,$5,$6,$7)",
+            "SELECT * FROM update_license_product_options_v1($1,$2)",
             &[
                 &(license.get_id().parse::<i64>().unwrap()),
-                &(serde_json::to_value(license.object_meta()).unwrap()),
-                &(license.get_status() as String),
-                &(license.get_product() as String),
-                &(license.get_activation_code() as String),
-                &(license.get_expired() as String),
                 &(serde_json::to_value(license.get_product_options()).unwrap()),
             ],
         ).map_err(Error::LicenseUpdate)?;
@@ -101,6 +95,25 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             let license = row_to_licenses(&rows.get(0))?;
             return Ok(Some(license));
+        }
+        Ok(None)
+    }
+
+
+    pub fn update_license_status(&self, license: &Licenses) -> LicenseOutput {
+        let conn = self.db.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM update_license_status_v1($1,$2,$3)",
+            &[
+                &(license.get_license_id() as String),
+                &(license.get_password() as String),
+                &(license.get_status() as String),
+            ],
+        ).map_err(Error::LicenseUpdate)?;
+
+        if rows.len() > 0 {
+            let mut license_data = row_to_licenses(&rows.get(0))?;
+            return Ok(Some(license_data));
         }
         Ok(None)
     }

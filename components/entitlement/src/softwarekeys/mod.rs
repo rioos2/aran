@@ -45,7 +45,22 @@ pub const SK_SYSTEM_IDENTIFIER_COMPARE: &'static str = "SK_PLUS_SystemIdentifier
 pub const SK_DATETIME_GET_CURRENT_STRING: &'static str = "SK_DateTimeGetCurrentString";
 //Compares two date-time strings in ISO-8601 format (YYYY-MM-DDTHH:MM:SSZ).
 pub const SK_DATETIME_COMPARE_STRING: &'static str = "SK_DateTimeCompareStrings";
+//Creates an XML document from a string representation.
+pub const SK_XML_DOC_CREATE_FROM_STRING: &'static str = "SK_XmlDocumentCreateFromString";
+//Decrypts an XML document using the RSA Algorithm.
+pub const SK_XML_DOC_DECRYPT_RSA: &'static str = "SK_XmlDocumentDecryptRsa";
+//Creates an new XML document from a sub-document in the specified XML document.
+pub const SK_XML_NODE_GET_DOC: &'static str = "SK_XmlNodeGetDocument";
+//Disposes an XML document, which clears it from memory and sets it's pointer to NULL (0).
+pub const SK_XML_DOC_DISPOSE: &'static str = "SK_XmlDocumentDispose";
+//Builds a request to send to the XmlActivationService web service's ActivateInstallationLicenseFile method in SOLO Server.
+pub const SK_ActivateInstallationGetRequest: &'static str = "SK_SOLO_ActivateInstallationGetRequest";
+//Calls a SOLO Server XML web service method.
+pub const SK_CALL_XM_WEB_SERVICE: &'static str = "SK_CallXmlWebService";
 
+//Activate url
+
+pub const SK_CONST_WEBSERVICE_ACTIVATEINSTALLATION_URL: &'static str = "secure.softwarekey.com/solo/webservices/XmlActivationService.asmx/ActivateInstallationLicenseFile";
 
 pub enum LicenseType {
     Unlicensed = 0,
