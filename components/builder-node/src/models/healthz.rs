@@ -42,7 +42,7 @@ impl<'a> DataStore<'a> {
         //current statistic of each node contains(cpu,network)
         let mut statistics = node::Statistics::new();
         statistics.set_title("Statistics".to_string());
-        let _ninja_stats = statistics.set_ninjas(append_unhealthy_ninjas(
+        statistics.set_ninjas(append_unhealthy_ninjas(
             self.db,
             get_statistics(client, ninja_gauges_collected.1, node::NODE_JOBS.to_string())?,
         ));
