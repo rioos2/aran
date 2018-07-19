@@ -6,7 +6,7 @@ use lib_load;
 use lib_load::{Symbol, Library};
 
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
-use protocol::api::licenses::{Licenses, AllowActive};
+use protocol::api::licenses::{Licenses, AllowActive, INVALID};
 use protocol::api::schema::type_meta_url;
 use rio_core::fs::rioconfig_license_path;
 use std::collections::BTreeMap;
@@ -27,7 +27,6 @@ lazy_static! {
 const EXPIRY: &'static str = "expired";
 const ACTIVE: &'static str = "active";
 const TRIAL: &'static str = "trial";
-const INVALID: &'static str = "invalid";
 
 const ENVELOPE: &'static str = "_EVALUATION_EXPIRES_2018-09-20_L4dVS4kcH1GFxoDymroPhDP43BXF1zjxYqos81AjLRZsF8OWcoh5dceEAbhTwpWiZIfJOalc7JVcpjTQeYcVoSZKRhU5JheuL1G0rVcZOrtK91cPLReVk+oyOQsb6N8P2KcEy8qhKTHXQmipOZsofMMPbF7YU/4uX/Q0U25r4H9RbtHLKH91ENTa55Cn2L0g0+dXRqi13uy6UuVbv4m56sBH6tX6ytV1QzgVvV0knf1BySY2rVuxA1ljFDHxtcK9WBpX7LVv3ILb/wNQ2yBbnuY0jfquXX383TTbRWeldoqpwsMMSNUyaz/IM5qE2plVmQrTNQrQdZube7iE1WotWdwcSWlv9EItEaJEHshvtovC7smNoY4eWca31u7Wr3/JySA0FH54FTfJnBRhTA67Qk+/msHYSZdD802CohKbC2cFr0OM/5FFoaaNvFeCh1t6ik9gx40rrFhqbNMFjKtu21y+7giqCmBODA1ZvBiEic7ekLqvR0dZWIzK4LCcPqCOHeKWXWkzOOY26tbYc1YUQ7bqpwtKh3Euztv81EgmnzzZG3LwE2btUEtz/Tmr/1lvNndF30K3ZVpyfWaYlB1NDOFIa6zeJrNXnGJRxwI+bD7vKDncNWjdOrEB7g14FKG+aPL5qYeJa3PJilMxr0ZuChkkkYxsyCmhkdmSDfc1zDEPlgKteNp5JcqZ2h2UXdSLzN4oFRU/G6ywS4jEJ7EKXm3TVg+U25aJHLHntAFlCHpFHL3Tpb6Zn7z8afAHL2LMJojUwIdWujd4F+/oJNJq/O/kCpkIs3d3iSnJda4MJudSjpsG+TSftsa8Smp80dXJsT4m1coFgEIRMDSRFGL6ZYeA6TrUY2lDg7Vc02prr6qcgpDxrMtxwJDfYTZ7NOFhxKLwLQVp/G2KoM2EHnzCIDHR/8ZM3UV5KUsWiwgll3SClHQqzFqR+VRMaAbk6Py2uTbfgKGdU7fxmx5iGl1uCIjcuvRyi9AmxCBtaH+eT4JmgxQAajCz23wqPUuzVB/CJBoHwo+Jf7wCetybZauJLVtmU0vZC8pvB8YbaLXgjCxyx/4Xfx3gA3VHnCe4NERtcR3b3hgJtAmvb1wdROkQukG4ODj5G3pjmv+meiVb9bwIYD5iK+fvAAqvHca9Y1Nw+XYNZr3JhuHh06fYdbAQIo5I5UQam43CK9gRmgzHGAjBAGjwXKlOWKC+cDIoi8DXPq7gIxGxXTtCXwPaYlUhX9ezIkdiH9FSN1rBcB98bnysMNhNDrbwMgar2fSy3TV/D25MIMlnkzkKUfQMRkDZjRFqd9zLkDkMx7fMfCzEzbeTWkWjbVQiy6LeBm6br3tXIoj4cMXTtDNxQ4tMCuYKRAyIr295oxphmoMknOjXA1SXXCYaEHGOkh+Xa5UFvQ75GMC0MIB84mZO9Ef3dR7Wmo2tV+JoDx10ubJhKp1RKS0JjR7/t/+d8Fi/0S65js1BJhcj11kaGzCF01Gew03qMOtAprUodcYi2W+rityBi/tEW2o+QDr7evpJPux7zsjpRGS1t2uc7WFs3bos5Mez0siu1FObqjr/Q+q5M9FCant0alyX/JSNd2LWbQX6MRHQMmqSD3In/v/v19w1i+niPeElFNBXe8Hs+1U0BFAtqWdGBbsSDUXPaTUm01i4Fbl56TDAPHOFMZZDzBerB3cU4lfes8Y2i9B6tI1eKd/QxC1ZGaD1jo0S4WiknL+dEUlMgmoObMajywF6OvIDIk8dvrgqxlAVRMnZOq9N3CbekGCW6vISe7I2QRDQ+9WWkXvsyUzRAJTqKhNP1jXfafk7ODkdtnX1TQSo+jZ9KMiOsLj2k0RzU6Vqy1S2n+9SnvrPav9L8ozn4sMrfcSj8E0Si1iQ8iflPgsaY0zYJUzPeyadBiIC0vmWhhaXyCDwtcN3U9BijjSOVsZ3rKVBN/t+xtm35GBmKZONPohNUmYa4k+gFdAjry3T84std7Wh3R76BTeUrw04X1Fn/e7aqtjEXw9qyK2oCVPQrqAkfpz86SMtQdzKEQBG8sk9MYmxNxUAIs6z3xkctFg6zqEAaOXAUm/sMzpGyWbuY4QGtcYk24Jmvvq8FoXHAVxd+xU8u9YuKzhi3sRL7n50XgVpOI9DAe4yKsJuCWXFjQkJG7aYkEtC3M1MoK6GeL43U/+gV5+dQ4bvHfgoNZSZZ5tUIJNVZtD5uQ0Ng9syzMRjP9oGX38=";
 
@@ -44,14 +43,14 @@ const SK_FLAGS_USE_SIGNATURE: c_int = 0x00020000;
 const SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
 
 pub struct NativeSDK {
-    lib: Library,
-    context: SK_ApiContext,
+    lib: Library, //sdk file for the licensor
+    context: SK_ApiContext, //The API Context may only represent a single License File.
     pub datastore: LicensesFascade,
-    license_file: SK_XmlDoc,
-    isLoaded: bool,
-    isWritable: bool,
-    licenseFilePath: String,
-    provider: String,
+    license_file: SK_XmlDoc, //Handle to an XML document in memory.
+    isLoaded: bool, //represent the license file is loaded or not
+    isWritable: bool, //set read and write permission for license file
+    licenseFilePath: String, //file path of license which is loaded in directory
+    provider: String, //license provider name
 }
 
 impl NativeSDK {
@@ -67,6 +66,7 @@ impl NativeSDK {
             provider: "SoftwareKey".to_string(),
         }
     }
+    //Initializes a new API Context, which may be used to open and manipulate a license file.
     pub fn initialize_license(&mut self) -> Result<()> {
         let context: &mut SK_ApiContext = &mut 0;
         unsafe {
@@ -111,6 +111,7 @@ impl NativeSDK {
         }
     }
 
+    //identify the system license_file is load
     fn initialize_system_identitifers(&mut self) -> Result<()> {
         unsafe {
             //identify the current system
@@ -156,6 +157,7 @@ impl NativeSDK {
         }
     }
 
+    //load the license file in the local directory
     pub fn load_license(&mut self) -> Result<()> {
         try!(File::create(
             rioconfig_license_path(None).join("LicenseFile.lfx"),
@@ -168,7 +170,7 @@ impl NativeSDK {
     fn set_license_path(&mut self, licenseFilePath: String) {
         self.licenseFilePath = licenseFilePath
     }
-
+    //
     pub fn reload(&mut self) -> Result<()> {
         self.isLoaded = false;
         self.set_writable(false)?;
@@ -262,7 +264,7 @@ impl NativeSDK {
             Ok(())
         }
     }
-
+    //Verifies license valid or not and update in database
     pub fn live_verify(&mut self) -> Result<()> {
         let licenseValid: bool = self.validate()?;
         if self.is_evaluation()? {
@@ -284,7 +286,7 @@ impl NativeSDK {
         }
         Ok(())
     }
-
+    //validate the license_file and update the status in database
     fn validate(&mut self) -> Result<bool> {
         unsafe {
             if !self.isLoaded {
@@ -400,7 +402,7 @@ impl NativeSDK {
             Ok(ret_val)
         }
     }
-
+    //returns the requested date time value from the license file
     fn get_date_time_string_value(&self, xpath: &str) -> Result<String> {
         unsafe {
             if !self.isLoaded {
@@ -437,6 +439,7 @@ impl NativeSDK {
 
     }
 
+    //returns the requested string value from the license file
     fn get_string_value(&self, xpath: &str) -> Result<String> {
         unsafe {
             if !self.isLoaded {
@@ -491,6 +494,7 @@ impl NativeSDK {
 
     }
 
+    //determine the type of license used
     fn determine_type(&self, licensePtr: SK_XmlDoc) -> Result<LicenseType> {
         unsafe {
             let valuePtr: &mut SK_IntPointer = &mut 0;
@@ -518,7 +522,7 @@ impl NativeSDK {
         }
 
     }
-
+    //calculate the number of days remain for the license
     fn get_days_remaining(&self) -> Result<c_int> {
         unsafe {
             let daysLeftPtr: &mut SK_IntPointer = &mut 0;
@@ -640,6 +644,7 @@ impl NativeSDK {
         }
     }
 
+    //activate the license in solo server with license_id and password
     pub fn activate_online(&mut self, license_id: u32, password: &str) -> Result<bool> {
         debug!("activate_online");
         debug!("{:?}", license_id);

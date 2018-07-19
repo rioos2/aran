@@ -5,6 +5,9 @@ use api::base::IdGet;
 use cache::inject::LicensesFeeder;
 use std::collections::BTreeMap;
 
+pub const INVALID: &'static str = "invalid";
+
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Licenses {
     #[serde(default)]

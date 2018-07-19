@@ -7,7 +7,7 @@ use api::audit::mailer::email_sender as mailer;
 use api::audit::slack::slack_sender as slack;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
-const INVALID: &'static str = "invalid";
+use protocol::api::licenses::INVALID;
 
 
 impl EventHandler for RuntimeHandler {
@@ -51,7 +51,7 @@ impl RuntimeHandler {
                     Err(err) => {
                         self.license.update_license_status(
                             INVALID.to_string(),
-                            "".to_string(),
+                            format!("{}", err),
                         );
                     }
                 }
