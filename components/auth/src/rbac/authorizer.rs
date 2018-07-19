@@ -51,12 +51,12 @@ impl Authorization {
     //And get permissions by role name and verify it.
     //Now we assume account/service_account has only one role.
     //In future we could extend it.
-    pub fn verify(self, role_type: RoleType, incoming_to_trust: String) -> Result<bool> {   
+    pub fn verify(self, role_type: RoleType, incoming_to_trust: String) -> Result<bool> {
         let role_box: Option<String> = match role_type.account {
             RoleNames::USERACCOUNT => {
                 let mut account_get = session::AccountGet::new();
                 account_get.set_email(role_type.name);
-                let mut account = self.accounts.get_by_email(account_get).get_roles();       
+                let mut account = self.accounts.get_by_email(account_get).get_roles();
                 account.pop()
             },
             RoleNames::SERVICEACCOUNT => {
@@ -67,7 +67,7 @@ impl Authorization {
                 debug!("« Authorizer verify {:?}", role_type.account);
                 None
             }
-        };                
+        };
 
 
         let role = match role_box {

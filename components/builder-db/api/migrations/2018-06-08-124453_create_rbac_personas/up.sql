@@ -76,6 +76,16 @@ VALUES
 ,
 (
   (
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.INGRESSES.*',
+      'Any access allowed for this ingress resource.'
+)
+,
+(
+  (
   SELECT
      id
   FROM
@@ -495,7 +505,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.ACCOUNTS.BUCKET.*',
+         'RIOOS.ACCOUNTS.BUCKETS.*',
          'Any access allowed for this bucket resource.'
    )
 ,
@@ -555,7 +565,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.HORIZONTALSCALNG.*',
+         'RIOOS.HORIZONTALSCALING.*',
          'Any access allowed for this horizontalscaling resource.'
    )
 ,
