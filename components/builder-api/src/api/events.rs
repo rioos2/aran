@@ -68,6 +68,17 @@ macro_rules! push_notification {
     }};
 }
 
+
+// Macros to post in the event logger  from any request.
+#[macro_export]
+macro_rules! activate_license {
+    ($req:ident, $evt:expr) => {{
+        use persistent;
+        let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
+        el.request_activation_to_licensor(($evt).get_license_id(),($evt).get_password())
+    }};
+}
+
 fn write_file<T: ?Sized>(parent_dir: &Path, file_path: &Path, val: &T)
 where
     T: Serialize,
@@ -108,19 +119,31 @@ impl EventLogger {
             self.channel.push_notify(envelope);
         }
     }
+
+    // Macros to post in the licensor from any request.
+    // Called by the userinferface requesting to activate the license
+    // key (license_id/password) combination
+
+
+    pub fn request_activation_to_licensor(&self, license_id: String, password: String) {
+        self.channel.activate_license(
+            license_id.parse::<u32>().unwrap_or(0),
+            password,
+        );
+
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use futures::sync::mpsc;
 
     use super::*;
+    use futures::sync::mpsc;
 
     #[test]
     fn event_logger_path() {
         let api_sender = ApiSender::new(mpsc::channel(10).0);
-        let event_logger: EventLogger =
-            EventLogger::new(api_sender, "/var/lib/rioos/foo/var", true);
+        let event_logger: EventLogger = EventLogger::new(api_sender, "/var/lib/rioos/foo/var", true);
         let expected = r#"foo"#;
         match event_logger.log_dir.to_str() {
             Some(s) => assert!(s.contains(expected)),

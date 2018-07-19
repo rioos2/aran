@@ -7,6 +7,7 @@ use api::audit::mailer::email_sender as mailer;
 use api::audit::slack::slack_sender as slack;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
+use protocol::api::licenses::INVALID;
 
 
 impl EventHandler for RuntimeHandler {
@@ -43,6 +44,19 @@ impl RuntimeHandler {
                 mailer::EmailNotifier::new(e, *self.mailer.clone()).notify();
                 slack::SlackNotifier::new(event_envl, *self.slack.clone()).notify();
             }
+
+            ExternalMessage::ActivateLicense(license_id, password) => {
+                match self.license.activate_online(license_id, &password) {
+                    Ok(_) => self.license.reload().unwrap(),
+                    Err(err) => {
+                        self.license.update_license_status(
+                            INVALID.to_string(),
+                            format!("{}", err),
+                        );
+                    }
+                }
+            }
+
         }
     }
 
