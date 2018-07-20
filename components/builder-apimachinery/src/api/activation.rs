@@ -9,8 +9,8 @@ pub const ACTIVE: &'static str = "active";
 pub struct Wizard {
     object_meta: ObjectMeta, //Standard object metadata
     type_meta: TypeMeta, //Standard type metadata: kind: SesssionCreate
-    registered: bool,
-    licensed: bool,
+    register: bool,
+    license: bool,
 }
 
 impl MetaFields for Wizard {
@@ -40,10 +40,10 @@ impl Wizard {
     }
 
     pub fn set_license(&mut self, v: bool) {
-        self.licensed = v;
+        self.license = v;
     }
 
     pub fn set_registered(&mut self, v: bool) {
-        self.registered = v;
+        self.register = v;
     }
 }

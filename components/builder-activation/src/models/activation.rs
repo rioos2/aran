@@ -9,6 +9,7 @@ use protocol::api::activation;
 use db::data_store::DataStoreConn;
 use protocol::api::schema::type_meta_url;
 
+use serde_json::from_str;
 
 
 pub struct DataStore<'a> {
@@ -23,7 +24,7 @@ impl<'a> DataStore<'a> {
     }
 
     pub fn wizard(&self, license_status: IdGet) -> Result<Option<activation::Wizard>> {
-        let mut wizard = row_to_wizard(license_status.get_id() == activation::ACTIVE.to_string());
+        let mut wizard = row_to_wizard(from_str::<bool>(&license_status.get_id()).unwrap_or(false));
 
         let conn = self.db.pool.get_shard(0)?;
         let rows = conn.query("SELECT * FROM get_accounts_v1_by_role($1)",

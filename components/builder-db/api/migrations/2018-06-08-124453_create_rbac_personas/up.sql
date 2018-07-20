@@ -114,6 +114,16 @@ VALUES
          'Read access for assemblyfactory resource.'
    )
 ,
+(
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.ASSEMBLYFACTORYS.*.GET',
+      'Read access for assemblyfactory resource.'
+)
+,
    (
 (
       SELECT
@@ -284,6 +294,17 @@ VALUES
          'RIOOS.NODES.*',
          'Any access allowed for this nodes resource.'
    )
+,
+
+(
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.SENSEIS.GET',
+      'Access for this sensei resource.'
+)
 ,
    (
 (
