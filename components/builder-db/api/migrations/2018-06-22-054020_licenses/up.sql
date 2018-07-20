@@ -8,7 +8,7 @@ CREATE SEQUENCE IF NOT EXISTS license_id_seq;
 CREATE TABLE IF NOT EXISTS LICENSES (id bigint PRIMARY KEY DEFAULT next_id_v1('license_id_seq'),
                                                                    object_meta JSONB,
                                                                                type_meta JSONB,
-                                                                                         status text, product text, license_id text,password text,expired text, product_options JSONB,
+                                                                                         status text, product text, license_id text,password text,expired text, product_options JSONB,user_activation bool,
                                                                                                                                                                                 updated_at timestamptz,
                                                                                                                                                                                 created_at timestamptz DEFAULT now());
 
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS LICENSES (id bigint PRIMARY KEY DEFAULT next_id_v1('l
 --- Table:licenses:create/update
 ---
 
-CREATE FUNCTION insert_or_update_license_v1(lobject_meta JSONB, ltype_meta JSONB, lstatus text, lproduct text,lexpired text, lproduct_options JSONB)RETURNS
+CREATE FUNCTION insert_or_update_license_v1(lobject_meta JSONB, ltype_meta JSONB, lstatus text, lproduct text,lexpired text, lproduct_options JSONB,luser_activation bool)RETURNS
 SETOF LICENSES AS $$
 DECLARE this_license LICENSES % rowtype;
 BEGIN
@@ -40,8 +40,8 @@ BEGIN
          RETURN;
          ELSE
          RETURN QUERY
-         INSERT INTO LICENSES(object_meta,type_meta, status, product,expired, product_options )
-           VALUES(lobject_meta, ltype_meta, lstatus, lproduct,lexpired ,lproduct_options)ON CONFLICT DO NOTHING RETURNING *;
+         INSERT INTO LICENSES(object_meta,type_meta, status, product,expired, product_options, user_activation)
+           VALUES(lobject_meta, ltype_meta, lstatus, lproduct,lexpired ,lproduct_options, luser_activation)ON CONFLICT DO NOTHING RETURNING *;
       RETURN;
       END
       IF;
@@ -99,10 +99,10 @@ SETOF licenses AS $$
                    $$ LANGUAGE PLPGSQL VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION update_license_status_v1 (llicense_id text,lpassword text,lstatus text) RETURNS
+CREATE OR REPLACE FUNCTION update_license_status_v1 (llicense_id text,lpassword text,lstatus text, luser_activation bool) RETURNS
 SETOF licenses AS $$
                                          BEGIN
-                                             RETURN QUERY UPDATE licenses SET license_id  = llicense_id,password=lpassword,status=lstatus,updated_at=now()
+                                             RETURN QUERY UPDATE licenses SET license_id  = llicense_id,password=lpassword,status=lstatus,user_activation=luser_activation,updated_at=now()
                                              RETURNING *;
                                              RETURN;
                                          END

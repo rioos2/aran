@@ -76,6 +76,16 @@ VALUES
 ,
 (
   (
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.INGRESSES.*',
+      'Any access allowed for this ingress resource.'
+)
+,
+(
+  (
   SELECT
      id
   FROM
@@ -103,6 +113,16 @@ VALUES
          'RIOOS.ASSEMBLYFACTORYS.GET',
          'Read access for assemblyfactory resource.'
    )
+,
+(
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.ASSEMBLYFACTORYS.*.GET',
+      'Read access for assemblyfactory resource.'
+)
 ,
    (
 (
@@ -215,16 +235,16 @@ VALUES
          'Edit only access for verticalscaling resource.'
    )
 ,
-(
   (
-SELECT
-     id
-  FROM
-     first_insert),
-     'RIOOS.VERTICALSCALING.*.STATUS.PUT',
-     'Edit only access for verticalscaling status resource.'
-),
-
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.VERTICALSCALING.*.STATUS.PUT',
+      'Edit only access for verticalscaling status resource.'
+)
+,
    (
 (
       SELECT
@@ -284,6 +304,17 @@ SELECT
          'RIOOS.NODES.*',
          'Any access allowed for this nodes resource.'
    )
+,
+
+(
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.SENSEIS.GET',
+      'Access for this sensei resource.'
+)
 ,
    (
 (
@@ -505,7 +536,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.ACCOUNTS.BUCKET.*',
+         'RIOOS.ACCOUNTS.BUCKETS.*',
          'Any access allowed for this bucket resource.'
    )
 ,
@@ -565,7 +596,7 @@ VALUES
          id
       FROM
          second_insert),
-         'RIOOS.HORIZONTALSCALNG.*',
+         'RIOOS.HORIZONTALSCALING.*',
          'Any access allowed for this horizontalscaling resource.'
    )
 ,

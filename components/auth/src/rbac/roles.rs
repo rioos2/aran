@@ -5,7 +5,8 @@ type TrustedAccessList = Vec<TrustAccess>;
 
 const ALL: &'static str = "*";
 const ASSEMBLY: &'static str = "ASSEMBLYS";
-const ASSEMBLYFACTORY: &'static str = "ASSSEMBLYFACTORY";
+const ASSEMBLYFACTORY: &'static str = "ASSEMBLYFACTORYS";
+const STACKSFACTORY: &'static str = "STACKSFACTORYS";
 const HORIZONTALSCALING: &'static str = "HORIZONTALSCALING";
 const VERTICALSCALING: &'static str = "VERTICALSCALING";
 const SECRET: &'static str = "SECRETS";
@@ -15,7 +16,7 @@ const SERVICE: &'static str = "SERVICES";
 const VOLUME: &'static str = "VOLUMES";
 const NODE: &'static str = "NODES";
 const STORAGECONNECTOR: &'static str = "STORAGECONNECTORS";
-const STORAGEPOOL: &'static str = "STORAGEPOOLS";
+const STORAGEPOOL: &'static str = "STORAGESPOOL";
 const IMAGEREFERENCE: &'static str = "IMAGEREFERENCES";
 const IMAGEMARK: &'static str = "IMAGEMARKS";
 const BUILD: &'static str = "BUILDS";
@@ -28,6 +29,11 @@ const AUDIT: &'static str = "AUDITS";
 const LOG: &'static str = "LOGS";
 const BUCKET: &'static str = "BUCKETS";
 const HEALTHZ: &'static str = "HEALTHZ";
+const INGRESSES: &'static str = "INGRESSES";
+const SETTINGSMAP: &'static str = "SETTINGSMAP";
+const SERVICEACCOUNT: &'static str = "SERVICEACCOUNTS";
+const PING: &'static str = "PING";
+const SENSEI: &'static str = "SENSEIS";
 
 const RESOURCE_GET: &'static str = "GET";
 const RESOURCE_POST: &'static str = "POST";
@@ -82,7 +88,7 @@ impl TrustAccess {
         }
         match flag {
             true => Ok(flag),
-            false => {                
+            false => {
                 Err(Error::PermissionError(format!(
                 "User doesn't have permission for this operation."
             )))
@@ -115,7 +121,8 @@ impl PartialEq for TrustAccess {
 enum TrustResource {
     Assembly,
     AssemblyFactory,
-    // ServiceAccount
+    StacksFactory,
+    ServiceAccount,
     HorizontalScaling,
     VerticalScaling,
     Secret,
@@ -126,7 +133,7 @@ enum TrustResource {
     Node,
     StorageConnector,
     Storagepool,
-    //Settingsmap
+    Settingsmap,
     Imagereference,
     Imagemark,
     Build,
@@ -140,6 +147,9 @@ enum TrustResource {
     Healthz,
     Wild,
     Bucket,
+    Ingresses,
+    Ping,
+    Sensei,
     None,
 }
 
@@ -173,7 +183,8 @@ impl TrustResource {
             ALL => TrustResource::Wild,
             ASSEMBLY => TrustResource::Assembly,
             ASSEMBLYFACTORY => TrustResource::AssemblyFactory,
-            // SERVICEACCOUNT => TrustResource::ServiceAccount
+            STACKSFACTORY=> TrustResource::StacksFactory,
+            SERVICEACCOUNT => TrustResource::ServiceAccount,
             HORIZONTALSCALING => TrustResource::HorizontalScaling,
             VERTICALSCALING => TrustResource::VerticalScaling,
             SECRET => TrustResource::Secret,
@@ -184,7 +195,7 @@ impl TrustResource {
             NODE => TrustResource::Node,
             STORAGECONNECTOR => TrustResource::StorageConnector,
             STORAGEPOOL => TrustResource::Storagepool,
-            // SETTINGSMAP => TrustResource::Settingsmap
+            SETTINGSMAP => TrustResource::Settingsmap,
             IMAGEREFERENCE => TrustResource::Imagereference,
             IMAGEMARK => TrustResource::Imagemark,
             BUILD => TrustResource::Build,
@@ -197,6 +208,10 @@ impl TrustResource {
             LOG => TrustResource::Log,
             BUCKET => TrustResource::Bucket,
             HEALTHZ => TrustResource::Healthz,
+            INGRESSES => TrustResource::Ingresses,
+            PING => TrustResource::Ping,
+            SENSEI =>TrustResource::Sensei,
+
             _ => TrustResource::None,
         }
     }

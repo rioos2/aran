@@ -42,7 +42,7 @@ impl<'a> DataStore<'a> {
         //current statistic of each node contains(cpu,network)
         let mut statistics = node::Statistics::new();
         statistics.set_title("Statistics".to_string());
-        let _ninja_stats = statistics.set_ninjas(append_unhealthy_ninjas(
+        statistics.set_ninjas(append_unhealthy_ninjas(
             self.db,
             get_statistics(client, ninja_gauges_collected.1, node::NODE_JOBS.to_string())?,
         ));
@@ -78,15 +78,18 @@ fn append_unhealthy_ninjas(db: &DataStoreConn, res: Vec<node::NodeStatistic>) ->
                     if res.is_empty() {
                         response.push(mk_ninja_statistics(x));
                     }
+                    let mut node = node::NodeStatistic::new();
                     res.iter()
                         .map(|y| {
                             if x.get_id() == y.get_id() {
+                                node = y.clone();
                                 response.push(y.clone());
-                            } else {
-                                response.push(mk_ninja_statistics(x));
                             }
                         })
                         .collect::<Vec<_>>();
+                    if node.get_id() != x.get_id() && !res.is_empty() {
+                        response.push(mk_ninja_statistics(x));
+                    }
                 })
                 .collect::<Vec<_>>();
             response
@@ -105,15 +108,18 @@ fn append_unhealthy_senseis(db: &DataStoreConn, res: Vec<node::NodeStatistic>) -
                     if res.is_empty() {
                         response.push(mk_sensei_statistics(x));
                     }
+                    let mut sensei = node::NodeStatistic::new();
                     res.iter()
                         .map(|y| {
                             if x.get_id() == y.get_id() {
+                                sensei = y.clone();
                                 response.push(y.clone());
-                            } else {
-                                response.push(mk_sensei_statistics(x));
                             }
                         })
                         .collect::<Vec<_>>();
+                        if sensei.get_id() != x.get_id() && !res.is_empty() {
+                            response.push(mk_sensei_statistics(x));
+                        }
                 })
                 .collect::<Vec<_>>();
             response
