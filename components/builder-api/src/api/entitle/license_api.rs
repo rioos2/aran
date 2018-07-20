@@ -52,7 +52,6 @@ impl LicenseApi {
         unmarshall_body.set_meta(type_meta(req), m);
 
         if unmarshall_body.get_password().len() > 0 && unmarshall_body.get_license_id().len()> 0 {
-            unmarshall_body.set_status(LICENSE_STATUS_ACTIVATING.to_string());
             activate_license!(req, *unmarshall_body.clone());
         }
 

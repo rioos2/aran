@@ -18,7 +18,7 @@ pub struct Licenses {
     #[serde(default)]
     status: String,
     #[serde(default)]
-    user_activation: bool,
+    activation_completed: bool,
     product: String,
     license_id: String,
     password: String,
@@ -117,12 +117,12 @@ impl Licenses {
         self.expired_at.clone()
     }
 
-    pub fn set_user_activation(&mut self, v: bool) {
-        self.user_activation = v;
+    pub fn set_activation_completed(&mut self, v: bool) {
+        self.activation_completed = v;
     }
 
-    pub fn get_user_activation(&self) -> bool {
-        self.user_activation.clone()
+    pub fn get_activation_completed(&self) -> bool {
+        self.activation_completed.clone()
     }
 
     pub fn set_product_options(&mut self, v: BTreeMap<String, AllowActive>) {

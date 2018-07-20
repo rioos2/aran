@@ -37,7 +37,7 @@ impl<'a> DataStore<'a> {
                 &(license.get_product() as String),
                 &(license.get_expired() as String),
                 &(serde_json::to_value(license.get_product_options()).unwrap()),
-                &(license.get_user_activation()as bool),
+                &(license.get_activation_completed()as bool),
             ],
         ).map_err(Error::LicenseCreate)?;
         if rows.len() > 0 {
@@ -109,7 +109,7 @@ impl<'a> DataStore<'a> {
                 &(license.get_license_id() as String),
                 &(license.get_password() as String),
                 &(license.get_status() as String),
-                &(license.get_user_activation()as bool),
+                &(license.get_activation_completed()as bool),
             ],
         ).map_err(Error::LicenseUpdate)?;
 
@@ -144,14 +144,14 @@ fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {
 
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
-    let user_activation: bool = row.get("user_activation");
+    let activation_completed: bool = row.get("user_activation");
 
     licenses.set_id(id.to_string() as String);
     licenses.set_status(row.get("status"));
     licenses.set_product(row.get("product"));
     licenses.set_expired(row.get("expired"));
     licenses.set_expired(row.get("expired"));
-    licenses.set_user_activation(user_activation);
+    licenses.set_activation_completed(activation_completed);
     licenses.set_product_options(serde_json::from_value(row.get("product_options")).unwrap());
     licenses.set_created_at(created_at.to_rfc3339());
 
