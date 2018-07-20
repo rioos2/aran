@@ -29,7 +29,7 @@ impl<'a> DataStore<'a> {
     pub fn create_or_update(&self, license: &Licenses) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_or_update_license_v1 ($1,$2,$3,$4,$5,$6)",
+            "SELECT * FROM insert_or_update_license_v1 ($1,$2,$3,$4,$5,$6,$7)",
             &[
                 &(serde_json::to_value(license.object_meta()).unwrap()),
                 &(serde_json::to_value(license.type_meta()).unwrap()),
@@ -37,6 +37,7 @@ impl<'a> DataStore<'a> {
                 &(license.get_product() as String),
                 &(license.get_expired() as String),
                 &(serde_json::to_value(license.get_product_options()).unwrap()),
+                &(license.get_activation_completed()as bool),
             ],
         ).map_err(Error::LicenseCreate)?;
         if rows.len() > 0 {
@@ -103,11 +104,12 @@ impl<'a> DataStore<'a> {
     pub fn update_license_status(&self, license: &Licenses) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM update_license_status_v1($1,$2,$3)",
+            "SELECT * FROM update_license_status_v1($1,$2,$3,$4)",
             &[
                 &(license.get_license_id() as String),
                 &(license.get_password() as String),
                 &(license.get_status() as String),
+                &(license.get_activation_completed()as bool),
             ],
         ).map_err(Error::LicenseUpdate)?;
 
@@ -142,11 +144,14 @@ fn row_to_licenses(row: &postgres::rows::Row) -> Result<Licenses> {
 
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
+    let activation_completed: bool = row.get("user_activation");
 
     licenses.set_id(id.to_string() as String);
     licenses.set_status(row.get("status"));
     licenses.set_product(row.get("product"));
     licenses.set_expired(row.get("expired"));
+    licenses.set_expired(row.get("expired"));
+    licenses.set_activation_completed(activation_completed);
     licenses.set_product_options(serde_json::from_value(row.get("product_options")).unwrap());
     licenses.set_created_at(created_at.to_rfc3339());
 

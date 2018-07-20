@@ -15,6 +15,7 @@ use router::Router;
 use activate::models::activation::DataStore;
 use entitle::models::license;
 
+
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -35,7 +36,7 @@ impl ActivationApi {
     fn wizard(&self, _req: &mut Request) -> AranResult<Response> {
         match license::DataStore::new(&self.conn).list_blank() {
         Ok(Some(license)) => {
-            let status = license.into_iter().map(|l|{l.get_status()}).collect::<_>();
+            let status = license.into_iter().map(|l|{l.get_activation_completed().to_string()}).collect::<_>();
             match DataStore::new(&self.conn).wizard(IdGet::with_id(status)) {
                 Ok(wizard) => Ok(render_json(status::Ok, &wizard)),
                 Err(err) => Err(internal_error(&format!("{}\n", err))),

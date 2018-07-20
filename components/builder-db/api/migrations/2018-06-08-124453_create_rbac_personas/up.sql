@@ -114,6 +114,16 @@ VALUES
          'Read access for assemblyfactory resource.'
    )
 ,
+(
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.ASSEMBLYFACTORYS.*.GET',
+      'Read access for assemblyfactory resource.'
+)
+,
    (
 (
       SELECT
@@ -225,6 +235,16 @@ VALUES
          'Edit only access for verticalscaling resource.'
    )
 ,
+  (
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.VERTICALSCALING.*.STATUS.PUT',
+      'Edit only access for verticalscaling status resource.'
+)
+,
    (
 (
       SELECT
@@ -284,6 +304,17 @@ VALUES
          'RIOOS.NODES.*',
          'Any access allowed for this nodes resource.'
    )
+,
+
+(
+(
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.SENSEIS.GET',
+      'Access for this sensei resource.'
+)
 ,
    (
 (

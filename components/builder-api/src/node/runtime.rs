@@ -92,7 +92,7 @@ impl ApiSender {
         )
     }
 
-    /// Add peer to peer list
+    /// Request the licensor to activate the license with the licenseid/password
     pub fn activate_license(&self, license_id: u32, password: String) -> io::Result<()> {
         let msg = ExternalMessage::ActivateLicense(license_id, password);
         self.0.clone().send(msg).wait().map(drop).map_err(

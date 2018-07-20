@@ -33,6 +33,7 @@ const INGRESSES: &'static str = "INGRESSES";
 const SETTINGSMAP: &'static str = "SETTINGSMAP";
 const SERVICEACCOUNT: &'static str = "SERVICEACCOUNTS";
 const PING: &'static str = "PING";
+const SENSEI: &'static str = "SENSEIS";
 
 const RESOURCE_GET: &'static str = "GET";
 const RESOURCE_POST: &'static str = "POST";
@@ -148,6 +149,7 @@ enum TrustResource {
     Bucket,
     Ingresses,
     Ping,
+    Sensei,
     None,
 }
 
@@ -208,6 +210,7 @@ impl TrustResource {
             HEALTHZ => TrustResource::Healthz,
             INGRESSES => TrustResource::Ingresses,
             PING => TrustResource::Ping,
+            SENSEI =>TrustResource::Sensei,
 
             _ => TrustResource::None,
         }

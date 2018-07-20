@@ -17,6 +17,8 @@ pub struct Licenses {
     pub object_meta: ObjectMeta,
     #[serde(default)]
     status: String,
+    #[serde(default)]
+    activation_completed: bool,
     product: String,
     license_id: String,
     password: String,
@@ -113,6 +115,14 @@ impl Licenses {
 
     pub fn get_expired(&self) -> ::std::string::String {
         self.expired_at.clone()
+    }
+
+    pub fn set_activation_completed(&mut self, v: bool) {
+        self.activation_completed = v;
+    }
+
+    pub fn get_activation_completed(&self) -> bool {
+        self.activation_completed.clone()
     }
 
     pub fn set_product_options(&mut self, v: BTreeMap<String, AllowActive>) {
