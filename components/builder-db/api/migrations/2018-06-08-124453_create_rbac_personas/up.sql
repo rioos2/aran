@@ -215,6 +215,16 @@ VALUES
          'Edit only access for verticalscaling resource.'
    )
 ,
+(
+  (
+SELECT
+     id
+  FROM
+     first_insert),
+     'RIOOS.VERTICALSCALING.*.STATUS.PUT',
+     'Edit only access for verticalscaling status resource.'
+),
+
    (
 (
       SELECT

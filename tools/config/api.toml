@@ -22,6 +22,7 @@ endpoint = "https://appstores.rioos.xyz:6443/api/v1"
 
 [blockchain]
 endpoint = "http://localhost:7000"
+enabled = false
 
 [ui]
 root = "/public"
