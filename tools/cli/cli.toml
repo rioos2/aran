@@ -1,0 +1,4 @@
+api_server = "https://localhost:7443/"
+auth_token = "NCmMtYUvZGHtLYkpdK"
+email = "dev@rio.company"
+account = "1017774412054667264"
