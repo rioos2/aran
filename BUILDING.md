@@ -1,11 +1,11 @@
-# Building Rio/OS Aran API from source
+# Building Rio/OS API Gateway from source
 
-## Mac OS X for Linux Development
+## Linux Development
 
 These install instructions assume you want to develop, build, and run the
-various Rio/OS Aran API software components in a Linux environment.
+various Rio/OS API Gateway software components in a Linux environment.
 
-1. Checkout the source by running `git clone git@gitlab.com.com:rioos/aran.git; cd aran`
+1. Checkout the source by running `git clone git@gitlab.com.com:rioos/api_gateway.git; cd api_gateway`
 1. Run `make` to compile all Rust software components (this will take a while)
 1. (Optional) Run `make test` if you want to run the tests. This will take a while.
 1. [postgresql](https://postgresql.com)
@@ -38,8 +38,8 @@ This installation method uses as many packages from Ubuntu as possible.
 First clone the codebase and enter the directory:
 
 ```
-git clone https://gitlab.com/rioos/aran.git
-cd aran
+git clone https://gitlab.com/rioos/api_gateway.git
+cd api_gateway
 ```
 
 Then, run the system preparation scripts and try to compile the project:
@@ -59,14 +59,13 @@ These docs were tested with Ubuntu 16.04.
 First clone the codebase and enter the directory:
 
 ```
-git clone https://gitlab.com/rioos/aran.git
-cd aran
+git clone https://gitlab.com/rioos/api_gateway.git
+cd api_gateway
 ```
 
 Then, run the system preparation scripts and try to compile the project:
 
 ```
-cp components/hab/install.sh /tmp/
 sh support/linux/install_dev_0_arch.sh
 sh support/linux/install_dev_9_linux.sh
 . ~/.profile
@@ -106,7 +105,7 @@ cargo build
 
 Once it is finished compiling, you can find the new build in root aran_repo/target/debug
 
-Head back to the root of the Aran repo
+Head back to the root of the api_gateway repo
 
 And you will find your build in target/debug
 
@@ -121,5 +120,5 @@ target/debug/builder-authorize
 You can now run this newly built component with
 
 ```
-./target/debug/rios-api-server
+./target/debug/rioos-api-server
 ```
