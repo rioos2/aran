@@ -1,22 +1,30 @@
-# Rio/OS API Server
+# Rio/OS API Gateway => Donald
 
-Rio/OS is the worlds first private cloud operating sytem.
+Rio/OS is the worlds first enterpise cloud operating sytem.
 
 To learn more about Rio/OS, please visit the [Rio/OS website](http://rio.digital).
 
+You ask something, `API  Donald` does it for ya ! :)
+
+![API Donald](https://gitlab.com/rioos/api_gateway/raw/2-0-stable/funpics/api_donald.gif)
+
+
+
 ## Installation
 
-There are a couple of different way to install Rio/OS API Server.
+There are a couple of different way to install Rio/OS API Gateway.
 
 ## Building
 
-See [BUILDING.md](BUILDING.md) for platform specific info on building Rio/OS API Server from source.
+See [BUILDING.md](BUILDING.md) for platform specific info on building Rio/OS API Gateway from source.
 
-## documentation
+## API Documentation
 
-Refer API documentation in SwaggerHub [API documentation](https://app.swaggerhub.com/apis/riocorp/rioos/2.0)
+1. Rio/OS API documentation in [SwaggerHub](https://app.swaggerhub.com/apis/rioadvancement/rioos/2.0)
 
-## Useful reference material
+1. Rio AppStore API documentation in [SwaggerHub](https://app.swaggerhub.com/apis/rioadvancement/rioappstore/1.0.0)
+
+## Useful reference material for Rust lang
 
 * [The Rust Programming Language](http://doc.rust-lang.org/book/)
 * [Rust by Example](http://rustbyexample.com/)
