@@ -16,7 +16,11 @@ There are a couple of different way to install Rio/OS API Gateway.
 
 ## Building
 
-See [BUILDING.md](BUILDING.md) for platform specific info on building Rio/OS API Gateway from source.
+See 
+
+[BUILDING.md](BUILDING.md) for  setting up platform specific prequisites (Rustlang).
+
+[BUILDING_DEV.md](BUILDER_DEV.md) for platform specific info on building Rio/OS API Gateway from source.
 
 ## API Documentation
 
