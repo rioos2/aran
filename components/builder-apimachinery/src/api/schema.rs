@@ -25,6 +25,7 @@ lazy_static! {
         map.register("GET:plans", "PlanFactoryList");
 
         map.register("POST:assemblys", "Assembly");
+        map.register("POST:accountsassemblys", "Assembly");
         map.register("GET:assemblys", "AssemblyList");
         map.register("GET:accountsassemblys", "AssemblyList");
         map.register("GET:assemblyfactorysdescribe", "AssemblyList");
@@ -63,7 +64,7 @@ lazy_static! {
         map.register("POST:services", "Service");
         map.register("GET:services", "ServiceList");
 
-        map.register("POST:endpoints", "EndPoint");
+        map.register("POST:endpoints", "Endpoints");
         map.register("GET:endpoints", "EndPointList");
         map.register("GET:endpointsassembly", "EndPointList");
 
