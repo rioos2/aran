@@ -9,7 +9,7 @@ use protocol::api::base::{MetaFields, WhoAmITypeMeta};
 ///replicas expander
 use protocol::api::schema::type_meta_url;
 
-const METRIC_LIMIT: &'static str = "80";
+const METRIC_LIMIT: &'static str = "10";
 
 pub struct ReplicasExpander<'a> {
     conn: &'a DataStoreConn,
@@ -59,10 +59,10 @@ impl<'a> ReplicasExpander<'a> {
 
     /// compare the current and disered resource of vs to scale_down or scale_up
     fn get_scale_type(&self) -> String {
-        if self.current_cpu() < self.desired_cpu() && self.current_ram() < self.desired_ram() {
-            return "verticalScaleUp".to_string();
+        if self.current_cpu() < self.desired_cpu() || self.current_ram() < self.desired_ram() {
+            return "scale_up".to_string();
         }
-        return "verticalScaleDown".to_string();
+        return "scale_down".to_string();
     }
 
     /// create the new job for scale_up or scale_down
