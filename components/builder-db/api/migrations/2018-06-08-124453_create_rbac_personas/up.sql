@@ -346,6 +346,16 @@ VALUES
          'Any access allowed for this settings map resource.'
    )
 ,
+(
+  (
+   SELECT
+      id
+   FROM
+      first_insert),
+      'RIOOS.ORIGINS.RIOOS_SYSTEM.SETTINGSMAP.*.GET',
+      'Any access allowed for this settings map resource.'
+)
+,
    (
 (
       SELECT
