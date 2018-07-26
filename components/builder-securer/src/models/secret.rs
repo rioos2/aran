@@ -98,6 +98,28 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
+    pub fn update(datastore: &DataStoreConn, secret: &secret::Secret) -> SecretOutput {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM update_secret_v1($1,$2,$3,$4,$5)",
+            &[
+                &(secret.get_id().parse::<i64>().unwrap()),
+                &(secret.get_secret_type() as String),
+                &(serde_json::to_value(secret.get_data()).unwrap()),
+                &(serde_json::to_value(secret.get_metadata()).unwrap()),
+                &(serde_json::to_value(&secret.object_meta()).unwrap()),
+            ],
+        ).map_err(Error::SecretUpdate)?;
+
+        if rows.len() > 0 {
+            for row in rows {
+                let secret = row_to_secret(&row);
+                return Ok(Some(secret));
+            }
+        }
+        Ok(None)
+    }
+
     pub fn list_blank(datastore: &DataStoreConn) -> SecretOutputList {
         let conn = datastore.pool.get_shard(0)?;
 

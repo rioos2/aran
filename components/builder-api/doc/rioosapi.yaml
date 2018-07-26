@@ -4177,6 +4177,64 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+    put:
+      tags:
+        - secrets
+      summary: Update secret by id
+      description: update secret
+      parameters:
+        - name: secretsId
+          in: path
+          description: ID of secret to update
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretsResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Secrets'
+
   '/origins/{Origin}/secrets/{SecretName}':
     get:
       tags:
