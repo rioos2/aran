@@ -279,7 +279,7 @@ VALUES ('rioos_system',
         '{"kind":"Origin","api_version":"v1"}') ON CONFLICT (name) DO NOTHING;
 
 
-CREATE OR REPLACE FUNCTION insert_origin_v1 (origin_name text, origin_type_meta JSONB, origin_object_meta JSONB, origin_mem_type_meta JSONB) RETURNS
+CREATE OR REPLACE FUNCTION insert_origin_v1 (origin_name text, origin_type_meta JSONB, origin_object_meta JSONB) RETURNS
 SETOF origins AS $$
                        DECLARE
                          existing_origin origins%rowtype;
@@ -291,7 +291,7 @@ SETOF origins AS $$
                        ELSE
                            INSERT INTO origins (name,type_meta,object_meta)
                                   VALUES (origin_name,origin_type_meta,origin_object_meta) ON CONFLICT (name) DO NOTHING RETURNING * into inserted_origin;
-                           PERFORM insert_origin_member_v1(origin_mem_type_meta,origin_object_meta, json_build_object('origin',inserted_origin.name)::jsonb);
+                           PERFORM insert_origin_member_v1('{"kind":"OriginMember","api_version":"v1"}',origin_object_meta, json_build_object('origin',inserted_origin.name)::jsonb);
                            RETURN NEXT inserted_origin;
                            RETURN;
                   END IF;
