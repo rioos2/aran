@@ -9,9 +9,9 @@ CREATE TABLE IF NOT EXISTS ROLES (id bigint PRIMARY KEY DEFAULT next_id_v1('role
 --- Table:roles:create
 ---
 CREATE
-OR REPLACE FUNCTION insert_role_v1 (name text, description text) RETURNS SETOF ROLES AS $$
+OR REPLACE FUNCTION insert_role_v1 (name text, description text,account text, origin text) RETURNS SETOF ROLES AS $$
+DECLARE inserted_roles roles;
 BEGIN
-   RETURN QUERY
    INSERT INTO
       roles(name, description)
    VALUES
@@ -19,7 +19,9 @@ BEGIN
          name,
          description
       )
-      RETURNING *;
+      ON CONFLICT DO NOTHING RETURNING * INTO inserted_roles;
+      PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',account)::jsonb,json_build_object('team', inserted_roles.name, 'origin', origin)::jsonb);
+      RETURN NEXT inserted_roles;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
