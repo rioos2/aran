@@ -87,7 +87,6 @@ BEGIN
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
----
 --- Table:origins:list_blank
 ---
 CREATE
