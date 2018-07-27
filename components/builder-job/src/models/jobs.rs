@@ -1,23 +1,29 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
+
+
+use super::super::{JobOutput, JobOutputList};
 use chrono::prelude::*;
 
+use db::data_store::DataStoreConn;
+
 use error::{Error, Result};
+use postgres;
 use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::api::job;
-
-use db::data_store::DataStoreConn;
-use postgres;
 use serde_json;
 
-use super::{JobOutput, JobOutputList};
+pub struct DataStore<'a> {
+    db: &'a DataStoreConn,
+}
 
-pub struct JobDS;
-
-impl JobDS {
-    pub fn create(datastore: &DataStoreConn, jobs_create: &job::Jobs) -> JobOutput {
-        let conn = datastore.pool.get_shard(0)?;
+impl<'a> DataStore<'a> {
+    pub fn new(db: &'a DataStoreConn) -> Self {
+        DataStore { db: db }
+    }
+    pub fn create(&self, jobs_create: &job::Jobs) -> JobOutput {
+        let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_jobs_v1($1,$2,$3,$4)",
             &[
@@ -35,11 +41,12 @@ impl JobDS {
         Ok(None)
     }
 
-    pub fn list(datastore: &DataStoreConn) -> JobOutputList {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn list(&self) -> JobOutputList {
+        let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_jobs_v1()", &[])
-            .map_err(Error::JobsGet)?;
+        let rows = &conn.query("SELECT * FROM get_jobs_v1()", &[]).map_err(
+            Error::JobsGet,
+        )?;
 
         let mut response = Vec::new();
 
@@ -51,8 +58,8 @@ impl JobDS {
         }
         Ok(None)
     }
-    pub fn status_update(datastore: &DataStoreConn, job: &StatusUpdate) -> JobOutput {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn status_update(&self, job: &StatusUpdate) -> JobOutput {
+        let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM set_job_status_v1($1, $2)",
             &[
@@ -67,8 +74,8 @@ impl JobDS {
         Ok(None)
     }
 
-    pub fn show_by_node(datastore: &DataStoreConn, job_get: &IdGet) -> JobOutputList {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn show_by_node(&self, job_get: &IdGet) -> JobOutputList {
+        let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
             "SELECT * FROM get_jobs_by_node_v1($1)",
@@ -86,8 +93,8 @@ impl JobDS {
         Ok(None)
     }
 
-    pub fn show(datastore: &DataStoreConn, job_get: &IdGet) -> JobOutput {
-        let conn = datastore.pool.get_shard(0)?;
+    pub fn show(&self, job_get: &IdGet) -> JobOutput {
+        let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
             "SELECT * FROM get_job_v1($1)",

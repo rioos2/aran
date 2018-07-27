@@ -2,15 +2,15 @@
 
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 
-use chrono::prelude::*;
-use error::{Error, Result};
-use protocol::api::base::MetaFields;
-use protocol::api::scale;
 
-use super::{VerticalScalingOutput, VerticalScalingOutputList};
+use super::super::{VerticalScalingOutput, VerticalScalingOutputList};
+use chrono::prelude::*;
 use db::data_store::DataStoreConn;
+use error::{Error, Result};
 use postgres;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::scale;
 use serde_json;
 
 pub struct DataStore<'a> {
@@ -97,8 +97,9 @@ impl<'a> DataStore<'a> {
     pub fn list_blank(&self) -> VerticalScalingOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_vs_v1()", &[])
-            .map_err(Error::VSGet)?;
+        let rows = &conn.query("SELECT * FROM get_vs_v1()", &[]).map_err(
+            Error::VSGet,
+        )?;
 
         let mut response = Vec::new();
 

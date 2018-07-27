@@ -13,8 +13,8 @@ use deploy::models::{assemblyfactory, blueprint, service};
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::{IdGet, MetaFields};
@@ -22,7 +22,7 @@ use protocol::api::scale::{HorizontalScaling, StatusUpdate};
 use protocol::api::schema::{dispatch, type_meta};
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
 use router::Router;
-use scale::{horizontalscaling_ds, scaling};
+use scale::{models, scaling};
 use serde_json;
 use std::sync::Arc;
 use telemetry::metrics::prometheus::PrometheusClient;
@@ -56,8 +56,9 @@ impl HorizontalScalingApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body =
-            self.validate(req.get::<bodyparser::Struct<HorizontalScaling>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<HorizontalScaling>>()?,
+        )?;
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
             unmarshall_body.get_name(),
@@ -70,7 +71,7 @@ impl HorizontalScalingApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match horizontalscaling_ds::DataStore::new(&self.conn).create(&unmarshall_body) {
+        match models::horizontalscaling::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -82,21 +83,23 @@ impl HorizontalScalingApi {
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn scale(&self, req: &mut Request, _cfg: &ServicesConfig) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-        match horizontalscaling_ds::DataStore::new(&self.conn).show(&params) {
+        match models::horizontalscaling::DataStore::new(&self.conn).show(&params) {
             Ok(Some(hs)) => {
                 let af_id: Vec<IdGet> = hs.get_owner_references()
                     .iter()
                     .map(|x| IdGet::with_id(x.uid.to_string()))
                     .collect::<Vec<_>>();
                 match assemblyfactory::DataStore::new(&self.conn).show(&af_id[0]) {
-                    Ok(Some(factory)) => match Assembler::new(&self.conn, _cfg).reassemble(
-                        hs.get_status().get_desired_replicas(),
-                        hs.get_status().get_current_replicas(),
-                        &factory,
-                    ) {
-                        Ok(factory) => Ok(render_json(status::Ok, &factory)),
-                        Err(err) => Err(internal_error(&format!("{}\n", err))),
-                    },
+                    Ok(Some(factory)) => {
+                        match Assembler::new(&self.conn, _cfg).reassemble(
+                            hs.get_status().get_desired_replicas(),
+                            hs.get_status().get_current_replicas(),
+                            &factory,
+                        ) {
+                            Ok(factory) => Ok(render_json(status::Ok, &factory)),
+                            Err(err) => Err(internal_error(&format!("{}\n", err))),
+                        }
+                    }
                     Err(err) => Err(internal_error(&format!("{}\n", err))),
                     Ok(None) => Err(not_found_error(&format!(
                         "{} for {}",
@@ -121,7 +124,7 @@ impl HorizontalScalingApi {
     fn show_by_assembly_factory(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match horizontalscaling_ds::DataStore::new(&self.conn).show_by_assembly_factory(&params) {
+        match models::horizontalscaling::DataStore::new(&self.conn).show_by_assembly_factory(&params) {
             Ok(Some(scale)) => Ok(render_json(status::Ok, &scale)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -137,7 +140,7 @@ impl HorizontalScalingApi {
     //Returns an horizontalscaling
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match horizontalscaling_ds::DataStore::new(&self.conn).show(&idget) {
+        let res = match models::horizontalscaling::DataStore::new(&self.conn).show(&idget) {
             Ok(Some(hs)) => {
                 let data = json!({
                             "type": typ,
@@ -170,10 +173,12 @@ impl HorizontalScalingApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
-        match horizontalscaling_ds::DataStore::new(&self.conn).status_update(&unmarshall_body) {
+        match models::horizontalscaling::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(hs_update)) => Ok(render_json(status::Ok, &hs_update)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -189,11 +194,12 @@ impl HorizontalScalingApi {
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body =
-            self.validate(req.get::<bodyparser::Struct<HorizontalScaling>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<HorizontalScaling>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
-        match horizontalscaling_ds::DataStore::new(&self.conn).update(&unmarshall_body) {
+        match models::horizontalscaling::DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(hs)) => Ok(render_json(status::Ok, &hs)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -208,7 +214,7 @@ impl HorizontalScalingApi {
     //Global: Returns all the HorizontalScalings (irrespective of origins)
     //Will need roles/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match horizontalscaling_ds::DataStore::new(&self.conn).list_blank() {
+        match models::horizontalscaling::DataStore::new(&self.conn).list_blank() {
             Ok(Some(hss)) => Ok(render_json_list(status::Ok, dispatch(req), &hss)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -236,20 +242,16 @@ impl Api for HorizontalScalingApi {
         let metrics = move |req: &mut Request| -> AranResult<Response> { _self.metrics(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
-        let show_by_assembly_factory = move |req: &mut Request| -> AranResult<Response> {
-            _self.show_by_assembly_factory(req)
-        };
+        let show_by_assembly_factory = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly_factory(req) };
 
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         let _self = self.clone();
-        let scale =
-            move |req: &mut Request| -> AranResult<Response> { _self.scale(req, &_service_cfg) };
+        let scale = move |req: &mut Request| -> AranResult<Response> { _self.scale(req, &_service_cfg) };
 
         router.post(
             "/horizontalscaling",
@@ -259,9 +261,7 @@ impl Api for HorizontalScalingApi {
 
         router.put(
             "/horizontalscaling/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "horizontal_scaling_status_update",
         );
         router.put(
@@ -283,9 +283,7 @@ impl Api for HorizontalScalingApi {
 
         router.get(
             "/horizontalscaling/assemblyfactory/:id",
-            XHandler::new(C {
-                inner: show_by_assembly_factory,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_assembly_factory }).before(basic.clone()),
             "horizontal_scaling_show_by_assembly_factory",
         );
 
@@ -304,9 +302,9 @@ impl ExpanderSender for HorizontalScalingApi {
         let plan_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PLAN.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                blueprint::DataStore::show(&_conn, &id)
-                    .ok()
-                    .and_then(|p| serde_json::to_string(&p).ok())
+                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
+                    serde_json::to_string(&p).ok()
+                })
             }),
         ));
 
@@ -352,10 +350,8 @@ impl Validator for HorizontalScaling {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| {
-                    if x.uid.len() <= 0 {
-                        s.push("uid".to_string());
-                    }
+                .map(|x| if x.uid.len() <= 0 {
+                    s.push("uid".to_string());
                 })
                 .collect::<Vec<_>>();
         }
