@@ -106,7 +106,7 @@ impl<'a> DataStore<'a> {
                 &session_create.get_company_name(),
                 &(serde_json::to_value(session_create.object_meta()).unwrap()),
                 &(serde_json::to_value(session_create.type_meta()).unwrap()),
-                &(format!("default-{}",rand::random::<u64>().to_string())),
+                &(format!("default-{}",rand::random::<u8>().to_string())),
                 &session_create.get_avatar(),
             ],
         ).map_err(Error::AccountCreate)?;

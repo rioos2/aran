@@ -22,6 +22,7 @@ DECLARE inserted_account accounts;
       )
       ON CONFLICT DO NOTHING RETURNING * INTO inserted_account;
       PERFORM insert_origin_v1(acc_origin_name,'{"kind":"Origin","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb);
+      PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb,json_build_object('team', account_roles[1], 'origin', acc_origin_name)::jsonb);
       RETURN NEXT inserted_account;
 RETURN;
 END

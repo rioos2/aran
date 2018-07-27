@@ -13,7 +13,6 @@ pub mod origin;
 pub mod plan_factory;
 pub mod service;
 pub mod stacks_factory;
-pub mod team;
 pub mod vertical_scaling;
 pub mod volume;
 pub mod ingress;
