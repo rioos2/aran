@@ -19,12 +19,11 @@ impl OriginDS {
     ) -> Result<Option<origin::Origin>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_origin_v1($1,$2,$3,$4)",
+            "SELECT * FROM insert_origin_v1($1,$2,$3)",
             &[
                 &(org_create.get_name() as String),
                 &(serde_json::to_value(org_create.type_meta()).unwrap()),
                 &(serde_json::to_value(org_create.object_meta()).unwrap()),
-                &(serde_json::to_value(org_create.type_meta()).unwrap()),
             ],
         ).map_err(Error::OriginCreate)?;
         if rows.len() > 0 {
