@@ -21,7 +21,7 @@ DECLARE inserted_account accounts;
          account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password, account_approval, account_suspend, account_roles, account_registration_ip_address, account_trust_level, account_company_name, account_object_meta, account_type_meta, account_avatar
       )
       ON CONFLICT DO NOTHING RETURNING * INTO inserted_account;
-      PERFORM insert_origin_v1(acc_origin_name,'{"kind":"Origin","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb,'{"kind":"OriginMember","api_version":"v1"}');
+      PERFORM insert_origin_v1(acc_origin_name,'{"kind":"Origin","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb);
       RETURN NEXT inserted_account;
 RETURN;
 END
