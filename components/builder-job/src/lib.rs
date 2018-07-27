@@ -10,7 +10,7 @@ extern crate postgres;
 extern crate serde_json;
 
 pub mod error;
-pub mod job_ds;
+pub mod models;
 
 pub use self::error::{Error, Result};
 

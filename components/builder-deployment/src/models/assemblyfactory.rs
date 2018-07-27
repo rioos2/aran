@@ -1,6 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! The PostgreSQL backend for the Deployment - AssemblyFactory
+
 use super::super::{AssemblyFactoryOutput, AssemblyFactoryOutputList};
 use chrono::prelude::*;
 use db::data_store::DataStoreConn;
@@ -70,8 +71,10 @@ impl<'a> DataStore<'a> {
     pub fn show_by_stacksfactory(&self, id: &IdGet) -> AssemblyFactoryOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_assemblyfactorys_by_parentid_v1($1)", &[&(id.get_id() as String)])
-            .map_err(Error::AssemblyFactoryGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_assemblyfactorys_by_parentid_v1($1)",
+            &[&(id.get_id() as String)],
+        ).map_err(Error::AssemblyFactoryGet)?;
 
         let mut response = Vec::new();
 
@@ -92,6 +95,33 @@ impl<'a> DataStore<'a> {
             &[
                 &(upd.get_id().parse::<i64>().unwrap()),
                 &(serde_json::to_value(upd.get_status()).unwrap()),
+            ],
+        ).map_err(Error::AssemblyFactoryUpdate)?;
+
+        if rows.len() > 0 {
+            for row in rows {
+                return Ok(Some(self.row_to_assembly_factory(&row, PULL_INVALDATED)?));
+            }
+        }
+        Ok(None)
+    }
+
+
+    pub fn update(&self, factory: &deploy::AssemblyFactory) -> AssemblyFactoryOutput {
+        let conn = self.db.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM set_assembly_factorys_v1($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+            &[
+                &(factory.get_id().parse::<i64>().unwrap()),
+                &(serde_json::to_value(factory.object_meta()).unwrap()),
+                &(serde_json::to_value(factory.type_meta()).unwrap()),
+                &(factory.get_replicas() as i16),
+                &(serde_json::to_value(factory.get_resources()).unwrap()),
+                &(serde_json::to_value(factory.get_metadata()).unwrap()),
+                &(serde_json::to_value(factory.get_secret()).unwrap()),
+                &(factory.get_plan().parse::<i64>().unwrap()),
+                &(serde_json::to_value(factory.get_spec()).unwrap()),
             ],
         ).map_err(Error::AssemblyFactoryUpdate)?;
 
@@ -170,7 +200,10 @@ impl<'a> DataStore<'a> {
         // During the creation AF sets the service to none
         // Hence the cache always return none for service.
         // HACK: To fix this the service is pulled invalidated from cache - send a LIVE copy always.
-        self.expander.with_services(&mut assembly_factory, PULL_INVALDATED);
+        self.expander.with_services(
+            &mut assembly_factory,
+            PULL_INVALDATED,
+        );
         Ok(assembly_factory)
     }
 }

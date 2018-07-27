@@ -24,7 +24,7 @@ use protocol::api::schema::{dispatch, type_meta};
 
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_METRIC, CACHE_PREFIX_FACTORY, CACHE_PREFIX_PLAN};
 use router::Router;
-use scale::{scaling, verticalscaling_ds};
+use scale::{scaling, models};
 use serde_json;
 use std::sync::Arc;
 use telemetry::metrics::prometheus::PrometheusClient;
@@ -70,7 +70,7 @@ impl VerticalScalingApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match verticalscaling_ds::DataStore::new(&self.conn).create(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -87,7 +87,7 @@ impl VerticalScalingApi {
         )?;
         unmarshall_body.set_id(params.get_id());
 
-        match verticalscaling_ds::DataStore::new(&self.conn).status_update(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(vs_update)) => Ok(render_json(status::Ok, &vs_update)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -108,7 +108,7 @@ impl VerticalScalingApi {
         )?;
         unmarshall_body.set_id(params.get_id());
 
-        match verticalscaling_ds::DataStore::new(&self.conn).update(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(vertical)) => Ok(render_json(status::Ok, &vertical)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -124,7 +124,7 @@ impl VerticalScalingApi {
     //Returns an verticalscaling
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match verticalscaling_ds::DataStore::new(&self.conn).show(&idget) {
+        let res = match models::verticalscaling::DataStore::new(&self.conn).show(&idget) {
             Ok(Some(vertical)) => {
                 let data = json!({
                             "type": typ,
@@ -140,7 +140,7 @@ impl VerticalScalingApi {
     //verticalscaling
     //Global: Returns all the verticalScalings (irrespective of origins)
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match verticalscaling_ds::DataStore::new(&self.conn).list_blank() {
+        match models::verticalscaling::DataStore::new(&self.conn).list_blank() {
             Ok(Some(vertical)) => Ok(render_json_list(status::Ok, dispatch(req), &vertical)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -168,7 +168,7 @@ impl VerticalScalingApi {
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn scale(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-        match verticalscaling_ds::DataStore::new(&self.conn).show(&params) {
+        match models::verticalscaling::DataStore::new(&self.conn).show(&params) {
             Ok(Some(vs)) => {
                 let af_id: Vec<IdGet> = vs.get_owner_references()
                     .iter()

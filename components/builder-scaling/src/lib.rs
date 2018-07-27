@@ -11,9 +11,8 @@ extern crate postgres;
 extern crate serde_json;
 
 pub mod error;
-pub mod horizontalscaling_ds;
 pub mod scaling;
-pub mod verticalscaling_ds;
+pub mod models;
 
 pub use self::error::{Error, Result};
 

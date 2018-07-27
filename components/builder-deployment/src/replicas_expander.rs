@@ -1,15 +1,19 @@
 
 
+use super::models::assemblyfactory;
 use db::data_store::DataStoreConn;
 use human_size::Size;
 
-use job::{error, job_ds, JobOutput};
+use job::{error, models, JobOutput};
 use protocol::api::{deploy, job, node, scale};
-use protocol::api::base::{MetaFields, WhoAmITypeMeta};
+use protocol::api::base::{MetaFields, WhoAmITypeMeta, Status, IdGet};
 ///replicas expander
 use protocol::api::schema::type_meta_url;
 
 const METRIC_LIMIT: &'static str = "10";
+use rand::{self, Rng};
+use rand::distributions::Alphanumeric;
+const PRE_NAME_LEN: usize = 5;
 
 pub struct ReplicasExpander<'a> {
     conn: &'a DataStoreConn,
@@ -35,10 +39,19 @@ impl<'a> ReplicasExpander<'a> {
             return Err(error::Error::METRICLIMITERROR);
             // assembly::DataStore::new(&self.conn).status_update(&self.build_assembly_status());
         }
-        job_ds::JobDS::create(
-            &self.conn,
-            &self.build_job(&qualified_assembly, &self.get_scale_type()),
-        )
+
+        let id_get = IdGet::with_id(qualified_assembly.get_owner_references()[0].get_uid());
+
+        let factory = assemblyfactory::DataStore::new(&self.conn)
+            .show(&id_get)
+            .unwrap();
+
+        if factory.is_some() {
+            let mut factory = factory.unwrap();
+            factory.set_resources(self.scaling_policy.get_status().get_desired_resource());
+            assemblyfactory::DataStore::new(&self.conn).update(&factory);
+        }
+        models::jobs::DataStore::new(&self.conn).create(&self.build_job(&qualified_assembly, &self.get_scale_type()))
     }
 
     // should return the least resource utilies assembly
@@ -71,7 +84,7 @@ impl<'a> ReplicasExpander<'a> {
 
         let ref mut om = job_create.mut_meta(
             job_create.object_meta(),
-            assembly.get_name(),
+            format!("{}-{}", self.pre_name(), assembly.get_name()),
             assembly.get_account(),
         );
         job_create.set_owner_reference(
@@ -93,6 +106,9 @@ impl<'a> ReplicasExpander<'a> {
             "assembly",
             scale_type,
         ));
+
+        job_create.set_status(Status::pending());
+
         job_create
     }
 
@@ -186,5 +202,13 @@ impl<'a> ReplicasExpander<'a> {
 
     fn metric_limit(&self) -> Option<String> {
         Some(METRIC_LIMIT.to_string())
+    }
+
+    fn pre_name(&self) -> String {
+        rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(PRE_NAME_LEN)
+            .collect::<String>()
+            .to_lowercase()
     }
 }
