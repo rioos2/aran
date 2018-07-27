@@ -8452,14 +8452,14 @@ components:
         - id: "87653212345011113"
           type_meta: {"kind": "Service","api_version":"v1"}
           object_meta: {"name": "rough-bush-8634.svc.local","account": "870109412813971456","created_at": "2017-12-11T11:29:50.547529+00:00","deleted_at": "","deletion_grace_period_seconds": 30,"cluster_name": "","labels": {},"annotations": {},"initializers": {"pending": [],"result": {"type_meta": {"kind": "","api_version": ""},"status": "","message": "","reason": "","details": { "name": "","group": "","kind": "", "causes": [],"uid": "","retry_after_seconds": 0},"code": 0}},  "finalizers": [""],"owner_references": [{"kind": "AssemblyFactory","api_version": "v1","name": "rough-bush-8634.svc.local","uid": "87543211234567876","block_owner_deletion": false}]}
-          spec: {"service_type": "ExternalName","loadbalancer_ip": "","names": {"849703502417502208": "rough-bush-86341.svc.local"},"external_names": {}}
+          spec: {"service_type": "ExternalName","loadbalancer": {"ingress": [{"ip": "192.168.2.66","hostname": "suganya.rioosbox.com"}]},"names": {"849703502417502208": "rough-bush-86341.svc.local"},"external_names": {}}
           status: {"phase": "ready","message": "","reason": "","conditions": [{"message": " ","reason": " ","status": " ","last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
           metadata: {}
           created_at: "2017-12-11T11:29:50.547529+00:00"
         - id: "87653212345011112"
           type_meta: {"kind": "Service","api_version":"v1"}
           object_meta: {"name": "rough-bush-8634.svc.local","account": "870109412813971456","created_at": "2017-12-11T11:29:50.547529+00:00","deleted_at": "","deletion_grace_period_seconds": 30,"cluster_name": "","labels":{} ,"annotations": {},"initializers": {"pending": [],"result": { "type_meta": {"kind": "", "api_version": ""},"status": "","message": "", "reason": "","details": { "name": "", "group": "", "kind": "","causes": [], "uid": "","retry_after_seconds": 0  }, "code": 0}},"finalizers": [""],"owner_references": [{"kind": "AssemblyFactory","api_version": "v1","name": "rough-bush-8634.svc.local","uid": "87543211234567876","block_owner_deletion": false}]}
-          spec: {"service_type": "LoadBalancer","loadbalancer_ip": "","names": {}, "external_names": {}}
+          spec: {"service_type": "LoadBalancer","loadbalancer": {"ingress": [{"ip": "192.168.2.66","hostname": "suganya.rioosbox.com"}]},"names": {}, "external_names": {}}
           status: {"phase": "ready","message": "","reason": "", "conditions": [{ "message": " ", "reason": " ","status": " ", "last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
           metadata: {"rioos_sh_loadbalancer_imagein": "container","rioos_sh_loadbalancer_imagename": "registry.rioos.xyz:5000/rioos/loadbalancer","rioos_sh_loadbalancer_cpu": "1","rioos_sh_loadbalancer_memory": "1024 MiB","rioos_sh_loadbalancer_disk": "1 GiB"}
           created_at: "2017-12-11T11:29:50.547529+00:00"
@@ -9516,10 +9516,9 @@ components:
           type: string
           description: "Only applies to Service Type: LoadBalancer LoadBalancer will get created with the IP specified in this field.type determines how the Service is exposed."
           example: ExternalName
-        loadbalancer_ip:
-          type: string
+        loadbalancer:
+          type: object
           description: "The IP address created and attached to access the loadbalancer."
-          example: ""
         names:
           type: object
           description: "name(internal) is the reference that internal powerdns will return as a CNAME record for this service. No proxying will be involved. Must be a valid RFC-1123 hostname (https://tools.ietf.org/html/rfc1123) and requires Type to be ExternalName"
@@ -9537,10 +9536,9 @@ components:
           type: string
           description: "Only applies to Service Type: LoadBalancer LoadBalancer will get created with the IP specified in this field.type determines how the Service is exposed."
           example: LoadBalancer
-        loadbalancer_ip:
-          type: string
+        loadbalancer:
+          type: object
           description: "The IP address created and attached to access the loadbalancer."
-          example: ""
         names:
           type: object
           description: "name(internal) is the reference that internal powerdns will return as a CNAME record for this service. No proxying will be involved. Must be a valid RFC-1123 hostname (https://tools.ietf.org/html/rfc1123) and requires Type to be ExternalName"
@@ -9553,8 +9551,8 @@ components:
         service_type:
           type: string
           description: "Only applies to Service Type: LoadBalancer LoadBalancer will get created with the IP specified in this field.type determines how the Service is exposed."
-        loadbalancer_ip:
-          type: string
+        loadbalancer:
+          type: object
           description: "The IP address created and attached to access the loadbalancer."
         names:
           type: object
