@@ -1,14 +1,12 @@
 ---
 ---
 ---
---- Table:origins, origin_members, teams, team_members
+--- Table:origins, origin_members, team_members
 ---
 CREATE SEQUENCE IF NOT EXISTS origin_id_seq;
 CREATE TABLE IF NOT EXISTS origins (id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('origin_id_seq'), name text UNIQUE, type_meta JSONB, object_meta JSONB, created_at timestamptz DEFAULT now(), updated_at timestamptz);
 CREATE SEQUENCE IF NOT EXISTS origin_mem_id_seq;
 CREATE TABLE IF NOT EXISTS origin_members (id bigint PRIMARY KEY DEFAULT next_id_v1('origin_mem_id_seq'), type_meta JSONB, object_meta JSONB, meta_data JSONB, created_at timestamptz DEFAULT now(), updated_at timestamptz);
-CREATE SEQUENCE IF NOT EXISTS team_id_seq;
-CREATE TABLE IF NOT EXISTS teams (id bigint UNIQUE PRIMARY KEY DEFAULT next_id_v1('team_id_seq'), name text UNIQUE, type_meta JSONB, object_meta JSONB, meta_data JSONB, created_at timestamptz DEFAULT now(), updated_at timestamptz);
 CREATE SEQUENCE IF NOT EXISTS team_mem_id_seq;
 CREATE TABLE IF NOT EXISTS team_members (id bigint PRIMARY KEY DEFAULT next_id_v1('team_mem_id_seq'), type_meta JSONB, object_meta JSONB, meta_data JSONB, created_at timestamptz DEFAULT now(), updated_at timestamptz);
 
@@ -89,42 +87,6 @@ BEGIN
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
----
---- Table:teams:create
----
-CREATE
-OR REPLACE FUNCTION insert_team_v1 (team_name text, origin text, team_object_meta JSONB, team_type_meta JSONB, team_meta_data JSONB, team_mem_type_meta JSONB) RETURNS SETOF teams AS $$
-DECLARE existing_team teams % rowtype;
-inserted_team teams;
-BEGIN
-   SELECT
-      * INTO existing_team
-   FROM
-      teams
-   WHERE
-      name = team_name LIMIT 1;
-IF FOUND
-THEN
-   RETURN NEXT existing_team;
-ELSE
-   INSERT INTO
-      teams (name, type_meta, object_meta, meta_data)
-   VALUES
-      (
-         team_name, team_type_meta, team_object_meta, team_meta_data
-      )
-      ON CONFLICT (name) DO NOTHING RETURNING * into inserted_team;
-PERFORM insert_origin_member_v1(team_mem_type_meta, team_object_meta, json_build_object('team', inserted_team.name, 'origin', origin)::jsonb);
-RETURN NEXT inserted_team;
-RETURN;
-END
-IF;
-RETURN;
-END
-$$ LANGUAGE PLPGSQL VOLATILE;
-
-
----
 --- Table:origins:list_blank
 ---
 CREATE

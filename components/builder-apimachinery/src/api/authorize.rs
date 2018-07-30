@@ -8,6 +8,8 @@ pub struct Roles {
     id: String,
     name: String,
     description: String,
+    account: String,
+    origin: String,
     #[serde(default)]
     created_at: String,
 }
@@ -38,6 +40,20 @@ impl Roles {
 
     pub fn get_description(&self) -> ::std::string::String {
         self.description.clone()
+    }
+    pub fn set_account(&mut self, v: ::std::string::String) {
+        self.account = v;
+    }
+
+    pub fn get_account(&self) -> ::std::string::String {
+        self.account.clone()
+    }
+    pub fn set_origin(&mut self, v: ::std::string::String) {
+        self.origin = v;
+    }
+
+    pub fn get_origin(&self) -> ::std::string::String {
+        self.origin.clone()
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
@@ -190,6 +206,8 @@ mod test {
         let val = r#"{
             "name": "RIOOS:SUPERUSER",
             "description":"superuser of RIO/OS. God given powers.  instance"
+            "account":"1096543234567876",
+            "origin":"dev"
             }"#;
         let role: Roles = json_decode(val).unwrap();
         assert_eq!(role.name, "RIOOS:SUPERUSER");

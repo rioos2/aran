@@ -167,6 +167,15 @@ impl Validator for Roles {
             s.push("description".to_string());
         }
 
+        if self.get_account().len() <= 0 {
+            s.push("account".to_string());
+        }
+
+        if self.get_origin().len() <= 0 {
+            s.push("origin".to_string());
+        }
+
+
         if s.is_empty() {
             return Ok(Box::new(self));
         }

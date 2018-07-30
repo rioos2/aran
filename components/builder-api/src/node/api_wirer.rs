@@ -203,9 +203,6 @@ impl HttpGateway for Wirer {
         let mut origin = deploy::origin::OriginApi::new(ds.clone());
         origin.wire(config.clone(), &mut router);
 
-        let mut team = deploy::team::TeamApi::new(ds.clone());
-        team.wire(config.clone(), &mut router);
-
         let mut role = authorize::role::RoleApi::new(ds.clone());
         role.wire(config.clone(), &mut router);
 
