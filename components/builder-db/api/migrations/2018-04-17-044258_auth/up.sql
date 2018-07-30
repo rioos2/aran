@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS accounts (id bigint UNIQUE PRIMARY KEY DEFAULT next_i
 ---
 
 CREATE
-OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_roles text[], account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, acc_origin_name text, account_avatar BYTEA) RETURNS SETOF accounts AS $$
+OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_roles text[], account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, acc_origin_name text, account_avatar BYTEA, acc_role_id text) RETURNS SETOF accounts AS $$
 DECLARE inserted_account accounts;
   BEGIN
    INSERT INTO
@@ -22,7 +22,7 @@ DECLARE inserted_account accounts;
       )
       ON CONFLICT DO NOTHING RETURNING * INTO inserted_account;
       PERFORM insert_origin_v1(acc_origin_name,'{"kind":"Origin","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb);
-      PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb,json_build_object('team', account_roles[1], 'origin', acc_origin_name)::jsonb);
+      PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb,json_build_object('team', acc_role_id, 'origin', acc_origin_name)::jsonb);
       RETURN NEXT inserted_account;
 RETURN;
 END

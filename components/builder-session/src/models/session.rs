@@ -85,10 +85,12 @@ impl<'a> DataStore<'a> {
         datastore: &DataStoreConn,
         session_create: &session::SessionCreate,
         device: &session::Device,
+        role: &IdGet
     ) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
+
         let query =
-            "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)";
+            "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)";
         let rows = conn.query(
             &query,
             &[
@@ -108,6 +110,7 @@ impl<'a> DataStore<'a> {
                 &(serde_json::to_value(session_create.type_meta()).unwrap()),
                 &(format!("default-{}",rand::random::<u8>().to_string())),
                 &session_create.get_avatar(),
+                &role.get_id(),
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {
@@ -304,6 +307,7 @@ impl<'a> DataStore<'a> {
                             datastore,
                             &mut add_account,
                             &session::Device::new(),
+                            &IdGet::new(),
                         )?;
                         imported_users.push(session.get_email());
                         Ok(session)

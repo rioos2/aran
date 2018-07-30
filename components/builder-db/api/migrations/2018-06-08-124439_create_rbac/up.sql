@@ -20,7 +20,7 @@ BEGIN
          description
       )
       ON CONFLICT DO NOTHING RETURNING * INTO inserted_roles;
-      PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',account)::jsonb,json_build_object('team', inserted_roles.name, 'origin', origin)::jsonb);
+      PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',account)::jsonb,json_build_object('team', inserted_roles.id::text, 'origin', origin)::jsonb);
       RETURN NEXT inserted_roles;
 RETURN;
 END
