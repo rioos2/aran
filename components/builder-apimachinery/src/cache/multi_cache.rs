@@ -69,9 +69,9 @@ impl<K, V> MultiCache<K, V> {
     {
         debug!("« Multi cache PUT: start");
 
-        let mut mparts = self.parts.lock().unwrap();               
+        let mut mparts = self.parts.lock().unwrap();
         mparts.totalsize -= existing_bytes;
-        
+
         while mparts.totalsize + bytes > mparts.maxsize {
             warn!("« Multi cache PUT: cacher max size reached ≈ {:?}", mparts);
             match mparts.hash.pop_front() {
@@ -86,7 +86,7 @@ impl<K, V> MultiCache<K, V> {
             .hash
             .insert(key, MultiCacheItem::new(value, bytes));
         debug!("« Multi cache PUT: End");
-        mparts.totalsize += bytes;        
+        mparts.totalsize += bytes;
     }
 
     /// Get an element from the cache, updating it so it's now the most recently used and
@@ -145,7 +145,7 @@ impl<K, V> MultiCache<K, V> {
         }
 
         false
-    }    
+    }
 }
 
 #[cfg(test)]
@@ -157,9 +157,9 @@ mod tests {
     fn evicts() {
         let cache = MultiCache::new(200);
 
-        cache.put(0, 0, 100);
-        cache.put(1, 1, 100);
-        cache.put(2, 2, 100);
+        cache.put(0, 0, 100, 0);
+        cache.put(1, 1, 100, 0);
+        cache.put(2, 2, 100, 0);
 
         assert_eq!(cache.get(&2), Some(Arc::new(2)));
         assert_eq!(cache.get(&1), Some(Arc::new(1)));
@@ -170,10 +170,10 @@ mod tests {
     fn get_refreshes() {
         let cache = MultiCache::new(200);
 
-        cache.put(0, 0, 100);
-        cache.put(1, 1, 100);
+        cache.put(0, 0, 100, 0);
+        cache.put(1, 1, 100, 0);
         cache.get(&0);
-        cache.put(2, 2, 100);
+        cache.put(2, 2, 100, 0);
 
         assert_eq!(cache.get(&0), Some(Arc::new(0)));
         assert_eq!(cache.get(&1), None);
@@ -184,9 +184,9 @@ mod tests {
     fn aliases() {
         let cache = MultiCache::new(200);
 
-        cache.put(0, 0, 100);
+        cache.put(0, 0, 100,0);
         cache.alias(0, 1);
-        cache.put(2, 2, 100);
+        cache.put(2, 2, 100,0);
 
         assert_eq!(cache.get(&0), Some(Arc::new(0)));
         assert_eq!(cache.get(&1), Some(Arc::new(0)));
@@ -197,14 +197,14 @@ mod tests {
     fn contains() {
         let cache = MultiCache::new(100);
 
-        cache.put(0, 0, 100);
+        cache.put(0, 0, 100, 0);
         cache.alias(0, 1);
 
         assert_eq!(cache.contains_key(&0), true);
         assert_eq!(cache.contains_key(&1), true);
         assert_eq!(cache.contains_key(&2), false);
 
-        cache.put(2, 2, 100);
+        cache.put(2, 2, 100, 0);
 
         assert_eq!(cache.contains_key(&0), false);
         assert_eq!(cache.contains_key(&1), false);
