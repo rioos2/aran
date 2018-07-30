@@ -211,7 +211,7 @@ impl ProceedAuthenticating {
             }
         };
 
-        let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;
+        let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;        
 
         let delegate = AuthenticateDelegate::new(broker.clone());
 

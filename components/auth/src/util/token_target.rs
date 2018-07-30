@@ -3,7 +3,12 @@
 
 use super::super::error::Result;
 use protocol::api::session::SessionGet;
+use base64;
+use base64::decode_config as b64_dec;
+use serde_json::Value as JsonValue;
 use std::fmt;
+use serde_json;
+pub use error::Error;
 
 pub trait TargetValidator: fmt::Display + Into<TokenTarget> {
     fn validate(&self) -> Result<()>;
@@ -14,6 +19,9 @@ pub struct TokenTarget {
     pub email: String,
     pub token: String,
     pub apikey: String,
+    pub org_id: String,
+    pub team_id: String,
+    pub account_id: String,
 }
 
 impl TokenTarget {
@@ -27,6 +35,20 @@ impl TokenTarget {
             email: email,
             token: token,
             apikey: Default::default(),
+            org_id: Default::default(),
+            team_id: Default::default(),
+            account_id: Default::default(),
+        }
+    }
+
+    pub fn new_with_values(email: String, token: String, apikey: String, org_id: String, team_id: String, account_id: String) -> Self {
+        TokenTarget {
+            email: email,
+            token: token,
+            apikey: apikey,
+            org_id: org_id,
+            team_id: team_id,
+            account_id: account_id,
         }
     }
 
@@ -41,6 +63,41 @@ impl TokenTarget {
     pub fn get_apikey(&self) -> ::std::string::String {
         self.apikey.clone()
     }
+
+    pub fn get_org_id(&self) -> ::std::string::String {
+        self.org_id.clone()
+    }
+
+    pub fn get_team_id(&self) -> ::std::string::String {
+        self.team_id.clone()
+    }
+
+    pub fn get_account_id(&self) -> ::std::string::String {
+        self.account_id.clone()
+    }
+
+    pub fn parse(token: String) -> Self {
+        let b64_to_json = |seg| -> Result<JsonValue> {
+            serde_json::from_slice(b64_dec(seg, base64::STANDARD)?.as_slice()).map_err(Error::from)
+        };
+        println!("{}", token);
+        match b64_to_json(&token) {
+            Ok(res) => {
+                TokenTarget::new_with_values(
+                    res["email"].to_string(), 
+                    res["api_token"].to_string(), 
+                    "".to_string(), 
+                    res["org_id"].to_string(), 
+                    res["team_id"].to_string(), 
+                    res["account_id"].to_string()
+                )
+            }
+            Err(err) => {               
+                TokenTarget::new_with_values("".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string())
+            }
+        }
+    }
+
 }
 
 impl fmt::Display for TokenTarget {

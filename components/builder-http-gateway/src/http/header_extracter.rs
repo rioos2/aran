@@ -13,6 +13,7 @@ use auth::config::PLUGIN_JWT;
 use auth::config::{PLUGIN_PASSTICKET, PLUGIN_PASSWORD, PLUGIN_SERVICE_ACCOUNT};
 
 use auth::util::authenticatable::Authenticatable;
+use auth::util::token_target::TokenTarget;
 
 //A trait responsible for extracting the identity plugin headers.
 pub trait HeaderExtracter {
@@ -49,6 +50,29 @@ impl HeaderExtracter for EmailHeader {
             return Some(Authenticatable::UserEmailAndToken {
                 email: email.unwrap().0.clone(),
                 token: token,
+            });
+        }
+        None
+    }
+}
+
+struct RioTokenHeader {}
+
+//A trait responsible for extracting the riotoken header
+impl HeaderExtracter for RioTokenHeader {
+    const AUTH_CONF_NAME: &'static str = "email";
+
+    fn extract(
+        req: iron::Headers,
+        token: String,
+        _config_value: Option<&String>,
+    ) -> Option<Authenticatable> {        
+
+        let token_target = TokenTarget::parse(token);       
+        if !token_target.email.is_empty() {
+            return Some(Authenticatable::UserEmailAndToken {
+                email: token_target.email,
+                token: token_target.token,
             });
         }
         None
@@ -143,7 +167,12 @@ impl HeaderDecider {
         let scrappers = plugins
             .into_iter()
             .map(|p| match p.as_str() {
-                PLUGIN_PASSWORD => EmailHeader::extract(
+                /*PLUGIN_PASSWORD => EmailHeader::extract(
+                    req.clone(),
+                    token.to_string(),
+                    EmailHeader::exists_conf_key().and_then(|x| conf.get(&x)),
+                ),*/
+                PLUGIN_PASSWORD => RioTokenHeader::extract(
                     req.clone(),
                     token.to_string(),
                     EmailHeader::exists_conf_key().and_then(|x| conf.get(&x)),
