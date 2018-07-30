@@ -11,16 +11,19 @@ CREATE TABLE IF NOT EXISTS accounts (id bigint UNIQUE PRIMARY KEY DEFAULT next_i
 ---
 
 CREATE
-OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_roles text[], account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, account_avatar BYTEA) RETURNS SETOF accounts AS $$
-BEGIN
-   RETURN QUERY
+OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_roles text[], account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, acc_origin_name text, account_avatar BYTEA, acc_role_id text) RETURNS SETOF accounts AS $$
+DECLARE inserted_account accounts;
+  BEGIN
    INSERT INTO
       accounts ( email, first_name, last_name, phone, api_key, password, approval, suspend, roles, registration_ip_address, trust_level, company_name, object_meta, type_meta, avatar)
    VALUES
       (
          account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password, account_approval, account_suspend, account_roles, account_registration_ip_address, account_trust_level, account_company_name, account_object_meta, account_type_meta, account_avatar
       )
-      ON CONFLICT DO NOTHING RETURNING *;
+      ON CONFLICT DO NOTHING RETURNING * INTO inserted_account;
+      PERFORM insert_origin_v1(acc_origin_name,'{"kind":"Origin","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb);
+      PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',inserted_account.id::text)::jsonb,json_build_object('team', acc_role_id, 'origin', acc_origin_name)::jsonb);
+      RETURN NEXT inserted_account;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;

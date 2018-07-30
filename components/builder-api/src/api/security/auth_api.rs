@@ -20,12 +20,13 @@ use http_gateway::util::errors::{
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;
-use protocol::api::base::MetaFields;
+use protocol::api::base::{MetaFields,IdGet};
 use protocol::api::schema::{dispatch, type_meta};
 use protocol::api::session::*;
 use rand;
 use router::Router;
 use session::models::session as sessions;
+use authorize::models::role;
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -115,9 +116,18 @@ impl AuthenticateApi {
             ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => {
-                match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device) {
-                    Ok(account) => Ok(render_json(status::Ok, &account)),
+                match role::DataStore::role_show_by_name(&self.conn, &IdGet::with_id(unmarshall_body.get_roles()[0].to_string())) {
                     Err(err) => Err(internal_error(&format!("{}", err))),
+                    Ok(None) => Err(not_found_error(&format!(
+                        "{} for roles",
+                        Error::Db(RecordsNotFound)
+                    ))),
+                    Ok(Some(roles)) => {
+                        match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device, &IdGet::with_id(roles.get_id())) {
+                            Ok(account) => Ok(render_json(status::Ok, &account)),
+                            Err(err) => Err(internal_error(&format!("{}", err))),
+                        }
+                    }
                 }
             }
         }

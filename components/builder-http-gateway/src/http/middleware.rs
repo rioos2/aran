@@ -103,7 +103,7 @@ impl XHandler {
 
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
-        ///// Maybe move this Request to a seperate method.        
+        ///// Maybe move this Request to a seperate method.
         debug!("{}", format!("→ ------------------------------------------------------------------------------------"));
         debug!("{}", format!("======= {}:{}:{}", req.version, req.method, req.url));
         debug!("{}", "Headers:");
@@ -241,7 +241,6 @@ impl URLGrabber {
         "RIOOS.ROLES.POST",
         "RIOOS.PERMISSIONS.GET",
         "RIOOS.PERMISSIONS.POST",
-        "RIOOS.TEAMS.POST",
         "RIOOS.ORIGINS.GET",
         "RIOOS.ORIGINS.POST",
         "RIOOS.ORIGINS.*.SECRETS.POST",

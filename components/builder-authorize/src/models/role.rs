@@ -18,10 +18,12 @@ impl DataStore {
     pub fn roles_create(datastore: &DataStoreConn, roles: &Roles) -> RolesOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_role_v1 ($1,$2)",
+            "SELECT * FROM insert_role_v1 ($1,$2,$3,$4)",
             &[
                 &(roles.get_name() as String),
                 &(roles.get_description() as String),
+                &(roles.get_account() as String),
+                &(roles.get_origin() as String),
             ],
         ).map_err(Error::RolesCreate)?;
 
@@ -81,13 +83,11 @@ fn row_to_roles(row: &postgres::rows::Row) -> Result<Roles> {
     let mut roles = Roles::new();
 
     let id: i64 = row.get("id");
-    let name: String = row.get("name");
-    let description: String = row.get("description");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
     roles.set_id(id.to_string() as String);
-    roles.set_name(name as String);
-    roles.set_description(description as String);
+    roles.set_name(row.get("name"));
+    roles.set_description(row.get("description"));
     roles.set_created_at(created_at.to_rfc3339());
 
     Ok(roles)

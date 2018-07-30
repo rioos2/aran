@@ -14,7 +14,6 @@ pub mod error;
 pub mod ldap;
 pub mod models;
 pub mod origin_ds;
-pub mod team_ds;
 pub use self::error::{Error, Result};
 
 //// The public types of outputs
