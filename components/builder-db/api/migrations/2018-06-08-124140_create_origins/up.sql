@@ -119,6 +119,26 @@ END
 $$ LANGUAGE PLPGSQL STABLE;
 
 ---
+--- Table:origins:list_by_account
+---
+
+CREATE
+OR REPLACE FUNCTION get_origin_by_account_v1 (account_id text) RETURNS SETOF origins AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      origins
+   WHERE
+      object_meta ->> 'account' = account_id;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+
+
+---
 --- Table:origin_members:show_members_for_origin
 ---
 CREATE
