@@ -288,7 +288,7 @@ impl Api for SecretApi {
 
         //secret API
         router.post(
-            "/accounts/:account_id/secrets",
+            "/secrets",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "secrets",
         );
@@ -296,7 +296,7 @@ impl Api for SecretApi {
         //MEGAM
         //without authentication
         router.post(
-            "/origins/:origin_id/secrets",
+            "/secrets/origins/:origin_id",
             XHandler::new(C {
                 inner: create_by_origin,
             }),
@@ -311,7 +311,7 @@ impl Api for SecretApi {
         //without authentication
 
         router.get(
-            "/secrets",
+            "/secrets/all",
             XHandler::new(C { inner: list_blank }),
             "secrets_list",
         );
@@ -321,7 +321,7 @@ impl Api for SecretApi {
             "secret_show",
         );
         router.get(
-            "/accounts/:account_id/secrets",
+            "/secrets",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "secret_show_by_account",
         );
@@ -329,7 +329,7 @@ impl Api for SecretApi {
         //MEGAM
         //without authentication
         router.get(
-            "/origins/:origin_id/secrets",
+            "/secrets/origins/:origin_id",
             C {
                 inner: list_by_origin,
             },
@@ -343,7 +343,7 @@ impl Api for SecretApi {
             "secret_show_by_origin_name",
         );*/
         router.get(
-            "/origins/:origin/secrets/:secret_name",
+            "/secrets/:secret_name/origins/:origin",
             C {
                 inner: show_by_org_and_name,
             },

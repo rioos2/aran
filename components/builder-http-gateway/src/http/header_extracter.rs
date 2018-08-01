@@ -59,6 +59,16 @@ impl HeaderExtracter for EmailHeader {
 struct RioTokenHeader {}
 
 //A trait responsible for extracting the riotoken header
+//Riotoken format
+// {
+//   "email" : "info@riocorp.io",
+//   "api_token" : "HgbANWOErPnDbOOTDW",
+//   "orgin_id" : "987286487564875", 
+//   "team_id" : "7634587687267",
+//   "account_id" : "1038115606378848256",
+//}
+//riotoken is only for user authentication
+//it is used for origin and team based requests
 impl HeaderExtracter for RioTokenHeader {
     const AUTH_CONF_NAME: &'static str = "email";
 
@@ -67,12 +77,13 @@ impl HeaderExtracter for RioTokenHeader {
         token: String,
         _config_value: Option<&String>,
     ) -> Option<Authenticatable> {        
+        let email = req.get::<XAuthRioOSEmail>();
+        let token_target = TokenTarget::parse(token);  
 
-        let token_target = TokenTarget::parse(token);       
-        if !token_target.email.is_empty() {
+        if !email.is_none() {
             return Some(Authenticatable::UserEmailAndToken {
-                email: token_target.email,
-                token: token_target.token,
+                email: email.unwrap().0.clone(),
+                token: token_target.get_token(),
             });
         }
         None

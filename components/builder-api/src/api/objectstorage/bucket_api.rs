@@ -112,19 +112,12 @@ impl Api for ObjectStorageApi {
         let download = move |req: &mut Request| -> AranResult<Response> { _self.download(req) };
 
         router.post(
-            "/accounts/:account_id/buckets",
+            "/buckets",
             XHandler::new(C {
                 inner: create.clone(),
             }).before(basic.clone()),
             "account_buckets_create",
-        );
-        router.get(
-            "/accounts/:account_id/buckets",
-            XHandler::new(C {
-                inner: list_blank.clone(),
-            }).before(basic.clone()),
-            "account_buckets_list",
-        );
+        );        
         router.get(
             "/buckets",
             XHandler::new(C {
@@ -133,12 +126,12 @@ impl Api for ObjectStorageApi {
             "buckets_list",
         );
         router.get(
-            "/accounts/:account_id/buckets/:id/files/:name/upload",
+            "/buckets/:id/files/:name/upload",
             XHandler::new(C { inner: upload }).before(basic.clone()),
             "buckets_upload",
         );
         router.get(
-            "/accounts/:account_id/buckets/:id/files/:name/download",
+            "/buckets/:id/files/:name/download",
             XHandler::new(C { inner: download }).before(basic.clone()),
             "buckets_download",
         );

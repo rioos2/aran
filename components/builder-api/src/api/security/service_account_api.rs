@@ -177,7 +177,7 @@ impl Api for SeriveAccountApi {
 
         //serviceAccount API
         router.post(
-            "/origins/:origin_id/serviceaccounts",
+            "/serviceaccounts",
             XHandler::new(C { inner: create }),
             "service_accounts",
         );
@@ -187,7 +187,7 @@ impl Api for SeriveAccountApi {
             "service_account_list",
         );
         router.get(
-            "/origins/:origin_id/serviceaccounts/:serviceaccount",
+            "/serviceaccounts/:serviceaccount/origins/:origin_id",
             C {
                 inner: show_by_origin,
             },
@@ -195,7 +195,7 @@ impl Api for SeriveAccountApi {
         );
 
         router.put(
-            "/origins/:origin_id/serviceaccounts/:serviceaccount",
+            "/serviceaccounts/:serviceaccount/origins/:origin_id",
             C {
                 inner: secret_update,
             },

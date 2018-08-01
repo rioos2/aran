@@ -61,7 +61,7 @@ impl TrustAccess {
     pub fn new(name: String) -> TrustAccess {
         if name.contains(".") {
             let x = name.split(".").collect::<Vec<_>>();
-            return TrustAccess(TrustResource::from_str(x[1]), TrustLevel::from_str(x[2]));
+            return TrustAccess(TrustResource::from_str(x[0]), TrustLevel::from_str(x[1]));
         }
         TrustAccess(TrustResource::Wild, TrustLevel::ResourceWild)
     }
@@ -170,7 +170,7 @@ impl Into<TrustAccess> for Permissions {
         let name = self.get_name();
         if name.contains(".") {
             let x = name.split(".").collect::<Vec<_>>();
-            return TrustAccess(TrustResource::from_str(x[1]), TrustLevel::from_str(x[2]));
+            return TrustAccess(TrustResource::from_str(x[0]), TrustLevel::from_str(x[1]));
         }
         TrustAccess(TrustResource::Wild, TrustLevel::ResourceWild)
     }

@@ -14,13 +14,18 @@ pub trait TargetValidator: fmt::Display + Into<TokenTarget> {
     fn validate(&self) -> Result<()>;
 }
 
-#[derive(Eq, PartialEq, Debug, Clone, Hash)]
+#[derive(Deserialize, Eq, PartialEq, Debug, Clone, Hash)]
 pub struct TokenTarget {
+    #[serde(default)]
     pub email: String,
     pub token: String,
+    #[serde(default)]
     pub apikey: String,
+    #[serde(default)]
     pub org_id: String,
+    #[serde(default)]
     pub team_id: String,
+    #[serde(default)]
     pub account_id: String,
 }
 
@@ -76,23 +81,18 @@ impl TokenTarget {
         self.account_id.clone()
     }
 
+    //parse riotoken 
+    // and convert it to TokenTarget form
     pub fn parse(token: String) -> Self {
-        let b64_to_json = |seg| -> Result<JsonValue> {
+        let b64_to_json = |seg| -> Result<TokenTarget> {
             serde_json::from_slice(b64_dec(seg, base64::STANDARD)?.as_slice()).map_err(Error::from)
         };
-        println!("{}", token);
         match b64_to_json(&token) {
-            Ok(res) => {
-                TokenTarget::new_with_values(
-                    res["email"].to_string(), 
-                    res["api_token"].to_string(), 
-                    "".to_string(), 
-                    res["org_id"].to_string(), 
-                    res["team_id"].to_string(), 
-                    res["account_id"].to_string()
-                )
+            Ok(res) => {              
+                res
             }
-            Err(err) => {               
+            Err(err) => {      
+                debug!("« TokenTarget parse Error : {:?}", err); 
                 TokenTarget::new_with_values("".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string())
             }
         }

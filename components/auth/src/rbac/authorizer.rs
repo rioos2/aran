@@ -5,6 +5,7 @@ use rbac::account;
 use protocol::api::session;
 use rbac::roles::{Roles, TrustAccess};
 
+
 #[derive(Clone, Debug)]
 pub enum RoleNames {
     USERACCOUNT,
@@ -51,7 +52,7 @@ impl Authorization {
     //And get permissions by role name and verify it.
     //Now we assume account/service_account has only one role.
     //In future we could extend it.
-    pub fn verify(self, role_type: RoleType, incoming_to_trust: String) -> Result<bool> {
+    pub fn verify(self, role_type: RoleType, incoming_to_trust: String) -> Result<bool> {        
         let role_box: Option<String> = match role_type.account {
             RoleNames::USERACCOUNT => {
                 let mut account_get = session::AccountGet::new();
@@ -68,7 +69,6 @@ impl Authorization {
                 None
             }
         };
-
 
         let role = match role_box {
             Some(r) => r,

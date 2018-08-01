@@ -128,11 +128,7 @@ impl Api for JobApi {
 
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
-
-        let _self = self.clone();
-        let service_account_based_create =
-            move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
-
+        
         let _self = self.clone();
         let status_update =
             move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
@@ -149,15 +145,7 @@ impl Api for JobApi {
             "/jobs",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "jobs",
-        );
-
-        router.post(
-            "serviceaccounts/:service_name/jobs",
-            XHandler::new(C {
-                inner: service_account_based_create,
-            }).before(basic.clone()),
-            "jobs_create",
-        );
+        );        
         router.put(
             "/jobs/:id/status",
             XHandler::new(C {
