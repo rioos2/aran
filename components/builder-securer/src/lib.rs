@@ -7,6 +7,7 @@ extern crate postgres;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
 extern crate serde_json;
+extern crate rand;
 
 pub mod error;
 pub mod models;

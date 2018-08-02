@@ -39,6 +39,7 @@ lazy_static! {
 
         map.register("POST:origins", "Origin");
         map.register("GET:origins", "OriginList");
+        map.register("GET:accountsorigins", "OriginList");
 
         map.register("POST:storageconnectors", "Storage");
         map.register("GET:storageconnectors", "StorageList");

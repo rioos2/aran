@@ -21,6 +21,7 @@ use protocol::api::service_account::ServiceAccount;
 use router::Router;
 use serde_json;
 use service::models::service_account;
+use authorize::models::role;
 use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
@@ -64,11 +65,22 @@ impl SeriveAccountApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match service_account::DataStore::create(&self.conn, &unmarshall_body) {
-            Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+        match role::DataStore::role_show_by_name(&self.conn, &IdGet::with_id(unmarshall_body.get_roles()[0].to_string())) {
             Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for roles",
+                Error::Db(RecordsNotFound)
+            ))),
+            Ok(Some(roles)) => {
+                match service_account::DataStore::create(&self.conn, &unmarshall_body, &IdGet::with_id(roles.get_id())) {
+                    Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
+                    Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+                    Err(err) => Err(internal_error(&format!("{}", err))),
+                }
+            }
         }
+
+
     }
     //GET: /serviceaccount
     //Blank origin: Returns all the serviceaccount(irrespective of namespaces)
