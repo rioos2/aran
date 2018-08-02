@@ -13,21 +13,17 @@ lazy_static! {
         let mut map = DispatchTable::new();
         map.register("POST:accounts", "Account");
 
-        map.register("POST:accountsassemblyfactorys", "AssemblyFactory");
-        map.register("GET:accountsassemblyfactorys", "AssemblyFactoryList");
+        map.register("POST:assemblyfactorys", "AssemblyFactory");
         map.register("GET:assemblyfactorys", "AssemblyFactoryList");
 
-        map.register("POST:accountsstacksfactorys", "StacksFactory");
-        map.register("GET:accountsstacksfactorys", "StacksFactoryList");
+        map.register("POST:stacksfactorys", "StacksFactory");
         map.register("GET:stacksfactorys", "StacksFactoryList");
 
         map.register("POST:plans", "PlanFactory");
         map.register("GET:plans", "PlanFactoryList");
 
         map.register("POST:assemblys", "Assembly");
-        map.register("POST:accountsassemblys", "Assembly");
         map.register("GET:assemblys", "AssemblyList");
-        map.register("GET:accountsassemblys", "AssemblyList");
         map.register("GET:assemblyfactorysdescribe", "AssemblyList");
         map.register("GET:stacksfactorysdescribe", "AssemblyFactoryList");
 
@@ -54,7 +50,6 @@ lazy_static! {
         map.register("GET:datacenters", "DatacenterList");
 
         map.register("POST:jobs", "Job");
-        map.register("POST:serviceaccountsjobs", "Job");
         map.register("GET:jobs", "JobList");
         map.register("GET:jobsnode", "JobList");
 
@@ -68,10 +63,10 @@ lazy_static! {
         map.register("GET:endpoints", "EndPointList");
         map.register("GET:endpointsassembly", "EndPointList");
 
-        map.register("POST:originsserviceaccounts", "ServiceAccount");
-        map.register("PUT:originsserviceaccounts", "ServiceAccount");
+        map.register("POST:serviceaccounts", "ServiceAccount");
+        map.register("PUT:serviceaccountsorigins", "ServiceAccount");
 
-        map.register("GET:originsserviceaccounts", "ServiceAccount");
+        map.register("GET:serviceaccountsorigins", "ServiceAccount");
         map.register("GET:serviceaccounts", "ServiceAccountList");
 
         map.register("GET:roles", "RoleList");
@@ -79,7 +74,7 @@ lazy_static! {
         map.register("GET:permissionsroles", "PermissionList");
 
         map.register("POST:volumes", "Volume");
-        map.register("GET:assemblysvolumes", "VolumeList");
+        map.register("GET:volumesassemblys", "VolumeList");
 
         map.register("POST:horizontalscaling", "HorizontalScaling");
         map.register("GET:horizontalscaling", "HorizontalScalingList");
@@ -91,12 +86,12 @@ lazy_static! {
         map.register("GET:verticalscaling", "VerticalScalingList");
         map.register("GET:verticalscalingmetrics", "ScalingMetricList");
 
-        map.register("POST:accountssecrets", "Secret");
-        map.register("POST:originssecrets", "Secret");
+        map.register("POST:secrets", "Secret");
+        map.register("POST:secretsorigins", "Secret");
 
-        map.register("GET:accountssecrets", "SecretList");
-        map.register("GET:originssecrets", "SecretList");
         map.register("GET:secrets", "SecretList");
+        map.register("GET:secretsorigins", "SecretList");
+        map.register("GET:secretsall", "SecretList");
 
         map.register("POST:settingsmap", "SettingsMap");
 

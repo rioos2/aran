@@ -131,7 +131,7 @@ impl Api for SettingsMapApi {
             "settingsmap",
         );
         router.get(
-            "/settingsmap/:name",
+            "/settingsmap/:name/origins/:origin",
             XHandler::new(C { inner: show }).before(basic.clone()),
             "settingsmap_show",
         );
