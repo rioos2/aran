@@ -33,11 +33,31 @@ impl OriginDS {
         Ok(None)
     }
 
-    pub fn list(datastore: &DataStoreConn) -> OriginOutputList {
+    pub fn list_blank(datastore: &DataStoreConn) -> OriginOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query("SELECT * FROM get_origins_v1()", &[])
             .map_err(Error::OriginGetResponse)?;
+
+        let mut response = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_origin(&row)?)
+            }
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+
+    pub fn list(datastore: &DataStoreConn, get_account: &IdGet) -> OriginOutputList {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_origin_by_account_v1($1)",
+            &[&(get_account.get_name() as String)]
+            ).map_err(Error::OriginGet)?;
 
         let mut response = Vec::new();
 

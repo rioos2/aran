@@ -10,6 +10,7 @@ use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
 use protocol::api::{base, service_account};
 use serde_json;
+use rand;
 use protocol::cache::InMemoryExpander;
 use protocol::cache::PULL_DIRECTLY;
 
@@ -31,16 +32,19 @@ impl<'a> DataStore<'a> {
     pub fn create(
         datastore: &DataStoreConn,
         service_create: &service_account::ServiceAccount,
+        role: &IdGet,
     ) -> ServiceAccountOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_service_account_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM insert_service_account_v1($1,$2,$3,$4,$5,$6,$7)",
             &[
                 &(serde_json::to_value(&service_create.get_secrets()).unwrap()),
                 &(serde_json::to_value(&service_create.object_meta()).unwrap()),
                 &(serde_json::to_value(&service_create.type_meta()).unwrap()),
                 &(serde_json::to_value(&service_create.get_metadata()).unwrap()),
                 &(service_create.get_roles() as Vec<String>),
+                &(format!("default-{}",rand::random::<u8>().to_string())),
+                &(role.get_id() as String),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
         if rows.len() > 0 {
@@ -75,7 +79,7 @@ impl<'a> DataStore<'a> {
 
     pub fn get_service_account_by_name_fascade(&self, get_service: &base::IdGet) -> service_account::ServiceAccountRoles {
         let mut account = service_account::ServiceAccountRoles::new();
-        account.set_name(get_service.get_id().clone());       
+        account.set_name(get_service.get_id().clone());
         self.expander
             .with_service_account(&mut account, PULL_DIRECTLY);
         account

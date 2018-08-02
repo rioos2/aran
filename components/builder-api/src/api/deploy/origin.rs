@@ -76,11 +76,26 @@ impl OriginApi {
     //GET: /origins
     //Every user will be able to list their own origin.
     //Will need roles/permission to access others origin.
-    fn list(&self, req: &mut Request) -> AranResult<Response> {
-        match OriginDS::list(&self.conn) {
+    fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
+        match OriginDS::list_blank(&self.conn) {
             Ok(Some(origins)) => Ok(render_json_list(status::Ok, dispatch(req), &origins)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+        }
+    }
+
+    //Input account id as input and returns a origins
+    fn list(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_account(req)?;
+
+        match OriginDS::list(&self.conn, &params) {
+            Ok(Some(origins)) => Ok(render_json_list(status::Ok, dispatch(req), &origins)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_name()
+            ))),
         }
     }
 
@@ -109,7 +124,7 @@ impl OriginApi {
             Ok(Some(origin)) => {
                 let data = json!({
                             "type": typ,
-                            "data": origin,      
+                            "data": origin,
                             });
                 serde_json::to_string(&data).unwrap()
             }
@@ -127,6 +142,9 @@ impl Api for OriginApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
+        let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
+
+        let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
@@ -141,7 +159,14 @@ impl Api for OriginApi {
 
         //TODO
         //without authentication
-        router.get("/origins", XHandler::new(C { inner: list }), "origin_list");
+        router.get("/origins", XHandler::new(C { inner: list_blank }), "origin_list");
+
+        router.get(
+            "accounts/:account_id/origins",
+            XHandler::new(C { inner: list }).before(basic.clone()),
+            "origin_list_by_account"
+         );
+
 
         //TODO
         //without authentication
