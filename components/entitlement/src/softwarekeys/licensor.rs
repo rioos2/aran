@@ -59,6 +59,9 @@ const SK_FLAGS_USE_SIGNATURE: c_int = 0x00020000;
 //If specified when calling SK_ApiContextDispose, the PLUSNative API will shutdown and free all memory.
 const SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
 
+const PRODUCTS: [&'static str; 2] = ["senseis", "ninjas"];
+
+
 //The LicenseFile.lfx is generated upon registration in SoftwareKey.com
 lazy_static! {
     static ref LICENSEFILE: PathBuf =
@@ -331,8 +334,7 @@ impl NativeSDK {
         let is_valid_remote: bool = self.validate()?;
         if self.is_evaluation()? {
             if is_valid_remote {
-                let name = vec!["senseis", "ninjas"];
-                for x in name {
+                for x in PRODUCTS.iter() {
                     self.create_trial_in_db(TRIAL.to_string(), self.get_days_remaining()?.to_string(), x);
                 }
             } else {
