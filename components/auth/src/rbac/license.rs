@@ -8,10 +8,9 @@ use protocol::api::licenses::{Licenses, LicenseStatus};
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_LICENSE};
 
 
-/// permission fascade: Permissions provides ability to declare the Permissions
+/// LicensesFascade fascade: Licenses provides ability to verify the license
 /// and manage them.
 /// Needs a Datastore mapper, hence a DataStoreConn needs to be sent in.
-//
 #[derive(Clone)]
 pub struct LicensesFascade {
     pub conn: Box<DataStoreConn>,

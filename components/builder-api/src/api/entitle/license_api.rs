@@ -21,9 +21,6 @@ use protocol::api::schema::{type_meta, dispatch};
 use router::Router;
 use std::sync::Arc;
 
-const LICENSE_STATUS_ACTIVATING: &'static str = "activating";
-
-
 #[derive(Clone)]
 pub struct LicenseApi {
     conn: Box<DataStoreConn>,
@@ -51,18 +48,19 @@ impl LicenseApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        if unmarshall_body.get_password().len() > 0 && unmarshall_body.get_license_id().len()> 0 {
-            activate_license!(req, *unmarshall_body.clone());
+        activate_license!(req, *unmarshall_body.clone());
+
+        if unmarshall_body.get_activation_completed() {
+            try!(DataStore::new(&self.conn).update_activation(
+                &unmarshall_body,
+            ));
         }
 
         debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match DataStore::new(&self.conn).update_license_status(&unmarshall_body) {
-            Ok(license) => Ok(render_json(status::Ok, &license)),
-            Err(err) => Err(internal_error(&format!("{}\n", err))),
-        }
+        Ok(render_json(status::Ok, &unmarshall_body))
     }
 
     //GET: /license/:name
@@ -169,10 +167,6 @@ impl Validator for Licenses {
 
         if self.object_meta().name.len() <= 0 {
             s.push("name".to_string());
-        }
-
-        if self.get_product().len() <= 0 {
-            s.push("product".to_string());
         }
 
         if s.is_empty() {

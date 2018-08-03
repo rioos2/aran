@@ -64,34 +64,20 @@ impl Node {
             }
         };
 
-        // let mut license = license::LicensesFascade::new(ds.clone());
-        // license.with_cache();
-        //
-        // let so_file = self.config.licenses.so_file.clone();
-        //
-        // let lib = lib_load::Library::new(&rioconfig_license_path(None).join(so_file))?;
-        //
-        // let mut data = NativeSDK::new_api_context(lib, license);
-        // data.initialize_license()?;
-        // data.load_license()?;
-
-
-
         let rg = runtime::Runtime::new(self.config.clone(), self.create_licensor(ds.clone())?);
-
 
         let api_sender = rg.channel();
 
         ui.end("✓ Runtime Guard");
 
-        ui.begin("→ Api Srver");
+        ui.begin("→ Api Gateway");
         &rg.start()?;
 
         api_wirer::ApiSrv::new(self.config.clone()).start(
             api_sender,
             ds.clone(),
         )?;
-        ui.end("✓ Api Srver");
+        ui.end("✓ Api Gateway");
 
         ui.begin("→ Streamer");
         streamer::Streamer::new(self.config.http2.port, self.config.clone())
@@ -105,7 +91,9 @@ impl Node {
 
         Ok(())
     }
-
+    /*This function creates the native API context with software key.
+      Needs a cache with access to database
+      The Native.so file is loaded and provided as input */
     fn create_licensor(&self, ds: Box<DataStoreConn>) -> Result<NativeSDK> {
         let mut license = license::LicensesFascade::new(ds.clone());
         license.with_cache();
@@ -113,10 +101,8 @@ impl Node {
 
         let lib = lib_load::Library::new(&rioconfig_license_path(None).join(so_file))?;
 
-        let mut sdk = NativeSDK::new_api_context(lib, license);
-        sdk.initialize_license()?;
-        sdk.load_license()?;
-
+        let mut sdk = NativeSDK::new(lib, license);
+        sdk.initialize_api_context()?;
         Ok(sdk)
 
     }

@@ -34,6 +34,7 @@ const SETTINGSMAP: &'static str = "SETTINGSMAP";
 const SERVICEACCOUNT: &'static str = "SERVICEACCOUNTS";
 const PING: &'static str = "PING";
 const SENSEI: &'static str = "SENSEIS";
+const LICENSE: &'static str = "LICENSES";
 
 const RESOURCE_GET: &'static str = "GET";
 const RESOURCE_POST: &'static str = "POST";
@@ -89,10 +90,10 @@ impl TrustAccess {
         match flag {
             true => Ok(flag),
             false => {
-                Err(Error::PermissionError(format!(
-                "User doesn't have permission for this operation."
-            )))
-            },
+                Err(Error::PermissionError(
+                    format!("User doesn't have permission for this operation."),
+                ))
+            }
         }
     }
 }
@@ -150,6 +151,7 @@ enum TrustResource {
     Ingresses,
     Ping,
     Sensei,
+    License,
     None,
 }
 
@@ -183,7 +185,7 @@ impl TrustResource {
             ALL => TrustResource::Wild,
             ASSEMBLY => TrustResource::Assembly,
             ASSEMBLYFACTORY => TrustResource::AssemblyFactory,
-            STACKSFACTORY=> TrustResource::StacksFactory,
+            STACKSFACTORY => TrustResource::StacksFactory,
             SERVICEACCOUNT => TrustResource::ServiceAccount,
             HORIZONTALSCALING => TrustResource::HorizontalScaling,
             VERTICALSCALING => TrustResource::VerticalScaling,
@@ -210,8 +212,8 @@ impl TrustResource {
             HEALTHZ => TrustResource::Healthz,
             INGRESSES => TrustResource::Ingresses,
             PING => TrustResource::Ping,
-            SENSEI =>TrustResource::Sensei,
-
+            SENSEI => TrustResource::Sensei,
+            LICENSE => TrustResource::License,
             _ => TrustResource::None,
         }
     }
