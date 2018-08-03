@@ -77,7 +77,7 @@ impl Node {
             api_sender,
             ds.clone(),
         )?;
-        ui.end("✓ Api Srver");
+        ui.end("✓ Api Gateway");
 
         ui.begin("→ Streamer");
         streamer::Streamer::new(self.config.http2.port, self.config.clone())
@@ -103,8 +103,6 @@ impl Node {
 
         let mut sdk = NativeSDK::new(lib, license);
         sdk.initialize_api_context()?;
-        sdk.load_license()?;
-
         Ok(sdk)
 
     }

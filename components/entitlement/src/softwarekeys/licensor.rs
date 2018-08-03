@@ -28,16 +28,31 @@ lazy_static! {
             .to_str()
             .unwrap());
 }
-
+//ID of the RIOOS product
 const PRODUCT_ID: c_int = 409264;
-
+//Option_id is the id of sub product of the RIOOS product.
+//We have use multiple sub product such as senseis,ninjas
 const PRODUCT_OPTION_ID: c_int = 0;
-
+//ENVELOPE is encrypted data from solo-server for unoque identification
 const ENVELOPE: &'static str = "_EVALUATION_EXPIRES_2018-09-20_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";
-
+//ENVELOPEkey is encrypted data from solo-server for unoque identification
 const ENVELOPE_KEY: &'static str = "_EVALUATION_EXPIRES_2018-09-20_nlZW/s6JCUNiKeKvwqKBH5siPNxGFcNZdfdOZhaETsL1kG0uV3xHHiY7Vm06Oipn";
-
+const PROVIDER: &'static str = "SoftwareKey";
 const VERSION: &'static str = "";
+//url to get the installation id
+const NOT_CONSIDER_INSTALATION: &'static str = "/SoftwareKey/PrivateData/License/InstallationID";
+//url to check the status of the license using triggercode
+const TRIGGER_CODE_URL: &'static str = "/SoftwareKey/PrivateData/License/TriggerCode";
+//url to get the license start date
+const EFFIECTIVE_START_DATE_URL: &'static str = "/SoftwareKey/PrivateData/License/EffectiveStartDate";
+//url to get the license end date
+const EFFIECTIVE_END_DATE_URL: &'static str = "/SoftwareKey/PrivateData/License/EffectiveEndDate";
+//url to get the license data
+const LICENSE_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/License";
+//url to get the license errorMsg
+const ERROR_MESSAGE_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/ErrorMessage";
+//url to get the license activation left
+const ACTIVATION_LEFT_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/ActivationsLeft";
 
 const SK_FLAGS_NONE: c_int = 0x00000000;
 const SK_FLAGS_USE_SSL: c_int = 0x00040000;
@@ -50,13 +65,13 @@ pub struct NativeSDK {
     context: SK_ApiContext, //The API Context may only represent a single License File.
     cache: LicensesFascade, // A cache backed by database to pull License
     license_file: SK_XmlDoc, //Handle to an XML document in memory.
+    licenseFilePath: String, //file path to load the license
     isLoaded: bool, //represent the license file is loaded or not
-    isWritable: bool, //set read and write permission for license file
-    licenseFilePath: String, //file path of license which is loaded in directory
+    isWritable: bool, //set read and write permission for license fil
     provider: String, //license provider name
-    activation: i32,
-    status: String,
-    remaining_days: String,
+    activation: i32, //activation left for the license
+    status: String, // status of the the license
+    remaining_days: String, //remaining_days of the license
 }
 
 impl NativeSDK {
@@ -69,7 +84,7 @@ impl NativeSDK {
             isLoaded: false,
             isWritable: false,
             licenseFilePath: "".to_string(),
-            provider: "SoftwareKey".to_string(),
+            provider: PROVIDER.to_string(),
             activation: 0,
             status: TRIAL.to_string(),
             remaining_days: "".to_string(),
@@ -78,8 +93,7 @@ impl NativeSDK {
     //Initializes a new API Context, which may be used to open and manipulate a license file.
     //1.init_fn initial the SK_INIT and verifies if a symbol by name SK_INIT exists
     //2.set_fn_str set the SK_SET string value to the API context (link)
-    //3.invoke init_fn funtion with as per(link)
-    //
+    //3.invoke init_fn funtion with as per refer doc (https://www.softwarekey.com/help/plus5/#SK_ApiContextInitialize.html%3FTocPath%3DProtection%2520PLUS%25205%2520SDK%2520Manual%7CAPI%2520References%7CPLUSNative%2520API%2520Reference%7CFunctions%7C_____3)
     pub fn initialize_api_context(&mut self) -> Result<()> {
         let context: &mut SK_ApiContext = &mut 0;
         unsafe {
@@ -120,23 +134,25 @@ impl NativeSDK {
                 self.check_result(result)?;
             }
             self.initialize_system_identitifers()?;
+            self.load_license()?;
             Ok(())
         }
     }
 
-    //identify the system license_file is load
+    //Initial the system identifiers
+    //1.system_identifiers fn  identify the current system
+    //2.system identifier passes the argument 20 to Make sure we have a computer name identifier
+    //3.system identifier passes the argument 30 to  Make sure we have a hard disk volume serial identifier
     fn initialize_system_identitifers(&mut self) -> Result<()> {
         unsafe {
-            //identify the current system
             let system_identifiers = self.lib.get::<fn(SK_ApiContext,
                        c_int,
                        c_int,
                        *const c_char,
                        *mut c_int)
                        -> c_int>(SK_IDNTIFIER_ALGORITHAM.as_bytes())?;
-            //system_identifiers
             let countPtr: &mut c_int = &mut 0;
-            // Make sure we have a computer name identifier
+
             self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
@@ -148,7 +164,7 @@ impl NativeSDK {
             if 0 == *countPtr {
                 return self.check_result(ResultCode::SK_ERROR_INVALID_DATA as i32);
             }
-            // Make sure we have a hard disk volume serial identifier
+
             self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
@@ -171,7 +187,7 @@ impl NativeSDK {
     }
 
     //load the license file in the local directory
-    pub fn load_license(&mut self) -> Result<()> {
+    fn load_license(&mut self) -> Result<()> {
         try!(File::create(
             rioconfig_license_path(None).join("LicenseFile.lfx"),
         ));
@@ -183,8 +199,8 @@ impl NativeSDK {
     fn set_license_path(&mut self, licenseFilePath: String) {
         self.licenseFilePath = licenseFilePath
     }
-    //
-    pub fn reload(&mut self) -> Result<()> {
+
+    fn reload(&mut self) -> Result<()> {
         self.isLoaded = false;
         self.set_writable(false)?;
         //load the license file
@@ -222,6 +238,9 @@ impl NativeSDK {
         Ok(())
     }
 
+    //set the permission for the license File
+    //0: Read permissions
+    //1: write permission
     fn set_writable(&mut self, isWritable: bool) -> Result<()> {
         unsafe {
             self.isWritable = isWritable;
@@ -340,10 +359,7 @@ impl NativeSDK {
             if *matchesPtr < 1 {
                 return Ok(false);
             }
-            if !(self.is_date_time_past(
-                "/SoftwareKey/PrivateData/License/EffectiveStartDate",
-            )?)
-            {
+            if !(self.is_date_time_past(EFFIECTIVE_START_DATE_URL)?) {
                 debug!(
                     "{:?}",
                     ResultCode::err_description(ResultCode::SK_ERROR_LICENSE_NOT_EFFECTIVE_YET as i32)
@@ -351,10 +367,7 @@ impl NativeSDK {
                 return Ok(false);
             }
             if self.is_evaluation()? || self.get_type()? as i32 == LicenseType::TimeLimited as i32 {
-                if !self.is_date_time_past(
-                    "/SoftwareKey/PrivateData/License/EffectiveStartDate",
-                )?
-                {
+                if !self.is_date_time_past(EFFIECTIVE_START_DATE_URL)? {
                     debug!(
                         "{:?}",
                         ResultCode::err_description(ResultCode::SK_ERROR_LICENSE_NOT_EFFECTIVE_YET as i32).to_string()
@@ -374,12 +387,9 @@ impl NativeSDK {
             Ok(true)
         }
     }
-    //(link)
+    //Create Trail if not InstallationID is found refer link https://www.softwarekey.com/help/plus5/#SK_ApiContextInitialize.html%3FTocPath%3DProtection%2520PLUS%25205%2520SDK%2520Manual%7CAPI%2520References%7CPLUSNative%2520API%2520Reference%7CFunctions%7C_____3
     fn is_evaluation(&self) -> Result<bool> {
-        if self.get_string_value(
-            "/SoftwareKey/PrivateData/License/InstallationID",
-        )? == "".to_string()
-        {
+        if self.get_string_value(NOT_CONSIDER_INSTALATION)? == "".to_string() {
             return Ok(true);
         } else {
             return Ok(false);
@@ -420,6 +430,7 @@ impl NativeSDK {
             Ok(ret_val)
         }
     }
+
     //returns the requested date time value from the license file
     fn get_date_time_string_value(&self, xpath: &str) -> Result<String> {
         unsafe {
@@ -494,7 +505,7 @@ impl NativeSDK {
             }
         }
     }
-
+    //returns the license type
     fn get_type(&self) -> Result<LicenseType> {
         unsafe {
             let mut license_type = LicenseType::Unlicensed;
@@ -523,9 +534,7 @@ impl NativeSDK {
             let result = node_get_int(
                 SK_FLAGS_NONE,
                 licensePtr,
-                CString::new("/SoftwareKey/PrivateData/License/TriggerCode")
-                    .unwrap()
-                    .into_raw(),
+                CString::new(TRIGGER_CODE_URL).unwrap().into_raw(),
                 valuePtr,
             );
 
@@ -550,9 +559,8 @@ impl NativeSDK {
 
             license_remaining_day(
                 SK_FLAGS_NONE,
-                CString::new(self.get_date_time_string_value(
-                    "/SoftwareKey/PrivateData/License/EffectiveEndDate",
-                )?).unwrap()
+                CString::new(self.get_date_time_string_value(EFFIECTIVE_END_DATE_URL)?)
+                    .unwrap()
                     .into_raw(),
                 daysLeftPtr,
             );
@@ -747,10 +755,7 @@ impl NativeSDK {
                     self.check_result(node_get_string(
                         SK_FLAGS_NONE,
                         *responsePtr,
-                        CString::new(
-                            "/ActivateInstallationLicenseFile/PrivateData/ErrorMessage",
-                        ).unwrap()
-                            .into_raw(),
+                        CString::new(ERROR_MESSAGE_URL).unwrap().into_raw(),
                         false,
                         errorMsgPtr,
                     ))?;
@@ -765,10 +770,7 @@ impl NativeSDK {
             self.check_result(xml_get(
                 SK_FLAGS_NONE,
                 *responsePtr,
-                CString::new(
-                    "/ActivateInstallationLicenseFile/PrivateData/License",
-                ).unwrap()
-                    .into_raw(),
+                CString::new(LICENSE_URL).unwrap().into_raw(),
                 licensePtr,
             ))?;
 
@@ -778,10 +780,7 @@ impl NativeSDK {
             let result = node_get_int(
                 SK_FLAGS_NONE,
                 *responsePtr,
-                CString::new(
-                    "/ActivateInstallationLicenseFile/PrivateData/ActivationsLeft",
-                ).unwrap()
-                    .into_raw(),
+                CString::new(ACTIVATION_LEFT_URL).unwrap().into_raw(),
                 activationleftPtr,
             );
 
