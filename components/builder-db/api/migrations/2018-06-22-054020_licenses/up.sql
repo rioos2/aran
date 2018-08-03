@@ -93,13 +93,12 @@ CREATE OR REPLACE FUNCTION update_license_v1 (lname text, li_activation JSONB,ll
 SETOF licenses AS $$
                       BEGIN
                           RETURN QUERY UPDATE licenses SET
-                          object_meta = lobject_meta,
                           license_id  = llicense_id,
                           password=lpassword,
                           status = lstatus,
                           expired = lexpired,
-                          error= lerror,
                           activation=li_activation,
+                          error=lerror,
                           updated_at=now() WHERE object_meta ->> 'name' = lname
                           RETURNING *;
                           RETURN;
@@ -111,6 +110,15 @@ CREATE OR REPLACE FUNCTION update_activation_complete_v1 (lid bigint,luser_activ
 SETOF licenses AS $$
                                          BEGIN
                                              RETURN QUERY UPDATE licenses SET user_activation=luser_activation,updated_at=now() WHERE id = lid
+                                             RETURNING *;
+                                             RETURN;
+                                         END
+                                      $$ LANGUAGE PLPGSQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION update_error_v1 (lname text,lerror text) RETURNS
+SETOF licenses AS $$
+                                         BEGIN
+                                             RETURN QUERY UPDATE licenses SET error=lerror,updated_at=now() WHERE  object_meta ->> 'name' = lname
                                              RETURNING *;
                                              RETURN;
                                          END

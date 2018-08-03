@@ -865,7 +865,7 @@ impl NativeSDK {
         license::DataStore::new(&self.cache.conn).create_or_update(&license);
     }
 
-    pub fn update_license(&self, name: &str, license_id: &str, password: &str, err: String) {
+    pub fn update_license(&self, name: &str, license_id: &str, password: &str) {
         let mut license = Licenses::new();
         let mut activation = BTreeMap::new();
         activation.insert("limit".to_string(), 5);
@@ -876,8 +876,14 @@ impl NativeSDK {
         license.set_expired(self.remaining_days.clone());
         license.set_license_id(license_id.to_string());
         license.set_password(password.to_string());
-        license.set_error(err);
         license::DataStore::new(&self.cache.conn).update(&license);
+    }
+
+    pub fn update_error(&self, product: &str, error: String) {
+        let mut license = Licenses::new();
+        license.set_provider_name(product.to_string());
+        license.set_error(error);
+        license::DataStore::new(&self.cache.conn).update_error(&license);
     }
 
     fn check_result(&self, value: i32) -> Result<()> {

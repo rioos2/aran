@@ -50,18 +50,9 @@ impl RuntimeHandler {
                             &product,
                             &license_id.to_string(),
                             &password,
-                            "".to_string(),
                         )
                     }
-                    Err(err) => {
-                        println!("-------------------------------------------{:?}", err);
-                        self.license.update_license(
-                            &product,
-                            &license_id.to_string(),
-                            &password,
-                            format!("{}", err),
-                        )
-                    }
+                    Err(err) => self.license.update_error(&product, format!("{}", err)),
                 }
             }
 
