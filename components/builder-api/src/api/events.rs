@@ -75,7 +75,7 @@ macro_rules! activate_license {
     ($req:ident, $evt:expr) => {{
         use persistent;
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
-        el.request_activation_to_licensor(($evt).get_license_id(),($evt).get_password())
+        el.request_activation_to_licensor(($evt).get_license_id(),($evt).get_password(),($evt).object_meta().name)
     }};
 }
 
@@ -125,10 +125,11 @@ impl EventLogger {
     // key (license_id/password) combination
 
 
-    pub fn request_activation_to_licensor(&self, license_id: String, password: String) {
+    pub fn request_activation_to_licensor(&self, license_id: String, password: String, product: String) {
         self.channel.activate_license(
             license_id.parse::<u32>().unwrap_or(0),
             password,
+            product,
         );
 
     }
