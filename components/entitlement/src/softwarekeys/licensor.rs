@@ -20,14 +20,6 @@ use std::fs::File;
 use std::os::raw::*;
 use std::path::PathBuf;
 
-//The LicenseFile.lfx is generated upon registration in SoftwareKey.com
-lazy_static! {
-    static ref LICENSEFILE: PathBuf =
-        PathBuf::from(&*rioconfig_license_path(None)
-            .join("LicenseFile.lfx")
-            .to_str()
-            .unwrap());
-}
 //ID of the RIOOS product
 const PRODUCT_ID: c_int = 409264;
 //Option_id is the id of sub product of the RIOOS product.
@@ -53,12 +45,28 @@ const LICENSE_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/
 const ERROR_MESSAGE_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/ErrorMessage";
 //url to get the license activation left
 const ACTIVATION_LEFT_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/ActivationsLeft";
+//url to get the license sessionCode
+const SESSION_CODE_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/SessionCode";
 
+//Use when not specifying any flags for a given function call.
 const SK_FLAGS_NONE: c_int = 0x00000000;
+//When specified, the function call will use Secure Sockets Layering (SSL) if applicable.
 const SK_FLAGS_USE_SSL: c_int = 0x00040000;
+//When specified, the function call will use encryption if applicable.
 const SK_FLAGS_USE_ENCRYPTION: c_int = 0x00010000;
+//When specified, the function call will use digital signatures.
 const SK_FLAGS_USE_SIGNATURE: c_int = 0x00020000;
+//If specified when calling SK_ApiContextDispose, the PLUSNative API will shutdown and free all memory.
 const SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
+
+//The LicenseFile.lfx is generated upon registration in SoftwareKey.com
+lazy_static! {
+    static ref LICENSEFILE: PathBuf =
+        PathBuf::from(&*rioconfig_license_path(None)
+            .join("LicenseFile.lfx")
+            .to_str()
+            .unwrap());
+}
 
 pub struct NativeSDK {
     lib: Library, //sdk file for the licensor
@@ -186,7 +194,9 @@ impl NativeSDK {
         }
     }
 
-    //load the license file in the local directory
+    //load the license file
+    //1.set_license_path set the license file path
+    //2.reload fn reload the the status of the license file
     fn load_license(&mut self) -> Result<()> {
         try!(File::create(
             rioconfig_license_path(None).join("LicenseFile.lfx"),
@@ -200,10 +210,17 @@ impl NativeSDK {
         self.licenseFilePath = licenseFilePath
     }
 
+    //load the license file
+    //1.set the isLoaded flas as false(means the still no license file is loaded)
+    //2.license_load_fn verifies the symbol and load the license file from the remote server
+    //3.If license file is not loaded then set the write permission to load the File
+    //4.If the license file not loaded after set the write permission then it create the trail
+    //5.If the license file is loaded then set the isLoaded flag the true
+    //5 call the live_verify to check the status of the license
     fn reload(&mut self) -> Result<()> {
         self.isLoaded = false;
         self.set_writable(false)?;
-        //load the license file
+
         unsafe {
             let license_load_fn = *self.lib
                 .get::<fn(SK_ApiContext, c_int, *const c_char) -> c_int>(SK_LOAD_LICENSE.as_bytes())?;
@@ -264,6 +281,10 @@ impl NativeSDK {
     }
 
     //create 30 days of trial
+    //1.license_create_fn creates the new license file for the period of 30 days
+    //2.license_save_fn save the license file in local directory
+    //3.set the isLoaded flag as true
+    //4.set the license_file ptr to the current licensefile object
     fn create_trial(&mut self, days: c_int) -> Result<()> {
         let license: &mut SK_XmlDoc = &mut 0;
         unsafe {
@@ -296,7 +317,15 @@ impl NativeSDK {
             Ok(())
         }
     }
-    //Verifies license valid or not and update in database
+
+    //Verifies license valid
+    //1.call the validate fn which returns the the bool value (license valid:true, invalid:false)
+    //2.call the is_evaluation fn which retun the bool value(if license installation id is empty return true else false)
+    //3.then create the trail version in db for the products
+    //4.get_days_remaining function returns number os days left for the licenses
+    //5.Evaluation is false and license not valid then it can be consider as expired license
+    //6.get_type fn is return the type of the license and the license is time limited and status is set as active and remaining days updated in db
+    //7.if all condition set tas false and the license is set as inavalid
     pub fn live_verify(&mut self) -> Result<()> {
 
         let is_valid_remote: bool = self.validate()?;
@@ -323,7 +352,12 @@ impl NativeSDK {
         }
         Ok(())
     }
-    //validate the license_file and update the status in database
+
+    //validate the license_file and returns the bool value
+    //1.date_time_validate fn verifies that the operating system clock APIs have not been compromised. This prevents tools like "Time Stopper" or "RunAsDate" from being used to trick your protected applications.
+    //2.compare_system_identifier fn compares the current system's identifiers against the identifiers authorized in the license.
+    //3.is_date_time_past is not presented in the license then returns the False
+    //4.is_evaluation is false and license type is TimeLimited then return False
     fn validate(&mut self) -> Result<bool> {
         unsafe {
             if !self.isLoaded {
@@ -396,6 +430,10 @@ impl NativeSDK {
         }
     }
 
+    //1.current_datetime fn retrieves the current date-time as a string from the system clock.
+    //2.compare_datetime fn compares two date-time strings in ISO-8601 format (YYYY-MM-DDTHH:MM:SSZ).
+    //3.comparisonPrt value is get fro the compare_datetime fn
+    //4.comparisonPrt is less than zero then return true less return false
     fn is_date_time_past(&mut self, xpath: &str) -> Result<bool> {
         let mut ret_val: bool = true;
         unsafe {
@@ -432,6 +470,10 @@ impl NativeSDK {
     }
 
     //returns the requested date time value from the license file
+    //1.isLoaded is set as false then return the empty string
+    //2.license_get_xml_doc fn retrieves the raw contents of the License File.
+    //3.node_get_date fn retrieves a date-time string value from a given XML node.
+    //4.returns the valuePtr value from the node_get_date
     fn get_date_time_string_value(&self, xpath: &str) -> Result<String> {
         unsafe {
             if !self.isLoaded {
@@ -469,6 +511,10 @@ impl NativeSDK {
     }
 
     //returns the requested string value from the license file
+    //1.license_get_xml_doc fn retrieves the raw contents of the License File.
+    //2.node_get_string fn retrieves a string value from a given XML node.
+    //3.valuePtr value is get from the node_get_string fn
+    //4.node_get_string fn returns as error none then the valuePtr is return otherwise empty string returned
     fn get_string_value(&self, xpath: &str) -> Result<String> {
         unsafe {
             if !self.isLoaded {
@@ -506,6 +552,9 @@ impl NativeSDK {
         }
     }
     //returns the license type
+    //1.license_get_xml_doc fn retrieves the raw contents of the License File.
+    //2.send the licensePtr value to determine_type fn
+    //3.return the license_type
     fn get_type(&self) -> Result<LicenseType> {
         unsafe {
             let mut license_type = LicenseType::Unlicensed;
@@ -525,6 +574,10 @@ impl NativeSDK {
     }
 
     //determine the type of license used
+    //1.node_get_int fn retrieves an integer value from a given XML node.
+    //2.if the node_get_int fn returns error then the license type in consider as Unlicensed
+    //3.valuePtr value is 1 | 18 | 28  then license type is FullNonExpiring
+    //4.valuePtr value is 10 | 11 | 29 then license type is TimeLimited
     fn determine_type(&self, licensePtr: SK_XmlDoc) -> Result<LicenseType> {
         unsafe {
             let valuePtr: &mut SK_IntPointer = &mut 0;
@@ -551,6 +604,8 @@ impl NativeSDK {
 
     }
     //calculate the number of days remain for the license
+    //1.license_remaining_day fn determines the number of days left until a specified date is reached.
+    //2.returns the daysLeftPtr as integer
     fn get_days_remaining(&self) -> Result<c_int> {
         unsafe {
             let daysLeftPtr: &mut SK_IntPointer = &mut 0;
@@ -575,8 +630,8 @@ impl NativeSDK {
             let encryptedResponse: &mut SK_XmlDoc = &mut 0;
             let license: &mut SK_XmlDoc = &mut 0;
             let decLicense: &mut SK_XmlDoc = &mut 0;
-            let xpath = "/ActivateInstallationLicenseFile/PrivateData/SessionCode";
-            let xpath1 = "/ActivateInstallationLicenseFile/PrivateData/License";
+            let xpath = SESSION_CODE_URL;
+            let xpath1 = LICENSE_URL;
 
             let create_string = *self.lib
                 .get::<fn(c_int, *const c_char, *mut SK_XmlDoc) -> c_int>(SK_XML_DOC_CREATE_FROM_STRING.as_bytes())?;
@@ -672,6 +727,16 @@ impl NativeSDK {
     }
 
     //activate the license in solo server with license_id and password
+    //1.activate_request fn builds a request to send to the XmlActivationService web service's ActivateInstallationLicenseFile method in SOLO Server.
+    //2.call_xml_service fn calls a SOLO Server XML web service method.
+    //3.if the result code is SK_ERROR_WEBSERVICE_RETURNED_FAILURE then return the error and not allowd to activate license
+    //4.node_get_string fn get the error msg from the license file
+    //5.xml_get fn retrieves the raw content of the license File
+    //6.node_get_int fn retrieve the activationleftPtr values
+    //7.sets the activationleftPtr to the current activation objects
+    //8.decrypt_doc fn decrypt the licensePtr
+    //9.save the licen file in the specified licensepath
+    //refer the link for more details https://www.softwarekey.com/help/plus5/#SK_SOLO_ActivateInstallationGetRequest.html%3FTocPath%3DProtection%2520PLUS%25205%2520SDK%2520Manual%7CAPI%2520References%7CPLUSNative%2520API%2520Reference%7CFunctions%7C_____75
     pub fn activate_online(&mut self, license_id: u32, password: &str) -> Result<()> {
         debug!("activate_online");
         debug!("{:?}", license_id);
