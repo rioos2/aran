@@ -1,9 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use activate::models::activation::DataStore;
 use api::Api;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use entitle::models::license;
 use error::Error;
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{internal_error, not_found_error};
@@ -11,9 +13,8 @@ use http_gateway::util::errors::AranResult;
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
 use router::Router;
-use activate::models::activation::DataStore;
-use entitle::models::license;
 
 
 use std::sync::Arc;
@@ -34,17 +35,17 @@ impl ActivationApi {
 
     //GET : wizards
     fn wizard(&self, _req: &mut Request) -> AranResult<Response> {
-        match license::DataStore::new(&self.conn).list_blank() {
-        Ok(Some(license)) => {
-            let status = license.into_iter().map(|l|{l.get_activation_completed().to_string()}).collect::<_>();
-            match DataStore::new(&self.conn).wizard(IdGet::with_id(status)) {
-                Ok(wizard) => Ok(render_json(status::Ok, &wizard)),
-                Err(err) => Err(internal_error(&format!("{}\n", err))),
+        let params = IdGet::with_id("senseis".to_string());
+        match license::DataStore::new(&self.conn).license_show_by_name(&params) {
+            Ok(Some(license)) => {
+                match DataStore::new(&self.conn).wizard(license.get_activation_completed()) {
+                    Ok(wizard) => Ok(render_json(status::Ok, &wizard)),
+                    Err(err) => Err(internal_error(&format!("{}\n", err))),
+                }
             }
+            Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
-        Err(err) => Err(internal_error(&format!("{}", err))),
-        Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
-    }
 
     }
 }
@@ -57,12 +58,6 @@ impl Api for ActivationApi {
         let wizard = move |req: &mut Request| -> AranResult<Response> { _self.wizard(req) };
 
 
-        router.get(
-            "/wizards",
-            XHandler::new(C {
-                inner: wizard,
-            }),
-            "wizard",
-        );
+        router.get("/wizards", XHandler::new(C { inner: wizard }), "wizard");
     }
 }

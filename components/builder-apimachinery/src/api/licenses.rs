@@ -19,11 +19,11 @@ pub struct Licenses {
     status: String,
     #[serde(default)]
     activation_completed: bool,
-    product: String,
     license_id: String,
     password: String,
+    provider_name: String,
     #[serde(default)]
-    product_options: BTreeMap<String, AllowActive>,
+    activation: BTreeMap<String, i32>,
     #[serde(default)]
     expired_at: String,
     #[serde(default)]
@@ -50,11 +50,6 @@ impl MetaFields for Licenses {
 }
 
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct AllowActive {
-    pub maximum: i32,
-    pub current: i32,
-}
 impl Licenses {
     pub fn new() -> Licenses {
         ::std::default::Default::default()
@@ -83,14 +78,6 @@ impl Licenses {
 
     pub fn get_status(&self) -> ::std::string::String {
         self.status.clone()
-    }
-
-    pub fn set_product(&mut self, v: ::std::string::String) {
-        self.product = v;
-    }
-
-    pub fn get_product(&self) -> ::std::string::String {
-        self.product.clone()
     }
 
     pub fn set_password(&mut self, v: ::std::string::String) {
@@ -125,12 +112,20 @@ impl Licenses {
         self.activation_completed.clone()
     }
 
-    pub fn set_product_options(&mut self, v: BTreeMap<String, AllowActive>) {
-        self.product_options = v;
+    pub fn set_provider_name(&mut self, v: ::std::string::String) {
+        self.provider_name = v;
     }
 
-    pub fn get_product_options(&self) -> &BTreeMap<String, AllowActive> {
-        &self.product_options
+    pub fn get_provider_name(&self) -> ::std::string::String {
+        self.provider_name.clone()
+    }
+
+    pub fn set_activation(&mut self, v: BTreeMap<String, i32>) {
+        self.activation = v;
+    }
+
+    pub fn get_activation(&self) -> &BTreeMap<String, i32> {
+        &self.activation
     }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {

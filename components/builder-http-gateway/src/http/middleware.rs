@@ -7,9 +7,9 @@ use super::rendering::*;
 use super::super::util::errors::*;
 use ansi_term::Colour;
 use auth::config::AuthenticationFlowCfg;
+use auth::rbac::account::{AccountsFascade, ServiceAccountsFascade};
 use auth::rbac::authorizer;
 use auth::rbac::license::LicensesFascade;
-use auth::rbac::account::{AccountsFascade, ServiceAccountsFascade};
 use auth::rbac::permissions::Permissions;
 use auth::rioos::AuthenticateDelegate;
 use common::ui;
@@ -103,9 +103,15 @@ impl XHandler {
 
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
-        ///// Maybe move this Request to a seperate method.        
-        debug!("{}", format!("→ ------------------------------------------------------------------------------------"));
-        debug!("{}", format!("======= {}:{}:{}", req.version, req.method, req.url));
+        ///// Maybe move this Request to a seperate method.
+        debug!(
+            "{}",
+            format!("→ ------------------------------------------------------------------------------------")
+        );
+        debug!(
+            "{}",
+            format!("======= {}:{}:{}", req.version, req.method, req.url)
+        );
         debug!("{}", "Headers:");
         debug!("{}", "========");
 
@@ -349,12 +355,7 @@ impl BeforeMiddleware for RBAC {
         let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
         let roles: authorizer::RoleType = header.decide()?.into();
 
-        debug!(
-            "↑ RBAC {} {} {:?}",
-            "→",
-            &roles.name,
-            input_trust
-        );
+        debug!("↑ RBAC {} {} {:?}", "→", &roles.name, input_trust);
 
         if roles.name.is_empty() {
             debug!("↑ RBAC SKIP {} {} {:?}", "→", &roles.name, input_trust);
@@ -402,7 +403,7 @@ impl EntitlementAct {
 
 impl BeforeMiddleware for EntitlementAct {
     fn before(&self, _req: &mut Request) -> IronResult<()> {
-        match self.license.clone().get_by_name(self.backend.clone()) {
+        match self.license.clone().get_by_name("senseis".to_string()) {
             Ok(_) => Ok(()),
             Err(err) => {
                 let err = entitlement_error(&format!("{}\n", err));

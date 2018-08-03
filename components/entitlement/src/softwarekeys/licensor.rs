@@ -11,7 +11,7 @@ use lib_load;
 use lib_load::{Symbol, Library};
 
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
-use protocol::api::licenses::{Licenses, AllowActive, INVALID};
+use protocol::api::licenses::{Licenses, INVALID};
 use protocol::api::schema::type_meta_url;
 use rio_core::fs::rioconfig_license_path;
 use std::collections::BTreeMap;
@@ -42,8 +42,8 @@ const ENVELOPE_KEY: &'static str = "_EVALUATION_EXPIRES_2018-09-20_nlZW/s6JCUNiK
 
 const VERSION: &'static str = "";
 
-const PRODUCT_ID: c_int = 408040;
-const PRODUCT_OPTION_ID: c_int = 30787;
+const PRODUCT_ID: c_int = 409264;
+const PRODUCT_OPTION_ID: c_int = 0;
 
 const SK_FLAGS_NONE: c_int = 0x00000000;
 const SK_FLAGS_USE_SSL: c_int = 0x00040000;
@@ -60,6 +60,9 @@ pub struct NativeSDK {
     isWritable: bool, //set read and write permission for license file
     licenseFilePath: String, //file path of license which is loaded in directory
     provider: String, //license provider name
+    activation: i32,
+    status: String,
+    remaining_days: String,
 }
 
 impl NativeSDK {
@@ -73,6 +76,9 @@ impl NativeSDK {
             isWritable: false,
             licenseFilePath: "".to_string(),
             provider: "SoftwareKey".to_string(),
+            activation: 0,
+            status: TRIAL.to_string(),
+            remaining_days: "".to_string(),
         }
     }
     //Initializes a new API Context, which may be used to open and manipulate a license file.
@@ -278,20 +284,24 @@ impl NativeSDK {
         let licenseValid: bool = self.validate()?;
         if self.is_evaluation()? {
             if licenseValid {
-                self.update_license_status(TRIAL.to_string(), self.get_days_remaining()?.to_string());
+                let name = vec!["senseis", "ninjas"];
+                for x in name {
+                    self.create_trial_in_db(TRIAL.to_string(), self.get_days_remaining()?.to_string(), x);
+                }
             } else {
-                self.update_license_status(EXPIRY.to_string(), "".to_string());
+                self.status = EXPIRY.to_string();
             }
             return Ok(());
         }
         if licenseValid {
             if self.get_type()? as i32 == LicenseType::TimeLimited as i32 {
-                self.update_license_status(ACTIVE.to_string(), self.get_days_remaining()?.to_string());
+                self.status = ACTIVE.to_string();
+                self.remaining_days = self.get_days_remaining()?.to_string();
             } else {
-                self.update_license_status(ACTIVE.to_string(), "".to_string());
+                self.status = ACTIVE.to_string();
             }
         } else {
-            self.update_license_status(INVALID.to_string(), "".to_string());
+            self.status = INVALID.to_string();
         }
         Ok(())
     }
@@ -466,6 +476,7 @@ impl NativeSDK {
                        bool,
                        *mut SK_StringPointer)
                        -> c_int>(SK_NODE_GET_STRING.as_bytes())?;
+
             if self.check_result(license_get_xml_doc(self.context, SK_FLAGS_NONE, licensePtr))
                 .is_ok() &&
                 self.check_result(node_get_string(
@@ -654,7 +665,7 @@ impl NativeSDK {
     }
 
     //activate the license in solo server with license_id and password
-    pub fn activate_online(&mut self, license_id: u32, password: &str) -> Result<bool> {
+    pub fn activate_online(&mut self, license_id: u32, password: &str) -> Result<()> {
         debug!("activate_online");
         debug!("{:?}", license_id);
         debug!("{:?}", password);
@@ -662,6 +673,7 @@ impl NativeSDK {
             let resultCodePtr: &mut SK_IntPointer = &mut 0;
             let statusCodePtr: &mut SK_IntPointer = &mut 0;
             let ptr: &mut SK_StringPointer = &mut (0 as *const c_char);
+            let activationleftPtr: &mut SK_IntPointer = &mut 0;
 
             let requestPtr: &mut SK_XmlDoc = &mut 0;
             let responsePtr: &mut SK_XmlDoc = &mut 0;
@@ -761,6 +773,21 @@ impl NativeSDK {
                 licensePtr,
             ))?;
 
+            let node_get_int = *self.lib
+                .get::<fn(c_int, SK_XmlDoc, *const c_char, *mut c_int) -> c_int>(SK_NODE_GET_INT.as_bytes())?;
+
+            let result = node_get_int(
+                SK_FLAGS_NONE,
+                *responsePtr,
+                CString::new(
+                    "/ActivateInstallationLicenseFile/PrivateData/ActivationsLeft",
+                ).unwrap()
+                    .into_raw(),
+                activationleftPtr,
+            );
+
+            self.activation = *activationleftPtr;
+
             let decrypt_doc = *self.lib.get::<fn(SK_ApiContext,
                        c_int,
                        bool,
@@ -775,8 +802,6 @@ impl NativeSDK {
                 *licensePtr,
                 decLicensePtr,
             ))?;
-
-
 
             let license_type = self.determine_type(*decLicensePtr)? as i32;
             self.set_writable(
@@ -803,16 +828,17 @@ impl NativeSDK {
             dispose(SK_FLAGS_NONE, responsePtr);
             dispose(SK_FLAGS_NONE, licensePtr);
             dispose(SK_FLAGS_NONE, decLicensePtr);
-            Ok(true)
+            self.reload()?;
+            Ok(())
         }
     }
 
-    pub fn update_license_status(&self, status: String, days: String) {
+    fn create_trial_in_db(&self, status: String, days: String, name: &str) {
         let mut license = Licenses::new();
 
         let m = license.mut_meta(
             license.object_meta(),
-            self.provider.clone(),
+            name.to_string(),
             license.get_account(),
         );
 
@@ -822,25 +848,36 @@ impl NativeSDK {
 
         license.set_status(status);
         license.set_expired(days);
-        //temp fix
-        let mut product_options = BTreeMap::new();
-        product_options.insert(
-            "ninja".to_string(),
-            AllowActive {
-                maximum: 10,
-                current: 1,
-            },
-        );
 
-        product_options.insert(
-            "sensei".to_string(),
-            AllowActive {
-                maximum: 5,
-                current: 1,
-            },
-        );
-        license.set_product_options(product_options);
+        let mut activation = BTreeMap::new();
+
+        //temp fix
+        if name == "senseis" {
+            activation.insert("limit".to_string(), 5);
+            activation.insert("remain".to_string(), 5);
+        } else {
+            activation.insert("limit".to_string(), 10);
+            activation.insert("remain".to_string(), 10);
+        }
+
+        license.set_activation(activation);
+        license.set_provider_name(self.provider.clone());
+
         license::DataStore::new(&self.datastore.conn).create_or_update(&license);
+    }
+
+    pub fn update_license(&self, name: &str, license_id: &str, password: &str) {
+        let mut license = Licenses::new();
+        let mut activation = BTreeMap::new();
+        activation.insert("limit".to_string(), 5);
+        activation.insert("remain".to_string(), self.activation);
+        license.set_provider_name(name.to_string());
+        license.set_activation(activation);
+        license.set_status(self.status.clone());
+        license.set_expired(self.remaining_days.clone());
+        license.set_license_id(license_id.to_string());
+        license.set_password(password.to_string());
+        license::DataStore::new(&self.datastore.conn).update(&license);
     }
 
     fn check_result(&self, value: i32) -> Result<()> {
