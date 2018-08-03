@@ -8,7 +8,7 @@ CREATE SEQUENCE IF NOT EXISTS license_id_seq;
 CREATE TABLE IF NOT EXISTS LICENSES (id bigint PRIMARY KEY DEFAULT next_id_v1('license_id_seq'),
                                                                    object_meta JSONB,
                                                                                type_meta JSONB,
-                                                                                         status text, license_id text,password text,expired text, activation JSONB,user_activation bool, provider text,
+                                                                                         status text, license_id text,password text,expired text, activation JSONB,user_activation bool, provider text, error text,
                                                                                                                                                                                 updated_at timestamptz,
                                                                                                                                                                                 created_at timestamptz DEFAULT now());
 
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS LICENSES (id bigint PRIMARY KEY DEFAULT next_id_v1('l
 --- Table:licenses:create/update
 ---
 
-CREATE FUNCTION insert_or_update_license_v1(lobject_meta JSONB, ltype_meta JSONB, lstatus text, lexpired text, lactivation JSONB,luser_activation bool,lprovider text)RETURNS
+CREATE FUNCTION insert_or_update_license_v1(lobject_meta JSONB, ltype_meta JSONB, lstatus text, lexpired text, lactivation JSONB,luser_activation bool,lprovider text,lerror text)RETURNS
 SETOF LICENSES AS $$
 DECLARE this_license LICENSES % rowtype;
 BEGIN
@@ -40,8 +40,8 @@ BEGIN
          RETURN;
          ELSE
          RETURN QUERY
-         INSERT INTO LICENSES(object_meta,type_meta, status,expired, activation, user_activation,provider)
-           VALUES(lobject_meta, ltype_meta, lstatus,lexpired ,lactivation, luser_activation,lprovider)ON CONFLICT DO NOTHING RETURNING *;
+         INSERT INTO LICENSES(object_meta,type_meta, status,expired, activation, user_activation,provider,error)
+           VALUES(lobject_meta, ltype_meta, lstatus,lexpired ,lactivation, luser_activation,lprovider,lerror)ON CONFLICT DO NOTHING RETURNING *;
       RETURN;
       END
       IF;
@@ -89,14 +89,16 @@ $$ LANGUAGE PLPGSQL STABLE;
 --- Table:licenses:update
 ---
 
-CREATE OR REPLACE FUNCTION update_license_v1 (lname text, li_activation JSONB,llicense_id text,lpassword text,lexpired text,lstatus text) RETURNS
+CREATE OR REPLACE FUNCTION update_license_v1 (lname text, li_activation JSONB,llicense_id text,lpassword text,lexpired text,lstatus text,lerror text) RETURNS
 SETOF licenses AS $$
                       BEGIN
                           RETURN QUERY UPDATE licenses SET
+                          object_meta = lobject_meta,
                           license_id  = llicense_id,
                           password=lpassword,
                           status = lstatus,
                           expired = lexpired,
+                          error= lerror,
                           activation=li_activation,
                           updated_at=now() WHERE object_meta ->> 'name' = lname
                           RETURNING *;

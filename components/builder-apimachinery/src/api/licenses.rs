@@ -5,7 +5,16 @@ use api::base::IdGet;
 use cache::inject::LicensesFeeder;
 use std::collections::BTreeMap;
 
+
+//The flag that indicates that the trial commenced.
+pub const TRIAL: &'static str = "trial";
+//The flag that indicates that the trial expired.
+pub const EXPIRY: &'static str = "expired";
+//The flag that indicates that the licencekey/activation code is valid and active.
+pub const ACTIVE: &'static str = "active";
+//The flag that indicates that the license id and password is incorrect.
 pub const INVALID: &'static str = "invalid";
+
 
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -26,6 +35,8 @@ pub struct Licenses {
     activation: BTreeMap<String, i32>,
     #[serde(default)]
     expired_at: String,
+    #[serde(default)]
+    error: String,
     #[serde(default)]
     created_at: String,
 }
@@ -118,6 +129,14 @@ impl Licenses {
 
     pub fn get_provider_name(&self) -> ::std::string::String {
         self.provider_name.clone()
+    }
+
+    pub fn set_error(&mut self, v: ::std::string::String) {
+        self.error = v;
+    }
+
+    pub fn get_error(&self) -> ::std::string::String {
+        self.error.clone()
     }
 
     pub fn set_activation(&mut self, v: BTreeMap<String, i32>) {

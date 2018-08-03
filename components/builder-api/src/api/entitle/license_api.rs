@@ -51,7 +51,7 @@ impl LicenseApi {
         activate_license!(req, *unmarshall_body.clone());
 
         if unmarshall_body.get_activation_completed() {
-            try!(DataStore::new(&self.conn).update_activation_complete(
+            try!(DataStore::new(&self.conn).update_activation(
                 &unmarshall_body,
             ));
         }

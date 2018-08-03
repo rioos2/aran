@@ -35,7 +35,6 @@ backend = "Local"
 
 [licenses]
 so_file = "libPLUSNative.so"
-activation_code = ""
 
 [logs]
 influx_endpoint = "http://localhost:8086"
