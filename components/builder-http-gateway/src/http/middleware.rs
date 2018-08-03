@@ -103,7 +103,7 @@ impl XHandler {
 
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
-        ///// Maybe move this Request to a seperate method.        
+        ///// Maybe move this Request to a seperate method.
         debug!("{}", format!("→ ------------------------------------------------------------------------------------"));
         debug!("{}", format!("======= {}:{}:{}", req.version, req.method, req.url));
         debug!("{}", "Headers:");
@@ -211,7 +211,7 @@ impl ProceedAuthenticating {
             }
         };
 
-        let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;
+        let header = HeaderDecider::new(req.headers.clone(), plugins, conf)?;        
 
         let delegate = AuthenticateDelegate::new(broker.clone());
 
@@ -229,50 +229,19 @@ struct URLGrabber {}
 
 impl URLGrabber {
     const WHITE_LIST: &'static [&'static str] = &[
-        "RIOOS.ACCOUNTS.POST",
-        "RIOOS.ACCOUNTS.*.AUDITS.POST",
-        "RIOOS.ACCOUNTS.*.AUDITS.GET",
-        "RIOOS.ACCOUNTS.*.ASSEMBLYS*EXEC",
-        "RIOOS.AUTHENTICATE.POST",
-        "RIOOS.LOGOUT.POST",
-        "RIOOS.LOGS.GET",
-        "RIOOS.IMAGES.*.VULNERABILITY.GET",
-        "RIOOS.ROLES.GET",
-        "RIOOS.ROLES.POST",
-        "RIOOS.PERMISSIONS.GET",
-        "RIOOS.PERMISSIONS.POST",
-        "RIOOS.TEAMS.POST",
-        "RIOOS.ORIGINS.GET",
-        "RIOOS.ORIGINS.POST",
-        "RIOOS.ORIGINS.*.SECRETS.POST",
-        "RIOOS.ORIGINS.*.SECRETS.GET",
-        "RIOOS.ORIGINS.*.SECRETS*.POST",
-        "RIOOS.ORIGINS.*.SERVICEACCOUNTS.POST",
-        "RIOOS.ORIGINS.*.SERVICEACCOUNTS*.GET",
-        "RIOOS.ORIGINS.*.SERVICEACCOUNTS*.PUT",
-        "RIOOS.ORIGINS.*.SETTINGSMAP*.POST",
-        "RIOOS.SERVICEACCOUNTS.GET",
-        "RIOOS.SETTINGSMAP.GET",
-        "RIOOS.PING.GET",
-        "RIOOS.HEALTHZ.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.POST",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.GET",
-        "RIOOS.SECRETS.GET",
-        "RIOOS.WIZARDS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.POST",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.CONTROLLER-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.NODELET-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.SCHEDULER-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.STORLET-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.PROMETHEUS-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.PROMETHEUS-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.TRAEFIK-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.TRAEFIK-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.CONTROLLER-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.NODELET-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.SCHEDULER-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.STORLET-SHARED-INFORMERS.PUT",
+        "ACCOUNTS.POST",      
+        "AUTHENTICATE.POST",
+        "LOGOUT.POST",
+        "ORIGINS.GET",
+        "ORIGINS.POST",
+        "SECRETS.POST",
+        "SECRETS.GET",
+        "SERVICEACCOUNTS.POST",
+        "SERVICEACCOUNTS.GET",
+        "SERVICEACCOUNTS.PUT",       
+        "PING.GET",
+        "HEALTHZ.GET",
+        "WIZARDS.GET",        
     ];
 
     fn grab(req: &mut Request) -> Option<String> {
@@ -282,20 +251,21 @@ impl URLGrabber {
 
         let system = "rioos";
         let method = &req.method;
-        let resource = format!(
-            "{}{}.{:?}",
-            system,
+        /*let resource = format!(
+            "{}.{:?}",            
             &req.url
                 .path()
                 .into_iter()
                 .map(|p| if RE.is_match(&p) {
-                    ".*".to_string()
+                    "*".to_string()
                 } else {
-                    format!(".{}", &p)
+                    format!("{}", &p)
                 })
                 .collect::<String>(),
             method
-        ).to_uppercase();
+        ).to_uppercase();*/
+
+        let resource = format!("{}.{:?}", &req.url.path()[0], method).to_uppercase();
 
         debug!("{}", format!("↑ Permission {} {}", "→", resource));
 

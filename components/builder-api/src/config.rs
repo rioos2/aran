@@ -86,11 +86,6 @@ impl Config {
         ui.heading("[vaults]")?;
         ui.para(&format!("{:?}", &self.vaults.backend))?;
         ui.heading("[services]")?;
-        ui.para(&self.services.loadbalancer_imagein)?;
-        ui.para(&self.services.loadbalancer_imagename)?;
-        ui.para(&self.services.loadbalancer_cpu)?;
-        ui.para(&self.services.loadbalancer_mem)?;
-        ui.para(&self.services.loadbalancer_disk)?;
         ui.heading("[licenses]")?;
         ui.para(&self.licenses.so_file)?;
         ui.para(&format!("{:?}", &self.licenses.backend))?;

@@ -82,6 +82,7 @@ impl ToAuth for Authenticatable {
     }
 }
 
+
 //convert the Authenticatable into RoleType
 impl Into<RoleType> for Authenticatable {
     fn into(self) -> RoleType {

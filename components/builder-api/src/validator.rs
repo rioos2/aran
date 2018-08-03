@@ -120,29 +120,7 @@ impl ConfigValidator for IdentityCfg {
 impl ConfigValidator for ServicesCfg {
     fn valid(&self) -> Result<()> {
         debug!("Validating services");
-        let mut s: Vec<&str> = vec![];
-
-        if self.loadbalancer_imagein.is_empty() {
-            s.push("loadbalancer_imagein");
-        }
-        if self.loadbalancer_imagename.is_empty() {
-            s.push("loadbalancer_imagename");
-        }
-        if self.loadbalancer_cpu.is_empty() {
-            s.push("loadbalancer_cpu");
-        }
-
-        if self.loadbalancer_mem.is_empty() {
-            s.push("loadbalancer_mem");
-        }
-
-        if self.loadbalancer_mem.is_empty() {
-            s.push("loadbalancer_mem");
-        }
-
-        if self.loadbalancer_disk.is_empty() {
-            s.push("loadbalancer_disk");
-        }
+        let s: Vec<&str> = vec![];
 
         if s.is_empty() {
             return Ok(());

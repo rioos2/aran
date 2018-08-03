@@ -210,13 +210,13 @@ impl Api for StacksFactoryApi {
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         router.post(
-            "/accounts/:account_id/stacksfactorys",
+            "/stacksfactorys",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "stacks_factory",
         );
 
         router.get(
-            "/accounts/:account_id/stacksfactorys",
+            "/stacksfactorys",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "stacksfactors_list",
         );
@@ -226,7 +226,7 @@ impl Api for StacksFactoryApi {
             "stacksfactory_show",
         );
         router.get(
-            "/stacksfactorys",
+            "/stacksfactorys/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "stacksfactory_list_blank",
         );

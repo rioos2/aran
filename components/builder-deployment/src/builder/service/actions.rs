@@ -56,7 +56,7 @@ impl AttachGenerator {
     fn build_loadbalancer(factory: &AssemblyFactory, config: ServicesConfig) -> ServiceAttachAction {
         let mut s: Services = Services::new();
 
-        let ref mut om = s.mut_meta(s.object_meta(), factory.object_meta().name, factory.get_account());
+        let ref mut om = s.mut_meta(s.object_meta(), format!("{}-lb", factory.object_meta().name), factory.get_account());
         s.set_cluster_name(om, factory.get_cluster_name());
 
         s.set_owner_reference(
@@ -80,7 +80,7 @@ impl AttachGenerator {
     fn build_internal_dns(factory: &AssemblyFactory, config: ServicesConfig, assembly: Vec<(String, String)>) -> ServiceAttachAction {
         let mut s: Services = Services::new();
 
-        let ref mut om = s.mut_meta(s.object_meta(), factory.get_name(), factory.get_account());
+        let ref mut om = s.mut_meta(s.object_meta(), format!("{}-dns", factory.get_name()), factory.get_account());
         s.set_cluster_name(om, factory.get_cluster_name());
         s.set_owner_reference(
             om,

@@ -433,14 +433,14 @@ impl Api for StorageApi {
             "storages_show",
         );
         router.put(
-            "storageconnectors/:id/status",
+            "/storageconnectors/:id/status",
             XHandler::new(C {
                 inner: status_update,
             }).before(basic.clone()),
             "storages_status_update",
         );
         router.put(
-            "storageconnectors/:id",
+            "/storageconnectors/:id",
             XHandler::new(C { inner: update }).before(basic.clone()),
             "storages_update",
         );
