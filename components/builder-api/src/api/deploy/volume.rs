@@ -175,7 +175,7 @@ impl Api for VolumeApi {
             "volumes_status_update",
         );
         router.get(
-            "/assemblys/:id/volumes",
+            "/volumes/assemblys/:id",
             XHandler::new(C {
                 inner: show_by_assembly,
             }).before(basic.clone()),

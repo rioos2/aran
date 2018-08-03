@@ -18,7 +18,6 @@ pub mod service_account;
 pub mod session;
 pub mod settings_map;
 pub mod storage;
-pub mod team;
 pub mod volume;
 pub mod audit;
 pub mod devtool;

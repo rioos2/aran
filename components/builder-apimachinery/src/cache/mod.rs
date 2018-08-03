@@ -74,7 +74,7 @@ pub trait CacheService: Send + Sync {
     fn key(&self) -> String;
 
     //The invalidate apply function for the cache
-    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize);
+    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize) -> Option<Arc<String>>;
 
     //The getter for the cache
     fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>>;
@@ -107,7 +107,7 @@ impl CacheService for NewCacheServiceFn {
         self.key.clone()
     }
 
-    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize) {
+    fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize) -> Option<Arc<String>> {
         debug!("✔ apply cache ≈ {}", id);
         self.cache().insert(
             lru,
@@ -116,6 +116,7 @@ impl CacheService for NewCacheServiceFn {
             existing_val_size,
         )
     }
+
 
     fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
         let _self = self.cache();
@@ -139,8 +140,8 @@ impl CacheService for NewCacheServiceFn {
             Some(v) => format!("{:?}",v).capacity(),
             None => 0
         };
-        self.apply(id.clone(), lru, existing_val_size);
-        self.cache().get(lru, self.cache_id(id).clone())
+        self.apply(id.clone(), lru, existing_val_size)
+        //self.cache().get(lru, self.cache_id(id).clone())
     }
 
     fn cache_id(&self, id: api::base::IdGet) -> String {
@@ -462,7 +463,7 @@ impl InMemoryExpander {
             )
         };
         i.ifeed(opt_found_as_str.and_then({
-            |found_as_str| {                
+            |found_as_str| {
                 let account: api::session::Account = serde_json::from_str(&found_as_str).unwrap_or(api::session::Account::new());
                 let roles: Vec<String> = account.get_roles();
                 Some(roles)
@@ -487,7 +488,7 @@ impl InMemoryExpander {
             )
         };
         i.ifeed(opt_found_as_str.and_then({
-            |found_as_str| {               
+            |found_as_str| {
                 let account: api::service_account::ServiceAccount = serde_json::from_str(&found_as_str).unwrap_or(api::service_account::ServiceAccount::new());
                 let roles: Vec<String> = account.get_roles();
                 Some(roles)

@@ -127,3 +127,24 @@ BEGIN
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
+
+---
+--- Table:secrets:update
+---
+CREATE
+OR REPLACE FUNCTION update_secret_v1 (sid bigint, s_secret_type text, s_data JSONB, s_metadata JSONB, s_object_meta JSONB) RETURNS SETOF secrets AS $$
+BEGIN
+   RETURN QUERY
+   UPDATE
+      secrets
+   SET
+      secret_type = s_secret_type,
+      data = s_data,
+      object_meta = s_object_meta,
+      metadata = s_metadata,
+      updated_at = now()
+   WHERE
+      id = sid RETURNING *;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;

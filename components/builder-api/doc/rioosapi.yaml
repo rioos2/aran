@@ -162,12 +162,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
-        '404':
-          description: account not found
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/404Error'
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -264,6 +264,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -313,6 +319,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -349,6 +361,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -409,6 +427,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -466,6 +490,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -521,6 +551,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -564,6 +600,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -615,6 +657,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -675,6 +723,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -731,6 +785,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: Can't connect with database, blockchain (or) other systems for processing.
           content:
@@ -783,6 +843,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -838,6 +904,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -882,6 +954,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -933,6 +1011,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -992,6 +1076,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1057,6 +1147,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1169,6 +1265,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1220,6 +1322,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1247,6 +1355,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1270,6 +1402,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OriginsList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: origins not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1297,12 +1453,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OriginsResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
-          description: Account not found
+          description: origin not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   /services:
     get:
       tags:
@@ -1341,6 +1521,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1385,6 +1571,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1450,6 +1642,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1510,6 +1708,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: Can't connect with database, blockchain (or) other systems for processing.
           content:
@@ -1560,6 +1764,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1608,6 +1818,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1668,6 +1884,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1728,6 +1950,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1773,6 +2001,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1821,6 +2055,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -1878,6 +2118,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
     put:
       tags:
         - datacenters
@@ -1932,6 +2178,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: Can't connect with database, blockchain (or) other systems for processing.
           content:
@@ -1982,6 +2234,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2030,6 +2288,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2090,6 +2354,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2145,6 +2415,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2205,6 +2481,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2437,6 +2719,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2492,6 +2780,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2535,6 +2829,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2595,6 +2895,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2656,6 +2962,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2712,6 +3024,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: Can't connect with database, blockchain (or) other systems for processing.
           content:
@@ -2757,6 +3075,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2804,6 +3128,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2864,6 +3194,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2929,6 +3265,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -2984,6 +3326,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3033,6 +3381,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3095,6 +3449,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3141,6 +3501,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3190,6 +3556,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3241,6 +3613,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3287,6 +3665,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3336,6 +3720,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3387,6 +3777,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3438,6 +3834,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3497,6 +3899,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3542,6 +3950,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3589,6 +4003,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3640,6 +4060,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3699,6 +4125,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3764,6 +4196,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3814,6 +4252,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3861,6 +4305,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3914,6 +4364,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -3969,6 +4425,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4171,6 +4633,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4549,6 +5017,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4579,6 +5053,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4645,6 +5125,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4704,6 +5190,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4754,6 +5246,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4802,6 +5300,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4862,6 +5366,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4926,6 +5436,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -4986,6 +5502,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5060,6 +5582,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5106,6 +5634,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5166,6 +5700,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5225,6 +5765,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5275,6 +5821,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5322,6 +5874,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/plans/{id}':
     get:
       tags:
@@ -5376,6 +5940,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5421,6 +5991,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5468,6 +6044,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5527,6 +6109,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5583,6 +6171,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5648,6 +6242,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5693,6 +6293,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5749,6 +6355,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5807,6 +6419,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5871,6 +6489,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -5927,6 +6551,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6013,6 +6643,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/logs/{assembly_id}(ques)range=10m&limits=1':
     get:
       tags:
@@ -6118,6 +6760,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "anchore connection refused"
           content:
@@ -6247,6 +6895,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6293,6 +6947,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6352,6 +7012,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6411,6 +7077,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6477,6 +7149,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6540,6 +7218,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6585,6 +7269,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6640,6 +7330,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6698,6 +7394,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6757,6 +7459,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6820,6 +7528,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6881,6 +7595,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6931,6 +7651,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -6977,6 +7703,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7035,6 +7767,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7094,6 +7832,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7148,6 +7892,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7193,6 +7943,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7239,6 +7995,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7297,6 +8059,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7356,6 +8124,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7410,6 +8184,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7462,6 +8242,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7517,6 +8303,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7561,6 +8353,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7606,6 +8404,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7652,6 +8456,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7712,6 +8522,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7777,6 +8593,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -7831,6 +8653,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
           description: "Can't connect with database, blockchain (or) other systems for processing."
           content:
@@ -8583,10 +9411,11 @@ components:
       type: object
       required:
         - name
-        - account
       properties:
         object_meta:
           type: object
+          required:
+            - account
           properties:
             name:
               type: string
@@ -8596,60 +9425,6 @@ components:
               type: string
               description: "account  defines the id the user account"
               example: "870109412813971456"
-            created_at:
-              type: string
-              description: "created_at is a timestamp representing the server time when this object was created. "
-              example: "2017-12-11T11:29:50.547529+00:00"
-            deleted_at:
-              type: string
-              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
-              example: ""
-            deletion_grace_period_seconds:
-              type: integer
-              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
-              example: 30
-            cluster_name:
-              type: string
-              description: "The name of the cluster(datacenter/location) which the object belongs to."
-              example: "chennai"
-            labels:
-              type: object
-              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
-            annotations:
-              type: object
-              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
-            finalizers:
-              type: array
-              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
-              items:
-                type: string
-                example: ""
-            owner_references:
-              type: array
-              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
-              items:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                    description: "Kind of the referent."
-                    example: ""
-                  api_version:
-                    type: string
-                    description: " API version of the referent."
-                    example: ""
-                  name:
-                    type: string
-                    description: "Name of the referent."
-                    example: ""
-                  uid:
-                    type: string
-                    description: "UID of the referent."
-                    example: ""
-                  block_owner_deletion:
-                    type: boolean
-                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
-                    example: false
         name:
           type: string
           description: "Name of the organization. This fields is same as ObjectMeta.name"
@@ -8660,7 +9435,7 @@ components:
         kind:
           type: string
           description: "kind is a string value representing the REST resource this object represents."
-          example: OriginsList
+          example: OriginList
         api_version:
           type: string
           description: "api version defines the versioned schema of this representation of an object"
@@ -13079,7 +13854,7 @@ components:
       properties:
         name:
           type: string
-          example: "rioos:superuser"
+          example: "RIOOS:SUPERUSER"
           description: "A role is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a role "
         description:
           type: string
@@ -13092,7 +13867,7 @@ components:
           example: "89075234567834563"
         name:
           type: string
-          example: "rioos:superuser"
+          example: "RIOOS:SUPERUSER"
         description:
           type: string
           example: "Superuser of RIO/OS. God given powers.  instance"
@@ -13129,15 +13904,15 @@ components:
             $ref: '#/components/schemas/RoleDataList'
           example:
             - id: "89075234567834568"
-              name: "rioos:loneranger"
+              name: "RIOOS:LONERANGER"
               description: "This is a regular  user"
               created_at: "2017-09-21T06:51:38.763014+00:00"
-            - id: "89075234567834567"
-              name: "rioos:superuser"
+            - id: "89075234567834563"
+              name: "RIOOS:SUPERUSER"
               description: "Superuser of RIO/OS. God given powers.  instance"
               created_at: "2017-09-21T06:51:38.763014+00:00"
             - id: "89075234567834566"
-              name: "rioos:universalsoldier"
+              name: "RIOOS:UNIVERSALSOLDIER"
               description: "Universalsoldier is system level user (like service account). instance"
               created_at: "2017-09-21T06:51:38.763014+00:00"
     Permissions:
@@ -13148,7 +13923,7 @@ components:
           example: "89075234567834563"
         name:
           type: string
-          example: "rioos.*.*"
+          example: "RIOOS.*.*"
         description:
           type: string
           example: "Allow any access to all resources."
@@ -13163,7 +13938,7 @@ components:
           example: "89075234567834563"
         name:
           type: string
-          example: "rioos.*.*"
+          example: "RIOOS.*.*"
         description:
           type: string
           example: "Allow any access to all resources."
@@ -19029,7 +19804,7 @@ components:
           example: "Refused since the requested resource is must have headers for the supported authentication. Refer  https://bit.ly/rioosauthetication for the supported authentication."
         reason:
           type: string
-          example: "Not Acceptable Headers"
+          example: "NotAcceptable"
     403Error:
       required:
         - status

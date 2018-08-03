@@ -30,11 +30,17 @@ impl Cacher {
         key: String,
         value: Option<String>,
         existing_val_size: usize,
-    ) {
-        if value.is_some() {
-            debug!("» Flock PUT: cached ≈ {}", key);
-            let val = value.unwrap();                
-            &mut lru.put(key, val.clone(), val.capacity(), existing_val_size);
+    ) -> Option<Arc<String>> {       
+        match value {
+            Some(v) => {
+                debug!("» Flock PUT: Some cached ≈ {}", key);
+                &mut lru.put(key, v.clone(), v.capacity(), existing_val_size);
+                Some(Arc::new(v))
+            }
+            None => {
+                debug!("» Flock PUT: None cached ≈ {}", key);
+                None
+            }
         }
     }
 }

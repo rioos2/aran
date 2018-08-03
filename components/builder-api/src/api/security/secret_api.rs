@@ -58,17 +58,15 @@ impl SecretApi {
         debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
-
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
             unmarshall_body.get_name(),
             self.verify_account(req)?.get_name(),
         );
-
+        
         unmarshall_body.set_meta(type_meta(req), m);
 
         let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
-
         match data.secure(&securer::parse::parse_key(&unmarshall_body)?) {
             Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
             Err(err) => Err(internal_error(&format!("{}", err))),
@@ -132,7 +130,7 @@ impl SecretApi {
             Ok(Some(secrets)) => {
                 let data = json!({
                             "type": typ,
-                            "data": secrets,      
+                            "data": secrets,
                             });
                 serde_json::to_string(&data).unwrap()
             }
@@ -229,6 +227,26 @@ impl SecretApi {
         }
     }
 
+    //PUT: /secrets/:id
+    //Input secrets id and returns updated secrets
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        let mut unmarshall_body =
+            self.validate(req.get::<bodyparser::Struct<Secret>>()?)?;
+        unmarshall_body.set_id(params.get_id());
+
+        match secret::DataStore::update(&self.conn,&unmarshall_body) {
+            Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
+        }
+    }
+
     //GET: /origin/:origin_name/secrets/:secrets_name
     //Input id - string as input and returns a secrets
     fn show_by_origin_and_name(&self, req: &mut Request) -> AranResult<Response> {
@@ -286,9 +304,12 @@ impl Api for SecretApi {
         let show_by_org_and_name =
             move |req: &mut Request| -> AranResult<Response> { _self.show_by_origin_and_name(req) };
 
+        let _self = self.clone();
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
+
         //secret API
         router.post(
-            "/accounts/:account_id/secrets",
+            "/secrets",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "secrets",
         );
@@ -296,7 +317,7 @@ impl Api for SecretApi {
         //MEGAM
         //without authentication
         router.post(
-            "/origins/:origin_id/secrets",
+            "/secrets/origins/:origin_id",
             XHandler::new(C {
                 inner: create_by_origin,
             }),
@@ -311,7 +332,7 @@ impl Api for SecretApi {
         //without authentication
 
         router.get(
-            "/secrets",
+            "/secrets/all",
             XHandler::new(C { inner: list_blank }),
             "secrets_list",
         );
@@ -321,15 +342,20 @@ impl Api for SecretApi {
             "secret_show",
         );
         router.get(
-            "/accounts/:account_id/secrets",
+            "/secrets",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "secret_show_by_account",
+        );
+        router.put(
+            "/secrets/:id",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "secret_update",
         );
 
         //MEGAM
         //without authentication
         router.get(
-            "/origins/:origin_id/secrets",
+            "/secrets/origins/:origin_id",
             C {
                 inner: list_by_origin,
             },
@@ -343,7 +369,7 @@ impl Api for SecretApi {
             "secret_show_by_origin_name",
         );*/
         router.get(
-            "/origins/:origin/secrets/:secret_name",
+            "/secrets/:secret_name/origins/:origin",
             C {
                 inner: show_by_org_and_name,
             },

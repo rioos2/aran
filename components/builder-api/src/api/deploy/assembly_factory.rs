@@ -234,13 +234,13 @@ impl Api for AssemblyFactoryApi {
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         router.post(
-            "/accounts/:account_id/assemblyfactorys",
+            "/assemblyfactorys",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "assembly_factorys",
         );
 
         router.get(
-            "/accounts/:account_id/assemblyfactorys",
+            "/assemblyfactorys",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "assemblyfactorys_list",
         );
@@ -255,7 +255,7 @@ impl Api for AssemblyFactoryApi {
             "stacksfactorys_describe",
         );
         router.get(
-            "/assemblyfactorys",
+            "/assemblyfactorys/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "assemblys_factorys_list_blank",
         );

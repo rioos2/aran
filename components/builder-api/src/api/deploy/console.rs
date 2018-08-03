@@ -95,7 +95,7 @@ impl Api for Containers {
         let get_url = move |req: &mut Request| -> AranResult<Response> { _self.get(req) };
 
         router.get(
-            "/accounts/:account_id/assemblys/:id/exec",
+            "/assemblys/:id/exec",
             XHandler::new(C { inner: get_url }).before(basic.clone()),
             "get_console_url",
         );

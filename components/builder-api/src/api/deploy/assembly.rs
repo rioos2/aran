@@ -119,7 +119,7 @@ impl AssemblyApi {
     ///Returns all the Assemblys (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_account(req)?;
-
+      
         match assembly::DataStore::new(&self.conn).list(&params) {
             Ok(Some(assemblys)) => Ok(render_json_list(status::Ok, dispatch(req), &assemblys)),
             Ok(None) => Err(not_found_error(&format!(
@@ -261,12 +261,12 @@ impl Api for AssemblyApi {
 
         //routes: assemblys
         router.post(
-            "/accounts/:account_id/assemblys",
+            "/assemblys",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "assemblys",
         );
         router.get(
-            "/accounts/:account_id/assemblys",
+            "/assemblys",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "assembly_list",
         );
@@ -283,7 +283,7 @@ impl Api for AssemblyApi {
             "assemblyfactorys_describe",
         );
         router.get(
-            "/assemblys",
+            "/assemblys/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "assembly_list_blank",
         );

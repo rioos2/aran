@@ -7,4 +7,3 @@ pub mod pack;
 pub mod rendering;
 pub mod requested_path;
 pub mod static_handler;
-pub mod token_target;

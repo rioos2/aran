@@ -211,13 +211,15 @@ mod test {
                 },
             "status":"trial",
             "product":"Rio/OS",
-            "activation_code":"ertyuicvbnm456789dfghjk456789",
+            "license_id":"4323456543567",
+            "password":"65efrg76fgyuijhgtyu",
             "expired_at":"30"}"#;
         let license: Licenses = json_decode(val).unwrap();
         assert_eq!(license.status, "trial");
         assert_eq!(license.product, "Rio/OS");
         assert_eq!(license.expired_at, "30");
-        assert_eq!(license.activation_code, "ertyuicvbnm456789dfghjk456789");
+        assert_eq!(license.license_id, "4323456543567");
+        assert_eq!(license.password, "65efrg76fgyuijhgtyu");
     }
 
 }

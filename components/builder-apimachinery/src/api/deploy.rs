@@ -328,7 +328,7 @@ impl MetaFields for StacksFactory {
 }
 
 impl ChildTypeMeta for StacksFactory {
-    const CHILD_KIND: &'static str = "POST:accountsassemblyfactorys";
+    const CHILD_KIND: &'static str = "POST:assemblyfactorys";
 }
 
 ////// AssemblyFactory structure related
