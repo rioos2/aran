@@ -130,7 +130,7 @@ impl SecretApi {
             Ok(Some(secrets)) => {
                 let data = json!({
                             "type": typ,
-                            "data": secrets,      
+                            "data": secrets,
                             });
                 serde_json::to_string(&data).unwrap()
             }
@@ -227,6 +227,26 @@ impl SecretApi {
         }
     }
 
+    //PUT: /secrets/:id
+    //Input secrets id and returns updated secrets
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        let mut unmarshall_body =
+            self.validate(req.get::<bodyparser::Struct<Secret>>()?)?;
+        unmarshall_body.set_id(params.get_id());
+
+        match secret::DataStore::update(&self.conn,&unmarshall_body) {
+            Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
+        }
+    }
+
     //GET: /origin/:origin_name/secrets/:secrets_name
     //Input id - string as input and returns a secrets
     fn show_by_origin_and_name(&self, req: &mut Request) -> AranResult<Response> {
@@ -284,6 +304,9 @@ impl Api for SecretApi {
         let show_by_org_and_name =
             move |req: &mut Request| -> AranResult<Response> { _self.show_by_origin_and_name(req) };
 
+        let _self = self.clone();
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
+
         //secret API
         router.post(
             "/secrets",
@@ -322,6 +345,11 @@ impl Api for SecretApi {
             "/secrets",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "secret_show_by_account",
+        );
+        router.put(
+            "/secrets/:id",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "secret_update",
         );
 
         //MEGAM

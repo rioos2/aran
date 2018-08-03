@@ -9,20 +9,22 @@ use clusters::models::healthz::DataStore;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use deploy::models::assembly;
+use deploy::models::{assembly, assemblyfactory, blueprint};
 use deploy::replicas_expander::ReplicasExpander;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::{IdGet, MetaFields};
 use protocol::api::scale::{VerticalScaling, VerticalScalingStatusUpdate};
 use protocol::api::schema::{dispatch, type_meta};
+
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_METRIC, CACHE_PREFIX_FACTORY, CACHE_PREFIX_PLAN};
 use router::Router;
-use scale::{scaling, verticalscaling_ds};
+use scale::{scaling, models};
 use serde_json;
 use std::sync::Arc;
 use telemetry::metrics::prometheus::PrometheusClient;
@@ -53,7 +55,9 @@ impl VerticalScalingApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<VerticalScaling>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<VerticalScaling>>()?,
+        )?;
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
             unmarshall_body.get_name(),
@@ -66,7 +70,7 @@ impl VerticalScalingApi {
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match verticalscaling_ds::DataStore::new(&self.conn).create(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -78,11 +82,12 @@ impl VerticalScalingApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body =
-            self.validate(req.get::<bodyparser::Struct<VerticalScalingStatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<VerticalScalingStatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
-        match verticalscaling_ds::DataStore::new(&self.conn).status_update(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(vs_update)) => Ok(render_json(status::Ok, &vs_update)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -98,10 +103,12 @@ impl VerticalScalingApi {
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<VerticalScaling>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<VerticalScaling>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
-        match verticalscaling_ds::DataStore::new(&self.conn).update(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(vertical)) => Ok(render_json(status::Ok, &vertical)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -117,7 +124,7 @@ impl VerticalScalingApi {
     //Returns an verticalscaling
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match verticalscaling_ds::DataStore::new(&self.conn).show(&idget) {
+        let res = match models::verticalscaling::DataStore::new(&self.conn).show(&idget) {
             Ok(Some(vertical)) => {
                 let data = json!({
                             "type": typ,
@@ -133,7 +140,7 @@ impl VerticalScalingApi {
     //verticalscaling
     //Global: Returns all the verticalScalings (irrespective of origins)
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match verticalscaling_ds::DataStore::new(&self.conn).list_blank() {
+        match models::verticalscaling::DataStore::new(&self.conn).list_blank() {
             Ok(Some(vertical)) => Ok(render_json_list(status::Ok, dispatch(req), &vertical)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -161,7 +168,7 @@ impl VerticalScalingApi {
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn scale(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-        match verticalscaling_ds::DataStore::new(&self.conn).show(&params) {
+        match models::verticalscaling::DataStore::new(&self.conn).show(&params) {
             Ok(Some(vs)) => {
                 let af_id: Vec<IdGet> = vs.get_owner_references()
                     .iter()
@@ -203,6 +210,7 @@ impl Api for VerticalScalingApi {
         let basic = Authenticated::new(&*config);
 
         //closures : scaling
+        self.with_cache();
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
@@ -210,8 +218,7 @@ impl Api for VerticalScalingApi {
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
@@ -230,9 +237,7 @@ impl Api for VerticalScalingApi {
 
         router.put(
             "/verticalscaling/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "vertical_scaling_status_update",
         );
         router.put(
@@ -247,7 +252,7 @@ impl Api for VerticalScalingApi {
         );
 
         router.get(
-            "/verticalscaling/scale/:id",
+            "/verticalscaling/:id/scale",
             XHandler::new(C { inner: scale }).before(basic.clone()),
             "verticalscaling_scale",
         );
@@ -258,6 +263,49 @@ impl Api for VerticalScalingApi {
         );
     }
 }
+
+impl ExpanderSender for VerticalScalingApi {
+    fn with_cache(&mut self) {
+        let _conn = self.conn.clone();
+        let plan_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_PLAN.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Planfactory live load for ≈ {}", id);
+                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
+                    serde_json::to_string(&p).ok()
+                })
+            }),
+        ));
+
+        let mut _conn = self.conn.clone();
+        _conn.expander.with(plan_service.clone());
+        let factory_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_FACTORY.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Assemblyfactory live load for ≈ {}", id);
+                assemblyfactory::DataStore::new(&_conn)
+                    .show(&id)
+                    .ok()
+                    .and_then(|f| serde_json::to_string(&f).ok())
+            }),
+        ));
+
+        let _conn = self.conn.clone();
+        let _prom = self.prom.clone();
+        let metric_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_METRIC.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                assembly::DataStore::new(&_conn)
+                    .show_metrics(&id, &_prom)
+                    .ok()
+                    .and_then(|m| serde_json::to_string(&m).ok())
+            }),
+        ));
+        &self.conn.expander.with(factory_service);
+        &self.conn.expander.with(metric_service);
+    }
+}
+
 
 ///We say verticalscalingAPI resource needs to be validated.
 impl ApiValidator for VerticalScalingApi {}
@@ -286,10 +334,8 @@ impl Validator for VerticalScaling {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| {
-                    if x.uid.len() <= 0 {
-                        s.push("uid".to_string());
-                    }
+                .map(|x| if x.uid.len() <= 0 {
+                    s.push("uid".to_string());
                 })
                 .collect::<Vec<_>>();
         }

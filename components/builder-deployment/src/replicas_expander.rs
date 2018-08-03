@@ -1,14 +1,19 @@
+
+
+use super::models::assemblyfactory;
+use db::data_store::DataStoreConn;
 use human_size::Size;
-use protocol::api::base::{MetaFields, WhoAmITypeMeta};
+
+use job::{error, models, JobOutput};
+use protocol::api::{deploy, job, node, scale};
+use protocol::api::base::{MetaFields, WhoAmITypeMeta, Status, IdGet};
 ///replicas expander
 use protocol::api::schema::type_meta_url;
-use protocol::api::{deploy, job, node, scale};
 
-use job::{error, job_ds, JobOutput};
-
-use db::data_store::DataStoreConn;
-
-const METRIC_LIMIT: i32 = 10;
+const METRIC_LIMIT: &'static str = "10";
+use rand::{self, Rng};
+use rand::distributions::Alphanumeric;
+const PRE_NAME_LEN: usize = 5;
 
 pub struct ReplicasExpander<'a> {
     conn: &'a DataStoreConn,
@@ -18,12 +23,7 @@ pub struct ReplicasExpander<'a> {
 }
 
 impl<'a> ReplicasExpander<'a> {
-    pub fn new(
-        conn: &'a DataStoreConn,
-        assemblys: Vec<deploy::Assembly>,
-        overall_metrics: Option<node::HealthzAllGetResponse>,
-        scale: &'a scale::VerticalScaling,
-    ) -> Self {
+    pub fn new(conn: &'a DataStoreConn, assemblys: Vec<deploy::Assembly>, overall_metrics: Option<node::HealthzAllGetResponse>, scale: &'a scale::VerticalScaling) -> Self {
         ReplicasExpander {
             conn: &*conn,
             assemblys: assemblys,
@@ -39,7 +39,19 @@ impl<'a> ReplicasExpander<'a> {
             return Err(error::Error::METRICLIMITERROR);
             // assembly::DataStore::new(&self.conn).status_update(&self.build_assembly_status());
         }
-        job_ds::JobDS::create(&self.conn, &self.build_job(&qualified_assembly, &self.get_scale_type()))
+
+        let id_get = IdGet::with_id(qualified_assembly.get_owner_references()[0].get_uid());
+
+        let factory = assemblyfactory::DataStore::new(&self.conn)
+            .show(&id_get)
+            .unwrap();
+
+        if factory.is_some() {
+            let mut factory = factory.unwrap();
+            factory.set_resources(self.scaling_policy.get_status().get_desired_resource());
+            assemblyfactory::DataStore::new(&self.conn).update(&factory);
+        }
+        models::jobs::DataStore::new(&self.conn).create(&self.build_job(&qualified_assembly, &self.get_scale_type()))
     }
 
     // should return the least resource utilies assembly
@@ -52,9 +64,7 @@ impl<'a> ReplicasExpander<'a> {
 
     /// check the datacenter metrics and node metric of assembly
     fn satisfy_metrics(&self, assembly: &deploy::Assembly) -> bool {
-        if (self.assembly_metric(assembly) == 0 || self.average_node_metric() == 0)
-            || (self.average_node_metric() < METRIC_LIMIT && self.assembly_metric(assembly) < METRIC_LIMIT)
-        {
+        if (self.average_node_metric() == None || self.assembly_metric(assembly) == None) || (self.average_node_metric() < self.metric_limit() && self.assembly_metric(assembly) < self.metric_limit()) {
             return false;
         }
         return true;
@@ -62,17 +72,21 @@ impl<'a> ReplicasExpander<'a> {
 
     /// compare the current and disered resource of vs to scale_down or scale_up
     fn get_scale_type(&self) -> String {
-        if self.current_cpu() < self.desired_cpu() && self.current_ram() < self.desired_ram() {
-            return "verticalScaleUp".to_string();
+        if self.current_cpu() < self.desired_cpu() || self.current_ram() < self.desired_ram() {
+            return "scale_up".to_string();
         }
-        return "verticalScaleDown".to_string();
+        return "scale_down".to_string();
     }
 
     /// create the new job for scale_up or scale_down
     fn build_job(&self, assembly: &deploy::Assembly, scale_type: &str) -> job::Jobs {
         let mut job_create = job::Jobs::new();
 
-        let ref mut om = job_create.mut_meta(job_create.object_meta(), assembly.get_name(), assembly.get_account());
+        let ref mut om = job_create.mut_meta(
+            job_create.object_meta(),
+            format!("{}-{}", self.pre_name(), assembly.get_name()),
+            assembly.get_account(),
+        );
         job_create.set_owner_reference(
             om,
             assembly.type_meta().kind,
@@ -85,10 +99,16 @@ impl<'a> ReplicasExpander<'a> {
         job_create.set_meta(type_meta_url(jackie), om.clone());
 
         job_create.set_spec(job::SpecData::with(
-            assembly.get_metadata().get("rioos_sh_scheduled_node").unwrap_or(&"".to_string()),
+            assembly
+                .get_metadata()
+                .get("rioos_sh_scheduled_node")
+                .unwrap_or(&"".to_string()),
             "assembly",
             scale_type,
         ));
+
+        job_create.set_status(Status::pending());
+
         job_create
     }
 
@@ -143,9 +163,9 @@ impl<'a> ReplicasExpander<'a> {
         )
     }
 
-    fn average_node_metric(&self) -> i32 {
-        let mut temp = 0;
-        let average: String = self.overall_metrics
+    fn average_node_metric(&self) -> Option<String> {
+        let mut temp = 0.0;
+        let average: Option<String> = self.overall_metrics
             .clone()
             .unwrap()
             .get_results()
@@ -153,28 +173,42 @@ impl<'a> ReplicasExpander<'a> {
             .get_counters()
             .iter()
             .map(|x| {
-                if x.get_counter().parse::<i32>().unwrap() > 0 {
-                    temp = temp + x.get_counter().parse::<i32>().unwrap_or(0);
-                    let avg = (temp + 10) / 3;
-                    return avg.to_string();
+                if x.get_counter().as_str() > "0" {
+                    temp = temp + x.get_counter().parse::<f64>().unwrap_or(0.0);
+                    let avg = (temp + 10.0) / 3.0;
+                    return Some(avg.to_string());
                 }
-                return "0".to_string();
+                None
             })
             .collect();
-        average.parse::<i32>().unwrap_or(0)
+        average
     }
 
-    fn assembly_metric(&self, assembly: &deploy::Assembly) -> i32 {
+    fn assembly_metric(&self, assembly: &deploy::Assembly) -> Option<String> {
         if assembly.get_spec().get_metrics().is_some() {
-            return assembly
-                .get_spec()
-                .get_metrics()
-                .unwrap()
-                .get(&assembly.get_id())
-                .unwrap_or(&"0".to_string())
-                .parse::<i32>()
-                .unwrap_or(0);
+            return Some(
+                assembly
+                    .get_spec()
+                    .get_metrics()
+                    .unwrap()
+                    .get(&assembly.get_id())
+                    .unwrap()
+                    .to_string(),
+            );
+
         }
-        return 0;
+        return None;
+    }
+
+    fn metric_limit(&self) -> Option<String> {
+        Some(METRIC_LIMIT.to_string())
+    }
+
+    fn pre_name(&self) -> String {
+        rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(PRE_NAME_LEN)
+            .collect::<String>()
+            .to_lowercase()
     }
 }

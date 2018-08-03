@@ -19,6 +19,7 @@ pub enum Error {
     ServiceAccountGet(postgres::error::Error),
     SettingsMapCreate(postgres::error::Error),
     SettingsMapGet(postgres::error::Error),
+    SecretUpdate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -45,6 +46,7 @@ impl fmt::Display for Error {
                 "Error retrive service_account for account in database, {}",
                 e
             ),
+            Error::SecretUpdate(ref e) => format!("Database error updating a secret, {}", e),
             Error::ServiceAccountGet(ref e) => format!("Error retrive service_account , {}", e),
         };
         write!(f, "{}", msg)
@@ -64,6 +66,7 @@ impl error::Error for Error {
             Error::ServiceAccountGet(ref err) => err.description(),
             Error::SettingsMapCreate(ref err) => err.description(),
             Error::SettingsMapGet(ref err) => err.description(),
+            Error::SecretUpdate(ref err) => err.description(),
         }
     }
 }
