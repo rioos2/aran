@@ -58,17 +58,15 @@ impl SecretApi {
         debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
-
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
             unmarshall_body.get_name(),
             self.verify_account(req)?.get_name(),
         );
-
+        
         unmarshall_body.set_meta(type_meta(req), m);
 
         let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
-
         match data.secure(&securer::parse::parse_key(&unmarshall_body)?) {
             Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
             Err(err) => Err(internal_error(&format!("{}", err))),

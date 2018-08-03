@@ -15,15 +15,18 @@ lazy_static! {
 
         map.register("POST:assemblyfactorys", "AssemblyFactory");
         map.register("GET:assemblyfactorys", "AssemblyFactoryList");
+        map.register("GET:assemblyfactorysall", "AssemblyFactoryList");
 
         map.register("POST:stacksfactorys", "StacksFactory");
         map.register("GET:stacksfactorys", "StacksFactoryList");
+        map.register("GET:stacksfactorysall", "StacksFactoryList");
 
         map.register("POST:plans", "PlanFactory");
         map.register("GET:plans", "PlanFactoryList");
 
         map.register("POST:assemblys", "Assembly");
         map.register("GET:assemblys", "AssemblyList");
+        map.register("GET:assemblysall", "AssemblyList");
         map.register("GET:assemblyfactorysdescribe", "AssemblyList");
         map.register("GET:stacksfactorysdescribe", "AssemblyFactoryList");
 

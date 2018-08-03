@@ -162,7 +162,7 @@ impl Api for OriginApi {
         router.get("/origins", XHandler::new(C { inner: list_blank }), "origin_list");
 
         router.get(
-            "accounts/:account_id/origins",
+            "/accounts/:account_id/origins",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "origin_list_by_account"
          );

@@ -171,7 +171,6 @@ impl<'a> ReplicaContext<'a> {
         let ref mut om = assembly.mut_meta(assembly.object_meta(), self.namer.next(x + 1), self.parent.get_account());
         //set the parents datacenter/location or clustername
         assembly.set_cluster_name(om, self.parent.get_cluster_name());
-
         //send the parents typemeta.
         assembly.set_owner_reference(
             om,
