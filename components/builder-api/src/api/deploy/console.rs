@@ -33,6 +33,7 @@ impl Containers {
 
     fn get(&self, req: &mut Request) -> AranResult<Response> {
         let (acc, asm_id) = {
+            let params = req.extensions.get::<Router>().unwrap();
             let account = self.verify_account(req)?;
             let acc = account.get_name();
             let asm_id = params.find("id").unwrap().to_owned();
@@ -101,3 +102,5 @@ impl Api for Containers {
         );
     }
 }
+
+impl ParmsVerifier for Containers {}
