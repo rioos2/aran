@@ -67,3 +67,17 @@ pub enum LicenseType {
     FullNonExpiring = 1,
     TimeLimited = 10,
 }
+
+//Enumeration for built-in system identifier algorithms.
+pub enum SK_SystemIdentifierAlgorithm {
+    //Use for adding current identifiers for all relevant Network Interface Cards (NICs) using their MAC/physical addresses.
+    SK_SYSTEM_IDENTIFIER_ALGORITHM_NIC = 10,
+    //Use for adding a current identifier for the computer's name.
+    SK_SYSTEM_IDENTIFIER_ALGORITHM_COMPUTER_NAME = 20,
+    //Use for adding current identifiers for the volume format serials on all accessible partitions on all available hard drives which report themselves as "fixed." (Note that some removable drives such as some USB drives or hard drives placed in USB enclosures may still report themselves as being "fixed" drives.)
+    SK_SYSTEM_IDENTIFIER_ALGORITHM_HARD_DISK_VOLUME_SERIAL = 30,
+    //Use for adding identifiers a network share location that use being used to store the applications license file and/or network semaphore files.
+    SK_SYSTEM_IDENTIFIER_ALGORITHM_NETWORK_NAME = 40,
+    //Use for adding current identifiers for all relevant usernames
+    SK_SYSTEM_IDENTIFIER_ALGORITHM_USER_NAME = 50,
+}

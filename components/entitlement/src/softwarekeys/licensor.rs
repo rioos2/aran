@@ -167,7 +167,8 @@ impl NativeSDK {
             self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
-                20,
+                SK_SystemIdentifierAlgorithm::SK_SYSTEM_IDENTIFIER_ALGORITHM_COMPUTER_NAME as
+                    c_int,
                 0 as *const c_char,
                 countPtr,
             ))?;
@@ -179,17 +180,17 @@ impl NativeSDK {
             self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
-                30,
+                SK_SystemIdentifierAlgorithm::SK_SYSTEM_IDENTIFIER_ALGORITHM_HARD_DISK_VOLUME_SERIAL as
+                    c_int,
                 0 as *const c_char,
                 countPtr,
             ))?;
-            if 0 == *countPtr {
-                return self.check_result(ResultCode::SK_ERROR_INVALID_DATA as i32);
-            }
+
             self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
-                10,
+                SK_SystemIdentifierAlgorithm::SK_SYSTEM_IDENTIFIER_ALGORITHM_NIC as
+                    c_int,
                 0 as *const c_char,
                 countPtr,
             ))?;
@@ -391,6 +392,7 @@ impl NativeSDK {
                 countPtr,
                 matchesPtr,
             ))?;
+
 
             if *matchesPtr < 1 {
                 return Ok(false);
