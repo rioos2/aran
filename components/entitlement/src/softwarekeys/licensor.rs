@@ -154,6 +154,7 @@ impl NativeSDK {
     //1.system_identifiers fn  identify the current system
     //2.system identifier passes the argument 20 to Make sure we have a computer name identifier
     //3.system identifier passes the argument 30 to  Make sure we have a hard disk volume serial identifier
+    //4.system identifier passes the argument 10 to Make sure we have a network interface card identifier
     fn initialize_system_identitifers(&mut self) -> Result<()> {
         unsafe {
             let system_identifiers = self.lib.get::<fn(SK_ApiContext,

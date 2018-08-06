@@ -49,7 +49,7 @@ impl BlockChainApi {
         }
     }
 
-    //POST: /accounts/:account_id/audits
+    //POST: /audits
     //The body has the input audit::AuditEvent
     //Upon receipt of the AuditEvent with an account_id, the event
     //is sent to an asynchronous channel for processing.
@@ -71,7 +71,7 @@ impl BlockChainApi {
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
             unmarshall_body.get_name(),
-            self.verify_account(req)?.get_name(),
+            unmarshall_body.get_account(),
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
@@ -82,11 +82,11 @@ impl BlockChainApi {
         Ok(render_json(status::Ok, &unmarshall_body))
     }
 
-    //GET: /accounts/:account_id/audits
+    //GET: /audits
     //Input account_id
     // Returns all the audits (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
+        let params = self.verify_account(req)?;
 
         let data = ledger::from_config(&self.clientcfg)?;
 
@@ -111,17 +111,9 @@ impl Api for BlockChainApi {
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         //secret API
-        router.post(
-            "/accounts/:account_id/audits",
-            XHandler::new(C { inner: create }),
-            "audits",
-        );
+        router.post("/audits", XHandler::new(C { inner: create }), "audits");
 
-        router.get(
-            "/accounts/:id/audits",
-            XHandler::new(C { inner: list }),
-            "list_audits",
-        );
+        router.get("/audits", XHandler::new(C { inner: list }), "list_audits");
     }
 }
 
