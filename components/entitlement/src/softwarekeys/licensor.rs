@@ -165,6 +165,18 @@ impl NativeSDK {
                        -> c_int>(SK_IDNTIFIER_ALGORITHAM.as_bytes())?;
             let countPtr: &mut c_int = &mut 0;
 
+            /* Initial the system identifiers
+System identifiers are used to identify a system in SoftwareKey. SoftwareKey uses a combination of system identifiers (eg: computername, harddisk volume serial, nic).
+We use a system to be identified by
+COMPUTERNAME (Required)
+HARD DISK VOLUME SERIAL (OPTIONAL)
+NIC (OPTIONAL)
+
+    1.system_identifiers fn identifies the current system
+    2.system identifier passes the argument 20 to Make sure we have a computer name identifier
+    3.system identifier passes the argument 30 to  Optional - check for a hard disk volume serial identifier. If the api_gateway runs inside a container then the hard disk volume serial identifier is blank.
+    4.system identifier passes the argument 10 to  Optional - check for a nic serial identifier. If the api_gateway runs inside a container then the nic serial idential is blank.
+*/
             self.check_result(system_identifiers(
                 self.context,
                 SK_FLAGS_NONE,
@@ -175,7 +187,7 @@ impl NativeSDK {
             ))?;
 
             if 0 == *countPtr {
-                return self.check_result(ResultCode::SK_ERROR_INVALID_DATA as i32);
+                return self.check_result(ResultCode::SK_ERROR_DID_NOT_SYSTEM_IDENTIFIERS as i32);
             }
 
             self.check_result(system_identifiers(
