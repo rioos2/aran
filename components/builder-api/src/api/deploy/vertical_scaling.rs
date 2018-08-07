@@ -257,7 +257,7 @@ impl Api for VerticalScalingApi {
             "verticalscaling_scale",
         );
         router.get(
-            "/verticalscaling/:id/metrics",
+            "/metrics/verticalscaling/:id",
             XHandler::new(C { inner: metrics }).before(basic.clone()),
             "vertical_scaling_metrics",
         );

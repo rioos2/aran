@@ -208,7 +208,7 @@ impl Api for NodeApi {
         );
 
         router.post(
-            "/nodes/discover",
+            "/ninjasz",
             XHandler::new(C { inner: discovery }).before(basic.clone()),
             "node_discovery",
         );

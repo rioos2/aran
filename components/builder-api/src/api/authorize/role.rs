@@ -13,14 +13,14 @@ use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use config::Config;
 use error::Error;
 use protocol::api::schema::dispatch;
-
+use protocol::api::schema::type_meta;
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 
 /// TO_DO: Should be named  (authorize::models::roles, authorize::models::permission)
 use authorize::models::role;
-
+use protocol::api::base::MetaFields;
 use protocol::api::authorize::Roles;
 
 use db::data_store::DataStoreConn;
@@ -52,7 +52,16 @@ impl RoleApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn role_create(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate::<Roles>(req.get::<bodyparser::Struct<Roles>>()?)?;
+        let mut unmarshall_body = self.validate::<Roles>(req.get::<bodyparser::Struct<Roles>>()?)?;
+
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
+
+        unmarshall_body.set_meta(type_meta(req), m);
+
         debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
@@ -102,6 +111,15 @@ impl RoleApi {
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
+
+    fn role_list_by_origins(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_name(req)?;
+        match role::DataStore::role_list_by_origins(&self.conn, &params) {
+            Ok(Some(roles_list)) => Ok(render_json_list(status::Ok, dispatch(req), &roles_list)),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+        }
+    }
 }
 
 impl Api for RoleApi {
@@ -120,28 +138,36 @@ impl Api for RoleApi {
         let role_show = move |req: &mut Request| -> AranResult<Response> { _self.role_show(req) };
 
         let _self = self.clone();
+        let role_list_by_origins = move |req: &mut Request| -> AranResult<Response> { _self.role_list_by_origins(req) };
+
+        let _self = self.clone();
         let role_show_by_name =
             move |req: &mut Request| -> AranResult<Response> { _self.role_show_by_name(req) };
 
         //Routes:  Authorization : Roles
         router.post(
-            "/roles",
+            "/teams",
             XHandler::new(C { inner: role_create }).before(basic.clone()),
             "roles",
         );
         router.get(
-            "/roles",
+            "/teams",
             XHandler::new(C { inner: role_list }).before(basic.clone()),
             "role_list",
         );
         router.get(
-            "/roles/:id",
+            "/teams/:id",
             XHandler::new(C { inner: role_show }).before(basic.clone()),
             "role_show",
         );
+        router.get(
+            "/teams/origins/:name",
+            XHandler::new(C { inner: role_list_by_origins }).before(basic.clone()),
+            "role_list_by_origins",
+        );
 
         router.get(
-            "/roles/name/:name",
+            "/teams/name/:name",
             XHandler::new(C {
                 inner: role_show_by_name,
             }).before(basic.clone()),
@@ -171,10 +197,14 @@ impl Validator for Roles {
             s.push("account".to_string());
         }
 
-        if self.get_origin().len() <= 0 {
+        let origin: String = match self.get_metadata().get("origin") {
+                        Some(org) => org.to_string(),
+                        None => "".to_string()
+                    };
+
+        if origin.len() <= 0 {
             s.push("origin".to_string());
         }
-
 
         if s.is_empty() {
             return Ok(Box::new(self));

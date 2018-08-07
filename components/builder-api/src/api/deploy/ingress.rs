@@ -190,7 +190,7 @@ impl Api for IngressApi {
             "ingress_status_update",
         );
         router.get(
-            "/assemblyfactorys/:id/ingresses",
+            "/ingresses/assemblyfactorys/:id",
             XHandler::new(C {
                 inner: show_by_assembly_factory,
             }).before(basic.clone()),

@@ -3,21 +3,22 @@
 --- Table:roles
 ---
 CREATE SEQUENCE IF NOT EXISTS role_id_seq;
-CREATE TABLE IF NOT EXISTS ROLES (id bigint PRIMARY KEY DEFAULT next_id_v1('role_id_seq'), name text, description text, updated_at timestamptz, created_at timestamptz DEFAULT now(), UNIQUE (name));
+CREATE TABLE IF NOT EXISTS ROLES (id bigint PRIMARY KEY DEFAULT next_id_v1('role_id_seq'), name text, type_meta JSONB, object_meta JSONB, metadata JSONB, description text, updated_at timestamptz, created_at timestamptz DEFAULT now(), UNIQUE (name));
 
 ---
 --- Table:roles:create
 ---
 CREATE
-OR REPLACE FUNCTION insert_role_v1 (name text, description text,account text, origin text) RETURNS SETOF ROLES AS $$
+OR REPLACE FUNCTION insert_role_v1 (name text, description text,account text, origin text, object_meta JSONB, type_meta JSONB, metadata JSONB) RETURNS SETOF ROLES AS $$
 DECLARE inserted_roles roles;
 BEGIN
    INSERT INTO
-      roles(name, description)
+      roles(name, description, type_meta, object_meta, metadata)
    VALUES
       (
          name,
-         description
+         description,
+         type_meta, object_meta, metadata
       )
       ON CONFLICT DO NOTHING RETURNING * INTO inserted_roles;
       PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',account)::jsonb,json_build_object('team', inserted_roles.id::text, 'origin', origin)::jsonb);
@@ -25,6 +26,7 @@ BEGIN
 RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
+
 
 ---
 --- Table:roles:list_blank
@@ -71,6 +73,23 @@ BEGIN
       roles
    WHERE
       name = rname;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+---
+--- Table:roles:list_by_origins
+---
+CREATE
+OR REPLACE FUNCTION get_roles_by_origins_v1 (org_id text) RETURNS SETOF ROLES AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      roles
+   WHERE
+      metadata ->> 'origin' = org_id ;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;

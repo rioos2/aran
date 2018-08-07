@@ -9,11 +9,14 @@
 WITH first_insert AS
 (
    INSERT INTO
-      roles(name, description)
+      roles(name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:SUPERUSER',
-         'Superuser RIO/OS. God given powers. '
+         'Superuser RIO/OS. God given powers. ',
+         '{"kind":"Role","api_version":"v1"}',
+         json_build_object()::jsonb,
+         json_build_object()::jsonb
       )
       ON CONFLICT (name) DO NOTHING RETURNING id
 )
@@ -43,11 +46,14 @@ VALUES
 WITH first_insert AS
 (
    INSERT INTO
-      roles(name, description)
+      roles(name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:UNIVERSALSOLDIER',
-         'Universalsoldier is system level user (like service account)'
+         'Universalsoldier is system level user (like service account)',
+         '{"kind":"Role","api_version":"v1"}',
+         json_build_object()::jsonb,
+         json_build_object()::jsonb
       )
       ON CONFLICT (name) DO NOTHING RETURNING id
 )
@@ -448,11 +454,14 @@ VALUES
 WITH second_insert AS
 (
    INSERT INTO
-      roles(name, description)
+      roles(name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:LONERANGER',
-         'This is a regular  user '
+         'This is a regular  user ',
+         '{"kind":"Role","api_version":"v1"}',
+         json_build_object()::jsonb,
+         json_build_object()::jsonb
       )
       ON CONFLICT (name) DO NOTHING RETURNING id
 )

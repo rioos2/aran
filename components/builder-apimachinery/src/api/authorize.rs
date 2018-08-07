@@ -1,6 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 use api::base::IdGet;
 use cache::inject::PermissionsFeeder;
+use std::collections::BTreeMap;
+use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields, WhoAmITypeMeta};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Roles {
@@ -8,8 +10,11 @@ pub struct Roles {
     id: String,
     name: String,
     description: String,
-    account: String,
-    origin: String,
+    #[serde(default)]
+    type_meta: TypeMeta, //standard type metadata: kind: Role
+    object_meta: ObjectMeta, ////Standard object metadata
+    #[serde(default)]
+    metadata: BTreeMap<String, String>, //Standard object's metadata. Can contain optional label selector team, origin
     #[serde(default)]
     created_at: String,
 }
@@ -17,6 +22,14 @@ pub struct Roles {
 impl Roles {
     pub fn new() -> Roles {
         ::std::default::Default::default()
+    }
+
+    pub fn with(t: TypeMeta, o: ObjectMeta) -> Roles {
+        Roles {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
     }
 
     pub fn set_id(&mut self, v: ::std::string::String) {
@@ -40,22 +53,8 @@ impl Roles {
 
     pub fn get_description(&self) -> ::std::string::String {
         self.description.clone()
-    }
-    pub fn set_account(&mut self, v: ::std::string::String) {
-        self.account = v;
-    }
-
-    pub fn get_account(&self) -> ::std::string::String {
-        self.account.clone()
-    }
-    pub fn set_origin(&mut self, v: ::std::string::String) {
-        self.origin = v;
-    }
-
-    pub fn get_origin(&self) -> ::std::string::String {
-        self.origin.clone()
-    }
-
+    }    
+   
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
     }
@@ -63,7 +62,42 @@ impl Roles {
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
     }
+
+    pub fn set_metadata(&mut self, v: BTreeMap<String, String>) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self) -> &BTreeMap<String, String> {
+        &self.metadata
+    }
+
+    // Mutable pointer to the field metadata.
+    pub fn get_mut_metadata(&mut self) -> &mut BTreeMap<String, String> {
+        &mut self.metadata
+    }
 }
+
+impl MetaFields for Roles {
+    /// Returns the latest self with built ObjectMeta and Type_meta
+    /// Wipes out the old meta.
+    /// Should be handled externally by doing Meta::with(by mutating the old ObjectMeta)
+    fn set_meta(&mut self, t: TypeMeta, v: ObjectMeta) {
+        self.type_meta = t;
+        self.object_meta = v;
+    }
+
+    fn object_meta(&self) -> ObjectMeta {
+        self.object_meta.clone()
+    }
+
+    fn type_meta(&self) -> TypeMeta {
+        self.type_meta.clone()
+    }
+}
+
+/*impl WhoAmITypeMeta for Roles {
+    const MY_KIND: &'static str = "POST:roles";
+}*/
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Permissions {

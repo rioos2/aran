@@ -270,7 +270,7 @@ impl Api for HorizontalScalingApi {
             "horizontal_scaling_update",
         );
         router.get(
-            "/horizontalscaling/:id/metrics",
+            "/metrics/horizontalscaling/:id",
             XHandler::new(C { inner: metrics }).before(basic.clone()),
             "horizontal_scaling_metrics",
         );
