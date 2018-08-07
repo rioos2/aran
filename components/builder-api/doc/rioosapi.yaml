@@ -6,10 +6,10 @@ info:
   termsOfService: http://rio.digital/
   contact:
     name: Rio/OS Team
-    email: info@rio.company
+    email: dev@rio.company
     url: http://rio.digital/
   license:
-    name: RioCorp License
+    name: Rio Advancement License
     url: http://rio.digital/
 servers:
   - url: https://localhost:7443/api/v1
@@ -444,18 +444,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/License'
-  '/accounts/{account_id}/stacksfactorys':
+  '/stacksfactorys':
     post:
       tags:
         - stacksfactorys
       summary: Create new stacksfactorys
-      parameters:
-        - name: account_id
-          in: path
-          description: id of the account
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful creation of the stacksfactory
@@ -513,13 +506,6 @@ paths:
       summary: Get all the stacksfactorys by account id
       description: Returns all stacksfactorys by account_id
       operationId: getStacksFactoryByAccount
-      parameters:
-        - name: account_id
-          in: path
-          description: account_id of stacksfactorys to return
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful operation
@@ -563,7 +549,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /stacksfactorys:
+  /stacksfactorys/all:
     get:
       tags:
         - stacksfactorys
@@ -797,18 +783,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{account_id}/assemblys':
+  '/assemblys':
     post:
       tags:
         - assembly
       summary: Create new assembly
-      parameters:
-        - name: account_id
-          in: path
-          description: id ofthe account_id
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: succesfull creation of assembly
@@ -866,13 +845,6 @@ paths:
       summary : Get all assemblys by account
       description: Returns all assemblys by account_id
       operationId: getAssemblyByAccount
-      parameters:
-        - name: account_id
-          in: path
-          description: account id of assembly to return
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful operation
@@ -916,7 +888,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /assemblys:
+  /assemblys/all:
     get:
       tags:
         - assembly
@@ -1395,6 +1367,57 @@ paths:
         - origin
       summary: Get all origins
       description: return all the  origins
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OriginsList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: origins not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/accounts/{id}/origins':
+    get:
+      tags:
+        - origin
+      summary: Get all origins by account
+      description: return all the  origins
+      operationId: getOriginByAccountId
+      parameters:
+        - name: id
+          in: path
+          description: id of account to return origins
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: successful operation
@@ -2673,18 +2696,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  '/accounts/{account_id}/assemblyfactorys':
+  '/assemblyfactorys':
     post:
       tags:
         - assemblyfactorys
       summary: Create new assemblyfactorys
-      parameters:
-        - name: account_id
-          in: path
-          description: id of the account
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful creation of the assembly factory
@@ -2742,13 +2758,6 @@ paths:
       summary: Get all the assembly factorys by account id
       description: Returns all assemblyfactorys by account_id
       operationId: getAssemblyFactoryByAccount
-      parameters:
-        - name: account_id
-          in: path
-          description: account_id of assemblyfactory to return
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful operation
@@ -2792,7 +2801,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /assemblyfactorys:
+  /assemblyfactorys/all:
     get:
       tags:
         - assemblyfactorys
@@ -4317,19 +4326,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{Id}/secrets':
+  '/secrets':
     post:
       tags:
         - secrets
       summary: Create new secrets
       description: create new secret by account id
-      parameters:
-        - name: Id
-          in: path
-          description: ID of account to create
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful creation of the secret
@@ -4386,13 +4388,6 @@ paths:
         - secrets
       summary: Returns all secrets by account
       operationId: find secrets by account
-      parameters:
-        - name: Id
-          in: path
-          description: ID of account secret to return
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful creation of the secret
@@ -4437,7 +4432,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/origins/{originName}/secrets':
+  '/secrets/origins/{originName}':
     post:
       tags:
         - secrets
@@ -4545,7 +4540,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /secrets:
+  /secrets/all:
     get:
       tags:
         - secrets
@@ -4645,7 +4640,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/origins/{Origin}/secrets/{SecretName}':
+  '/secrets/{SecretName}/origins/{Origin}':
     get:
       tags:
         - secrets
@@ -4760,7 +4755,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ServiceAccounts'
-  '/origins/{origin}/serviceaccounts/{ServiceAccount}':
+  '/serviceaccounts/{ServiceAccount}/origins/{origin}':
     get:
       tags:
         - serviceaccounts
@@ -6506,7 +6501,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Status'
-  '/assemblys/{id}/volumes':
+  '/volumes/assemblys/{id}':
     get:
       tags:
         - volumes
@@ -6598,7 +6593,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SettingsMap'
-  '/origins/{origin}/settingsmap/{name}':
+  '/settingsmap/{name}/origins/{origin}':
     get:
       tags:
         - settingsmap
@@ -6772,18 +6767,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{accountId}/audits':
+  '/audits':
     post:
       tags:
         - audit
       summary: Create new audit by account id
-      parameters:
-        - name: accountId
-          in: path
-          description: Id of the account user audit return
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful creation audit using account id
@@ -6818,13 +6806,6 @@ paths:
       tags:
         - audit
       summary: Get all audits for the account id
-      parameters:
-        - name: accountId
-          in: path
-          description: Id of the account user audit return
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful operation
@@ -8196,18 +8177,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{account_id}/buckets':
+  '/buckets':
     post:
       tags:
         - buckets
       summary: Create new buckets
-      parameters:
-        - name: account_id
-          in: path
-          description: Id of the imageref  to return
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful creation of bucket
@@ -8259,63 +8233,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Bucket'
-    get:
-      tags:
-        - buckets
-      summary: Get all buckets
-      description: Return all the buckets
-      parameters:
-        - name: account_id
-          in: path
-          description: Id of the imageref  to return
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful opertaion
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BucketList'
-
-        '401':
-          description:  UnAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/401Error'
-        '402':
-          description:  Must have entitlement to use Rio/OS.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/402Error'
-        '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Error'
-        '404':
-          description: Buckets not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Error'
-        '406':
-          description: "Refused since the requested resource is must have headers for the supported authentication."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/406Error'
-        '500':
-          description: "Can't connect with database, blockchain (or) other systems for processing."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Error'
-  '/buckets':
     get:
       tags:
         - buckets
@@ -8610,7 +8527,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/IngressStatus'
-  '/assemblyfactorys/{id}/ingresses':
+  '/ingresses/assemblyfactorys/{id}':
     get:
       tags:
         - ingress
@@ -13859,6 +13776,10 @@ components:
         description:
           type: string
           example: "Superuser of RIO/OS. God given powers.  instance"
+        origin:
+          type: string
+          example: "default-233"
+
     RolesResponse:
       type: object
       properties:
@@ -13871,6 +13792,9 @@ components:
         description:
           type: string
           example: "Superuser of RIO/OS. God given powers.  instance"
+        origin:
+          type: string
+          example: "default-233"
         created_at:
           type: string
           example: "2017-09-21T06:51:38.763014+00:00"
