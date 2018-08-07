@@ -56,6 +56,19 @@ impl RuntimeHandler {
                 }
             }
 
+            ExternalMessage::DeActivateLicense(license_id, password, product) => {
+                match self.license.license_deactivate() {
+                    Ok(_) => {
+                        self.license.update_license(
+                            &product,
+                            &license_id.to_string(),
+                            &password,
+                        )
+                    }
+                    Err(err) => self.license.update_error(&product, format!("{}", err)),
+                }
+            }
+
         }
     }
 

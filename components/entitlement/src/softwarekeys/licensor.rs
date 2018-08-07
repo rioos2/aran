@@ -32,7 +32,7 @@ const ENVELOPE_KEY: &'static str = "_EVALUATION_EXPIRES_2018-09-20_nlZW/s6JCUNiK
 const PROVIDER: &'static str = "SoftwareKey";
 const VERSION: &'static str = "";
 //url to get the installation id
-const NOT_CONSIDER_INSTALATION: &'static str = "/SoftwareKey/PrivateData/License/InstallationID";
+const NOT_CONSIDER_INSTALLATION: &'static str = "/SoftwareKey/PrivateData/License/InstallationID";
 //url to check the status of the license using triggercode
 const TRIGGER_CODE_URL: &'static str = "/SoftwareKey/PrivateData/License/TriggerCode";
 //url to get the license start date
@@ -45,6 +45,7 @@ const LICENSE_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/
 const ERROR_MESSAGE_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/ErrorMessage";
 //url to get the license activation left
 const ACTIVATION_LEFT_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/ActivationsLeft";
+
 //url to get the license sessionCode
 const SESSION_CODE_URL: &'static str = "/ActivateInstallationLicenseFile/PrivateData/SessionCode";
 
@@ -443,7 +444,7 @@ NIC (OPTIONAL)
     }
     //Create Trail if not InstallationID is found refer link https://www.softwarekey.com/help/plus5/#SK_ApiContextInitialize.html%3FTocPath%3DProtection%2520PLUS%25205%2520SDK%2520Manual%7CAPI%2520References%7CPLUSNative%2520API%2520Reference%7CFunctions%7C_____3
     fn is_evaluation(&self) -> Result<bool> {
-        if self.get_string_value(NOT_CONSIDER_INSTALATION)? == "".to_string() {
+        if self.get_string_value(NOT_CONSIDER_INSTALLATION)? == "".to_string() {
             return Ok(true);
         } else {
             return Ok(false);
@@ -849,15 +850,6 @@ NIC (OPTIONAL)
                 self.check_result(result);
             }
 
-            let xml_get = *self.lib
-                .get::<fn(c_int, SK_XmlDoc, *const c_char, *mut SK_XmlDoc) -> c_int>(SK_XML_NODE_GET_DOC.as_bytes())?;
-
-            self.check_result(xml_get(
-                SK_FLAGS_NONE,
-                *responsePtr,
-                CString::new(LICENSE_URL).unwrap().into_raw(),
-                licensePtr,
-            ))?;
 
             let node_get_int = *self.lib
                 .get::<fn(c_int, SK_XmlDoc, *const c_char, *mut c_int) -> c_int>(SK_NODE_GET_INT.as_bytes())?;
@@ -916,6 +908,86 @@ NIC (OPTIONAL)
         }
     }
 
+    pub fn license_deactivate(&mut self) -> Result<()> {
+        println!("-----------------license_deactivate-----------------------------");
+        unsafe {
+            let resultCodePtr: &mut SK_IntPointer = &mut 0;
+            let statusCodePtr: &mut SK_IntPointer = &mut 0;
+            let requestPtr: &mut SK_XmlDoc = &mut 0;
+            let responsePtr: &mut SK_XmlDoc = &mut 0;
+            let errorMsgPtr: &mut SK_StringPointer = &mut (0 as *const c_char);
+            let sessionCode: &mut SK_StringPointer = &mut (0 as *const c_char);
+            let activationleftPtr: &mut SK_IntPointer = &mut 0;
+            let licensePtr: &mut SK_XmlDoc = &mut 0;
+
+            let deactivate_request = *self.lib.get::<fn(SK_ApiContext,
+                       c_int,
+                       *const c_char,
+                       *mut SK_XmlDoc,
+                       *mut SK_StringPointer)
+                       -> c_int>(
+                SK_SOLO_DeactivateInstallationGetRequest.as_bytes(),
+            )?;
+
+            self.check_result(deactivate_request(
+                self.context,
+                SK_FLAGS_NONE,
+                CString::new(
+                    self.get_string_value(NOT_CONSIDER_INSTALLATION)?,
+                ).unwrap()
+                    .into_raw(),
+                requestPtr,
+                sessionCode,
+            ))?;
+
+            let call_xml_service = *self.lib.get::<fn(SK_ApiContext,
+                       c_int,
+                       *const c_char,
+                       SK_XmlDoc,
+                       *mut SK_XmlDoc,
+                       *mut SK_IntPointer,
+                       *mut SK_IntPointer)
+                       -> c_int>(SK_CALL_XM_WEB_SERVICE.as_bytes())?;
+
+            let result = call_xml_service(
+                self.context,
+                SK_FLAGS_NONE,
+                CString::new(SK_CONST_WEBSERVICE_DEACTIVATEINSTALLATION_URL)
+                    .unwrap()
+                    .into_raw(),
+                *requestPtr,
+                responsePtr,
+                resultCodePtr,
+                statusCodePtr,
+            );
+            debug!("call_xml_service");
+
+            if ResultCode::SK_ERROR_NONE as i32 != result {
+                if ResultCode::SK_ERROR_WEBSERVICE_RETURNED_FAILURE as i32 == result {
+                    let node_get_string = self.lib.get::<fn(c_int,
+                               SK_XmlDoc,
+                               *const c_char,
+                               bool,
+                               *mut SK_StringPointer)
+                               -> c_int>(SK_NODE_GET_STRING.as_bytes())?;
+
+                    self.check_result(node_get_string(
+                        SK_FLAGS_NONE,
+                        *responsePtr,
+                        CString::new(ERROR_MESSAGE_URL).unwrap().into_raw(),
+                        false,
+                        errorMsgPtr,
+                    ))?;
+                    debug!("{:?}", *errorMsgPtr);
+                }
+                self.check_result(result);
+            }
+
+            self.activation = self.activation + 1;
+            Ok(())
+        }
+    }
+
     fn create_trial_in_db(&self, status: String, days: String, name: &str) {
         let mut license = Licenses::new();
 
@@ -954,8 +1026,13 @@ NIC (OPTIONAL)
     pub fn update_license(&self, name: &str, license_id: &str, password: &str) {
         let mut license = Licenses::new();
         let mut activation = BTreeMap::new();
-        activation.insert("limit".to_string(), 5);
-        activation.insert("remain".to_string(), self.activation);
+        if name == "senseis" {
+            activation.insert("limit".to_string(), 5);
+            activation.insert("remain".to_string(), self.activation);
+        } else {
+            activation.insert("limit".to_string(), 10);
+            activation.insert("remain".to_string(), self.activation);
+        }
         license.set_provider_name(name.to_string());
         license.set_activation(activation);
         license.set_status(self.status.clone());

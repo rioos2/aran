@@ -79,6 +79,17 @@ macro_rules! activate_license {
     }};
 }
 
+
+// Macros to post in the event logger  from any request.
+#[macro_export]
+macro_rules! deactivate_license {
+    ($req:ident,$evt:expr) => {{
+        use persistent;
+        let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
+        el.request_deactivation_to_licensor(($evt).get_license_id(),($evt).get_password(),($evt).object_meta().name)
+    }};
+}
+
 fn write_file<T: ?Sized>(parent_dir: &Path, file_path: &Path, val: &T)
 where
     T: Serialize,
@@ -132,6 +143,14 @@ impl EventLogger {
             product,
         );
 
+    }
+
+    pub fn request_deactivation_to_licensor(&self, license_id: String, password: String, product: String) {
+        self.channel.deactivate_license(
+            license_id.parse::<u32>().unwrap_or(0),
+            password,
+            product,
+        );
     }
 }
 
