@@ -1,4 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
+
 use api::base::IdGet;
 use cache::inject::PermissionsFeeder;
 
@@ -197,18 +198,17 @@ impl PermissionsFeeder for PermissionsForRole {
 
 #[cfg(test)]
 mod test {
-    use serde_json::from_str as json_decode;
 
     use super::*;
+    use serde_json::from_str as json_decode;
 
     #[test]
     fn decode_roles() {
         let val = r#"{
             "name": "RIOOS:SUPERUSER",
-            "description":"superuser of RIO/OS. God given powers.  instance"
+            "description":"superuser of RIO/OS. God given powers.  instance",
             "account":"1096543234567876",
-            "origin":"dev"
-            }"#;
+            "origin":"dev"}"#;
         let role: Roles = json_decode(val).unwrap();
         assert_eq!(role.name, "RIOOS:SUPERUSER");
         assert_eq!(

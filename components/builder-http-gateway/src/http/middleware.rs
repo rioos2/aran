@@ -248,6 +248,8 @@ impl URLGrabber {
         "PING.GET",
         "HEALTHZ.GET",
         "WIZARDS.GET",
+        "AUDITS.POST",
+        "AUDITS.GET",
     ];
 
     fn grab(req: &mut Request) -> Option<String> {

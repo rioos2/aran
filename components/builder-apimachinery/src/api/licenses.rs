@@ -31,6 +31,7 @@ pub struct Licenses {
     license_id: String,
     password: String,
     provider_name: String,
+    product: String,
     #[serde(default)]
     activation: BTreeMap<String, i32>,
     #[serde(default)]
@@ -113,6 +114,15 @@ impl Licenses {
 
     pub fn get_expired(&self) -> ::std::string::String {
         self.expired_at.clone()
+    }
+
+
+    pub fn set_product(&mut self, v: ::std::string::String) {
+        self.product = v;
+    }
+
+    pub fn get_product(&self) -> ::std::string::String {
+        self.product.clone()
     }
 
     pub fn set_activation_completed(&mut self, v: bool) {
@@ -207,18 +217,20 @@ mod test {
     fn decode_license() {
         let val = r#"{
             "object_meta":{
-                "name":"SoftwareKey"
+                "name":"ninjas"
                 },
             "status":"trial",
             "product":"Rio/OS",
             "license_id":"4323456543567",
             "password":"65efrg76fgyuijhgtyu",
+            "provider_name":"SoftwareKey",
             "expired_at":"30"}"#;
         let license: Licenses = json_decode(val).unwrap();
         assert_eq!(license.status, "trial");
         assert_eq!(license.product, "Rio/OS");
         assert_eq!(license.expired_at, "30");
         assert_eq!(license.license_id, "4323456543567");
+        assert_eq!(license.provider_name, "SoftwareKey");
         assert_eq!(license.password, "65efrg76fgyuijhgtyu");
     }
 
