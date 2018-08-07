@@ -217,18 +217,20 @@ mod test {
     fn decode_license() {
         let val = r#"{
             "object_meta":{
-                "name":"SoftwareKey"
+                "name":"ninjas"
                 },
             "status":"trial",
             "product":"Rio/OS",
             "license_id":"4323456543567",
             "password":"65efrg76fgyuijhgtyu",
+            "provider_name":"SoftwareKey",
             "expired_at":"30"}"#;
         let license: Licenses = json_decode(val).unwrap();
         assert_eq!(license.status, "trial");
         assert_eq!(license.product, "Rio/OS");
         assert_eq!(license.expired_at, "30");
         assert_eq!(license.license_id, "4323456543567");
+        assert_eq!(license.provider_name, "SoftwareKey");
         assert_eq!(license.password, "65efrg76fgyuijhgtyu");
     }
 
