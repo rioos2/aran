@@ -1,12 +1,12 @@
-use api::Api;
+use api::{Api, ApiValidator, ParmsVerifier};
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use deploy::models::assembly;
 use error::Error;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::AranResult;
 use http_gateway::util::errors::{internal_error, not_found_error};
+use http_gateway::util::errors::AranResult;
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::IdGet;
@@ -34,37 +34,38 @@ impl Containers {
     fn get(&self, req: &mut Request) -> AranResult<Response> {
         let (acc, asm_id) = {
             let params = req.extensions.get::<Router>().unwrap();
-            let acc = params.find("account_id").unwrap().to_owned();
+            let account = self.verify_account(req)?;
+            let acc = account.get_name();
             let asm_id = params.find("id").unwrap().to_owned();
             (acc, asm_id)
         };
         let id_get = IdGet::with_id(asm_id.to_string());
         match assembly::DataStore::new(&self.conn).show(&id_get) {
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                asm_id
-            ))),
+            Ok(None) => Err(not_found_error(
+                &format!("{} for {}", Error::Db(RecordsNotFound), asm_id),
+            )),
             Ok(Some(assembly)) => {
-                if !assembly.get_metadata().contains_key("rioos_sh_vnc_host")
-                    || !assembly.get_metadata().contains_key("rioos_sh_vnc_port")
-                {
+                if !assembly.get_metadata().contains_key("rioos_sh_vnc_host") || !assembly.get_metadata().contains_key("rioos_sh_vnc_port") {
                     return Err(not_found_error(&format!(
                         "Still deploying. Must have console host and port: for {} ",
                         asm_id
                     )));
                 }
                 let vnc = &"".to_string();
-                let host = assembly
-                    .get_metadata()
-                    .get("rioos_sh_vnc_host")
-                    .unwrap_or(vnc);
-                let port = assembly
-                    .get_metadata()
-                    .get("rioos_sh_vnc_port")
-                    .unwrap_or(vnc);
-                let url = format!("http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1&stdout=1&stdin=1&stderr=1", host, port, acc, asm_id);
+                let host = assembly.get_metadata().get("rioos_sh_vnc_host").unwrap_or(
+                    vnc,
+                );
+                let port = assembly.get_metadata().get("rioos_sh_vnc_port").unwrap_or(
+                    vnc,
+                );
+                let url = format!(
+                    "http://{}:{}/exec/accounts/{}/assemblys/{}?tty=1&input=1&stdout=1&stdin=1&stderr=1",
+                    host,
+                    port,
+                    acc,
+                    asm_id
+                );
 
                 let client = ApiClient::new(&url, "", "v1", None)?;
                 let res = client.get("").send();
@@ -101,3 +102,5 @@ impl Api for Containers {
         );
     }
 }
+
+impl ParmsVerifier for Containers {}
