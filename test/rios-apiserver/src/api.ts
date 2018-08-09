@@ -6,7 +6,7 @@ import "./auth";
 //
 import "./license";
 // import "./origin";
-import "./roles";
+import "./teams";
 import "./permissions";
 import "./settingsmap";
 import "./secrets";

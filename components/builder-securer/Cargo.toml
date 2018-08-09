@@ -2,7 +2,7 @@
 name = "rioos_builder_services"
 version = "0.0.0"
 authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
-description = "RIO/OS Identity and Access (roles/permissions) library"
+description = "RIO/OS Identity and Access (teams/permissions) library"
 workspace = "../../"
 
 [dependencies]

@@ -41,9 +41,9 @@ const RESOURCE_POST: &'static str = "POST";
 const RESOURCE_PUT: &'static str = "PUT";
 const RESOURCE_DELETE: &'static str = "DELETE";
 
-pub struct Roles {}
+pub struct Teams {}
 
-impl Roles {
+impl Teams {
     pub fn per_type(permission: Option<Vec<Permissions>>) -> Result<TrustedAccessList> {
         match permission {
             Some(perm) => Ok(perm.iter().map(|x| x.clone().into()).collect::<Vec<_>>()),

@@ -40,7 +40,7 @@ impl IngressApi {
     //- id
     //- ObjectMeta: has updated created_at
     //- created_at
-    //Will need roles/permission to access others ingress
+    //Will need teams/permission to access others ingress
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Ingress>>()?)?;
         let m = unmarshall_body.mut_meta(
@@ -64,7 +64,7 @@ impl IngressApi {
 
     //PUT: /ingresses/:id/status
     //Input status  as input and returns an updated Ingress
-    //Will need roles/permission to access others ingress
+    //Will need teams/permission to access others ingress
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
@@ -84,7 +84,7 @@ impl IngressApi {
 
     //GET: /assemblyfactorys/:id/ingresses
     //Input assembly factory id Returns ingress
-    //Will need roles/permission to access others ingress
+    //Will need teams/permission to access others ingress
     fn show_by_assembly_factory(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
@@ -101,7 +101,7 @@ impl IngressApi {
 
     //PUT: /ingresses/:id
     //Input ingress id and returns updated ingress
-    //Will need roles/permission to access others ingress
+    //Will need teams/permission to access others ingress
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
@@ -122,7 +122,7 @@ impl IngressApi {
 
     //GET: /ingresses
     //Global: Returns all the ingress
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match DataStore::new(&self.conn).list_blank() {
             Ok(Some(ingress)) => Ok(render_json_list(status::Ok, dispatch(req), &ingress)),
@@ -190,7 +190,7 @@ impl Api for IngressApi {
             "ingress_status_update",
         );
         router.get(
-            "/assemblyfactorys/:id/ingresses",
+            "/ingresses/assemblyfactorys/:id",
             XHandler::new(C {
                 inner: show_by_assembly_factory,
             }).before(basic.clone()),

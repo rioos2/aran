@@ -66,7 +66,7 @@ impl NodeApi {
     }
     // GET  / //GET: /nodes
     //Blank origin: Returns all the Nodes (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match DataStore::new(&self.conn).list_blank() {
             Ok(Some(node_list)) => Ok(render_json_list(status::Ok, dispatch(_req), &node_list)),
@@ -208,7 +208,7 @@ impl Api for NodeApi {
         );
 
         router.post(
-            "/nodes/discover",
+            "/ninjasz",
             XHandler::new(C { inner: discovery }).before(basic.clone()),
             "node_discovery",
         );

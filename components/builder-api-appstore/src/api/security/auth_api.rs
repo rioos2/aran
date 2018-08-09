@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! A collection of auth [accounts, login, roles, permissions,] for the HTTP server
+//! A collection of auth [accounts, login, teams, permissions,] for the HTTP server
 
 use std::sync::Arc;
 
@@ -28,7 +28,7 @@ use rand;
 use router::Router;
 use session::models::session as sessions;
 
-const DEFAULTROLE: &'static str = "rioos:loneranger";
+const DEFAULTTEAM: &'static str = "rioos:loneranger";
 
 #[derive(Clone)]
 pub struct AuthenticateApi {
@@ -95,8 +95,8 @@ impl AuthenticateApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        if unmarshall_body.get_roles().is_empty() {
-            unmarshall_body.set_roles(vec![DEFAULTROLE.to_string()]);
+        if unmarshall_body.get_teams().is_empty() {
+            unmarshall_body.set_teams(vec![DEFAULTTEAM.to_string()]);
         }
 
         unmarshall_body.set_token(UserAccountAuthenticate::token().unwrap());

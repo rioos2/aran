@@ -75,7 +75,7 @@ impl PlanFactory {
 
     //GET: /planctorys
     //Blank origin: Returns all the PlanFactorys (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match blueprint::DataStore::list_blank(&self.conn) {
             Ok(Some(plans)) => Ok(render_json_list(status::Ok, dispatch(_req), &plans)),

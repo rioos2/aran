@@ -19,7 +19,7 @@ describe('Service account API', function() {
         expect(res.body);
         globalAny.servacc_name =res.body.object_meta.name;
         globalAny.servacc_id =res.body.id;
-        expect(res.body.roles.length).to.equal(1);
+        expect(res.body.teams.length).to.equal(1);
         done(err);
       });
   });

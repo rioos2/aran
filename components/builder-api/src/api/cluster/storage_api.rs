@@ -70,7 +70,7 @@ impl StorageApi {
 
     //GET: /storagesconnectors
     //Blank origin: Returns all the Storage(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list(&self, _req: &mut Request) -> AranResult<Response> {
         match StorageDS::storage_list(&self.conn) {
             Ok(Some(storage_list)) => {
@@ -176,7 +176,7 @@ impl StorageApi {
 
     //GET: /datacenters
     //Blank origin: Returns all the Datacenters(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
 
     fn data_center_list(&self, _req: &mut Request) -> AranResult<Response> {
         match StorageDS::data_center_list(&self.conn) {
@@ -292,7 +292,7 @@ impl StorageApi {
 
     //GET: /storageconnectors/:id/storagespool
     //Blank origin: Returns all the Storagepool(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn storage_pool_by_connector(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
@@ -324,7 +324,7 @@ impl StorageApi {
 
     //GET: /storagespool
     //Blank origin: Returns all the Storagepool(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn storage_pool_list(&self, _req: &mut Request) -> AranResult<Response> {
         match StorageDS::storage_pool_list_all(&self.conn) {
             Ok(Some(storage_pool_list)) => Ok(render_json_list(

@@ -40,7 +40,7 @@ impl<'a> DataStore<'a> {
                 &(serde_json::to_value(&service_create.object_meta()).unwrap()),
                 &(serde_json::to_value(&service_create.type_meta()).unwrap()),
                 &(serde_json::to_value(&service_create.get_metadata()).unwrap()),
-                &(service_create.get_roles() as Vec<String>),
+                &(service_create.get_teams() as Vec<String>),
             ],
         ).map_err(Error::ServiceAccountCreate)?;
         if rows.len() > 0 {
@@ -73,8 +73,8 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn get_service_account_by_name_fascade(&self, get_service: &base::IdGet) -> service_account::ServiceAccountRoles {
-        let mut account = service_account::ServiceAccountRoles::new();
+    pub fn get_service_account_by_name_fascade(&self, get_service: &base::IdGet) -> service_account::ServiceAccountTeams {
+        let mut account = service_account::ServiceAccountTeams::new();
         account.set_name(get_service.get_id().clone());       
         self.expander
             .with_service_account(&mut account, PULL_DIRECTLY);
@@ -139,7 +139,7 @@ fn row_to_service_account(row: &postgres::rows::Row) -> Result<service_account::
     service_account.set_id(id.to_string());
     service_account.set_secrets(serde_json::from_value(row.get("secrets")).unwrap());
     service_account.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
-    service_account.set_roles(row.get("roles"));
+    service_account.set_teams(row.get("teams"));
     service_account.set_created_at(created_at.to_rfc3339());
 
     Ok(service_account)

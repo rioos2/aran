@@ -27,9 +27,9 @@ impl<'a> DataStore<'a> {
 
         let conn = self.db.pool.get_shard(0)?;
         let rows = conn.query(
-            "SELECT * FROM get_accounts_v1_by_role($1)",
+            "SELECT * FROM get_accounts_v1_by_team($1)",
             &[
-                &(vec![activation::BUILTIN_ROLE_RIOOS_SUPERUSER.to_string()]),
+                &(vec![activation::BUILTIN_TEAM_RIOOS_SUPERUSER.to_string()]),
             ],
         ).map_err(Error::WizardGet)?;
 
