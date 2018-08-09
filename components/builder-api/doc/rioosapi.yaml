@@ -1463,7 +1463,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{id}/origins':
+  '/origins/accounts/{id}':
     get:
       tags:
         - origin
