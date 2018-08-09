@@ -122,6 +122,7 @@ pub enum ResultCode {
     SK_ERROR_MEMORY_ALLOCATION = 9403,
     SK_ERROR_LIBRARY_UNAVAILABLE = 9404,
     SK_ERROR_LIBRARY_FUNCTION_UNAVAILABLE = 9405,
+    SK_ERROR_DID_NOT_SYSTEM_IDENTIFIERS = 9406,
 }
 
 impl ResultCode {
@@ -196,6 +197,7 @@ impl ResultCode {
             9403 => "Memory could not be allocated.",
             9404 => "Required system library is missing for failed to load.",
             9405 => "Required library function is missing.",
+            9406 => "Didn't find a system identifier.",
             _ => "Invalid Error Code",
         }
     }

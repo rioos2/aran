@@ -1,11 +1,12 @@
-use iron::prelude::*;
-use std::collections::HashMap;
-use std::fmt;
-use std::str::FromStr;
+
 
 use api::base::TypeMeta;
 
 use error::{self, Result};
+use iron::prelude::*;
+use std::collections::HashMap;
+use std::fmt;
+use std::str::FromStr;
 
 //
 lazy_static! {
