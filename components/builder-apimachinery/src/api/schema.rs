@@ -1,11 +1,12 @@
-use iron::prelude::*;
-use std::collections::HashMap;
-use std::fmt;
-use std::str::FromStr;
+
 
 use api::base::TypeMeta;
 
 use error::{self, Result};
+use iron::prelude::*;
+use std::collections::HashMap;
+use std::fmt;
+use std::str::FromStr;
 
 //
 lazy_static! {
@@ -104,8 +105,8 @@ lazy_static! {
 
         map.register("GET:logs", "LogList");
 
-        map.register("POST:accountsaudits", "Event");
-        map.register("GET:accountsaudits", "EventList");
+        map.register("POST:audits", "Event");
+        map.register("GET:audits", "EventList");
 
         map.register("GET:imagevulnerablity", "Image");
 
