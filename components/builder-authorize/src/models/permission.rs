@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! The PostgreSQL backend for the Authorization [roles, permissions].
+//! The PostgreSQL backend for the Authorization [teams, permissions].
 
 use chrono::prelude::*;
 use error::{Error, Result};
 
-use protocol::api::authorize::{Permissions, PermissionsForAccount, PermissionsForRole};
+use protocol::api::authorize::{Permissions, PermissionsForAccount, PermissionsForTeam};
 use protocol::api::base::IdGet;
 
 use protocol::cache::{InMemoryExpander, PULL_DIRECTLY};
@@ -32,7 +32,7 @@ impl<'a> DataStore<'a> {
         let rows = &conn.query(
             "SELECT * FROM insert_permission_v1 ($1,$2,$3)",
             &[
-                &(permissions.get_role_id().parse::<i64>().unwrap()),
+                &(permissions.get_team_id().parse::<i64>().unwrap()),
                 &(permissions.get_name() as String),
                 &(permissions.get_description() as String),
             ],
@@ -61,12 +61,12 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    //Return a permission for a role_id and permission_id
-    pub fn show_by_role(&self, get_perms: &IdGet) -> PermissionsOutput {
+    //Return a permission for a team_id and permission_id
+    pub fn show_by_team(&self, get_perms: &IdGet) -> PermissionsOutput {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM get_permission_by_role_v1($1,$2)",
+            "SELECT * FROM get_permission_by_team_v1($1,$2)",
             &[
                 &(get_perms.get_id().parse::<i64>().unwrap()),
                 &(get_perms.get_name().parse::<i64>().unwrap()),
@@ -124,22 +124,22 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    //This is a fascade method to get permissions by role from cache.
-    pub fn list_by_role_fascade(&self, role: IdGet) -> PermissionsForRole {
-        let mut perms_for_role = PermissionsForRole::new();
-        perms_for_role.set_role(role.get_id());
+    //This is a fascade method to get permissions by team from cache.
+    pub fn list_by_team_fascade(&self, team: IdGet) -> PermissionsForTeam {
+        let mut perms_for_team = PermissionsForTeam::new();
+        perms_for_team.set_team(team.get_id());
         self.expander
-            .with_permissions(&mut perms_for_role, PULL_DIRECTLY);
-        perms_for_role
+            .with_permissions(&mut perms_for_team, PULL_DIRECTLY);
+        perms_for_team
     }
 
-    //To get permissions by role name from database
-    pub fn list_by_role_name(&self, role_name: &IdGet) -> PermissionsOutputList {
+    //To get permissions by team name from database
+    pub fn list_by_team_name(&self, team_name: &IdGet) -> PermissionsOutputList {
         let conn = self.db.pool.get_shard(0)?;    
         let rows = &conn.query(
-            "SELECT * FROM get_permissions_by_role_name_v1($1)",
-            &[&(role_name.get_id() as String)],
-        ).map_err(Error::RolePermissionsGet)?;
+            "SELECT * FROM get_permissions_by_team_name_v1($1)",
+            &[&(team_name.get_id() as String)],
+        ).map_err(Error::TeamPermissionsGet)?;
 
         let mut response = Vec::new();
 
@@ -152,12 +152,12 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn list_by_role(&self, role_id: &IdGet) -> PermissionsOutputList {
+    pub fn list_by_team(&self, team_id: &IdGet) -> PermissionsOutputList {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_permissions_by_role_v1($1)",
-            &[&(role_id.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::RolePermissionsGet)?;
+            "SELECT * FROM get_permissions_by_team_v1($1)",
+            &[&(team_id.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::TeamPermissionsGet)?;
 
         let mut response = Vec::new();
 
@@ -176,12 +176,12 @@ fn row_to_permissions(row: &postgres::rows::Row) -> Result<Permissions> {
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
-    let role_id: i64 = row.get("role_id");
+    let team_id: i64 = row.get("team_id");
     let description: String = row.get("description");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
     permissions.set_id(id.to_string() as String);
-    permissions.set_role_id(role_id.to_string() as String);
+    permissions.set_team_id(team_id.to_string() as String);
     permissions.set_name(name as String);
     permissions.set_description(description as String);
     permissions.set_created_at(created_at.to_rfc3339());

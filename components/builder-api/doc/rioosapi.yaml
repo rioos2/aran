@@ -34,8 +34,8 @@ tags:
     description: Everything about oidc
   - name: horizontalscaling
     description: Everything about horizontal scaling
-  - name: roles
-    description: Everything about roles
+  - name: teams
+    description: Everything about teams
   - name: permissions
     description: Everything about permissions
   - name: nodes
@@ -119,7 +119,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -157,7 +157,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -215,7 +215,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -259,7 +259,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/401Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -308,7 +308,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/401Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -350,7 +350,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/401Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -416,7 +416,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -485,7 +485,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -540,7 +540,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -589,7 +589,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -646,7 +646,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -712,7 +712,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -774,7 +774,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -838,7 +838,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -893,7 +893,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -943,7 +943,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1000,7 +1000,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1065,7 +1065,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1136,7 +1136,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1198,7 +1198,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1254,7 +1254,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1311,7 +1311,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1368,7 +1368,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1415,7 +1415,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1466,7 +1466,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1510,7 +1510,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1566,7 +1566,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1631,7 +1631,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1697,7 +1697,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1759,7 +1759,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1807,7 +1807,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1873,7 +1873,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1939,7 +1939,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1996,7 +1996,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2044,7 +2044,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2107,7 +2107,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2167,7 +2167,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2229,7 +2229,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2277,7 +2277,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2343,7 +2343,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2404,7 +2404,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2470,7 +2470,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2714,7 +2714,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2769,7 +2769,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2818,7 +2818,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2884,7 +2884,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2951,7 +2951,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3013,7 +3013,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3070,7 +3070,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3117,7 +3117,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3183,7 +3183,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3254,7 +3254,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3315,7 +3315,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3370,7 +3370,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3438,7 +3438,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3461,19 +3461,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /roles :
+  /teams :
     post:
       tags:
-        - roles
-      summary: Add new role
-      description: Adds an item to the role
+        - teams
+      summary: Add new team
+      description: Adds an item to the team
       responses:
         '200':
-          description: successful creation of roles
+          description: successful creation of teams
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RolesResponse'
+                $ref: '#/components/schemas/TeamsResponse'
         '400':
           description: |
             Must supply required fields
@@ -3496,7 +3496,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3517,20 +3517,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Roles'
+              $ref: '#/components/schemas/Teams'
     get:
       tags:
-        - roles
-      description: Returns all roles
-      summary: Get all roles
-      operationId: Role
+        - teams
+      description: Returns all teams
+      summary: Get all teams
+      operationId: Team
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RolesList'
+                $ref: '#/components/schemas/TeamsList'
 
         '401':
           description:  UnAuthorized
@@ -3545,13 +3545,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '404':
-          description: roles not found
+          description: teams not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3568,17 +3568,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/roles/{id}':
+  '/teams/{id}':
     get:
       tags:
-        - roles
-      summary: Get role by ID
-      description: Returns single role
-      operationId: getRoleById
+        - teams
+      summary: Get team by ID
+      description: Returns single team
+      operationId: getTeamById
       parameters:
         - name: id
           in: path
-          description: ID of role to return
+          description: ID of team to return
           required: true
           schema:
             type: string
@@ -3588,7 +3588,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RolesResponse'
+                $ref: '#/components/schemas/TeamsResponse'
         '401':
           description:  UnAuthorized
           content:
@@ -3602,13 +3602,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '404':
-          description: roles not found
+          description: teams not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3660,7 +3660,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3709,7 +3709,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3766,7 +3766,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3789,15 +3789,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/roles/{RolesId}':
+  '/permissions/teams/{TeamsId}':
     get:
       tags:
         - permissions
-      summary: Get all permissions by role id
-      description: Returns permissions for roleid
+      summary: Get all permissions by team id
+      description: Returns permissions for teamid
       operationId: getPermissionById
       parameters:
-        - name: RolesId
+        - name: TeamsId
           in: path
           description: ID of permissions to return
           required: true
@@ -3823,7 +3823,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3846,11 +3846,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/{Id}/roles/{RolesId}':
+  '/permissions/{Id}/teams/{TeamsId}':
     get:
       tags:
         - permissions
-      summary: Find permission by role id
+      summary: Find permission by team id
       description: Return permission by id
       operationId: getPermissionById
       parameters:
@@ -3860,9 +3860,9 @@ paths:
           required: true
           schema:
             type: string
-        - name: RolesId
+        - name: TeamsId
           in: path
-          description: ID of the Role
+          description: ID of the Team
           required: true
           schema:
             type: string
@@ -3888,7 +3888,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3945,7 +3945,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3992,7 +3992,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4049,7 +4049,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4114,7 +4114,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4185,7 +4185,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4247,7 +4247,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4294,7 +4294,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4359,7 +4359,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4414,7 +4414,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4479,7 +4479,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4528,7 +4528,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4571,7 +4571,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4622,7 +4622,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4685,7 +4685,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4744,7 +4744,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4799,7 +4799,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4863,7 +4863,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4918,7 +4918,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4961,7 +4961,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5012,7 +5012,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5114,7 +5114,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5179,7 +5179,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5241,7 +5241,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5289,7 +5289,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5355,7 +5355,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5425,7 +5425,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5491,7 +5491,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5577,7 +5577,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5623,7 +5623,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5689,7 +5689,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5754,7 +5754,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5816,7 +5816,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5863,7 +5863,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5929,7 +5929,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5986,7 +5986,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6033,7 +6033,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6098,7 +6098,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6160,7 +6160,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6231,7 +6231,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6288,7 +6288,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6344,7 +6344,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6408,7 +6408,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6478,7 +6478,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6540,7 +6540,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6890,7 +6890,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6936,7 +6936,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7001,7 +7001,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7066,7 +7066,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7138,7 +7138,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7207,7 +7207,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7264,7 +7264,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7319,7 +7319,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7383,7 +7383,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7448,7 +7448,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7517,7 +7517,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7584,7 +7584,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7646,7 +7646,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7692,7 +7692,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7756,7 +7756,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7821,7 +7821,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7881,7 +7881,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7938,7 +7938,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7984,7 +7984,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8048,7 +8048,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8113,7 +8113,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8173,7 +8173,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8237,7 +8237,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8292,7 +8292,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8342,7 +8342,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8399,7 +8399,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8445,7 +8445,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8511,7 +8511,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8582,7 +8582,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8642,7 +8642,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          description: "Forbidden, Must have teams and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -9397,9 +9397,9 @@ components:
           type: string
           description: "registration ip address of the user"
           example: "49.91.88.72"
-        roles:
+        teams:
           type: array
-          description: "roles are Rio/OS role label that applies to the user"
+          description: "teams are Rio/OS team label that applies to the user"
           items:
             type: string
             example: "rioos:loneranger"
@@ -13849,17 +13849,17 @@ components:
         client_cert:
           type: string
           example: "if the client needs to access LDAP  using TLS then add the certificate"
-    Roles:
+    Teams:
       type: object
       properties:
         name:
           type: string
           example: "RIOOS:SUPERUSER"
-          description: "A role is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a role "
+          description: "A team is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a team "
         description:
           type: string
           example: "Superuser of RIO/OS. God given powers.  instance"
-    RolesResponse:
+    TeamsResponse:
       type: object
       properties:
         id:
@@ -13874,34 +13874,34 @@ components:
         created_at:
           type: string
           example: "2017-09-21T06:51:38.763014+00:00"
-    RoleDataList:
+    TeamDataList:
       type: object
       properties:
         id:
           type: string
-          description: "id of the role"
+          description: "id of the team"
         name:
           type: string
-          description: "name of the role"
+          description: "name of the team"
         description:
           type: string
-          description: "description of the role"
+          description: "description of the team"
         created_at:
           type: string
-          description: "creation time of the role"
-    RolesList:
+          description: "creation time of the team"
+    TeamsList:
       type: object
       properties:
         kind:
           type: string
-          example: RoleList
+          example: TeamList
         api_version:
           type: string
           example: v1
         items:
           type: array
           items:
-            $ref: '#/components/schemas/RoleDataList'
+            $ref: '#/components/schemas/TeamDataList'
           example:
             - id: "89075234567834568"
               name: "RIOOS:LONERANGER"
@@ -13918,7 +13918,7 @@ components:
     Permissions:
       type: object
       properties:
-        role_id:
+        team_id:
           type: string
           example: "89075234567834563"
         name:
@@ -13933,7 +13933,7 @@ components:
         id:
           type: string
           example: "8765432123456543"
-        role_id:
+        team_id:
           type: string
           example: "89075234567834563"
         name:
@@ -19820,10 +19820,10 @@ components:
           example: '403'
         message:
           type: string
-          example: "The request is valid, but the user must have necessary authorization (Role & Permissions) for a performing action on  the resource.Refer  https://bit.ly/rioosauthorization for the supported authorization."
+          example: "The request is valid, but the user must have necessary authorization (Team & Permissions) for a performing action on  the resource.Refer  https://bit.ly/rioosauthorization for the supported authorization."
         reason:
           type: string
-          example: "Forbidden. Must Have Role & Permissions"
+          example: "Forbidden. Must Have Team & Permissions"
     402Error:
       required:
         - status

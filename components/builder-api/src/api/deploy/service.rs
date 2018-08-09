@@ -101,7 +101,7 @@ impl ServiceApi {
 
     //GET: /services
     //Blank origin: Returns all the Services (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match service::DataStore::list_blank(&self.conn) {
             Ok(Some(linkers)) => Ok(render_json_list(status::Ok, dispatch(_req), &linkers)),

@@ -141,7 +141,7 @@ impl SecretApi {
 
     //GET: /secrets
     //Blank origin: Returns all the secrets(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
 
@@ -157,7 +157,7 @@ impl SecretApi {
     //GET: /accounts/:account_id/secrets
     //Input origin_name Returns all the secrets (fpr that namespaces)
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //Will need teams/permission to access others origin.
     fn list(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_account(req)?;
 
@@ -177,7 +177,7 @@ impl SecretApi {
     //GET: /accounts/:account_id/secrets
     //Input origin_name Returns all the secrets (fpr that namespaces)
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //Will need teams/permission to access others origin.
     pub fn watch_list_by_account(&self, params: IdGet, dispatch: String) -> Option<String> {
         let data = match securer::from_config(&self.secret, Box::new(*self.conn.clone())) {
             Ok(result) => result,
@@ -201,7 +201,7 @@ impl SecretApi {
     //GET: /origins/:origin_id/secrets
     //Input origin_name Returns all the secrets (fpr that namespaces)
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //Will need teams/permission to access others origin.
     fn list_by_origin(&self, req: &mut Request) -> AranResult<Response> {
         let (org, name) = {
             let params = req.extensions.get::<Router>().unwrap();

@@ -3,24 +3,24 @@
 --- Table:service_accounts
 ---
 CREATE SEQUENCE IF NOT EXISTS service_id_seq;
-CREATE TABLE IF NOT EXISTS service_accounts(id bigint PRIMARY KEY DEFAULT next_id_v1('service_id_seq'), secrets JSONB, object_meta JSONB, type_meta JSONB, metadata JSONB, ROLES text[], updated_at timestamptz, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS service_accounts(id bigint PRIMARY KEY DEFAULT next_id_v1('service_id_seq'), secrets JSONB, object_meta JSONB, type_meta JSONB, metadata JSONB, TEAMS text[], updated_at timestamptz, created_at timestamptz DEFAULT now());
 
 ---
 --- Table:service_accounts:create
 ---
 CREATE 
-OR REPLACE FUNCTION insert_service_account_v1 (secrets JSONB, object_meta JSONB, type_meta JSONB, metadata JSONB, ROLES text[]) RETURNS SETOF service_accounts AS $$ 
+OR REPLACE FUNCTION insert_service_account_v1 (secrets JSONB, object_meta JSONB, type_meta JSONB, metadata JSONB, TEAMS text[]) RETURNS SETOF service_accounts AS $$ 
 BEGIN
    RETURN QUERY 
    INSERT INTO
-      service_accounts(secrets, object_meta, type_meta, metadata, roles) 
+      service_accounts(secrets, object_meta, type_meta, metadata, teams) 
    VALUES
       (
          secrets,
          object_meta,
          type_meta,
          metadata,
-         roles
+         teams
       )
       RETURNING *;
 RETURN;

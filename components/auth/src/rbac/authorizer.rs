@@ -3,26 +3,26 @@ use protocol::api::base::IdGet;
 use rbac::permissions;
 use rbac::account;
 use protocol::api::session;
-use rbac::roles::{Roles, TrustAccess};
+use rbac::teams::{Teams, TrustAccess};
 
 
 #[derive(Clone, Debug)]
-pub enum RoleNames {
+pub enum TeamNames {
     USERACCOUNT,
     SERVICEACCOUNT,
     NONE,
 }
 
-// role type to get the permission from database
+// team type to get the permission from database
 #[derive(Clone, Debug)]
-pub struct RoleType {
+pub struct TeamType {
     pub name: String,
-    pub account: RoleNames,
+    pub account: TeamNames,
 }
 
-impl RoleType {
-    pub fn new(name: String, account: RoleNames) -> Self {
-        RoleType {
+impl TeamType {
+    pub fn new(name: String, account: TeamNames) -> Self {
+        TeamType {
             name: name,
             account: account,
         }
@@ -47,47 +47,47 @@ impl Authorization {
     }
 
     //verify method verifies account/service_account have accesibility of requested operation
-    //first it gets account/serviceaccount roles from cache.
-    //If role type does't match then it returns NONE response.
-    //And get permissions by role name and verify it.
-    //Now we assume account/service_account has only one role.
+    //first it gets account/serviceaccount teams from cache.
+    //If team type does't match then it returns NONE response.
+    //And get permissions by team name and verify it.
+    //Now we assume account/service_account has only one team.
     //In future we could extend it.
-    pub fn verify(self, role_type: RoleType, incoming_to_trust: String) -> Result<bool> {        
-        let role_box: Option<String> = match role_type.account {
-            RoleNames::USERACCOUNT => {
+    pub fn verify(self, team_type: TeamType, incoming_to_trust: String) -> Result<bool> {        
+        let team_box: Option<String> = match team_type.account {
+            TeamNames::USERACCOUNT => {
                 let mut account_get = session::AccountGet::new();
-                account_get.set_email(role_type.name);
-                let mut account = self.accounts.get_by_email(account_get).get_roles();
+                account_get.set_email(team_type.name);
+                let mut account = self.accounts.get_by_email(account_get).get_teams();
                 account.pop()
             },
-            RoleNames::SERVICEACCOUNT => {
-                let mut account = self.service_accounts.get_by_name(IdGet::with_id(role_type.name)).get_roles();
+            TeamNames::SERVICEACCOUNT => {
+                let mut account = self.service_accounts.get_by_name(IdGet::with_id(team_type.name)).get_teams();
                 account.pop()
             },
-            RoleNames::NONE => {
-                debug!("« Authorizer verify {:?}", role_type.account);
+            TeamNames::NONE => {
+                debug!("« Authorizer verify {:?}", team_type.account);
                 None
             }
         };
 
-        let role = match role_box {
+        let team = match team_box {
             Some(r) => r,
             None => {
-                debug!("« Authorizer Role none : {:?}", role_box);
+                debug!("« Authorizer Team none : {:?}", team_box);
                 return Err(Error::PermissionError(format!(
                 "User doesn't have permission for this operation."
             )))
             },
         };
-        let perms_for_account = self.permissions.list_by_role(IdGet::with_id(role.to_string()));
-        match Roles::per_type(perms_for_account.get_permissions()) {
+        let perms_for_account = self.permissions.list_by_team(IdGet::with_id(team.to_string()));
+        match Teams::per_type(perms_for_account.get_permissions()) {
             Ok(perm_for_account) => {
                 let access = TrustAccess::new(incoming_to_trust);
                 access.is_allowed(perm_for_account)
             }
             Err(err) => {
                 debug!("« Authorizer get none permissions : {:?}", perms_for_account.get_permissions());
-                debug!("« Authorizer role : {}", role.to_string());
+                debug!("« Authorizer team : {}", team.to_string());
                 Err(Error::PermissionError(format!("{}", err)))
             },
         }

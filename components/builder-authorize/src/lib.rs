@@ -16,10 +16,10 @@ pub mod models;
 
 pub use self::error::{Error, Result};
 
-/// Roles output
-pub type RolesOutput = Result<std::option::Option<protocol::api::authorize::Roles>>;
-/// Roles output as list
-pub type RolesOutputList = Result<Option<Vec<protocol::api::authorize::Roles>>>;
+/// Teams output
+pub type TeamsOutput = Result<std::option::Option<protocol::api::authorize::Teams>>;
+/// Teams output as list
+pub type TeamsOutputList = Result<Option<Vec<protocol::api::authorize::Teams>>>;
 
 /// permission output
 pub type PermissionsOutput = Result<std::option::Option<protocol::api::authorize::Permissions>>;

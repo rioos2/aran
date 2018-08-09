@@ -85,7 +85,7 @@ impl<'a> DataStore<'a> {
         datastore: &DataStoreConn,
         session_create: &session::SessionCreate,
         device: &session::Device,
-        role: &IdGet
+        team: &IdGet
     ) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
 
@@ -102,7 +102,7 @@ impl<'a> DataStore<'a> {
                 &session_create.get_password(),
                 &session_create.get_approval(),
                 &session_create.get_suspend(),
-                &session_create.get_roles(),
+                &session_create.get_teams(),
                 &session_create.get_registration_ip_address(),
                 &session_create.get_trust_level(),
                 &session_create.get_company_name(),
@@ -110,7 +110,7 @@ impl<'a> DataStore<'a> {
                 &(serde_json::to_value(session_create.type_meta()).unwrap()),
                 &(format!("default-{}",rand::random::<u8>().to_string())),
                 &session_create.get_avatar(),
-                &role.get_id(),
+                &team.get_id(),
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {
@@ -456,7 +456,7 @@ fn row_to_account(row: postgres::rows::Row) -> session::Account {
     account.set_password(row.get("password"));
     account.set_first_name(row.get("first_name"));
     account.set_last_name(row.get("last_name"));
-    account.set_roles(row.get("roles"));
+    account.set_teams(row.get("teams"));
     account.set_apikey(row.get("api_key"));
     account.set_company_name(row.get("company_name"));
     account.set_trust_level(row.get("trust_level"));
