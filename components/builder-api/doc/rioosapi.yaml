@@ -3402,7 +3402,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/horizontalscaling/{AssemblyFactoryId}/metrics(ques)source={sourceName}&job={jobName}':
+  '/metrics/horizontalscaling/{AssemblyFactoryId}(ques)source={sourceName}&job={jobName}':
     get:
       tags:
         - horizontalscaling
