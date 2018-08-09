@@ -15,7 +15,7 @@ use serde_json;
 pub struct DataStore;
 
 impl DataStore {
-    pub fn teams_create(datastore: &DataStoreConn, teams: &Teams) -> TeamsOutput {
+    pub fn create(datastore: &DataStoreConn, teams: &Teams) -> TeamsOutput {
         let conn = datastore.pool.get_shard(0)?;
         let origin: String = match teams.get_metadata().get("origin") {
                         Some(org) => org.to_string(),
@@ -42,7 +42,7 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn teams_show(datastore: &DataStoreConn, get_teams: &IdGet) -> TeamsOutput {
+    pub fn show(datastore: &DataStoreConn, get_teams: &IdGet) -> TeamsOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_team_v1($1)",
@@ -57,7 +57,7 @@ impl DataStore {
     }
 
 
-    pub fn team_show_by_name(datastore: &DataStoreConn, get_teams: &IdGet) -> TeamsOutput {
+    pub fn show_by_name(datastore: &DataStoreConn, get_teams: &IdGet) -> TeamsOutput {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
@@ -72,7 +72,7 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn teams_list(datastore: &DataStoreConn) -> TeamsOutputList {
+    pub fn list(datastore: &DataStoreConn) -> TeamsOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query("SELECT * FROM get_teams_v1()", &[])
@@ -87,7 +87,7 @@ impl DataStore {
         Ok(None)
     }
 
-    pub fn team_list_by_origins(datastore: &DataStoreConn, get_teams: &IdGet) -> TeamsOutputList {
+    pub fn list_by_origins(datastore: &DataStoreConn, get_teams: &IdGet) -> TeamsOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(

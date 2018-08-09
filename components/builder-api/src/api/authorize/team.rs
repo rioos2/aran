@@ -51,7 +51,7 @@ impl TeamApi {
     //- id
     //- ObjectMeta: has updated created_at
     //- created_at
-    fn team_create(&self, req: &mut Request) -> AranResult<Response> {
+    fn create(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate::<Teams>(req.get::<bodyparser::Struct<Teams>>()?)?;
 
         let m = unmarshall_body.mut_meta(
@@ -65,18 +65,18 @@ impl TeamApi {
         debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
-        match team::DataStore::teams_create(&self.conn, &unmarshall_body) {
-            Ok(teams_create) => Ok(render_json(status::Ok, &teams_create)),
+        match team::DataStore::create(&self.conn, &unmarshall_body) {
+            Ok(create) => Ok(render_json(status::Ok, &create)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
 
     //GET: /teams/:id
     //Input id - u64 as input and returns a teams
-    fn team_show(&self, req: &mut Request) -> AranResult<Response> {
+    fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match team::DataStore::teams_show(&self.conn, &params) {
+        match team::DataStore::show(&self.conn, &params) {
             Ok(Some(teams)) => Ok(render_json(status::Ok, &teams)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -89,9 +89,9 @@ impl TeamApi {
 
     //GET: /teams/:name
     //Input as string input and returns a teams
-    fn team_show_by_name(&self, req: &mut Request) -> AranResult<Response> {
+    fn show_by_name(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
-        match team::DataStore::team_show_by_name(&self.conn, &params) {
+        match team::DataStore::show_by_name(&self.conn, &params) {
             Ok(Some(teams)) => Ok(render_json(status::Ok, &teams)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -104,18 +104,18 @@ impl TeamApi {
 
     //GET: /teams
     //Returns all the teams(irrespective of namespaces)
-    fn team_list(&self, req: &mut Request) -> AranResult<Response> {
-        match team::DataStore::teams_list(&self.conn) {
-            Ok(Some(teams_list)) => Ok(render_json_list(status::Ok, dispatch(req), &teams_list)),
+    fn list(&self, req: &mut Request) -> AranResult<Response> {
+        match team::DataStore::list(&self.conn) {
+            Ok(Some(list)) => Ok(render_json_list(status::Ok, dispatch(req), &list)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
 
-    fn team_list_by_origins(&self, req: &mut Request) -> AranResult<Response> {
+    fn list_by_origins(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
-        match team::DataStore::team_list_by_origins(&self.conn, &params) {
-            Ok(Some(teams_list)) => Ok(render_json_list(status::Ok, dispatch(req), &teams_list)),
+        match team::DataStore::list_by_origins(&self.conn, &params) {
+            Ok(Some(list)) => Ok(render_json_list(status::Ok, dispatch(req), &list)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
@@ -128,50 +128,50 @@ impl Api for TeamApi {
 
         //closures : teams
         let _self = self.clone();
-        let team_create =
-            move |req: &mut Request| -> AranResult<Response> { _self.team_create(req) };
+        let create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let team_list = move |req: &mut Request| -> AranResult<Response> { _self.team_list(req) };
+        let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
-        let team_show = move |req: &mut Request| -> AranResult<Response> { _self.team_show(req) };
+        let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let team_list_by_origins = move |req: &mut Request| -> AranResult<Response> { _self.team_list_by_origins(req) };
+        let list_by_origins = move |req: &mut Request| -> AranResult<Response> { _self.list_by_origins(req) };
 
         let _self = self.clone();
-        let team_show_by_name =
-            move |req: &mut Request| -> AranResult<Response> { _self.team_show_by_name(req) };
+        let show_by_name =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_name(req) };
 
         //Routes:  Authorization : Teams
         router.post(
             "/teams",
-            XHandler::new(C { inner: team_create }).before(basic.clone()),
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "teams",
         );
         router.get(
             "/teams",
-            XHandler::new(C { inner: team_list }).before(basic.clone()),
-            "team_list",
+            XHandler::new(C { inner: list }).before(basic.clone()),
+            "teams_list",
         );
         router.get(
             "/teams/:id",
-            XHandler::new(C { inner: team_show }).before(basic.clone()),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "team_show",
         );
         router.get(
             "/teams/origins/:name",
-            XHandler::new(C { inner: team_list_by_origins }).before(basic.clone()),
-            "team_list_by_origins",
+            XHandler::new(C { inner: list_by_origins }).before(basic.clone()),
+            "list_by_origins",
         );
 
         router.get(
             "/teams/name/:name",
             XHandler::new(C {
-                inner: team_show_by_name,
+                inner: show_by_name,
             }).before(basic.clone()),
-            "team_show_by_name",
+            "show_by_name",
         );
     }
 }
