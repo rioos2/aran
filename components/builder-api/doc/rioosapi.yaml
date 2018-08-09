@@ -34,7 +34,7 @@ tags:
     description: Everything about oidc
   - name: horizontalscaling
     description: Everything about horizontal scaling
-  - name: roles
+  - name: teams
     description: Everything about roles
   - name: permissions
     description: Everything about permissions
@@ -92,6 +92,8 @@ tags:
     description: Everything about license
   - name: ingress
     description: Everything about ingress
+  - name: passticket
+    description: Everything about pass ticket
 
 paths:
   /healthz:
@@ -1136,6 +1138,63 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Status'
+  '/assemblys/{id}/exec':
+    get:
+      tags:
+        - assembly
+      summary: Get console url and port
+      description: Get console
+      operationId: GetConsoleByAssemblyId
+      parameters:
+        - name: id
+          in: path
+          description: ID of assembly console to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Console'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: Still deploying. Must have console host and port
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   /accounts:
     post:
       tags:
@@ -3402,7 +3461,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/metrics/horizontalscaling/{AssemblyFactoryId}(ques)source={sourceName}&job={jobName}':
+  '/metrics/horizontalscaling/{AssemblyFactoryId}':
     get:
       tags:
         - horizontalscaling
@@ -3412,18 +3471,6 @@ paths:
         - name: AssemblyFactoryId
           in: path
           description: ID of assembly factory
-          required: true
-          schema:
-            type: string
-        - name: sourceName
-          in: path
-          description: name of the source to get machine/container metric(Ex - container_cpu_user_seconds_total/node_cpu)
-          required: true
-          schema:
-            type: string
-        - name: jobName
-          in: path
-          description: name of the job to get machine/container metric(Ex - rioos_sh_containers/rioos_sh_machines)
           required: true
           schema:
             type: string
@@ -3470,19 +3517,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /roles :
+  /teams :
     post:
       tags:
-        - roles
-      summary: Add new role
-      description: Adds an item to the role
+        - teams
+      summary: Add new team
+      description: Adds an item to the team
       responses:
         '200':
-          description: successful creation of roles
+          description: successful creation of team
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RolesResponse'
+                $ref: '#/components/schemas/TeamResponse'
         '400':
           description: |
             Must supply required fields
@@ -3526,12 +3573,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Roles'
+              $ref: '#/components/schemas/Team'
     get:
       tags:
-        - roles
-      description: Returns all roles
-      summary: Get all roles
+        - teams
+      description: Returns all teams
+      summary: Get all teams
       operationId: Role
       responses:
         '200':
@@ -3539,7 +3586,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RolesList'
+                $ref: '#/components/schemas/TeamList'
 
         '401':
           description:  UnAuthorized
@@ -3554,7 +3601,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '404':
-          description: roles not found
+          description: teams not found
           content:
             application/json:
               schema:
@@ -3577,17 +3624,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/roles/{id}':
+  '/teams/{id}':
     get:
       tags:
-        - roles
-      summary: Get role by ID
+        - teams
+      summary: Get team by ID
       description: Returns single role
-      operationId: getRoleById
+      operationId: getTeamById
       parameters:
         - name: id
           in: path
-          description: ID of role to return
+          description: ID of team to return
           required: true
           schema:
             type: string
@@ -3597,7 +3644,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RolesResponse'
+                $ref: '#/components/schemas/TeamResponse'
         '401':
           description:  UnAuthorized
           content:
@@ -3611,7 +3658,122 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '404':
-          description: roles not found
+          description: team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/teams/origins/{name}':
+    get:
+      tags:
+        - teams
+      description: Returns all teams by origin
+      summary: Get all teams by origin
+      operationId: Role
+      parameters:
+        - name: name
+          in: path
+          description: name of the origin to return teams
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamList'
+
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '404':
+          description: teams not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/teams/name/{name}':
+    get:
+      tags:
+        - teams
+      summary: Get team by name
+      description: Returns team by name
+      operationId: getTeamById
+      parameters:
+        - name: name
+          in: path
+          description: Name of team to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '404':
+          description: team not found
           content:
             application/json:
               schema:
@@ -3798,15 +3960,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/roles/{RolesId}':
+  '/permissions/teams/{TeamId}':
     get:
       tags:
         - permissions
-      summary: Get all permissions by role id
-      description: Returns permissions for roleid
+      summary: Get all permissions by team id
+      description: Returns permissions for teamid
       operationId: getPermissionById
       parameters:
-        - name: RolesId
+        - name: TeamId
           in: path
           description: ID of permissions to return
           required: true
@@ -3855,11 +4017,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/{Id}/roles/{RolesId}':
+  '/permissions/{Id}/teams/{TeamId}':
     get:
       tags:
         - permissions
-      summary: Find permission by role id
+      summary: Find permission by team id
       description: Return permission by id
       operationId: getPermissionById
       parameters:
@@ -3869,7 +4031,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: RolesId
+        - name: TeamId
           in: path
           description: ID of the Role
           required: true
@@ -4222,6 +4384,62 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/NodeStatus'
+  '/ninjasz':
+    post:
+      tags:
+        - nodes
+      summary: Discover nodes
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodesList'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodesDiscover'
   /senseis:
     post:
       tags:
@@ -6233,6 +6451,62 @@ paths:
                 $ref: '#/components/schemas/403Error'
         '404':
           description: verical scaling not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/metrics/verticalscaling/{id}':
+    get:
+      tags:
+        - verticalscaling
+      summary: Get assembly factory metrics
+      description: Returns all assemblys metrics
+      parameters:
+        - name: id
+          in: path
+          description: ID of assembly factory
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: metrics not found
           content:
             application/json:
               schema:
@@ -8282,6 +8556,131 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+  '/bucketfiles/{id}/files/{name}/upload':
+    get:
+      tags:
+        - buckets
+      summary: Get uploaded file information
+      description: Return uploaded file
+      parameters:
+        - name: id
+          in: path
+          description: Name of the bucket
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          description: Name of the file
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful opertaion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BucketFiles'
+
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/bucketfiles/{id}/files/{name}/download':
+    get:
+      tags:
+        - buckets
+      summary: Get downloaded file url
+      description: Return downloaded file
+      parameters:
+        - name: id
+          in: path
+          description: Name of the bucket
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          description: Name of the file
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful opertaion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BucketFiles'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: Buckets not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/ingresses':
     post:
       tags:
@@ -8606,6 +9005,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+  '/passtickets':
+    get:
+      tags:
+        - passticket
+      summary: Get pass ticket
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passticket'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+
 components:
   schemas:
     Assembly:
@@ -8786,7 +9228,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AssemblyResponse'
-
+    Passticket:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "85465458545678765"
+        passticket:
+          type: string
+          example: "9875678876556776"
+        created_at:
+          type: string
+          example: "2017-09-21T06:51:38.763014+00:00"
+    Console:
+      type: object
+      properties:
+        url:
+          type: string
+          example: "192.168.2.66"
+        target:
+          type: string
+          example: "8080"
     Services:
       type: object
       properties:
@@ -9150,6 +9612,22 @@ components:
           status: {"phase": "ready","message": "","reason": "", "conditions": [{ "message": " ", "reason": " ","status": " ", "last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
           metadata: {"rioos_sh_loadbalancer_imagein": "container","rioos_sh_loadbalancer_imagename": "registry.rioos.xyz:5000/rioos/loadbalancer","rioos_sh_loadbalancer_cpu": "1","rioos_sh_loadbalancer_memory": "1024 MiB","rioos_sh_loadbalancer_disk": "1 GiB"}
           created_at: "2017-12-11T11:29:50.547529+00:00"
+    NodesDiscover:
+      type: object
+      properties:
+        ip_address_type:
+          type: string
+          example: "IPV4"
+        cidrs:
+          type: array
+          items:
+            example: []
+        range_address_from:
+          type: string
+          example: "192.168.2.1"
+        range_address_to:
+          type: string
+          example: "192.168.2.5"
     Accounts:
       type: object
       required:
@@ -9314,7 +9792,7 @@ components:
           type: string
           description: "registration ip address of the user"
           example: "49.91.88.72"
-        roles:
+        teams:
           type: array
           description: "roles are Rio/OS role label that applies to the user"
           items:
@@ -13298,6 +13776,12 @@ components:
               api_version: "v1"
               resource_version: ""
               field_path:  ""
+        teams:
+          type: array
+          description: "team are Rio/OS role label that applies to the service account "
+          items:
+            type: string
+            example: "RIOOS:UNIVERSALSOLIDER"
         metadata:
           type: object
           properties:
@@ -13766,21 +14250,33 @@ components:
         client_cert:
           type: string
           example: "if the client needs to access LDAP  using TLS then add the certificate"
-    Roles:
+    Team:
       type: object
       properties:
         name:
           type: string
-          example: "RIOOS:SUPERUSER"
-          description: "A role is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a role "
+          example: "RIOOS:TESTER"
+          description: "A team is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a team "
         description:
           type: string
-          example: "Superuser of RIO/OS. God given powers.  instance"
-        origin:
-          type: string
-          example: "default-233"
+          example: "tester of RIO/OS"
+        object_meta:
+          type: object
+          required:
+            - account
+          properties:
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "8765234567845678"
+        metadata:
+          type: object
+          properties:
+            origin:
+              type: string
+              example: "megam"
 
-    RolesResponse:
+    TeamResponse:
       type: object
       properties:
         id:
@@ -13788,57 +14284,114 @@ components:
           example: "89075234567834563"
         name:
           type: string
-          example: "RIOOS:SUPERUSER"
+          example: "RIOOS:TESTER"
+          description: "A team is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a team "
         description:
           type: string
-          example: "Superuser of RIO/OS. God given powers.  instance"
-        origin:
-          type: string
-          example: "default-233"
+          example: "tester of RIO/OS"
+        object_meta:
+          type: object
+          required:
+            - name
+            - account
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "RIOOS:TESTER"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "8765234567845678"
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2017-12-11T11:29:50.547529+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              required:
+                - uid
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                    example: ""
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                    example: ""
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                    example: ""
+                  uid:
+                    type: string
+                    description: "UID of the referent. owner_refered by <assembly_id> (or) <backup_id> (or) <service_id>"
+                    example: ""
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                    example: false
+        metadata:
+          type: object
+          properties:
+            origin:
+              type: string
+              example: "megam"
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              description: "kind is a string value representing the REST resource this object represents."
+              example: "Team"
+            api_version:
+              type: string
+              description: "api version defines the versioned schema of this representation of an object"
+              example: "v1"
         created_at:
           type: string
           example: "2017-09-21T06:51:38.763014+00:00"
-    RoleDataList:
-      type: object
-      properties:
-        id:
-          type: string
-          description: "id of the role"
-        name:
-          type: string
-          description: "name of the role"
-        description:
-          type: string
-          description: "description of the role"
-        created_at:
-          type: string
-          description: "creation time of the role"
-    RolesList:
+    TeamList:
       type: object
       properties:
         kind:
           type: string
-          example: RoleList
+          example: TeamList
         api_version:
           type: string
           example: v1
         items:
           type: array
           items:
-            $ref: '#/components/schemas/RoleDataList'
-          example:
-            - id: "89075234567834568"
-              name: "RIOOS:LONERANGER"
-              description: "This is a regular  user"
-              created_at: "2017-09-21T06:51:38.763014+00:00"
-            - id: "89075234567834563"
-              name: "RIOOS:SUPERUSER"
-              description: "Superuser of RIO/OS. God given powers.  instance"
-              created_at: "2017-09-21T06:51:38.763014+00:00"
-            - id: "89075234567834566"
-              name: "RIOOS:UNIVERSALSOLDIER"
-              description: "Universalsoldier is system level user (like service account). instance"
-              created_at: "2017-09-21T06:51:38.763014+00:00"
+            $ref: '#/components/schemas/TeamResponse'
     Permissions:
       type: object
       properties:
@@ -19634,6 +20187,146 @@ components:
         licensed:
           type: boolean
           example: false
+    BucketFiles:
+      type: object
+      properties:
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              example: "BucketAccessor"
+            api_version:
+              type: string
+              example: "v1"
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              example: ""
+            account:
+              type: string
+              example: ""
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2018-07-11T09:06:10.430927061+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              type: object
+              description: "An initializer is a controller which enforces some system invariant at object creation time."
+              properties:
+                pending:
+                  type: array
+                  description: "Pending is a list of initializers that must execute in order before this object is visible. When the last pending initializer is removed, and no failing result is set, the initializers struct will be set to nil and the object is considered as initialized and visible to all clients."
+                  items:
+                    type: object
+                  example: []
+                result:
+                  type: object
+                  description: "If result is set with the Failure field, the object will be persisted to storage and then deleted, ensuring that other clients can observe the deletion."
+                  properties:
+                    type_meta:
+                      type: object
+                      properties:
+                        kind:
+                          type: string
+                          example: ""
+                        api_version:
+                          type: string
+                          example: ""
+                    status:
+                      type: string
+                      description: " status of the operation. One of: Success or Failure"
+                      example: ""
+                    message:
+                      type: string
+                      description: "a human-readable description of the status of this operation."
+                      example: ""
+                    reason:
+                      type: string
+                      description: "a machine-readable description of why this operation is in the Failure status. If this value is empty there is no     information available. a Reason clarifies an HTTP status  code but does not override it."
+                      example: ""
+                    details:
+                      type: object
+                      description: "atatusDetails is a set of additional properties that MAY be set by the server to provide additional information about a response"
+                      properties:
+                        name:
+                          type: string
+                          description: "the name attribute of the resource associated with the status StatusReason"
+                          example: ""
+                        group:
+                          type: string
+                          description: "the group attribute of the resource associated with the status StatusReason."
+                          example: ""
+                        kind:
+                          type: string
+                          description: "the kind attribute of the resource associated with the status StatusReason."
+                          example: ""
+                        causes:
+                          type: array
+                          description: "the Causes array includes more details associated with the StatusReason failure. Not all StatusReasons may provide detailed causes."
+                          items:
+                            type: object
+                          example: []
+                        uid:
+                          type: string
+                          description: "UID of the resource."
+                          example: ""
+                        retry_after_seconds:
+                          description: "if specified, the time in seconds before the operation should be retried."
+                          type: integer
+                          example: 0
+                    code:
+                      type: integer
+                      description: "suggested HTTP return code for this status, 0 if not set."
+                      example: 0
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+              example: []
+        data:
+          type: object
+          properties:
+            rioos_sh_remote_url:
+              type: string
+              example: ""
+            content_type:
+              type: string
+              example: ""
+            date:
+              type: string
+              example: ""
+            authorization:
+              type: string
+              example: ""
+
     400Error:
       required:
         - status

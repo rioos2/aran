@@ -51,7 +51,7 @@ impl ExpanderSender for AccountsFascade {
 
 /// ServiceAccount fascade: In this fascade declare the cache service fn for getting service_accounts from database 
 /// and store it to inmemory cache.
-/// Then RBAC middleware get service_account role from cache for verify account accesibility.
+/// Then RBAC middleware get service_account team from cache for verify account accesibility.
 //
 #[derive(Clone)]
 pub struct ServiceAccountsFascade {
@@ -63,7 +63,7 @@ impl ServiceAccountsFascade {
         ServiceAccountsFascade { conn: datastore }
     }
 
-     pub fn get_by_name(&self, account: IdGet) -> protocol::api::service_account::ServiceAccountRoles {
+     pub fn get_by_name(&self, account: IdGet) -> protocol::api::service_account::ServiceAccountTeams {
         service_account::DataStore::new(&self.conn).get_service_account_by_name_fascade(&account)
     }
 }

@@ -113,7 +113,7 @@ impl AssemblyApi {
     }
 
     ///Every user will be able to list their own account_id.
-    ///Will need roles/permission to access others account_id.
+    ///Will need teams/permission to access others account_id.
     ///GET: /accounts/:account_id/assemblys/list
     ///Input account_id
     ///Returns all the Assemblys (for that account)
@@ -178,7 +178,7 @@ impl AssemblyApi {
 
     //Global: Returns all the AssemblyFactorys (irrespective of origins)
     //GET: /assembly
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match assembly::DataStore::new(&self.conn).list_blank() {
             Ok(Some(assemblys)) => Ok(render_json_list(status::Ok, dispatch(req), &assemblys)),
@@ -206,7 +206,7 @@ impl AssemblyApi {
     }
 
     ///Every user will be able to list their own account_id.
-    ///Will need roles/permission to access others account_id.
+    ///Will need teams/permission to access others account_id.
     ///GET: /accounts/:account_id/assemblys/list
     ///Input account_id
     ///Returns all the Assemblys (for that account)

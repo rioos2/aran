@@ -16,34 +16,32 @@ lazy_static! {
 
         map.register("POST:assemblyfactorys", "AssemblyFactory");
         map.register("GET:assemblyfactorys", "AssemblyFactoryList");
-        map.register("GET:assemblyfactorysall", "AssemblyFactoryList");
 
         map.register("POST:stacksfactorys", "StacksFactory");
         map.register("GET:stacksfactorys", "StacksFactoryList");
-        map.register("GET:stacksfactorysall", "StacksFactoryList");
 
         map.register("POST:plans", "PlanFactory");
         map.register("GET:plans", "PlanFactoryList");
 
         map.register("POST:assemblys", "Assembly");
         map.register("GET:assemblys", "AssemblyList");
-        map.register("GET:assemblysall", "AssemblyList");
-        map.register("GET:assemblyfactorysdescribe", "AssemblyList");
-        map.register("GET:stacksfactorysdescribe", "AssemblyFactoryList");
+
+        //map.register("GET:assemblyfactorysdescribe", "AssemblyList");
+        //map.register("GET:stacksfactorysdescribe", "AssemblyFactoryList");
 
         map.register("POST:nodes", "Node");
         map.register("GET:nodes", "NodeList");
-        map.register("POST:nodesdiscover", "NodeList");
+
+        map.register("POST:ninjasz", "NodeList");
 
         map.register("POST:senseis", "Sensei");
         map.register("GET:senseis", "SenseiList");
 
-        map.register("POST:licenseactivate", "License");
+        map.register("POST:license", "License");
         map.register("GET:licenses", "LicenseList");
 
         map.register("POST:origins", "Origin");
         map.register("GET:origins", "OriginList");
-        map.register("GET:accountsorigins", "OriginList");
 
         map.register("POST:storageconnectors", "Storage");
         map.register("GET:storageconnectors", "StorageList");
@@ -56,7 +54,6 @@ lazy_static! {
 
         map.register("POST:jobs", "Job");
         map.register("GET:jobs", "JobList");
-        map.register("GET:jobsnode", "JobList");
 
         map.register("POST:networks", "Network");
         map.register("GET:networks", "NetworkList");
@@ -66,37 +63,29 @@ lazy_static! {
 
         map.register("POST:endpoints", "Endpoints");
         map.register("GET:endpoints", "EndPointList");
-        map.register("GET:endpointsassembly", "EndPointList");
 
         map.register("POST:serviceaccounts", "ServiceAccount");
-        map.register("PUT:serviceaccountsorigins", "ServiceAccount");
-
-        map.register("GET:serviceaccountsorigins", "ServiceAccount");
+        map.register("PUT:serviceaccounts", "ServiceAccount");
         map.register("GET:serviceaccounts", "ServiceAccountList");
 
-        map.register("GET:roles", "RoleList");
+        map.register("POST:teams", "Team");
+        map.register("GET:teams", "TeamList");
+
+        map.register("POST:permissions", "Permission");
         map.register("GET:permissions", "PermissionList");
-        map.register("GET:permissionsroles", "PermissionList");
 
         map.register("POST:volumes", "Volume");
-        map.register("GET:volumesassemblys", "VolumeList");
+        map.register("GET:volumes", "VolumeList");
 
         map.register("POST:horizontalscaling", "HorizontalScaling");
         map.register("GET:horizontalscaling", "HorizontalScalingList");
-        map.register("GET:horizontalscalingmetrics", "ScalingMetricList");
-
-        map.register("POST:teams", "Team");
+        map.register("GET:metrics", "ScalingMetricList");
 
         map.register("POST:verticalscaling", "VerticalScaling");
         map.register("GET:verticalscaling", "VerticalScalingList");
-        map.register("GET:verticalscalingmetrics", "ScalingMetricList");
 
         map.register("POST:secrets", "Secret");
-        map.register("POST:secretsorigins", "Secret");
-
-        map.register("GET:secrets", "SecretList");
-        map.register("GET:secretsorigins", "SecretList");
-        map.register("GET:secretsall", "SecretList");
+        map.register("GET:secrets", "SecretList");      
 
         map.register("POST:settingsmap", "SettingsMap");
 
@@ -108,7 +97,7 @@ lazy_static! {
         map.register("POST:audits", "Event");
         map.register("GET:audits", "EventList");
 
-        map.register("GET:imagevulnerablity", "Image");
+        ////map.register("GET:imagevulnerablity", "Image");
 
         map.register("POST:buildconfigs", "BuildConfig");
         map.register("GET:buildconfigs", "BuildConfigList");
@@ -121,21 +110,16 @@ lazy_static! {
 
         map.register("POST:imagemarks", "ImageMark");
         map.register("GET:imagemarks", "ImageMarkList");
-        map.register("GET:imagemarksbuilds", "ImageMarkList");
 
         map.register("POST:packages", "Package");
         map.register("GET:authoidcproviders", "OpenidList");
         map.register("GET:authsamlproviders", "SamlList");
 
-        map.register("POST:accountsbuckets", "Bucket");
-        map.register("GET:accountsbuckets", "BucketList");
         map.register("POST:buckets", "Bucket");
-        map.register("GET:buckets", "BucketList");
-
-        map.register("POST:accountsbucketsfilesupload", "BucketAccessor");
-        map.register("GET:accountsbucketsfilesdownload", "BucketAccessor");
-        map.register("POST:bucketsfilesupload", "BucketAccessor");
-        map.register("GET:bucketsfilesdownload", "BucketAccessor");
+        map.register("GET:buckets", "BucketList");        
+       
+        map.register("POST:bucketfiles", "BucketAccessor");
+        map.register("GET:bucketfiles", "BucketAccessor");
 
         map.register("POST:ingresses", "Ingress");
         map.register("GET:ingresses", "IngressList");
@@ -254,10 +238,11 @@ pub fn dispatch(req: &mut Request) -> ApiSchema {
 //Helper function for parse url path and finding api schemas
 pub fn parse_schema_url(req: &mut Request) -> String {
     let mut url: String = req.url.path().into_iter().collect();
-    if req.url.path().len() > 2 {
+    /*if req.url.path().len() > 2 {
         url = format!("{}{}", req.url.path()[0], req.url.path()[2]);
     }
-    format!("{}:{}", req.method, url.replace(char::is_numeric, ""))
+    format!("{}:{}", req.method, url.replace(char::is_numeric, ""))*/
+    format!("{}:{}", req.method, req.url.path()[0])
 }
 
 /// Helper function for finding the requests type_meta

@@ -9,7 +9,7 @@
 //                   password: "sdkjfhkj",
 //                };
 //let auth = delegate.authenticate(&auth_enum);
-use rbac::authorizer::{RoleType, RoleNames};
+use rbac::authorizer::{TeamType, TeamNames};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
@@ -83,32 +83,32 @@ impl ToAuth for Authenticatable {
 }
 
 
-//convert the Authenticatable into RoleType
-impl Into<RoleType> for Authenticatable {
-    fn into(self) -> RoleType {
+//convert the Authenticatable into TeamType
+impl Into<TeamType> for Authenticatable {
+    fn into(self) -> TeamType {
         match self {
             Authenticatable::UserAndPass {
                 username: ref u,
                 password: ref _p,
-            } => RoleType::new(u.to_string(), RoleNames::USERACCOUNT),
+            } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
 
             Authenticatable::ServiceAccountNameAndWebtoken {
                 name: ref u,
                 webtoken: ref _p,
                 key: ref _k,
-            } => RoleType::new(u.to_string(), RoleNames::SERVICEACCOUNT),
+            } => TeamType::new(u.to_string(), TeamNames::SERVICEACCOUNT),
 
             Authenticatable::UserEmailAndToken {
                 email: ref u,
                 token: ref _p,
-            } => RoleType::new(u.to_string(), RoleNames::USERACCOUNT),
+            } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
 
             Authenticatable::UserEmailAndWebtoken {
                 email: ref u,
                 webtoken: ref _p,
-            } => RoleType::new(u.to_string(), RoleNames::USERACCOUNT),
+            } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
 
-            _ => RoleType::new("".to_string(), RoleNames::NONE),
+            _ => TeamType::new("".to_string(), TeamNames::NONE),
         }
     }
 }

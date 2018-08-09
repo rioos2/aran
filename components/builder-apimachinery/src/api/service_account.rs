@@ -16,7 +16,7 @@ pub struct ServiceAccount {
     metadata: BTreeMap<String, String>,
     secrets: Vec<ObjectReference>,
     #[serde(default)]
-    roles: Vec<String>,
+    teams: Vec<String>,
     #[serde(default)]
     created_at: String,
 }
@@ -54,12 +54,12 @@ impl ServiceAccount {
         self.created_at = v;
     }
 
-    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
-        self.roles = v;
+    pub fn set_teams(&mut self, v: ::std::vec::Vec<String>) {
+        self.teams = v;
     }
 
-    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
-        self.roles.clone()
+    pub fn get_teams(&self) -> ::std::vec::Vec<String> {
+        self.teams.clone()
     }
 
     pub fn get_created_at(&self) -> ::std::string::String {
@@ -102,13 +102,13 @@ impl Into<Session> for ServiceAccount {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct ServiceAccountRoles {
+pub struct ServiceAccountTeams {
     name: String,
-    roles: Vec<String>,
+    teams: Vec<String>,
 }
 
-impl ServiceAccountRoles {
-    pub fn new() -> ServiceAccountRoles {
+impl ServiceAccountTeams {
+    pub fn new() -> ServiceAccountTeams {
         ::std::default::Default::default()
     }
 
@@ -120,23 +120,23 @@ impl ServiceAccountRoles {
         self.name.clone()
     }    
 
-    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
-        self.roles = v;
+    pub fn set_teams(&mut self, v: ::std::vec::Vec<String>) {
+        self.teams = v;
     }
 
-    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
-        self.roles.clone()
+    pub fn get_teams(&self) -> ::std::vec::Vec<String> {
+        self.teams.clone()
     }
 }
 
-impl ServiceAccountFeeder for ServiceAccountRoles {
+impl ServiceAccountFeeder for ServiceAccountTeams {
     fn iget_id(&mut self) -> IdGet {
         IdGet::with_id_name(self.get_name(), "_service_account".to_string())
     }
 
     fn ifeed(&mut self, m: Option<Vec<String>>) {
         match m {
-            Some(roles) => self.set_roles(roles),
+            Some(teams) => self.set_teams(teams),
             None => {}
         }
     }

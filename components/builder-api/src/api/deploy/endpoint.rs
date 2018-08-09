@@ -105,7 +105,7 @@ impl EndpointApi {
 
     //GET: /endpoint/assembly/:id
     //Input assembly_id Returns list of endpoints for an assembly
-    //Will need roles/permission to access others origin
+    //Will need teams/permission to access others origin
     pub fn show_by_assembly(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
         match endpoint::DataStore::show_by_assembly(&self.conn, &params) {
@@ -121,7 +121,7 @@ impl EndpointApi {
 
     //GET: /endpoint
     //Global: Returns all the Endpoints (irrespective of origin)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match endpoint::DataStore::list_blank(&self.conn) {
             Ok(Some(endpoints)) => Ok(render_json_list(status::Ok, dispatch(req), &endpoints)),
