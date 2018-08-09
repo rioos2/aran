@@ -44,28 +44,28 @@ impl RuntimeHandler {
             }
 
             ExternalMessage::ActivateLicense(license_id, password, product) => {
-                match self.license.activate_online(license_id, &password) {
+                match self.license.activate(license_id, &password) {
                     Ok(_) => {
-                        self.license.update_license(
+                        self.license.update(
                             &product,
                             &license_id.to_string(),
                             &password,
                         )
                     }
-                    Err(err) => self.license.update_error(&product, format!("{}", err)),
+                    Err(err) => self.license.persist_error(&product, format!("{}", err)),
                 }
             }
 
             ExternalMessage::DeActivateLicense(license_id, password, product) => {
-                match self.license.license_deactivate() {
+                match self.license.deactivate() {
                     Ok(_) => {
-                        self.license.update_license(
+                        self.license.update(
                             &product,
                             &license_id.to_string(),
                             &password,
                         )
                     }
-                    Err(err) => self.license.update_error(&product, format!("{}", err)),
+                    Err(err) => self.license.persist_error(&product, format!("{}", err)),
                 }
             }
 

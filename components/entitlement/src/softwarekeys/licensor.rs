@@ -758,10 +758,7 @@ NIC (OPTIONAL)
     //8.decrypt_doc fn decrypt the licensePtr
     //9.save the licen file in the specified licensepath
     //refer the link for more details https://www.softwarekey.com/help/plus5/#SK_SOLO_ActivateInstallationGetRequest.html%3FTocPath%3DProtection%2520PLUS%25205%2520SDK%2520Manual%7CAPI%2520References%7CPLUSNative%2520API%2520Reference%7CFunctions%7C_____75
-    pub fn activate_online(&mut self, license_id: u32, password: &str) -> Result<()> {
-        debug!("activate_online");
-        debug!("{:?}", license_id);
-        debug!("{:?}", password);
+    pub fn activate(&mut self, license_id: u32, password: &str) -> Result<()> {
         unsafe {
             let resultCodePtr: &mut SK_IntPointer = &mut 0;
             let statusCodePtr: &mut SK_IntPointer = &mut 0;
@@ -805,8 +802,6 @@ NIC (OPTIONAL)
                 ptr,
             ))?;
 
-            debug!("activate_request");
-
             let call_xml_service = *self.lib.get::<fn(SK_ApiContext,
                        c_int,
                        *const c_char,
@@ -827,7 +822,6 @@ NIC (OPTIONAL)
                 resultCodePtr,
                 statusCodePtr,
             );
-            debug!("call_xml_service");
 
             if ResultCode::SK_ERROR_NONE as i32 != result {
                 if ResultCode::SK_ERROR_WEBSERVICE_RETURNED_FAILURE as i32 == result {
@@ -923,7 +917,7 @@ NIC (OPTIONAL)
     //3.If call_xml_service is failure then return the correspondig error
     //4.Failure may happen because of network connection lost or incorrect data
     //5.Deactivation is successful then increase the ActivationsLeft data with 1
-    pub fn license_deactivate(&mut self) -> Result<()> {
+    pub fn deactivate(&mut self) -> Result<()> {
         unsafe {
             let resultCodePtr: &mut SK_IntPointer = &mut 0;
             let statusCodePtr: &mut SK_IntPointer = &mut 0;
@@ -974,7 +968,6 @@ NIC (OPTIONAL)
                 resultCodePtr,
                 statusCodePtr,
             );
-            debug!("call_xml_service");
 
             if ResultCode::SK_ERROR_NONE as i32 != result {
                 if ResultCode::SK_ERROR_WEBSERVICE_RETURNED_FAILURE as i32 == result {
@@ -1037,7 +1030,7 @@ NIC (OPTIONAL)
         license::DataStore::new(&self.cache.conn).create_or_update(&license);
     }
 
-    pub fn update_license(&self, name: &str, license_id: &str, password: &str) {
+    pub fn update(&self, name: &str, license_id: &str, password: &str) {
         let mut license = Licenses::new();
         let mut activation = BTreeMap::new();
         if name == SUB_PRODUCTS[0] {
@@ -1056,11 +1049,11 @@ NIC (OPTIONAL)
         license::DataStore::new(&self.cache.conn).update(&license);
     }
 
-    pub fn update_error(&self, product: &str, error: String) {
+    pub fn persist_error(&self, product: &str, error: String) {
         let mut license = Licenses::new();
         license.set_provider_name(product.to_string());
         license.set_error(error);
-        license::DataStore::new(&self.cache.conn).update_error(&license);
+        license::DataStore::new(&self.cache.conn).persist_error(&license);
     }
 
     fn check_result(&self, value: i32) -> Result<()> {
