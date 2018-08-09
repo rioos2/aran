@@ -62,7 +62,7 @@ const SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
 
 const SUB_PRODUCTS: [&'static str; 2] = ["senseis", "ninjas"];
 
-const PRODUCT: &'static str = "Rio/OS";
+const PRODUCT: &'static str = "Rio/OS v2";
 
 
 
@@ -850,6 +850,15 @@ NIC (OPTIONAL)
                 self.check_result(result);
             }
 
+            let xml_get = *self.lib
+                .get::<fn(c_int, SK_XmlDoc, *const c_char, *mut SK_XmlDoc) -> c_int>(SK_XML_NODE_GET_DOC.as_bytes())?;
+
+            self.check_result(xml_get(
+                SK_FLAGS_NONE,
+                *responsePtr,
+                CString::new(LICENSE_URL).unwrap().into_raw(),
+                licensePtr,
+            ))?;
 
             let node_get_int = *self.lib
                 .get::<fn(c_int, SK_XmlDoc, *const c_char, *mut c_int) -> c_int>(SK_NODE_GET_INT.as_bytes())?;
@@ -908,8 +917,13 @@ NIC (OPTIONAL)
         }
     }
 
+    //license_deactivate fn deactivate the current license
+    //1.deactivate_request fn generate the deactivation request using the license installation id
+    //2.call_xml_service fn calls a SOLO Server XML web service method  using SK_CONST_WEBSERVICE_DEACTIVATEINSTALLATION_URL
+    //3.If call_xml_service is failure then return the correspondig error
+    //4.Failure may happen because of network connection lost or incorrect data
+    //5.Deactivation is successful then increase the ActivationsLeft data with 1
     pub fn license_deactivate(&mut self) -> Result<()> {
-        println!("-----------------license_deactivate-----------------------------");
         unsafe {
             let resultCodePtr: &mut SK_IntPointer = &mut 0;
             let statusCodePtr: &mut SK_IntPointer = &mut 0;
@@ -984,6 +998,7 @@ NIC (OPTIONAL)
             }
 
             self.activation = self.activation + 1;
+
             Ok(())
         }
     }
@@ -1006,8 +1021,7 @@ NIC (OPTIONAL)
 
         let mut activation = BTreeMap::new();
 
-        //temp fix
-        if name == "senseis" {
+        if name == SUB_PRODUCTS[0] {
             activation.insert("limit".to_string(), 5);
             activation.insert("remain".to_string(), 5);
         } else {
@@ -1026,7 +1040,7 @@ NIC (OPTIONAL)
     pub fn update_license(&self, name: &str, license_id: &str, password: &str) {
         let mut license = Licenses::new();
         let mut activation = BTreeMap::new();
-        if name == "senseis" {
+        if name == SUB_PRODUCTS[0] {
             activation.insert("limit".to_string(), 5);
             activation.insert("remain".to_string(), self.activation);
         } else {
