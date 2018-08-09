@@ -124,7 +124,7 @@ impl StacksFactoryApi {
         }
     }
 
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     //GET: /stacksfactorys
     //Returns all the StacksFactorys (irrespective of accounts, origins)
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {

@@ -18,41 +18,41 @@ use http_gateway::http::controller::*;
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 
-/// TO_DO: Should be named  (authorize::models::roles, authorize::models::permission)
-use authorize::models::role;
+/// TO_DO: Should be named  (authorize::models::teams, authorize::models::permission)
+use authorize::models::team;
 use protocol::api::base::MetaFields;
-use protocol::api::authorize::Roles;
+use protocol::api::authorize::Teams;
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
 
-/// role api: RoleApi provides ability to declare the roles
+/// team api: TeamApi provides ability to declare the teams
 /// and manage them.
 /// Needs a Datastore mapper, hence a DataStoreConn needs to be sent in.
 //
 /// Secret: URLs supported are.
-/// POST: /roles,,
-/// GET: /roles,
-/// GET: /roles/:id,
-//GET: /roles/:name
+/// POST: /teams,,
+/// GET: /teams,
+/// GET: /teams/:id,
+//GET: /teams/:name
 #[derive(Clone)]
-pub struct RoleApi {
+pub struct TeamApi {
     conn: Box<DataStoreConn>,
 }
 
-impl RoleApi {
+impl TeamApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
-        RoleApi { conn: datastore }
+        TeamApi { conn: datastore }
     }
-    //POST: /roles
-    //The body has the input cluster::roles
-    //Returns a mutated Roles  with
+    //POST: /teams
+    //The body has the input cluster::teams
+    //Returns a mutated Teams  with
     //- id
     //- ObjectMeta: has updated created_at
     //- created_at
-    fn role_create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<Roles>(req.get::<bodyparser::Struct<Roles>>()?)?;
+    fn team_create(&self, req: &mut Request) -> AranResult<Response> {
+        let mut unmarshall_body = self.validate::<Teams>(req.get::<bodyparser::Struct<Teams>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -65,19 +65,19 @@ impl RoleApi {
         debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
-        match role::DataStore::roles_create(&self.conn, &unmarshall_body) {
-            Ok(roles_create) => Ok(render_json(status::Ok, &roles_create)),
+        match team::DataStore::teams_create(&self.conn, &unmarshall_body) {
+            Ok(teams_create) => Ok(render_json(status::Ok, &teams_create)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
 
-    //GET: /roles/:id
-    //Input id - u64 as input and returns a roles
-    fn role_show(&self, req: &mut Request) -> AranResult<Response> {
+    //GET: /teams/:id
+    //Input id - u64 as input and returns a teams
+    fn team_show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match role::DataStore::roles_show(&self.conn, &params) {
-            Ok(Some(roles)) => Ok(render_json(status::Ok, &roles)),
+        match team::DataStore::teams_show(&self.conn, &params) {
+            Ok(Some(teams)) => Ok(render_json(status::Ok, &teams)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
@@ -87,12 +87,12 @@ impl RoleApi {
         }
     }
 
-    //GET: /roles/:name
-    //Input as string input and returns a roles
-    fn role_show_by_name(&self, req: &mut Request) -> AranResult<Response> {
+    //GET: /teams/:name
+    //Input as string input and returns a teams
+    fn team_show_by_name(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
-        match role::DataStore::role_show_by_name(&self.conn, &params) {
-            Ok(Some(roles)) => Ok(render_json(status::Ok, &roles)),
+        match team::DataStore::team_show_by_name(&self.conn, &params) {
+            Ok(Some(teams)) => Ok(render_json(status::Ok, &teams)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
@@ -102,85 +102,85 @@ impl RoleApi {
         }
     }
 
-    //GET: /roles
-    //Returns all the roles(irrespective of namespaces)
-    fn role_list(&self, req: &mut Request) -> AranResult<Response> {
-        match role::DataStore::roles_list(&self.conn) {
-            Ok(Some(roles_list)) => Ok(render_json_list(status::Ok, dispatch(req), &roles_list)),
+    //GET: /teams
+    //Returns all the teams(irrespective of namespaces)
+    fn team_list(&self, req: &mut Request) -> AranResult<Response> {
+        match team::DataStore::teams_list(&self.conn) {
+            Ok(Some(teams_list)) => Ok(render_json_list(status::Ok, dispatch(req), &teams_list)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
 
-    fn role_list_by_origins(&self, req: &mut Request) -> AranResult<Response> {
+    fn team_list_by_origins(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
-        match role::DataStore::role_list_by_origins(&self.conn, &params) {
-            Ok(Some(roles_list)) => Ok(render_json_list(status::Ok, dispatch(req), &roles_list)),
+        match team::DataStore::team_list_by_origins(&self.conn, &params) {
+            Ok(Some(teams_list)) => Ok(render_json_list(status::Ok, dispatch(req), &teams_list)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
 }
 
-impl Api for RoleApi {
+impl Api for TeamApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
 
-        //closures : roles
+        //closures : teams
         let _self = self.clone();
-        let role_create =
-            move |req: &mut Request| -> AranResult<Response> { _self.role_create(req) };
+        let team_create =
+            move |req: &mut Request| -> AranResult<Response> { _self.team_create(req) };
 
         let _self = self.clone();
-        let role_list = move |req: &mut Request| -> AranResult<Response> { _self.role_list(req) };
+        let team_list = move |req: &mut Request| -> AranResult<Response> { _self.team_list(req) };
 
         let _self = self.clone();
-        let role_show = move |req: &mut Request| -> AranResult<Response> { _self.role_show(req) };
+        let team_show = move |req: &mut Request| -> AranResult<Response> { _self.team_show(req) };
 
         let _self = self.clone();
-        let role_list_by_origins = move |req: &mut Request| -> AranResult<Response> { _self.role_list_by_origins(req) };
+        let team_list_by_origins = move |req: &mut Request| -> AranResult<Response> { _self.team_list_by_origins(req) };
 
         let _self = self.clone();
-        let role_show_by_name =
-            move |req: &mut Request| -> AranResult<Response> { _self.role_show_by_name(req) };
+        let team_show_by_name =
+            move |req: &mut Request| -> AranResult<Response> { _self.team_show_by_name(req) };
 
-        //Routes:  Authorization : Roles
+        //Routes:  Authorization : Teams
         router.post(
             "/teams",
-            XHandler::new(C { inner: role_create }).before(basic.clone()),
-            "roles",
+            XHandler::new(C { inner: team_create }).before(basic.clone()),
+            "teams",
         );
         router.get(
             "/teams",
-            XHandler::new(C { inner: role_list }).before(basic.clone()),
-            "role_list",
+            XHandler::new(C { inner: team_list }).before(basic.clone()),
+            "team_list",
         );
         router.get(
             "/teams/:id",
-            XHandler::new(C { inner: role_show }).before(basic.clone()),
-            "role_show",
+            XHandler::new(C { inner: team_show }).before(basic.clone()),
+            "team_show",
         );
         router.get(
             "/teams/origins/:name",
-            XHandler::new(C { inner: role_list_by_origins }).before(basic.clone()),
-            "role_list_by_origins",
+            XHandler::new(C { inner: team_list_by_origins }).before(basic.clone()),
+            "team_list_by_origins",
         );
 
         router.get(
             "/teams/name/:name",
             XHandler::new(C {
-                inner: role_show_by_name,
+                inner: team_show_by_name,
             }).before(basic.clone()),
-            "role_show_by_name",
+            "team_show_by_name",
         );
     }
 }
 
-impl ApiValidator for RoleApi {}
+impl ApiValidator for TeamApi {}
 
-impl ParmsVerifier for RoleApi {}
+impl ParmsVerifier for TeamApi {}
 
-impl Validator for Roles {
+impl Validator for Teams {
     //default implementation is to check for `name` and 'origin'
     fn valid(self) -> AranValidResult<Self> {
         let mut s: Vec<String> = vec![];

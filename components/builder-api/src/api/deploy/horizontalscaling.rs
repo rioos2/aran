@@ -120,7 +120,7 @@ impl HorizontalScalingApi {
     //GET: /horizontalscaling/assemblyfactory/:id
 
     //Input assembly factory id Returns horizontal_scaling
-    //Will need roles/permission to access others horizontal_scaling
+    //Will need teams/permission to access others horizontal_scaling
     fn show_by_assembly_factory(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
@@ -212,7 +212,7 @@ impl HorizontalScalingApi {
 
     //horizontalscaling
     //Global: Returns all the HorizontalScalings (irrespective of origins)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match models::horizontalscaling::DataStore::new(&self.conn).list_blank() {
             Ok(Some(hss)) => Ok(render_json_list(status::Ok, dispatch(req), &hss)),

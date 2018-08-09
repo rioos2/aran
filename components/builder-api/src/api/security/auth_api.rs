@@ -1,9 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! A collection of auth [accounts, login, roles, permissions,] for the HTTP server
+//! A collection of auth [accounts, login, teams, permissions,] for the HTTP server
 
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use auth::rbac::BUILTIN_ROLE_RIOOS_LONERANGER;
+use auth::rbac::BUILTIN_TEAM_RIOOS_LONERANGER;
 use auth::rioos::user_account::UserAccountAuthenticate;
 use auth::rioos::AuthenticateDelegate;
 use auth::util::authenticatable::Authenticatable;
@@ -26,7 +26,7 @@ use protocol::api::session::*;
 use rand;
 use router::Router;
 use session::models::session as sessions;
-use authorize::models::role;
+use authorize::models::team;
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -94,8 +94,8 @@ impl AuthenticateApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        if unmarshall_body.get_roles().is_empty() {
-            unmarshall_body.set_roles(vec![BUILTIN_ROLE_RIOOS_LONERANGER.to_string()]);
+        if unmarshall_body.get_teams().is_empty() {
+            unmarshall_body.set_teams(vec![BUILTIN_TEAM_RIOOS_LONERANGER.to_string()]);
         }
 
         unmarshall_body.set_token(UserAccountAuthenticate::token().unwrap());
@@ -116,14 +116,14 @@ impl AuthenticateApi {
             ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => {
-                match role::DataStore::role_show_by_name(&self.conn, &IdGet::with_id(unmarshall_body.get_roles()[0].to_string())) {
+                match team::DataStore::team_show_by_name(&self.conn, &IdGet::with_id(unmarshall_body.get_teams()[0].to_string())) {
                     Err(err) => Err(internal_error(&format!("{}", err))),
                     Ok(None) => Err(not_found_error(&format!(
-                        "{} for roles",
+                        "{} for teams",
                         Error::Db(RecordsNotFound)
                     ))),
-                    Ok(Some(roles)) => {
-                        match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device, &IdGet::with_id(roles.get_id())) {
+                    Ok(Some(teams)) => {
+                        match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device, &IdGet::with_id(teams.get_id())) {
                             Ok(account) => Ok(render_json(status::Ok, &account)),
                             Err(err) => Err(internal_error(&format!("{}", err))),
                         }

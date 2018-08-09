@@ -325,17 +325,17 @@ impl BeforeMiddleware for RBAC {
         }
 
         let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
-        let roles: authorizer::RoleType = header.decide()?.into();
+        let teams: authorizer::TeamType = header.decide()?.into();
 
-        debug!("↑ RBAC {} {} {:?}", "→", &roles.name, input_trust);
+        debug!("↑ RBAC {} {} {:?}", "→", &teams.name, input_trust);
 
-        if roles.name.is_empty() {
-            debug!("↑ RBAC SKIP {} {} {:?}", "→", &roles.name, input_trust);
+        if teams.name.is_empty() {
+            debug!("↑ RBAC SKIP {} {} {:?}", "→", &teams.name, input_trust);
             return Ok(());
         }
 
         match self.authorizer.clone().verify(
-            roles.clone(),
+            teams.clone(),
             input_trust.clone().unwrap(),
         ) {
             Ok(_validate) => Ok(()),
@@ -343,13 +343,13 @@ impl BeforeMiddleware for RBAC {
                 debug!(
                     "↑☒ RBAC ERROR {} {} {:?}",
                     "→",
-                    &roles.clone().name,
+                    &teams.clone().name,
                     input_trust.clone()
                 );
 
                 let err = forbidden_error(&format!(
                     "{}, is denied access. Must have permission for [{}].",
-                    &roles.clone().name,
+                    &teams.clone().name,
                     input_trust.clone().unwrap_or("".to_string())
                 ));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));

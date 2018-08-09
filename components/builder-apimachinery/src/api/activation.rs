@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 use api::base::{MetaFields, ObjectMeta, TypeMeta,WhoAmITypeMeta};
 
-pub const BUILTIN_ROLE_RIOOS_SUPERUSER: &'static str = "RIOOS:SUPERUSER";
+pub const BUILTIN_TEAM_RIOOS_SUPERUSER: &'static str = "RIOOS:SUPERUSER";
 pub const ACTIVE: &'static str = "active";
 
 

@@ -69,13 +69,13 @@ impl HttpGateway for Wirer {
         //let ods = DataStoreConn::new().ok();
         let pds: DataStoreConn = *ds.clone();
         chain.link(persistent::Read::<DataStoreBroker>::both(Arc::new(pds)));
-        //this for cache permissions by roles
+        //this for cache permissions by teams
         let mut permissions = permissions::Permissions::new(ds.clone());
         permissions.with_cache();
-        //this for cache user account roles
+        //this for cache user account teams
         let mut accounts = account::AccountsFascade::new(ds.clone());
         accounts.with_cache();
-        //this for cache service account roles
+        //this for cache service account teams
         let mut service_accounts = account::ServiceAccountsFascade::new(ds.clone());
         service_accounts.with_cache();
 
@@ -203,8 +203,8 @@ impl HttpGateway for Wirer {
         let mut origin = deploy::origin::OriginApi::new(ds.clone());
         origin.wire(config.clone(), &mut router);
 
-        let mut role = authorize::role::RoleApi::new(ds.clone());
-        role.wire(config.clone(), &mut router);
+        let mut team = authorize::team::TeamApi::new(ds.clone());
+        team.wire(config.clone(), &mut router);
 
         let mut permission = authorize::permission::PermissionApi::new(ds.clone());
         permission.wire(config.clone(), &mut router);

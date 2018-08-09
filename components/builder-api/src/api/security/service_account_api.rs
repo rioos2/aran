@@ -2,7 +2,7 @@
 //
 
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use auth::rbac::BUILTIN_ROLE_RIOOS_UNIVERSALSOLDIER;
+use auth::rbac::BUILTIN_TEAM_RIOOS_UNIVERSALSOLDIER;
 use bodyparser;
 use bytes::Bytes;
 use config::Config;
@@ -21,7 +21,7 @@ use protocol::api::service_account::ServiceAccount;
 use router::Router;
 use serde_json;
 use service::models::service_account;
-use authorize::models::role;
+use authorize::models::team;
 use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
@@ -59,7 +59,7 @@ impl SeriveAccountApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        unmarshall_body.set_roles(vec![BUILTIN_ROLE_RIOOS_UNIVERSALSOLDIER.to_string()]);
+        unmarshall_body.set_teams(vec![BUILTIN_TEAM_RIOOS_UNIVERSALSOLDIER.to_string()]);
 
         debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
@@ -74,7 +74,7 @@ impl SeriveAccountApi {
 
     //GET: /serviceaccount
     //Blank origin: Returns all the serviceaccount(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match service_account::DataStore::list_blank(&self.conn) {
             Ok(Some(service_list)) => {

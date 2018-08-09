@@ -75,7 +75,7 @@ impl OriginApi {
 
     //GET: /origins
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //Will need teams/permission to access others origin.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match OriginDS::list_blank(&self.conn) {
             Ok(Some(origins)) => Ok(render_json_list(status::Ok, dispatch(req), &origins)),

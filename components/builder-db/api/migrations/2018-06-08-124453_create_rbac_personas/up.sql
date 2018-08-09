@@ -1,27 +1,27 @@
 ---
---- Table:roles:create stub role named RIOOS:SUPERUSER
---- When editing roles, use uppercase.
+--- Table:teams:create stub team named RIOOS:SUPERUSER
+--- When editing teams, use uppercase.
 ---
 ---
---- Table:permissions:create stub permissions for role RIOOS:SUPERUSER
---- When editing roles, use uppercase.
+--- Table:permissions:create stub permissions for team RIOOS:SUPERUSER
+--- When editing teams, use uppercase.
 --- This is a long query.
 WITH first_insert AS
 (
    INSERT INTO
-      roles(name, description, type_meta, object_meta, metadata)
+      teams(name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:SUPERUSER',
          'Superuser RIO/OS. God given powers. ',
-         '{"kind":"Role","api_version":"v1"}',
+         '{"kind":"Team","api_version":"v1"}',
          json_build_object()::jsonb,
          json_build_object()::jsonb
       )
       ON CONFLICT (name) DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (role_id, name, description)
+   permissions (team_id, name, description)
 VALUES
    (
 (
@@ -36,29 +36,29 @@ VALUES
 
 
 ---
---- Table:roles:create stub role named RIOOS:UNIVERSALSOLDIER
---- When editing roles, use uppercase.
+--- Table:teams:create stub team named RIOOS:UNIVERSALSOLDIER
+--- When editing teams, use uppercase.
 ---
 ---
---- Table:permissions:create stub permissions for role RIOOS:UNIVERSALSOLDIER
---- When editing roles, use uppercase.
+--- Table:permissions:create stub permissions for team RIOOS:UNIVERSALSOLDIER
+--- When editing teams, use uppercase.
 --- This is a long query.
 WITH first_insert AS
 (
    INSERT INTO
-      roles(name, description, type_meta, object_meta, metadata)
+      teams(name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:UNIVERSALSOLDIER',
          'Universalsoldier is system level user (like service account)',
-         '{"kind":"Role","api_version":"v1"}',
+         '{"kind":"Team","api_version":"v1"}',
          json_build_object()::jsonb,
          json_build_object()::jsonb
       )
       ON CONFLICT (name) DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (role_id, name, description)
+   permissions (team_id, name, description)
 VALUES
    (
 (
@@ -176,7 +176,7 @@ VALUES
          id
       FROM
          first_insert),
-         'HORIZONTALSCALING.METRICS.GET',
+         'METRICS.GET',
          'Read only access for horizontalscaling metric resource.'
    )
 ,
@@ -444,29 +444,29 @@ VALUES
 
 
 ---
---- Table:roles:create stub role named RIOOS:LONERANGER
---- When editing roles, use uppercase.
+--- Table:teams:create stub team named RIOOS:LONERANGER
+--- When editing teams, use uppercase.
 ---
 ---
---- Table:permissions:create stub permissions for role RIOOS:LONERANGER
---- When editing roles, use uppercase.
+--- Table:permissions:create stub permissions for team RIOOS:LONERANGER
+--- When editing teams, use uppercase.
 --- This is a long query.
 WITH second_insert AS
 (
    INSERT INTO
-      roles(name, description, type_meta, object_meta, metadata)
+      teams(name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:LONERANGER',
          'This is a regular  user ',
-         '{"kind":"Role","api_version":"v1"}',
+         '{"kind":"Team","api_version":"v1"}',
          json_build_object()::jsonb,
          json_build_object()::jsonb
       )
       ON CONFLICT (name) DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (role_id, name, description)
+   permissions (team_id, name, description)
 VALUES
 (
 (
@@ -546,6 +546,16 @@ VALUES
          second_insert),
          'VERTICALSCALING.*',
          'Any access allowed for this verticalscaling resource.'
+   )
+,
+ (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'METRICS.GET',
+         'Read only access for horizontalscaling metric resource.'
    )
 ,
    (
