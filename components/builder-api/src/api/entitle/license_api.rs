@@ -35,7 +35,7 @@ impl LicenseApi {
         LicenseApi { conn: datastore }
     }
     //POST: /license/activate
-    fn create(&self, req: &mut Request) -> AranResult<Response> {
+    fn activate(&self, req: &mut Request) -> AranResult<Response> {
         let mut unmarshall_body = self.validate::<Licenses>(
             req.get::<bodyparser::Struct<Licenses>>()?,
         )?;
@@ -55,6 +55,29 @@ impl LicenseApi {
                 &unmarshall_body,
             ));
         }
+
+        debug!("✓ {}",
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
+
+        Ok(render_json(status::Ok, &unmarshall_body))
+    }
+
+    //POST: /license/deactivate
+    fn deactivate(&self, req: &mut Request) -> AranResult<Response> {
+        let mut unmarshall_body = self.validate::<Licenses>(
+            req.get::<bodyparser::Struct<Licenses>>()?,
+        )?;
+
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
+
+        unmarshall_body.set_meta(type_meta(req), m);
+
+        deactivate_license!(req, *unmarshall_body.clone());
 
         debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
@@ -114,7 +137,10 @@ impl Api for LicenseApi {
         let basic = Authenticated::new(&*config);
 
         let _self = self.clone();
-        let create_or_update = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
+        let activate = move |req: &mut Request| -> AranResult<Response> { _self.activate(req) };
+
+        let _self = self.clone();
+        let deactivate = move |req: &mut Request| -> AranResult<Response> { _self.deactivate(req) };
 
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show_by_name(req) };
@@ -135,8 +161,14 @@ impl Api for LicenseApi {
 
         router.post(
             "/licenses/activate",
-            XHandler::new(C { inner: create_or_update }).before(basic.clone()),
-            "license_create_or_update",
+            XHandler::new(C { inner: activate }).before(basic.clone()),
+            "activate",
+        );
+
+        router.post(
+            "/licenses/deactivate",
+            XHandler::new(C { inner: deactivate }).before(basic.clone()),
+            "deactivate",
         );
 
         router.get(

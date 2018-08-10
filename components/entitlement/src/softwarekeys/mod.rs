@@ -1,7 +1,8 @@
 use error::{Error, ResultCode, Result};
 use std::os::raw::*;
 pub mod licensor;
-
+pub mod saver;
+pub mod state;
 
 pub type SK_ApiContext = c_long;
 pub type SK_XmlDoc = c_long;
@@ -57,6 +58,11 @@ pub const SK_XML_DOC_DISPOSE: &'static str = "SK_XmlDocumentDispose";
 pub const SK_ActivateInstallationGetRequest: &'static str = "SK_SOLO_ActivateInstallationGetRequest";
 //Calls a SOLO Server XML web service method.
 pub const SK_CALL_XM_WEB_SERVICE: &'static str = "SK_CallXmlWebService";
+//Builds a request to send to the XmlActivationService web service's DeactivateInstallation method in SOLO Server.
+pub const SK_SOLO_DeactivateInstallationGetRequest: &'static str = "SK_SOLO_DeactivateInstallationGetRequest";
+//Instant SOLO Server URL for the XmlActivationService web service's DeactivateInstallation web method.
+pub const SK_CONST_WEBSERVICE_DEACTIVATEINSTALLATION_URL: &'static str = "secure.softwarekey.com/solo/webservices/XmlActivationService.asmx/DeactivateInstallation";
+
 
 //Activate url
 
