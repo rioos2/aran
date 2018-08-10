@@ -131,6 +131,44 @@ pub struct AuditEvent {
     type_of_event: String,
 }
 
+/*impl AuditEvent {
+    pub fn new() -> AuditEvent {
+        ::std::default::Default::default()
+    }
+
+    pub fn with(t: TypeMeta, o: ObjectMeta) -> AuditEvent {
+        AuditEvent {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
+    }
+
+    pub fn set_object_reference(&mut self, v: ObjectReference) {
+        self.object_reference = v;
+    }
+    pub fn get_object_reference(&self) -> ObjectReference {
+        self.object_reference.clone()
+    }
+
+    pub fn set_reason(&mut self, v: ::std::string::String) {
+        self.reason = v;
+    }
+
+    pub fn get_reason(&self) -> ::std::string::String {
+        self.reason.clone()
+    }
+
+    pub fn set_message(&mut self, v: ::std::string::String) {
+        self.message = v;
+    }
+
+    pub fn get_message(&self) -> ::std::string::String {
+        self.message.clone()
+    }      
+    
+}
+*/
 impl MetaFields for AuditEvent {
     /// Returns the latest self with built ObjectMeta and Type_meta
     /// Wipes out the old meta.

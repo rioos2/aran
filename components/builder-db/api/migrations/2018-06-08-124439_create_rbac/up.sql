@@ -295,3 +295,51 @@ IF;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
+
+
+---
+--- Table:invitations
+---
+CREATE SEQUENCE IF NOT EXISTS invite_id_seq;
+CREATE TABLE IF NOT EXISTS INVITATIONS (id bigint PRIMARY KEY DEFAULT next_id_v1('invite_id_seq'), invite_from text, invite_to text, type_meta JSONB, object_meta JSONB, origin_id text, status text, team_id text, updated_at timestamptz, created_at timestamptz DEFAULT now(), UNIQUE (id));
+
+---
+--- Table:invitations:create
+---
+CREATE
+OR REPLACE FUNCTION insert_invitations_v1 (invite_from text, invite_to text, origin_id text, team_id text, object_meta JSONB, type_meta JSONB, status text) RETURNS SETOF INVITATIONS AS $$
+BEGIN
+   RETURN QUERY
+   INSERT INTO
+      invitations(invite_from, invite_to, origin_id, team_id, object_meta, type_meta, status)
+   VALUES
+      (
+         invite_from,
+         invite_to,
+         origin_id,
+         team_id,
+         object_meta,
+         type_meta, 
+         status
+      )
+      RETURNING *;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;
+
+---
+--- Table:teams:list_by_origins
+---
+CREATE
+OR REPLACE FUNCTION get_invitations_by_teams_v1 (mteam_id text) RETURNS SETOF INVITATIONS AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      invitations
+   WHERE
+      team_id = mteam_id ;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;

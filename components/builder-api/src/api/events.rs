@@ -57,7 +57,7 @@ macro_rules! log_event {
     }};
 }
 
-// Macros to post in the event logger  from any request.
+// Macros to post in the event logger from any request.
 #[macro_export]
 macro_rules! push_notification {
     ($req:ident, $evt:expr) => {{
@@ -69,7 +69,7 @@ macro_rules! push_notification {
 }
 
 
-// Macros to post in the event logger  from any request.
+// Macros to post in the event logger from any request.
 #[macro_export]
 macro_rules! activate_license {
     ($req:ident, $evt:expr) => {{

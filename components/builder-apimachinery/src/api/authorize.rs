@@ -4,6 +4,8 @@ use api::base::IdGet;
 use cache::inject::PermissionsFeeder;
 use std::collections::BTreeMap;
 use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields, WhoAmITypeMeta};
+use cache::inject::MembersFeeder;
+use api::invitations::Invitations;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Teams {
@@ -18,6 +20,8 @@ pub struct Teams {
     metadata: BTreeMap<String, String>, //Standard object's metadata. Can contain optional label selector team, origin
     #[serde(default)]
     created_at: String,
+    #[serde(default)]
+    members: Option<Vec<Invitations>>,
 }
 
 impl Teams {
@@ -76,6 +80,10 @@ impl Teams {
     pub fn get_mut_metadata(&mut self) -> &mut BTreeMap<String, String> {
         &mut self.metadata
     }
+
+     pub fn set_members(&mut self, v: Option<Vec<Invitations>>) {
+        self.members = v;
+    }
 }
 
 impl MetaFields for Teams {
@@ -93,6 +101,18 @@ impl MetaFields for Teams {
 
     fn type_meta(&self) -> TypeMeta {
         self.type_meta.clone()
+    }
+}
+
+// The service feeder, which gets called from an expander cache.
+// The expander cache is ttl and loads the service the first time.
+impl MembersFeeder for Teams {
+    fn eget_id(&mut self) -> IdGet {
+        IdGet::with_id(self.get_id().clone())
+    }
+
+    fn efeed(&mut self, s: Option<Vec<Invitations>>) {        
+        self.set_members(s);
     }
 }
 
