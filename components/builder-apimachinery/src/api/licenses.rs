@@ -180,7 +180,7 @@ impl LicensesFeeder for Licenses {
 }
 
 impl WhoAmITypeMeta for Licenses {
-    const MY_KIND: &'static str = "POST:licenseactivate";
+    const MY_KIND: &'static str = "POST:licensesactivate";
 }
 //TRIAL => Evaluation trial for 30 days
 //ACTIVE => License with FullNonExpiring

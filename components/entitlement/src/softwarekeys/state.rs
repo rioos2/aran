@@ -13,7 +13,22 @@ A site evaulates 1. Ninja node for digital cloud, 2. Ninja node for containers 3
 Senseis are restricted to 1. */
 const PROVIDER: &'static str = "SoftwareKey";
 const PRODUCT: &'static str = "Rio/OS v2";
-pub const SUB_PRODUCTS: [(&'static str, i32, i32); 2] = [("senseis", 5, 5), ("ninjas", 10, 10)];
+/*
+A tuple that provides the license sub products and the default trial count to be activated
+
+("senseis", 1, 1) => (subproduct name, total_number_of_activations,  no_of_activations_available)
+
+Default total_number_of_activations:
+
+Ninjas is 5: Why ?
+
+Ninja node for digital cloud (1) + Ninja node for containers(2) + OpenIO or Self Healing (3,4,5)
+
+Senseis are restricted to 1.
+
+*/
+
+pub const SUB_PRODUCTS: [(&'static str, i32, i32); 2] = [("senseis", 1, 1), ("ninjas", 5, 5)];
 
 pub struct State {
     no_of_activations_available: i32, //the number of activations available for the license
