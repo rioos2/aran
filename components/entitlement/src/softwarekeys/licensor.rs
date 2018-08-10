@@ -4,15 +4,16 @@
 
 
 use super::*;
+use super::saver::Saver;
+use super::state::{State, SUB_PRODUCTS};
+
 use auth::rbac::license::LicensesFascade;
 use entitlement::models::license;
 use error::{Result, Error, ResultCode};
 use lib_load;
 use lib_load::{Symbol, Library};
 
-use protocol::api::base::{MetaFields, WhoAmITypeMeta};
 use protocol::api::licenses::{Licenses, INVALID, TRIAL, ACTIVE, EXPIRY};
-use protocol::api::schema::type_meta_url;
 use rio_core::fs::rioconfig_license_path;
 use std::collections::BTreeMap;
 use std::ffi::{CString, CStr};
@@ -29,7 +30,6 @@ const PRODUCT_OPTION_ID: c_int = 0;
 const ENVELOPE: &'static str = "_EVALUATION_EXPIRES_2018-09-20_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";
 //ENVELOPEkey is encrypted data from solo-server for unoque identification
 const ENVELOPE_KEY: &'static str = "_EVALUATION_EXPIRES_2018-09-20_nlZW/s6JCUNiKeKvwqKBH5siPNxGFcNZdfdOZhaETsL1kG0uV3xHHiY7Vm06Oipn";
-const PROVIDER: &'static str = "SoftwareKey";
 const VERSION: &'static str = "";
 //url to get the installation id
 const NOT_CONSIDER_INSTALLATION: &'static str = "/SoftwareKey/PrivateData/License/InstallationID";
@@ -60,12 +60,6 @@ const SK_FLAGS_USE_SIGNATURE: c_int = 0x00020000;
 //If specified when calling SK_ApiContextDispose, the PLUSNative API will shutdown and free all memory.
 const SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
 
-const SUB_PRODUCTS: [&'static str; 2] = ["senseis", "ninjas"];
-
-const PRODUCT: &'static str = "Rio/OS v2";
-
-
-
 //The LicenseFile.lfx is generated upon registration in SoftwareKey.com
 lazy_static! {
     static ref LICENSEFILE: PathBuf =
@@ -83,10 +77,7 @@ pub struct NativeSDK {
     licenseFilePath: String, //file path to load the license
     isLoaded: bool, //represent the license file is loaded or not
     isWritable: bool, //set read and write permission for license fil
-    provider: String, //license provider name
-    activation: i32, //activation left for the license
-    status: String, // status of the the license
-    remaining_days: String, //remaining_days of the license
+    state: State,
 }
 
 impl NativeSDK {
@@ -99,10 +90,7 @@ impl NativeSDK {
             isLoaded: false,
             isWritable: false,
             licenseFilePath: "".to_string(),
-            provider: PROVIDER.to_string(),
-            activation: 0,
-            status: TRIAL.to_string(),
-            remaining_days: "".to_string(),
+            state: State::new(),
         }
     }
     //Initializes a new API Context, which may be used to open and manipulate a license file.
@@ -348,27 +336,30 @@ NIC (OPTIONAL)
     //6.get_type fn is return the type of the license and the license is time limited and status is set as active and remaining days updated in db
     //7.if all condition set tas false and the license is set as inavalid
     pub fn live_verify(&mut self) -> Result<()> {
-
         let is_valid_remote: bool = self.validate()?;
+        let no_of_days_to_expire = self.get_days_remaining()?.to_string();
         if self.is_evaluation()? {
             if is_valid_remote {
-                for x in SUB_PRODUCTS.iter() {
-                    self.create_trial_in_db(TRIAL.to_string(), self.get_days_remaining()?.to_string(), x);
-                }
+                self.state.set_status(TRIAL.to_string());
+                self.state.set_no_of_days_to_expire(no_of_days_to_expire);
+                self.create();
             } else {
-                self.status = EXPIRY.to_string();
+                self.state.set_status(EXPIRY.to_string());
+                self.state.set_no_of_days_to_expire(no_of_days_to_expire);
             }
             return Ok(());
         }
         if is_valid_remote {
             if self.get_type()? as i32 == LicenseType::TimeLimited as i32 {
-                self.status = ACTIVE.to_string();
-                self.remaining_days = self.get_days_remaining()?.to_string();
+                self.state.set_status(ACTIVE.to_string());
+                self.state.set_no_of_days_to_expire(no_of_days_to_expire);
             } else {
-                self.status = ACTIVE.to_string();
+                self.state.set_status(ACTIVE.to_string());
+                self.state.set_no_of_days_to_expire(no_of_days_to_expire);
             }
         } else {
-            self.status = INVALID.to_string();
+            self.state.set_status(INVALID.to_string());
+            self.state.set_no_of_days_to_expire(no_of_days_to_expire);
         }
         Ok(())
     }
@@ -864,7 +855,9 @@ NIC (OPTIONAL)
                 activationleftPtr,
             );
 
-            self.activation = *activationleftPtr;
+            self.state.set_no_of_activations_available(
+                *activationleftPtr,
+            );
 
             let decrypt_doc = *self.lib.get::<fn(SK_ApiContext,
                        c_int,
@@ -989,64 +982,24 @@ NIC (OPTIONAL)
                 }
                 self.check_result(result);
             }
-
-            self.activation = self.activation + 1;
-
+            let no_of_activations_available = self.state.get_no_of_activations_available() + 1;
+            self.state.set_no_of_activations_available(
+                no_of_activations_available,
+            );
             Ok(())
         }
     }
 
-    fn create_trial_in_db(&self, status: String, days: String, name: &str) {
-        let mut license = Licenses::new();
-
-        let m = license.mut_meta(
-            license.object_meta(),
-            name.to_string(),
-            license.get_account(),
-        );
-
-        let jackie = license.who_am_i();
-
-        license.set_meta(type_meta_url(jackie), m);
-
-        license.set_status(status);
-        license.set_expired(days);
-
-        let mut activation = BTreeMap::new();
-
-        if name == SUB_PRODUCTS[0] {
-            activation.insert("limit".to_string(), 5);
-            activation.insert("remain".to_string(), 5);
-        } else {
-            activation.insert("limit".to_string(), 10);
-            activation.insert("remain".to_string(), 10);
+    fn create(&self) {
+        for x in SUB_PRODUCTS.iter() {
+            let license = self.state.mk_new(x.0);
+            Saver::new(&self.cache.conn).create(license);
         }
-
-        license.set_activation(activation);
-        license.set_provider_name(self.provider.clone());
-
-        license.set_product(PRODUCT.to_string());
-
-        license::DataStore::new(&self.cache.conn).create_or_update(&license);
     }
 
     pub fn update(&self, name: &str, license_id: &str, password: &str) {
-        let mut license = Licenses::new();
-        let mut activation = BTreeMap::new();
-        if name == SUB_PRODUCTS[0] {
-            activation.insert("limit".to_string(), 5);
-            activation.insert("remain".to_string(), self.activation);
-        } else {
-            activation.insert("limit".to_string(), 10);
-            activation.insert("remain".to_string(), self.activation);
-        }
-        license.set_provider_name(name.to_string());
-        license.set_activation(activation);
-        license.set_status(self.status.clone());
-        license.set_expired(self.remaining_days.clone());
-        license.set_license_id(license_id.to_string());
-        license.set_password(password.to_string());
-        license::DataStore::new(&self.cache.conn).update(&license);
+        let license = self.state.current(name, license_id, password);
+        Saver::new(&self.cache.conn).update(license);
     }
 
     pub fn persist_error(&self, product: &str, error: String) {
