@@ -31,6 +31,7 @@ pub enum ExternalMessage {
     PeerAdd(Envelope),
     PushNotification(Envelope),
     ActivateLicense(u32, String, String),
+    DeActivateLicense(u32, String, String),
 }
 
 /// Transactions sender.
@@ -95,6 +96,14 @@ impl ApiSender {
     /// Request the licensor to activate the license with the licenseid/password
     pub fn activate_license(&self, license_id: u32, password: String, product: String) -> io::Result<()> {
         let msg = ExternalMessage::ActivateLicense(license_id, password, product);
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
+    }
+
+    /// Request the licensor to activate the license with the licenseid/password
+    pub fn deactivate_license(&self, license_id: u32, password: String, product: String) -> io::Result<()> {
+        let msg = ExternalMessage::DeActivateLicense(license_id, password, product);
         self.0.clone().send(msg).wait().map(drop).map_err(
             into_other,
         )

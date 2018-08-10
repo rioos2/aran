@@ -125,7 +125,7 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn update_error(&self, license: &Licenses) -> LicenseOutput {
+    pub fn persist_error(&self, license: &Licenses) -> LicenseOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM update_error_v1($1,$2)",
