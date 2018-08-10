@@ -35,7 +35,7 @@ tags:
   - name: horizontalscaling
     description: Everything about horizontal scaling
   - name: teams
-    description: Everything about roles
+    description: Everything about teams
   - name: permissions
     description: Everything about permissions
   - name: nodes
@@ -1670,7 +1670,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Services'
-  '/services/{servicesid}':
+  '/services/{serviceId}':
     get:
       tags:
         - services
@@ -1678,7 +1678,7 @@ paths:
       description: Returns a single service
       operationId: getServiceById
       parameters:
-        - name: servicesid
+        - name: serviceId
           in: path
           description: ID of service to return
           required: true
@@ -1912,7 +1912,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/endpoints/{EndpointsId}':
+  '/endpoints/{endpointsId}':
     get:
       tags:
         - endpoints
@@ -1920,7 +1920,7 @@ paths:
       description: Returns a single endpoints
       operationId: getEndpointById
       parameters:
-        - name: EndpointsId
+        - name: endpointsId
           in: path
           description: ID of endpoint to return
           required: true
@@ -2448,14 +2448,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storagespool/{Id}':
+  '/storagespool/{id}':
     get:
       tags:
          - storagespool
       summary: Get storagespool by Id
       operationId: getStoragePoolById
       parameters:
-        - name: Id
+        - name: id
           in: path
           description: ID of storagespool to return
           required: true
@@ -2630,7 +2630,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  '/auth/saml/providers/{ProviderId}':
+  '/auth/saml/providers/{providerId}':
     get:
       tags:
         - saml
@@ -2638,7 +2638,7 @@ paths:
       description: Returns a single saml provider
       operationId: getsamlProviderById
       parameters:
-        - name: ProviderId
+        - name: providerId
           in: path
           description: ID of saml provider to return
           required: true
@@ -2697,29 +2697,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/OpenId'
-  '/auth/oidc/providers':
-    get:
-      tags:
-        - oidc
-      description: Returns all open id providers
-      summary: all open id providers
-      operationId: find open id provider
-      responses:
-        '200':
-          description: open id providers response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OpenIdList'
-        '404':
-          description: oidc provider not found
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/auth/oidc/providers/{ProviderId}':
     get:
       tags:
         - oidc
@@ -2727,7 +2704,7 @@ paths:
       description: Returns a single openid provider
       operationId: getOidcProviderById
       parameters:
-        - name: ProviderId
+        - name: providerId
           in: path
           description: ID of openid provider to return
           required: true
@@ -2749,6 +2726,28 @@ paths:
           description: openid not found
         '500':
           description: Inter server Error
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/auth/oidc/providers':
+    get:
+      tags:
+        - oidc
+      description: Returns all open id providers
+      summary: all open id providers
+      operationId: find open id provider
+      responses:
+        '200':
+          description: open id providers response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenIdList'
+        '404':
+          description: oidc provider not found
         default:
           description: unexpected error
           content:
@@ -3208,7 +3207,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/horizontalscaling/{HorizontalScalingId}':
+  '/horizontalscaling/{horizontalScalingId}':
     put:
       tags:
         - horizontalscaling
@@ -3216,7 +3215,7 @@ paths:
       description: Returns updated single horizontalscaling
       operationId: getHorizontalScalingById
       parameters:
-        - name: HorizontalScalingId
+        - name: horizontalScalingId
           in: path
           description: ID of horizontalscaling to return
           required: true
@@ -3279,7 +3278,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/HorizontalScaling'
-  '/horizontalscaling/{HorizontalScalingId}/status':
+  '/horizontalscaling/{horizontalScalingId}/status':
     put:
       tags:
         - horizontalscaling
@@ -3287,7 +3286,7 @@ paths:
       description: Update  horizontalscaling status
       operationId: UpdateHSById
       parameters:
-        - name: HorizontalScalingId
+        - name: horizontalScalingId
           in: path
           description: ID of horizontalscaling to return
           required: true
@@ -3350,14 +3349,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/HSstatus'
-  '/horizontalscaling/{HorizontalScalingId}/scale':
+  '/horizontalscaling/{horizontalScalingId}/scale':
     get:
       tags:
         - horizontalscaling
       summary: Scale up assembly factory
       description: Create assembly by the assembly factory scale up using HS
       parameters:
-        - name: HorizontalScalingId
+        - name: horizontalScalingId
           in: path
           description: ID of horizontal scaling
           required: true
@@ -3406,13 +3405,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/horizontalscaling/assemblyfactory/{AssemblyFactoryId}':
+  '/horizontalscaling/assemblyfactory/{assemblyFactoryId}':
     get:
       tags:
         - horizontalscaling
       summary: Get horizontalscaling by assembly factory id
       parameters:
-        - name: AssemblyFactoryId
+        - name: assemblyFactoryId
           in: path
           description: ID of the assembly factory
           required: true
@@ -3461,14 +3460,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/metrics/horizontalscaling/{AssemblyFactoryId}':
+  '/metrics/horizontalscaling/{assemblyFactoryId}':
     get:
       tags:
         - horizontalscaling
       summary: Get assembly factory metrics
       description: Returns all assemblys metrics
       parameters:
-        - name: AssemblyFactoryId
+        - name: assemblyFactoryId
           in: path
           description: ID of assembly factory
           required: true
@@ -3903,7 +3902,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/{Id}':
+  '/permissions/{id}':
     get:
       tags:
         - permissions
@@ -3911,7 +3910,7 @@ paths:
       description: Returns a single permissions
       operationId: getPermissionById
       parameters:
-        - name: Id
+        - name: id
           in: path
           description: ID of permission to return
           required: true
@@ -3960,7 +3959,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/teams/{TeamId}':
+  '/permissions/teams/{teamId}':
     get:
       tags:
         - permissions
@@ -3968,7 +3967,7 @@ paths:
       description: Returns permissions for teamid
       operationId: getPermissionById
       parameters:
-        - name: TeamId
+        - name: teamId
           in: path
           description: ID of permissions to return
           required: true
@@ -4017,7 +4016,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/{Id}/teams/{TeamId}':
+  '/permissions/{id}/teams/{teamId}':
     get:
       tags:
         - permissions
@@ -4025,13 +4024,13 @@ paths:
       description: Return permission by id
       operationId: getPermissionById
       parameters:
-        - name: Id
+        - name: id
           in: path
           description: ID of permission to return
           required: true
           schema:
             type: string
-        - name: TeamId
+        - name: teamId
           in: path
           description: ID of the Role
           required: true
@@ -4186,7 +4185,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/nodes/{nodeid}':
+  '/nodes/{nodeId}':
     get:
       tags:
         - nodes
@@ -4194,7 +4193,7 @@ paths:
       description: Returns a single node
       operationId: getNodeById
       parameters:
-        - name: nodeid
+        - name: nodeId
           in: path
           description: ID of node to return
           required: true
@@ -4858,20 +4857,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/secrets/{SecretName}/origins/{Origin}':
+  '/secrets/{secretName}/origins/{originName}':
     get:
       tags:
         - secrets
       summary: Returns secrets by origin and secret name
       operationId: getSecretsByOriginAndSecret
       parameters:
-        - name: Origin
+        - name: originName
           in: path
           description: origin name  of secrets to return
           required: true
           schema:
             type: string
-        - name: SecretName
+        - name: secretName
           in: path
           description: secret name  of secrets to return
           required: true
@@ -4915,14 +4914,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/origins/{origin}/serviceaccounts':
+  '/origins/{originName}/serviceaccounts':
     post:
       tags:
         - serviceaccounts
       summary: Create new serviceaccounts
       operationId: CreateServiceAccountByOrigin
       parameters:
-        - name: origin
+        - name: originName
           in: path
           description: name of the origin to create service account
           required: true
@@ -4973,20 +4972,20 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ServiceAccounts'
-  '/serviceaccounts/{ServiceAccount}/origins/{origin}':
+  '/serviceaccounts/{serviceAccountName}/origins/{originName}':
     get:
       tags:
         - serviceaccounts
       summary: Get service accounts by origin and service account name
       operationId: getServiceAccountsByOriginAndName
       parameters:
-        - name: origin
+        - name: originName
           in: path
           description: origin name  of service account to return
           required: true
           schema:
             type: string
-        - name: ServiceAccount
+        - name: serviceAccountName
           in: path
           description: service account name to return
           required: true
@@ -5098,14 +5097,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SecretUpdate'
-  '/serviceaccounts/{ServiceAccountName}':
+  '/serviceaccounts/{serviceAccountName}':
     get:
       tags:
         - serviceaccounts
       summary: Get service accounts by service account name
       operationId: getServiceAccountsByName
       parameters:
-        - name: ServiceAccountName
+        - name: serviceAccountName
           in: path
           description: service account name to return
           required: true
@@ -5525,7 +5524,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storageconnectors/{Id}':
+  '/storageconnectors/{id}':
     put:
       tags:
         - storageconnectors
@@ -5533,7 +5532,7 @@ paths:
       description: Returns updated single storageconnectors
       operationId: getstorageconnectorsById
       parameters:
-        - name: Id
+        - name: id
           in: path
           description: ID of storageconnectors to return
           required: true
@@ -5661,7 +5660,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storageconnectors/{Id}/status':
+  '/storageconnectors/{id}/status':
     put:
       tags:
         - storageconnectors
@@ -5669,7 +5668,7 @@ paths:
       description: Update  storageconnectors status
       operationId: getstorageconnectorsById
       parameters:
-        - name: Id
+        - name: id
           in: path
           description: ID of storageconnectors to return
           required: true
@@ -6269,14 +6268,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/verticalscaling/{VerticalScalingId}':
+  '/verticalscaling/{verticalScalingId}':
     put:
       tags:
         - verticalscaling
       summary: Update vertical scaling by id
       operationId: updateVerticalScalingById
       parameters:
-        - name: VerticalScalingId
+        - name: verticalScalingId
           in: path
           description: ID of vertical scaling to update
           required: true
@@ -6867,7 +6866,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SettingsMap'
-  '/settingsmap/{name}/origins/{origin}':
+  '/settingsmap/{name}/origins/{originName}':
     get:
       tags:
         - settingsmap
@@ -6875,7 +6874,7 @@ paths:
       description: "Return settingsmap by settingsmap name and origin name"
       operationId: getSettingMapByIdAndOrigin
       parameters:
-        - name: origin
+        - name: originName
           in: path
           description: name of the origin return
           required: true
@@ -6924,13 +6923,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/logs/{assembly_id}(ques)range=10m&limits=1':
+  '/logs/{assemblyId}(ques)range=10m&limits=1':
     get:
       tags:
         - logs
       summary: Get logs by assembly id
       parameters:
-        - name: assembly_id
+        - name: assemblyId
           in: path
           description: ID of the assembly logs return
           required: true
@@ -7004,13 +7003,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/402Error'
-  '/image/{ImageName}/vulnerablity':
+  '/image/{imageName}/vulnerablity':
     get:
       tags:
         - image
       summary: Get vulnerablity check response of Image
       parameters:
-        - name: ImageName
+        - name: imageName
           in: path
           description: Name of the image vulnerablity return
           required: true
