@@ -29,3 +29,4 @@ pub mod licenses;
 pub mod senseis;
 pub mod ingress;
 pub mod activation;
+pub mod invitations;

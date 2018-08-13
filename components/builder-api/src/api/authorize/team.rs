@@ -17,11 +17,14 @@ use protocol::api::schema::type_meta;
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
-
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_MEMBER};
 /// TO_DO: Should be named  (authorize::models::teams, authorize::models::permission)
 use authorize::models::team;
+use authorize::models::invitations;
+use authorize::invites::Invites;
 use protocol::api::base::MetaFields;
 use protocol::api::authorize::Teams;
+use protocol::api::invitations::{InvitationInputs, InvitationsList};
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -65,7 +68,7 @@ impl TeamApi {
         debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
-        match team::DataStore::create(&self.conn, &unmarshall_body) {
+        match team::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(create) => Ok(render_json(status::Ok, &create)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
@@ -76,7 +79,7 @@ impl TeamApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match team::DataStore::show(&self.conn, &params) {
+        match team::DataStore::new(&self.conn).show(&params) {
             Ok(Some(teams)) => Ok(render_json(status::Ok, &teams)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -91,7 +94,7 @@ impl TeamApi {
     //Input as string input and returns a teams
     fn show_by_name(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
-        match team::DataStore::show_by_name(&self.conn, &params) {
+        match team::DataStore::new(&self.conn).show_by_name(&params) {
             Ok(Some(teams)) => Ok(render_json(status::Ok, &teams)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -105,7 +108,7 @@ impl TeamApi {
     //GET: /teams
     //Returns all the teams(irrespective of namespaces)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
-        match team::DataStore::list(&self.conn) {
+        match team::DataStore::new(&self.conn).list() {
             Ok(Some(list)) => Ok(render_json_list(status::Ok, dispatch(req), &list)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -114,10 +117,38 @@ impl TeamApi {
 
     fn list_by_origins(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
-        match team::DataStore::list_by_origins(&self.conn, &params) {
+        match team::DataStore::new(&self.conn).list_by_origins(&params) {
             Ok(Some(list)) => Ok(render_json_list(status::Ok, dispatch(req), &list)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+        }
+    }
+
+    //POST: /teams/invitations
+    //The body has the input cluster::invitation_inputs
+    //Returns a mutated invitation_inputs  with
+    //- id
+    //- account_id
+    //- origin_id
+    //- team_id
+    //- users
+    //- created_at
+    fn invite_users(&self, req: &mut Request) -> AranResult<Response> {
+        let unmarshall_body = self.validate::<InvitationInputs>(req.get::<bodyparser::Struct<InvitationInputs>>()?)?;
+
+        debug!("{} ✓",
+            format!("======= parsed {:?} ", unmarshall_body.clone()),
+        );
+
+        let converted_body: InvitationsList = unmarshall_body.clone().into();
+
+        debug!("{} ✓",
+            format!("======= converted parsed {:?} ", converted_body),
+        );
+
+        match Invites::new(&self.conn).mk_invites(&converted_body) {
+            Ok(create) => Ok(render_json(status::Ok, &create)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }
 }
@@ -127,6 +158,7 @@ impl Api for TeamApi {
         let basic = Authenticated::new(&*config);
 
         //closures : teams
+        self.with_cache();
         let _self = self.clone();
         let create =
             move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -143,6 +175,10 @@ impl Api for TeamApi {
         let _self = self.clone();
         let show_by_name =
             move |req: &mut Request| -> AranResult<Response> { _self.show_by_name(req) };
+
+        let _self = self.clone();
+        let invite_users =
+            move |req: &mut Request| -> AranResult<Response> { _self.invite_users(req) };
 
         //Routes:  Authorization : Teams
         router.post(
@@ -173,6 +209,32 @@ impl Api for TeamApi {
             }).before(basic.clone()),
             "show_by_name",
         );
+        router.post(
+            "/teams/invitations",
+            XHandler::new(C { inner: invite_users }).before(basic.clone()),
+            "invite_users_to_team",
+        );
+    }
+}
+
+use protocol::api::base::IdGet;
+use serde_json;
+
+impl ExpanderSender for TeamApi {
+    fn with_cache(&mut self) {   
+
+        let _conn = self.conn.clone();
+        let member_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_MEMBER.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Members live load for ≈ {}", id);
+                invitations::DataStore::list_by_teams(&_conn, &id)
+                    .ok()
+                    .and_then(|e| serde_json::to_string(&e).ok())
+            }),
+        ));
+       
+        &self.conn.expander.with(member_service);        
     }
 }
 
@@ -204,6 +266,35 @@ impl Validator for Teams {
 
         if origin.len() <= 0 {
             s.push("origin".to_string());
+        }
+
+        if s.is_empty() {
+            return Ok(Box::new(self));
+        }
+
+        Err(bad_request(&MissingParameter(format!("{:?}", s))))
+    }
+}
+
+impl Validator for InvitationInputs {
+    //default implementation is to check for `account`, 'team id'  and 'origin'
+    fn valid(self) -> AranValidResult<Self> {
+        let mut s: Vec<String> = vec![];
+
+        if self.get_account_id().len() <= 0 {
+            s.push("account_id".to_string());
+        }
+
+        if self.get_origin_id().len() <= 0 {
+            s.push("origin_id".to_string());
+        }
+
+        if self.get_team_id().len() <= 0 {
+            s.push("team_id".to_string());
+        }
+        
+         if self.get_users().is_empty() {
+            s.push("users".to_string());
         }
 
         if s.is_empty() {

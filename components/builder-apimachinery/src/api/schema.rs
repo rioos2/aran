@@ -37,7 +37,7 @@ lazy_static! {
         map.register("POST:senseis", "Sensei");
         map.register("GET:senseis", "SenseiList");
 
-        map.register("POST:license", "License");
+        map.register("POST:licensesactivate", "License");
         map.register("GET:licenses", "LicenseList");
 
         map.register("POST:origins", "Origin");
@@ -85,7 +85,7 @@ lazy_static! {
         map.register("GET:verticalscaling", "VerticalScalingList");
 
         map.register("POST:secrets", "Secret");
-        map.register("GET:secrets", "SecretList");      
+        map.register("GET:secrets", "SecretList");
 
         map.register("POST:settingsmap", "SettingsMap");
 
@@ -116,8 +116,8 @@ lazy_static! {
         map.register("GET:authsamlproviders", "SamlList");
 
         map.register("POST:buckets", "Bucket");
-        map.register("GET:buckets", "BucketList");        
-       
+        map.register("GET:buckets", "BucketList");
+
         map.register("POST:bucketfiles", "BucketAccessor");
         map.register("GET:bucketfiles", "BucketAccessor");
 
@@ -125,6 +125,7 @@ lazy_static! {
         map.register("GET:ingresses", "IngressList");
 
         map.register("GET:wizards", "Wizard");
+        map.register("POST:invitations", "Invitations");
 
         map
     };

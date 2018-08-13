@@ -494,6 +494,16 @@ VALUES
          id
       FROM
          second_insert),
+         'TEAMS.*',
+         'Edit only access for assembly resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
          'ASSEMBLYS.GET',
          'Read only access for assembly resource.'
    )
