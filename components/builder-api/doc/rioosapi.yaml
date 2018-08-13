@@ -283,14 +283,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/License'
-  '/licenses/{name}':
+  '/licenses/{licenseName}':
     get:
       tags:
         - license
       summary : Get license by name
       operationId: getLicenseByAName
       parameters:
-        - name: name
+        - name: licenseName
           in: path
           description: name id of license to return
           required: true
@@ -375,7 +375,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/licenses/{id}':
+  '/licenses/{licenseId}':
     put:
       tags:
         - license
@@ -383,7 +383,7 @@ paths:
       description: Update license
       operationId: getLicenseById
       parameters:
-        - name: id
+        - name: licenseId
           in: path
           description: ID of License to return
           required: true
@@ -1138,7 +1138,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Status'
-  '/assemblys/{id}/exec':
+  '/assemblys/{assemblyId}/exec':
     get:
       tags:
         - assembly
@@ -1146,7 +1146,7 @@ paths:
       description: Get console
       operationId: GetConsoleByAssemblyId
       parameters:
-        - name: id
+        - name: assemblyId
           in: path
           description: ID of assembly console to return
           required: true
@@ -1251,7 +1251,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Accounts'
-  '/accounts/{id}':
+  '/accounts/{accountId}':
     get:
       tags:
         - accounts
@@ -1259,7 +1259,7 @@ paths:
       description: Returns a single account
       operationId: getAccountById
       parameters:
-        - name: id
+        - name: accountId
           in: path
           description: ID of account to return
           required: true
@@ -1308,7 +1308,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/name/{email}':
+  '/accounts/name/{accountEmail}':
     get:
       tags:
         - accounts
@@ -1316,7 +1316,7 @@ paths:
       description: Returns a single account
       operationId: getAccountByEmail
       parameters:
-        - name: email
+        - name: accountEmail
           in: path
           description: email of account to return
           required: true
@@ -1463,7 +1463,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/origins/accounts/{id}':
+  '/origins/accounts/{accountId}':
     get:
       tags:
         - origin
@@ -1471,7 +1471,7 @@ paths:
       description: return all the  origins
       operationId: getOriginByAccountId
       parameters:
-        - name: id
+        - name: accountId
           in: path
           description: id of account to return origins
           required: true
@@ -1514,7 +1514,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/origins/{name}':
+  '/origins/{originName}':
     get:
       tags:
         - origin
@@ -1522,7 +1522,7 @@ paths:
       description: Returns a single origins
       operationId: getOriginByName
       parameters:
-        - name: name
+        - name: originName
           in: path
           description: name of origins to return
           required: true
@@ -1743,7 +1743,7 @@ paths:
       description: Returns updated single service
       operationId: updateServiceById
       parameters:
-        - name: servicesid
+        - name: serviceId
           in: path
           description: ID of service to return
           required: true
@@ -1912,7 +1912,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/endpoints/{endpointsId}':
+  '/endpoints/{endpointId}':
     get:
       tags:
         - endpoints
@@ -1920,7 +1920,7 @@ paths:
       description: Returns a single endpoints
       operationId: getEndpointById
       parameters:
-        - name: endpointsId
+        - name: endpointId
           in: path
           description: ID of endpoint to return
           required: true
@@ -1978,7 +1978,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/endpoints/assembly/{id}':
+  '/endpoints/assembly/{assemblyId}':
     get:
       tags:
         - endpoints
@@ -1986,7 +1986,7 @@ paths:
       summary : Find endpoint by assembly id
       operationId: getEndpointByAssembly
       parameters:
-        - name: id
+        - name: assemblyId
           in: path
           description: assembly id of endpoints to return
           required: true
@@ -2448,14 +2448,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storagespool/{id}':
+  '/storagespool/{storagespoolId}':
     get:
       tags:
          - storagespool
       summary: Get storagespool by Id
       operationId: getStoragePoolById
       parameters:
-        - name: id
+        - name: storagespoolId
           in: path
           description: ID of storagespool to return
           required: true
@@ -3623,7 +3623,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/teams/{id}':
+  '/teams/{teamId}':
     get:
       tags:
         - teams
@@ -3631,7 +3631,7 @@ paths:
       description: Returns single role
       operationId: getTeamById
       parameters:
-        - name: id
+        - name: teamId
           in: path
           description: ID of team to return
           required: true
@@ -3680,7 +3680,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/teams/origins/{name}':
+  '/teams/origins/{originName}':
     get:
       tags:
         - teams
@@ -3688,7 +3688,7 @@ paths:
       summary: Get all teams by origin
       operationId: Role
       parameters:
-        - name: name
+        - name: originName
           in: path
           description: name of the origin to return teams
           required: true
@@ -3738,7 +3738,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/teams/name/{name}':
+  '/teams/name/{teamName}':
     get:
       tags:
         - teams
@@ -3746,7 +3746,7 @@ paths:
       description: Returns team by name
       operationId: getTeamById
       parameters:
-        - name: name
+        - name: teamName
           in: path
           description: Name of team to return
           required: true
@@ -3902,7 +3902,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/{id}':
+  '/permissions/{permissionId}':
     get:
       tags:
         - permissions
@@ -3910,7 +3910,7 @@ paths:
       description: Returns a single permissions
       operationId: getPermissionById
       parameters:
-        - name: id
+        - name: permissionId
           in: path
           description: ID of permission to return
           required: true
@@ -4016,7 +4016,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/{id}/teams/{teamId}':
+  '/permissions/{permissionId}/teams/{teamId}':
     get:
       tags:
         - permissions
@@ -4024,7 +4024,7 @@ paths:
       description: Return permission by id
       operationId: getPermissionById
       parameters:
-        - name: id
+        - name: permissionId
           in: path
           description: ID of permission to return
           required: true
@@ -4249,7 +4249,7 @@ paths:
       description: Returns updated single node
       operationId: updateNodeById
       parameters:
-        - name: nodeid
+        - name: nodeId
           in: path
           description: ID of node to return
           required: true
@@ -4312,7 +4312,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Nodes'
-  '/nodes/{id}/status':
+  '/nodes/{nodeId}/status':
     put:
       tags:
         - nodes
@@ -4320,7 +4320,7 @@ paths:
       description: Returns status updated single node
       operationId: updateNodeStatusById
       parameters:
-        - name: id
+        - name: nodeId
           in: path
           description: ID of node to return
           required: true
@@ -5034,13 +5034,13 @@ paths:
       summary: Update service accounts service account name and origin
       operationId: updateServiceAccountsByNameAndOrigin
       parameters:
-        - name: ServiceAccount
+        - name: serviceAccountName
           in: path
           description: service account id to update
           required: true
           schema:
             type: string
-        - name: origin
+        - name: originName
           in: path
           description: origin name to update service account
           required: true
@@ -5283,7 +5283,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/401Error'
-  '/networks/{id}':
+  '/networks/{networkId}':
     get:
       tags:
         - networks
@@ -5291,7 +5291,7 @@ paths:
       description: Return single network data
       operationId: getNetworkById
       parameters:
-        - name: id
+        - name: networkId
           in: path
           description: ID of network to return
           required: true
@@ -5356,7 +5356,7 @@ paths:
       description: Returns updated single network
       operationId: getNetworkById
       parameters:
-        - name: id
+        - name: networkId
           in: path
           description: ID of network to return
           required: true
@@ -5524,7 +5524,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storageconnectors/{id}':
+  '/storageconnectors/{storageConnectorId}':
     put:
       tags:
         - storageconnectors
@@ -5532,7 +5532,7 @@ paths:
       description: Returns updated single storageconnectors
       operationId: getstorageconnectorsById
       parameters:
-        - name: id
+        - name: storageConnectorId
           in: path
           description: ID of storageconnectors to return
           required: true
@@ -5602,7 +5602,7 @@ paths:
       description: Returns a single storageconnectors
       operationId: getstorageconnectorsById
       parameters:
-        - name: Id
+        - name: storageConnectorId
           in: path
           description: ID of storageconnectors to return
           required: true
@@ -5660,7 +5660,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storageconnectors/{id}/status':
+  '/storageconnectors/{storageConnectorId}/status':
     put:
       tags:
         - storageconnectors
@@ -5668,7 +5668,7 @@ paths:
       description: Update  storageconnectors status
       operationId: getstorageconnectorsById
       parameters:
-        - name: id
+        - name: storageConnectorId
           in: path
           description: ID of storageconnectors to return
           required: true
@@ -5858,7 +5858,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/jobs/node(ques)node_id={nodeId}':
+  '/jobs/node':
     get:
       tags:
         - jobs
@@ -5866,8 +5866,8 @@ paths:
       description: Returns a single job
       operationId: getJobsByNodeId
       parameters:
-        - name: nodeId
-          in: path
+        - name: node_id
+          in: query
           description: ID of node to return job
           required: true
           schema:
@@ -6098,7 +6098,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/plans/{id}':
+  '/plans/{planId}':
     get:
       tags:
         - plan
@@ -6106,7 +6106,7 @@ paths:
       description: Returns a single plan
       operationId: getPlanById
       parameters:
-        - name: id
+        - name: planId
           in: path
           description: ID of plan to return
           required: true
@@ -6338,7 +6338,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/VerticalScaling'
-  '/verticalscaling/{id}/scale':
+  '/verticalscaling/{verticalScalingId}/scale':
     get:
       tags:
         - verticalscaling
@@ -6346,7 +6346,7 @@ paths:
       description: scale by id
       operationId: scaleById
       parameters:
-        - name: id
+        - name: verticalScalingId
           in: path
           description: ID of vertical scale up or down
           required: true
@@ -6395,7 +6395,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/verticalscaling/{id}/status':
+  '/verticalscaling/{verticalScalingId}/status':
     put:
       tags:
         - verticalscaling
@@ -6403,7 +6403,7 @@ paths:
       description: Update vertical scaling status by id
       operationId: updateVerticalScalingStatusById
       parameters:
-        - name: id
+        - name: verticalScalingId
           in: path
           description: ID of vertical scaling status to update
           required: true
@@ -6466,14 +6466,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/metrics/verticalscaling/{id}':
+  '/metrics/verticalscaling/{assemblyFactoryId}':
     get:
       tags:
         - verticalscaling
       summary: Get assembly factory metrics
       description: Returns all assemblys metrics
       parameters:
-        - name: id
+        - name: assemblyFactoryId
           in: path
           description: ID of assembly factory
           required: true
@@ -6578,7 +6578,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Volumes'
-  '/volumes/{id}':
+  '/volumes/{volumeId}':
     get:
       tags:
         - volumes
@@ -6586,7 +6586,7 @@ paths:
       description: "Return volume by volume id"
       operationId: getVolumeById
       parameters:
-        - name: id
+        - name: volumeId
           in: path
           description: ID of the volume return
           required: true
@@ -6641,7 +6641,7 @@ paths:
       summary: Update volume by id
       operationId: updateVolumeById
       parameters:
-        - name: id
+        - name: volumeId
           in: path
           description: ID of volume to update
           required: true
@@ -6704,14 +6704,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Volumes'
-  '/volumes/{id}/status':
+  '/volumes/{volumeId}/status':
     put:
       tags:
         - volumes
       summary: Update volume status by id
       operationId: updateVolumeStausById
       parameters:
-        - name: id
+        - name: volumeId
           in: path
           description: ID of volume status to update
           required: true
@@ -6774,7 +6774,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Status'
-  '/volumes/assemblys/{id}':
+  '/volumes/assemblys/{assemblyId}':
     get:
       tags:
         - volumes
@@ -6782,7 +6782,7 @@ paths:
       description: Return all volumes by assembly id
       operationId: getVolumesByAssemblyId
       parameters:
-        - name: id
+        - name: assemblyId
           in: path
           description: ID of the assembly volumes return
           required: true
@@ -6866,7 +6866,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SettingsMap'
-  '/settingsmap/{name}/origins/{originName}':
+  '/settingsmap/{settingsmapName}/origins/{originName}':
     get:
       tags:
         - settingsmap
@@ -6880,7 +6880,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: name
+        - name: settingsmapName
           in: path
           description: name of the settingsmap return
           required: true
@@ -6923,15 +6923,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/logs/{assemblyId}(ques)range=10m&limits=1':
+  '/logs/{assemblyId}':
     get:
       tags:
         - logs
       summary: Get logs by assembly id
       parameters:
+        - name: range
+          in: query
+          description: range of the logs return
+          required: true
+          schema:
+            type: string
+        - name: limits
+          in: query
+          description: limits of the logs return
+          required: true
+          schema:
+            type: integer
         - name: assemblyId
           in: path
-          description: ID of the assembly logs return
+          description: Id of the assembly log return
           required: true
           schema:
             type: string
@@ -6967,7 +6979,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/402Error'
-  '/logs(ques)limits=1&range=15m':
+  '/logs':
     get:
       tags:
         - logs
@@ -7213,14 +7225,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/buildconfigs/{id}':
+  '/buildconfigs/{buildConfigId}':
     get:
       tags:
         - buildconfig
       summary: Get build config by id
       operationId: getBuildConfigById
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
           description: Id of the build config to return
           required: true
@@ -7285,7 +7297,7 @@ paths:
       description: Returns updated single buildconfig
       operationId: getbuildconfigById
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
           description: ID of buildconfig to return
           required: true
@@ -7348,7 +7360,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BuildConfig'
-  '/buildconfigs/{id}/status':
+  '/buildconfigs/{buildConfigId}/status':
     put:
       tags:
         - buildconfig
@@ -7356,7 +7368,7 @@ paths:
       description: Update  buildconfig status
       operationId: getBuildConfigById
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
           description: ID of buildconfig to return
           required: true
@@ -7420,13 +7432,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Status'
-  '/buildconfigs/assemblyfactorys/{id}':
+  '/buildconfigs/assemblyfactorys/{assemblyFactoryId}':
     get:
       tags:
         - buildconfig
       summary: Get build config by assembly factory id
       parameters:
-        - name: id
+        - name: assemblyFactoryId
           in: path
           description: Id of the assembly factory to return build config
           required: true
@@ -7596,13 +7608,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/builds/{id}':
+  '/builds/{buildId}':
     get:
       tags:
         - build
       summary: Get build by id
       parameters:
-        - name: id
+        - name: buildId
           in: path
           description: Id of the build  to return
           required: true
@@ -7667,7 +7679,7 @@ paths:
       description: Returns updated single build
       operationId: getBuildById
       parameters:
-        - name: id
+        - name: buildId
           in: path
           description: ID of build to return
           required: true
@@ -7730,13 +7742,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Build'
-  '/builds/buildconfigs/{id}':
+  '/builds/buildconfigs/{buildConfigId}':
     get:
       tags:
         - build
       summary: Get build by build config id
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
           description: Id of the build config to return builds
           required: true
@@ -7794,7 +7806,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/builds/{id}/status':
+  '/builds/{buildId}/status':
    put:
       tags:
         - build
@@ -7802,7 +7814,7 @@ paths:
       description: Update  build status
       operationId: getBuildById
       parameters:
-        - name: id
+        - name: buildId
           in: path
           description: ID of build to return
           required: true
@@ -7969,13 +7981,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/imagereferences/{id}':
+  '/imagereferences/{imageReferenceId}':
     get:
       tags:
         - imagereferences
       summary: Get image reference by id
       parameters:
-        - name: id
+        - name: imageReferenceId
           in: path
           description: Id of the imageref  to return
           required: true
@@ -8040,7 +8052,7 @@ paths:
       description: Returns updated single imagereference
       operationId: getImageReferenceById
       parameters:
-        - name: id
+        - name: imageReferenceId
           in: path
           description: ID of imagereference to return
           required: true
@@ -8103,13 +8115,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImageRef'
-  '/imagereferences/buildconfigs/{id}':
+  '/imagereferences/buildconfigs/{buildConfigId}':
     get:
       tags:
         - imagereferences
       summary: Get imagereferences by buildconfig id
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
           description: Id of the buildconfig to return imagereferences
           required: true
@@ -8261,13 +8273,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/imagemarks/{id}':
+  '/imagemarks/{imagemarkId}':
     get:
       tags:
         - imagemarks
       summary: Get imagemarks by id
       parameters:
-        - name: id
+        - name: imagemarkId
           in: path
           description: Id of the imagemarks  to return
           required: true
@@ -8332,7 +8344,7 @@ paths:
       description: Returns updated single imagemarks
       operationId: UpdateImagemarksById
       parameters:
-        - name: id
+        - name: imagemarkId
           in: path
           description: ID of imagemarks to return
           required: true
@@ -8395,13 +8407,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImageMarks'
-  '/imagemarks/builds/{id}':
+  '/imagemarks/builds/{buildId}':
     get:
       tags:
         - imagemarks
       summary: Get imagemarks by builds id
       parameters:
-        - name: id
+        - name: buildId
           in: path
           description: Id of the builds to return imagemarks
           required: true
@@ -8555,20 +8567,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/bucketfiles/{id}/files/{name}/upload':
+  '/bucketfiles/{bucketId}/files/{fileName}/upload':
     get:
       tags:
         - buckets
       summary: Get uploaded file information
       description: Return uploaded file
       parameters:
-        - name: id
+        - name: bucketId
           in: path
           description: Name of the bucket
           required: true
           schema:
             type: string
-        - name: name
+        - name: fileName
           in: path
           description: Name of the file
           required: true
@@ -8618,20 +8630,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/bucketfiles/{id}/files/{name}/download':
+  '/bucketfiles/{bucketId}/files/{fileName}/download':
     get:
       tags:
         - buckets
       summary: Get downloaded file url
       description: Return downloaded file
       parameters:
-        - name: id
+        - name: bucketId
           in: path
           description: Name of the bucket
           required: true
           schema:
             type: string
-        - name: name
+        - name: fileName
           in: path
           description: Name of the file
           required: true
@@ -8783,7 +8795,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/ingresses/{id}':
+  '/ingresses/{ingressId}':
     put:
       tags:
         - ingress
@@ -8791,7 +8803,7 @@ paths:
       description: Returns updated single ingress
       operationId: UpdateIngressById
       parameters:
-        - name: id
+        - name: ingressId
           in: path
           description: ID of ingress to return
           required: true
@@ -8854,7 +8866,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Ingress'
-  '/ingresses/{id}/status':
+  '/ingresses/{ingressId}/status':
     put:
       tags:
         - ingress
@@ -8862,7 +8874,7 @@ paths:
       description: Returns updated single ingress
       operationId: UpdateIngressStatusById
       parameters:
-        - name: id
+        - name: ingressId
           in: path
           description: ID of ingress to return
           required: true
@@ -8925,13 +8937,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/IngressStatus'
-  '/ingresses/assemblyfactorys/{id}':
+  '/ingresses/assemblyfactorys/{assemblyFactoryId}':
     get:
       tags:
         - ingress
       summary: Get ingress by assemblyfactory id
       parameters:
-        - name: id
+        - name: assemblyFactoryId
           in: path
           description: Id of the assemblyfactory to return ingress
           required: true
