@@ -116,7 +116,7 @@ impl AuthenticateApi {
             ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => {
-                match team::DataStore::new(&self.conn).show_by_name(&IdGet::with_id(unmarshall_body.get_teams()[0].to_string())) {
+                match team::DataStore::new(&self.conn).show_by_full_name(&IdGet::with_id(unmarshall_body.get_teams()[0].to_string())) {
                     Err(err) => Err(internal_error(&format!("{}", err))),
                     Ok(None) => Err(not_found_error(&format!(
                         "{} for teams",

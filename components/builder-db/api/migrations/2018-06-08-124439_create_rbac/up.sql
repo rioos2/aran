@@ -3,20 +3,20 @@
 --- Table:teams
 ---
 CREATE SEQUENCE IF NOT EXISTS team_id_seq;
-CREATE TABLE IF NOT EXISTS TEAMS (id bigint PRIMARY KEY DEFAULT next_id_v1('team_id_seq'), name text, type_meta JSONB, object_meta JSONB, metadata JSONB, description text, updated_at timestamptz, created_at timestamptz DEFAULT now(), UNIQUE (name));
+CREATE TABLE IF NOT EXISTS TEAMS (id bigint PRIMARY KEY DEFAULT next_id_v1('team_id_seq'), full_name text, type_meta JSONB, object_meta JSONB, metadata JSONB, description text, updated_at timestamptz, created_at timestamptz DEFAULT now(), UNIQUE (full_name));
 
 ---
 --- Table:teams:create
 ---
 CREATE
-OR REPLACE FUNCTION insert_team_v1 (name text, description text,account text, origin text, object_meta JSONB, type_meta JSONB, metadata JSONB) RETURNS SETOF TEAMS AS $$
+OR REPLACE FUNCTION insert_team_v1 (full_name text, description text,account text, origin text, object_meta JSONB, type_meta JSONB, metadata JSONB) RETURNS SETOF TEAMS AS $$
 DECLARE inserted_teams teams;
 BEGIN
    INSERT INTO
-      teams(name, description, type_meta, object_meta, metadata)
+      teams(full_name, description, type_meta, object_meta, metadata)
    VALUES
       (
-         name,
+         full_name,
          description,
          type_meta, object_meta, metadata
       )
@@ -72,7 +72,24 @@ BEGIN
    FROM
       teams
    WHERE
-      name = rname;
+      object_meta ->> 'name' = rname;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+---
+--- Table:teams:show_by_full_name
+---
+CREATE
+OR REPLACE FUNCTION get_team_by_full_name_v1 (rname text) RETURNS SETOF TEAMS AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      teams
+   WHERE
+      full_name = rname;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
@@ -220,7 +237,7 @@ BEGIN
          FROM
             teams
          WHERE
-            name = rname
+            full_name = rname
       )
    ORDER BY
       name ASC;

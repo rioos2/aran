@@ -11,7 +11,8 @@ use api::invitations::Invitations;
 pub struct Teams {
     #[serde(default)]
     id: String,
-    name: String,
+    #[serde(default)]
+    full_name: String,
     description: String,
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Team
@@ -44,12 +45,12 @@ impl Teams {
         self.id.clone()
     }
 
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
+    pub fn set_full_name(&mut self, v: ::std::string::String) {
+        self.full_name = v;
     }
 
-    pub fn get_name(&self) -> ::std::string::String {
-        self.name.clone()
+    pub fn get_full_name(&self) -> ::std::string::String {
+        self.full_name.clone()
     }
 
     pub fn set_description(&mut self, v: ::std::string::String) {
@@ -259,7 +260,7 @@ mod test {
     #[test]
     fn decode_teams() {
         let val = r#"{
-            "name": "RIOOS:SUPERUSER",
+            "full_name": "RIOOS:SUPERUSER",
             "description":"superuser of RIO/OS. God given powers.  instance",
             "object_meta": {"account":"1043206892018475008"},"metadata": {"origin":"rioos"}}"#;
         let team: Teams = json_decode(val).unwrap();

@@ -25,10 +25,11 @@ use authorize::invites::Invites;
 use protocol::api::base::MetaFields;
 use protocol::api::authorize::Teams;
 use protocol::api::invitations::{InvitationInputs, InvitationsList};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
+use typemap;
+use api::audit::blockchain_api::EventLog;
 
 /// team api: TeamApi provides ability to declare the teams
 /// and manage them.
@@ -140,14 +141,46 @@ impl TeamApi {
             format!("======= parsed {:?} ", unmarshall_body.clone()),
         );
 
+        let params = IdGet::with_id(unmarshall_body.get_team_id());
+
+        let team = match team::DataStore::new(&self.conn).show(&params) {
+            Ok(Some(teams)) => Ok(teams),
+            Err(err) => Err(internal_error(&format!("Requested Team not found: {}", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
+        };
+
+        let unwrap_team = team.unwrap();
+
+        debug!("{} ✓",
+            format!("======= Invited team {:?} ", unwrap_team.clone()),
+        );
+
         let converted_body: InvitationsList = unmarshall_body.clone().into();
 
         debug!("{} ✓",
             format!("======= converted parsed {:?} ", converted_body),
         );
 
-        match Invites::new(&self.conn).mk_invites(&converted_body) {
-            Ok(create) => Ok(render_json(status::Ok, &create)),
+        let invites = Invites::new(&self.conn);
+
+        match invites.mk_invites(&converted_body) {
+            Ok(converted) => {
+                match converted {
+                    Some(ini) => {
+                        for x in ini.iter() {
+                            let eve = invites.build_event(&x, &unwrap_team.clone());
+                            println!("{} ✓",format!("===== parsed audit {:?} ", eve.clone()));
+                            push_notification!(req, eve.clone());
+                        }
+                        Ok(render_json(status::Ok, &ini))
+                    },
+                    None => Err(internal_error(&format!("{}\n", "Invitations build error."))),
+                }
+            },
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
     }

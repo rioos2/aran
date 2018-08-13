@@ -77,7 +77,7 @@ impl PushNotifier for EmailNotifier {
             return false;
         }
         match Status::from_str(&self.envelope.get_event().reason) {
-            Status::DigitalCloudRunning | Status::DigitalCloudFailed => true,
+            Status::DigitalCloudRunning | Status::DigitalCloudFailed | Status::Invite => true,
             _ => false,
         }
     }
@@ -99,6 +99,12 @@ impl PushNotifier for EmailNotifier {
             }
             Status::DigitalCloudFailed => {
                 let content = data.deploy_failed().unwrap();
+                let mail_builder =
+                    EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
+                mail_builder.send();
+            }
+            Status::Invite => {
+                let content = data.invite().unwrap();
                 let mail_builder =
                     EmailSender::new(self.config.clone(), data.email(), content.0, content.1);
                 mail_builder.send();
