@@ -14,6 +14,7 @@ use postgres;
 use serde_json;
 
 pub const PENDING: &'static str = "pending";
+pub const ACCEPT: &'static str = "accept";
 
 pub struct DataStore;
 
@@ -55,6 +56,26 @@ impl DataStore {
                 response.push(row_to_invitations(&row)?)
             }
             return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+    pub fn update_status(db: &DataStoreConn, team: &IdGet) -> InvitationsOutput {
+        let conn = db.pool.get_shard(0)?;
+        
+        let rows = &conn.query(
+            "SELECT * FROM update_status_by_team_v1($1, $2)",
+            &[
+                &(team.get_id().parse::<i64>().unwrap()),
+                &(ACCEPT.to_string()),
+            ],
+        ).map_err(Error::InvitationsUpdate)?;
+
+        if rows.len() > 0 {
+            for row in rows {
+                let end = row_to_invitations(&rows.get(0))?;
+                return Ok(Some(end));
+            }
         }
         Ok(None)
     }

@@ -79,7 +79,7 @@ impl TeamApi {
     //Input id - u64 as input and returns a teams
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-
+      
         match team::DataStore::new(&self.conn).show(&params) {
             Ok(Some(teams)) => Ok(render_json(status::Ok, &teams)),
             Err(err) => Err(internal_error(&format!("{}", err))),
@@ -141,39 +141,48 @@ impl TeamApi {
             format!("======= parsed {:?} ", unmarshall_body.clone()),
         );
 
+        let converted_body: InvitationsList = unmarshall_body.clone().into();
+
+        debug!("{} ✓",
+            format!("======= converted body parsed {:?} ", converted_body),
+        );
+
         let params = IdGet::with_id(unmarshall_body.get_team_id());
 
-        let team = match team::DataStore::new(&self.conn).show(&params) {
-            Ok(Some(teams)) => Ok(teams),
+        match team::DataStore::new(&self.conn).show(&params) {
+            Ok(Some(teams)) => self.push_invite_notifications(req, teams, converted_body),
             Err(err) => Err(internal_error(&format!("Requested Team not found: {}", err))),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(RecordsNotFound),
                 params.get_id()
             ))),
-        };
+        }        
+    }
 
-        let unwrap_team = team.unwrap();
-
+    /// this is private helper function
+    /// first build audit data from team and invitation datas
+    /// then push event using generated audit data
+    /// the audit data has message and sender email details
+    fn push_invite_notifications(&self, req: &mut Request, team: Teams, invite_list: InvitationsList) -> AranResult<Response> {
+       
         debug!("{} ✓",
-            format!("======= Invited team {:?} ", unwrap_team.clone()),
-        );
+            format!("======= Invited team {:?} ", team.clone()),
+        );        
 
-        let converted_body: InvitationsList = unmarshall_body.clone().into();
-
-        debug!("{} ✓",
-            format!("======= converted parsed {:?} ", converted_body),
-        );
+        let originated_url = format!("https://{}:{}", req.url.host().to_owned(), req.url.port().to_string());
 
         let invites = Invites::new(&self.conn);
 
-        match invites.mk_invites(&converted_body) {
+        match invites.mk_invites(&invite_list) {
             Ok(converted) => {
                 match converted {
                     Some(ini) => {
                         for x in ini.iter() {
-                            let eve = invites.build_event(&x, &unwrap_team.clone());
-                            println!("{} ✓",format!("===== parsed audit {:?} ", eve.clone()));
+                            let eve = invites.build_event(originated_url.clone(), &x, &team.clone());
+                            debug!("{} ✓",
+                                        format!("===== parsed audit {:?} ", eve.clone()),
+                            );     
                             push_notification!(req, eve.clone());
                         }
                         Ok(render_json(status::Ok, &ini))
@@ -183,6 +192,21 @@ impl TeamApi {
             },
             Err(err) => Err(internal_error(&format!("{}\n", err))),
         }
+    }
+
+    fn accept_invite(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;        
+        let invites = Invites::new(&self.conn);
+
+        match invitations::DataStore::update_status(&self.conn, &params) {
+            Ok(Some(invite)) => Ok(render_json(status::Ok, &invites.mk_member(&invite)?)),
+            Err(err) => Err(internal_error(&format!("Accepted Team not found: {}", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
+        }        
     }
 }
 
@@ -212,6 +236,10 @@ impl Api for TeamApi {
         let _self = self.clone();
         let invite_users =
             move |req: &mut Request| -> AranResult<Response> { _self.invite_users(req) };
+
+        let _self = self.clone();
+        let accept_invite =
+            move |req: &mut Request| -> AranResult<Response> { _self.accept_invite(req) };
 
         //Routes:  Authorization : Teams
         router.post(
@@ -246,6 +274,11 @@ impl Api for TeamApi {
             "/teams/invitations",
             XHandler::new(C { inner: invite_users }).before(basic.clone()),
             "invite_users_to_team",
+        );
+        router.put(
+            "/invitations/:id/accept",
+            XHandler::new(C { inner: accept_invite }).before(basic.clone()),
+            "accept_invite_user_to_team",
         );
     }
 }

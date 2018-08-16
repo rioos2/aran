@@ -1,8 +1,10 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use db::data_store::DataStoreConn;
-use models::invitations::DataStore;
-use super::InvitationsOutputList;
+use db::error::Error::RecordsNotFound;
+use error::Error;
+use models::{invitations, team_members};
+use super::{InvitationsOutputList, TeamMembersOutput};
 use protocol::api::invitations::InvitationsList;
 use protocol::api::invitations::Invitations;
 use protocol::api::audit::AuditEvent;
@@ -10,7 +12,9 @@ use protocol::api::schema::type_meta_url;
 use protocol::api::base::{MetaFields, ObjectMeta};
 use std::collections::BTreeMap;
 use protocol::api::base::ChildTypeMeta;
-use protocol::api::authorize::Teams;
+use protocol::api::authorize::{Teams, TeamMembers};
+use protocol::api::session;
+use session::models::{session as sessions};
 
 /// This struct used for insert new entry into invitations table
 /// And also sends email/slack invitations to users
@@ -33,7 +37,7 @@ impl<'a> Invites<'a> {
     	let mk_invites = invitation_list.invites
                         .into_iter()
                         .map(|invite| {
-                            DataStore::create(&self.conn, &invite)
+                            invitations::DataStore::create(&self.conn, &invite)
                         })
                         .fold(vec![], |mut acc, x| match x {
                             Ok(one_invite) => {                            	
@@ -51,10 +55,25 @@ impl<'a> Invites<'a> {
         Ok(Some(mk_invites))
     }
 
-    pub fn build_event(&self, ini: &Invitations, team: &Teams) -> AuditEvent {
+    pub fn mk_member(&self, invitations: &Invitations) -> TeamMembersOutput {
+        let mut account_get = session::AccountGet::new();
+        account_get.set_email(invitations.get_invite_to());
+        match sessions::DataStore::get_account(&self.conn, &account_get) {
+            Ok(Some(opt_account)) => {
+                    let member = self.build_team_member(opt_account.get_id(), invitations);
+                    team_members::DataStore::new(&self.conn).create(&member)
+            }
+            Err(err) => Err(Error::Db(RecordsNotFound)), //In future  we track this errors
+            Ok(None) => Err(Error::AccountNotFound(
+                    "Invited Account not found, Please sign up your account.".to_string(),
+                )),
+        }
+    }
+
+    pub fn build_event(&self, originated_url: String, ini: &Invitations, team: &Teams) -> AuditEvent {
     	let mut audits = AuditEvent::new();
         let mut labels = BTreeMap::new();
-        let url = format!("{}/{}", "https://console.rioos.xyz/api/v1", team.get_id());
+        let url = format!("{}/invitations/{}/accept", originated_url, ini.get_id());
         let mut m = audits.mut_meta(
                 ObjectMeta::new(),
                 "AUDITS".to_string(),
@@ -72,5 +91,23 @@ impl<'a> Invites<'a> {
         audits.set_message("hai".to_string());
         audits        
     }
+
+    pub fn build_team_member(&self, account_id: String, ini: &Invitations) -> TeamMembers {
+        let mut members = TeamMembers::new();
+        let mut m = members.mut_meta(
+                ObjectMeta::new(),
+                "teammembers".to_string(),
+                account_id,
+        );        
+        //it is temporary fix 
+        let jackie = "POST:teammembers".to_string();
+        members.set_meta(type_meta_url(jackie), m);
+        let mut metadata = BTreeMap::new();
+        metadata.insert("team".to_string(), ini.get_team_id());
+        metadata.insert("origin".to_string(), ini.get_origin_id());
+        members.set_metadata(metadata);
+        members        
+    }
+  
 
 }

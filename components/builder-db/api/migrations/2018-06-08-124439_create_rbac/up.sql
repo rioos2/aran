@@ -21,7 +21,7 @@ BEGIN
          type_meta, object_meta, metadata
       )
       ON CONFLICT DO NOTHING RETURNING * INTO inserted_teams;
-      PERFORM insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',account)::jsonb,json_build_object('team', inserted_teams.id::text, 'origin', origin)::jsonb);
+      PERFORM direct_insert_team_member_v1('{"kind":"TeamMember","api_version":"v1"}',json_build_object('account',account)::jsonb,json_build_object('team', inserted_teams.id::text, 'origin', origin)::jsonb);
       RETURN NEXT inserted_teams;
 RETURN;
 END
@@ -360,3 +360,18 @@ BEGIN
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
+
+CREATE
+OR REPLACE FUNCTION update_status_by_team_v1 (tid bigint, accept text) RETURNS SETOF INVITATIONS AS $$
+BEGIN
+   RETURN QUERY
+   UPDATE
+      invitations
+   SET
+      status = accept,     
+      updated_at = now()
+   WHERE
+      id = tid RETURNING *;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;

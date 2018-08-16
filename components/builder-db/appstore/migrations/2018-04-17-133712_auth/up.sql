@@ -288,10 +288,11 @@ SETOF origins AS $$
                    $$ LANGUAGE PLPGSQL VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION insert_team_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS void AS $$
+
+CREATE OR REPLACE FUNCTION insert_team_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS SETOF team_members AS $$
                BEGIN
                    INSERT INTO team_members ( type_meta, object_meta,meta_data)
-                          VALUES (om_type_meta,om_obj_meta,om_meta_data);
+                          VALUES (om_type_meta,om_obj_meta,om_meta_data) RETURNING *;
                END
            $$ LANGUAGE PLPGSQL VOLATILE;
 

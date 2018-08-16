@@ -62,7 +62,7 @@ macro_rules! log_event {
 macro_rules! push_notification {
     ($req:ident, $evt:expr) => {{
         use persistent;
-        let ad = format!("{}", ($req).remote_addr);
+        let ad = format!("{}", ($req).remote_addr);      
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
         el.push_notify($evt, (($evt).get_account(), ad))
     }};
