@@ -253,14 +253,6 @@ CREATE TABLE IF NOT EXISTS team_members (id bigint PRIMARY KEY DEFAULT next_id_v
                                                                                                                                       updated_at timestamptz);
 
 
-CREATE OR REPLACE FUNCTION insert_origin_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS void AS $$
-               BEGIN
-                   INSERT INTO origin_members ( type_meta, object_meta,meta_data)
-                          VALUES (om_type_meta,om_obj_meta,om_meta_data);
-               END
-           $$ LANGUAGE PLPGSQL VOLATILE;
-
-
 INSERT INTO origins (name, object_meta, type_meta)
 VALUES ('rioos_system',
         '{"name":"rioos_system", "labels": {}, "account": "", "created_at": "", "deleted_at": "", "finalizers": [], "annotations": {}, "cluster_name": "", "initializers": {"result": {"code": 0, "reason": "", "status": "", "details": {"uid": "", "kind": "", "name": "", "group": "", "causes": [], "retry_after_seconds": 0}, "message": "", "type_meta": {"kind": "", "api_version": ""}}, "pending": []}, "owner_references": [{"uid": "", "kind": "", "name": "", "api_version": "", "block_owner_deletion": false}], "deletion_grace_period_seconds": 0}',
@@ -279,22 +271,13 @@ SETOF origins AS $$
                        ELSE
                            INSERT INTO origins (name,type_meta,object_meta)
                                   VALUES (origin_name,origin_type_meta,origin_object_meta) ON CONFLICT (name) DO NOTHING RETURNING * into inserted_origin;
-                           PERFORM insert_origin_member_v1('{"kind":"OriginMember","api_version":"v1"}',origin_object_meta, json_build_object('origin',inserted_origin.name)::jsonb);
+                           PERFORM internal_insert_origin_member_v1('{"kind":"OriginMember","api_version":"v1"}',origin_object_meta, json_build_object('origin',inserted_origin.name)::jsonb);
                            RETURN NEXT inserted_origin;
                            RETURN;
                   END IF;
                   RETURN;
                END
                    $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION insert_team_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS void AS $$
-               BEGIN
-                   INSERT INTO team_members ( type_meta, object_meta,meta_data)
-                          VALUES (om_type_meta,om_obj_meta,om_meta_data);
-               END
-           $$ LANGUAGE PLPGSQL VOLATILE;
-
 
 CREATE OR REPLACE FUNCTION get_origins_v1() RETURNS
 SETOF origins AS $$
@@ -359,126 +342,6 @@ SETOF account_origins AS $$
                  RETURN;
               END
           $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE SEQUENCE IF NOT EXISTS team_id_seq;
-
-
-CREATE TABLE IF NOT EXISTS TEAMS (id bigint PRIMARY KEY DEFAULT next_id_v1('team_id_seq'),
-                                                                name text, description text, updated_at timestamptz,
-                                                                                             created_at timestamptz DEFAULT now(),
-                                                                                                                            UNIQUE (name));
-
-
-CREATE OR REPLACE FUNCTION insert_team_v1 (name text, description text) RETURNS
-SETOF TEAMS AS $$
-                      BEGIN
-                          RETURN QUERY INSERT INTO teams(name, description)
-                              VALUES (name, description)
-                              RETURNING *;
-                          RETURN;
-                      END
-                  $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION get_teams_v1 () RETURNS
-SETOF TEAMS AS $$
-              BEGIN
-                RETURN QUERY SELECT * FROM teams;
-                RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION get_team_v1 (rid bigint) RETURNS
-SETOF TEAMS AS $$
-              BEGIN
-                RETURN QUERY SELECT * FROM teams WHERE id = rid;
-                RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION get_team_by_name_v1 (rname text) RETURNS
-SETOF TEAMS AS $$
-              BEGIN
-                RETURN QUERY SELECT * FROM teams WHERE name = rname;
-                RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE SEQUENCE IF NOT EXISTS perm_id_seq;
-
-
-CREATE TABLE IF NOT EXISTS permissions (id bigint PRIMARY KEY DEFAULT next_id_v1('perm_id_seq'),
-                                                                      team_id bigint REFERENCES teams(id),
-                                                                                                name text, description text, updated_at timestamptz,
-                                                                                                                             created_at timestamptz DEFAULT now());
-
-
-CREATE OR REPLACE FUNCTION insert_permission_v1 (per_team_id bigint, per_name text, per_description text) RETURNS
-SETOF permissions AS $$
-                                                                                                                                            BEGIN
-                                                                                                                                             IF EXISTS (SELECT true FROM teams WHERE id = per_team_id) THEN
-                                                                                                                                                    RETURN QUERY INSERT INTO permissions (team_id, name, description)
-                                                                                                                                                           VALUES (per_team_id, per_name, per_description)
-                                                                                                                                                           ON CONFLICT DO NOTHING
-                                                                                                                                                           RETURNING *;
-                                                                                                                                                    RETURN;
-                                                                                                                                                    END IF;
-                                                                                                                                            END
-                                                                                                                                        $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION get_permissions_v1 () RETURNS
-SETOF permissions AS $$
-              BEGIN
-                RETURN QUERY SELECT * FROM permissions;
-                RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION get_permission_v1 (pid bigint) RETURNS
-SETOF permissions AS $$
-              BEGIN
-                RETURN QUERY SELECT * FROM permissions WHERE id = pid;
-                RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION get_permission_for_team_v1 (rid bigint) RETURNS
-SETOF permissions AS $$
-             BEGIN
-                 RETURN QUERY SELECT * FROM permissions WHERE team_id = rid
-                   ORDER BY name ASC;
-                 RETURN;
-             END
-             $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION get_permission_by_team_name_v1 (rname text) RETURNS
-SETOF permissions AS $$
-                   DECLARE
-                      this_team teams%rowtype;
-                   BEGIN
-                       SELECT * FROM teams WHERE name = rname LIMIT 1 INTO this_team;
-                       RETURN QUERY SELECT * FROM permissions WHERE team_id = this_team.id;
-                       RETURN;
-                           END
-                           $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION get_specfic_permission_team_v1 (perm_id bigint, rid bigint) RETURNS
-SETOF permissions AS $$
-             BEGIN
-                 RETURN QUERY SELECT * FROM permissions WHERE team_id = rid AND id = perm_id
-                   ORDER BY name ASC;
-                 RETURN;
-             END
-             $$ LANGUAGE PLPGSQL STABLE;
 
 
 CREATE SEQUENCE IF NOT EXISTS passticket_id_seq;

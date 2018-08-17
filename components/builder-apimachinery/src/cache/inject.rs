@@ -72,3 +72,9 @@ pub trait MembersFeeder: Send {
 
     fn efeed(&mut self, e: Option<Vec<api::invitations::Invitations>>);
 }
+
+pub trait TeamsFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<api::authorize::Teams>);
+}

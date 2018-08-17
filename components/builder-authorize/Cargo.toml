@@ -18,5 +18,8 @@ path = "../builder-apimachinery"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
+[dependencies.rioos_builder_session]
+path = "../builder-session"
+
 [features]
 functional = []

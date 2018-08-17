@@ -14,6 +14,7 @@ use postgres;
 use serde_json;
 
 pub const PENDING: &'static str = "pending";
+pub const ACCEPT: &'static str = "accept";
 
 pub struct DataStore;
 
@@ -41,6 +42,22 @@ impl DataStore {
         Ok(None)
     }   
 
+    pub fn show(datastore: &DataStoreConn, net_get: &IdGet) -> InvitationsOutput {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_invitations_v1($1)",
+            &[&(net_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::InvitationsGet)?;
+
+        if rows.len() > 0 {
+            let net = row_to_invitations(&rows.get(0))?;            
+            return Ok(Some(net));
+        }       
+        
+        Ok(None)
+    }
+
    pub fn list_by_teams(datastore: &DataStoreConn, get_teams: &IdGet) -> InvitationsOutputList {
         let conn = datastore.pool.get_shard(0)?;
 
@@ -55,6 +72,26 @@ impl DataStore {
                 response.push(row_to_invitations(&row)?)
             }
             return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+    pub fn update_status(db: &DataStoreConn, team: &IdGet) -> InvitationsOutput {
+        let conn = db.pool.get_shard(0)?;
+        
+        let rows = &conn.query(
+            "SELECT * FROM update_status_by_team_v1($1, $2)",
+            &[
+                &(team.get_id().parse::<i64>().unwrap()),
+                &(ACCEPT.to_string()),
+            ],
+        ).map_err(Error::InvitationsUpdate)?;
+
+        if rows.len() > 0 {
+            for row in rows {
+                let end = row_to_invitations(&rows.get(0))?;
+                return Ok(Some(end));
+            }
         }
         Ok(None)
     }

@@ -20,7 +20,7 @@ impl Cacher {
     }
 
     pub fn get(&self, lru: &Box<MultiCache<String, String>>, key: String) -> Option<Arc<String>> {
-        debug!("« Flock GET: cached ≈ {}", key);
+        info!("« Flock GET: cached ≈ {}", key);
         lru.get(&key)
     }
 
@@ -33,12 +33,12 @@ impl Cacher {
     ) -> Option<Arc<String>> {       
         match value {
             Some(v) => {
-                debug!("» Flock PUT: Some cached ≈ {}", key);
+                info!("» Flock PUT: Some cached ≈ {}", key);
                 &mut lru.put(key, v.clone(), v.capacity(), existing_val_size);
                 Some(Arc::new(v))
             }
             None => {
-                debug!("» Flock PUT: None cached ≈ {}", key);
+                info!("» Flock PUT: None cached ≈ {}", key);
                 None
             }
         }

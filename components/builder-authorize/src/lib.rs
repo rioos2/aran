@@ -6,6 +6,7 @@ extern crate log;
 extern crate chrono;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_builder_db as db;
+extern crate rioos_builder_session as session;
 
 extern crate postgres;
 extern crate serde;
@@ -31,3 +32,8 @@ pub type PermissionsOutputList = Result<Option<Vec<protocol::api::authorize::Per
 pub type InvitationsOutput = Result<std::option::Option<protocol::api::invitations::Invitations>>;
 /// Invitations output as list
 pub type InvitationsOutputList = Result<Option<Vec<protocol::api::invitations::Invitations>>>;
+
+/// TeamMembers output
+pub type TeamMembersOutput = Result<std::option::Option<protocol::api::authorize::TeamMembers>>;
+/// TeamMembers output as list
+pub type TeamMembersOutputList = Result<Option<Vec<protocol::api::authorize::TeamMembers>>>;

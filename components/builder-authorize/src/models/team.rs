@@ -33,10 +33,11 @@ impl<'a> DataStore<'a> {
                         Some(org) => org.to_string(),
                         None => "".to_string()
                     };
+        let builded_name: String = format!("{}:{}", origin, teams.get_name());
          let rows = &conn.query(
             "SELECT * FROM insert_team_v1 ($1,$2,$3,$4,$5,$6,$7)",
             &[
-                &(teams.get_name() as String),
+                &(builded_name as String),
                 &(teams.get_description() as String),
                 &(teams.get_account() as String),
                 &(origin as String),
@@ -54,6 +55,7 @@ impl<'a> DataStore<'a> {
         }
         Ok(None)
     }
+
 
     //show team with team members
     pub fn show(&self,get_teams: &IdGet) -> TeamsOutput {
@@ -78,6 +80,21 @@ impl<'a> DataStore<'a> {
 
         let rows = &conn.query(
             "SELECT * FROM get_team_by_name_v1($1)",
+            &[&(get_teams.get_id() as String)],
+        ).map_err(Error::TeamGet)?;
+
+        if rows.len() > 0 {
+            let team = row_to_teams(&rows.get(0))?;
+            return Ok(Some(team));
+        }
+        Ok(None)
+    }
+
+    pub fn show_by_full_name(&self,get_teams: &IdGet) -> TeamsOutput {
+        let conn = self.db.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_team_by_full_name_v1($1)",
             &[&(get_teams.get_id() as String)],
         ).map_err(Error::TeamGet)?;
 
@@ -139,10 +156,11 @@ fn row_to_teams(row: &postgres::rows::Row) -> Result<Teams> {
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
-    teams.set_id(id.to_string() as String);
-    teams.set_name(row.get("name"));
+    teams.set_id(id.to_string() as String);    
+    teams.set_full_name(row.get("full_name"));
     teams.set_description(row.get("description"));
     teams.set_created_at(created_at.to_rfc3339());
+    teams.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
 
     Ok(teams)
 }

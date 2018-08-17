@@ -89,7 +89,7 @@ impl fmt::Display for Envelope {
 }
 
 // EventSource contains information for an event.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EventSource {
     // Component from which the event is generated.
     // +optional
@@ -100,7 +100,7 @@ pub struct EventSource {
 }
 
 // AuditEvent is a report of an event somewhere in the cluster.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AuditEvent {
     // Standard type metadata.
     type_meta: TypeMeta,
@@ -131,7 +131,7 @@ pub struct AuditEvent {
     type_of_event: String,
 }
 
-/*impl AuditEvent {
+impl AuditEvent {
     pub fn new() -> AuditEvent {
         ::std::default::Default::default()
     }
@@ -168,7 +168,7 @@ pub struct AuditEvent {
     }      
     
 }
-*/
+
 impl MetaFields for AuditEvent {
     /// Returns the latest self with built ObjectMeta and Type_meta
     /// Wipes out the old meta.
