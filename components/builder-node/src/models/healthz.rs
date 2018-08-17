@@ -27,7 +27,74 @@ impl<'a> DataStore<'a> {
     pub fn healthz_all(&self) -> Result<Option<node::HealthzAllGetResponse>> {
         let mut mk_query = QueryMaker::new(self.client);
         let querys = mk_query.build_consumption_in_datacenter();
-        let res = Collector::new(mk_query.pull_metrics(querys)?).get_reports();
+        let mut res = Collector::new(mk_query.pull_metrics(querys)?).get_reports();
+        let new_ninjas = self.merge_live_ninjas(res.get_statistics().get_ninjas());
+        let new_senseis = self.merge_live_senseis(res.get_statistics().get_senseis());
+        res.set_statistics(new_statistics(new_ninjas, new_senseis));
         Ok(Some(res.into()))
     }
+
+    fn merge_live_ninjas(&self, live: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
+        match ninja::DataStore::new(self.db).list_blank() {
+            Ok(Some(node)) => {
+                let mut response = Vec::new();
+                node.iter()
+                    .map(|x| {
+                        if live.is_empty() {
+                            response.push(x.clone().into());
+                        }
+                        let mut node = node::NodeStatistic::new();
+                        live.iter()
+                            .map(|y| if x.get_id() == y.get_id() {
+                                node = y.clone();
+                                response.push(y.clone());
+                            })
+                            .collect::<Vec<_>>();
+                        if node.get_id() != x.get_id() && !live.is_empty() {
+                            response.push(x.clone().into());
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                response
+            }
+            Ok(None) => live,
+            Err(_err) => live,
+        }
+    }
+
+    fn merge_live_senseis(&self, live: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
+        match db_senseis::DataStore::new(self.db).list_blank() {
+            Ok(Some(node)) => {
+                let mut response = Vec::new();
+                node.iter()
+                    .map(|x| {
+                        if live.is_empty() {
+                            response.push(x.clone().into());
+                        }
+                        let mut node = node::NodeStatistic::new();
+                        live.iter()
+                            .map(|y| if x.get_id() == y.get_id() {
+                                node = y.clone();
+                                response.push(y.clone());
+                            })
+                            .collect::<Vec<_>>();
+                        if node.get_id() != x.get_id() && !live.is_empty() {
+                            response.push(x.clone().into());
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                response
+            }
+            Ok(None) => live,
+            Err(_err) => live,
+        }
+    }
+}
+
+fn new_statistics(new_ninjas: Vec<node::NodeStatistic>, new_senseis: Vec<node::NodeStatistic>) -> node::Statistics {
+    let mut statistics = node::Statistics::new();
+    statistics.set_title("Statistics".to_string());
+    statistics.set_ninjas(new_ninjas);
+    statistics.set_senseis(new_senseis);
+    statistics
 }
