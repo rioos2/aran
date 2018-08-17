@@ -65,7 +65,7 @@ impl Authorization {
                 account.pop()
             },
             TeamNames::NONE => {
-                debug!("« Authorizer verify {:?}", team_type.account);
+                info!("« Authorizer verify {:?}", team_type.account);
                 None
             }
         };
@@ -73,7 +73,7 @@ impl Authorization {
         let team = match team_box {
             Some(r) => r,
             None => {
-                debug!("« Authorizer Team none : {:?}", team_box);
+                info!("« Authorizer Team none : {:?}", team_box);
                 return Err(Error::PermissionError(format!(
                 "User doesn't have permission for this operation."
             )))
@@ -86,8 +86,8 @@ impl Authorization {
                 access.is_allowed(perm_for_account)
             }
             Err(err) => {
-                debug!("« Authorizer get none permissions : {:?}", perms_for_account.get_permissions());
-                debug!("« Authorizer team : {}", team.to_string());
+                info!("« Authorizer get none permissions : {:?}", perms_for_account.get_permissions());
+                info!("« Authorizer team : {}", team.to_string());
                 Err(Error::PermissionError(format!("{}", err)))
             },
         }

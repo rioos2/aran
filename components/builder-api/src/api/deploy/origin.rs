@@ -21,7 +21,7 @@ use http_gateway::util::errors::{AranResult, AranValidResult};
 
 use protocol::api::base::MetaFields;
 use protocol::api::origin::Origin;
-use session::origin_ds::OriginDS;
+use session::models::{origins, origin_members};
 
 use bytes::Bytes;
 use db::data_store::DataStoreConn;
@@ -66,7 +66,7 @@ impl OriginApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match OriginDS::create(&self.conn, &unmarshall_body) {
+        match origins::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -77,7 +77,7 @@ impl OriginApi {
     //Every user will be able to list their own origin.
     //Will need teams/permission to access others origin.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match OriginDS::list_blank(&self.conn) {
+        match origins::DataStore::list_blank(&self.conn) {
             Ok(Some(origins)) => Ok(render_json_list(status::Ok, dispatch(req), &origins)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -88,7 +88,7 @@ impl OriginApi {
     fn list(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_account(req)?;
 
-        match OriginDS::list(&self.conn, &params) {
+        match origin_members::DataStore::new(&self.conn).list(&params) {
             Ok(Some(origins)) => Ok(render_json_list(status::Ok, dispatch(req), &origins)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -104,7 +104,7 @@ impl OriginApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
 
-        match OriginDS::show(&self.conn, &params) {
+        match origins::DataStore::show(&self.conn, &params) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -120,7 +120,7 @@ impl OriginApi {
     //Returns an origins
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match OriginDS::show(&self.conn, &idget) {
+        let res = match origins::DataStore::show(&self.conn, &idget) {
             Ok(Some(origin)) => {
                 let data = json!({
                             "type": typ,

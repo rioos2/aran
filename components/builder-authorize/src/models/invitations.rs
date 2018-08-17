@@ -42,6 +42,22 @@ impl DataStore {
         Ok(None)
     }   
 
+    pub fn show(datastore: &DataStoreConn, net_get: &IdGet) -> InvitationsOutput {
+        let conn = datastore.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_invitations_v1($1)",
+            &[&(net_get.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::InvitationsGet)?;
+
+        if rows.len() > 0 {
+            let net = row_to_invitations(&rows.get(0))?;            
+            return Ok(Some(net));
+        }       
+        
+        Ok(None)
+    }
+
    pub fn list_by_teams(datastore: &DataStoreConn, get_teams: &IdGet) -> InvitationsOutputList {
         let conn = datastore.pool.get_shard(0)?;
 

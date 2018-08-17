@@ -253,14 +253,6 @@ CREATE TABLE IF NOT EXISTS team_members (id bigint PRIMARY KEY DEFAULT next_id_v
                                                                                                                                       updated_at timestamptz);
 
 
-CREATE OR REPLACE FUNCTION insert_origin_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS void AS $$
-               BEGIN
-                   INSERT INTO origin_members ( type_meta, object_meta,meta_data)
-                          VALUES (om_type_meta,om_obj_meta,om_meta_data);
-               END
-           $$ LANGUAGE PLPGSQL VOLATILE;
-
-
 INSERT INTO origins (name, object_meta, type_meta)
 VALUES ('rioos_system',
         '{"name":"rioos_system", "labels": {}, "account": "", "created_at": "", "deleted_at": "", "finalizers": [], "annotations": {}, "cluster_name": "", "initializers": {"result": {"code": 0, "reason": "", "status": "", "details": {"uid": "", "kind": "", "name": "", "group": "", "causes": [], "retry_after_seconds": 0}, "message": "", "type_meta": {"kind": "", "api_version": ""}}, "pending": []}, "owner_references": [{"uid": "", "kind": "", "name": "", "api_version": "", "block_owner_deletion": false}], "deletion_grace_period_seconds": 0}',
@@ -279,23 +271,13 @@ SETOF origins AS $$
                        ELSE
                            INSERT INTO origins (name,type_meta,object_meta)
                                   VALUES (origin_name,origin_type_meta,origin_object_meta) ON CONFLICT (name) DO NOTHING RETURNING * into inserted_origin;
-                           PERFORM insert_origin_member_v1('{"kind":"OriginMember","api_version":"v1"}',origin_object_meta, json_build_object('origin',inserted_origin.name)::jsonb);
+                           PERFORM internal_insert_origin_member_v1('{"kind":"OriginMember","api_version":"v1"}',origin_object_meta, json_build_object('origin',inserted_origin.name)::jsonb);
                            RETURN NEXT inserted_origin;
                            RETURN;
                   END IF;
                   RETURN;
                END
                    $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-
-CREATE OR REPLACE FUNCTION insert_team_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS SETOF team_members AS $$
-               BEGIN
-                   INSERT INTO team_members ( type_meta, object_meta,meta_data)
-                          VALUES (om_type_meta,om_obj_meta,om_meta_data) RETURNING *;
-               END
-           $$ LANGUAGE PLPGSQL VOLATILE;
-
 
 CREATE OR REPLACE FUNCTION get_origins_v1() RETURNS
 SETOF origins AS $$

@@ -361,6 +361,23 @@ RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
 
+---
+--- Table:networks:show
+---
+CREATE 
+OR REPLACE FUNCTION get_invitations_v1(nid bigint) RETURNS SETOF invitations AS $$ 
+BEGIN
+   RETURN QUERY 
+   SELECT
+      * 
+   FROM
+      invitations 
+   where
+      id = nid;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
 CREATE
 OR REPLACE FUNCTION update_status_by_team_v1 (tid bigint, accept text) RETURNS SETOF INVITATIONS AS $$
 BEGIN

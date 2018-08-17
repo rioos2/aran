@@ -73,6 +73,8 @@ lazy_static! {
 
         map.register("POST:teammembers", "TeamMember");
 
+        map.register("POST:originmembers", "OriginMember");
+
         map.register("POST:permissions", "Permission");
         map.register("GET:permissions", "PermissionList");
 

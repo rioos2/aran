@@ -8,7 +8,7 @@ mod multi_cache;
 use self::flock::Cacher;
 use api;
 use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder, VolumesFeeder,
-                    LicensesFeeder, AccountsFeeder, ServiceAccountFeeder, MembersFeeder};
+                    LicensesFeeder, AccountsFeeder, ServiceAccountFeeder, MembersFeeder, TeamsFeeder};
 use cache::multi_cache::MultiCache;
 use serde_json;
 use std::collections::BTreeMap;
@@ -31,6 +31,7 @@ pub const CACHE_PREFIX_LICENSE: &'static str = "_license";
 pub const CACHE_PREFIX_ACCOUNT: &'static str = "_account";
 pub const CACHE_PREFIX_SERVICEACCOUNT: &'static str = "_service_account";
 pub const CACHE_PREFIX_MEMBER: &'static str = "_member";
+pub const CACHE_PREFIX_TEAM: &'static str = "_team";
 
 /// The fake type that decides how to pull the data from cache (invalidate or just from cache)
 /// PULL_DIRECTLY: This loads from the cache is present, if the copy isn't there then it applies the function closure |_v| to cache the entry
@@ -109,7 +110,7 @@ impl CacheService for NewCacheServiceFn {
     }
 
     fn apply(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>, existing_val_size: usize) -> Option<Arc<String>> {
-        debug!("✔ apply cache ≈ {}", id);
+        info!("✔ apply cache ≈ {}", id);
         self.cache().insert(
             lru,
             self.cache_id(id.clone()).clone(),
@@ -122,21 +123,21 @@ impl CacheService for NewCacheServiceFn {
     fn get(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
         let _self = self.cache();
         let _cache_id = self.cache_id(id.clone());
-        debug!("GET -----------start--------------{}", _cache_id.clone());
+        info!("GET -----------start--------------{}", _cache_id.clone());
         match _self.get(lru, _cache_id.clone()) {
             Some(value) => {
-                debug!("✔ get: cachefn ≈ {}", _cache_id.clone());
+                info!("✔ get: cachefn ≈ {}", _cache_id.clone());
                 Some(value.to_owned())
             }
             None => {
-                debug!("✘ get: cachefn ≈ {}", _cache_id.clone());
+                info!("✘ get: cachefn ≈ {}", _cache_id.clone());
                 self.invalidate(id, lru)
             }
         }
     }
 
     fn invalidate(&self, id: api::base::IdGet, lru: &Box<MultiCache<String, String>>) -> Option<Arc<String>> {
-        debug!("✔ get: invalidate ≈ {}", id);
+        info!("✔ get: invalidate ≈ {}", id);
         let existing_val_size = match self.cache().get(lru, self.cache_id(id.clone()).clone()) {
             Some(v) => format!("{:?}",v).capacity(),
             None => 0
@@ -215,8 +216,8 @@ impl InMemoryExpander {
     /// This will be the latest value of the id at any particular instant.
     fn cached_invalidate_for(&self, key: String, id: api::base::IdGet) -> Option<String> {
         let mut _lru = &self.lru;
-        debug!("» Cache Invalidate key: {:?}", key.clone());
-        debug!("» Cache Invalidate id: {:?}", id);
+        info!("» Cache Invalidate key: {:?}", key.clone());
+        info!("» Cache Invalidate id: {:?}", id);
         match self.cache_service_for(key.clone()) {
             Some(cachefn) => {
                 cachefn.invalidate(id, _lru).map(|a| {
@@ -236,12 +237,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Plan Invalidate fn for ≈ {}", pid);
+                    info!("» Plan Invalidate fn for ≈ {}", pid);
                     self.cached_invalidate_for(CACHE_PREFIX_PLAN.to_string(), pid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Plan cache get fn for ≈ {}", pid);
+                    info!("» Plan cache get fn for ≈ {}", pid);
                     self.cached_value_for(CACHE_PREFIX_PLAN.to_string(), pid.clone())
                         .clone()
                 },
@@ -264,12 +265,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Assemblyfactory Invalidate fn for ≈ {}", fid);
+                    info!("» Assemblyfactory Invalidate fn for ≈ {}", fid);
                     self.cached_invalidate_for(CACHE_PREFIX_FACTORY.to_string(), fid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Assemblyfactory cache fn for ≈ {}", fid);
+                    info!("» Assemblyfactory cache fn for ≈ {}", fid);
                     self.cached_value_for(CACHE_PREFIX_FACTORY.to_string(), fid.clone())
                         .clone()
                 },
@@ -292,12 +293,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Stacksfactory Invalidate fn for ≈ {}", fid);
+                    info!("» Stacksfactory Invalidate fn for ≈ {}", fid);
                     self.cached_invalidate_for(CACHE_PREFIX_STACKS_FACTORY.to_string(), fid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Stacksfactory cache fn for ≈ {}", fid);
+                    info!("» Stacksfactory cache fn for ≈ {}", fid);
                     self.cached_value_for(CACHE_PREFIX_STACKS_FACTORY.to_string(), fid.clone())
                         .clone()
                 },
@@ -320,12 +321,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Endpoints Invalidate fn for ≈ {}", eid);
+                    info!("» Endpoints Invalidate fn for ≈ {}", eid);
                     self.cached_invalidate_for(CACHE_PREFIX_ENDPOINT.to_string(), eid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Endpoints cache fn for ≈ {}", eid);
+                    info!("» Endpoints cache fn for ≈ {}", eid);
                     self.cached_value_for(CACHE_PREFIX_ENDPOINT.to_string(), eid.clone())
                         .clone()
                 },
@@ -374,12 +375,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Volumes Invalidate fn for ≈ {}", vid);
+                    info!("» Volumes Invalidate fn for ≈ {}", vid);
                     self.cached_invalidate_for(CACHE_PREFIX_VOLUME.to_string(), vid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Volumes cache fn for ≈ {}", vid);
+                    info!("» Volumes cache fn for ≈ {}", vid);
                     self.cached_value_for(CACHE_PREFIX_VOLUME.to_string(), vid.clone())
                         .clone()
                 },
@@ -402,12 +403,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Permissions Invalidate fn for ≈ {}", iid);
+                    info!("» Permissions Invalidate fn for ≈ {}", iid);
                     self.cached_invalidate_for(CACHE_PREFIX_PERMISSION.to_string(), iid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Permissions cache fn for ≈ {}", iid);
+                    info!("» Permissions cache fn for ≈ {}", iid);
                     self.cached_value_for(CACHE_PREFIX_PERMISSION.to_string(), iid.clone())
                         .clone()
                 },
@@ -427,12 +428,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Licenses Invalidate fn for ≈ {}", iid);
+                    info!("» Licenses Invalidate fn for ≈ {}", iid);
                     self.cached_invalidate_for(CACHE_PREFIX_LICENSE.to_string(), iid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Licenses cache fn for ≈ {}", iid);
+                    info!("» Licenses cache fn for ≈ {}", iid);
                     self.cached_value_for(CACHE_PREFIX_LICENSE.to_string(), iid.clone())
                         .clone()
                 },
@@ -452,12 +453,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» Accounts Invalidate fn for ≈ {}", iid);
+                    info!("» Accounts Invalidate fn for ≈ {}", iid);
                     self.cached_invalidate_for(CACHE_PREFIX_ACCOUNT.to_string(), iid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» Accounts cache fn for ≈ {}", iid);
+                    info!("» Accounts cache fn for ≈ {}", iid);
                     self.cached_value_for(CACHE_PREFIX_ACCOUNT.to_string(), iid.clone())
                         .clone()
                 },
@@ -477,12 +478,12 @@ impl InMemoryExpander {
         let opt_found_as_str = {
             force.map_or_else(
                 || {
-                    debug!("» ServiceAccount Invalidate fn for ≈ {}", iid);
+                    info!("» ServiceAccount Invalidate fn for ≈ {}", iid);
                     self.cached_invalidate_for(CACHE_PREFIX_SERVICEACCOUNT.to_string(), iid.clone())
                         .clone()
                 },
                 |_v| {
-                    debug!("» ServiceAccount cache fn for ≈ {}", iid);
+                    info!("» ServiceAccount cache fn for ≈ {}", iid);
                     self.cached_value_for(CACHE_PREFIX_SERVICEACCOUNT.to_string(), iid.clone())
                         .clone()
                 },
@@ -521,6 +522,34 @@ impl InMemoryExpander {
             |found_as_str| {
                 let member: Option<Vec<api::invitations::Invitations>> = serde_json::from_str(&found_as_str).ok();
                 member
+            }
+        }))
+    }
+
+    /// Expands a structure with the members information.
+    /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
+    /// If force is None, then it invalidates the cache and loads a fresh copy
+    pub fn with_teams<E: TeamsFeeder>(&self, e: &mut E, force: Option<bool>) {
+        let eid = e.eget_id();
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    debug!("» Members Invalidate fn for ≈ {}", eid);
+                    self.cached_invalidate_for(CACHE_PREFIX_TEAM.to_string(), eid.clone())
+                        .clone()
+                },
+                |_v| {
+                    debug!("» Members cache fn for ≈ {}", eid);
+                    self.cached_value_for(CACHE_PREFIX_TEAM.to_string(), eid.clone())
+                        .clone()
+                },
+            )
+        };
+
+        e.efeed(opt_found_as_str.and_then({
+            |found_as_str| {
+                let team: api::authorize::Teams = serde_json::from_str(&found_as_str).unwrap_or(api::authorize::Teams::new());
+                Some(team)
             }
         }))
     }

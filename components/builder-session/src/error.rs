@@ -25,6 +25,8 @@ pub enum Error {
     AccountOriginInvitationAccept(postgres::error::Error),
     OriginAccountList(postgres::error::Error),
     OriginCreate(postgres::error::Error),
+    OriginMembersCreate(postgres::error::Error),
+    OriginMembersGet(postgres::error::Error),
     OriginGetResponse(postgres::error::Error),
     OriginGet(postgres::error::Error),
     LdapConfigCreate(postgres::error::Error),
@@ -70,10 +72,14 @@ impl fmt::Display for Error {
             Error::OriginCreate(ref e) => {
                 format!("Error creating origin for account in database, {}", e)
             }
+            Error::OriginMembersCreate(ref e) => {
+                format!("Error creating origin members for account in database, {}", e)
+            }
             Error::OriginGetResponse(ref e) => {
                 format!("Error retrive origin for account in database, {}", e)
             }
             Error::OriginGet(ref e) => format!("Error retrive origin by name, {}", e),
+            Error::OriginMembersGet(ref e) => format!("Error retrive origin member by name, {}", e),
             Error::LdapConfigCreate(ref e) => format!("Error creating ldap config, {}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::SamlProviderCreate(ref e) => format!("Error creating saml provider, {}", e),
@@ -110,6 +116,8 @@ impl error::Error for Error {
             Error::AccountOriginInvitationAccept(ref err) => err.description(),
             Error::OriginAccountList(ref err) => err.description(),
             Error::OriginCreate(ref err) => err.description(),
+            Error::OriginMembersCreate(ref err) => err.description(),
+            Error::OriginMembersGet(ref err) => err.description(),
             Error::OriginGetResponse(ref err) => err.description(),
             Error::OriginGet(ref err) => err.description(),
             Error::LdapConfigCreate(ref err) => err.description(),

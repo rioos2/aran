@@ -13,8 +13,10 @@ use protocol::api::base::{MetaFields, ObjectMeta};
 use std::collections::BTreeMap;
 use protocol::api::base::ChildTypeMeta;
 use protocol::api::authorize::{Teams, TeamMembers};
+use protocol::api::origin::OriginMembers;
 use protocol::api::session;
-use session::models::{session as sessions};
+use session::models::{session as sessions, origin_members};
+use protocol::api::base::IdGet;
 
 /// This struct used for insert new entry into invitations table
 /// And also sends email/slack invitations to users
@@ -55,13 +57,21 @@ impl<'a> Invites<'a> {
         Ok(Some(mk_invites))
     }
 
-    pub fn mk_member(&self, invitations: &Invitations) -> TeamMembersOutput {
+    pub fn mk_member(&self, invitations: &Invitations, ini_get: &IdGet) -> TeamMembersOutput {
         let mut account_get = session::AccountGet::new();
         account_get.set_email(invitations.get_invite_to());
         match sessions::DataStore::get_account(&self.conn, &account_get) {
             Ok(Some(opt_account)) => {
-                    let member = self.build_team_member(opt_account.get_id(), invitations);
-                    team_members::DataStore::new(&self.conn).create(&member)
+                    let team_member = self.build_team_member(opt_account.get_id(), invitations);
+                    let origin_member = self.build_origin_member(opt_account.get_id(), invitations);
+                    //update accept status into invitations table
+                    invitations::DataStore::update_status(&self.conn, &ini_get)?;
+                    //insert new origin member entry into origin member table
+                    //now the user merged to invited origin
+                    origin_members::DataStore::new(&self.conn).create(&origin_member); //we must track this error..
+                    //insert new team member entry into team member table
+                    //now the user merged to invited team
+                    team_members::DataStore::new(&self.conn).create(&team_member)
             }
             Err(err) => Err(Error::Db(RecordsNotFound)), //In future  we track this errors
             Ok(None) => Err(Error::AccountNotFound(
@@ -70,7 +80,8 @@ impl<'a> Invites<'a> {
         }
     }
 
-    pub fn build_event(&self, originated_url: String, ini: &Invitations, team: &Teams) -> AuditEvent {
+    // build audit data for send email invitations
+    pub fn build_event(&self, originated_url: String, ini: &Invitations, team: &Teams, account_name: String) -> AuditEvent {
     	let mut audits = AuditEvent::new();
         let mut labels = BTreeMap::new();
         let url = format!("{}/invitations/{}/accept", originated_url, ini.get_id());
@@ -80,7 +91,7 @@ impl<'a> Invites<'a> {
                 ini.get_invite_from(),
         );
         labels.insert("email".to_string(), ini.get_invite_to());
-        labels.insert("invite_from".to_string(), ini.get_invite_from());
+        labels.insert("invite_from".to_string(), account_name);
         labels.insert("origin".to_string(), ini.get_origin_id());
         labels.insert("team".to_string(), team.get_name());
         labels.insert("url".to_string(), url);
@@ -92,6 +103,7 @@ impl<'a> Invites<'a> {
         audits        
     }
 
+    // build team member data for create new entry 
     pub fn build_team_member(&self, account_id: String, ini: &Invitations) -> TeamMembers {
         let mut members = TeamMembers::new();
         let mut m = members.mut_meta(
@@ -104,6 +116,23 @@ impl<'a> Invites<'a> {
         members.set_meta(type_meta_url(jackie), m);
         let mut metadata = BTreeMap::new();
         metadata.insert("team".to_string(), ini.get_team_id());
+        metadata.insert("origin".to_string(), ini.get_origin_id());
+        members.set_metadata(metadata);
+        members        
+    }
+
+    // build origin member data for create new entry 
+    pub fn build_origin_member(&self, account_id: String, ini: &Invitations) -> OriginMembers {
+        let mut members = OriginMembers::new();
+        let mut m = members.mut_meta(
+                ObjectMeta::new(),
+                ini.get_origin_id(),
+                account_id,
+        );        
+        //it is temporary fix 
+        let jackie = "POST:originmembers".to_string();
+        members.set_meta(type_meta_url(jackie), m);
+        let mut metadata = BTreeMap::new();
         metadata.insert("origin".to_string(), ini.get_origin_id());
         members.set_metadata(metadata);
         members        

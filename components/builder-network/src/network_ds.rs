@@ -69,7 +69,7 @@ impl NetworkDS {
             let net = row_to_network(&rows.get(0))?;            
             return Ok(Some(net));
         }       
-        exit(0);
+        
         Ok(None)
     }
     pub fn update(datastore: &DataStoreConn, net: &network::Network) -> NetworkOutput {

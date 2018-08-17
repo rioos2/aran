@@ -80,7 +80,7 @@ impl TrustAccess {
             return Ok(true);
         }
 
-        debug!("Not ALL WILD.");
+        info!("Not ALL WILD.");
 
         for p in perms.iter() {
             if p == self {
@@ -103,7 +103,7 @@ impl TrustAccess {
 //otherwise it will check resource and level permissions
 impl PartialEq for TrustAccess {
     fn eq(&self, other: &TrustAccess) -> bool {
-        debug!(
+        info!(
             "Comparing [{:?}={:?}] [{:?}={:?}]",
             self.0.clone(),
             other.0.clone(),

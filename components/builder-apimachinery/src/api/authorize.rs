@@ -5,6 +5,7 @@ use cache::inject::PermissionsFeeder;
 use std::collections::BTreeMap;
 use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields, WhoAmITypeMeta};
 use cache::inject::MembersFeeder;
+use cache::inject::TeamsFeeder;
 use api::invitations::Invitations;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -130,6 +131,8 @@ pub struct TeamMembers {
     created_at: String,
     #[serde(default)]
     updated_at: String,
+    #[serde(default)]
+    team: Option<Teams>,
 }
 
 impl TeamMembers {
@@ -175,7 +178,25 @@ impl TeamMembers {
     pub fn get_updated_at(&self) -> ::std::string::String {
         self.updated_at.clone()
     }
+
+     pub fn set_team(&mut self, v: Option<Teams>) {
+        self.team = v;
+    }
    
+}
+
+// The service feeder, which gets called from an expander cache.
+// The expander cache is ttl and loads the service the first time.
+impl TeamsFeeder for TeamMembers {
+    fn eget_id(&mut self) -> IdGet {
+        let empty = "".to_string();
+        let id = self.get_metadata().get("team").unwrap_or(&empty);
+        IdGet::with_id(id.clone())
+    }
+
+    fn efeed(&mut self, s: Option<Teams>) {        
+        self.set_team(s);
+    }
 }
 
 impl MetaFields for TeamMembers {

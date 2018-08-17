@@ -14,7 +14,38 @@ CREATE TABLE IF NOT EXISTS team_members (id bigint PRIMARY KEY DEFAULT next_id_v
 --- Table:origins:list_blank
 ---
 CREATE
-OR REPLACE FUNCTION insert_origin_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS void AS $$
+OR REPLACE FUNCTION insert_origin_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS SETOF origin_members AS $$
+DECLARE existing_origin_member origin_members % rowtype;
+inserted_origin_member origin_members;
+BEGIN
+   SELECT
+      * INTO existing_origin_member
+   FROM
+      origin_members
+   WHERE
+      object_meta ->> 'account' = om_obj_meta ->> 'account' AND
+      meta_data ->> 'origin' = om_meta_data ->> 'origin';
+IF FOUND
+THEN
+   RETURN NEXT existing_origin_member;
+ELSE
+   INSERT INTO
+         origin_members(type_meta, object_meta, meta_data)
+      VALUES
+      (
+         om_type_meta, om_obj_meta, om_meta_data
+      )
+      RETURNING * into inserted_origin_member;
+RETURN NEXT inserted_origin_member;
+RETURN;
+END
+IF;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;
+
+CREATE
+OR REPLACE FUNCTION internal_insert_origin_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS void AS $$
 BEGIN
    INSERT INTO
       origin_members ( type_meta, object_meta, meta_data)
@@ -66,7 +97,7 @@ ELSE
          origin_name, origin_type_meta, origin_object_meta
       )
       ON CONFLICT (name) DO NOTHING RETURNING * into inserted_origin;
-PERFORM insert_origin_member_v1('{"kind":"OriginMember","api_version":"v1"}', origin_object_meta, json_build_object('origin', inserted_origin.name)::jsonb);
+PERFORM internal_insert_origin_member_v1('{"kind":"OriginMember","api_version":"v1"}', origin_object_meta, json_build_object('origin', inserted_origin.name)::jsonb);
 RETURN NEXT inserted_origin;
 RETURN;
 END
@@ -75,16 +106,35 @@ RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
-
 CREATE
 OR REPLACE FUNCTION insert_team_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS SETOF team_members AS $$
+DECLARE existing_member team_members % rowtype;
+inserted_member team_members;
 BEGIN
+   SELECT
+      * INTO existing_member
+   FROM
+      team_members
+   WHERE
+      object_meta ->> 'account' = om_obj_meta ->> 'account' AND
+      meta_data ->> 'origin' = om_meta_data ->> 'origin' AND
+      meta_data ->> 'team' = om_meta_data ->> 'team';
+IF FOUND
+THEN
+   RETURN NEXT existing_member;
+ELSE
    INSERT INTO
-      team_members ( type_meta, object_meta, meta_data)
-   VALUES
+         team_members(type_meta, object_meta, meta_data)
+      VALUES
       (
          om_type_meta, om_obj_meta, om_meta_data
-      ) RETURNING *;
+      )
+      RETURNING * into inserted_member;
+RETURN NEXT inserted_member;
+RETURN;
+END
+IF;
+RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
@@ -99,6 +149,24 @@ BEGIN
       ) ;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
+
+---
+--- Table:team_members:list_by_origins
+---
+CREATE
+OR REPLACE FUNCTION get_team_members_by_origins_v1 (org_id text, account_id text) RETURNS SETOF team_members AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      team_members
+   WHERE
+      meta_data ->> 'origin' = org_id 
+      AND object_meta ->> 'account' = account_id;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
 
 --- Table:origins:list_blank
 ---
@@ -150,6 +218,23 @@ END
 $$ LANGUAGE PLPGSQL STABLE;
 
 
+---
+--- Table:origins:list_by_account
+---
+
+CREATE
+OR REPLACE FUNCTION get_origin_members_by_account_v1 (account_id text) RETURNS SETOF origin_members AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      origin_members
+   WHERE
+      object_meta ->> 'account' = account_id;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
 
 ---
 --- Table:origin_members:show_members_for_origin

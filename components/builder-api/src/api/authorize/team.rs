@@ -17,9 +17,9 @@ use protocol::api::schema::type_meta;
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
-use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_MEMBER};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_MEMBER, CACHE_PREFIX_TEAM};
 /// TO_DO: Should be named  (authorize::models::teams, authorize::models::permission)
-use authorize::models::team;
+use authorize::models::{team, team_members};
 use authorize::models::invitations;
 use authorize::invites::Invites;
 use protocol::api::base::MetaFields;
@@ -30,6 +30,8 @@ use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
 use typemap;
 use api::audit::blockchain_api::EventLog;
+use protocol::api::session;
+use session::models::{session as sessions};
 
 /// team api: TeamApi provides ability to declare the teams
 /// and manage them.
@@ -118,7 +120,9 @@ impl TeamApi {
 
     fn list_by_origins(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
-        match team::DataStore::new(&self.conn).list_by_origins(&params) {
+        let account_id = self.verify_account(req)?;
+
+        match team_members::DataStore::new(&self.conn).list_by_origins(&params, &account_id) {
             Ok(Some(list)) => Ok(render_json_list(status::Ok, dispatch(req), &list)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -148,9 +152,10 @@ impl TeamApi {
         );
 
         let params = IdGet::with_id(unmarshall_body.get_team_id());
+        let account_id = unmarshall_body.get_account_id();
 
         match team::DataStore::new(&self.conn).show(&params) {
-            Ok(Some(teams)) => self.push_invite_notifications(req, teams, converted_body),
+            Ok(Some(teams)) => self.push_invite_notifications(req, teams, converted_body, account_id),
             Err(err) => Err(internal_error(&format!("Requested Team not found: {}", err))),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
@@ -164,11 +169,23 @@ impl TeamApi {
     /// first build audit data from team and invitation datas
     /// then push event using generated audit data
     /// the audit data has message and sender email details
-    fn push_invite_notifications(&self, req: &mut Request, team: Teams, invite_list: InvitationsList) -> AranResult<Response> {
+    fn push_invite_notifications(&self, req: &mut Request, team: Teams, invite_list: InvitationsList, account_id: String) -> AranResult<Response> {
        
         debug!("{} ✓",
             format!("======= Invited team {:?} ", team.clone()),
         );        
+
+        let mut account_get = session::AccountGetId::new();
+        account_get.set_id(account_id.clone());
+        let account = match sessions::DataStore::get_account_by_id(&self.conn, &account_get) {
+            Ok(Some(opt_account)) => opt_account,
+            Err(err) => return Err(internal_error(&format!("Requester account not found: {}", err))),
+            Ok(None) => return Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                account_id.clone()
+            ))),
+        };
 
         let originated_url = format!("https://{}:{}", req.url.host().to_owned(), req.url.port().to_string());
 
@@ -179,7 +196,7 @@ impl TeamApi {
                 match converted {
                     Some(ini) => {
                         for x in ini.iter() {
-                            let eve = invites.build_event(originated_url.clone(), &x, &team.clone());
+                            let eve = invites.build_event(originated_url.clone(), &x, &team.clone(), account.get_first_name());
                             debug!("{} ✓",
                                         format!("===== parsed audit {:?} ", eve.clone()),
                             );     
@@ -198,8 +215,8 @@ impl TeamApi {
         let params = self.verify_id(req)?;        
         let invites = Invites::new(&self.conn);
 
-        match invitations::DataStore::update_status(&self.conn, &params) {
-            Ok(Some(invite)) => Ok(render_json(status::Ok, &invites.mk_member(&invite)?)),
+        match invitations::DataStore::show(&self.conn, &params) {
+            Ok(Some(invite)) => Ok(render_json(status::Ok, &invites.mk_member(&invite, &params)?)),
             Err(err) => Err(internal_error(&format!("Accepted Team not found: {}", err))),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
@@ -299,8 +316,20 @@ impl ExpanderSender for TeamApi {
                     .and_then(|e| serde_json::to_string(&e).ok())
             }),
         ));
+
+        let _conn = self.conn.clone();
+        let team_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_TEAM.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Team live load for ≈ {}", id);
+                team::DataStore::new(&_conn).show(&id)
+                    .ok()
+                    .and_then(|e| serde_json::to_string(&e).ok())
+            }),
+        ));
        
-        &self.conn.expander.with(member_service);        
+        &self.conn.expander.with(member_service);  
+        &self.conn.expander.with(team_service);       
     }
 }
 
