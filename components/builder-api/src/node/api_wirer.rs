@@ -79,10 +79,16 @@ impl HttpGateway for Wirer {
         let mut service_accounts = account::ServiceAccountsFascade::new(ds.clone());
         service_accounts.with_cache();
 
-        chain.link_before(Arc::new(RBAC::new(&*_config, permissions, accounts, service_accounts)));
+        chain.link_before(Arc::new(RBAC::new(
+            &*_config,
+            permissions,
+            accounts,
+            service_accounts,
+        )));
 
         let mut license = license::LicensesFascade::new(ds.clone());
         license.with_cache();
+
         chain.link_before(Arc::new(EntitlementAct::new(&*_config, license)));
 
         chain.link_after(pack::CompressionMiddleware);

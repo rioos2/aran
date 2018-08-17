@@ -1,21 +1,24 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use api::base::{Condition, MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
+use api::senseis::SENSEI_JOBS;
 use chrono::naive::NaiveDateTime;
-use std::collections::BTreeMap;
 
 use serde_json;
-
-pub const ASSEMBLY_JOBS: &'static str = "job=rioos_sh_machines";
-pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
-//Rioos prometheus tool automatically allocated "rioos-nodes" job, so we use it
-pub const NODE_JOBS: &'static str = "job=rioos-nodes";
-pub const IDLEMODE: &'static str = "mode=idle";
+use std::collections::BTreeMap;
 
 // The constants to store status.capacity
 pub const CAPACITY_CPU: &'static str = "cpu";
 pub const CAPACITY_MEMORY: &'static str = "memory";
 pub const CAPACITY_STORAGE: &'static str = "storage";
+pub const NODE_JOBS: &'static str = "job=rioos-nodes";
+
+pub const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
+pub const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
+
+pub const NODES: [(&'static str, &'static str); 2] = [("senseis", SENSEI_JOBS), ("ninjas", NODE_JOBS)];
+
+pub const NODES_METRIC_SOURCE: [&'static str; 3] = ["process", "disk", "network"];
 
 pub type SpeedSummary = (String, i32, i32);
 
@@ -27,7 +30,7 @@ pub struct Node {
     object_meta: ObjectMeta,
     #[serde(default)]
     type_meta: TypeMeta,
-    spec: Spec,         //
+    spec: Spec, //
     status: NodeStatus, //NodeStatus is information about the current status of a node.
     #[serde(default)]
     metadata: BTreeMap<String, String>,
@@ -176,12 +179,12 @@ impl Taints {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeStatus {
-    capacity: BTreeMap<String, String>,    //Capacity represents the total resources of a node.
+    capacity: BTreeMap<String, String>, //Capacity represents the total resources of a node.
     allocatable: BTreeMap<String, String>, // Allocatable represents the resources of a node that are available for scheduling. Defaults to Capacity.
-    phase: String,                         //NodePhase is the recently observed lifecycle phase of the node.
-    conditions: Vec<Condition>,            //Conditions is an array of current observed node conditions.
-    addresses: Vec<Addresses>,             //List of addresses reachable to the node.
-    node_info: NodeInfo,                   //Set of ids/uuids to uniquely identify the node.
+    phase: String, //NodePhase is the recently observed lifecycle phase of the node.
+    conditions: Vec<Condition>, //Conditions is an array of current observed node conditions.
+    addresses: Vec<Addresses>, //List of addresses reachable to the node.
+    node_info: NodeInfo, //Set of ids/uuids to uniquely identify the node.
 }
 
 impl NodeStatus {
@@ -189,14 +192,7 @@ impl NodeStatus {
         ::std::default::Default::default()
     }
 
-    pub fn with(
-        capacity: BTreeMap<String, String>,
-        allocatable: BTreeMap<String, String>,
-        phase: &str,
-        conditions: Vec<Condition>,
-        addresses: Vec<Addresses>,
-        node_info: NodeInfo,
-    ) -> NodeStatus {
+    pub fn with(capacity: BTreeMap<String, String>, allocatable: BTreeMap<String, String>, phase: &str, conditions: Vec<Condition>, addresses: Vec<Addresses>, node_info: NodeInfo) -> NodeStatus {
         NodeStatus {
             capacity: capacity,
             allocatable: allocatable,
@@ -334,11 +330,11 @@ impl Addresses {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct NodeInfo {
-    machine_id: String,     //MachineID reported by the node. For unique machine identification in the cluster this field is preferred.
-    system_uuid: String,    //SystemUUID reported by the node. For unique machine identification
+    machine_id: String, //MachineID reported by the node. For unique machine identification in the cluster this field is preferred.
+    system_uuid: String, //SystemUUID reported by the node. For unique machine identification
     kernel_version: String, //Kernel Version reported by the node from 'uname -r' (e.g. 3.16.0-0.bpo.4-amd64).
-    os_image: String,       //OS Image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy)).
-    architecture: String,   //The Architecture reported by the node
+    os_image: String, //OS Image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy)).
+    architecture: String, //The Architecture reported by the node
     #[serde(default)]
     bridges: Vec<Bridge>, // List of virtual networking bridge that are created by RioOS
 }
@@ -394,10 +390,10 @@ impl NodeInfo {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Bridge {
-    bridge_name: String,        // Name of the bridge to be used for virtual networking
-    physical_device: String,    // Physical network interface that are connected to this bridge
+    bridge_name: String, // Name of the bridge to be used for virtual networking
+    physical_device: String, // Physical network interface that are connected to this bridge
     network_types: Vec<String>, //supported networks
-    bridge_type: String,        //Configured Which type of network to this bridge
+    bridge_type: String, //Configured Which type of network to this bridge
 }
 
 impl Bridge {
@@ -411,14 +407,42 @@ impl Bridge {
     }
 }
 
+// report data starts here
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HealthzAllGetResponse {
+    kind: String,
+    api_version: String,
+    id: String,
+    results: HealthzAllGet,
+}
+
+impl HealthzAllGetResponse {
+    pub fn new() -> HealthzAllGetResponse {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
+    }
+    pub fn set_results(&mut self, v: HealthzAllGet) {
+        self.results = v;
+    }
+    pub fn get_results(&self) -> HealthzAllGet {
+        self.results.clone()
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HealthzAllGet {
     title: String,
-    guages: Guages,         //average of the cpu ram disk values get from PromResponse
+    guages: Guages, //average of the cpu ram disk values get from PromResponse
     statistics: Statistics, //ovarall cpu usage of the each node
-    osusages: OSUsages,     //overall cpu usage of the each os
-    from_date: String,
-    to_date: String,
+    osusages: OSUsages, //overall cpu usage of the each os
 }
 
 impl HealthzAllGet {
@@ -443,12 +467,6 @@ impl HealthzAllGet {
     }
     pub fn set_osusages(&mut self, v: OSUsages) {
         self.osusages = v;
-    }
-    pub fn set_from_date(&mut self, v: ::std::string::String) {
-        self.from_date = v;
-    }
-    pub fn set_to_date(&mut self, v: ::std::string::String) {
-        self.to_date = v;
     }
 }
 
@@ -746,6 +764,38 @@ impl ValueData {
     }
 }
 
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct QueryBuilder {
+    name: String,
+    query: String,
+}
+impl QueryBuilder {
+    pub fn with_name_query(name: String, query: String) -> QueryBuilder {
+        QueryBuilder {
+            name: name,
+            query: query,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PrometheusQuery {
+    querys: Vec<QueryBuilder>,
+}
+
+impl PrometheusQuery {
+    pub fn with_querys(querys: Vec<QueryBuilder>) -> PrometheusQuery {
+        PrometheusQuery { querys: querys }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct MetricResponse {
+    status: StatusData,
+    pub data: Vec<PromResponse>,
+}
+
 type Timestamp = f64;
 type Value = String;
 
@@ -795,8 +845,8 @@ pub enum Data {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PromResponse {
-    pub status: StatusData,
-    pub data: Data,
+    pub name: String,
+    pub result: Data,
     #[serde(rename = "errorType")]
     #[serde(default)]
     pub error_type: Option<String>,
@@ -808,13 +858,11 @@ pub struct PromResponse {
 impl Into<Counters> for PromResponse {
     fn into(mut self) -> Counters {
         let mut counters = Counters::new();
-        if let Data::Vector(ref mut instancevec) = self.data {
+        counters.set_name(self.name);
+        if let Data::Vector(ref mut instancevec) = self.result {
             instancevec
                 .into_iter()
-                .map(|x| {
-                    counters.set_name(x.metric.get("__name__").unwrap_or(&"".to_string()).to_owned());
-                    counters.set_counter(x.value.1.to_owned());
-                })
+                .map(|x| { counters.set_counter(x.value.1.to_owned()); })
                 .collect::<Vec<_>>();
         }
         counters
@@ -825,13 +873,15 @@ impl Into<Counters> for PromResponse {
 impl Into<Vec<NodeStatistic>> for PromResponse {
     fn into(mut self) -> Vec<NodeStatistic> {
         let mut collections = Vec::new();
-        if let Data::Vector(ref mut instancevec) = self.data {
+        if let Data::Vector(ref mut instancevec) = self.result {
             collections = instancevec
                 .into_iter()
                 .map(|x| {
                     let mut node = NodeStatistic::new();
-
-                    let instance = x.metric.get("instance").unwrap_or(&"".to_string()).to_owned();
+                    let instance = x.metric
+                        .get("instance")
+                        .unwrap_or(&"".to_string())
+                        .to_owned();
                     let ins: Vec<&str> = instance.split("-").collect();
                     node.set_name(ins[1].to_string());
                     node.set_counter(x.value.1.to_owned());
@@ -848,7 +898,7 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
     }
 }
 //convert the PromResponse into OSUsages value
-impl Into<OSUsages> for PromResponse {
+/*impl Into<OSUsages> for PromResponse {
     fn into(mut self) -> OSUsages {
         let mut osusage = OSUsages::new();
         if let Data::Matrix(ref mut instancevec) = self.data {
@@ -856,14 +906,28 @@ impl Into<OSUsages> for PromResponse {
                 .into_iter()
                 .map(|x| {
                     let mut item = Item::new();
-                    item.set_id(x.metric.get("rioos_assemblyfactory_id").unwrap_or(&"none".to_string()).to_owned());
-                    item.set_name(x.metric.get("rioos_os_name").unwrap_or(&"none".to_string()).to_owned());
+                    item.set_id(
+                        x.metric
+                            .get("rioos_assemblyfactory_id")
+                            .unwrap_or(&"none".to_string())
+                            .to_owned(),
+                    );
+                    item.set_name(
+                        x.metric
+                            .get("rioos_os_name")
+                            .unwrap_or(&"none".to_string())
+                            .to_owned(),
+                    );
                     let values = x.values
                         .clone()
                         .into_iter()
                         .map(|s| {
                             let mut value_data = ValueData::new();
-                            value_data.set_date(NaiveDateTime::from_timestamp(s.0.round() as i64, 0).to_string().to_owned());
+                            value_data.set_date(
+                                NaiveDateTime::from_timestamp(s.0.round() as i64, 0)
+                                    .to_string()
+                                    .to_owned(),
+                            );
                             value_data.set_value(s.1.to_owned());
                             value_data
                         })
@@ -876,37 +940,7 @@ impl Into<OSUsages> for PromResponse {
         }
         osusage
     }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct HealthzAllGetResponse {
-    kind: String,
-    api_version: String,
-    id: String,
-    results: HealthzAllGet,
-}
-
-impl HealthzAllGetResponse {
-    pub fn new() -> HealthzAllGetResponse {
-        ::std::default::Default::default()
-    }
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-    pub fn set_kind(&mut self, v: ::std::string::String) {
-        self.kind = v;
-    }
-    pub fn set_api_version(&mut self, v: ::std::string::String) {
-        self.api_version = v;
-    }
-    pub fn set_results(&mut self, v: HealthzAllGet) {
-        self.results = v;
-    }
-
-    pub fn get_results(&self) -> HealthzAllGet {
-        self.results.clone()
-    }
-}
+}*/
 
 impl Into<HealthzAllGetResponse> for HealthzAllGet {
     fn into(self) -> HealthzAllGetResponse {
@@ -919,11 +953,50 @@ impl Into<HealthzAllGetResponse> for HealthzAllGet {
     }
 }
 
+impl Into<Guages> for Vec<Counters> {
+    fn into(self) -> Guages {
+        let mut guages = Guages::new();
+        guages.set_title("Cumulative operations counter".to_string());
+        guages.set_counters(self);
+        guages
+    }
+}
+
+impl Into<NodeStatistic> for Node {
+    fn into(self) -> NodeStatistic {
+        let mut ns = NodeStatistic::new();
+        ns.set_id(self.get_id());
+        ns.set_kind(self.type_meta().kind);
+        ns.set_api_version(self.type_meta().api_version);
+        ns.set_name(self.get_name());
+        ns.set_health("down".to_string());
+        ns
+    }
+}
+
+impl Into<BTreeMap<String, String>> for PromResponse {
+    fn into(mut self) -> BTreeMap<String, String> {
+        let mut data = BTreeMap::new();
+        if let Data::Vector(ref mut instancevec) = self.result {
+            instancevec
+                .iter_mut()
+                .map(|x| {
+                    data.insert(
+                        x.metric.get("rioos_assembly_id").unwrap().to_string(),
+                        x.value.1.clone(),
+                    );
+                })
+                .collect::<Vec<_>>();
+        }
+        data
+    }
+}
+
+
 #[cfg(test)]
 mod test {
-    use serde_json::from_str as json_decode;
-
     use super::*;
+    use serde_json::from_str as json_decode;
     #[test]
     fn decode_node() {
         let val = r#"
