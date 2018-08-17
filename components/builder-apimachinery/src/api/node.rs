@@ -13,6 +13,9 @@ pub const CAPACITY_MEMORY: &'static str = "memory";
 pub const CAPACITY_STORAGE: &'static str = "storage";
 pub const NODE_JOBS: &'static str = "job=rioos-nodes";
 
+pub const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
+pub const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
+
 pub const NODES: [(&'static str, &'static str); 2] = [("senseis", SENSEI_JOBS), ("ninjas", NODE_JOBS)];
 
 pub const NODES_METRIC_SOURCE: [&'static str; 3] = ["process", "disk", "network"];

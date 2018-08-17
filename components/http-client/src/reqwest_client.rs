@@ -2,7 +2,6 @@
 
 use super::error::{Error, Result};
 use api_client::err_from_response;
-use protocol::api::node::{MetricResponse, BuildQuery};
 use reqwest;
 use reqwest::{StatusCode, Body};
 use reqwest::Url;
@@ -30,9 +29,9 @@ fn reqwest_client(fs_root_path: Option<&Path>) -> Result<reqwest::Client> {
     }
 }
 
-pub fn http_bearer_post(path: &str, body: BuildQuery) -> Result<MetricResponse> {
+pub fn http_bearer_post(path: &str, body: serde_json::Value) -> Result<reqwest::Response> {
     let url = Url::parse(path)?;
-    let mut res = reqwest_client(None)?
+    let res = reqwest_client(None)?
         .post(url)
         .body(Body::from(serde_json::to_string(&body)?))
         .header(UserAgent::new(USER_AGENT.to_string()))
@@ -41,8 +40,7 @@ pub fn http_bearer_post(path: &str, body: BuildQuery) -> Result<MetricResponse> 
     if res.status() != StatusCode::Ok {
         return Err(err_from_response(res));
     };
-    let data: MetricResponse = res.json()?;
-    Ok(data)
+    Ok(res)
 }
 
 pub fn http_bearer_get(path: &str, token: &str) -> Result<reqwest::Response> {

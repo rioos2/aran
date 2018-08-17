@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 use std::ops::Div;
 use telemetry::metrics::collector::Collector;
 use telemetry::metrics::prometheus::PrometheusClient;
-use telemetry::metrics::query_builder::QueryMaker;
+use telemetry::metrics::query::QueryMaker;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -26,8 +26,8 @@ impl<'a> DataStore<'a> {
 
     pub fn healthz_all(&self) -> Result<Option<node::HealthzAllGetResponse>> {
         let mut mk_query = QueryMaker::new(self.client);
-        mk_query.set_overall_query();
-        let res = Collector::new(mk_query.pull_metrics()?).get_reports();
+        let querys = mk_query.build_consumption_in_datacenter();
+        let res = Collector::new(mk_query.pull_metrics(querys)?).get_reports();
         Ok(Some(res.into()))
     }
 }

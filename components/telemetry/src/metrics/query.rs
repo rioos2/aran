@@ -2,8 +2,8 @@
 
 //! A module containing the health insight for the datacenter
 
+use super::*;
 use super::expression::*;
-
 use super::super::error::{self, Result};
 
 use chrono::prelude::*;
@@ -23,9 +23,6 @@ const IDLEMODE: &'static str = "mode=idle";
 const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 
 const NETWORK_DEFAULT_LAST_X_MINUTE: &'static str = "[1m]";
-
-const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
-const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
 
 
 #[derive(Clone)]
@@ -50,54 +47,59 @@ impl<'a> QueryMaker<'a> {
         }
     }
 
-    pub fn set_overall_query(&mut self) {
-        //query for ram guage
-        self.average_memory_query(collect_properties(
+    //Build the query to get metrics for the dashboard.
+    //1. Gauges to indicate overall consumption of (CPU, RAM, DISK, GPU)
+    //2. Statistics of the sensei nodes/ninja nodes
+    //    - node cpu, network, disks, processes
+    //3. All the OS Usage of the VPS(Digital cloud)
+    pub fn build_consumption_in_datacenter(&mut self) -> Vec<QueryBuilder> {
+
+        self.snapshot_memory_usage(collect_properties(
             vec![
-                "node_memory_MemTotal".to_string(),
-                "node_memory_MemFree".to_string(),
-                "node_memory_Buffers".to_string(),
+                NODE_MEMORY_TOTAL.to_string(),
+                NODE_MEMORY_FREE.to_string(),
+                NODE_MEMORY_BUFFER.to_string(),
             ],
             vec![node::NODE_JOBS.to_string()],
             "",
             "",
         ));
-        //query for cpu guage
-        self.avg_cpu_query(collect_properties(
-            vec!["node_cpu".to_string()],
+
+        self.snapshot_cpu_usage(collect_properties(
+            vec![NODE_CPU.to_string()],
             vec![node::NODE_JOBS.to_string(), IDLEMODE.to_string()],
             METRIC_DEFAULT_LAST_X_MINUTE,
-            "instance",
+            INSTANCE,
         ));
-        //query for disk guage
-        self.average_disk_query(collect_properties(
+
+        self.snapshot_disks_usage(collect_properties(
             vec![
-                "node_filesystem_size".to_string(),
-                "node_filesystem_free".to_string(),
+                NODE_FILE_SYSTEM_SIZE.to_string(),
+                NODE_FILE_SYSTEM_FREE.to_string(),
             ],
             vec![node::NODE_JOBS.to_string()],
             "",
             "",
         ));
-        //statistics for ninja and senseis
+
         for x in node::NODES.iter() {
-            self.node_cpu_query(
+            self.snapshot_cpu_usage_in_node(
                 collect_properties(
-                    vec!["node_cpu".to_string()],
+                    vec![NODE_CPU.to_string()],
                     vec![x.1.to_string(), IDLEMODE.to_string()],
                     METRIC_DEFAULT_LAST_X_MINUTE,
-                    "instance",
+                    INSTANCE,
                 ),
                 &format!("{}-cpu", x.0),
             );
 
-            self.node_network_query(
+            self.snapshot_disk_io_and_network_bandwidth_usage(
                 collect_properties(
                     vec![
-                        "node_network_transmit_bytes_total".to_string(),
-                        "node_network_receive_bytes_total".to_string(),
-                        "node_network_receive_errs_total".to_string(),
-                        "node_network_transmit_errs_total".to_string(),
+                        NODE_NETWORK_TRANSMIT_BYTES_TOTAL.to_string(),
+                        NODE_NETWORK_RECEIVE_BYTES_TOTAL.to_string(),
+                        NODE_NETWORK_RECEIVE_ERRS_TOTAL.to_string(),
+                        NODE_NETWORK_TRANSMIT_ERRS_TOTAL.to_string(),
                     ],
                     vec![x.1.to_string()],
                     NETWORK_DEFAULT_LAST_X_MINUTE,
@@ -106,12 +108,9 @@ impl<'a> QueryMaker<'a> {
                 &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[2]),
             );
 
-            self.node_process_query(
+            self.snapshot_process_usage_in_node(
                 collect_properties(
-                    vec![
-                        "node_process_cpu".to_string(),
-                        "node_process_mem".to_string(),
-                    ],
+                    vec![NODE_PROCESS_CPU.to_string(), NODE_PROCESS_MEM.to_string()],
                     vec![x.1.to_string()],
                     "",
                     "",
@@ -119,13 +118,13 @@ impl<'a> QueryMaker<'a> {
                 &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[0]),
             );
 
-            self.node_network_query(
+            self.snapshot_disk_io_and_network_bandwidth_usage(
                 collect_properties(
                     vec![
-                        "node_disk_mega_bytes_read".to_string(),
-                        "node_disk_mega_bytes_written".to_string(),
-                        "node_disk_io_now".to_string(),
-                        "node_disk_mega_bytes_io_total".to_string(),
+                        NODE_DISK_MEGA_BYTES_READ.to_string(),
+                        NODE_DISK_MEGA_BYTES_WRITTEN.to_string(),
+                        NODE_DISK_IO_NOW.to_string(),
+                        NODE_DISK_MEGA_BYTES_IO_TOTAL.to_string(),
                     ],
                     vec![x.1.to_string()],
                     "",
@@ -134,72 +133,67 @@ impl<'a> QueryMaker<'a> {
                 &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[1]),
             );
         }
+        self.querys.clone()
     }
-
-    pub fn set_assembly_cpu_query(&mut self, id: &str) {
-        self.node_cpu_query(
+    //Provides the cpu usage in an assembly
+    //The (total cpu - ide cpu) is returned.
+    //The job name we look for is ASSEMBLY_JOBS
+    pub fn snapshot_cpu_usage_in_machine(&mut self, id: &str, job: &str) -> Vec<QueryBuilder> {
+        self.snapshot_cpu_usage_in_node(
             collect_properties(
-                vec!["node_cpu".to_string()],
+                vec![NODE_CPU.to_string()],
                 vec![
-                    format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id).to_string(),
+                    format!("{}={}", job, id).to_string(),
                     ASSEMBLY_JOBS.to_string(),
                     IDLEMODE.to_string(),
                 ],
                 METRIC_DEFAULT_LAST_X_MINUTE,
-                "rioos_assembly_id",
+                job,
             ),
             node::CAPACITY_CPU,
         );
+        self.querys.clone()
     }
-
-    pub fn set_container_query(&mut self, id: &str) {
-        self.container_cpu_query(collect_properties(
-            vec!["container_cpu_usage_seconds_total".to_string()],
-            vec![
-                format!(
-                    "{}={}",
-                    METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID,
-                    id
-                ).to_string(),
-            ],
+    //Provide the cpu usage in a container
+    //The (container_cpu_usage_seconds_total is returned)
+    //The job name we look for is CONTAINER_JOBS
+    pub fn snapshot_cpu_usage_in_contaner(&mut self, id: &str, job: &str) -> Vec<QueryBuilder> {
+        self.snapshot_cpu_usage_in_container(collect_properties(
+            vec![CONTAINER_CPU_USAGE_SEC_TOTAL.to_string()],
+            vec![format!("{}={}", job, id).to_string()],
             METRIC_DEFAULT_LAST_X_MINUTE,
-            METRIC_LBL_RIOOS_ASSEMBLY_ID,
+            job,
         ));
 
-        self.container_query(
+        self.snapshot_memory_and_storage_usage_in_container(
             collect_properties(
                 vec![
-                    "container_memory_usage_bytes".to_string(),
-                    "container_spec_memory_limit_bytes".to_string(),
+                    CONTAINER_MEM_USAGE_BYTES.to_string(),
+                    CONTAINER_SPEC_MEM_LIMIT_BYTES.to_string(),
                 ],
-                vec![
-                    format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, id).to_string(),
-                ],
+                vec![format!("{}={}", job, id).to_string()],
                 "",
                 "",
             ),
             node::CAPACITY_MEMORY,
         );
-        self.container_query(
+        self.snapshot_memory_and_storage_usage_in_container(
             collect_properties(
                 vec![
-                    "container_fs_usage_bytes".to_string(),
-                    "container_fs_limit_bytes".to_string(),
+                    CONTAINER_FS_USAGE_BYTES.to_string(),
+                    CONTAINER_FS_LIMIT_BYTES.to_string(),
                 ],
-                vec![
-                    format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID, id).to_string(),
-                ],
+                vec![format!("{}={}", job, id).to_string()],
                 "",
                 "",
             ),
             node::CAPACITY_STORAGE,
         );
+        self.querys.clone()
     }
 
-
-
-    //collect the overall memory of all nodes
-    fn average_memory_query(&mut self, scope: QueryProperties) {
+    //The query to build the snapshot usage of memory in a the datacenter
+    fn snapshot_memory_usage(&mut self, scope: QueryProperties) {
         let avg = Functions::Sum(AvgInfo {
             operator: Operators::Sum(SumInfo {
                 labels: scope.labels.clone(),
@@ -218,8 +212,9 @@ impl<'a> QueryMaker<'a> {
             ),
         ));
     }
-    // collect the average data for the cpu usage from prometheus
-    fn avg_cpu_query(&mut self, scope: QueryProperties) {
+
+    //The query to build the snapshot usage of cpu in a the datacenter
+    fn snapshot_cpu_usage(&mut self, scope: QueryProperties) {
         for metric_name in scope.metric_names.iter() {
             let avg = Functions::Avg(AvgInfo {
                 operator: Operators::IRate(IRateInfo {
@@ -240,8 +235,8 @@ impl<'a> QueryMaker<'a> {
             ));
         }
     }
-    //collect the overall disk of all nodes
-    fn average_disk_query(&mut self, scope: QueryProperties) {
+    //The query to build the snapshot usage of disk usage in a the datacenter
+    fn snapshot_disks_usage(&mut self, scope: QueryProperties) {
         let avg = Functions::SumDisk(AvgInfo {
             operator: Operators::SumDisk(SumInfo {
                 labels: scope.labels.clone(),
@@ -261,8 +256,8 @@ impl<'a> QueryMaker<'a> {
         ));
     }
 
-    // collect the average data for the cpu usage from prometheus
-    fn node_cpu_query(&mut self, scope: QueryProperties, name: &str) {
+    //The query to build the snapshot usage of cpu in a the node
+    fn snapshot_cpu_usage_in_node(&mut self, scope: QueryProperties, name: &str) {
         for metric_name in scope.metric_names.iter() {
             let avg = Functions::Avg(AvgInfo {
                 operator: Operators::IRate(IRateInfo {
@@ -283,8 +278,8 @@ impl<'a> QueryMaker<'a> {
             ));
         }
     }
-
-    fn node_network_query(&mut self, scope: QueryProperties, name: &str) {
+    //The query to build the snapshot network bandwidth and a disk io in a the node
+    fn snapshot_disk_io_and_network_bandwidth_usage(&mut self, scope: QueryProperties, name: &str) {
         let network_query = Functions::Network(AvgInfo {
             operator: Operators::Network(SumInfo {
                 labels: scope.labels.clone(),
@@ -297,8 +292,8 @@ impl<'a> QueryMaker<'a> {
             format!("{}", network_query),
         ));
     }
-
-    fn node_process_query(&mut self, scope: QueryProperties, name: &str) {
+    //The query to build the process usage in a the node
+    fn snapshot_process_usage_in_node(&mut self, scope: QueryProperties, name: &str) {
         let process_query = Functions::Network(AvgInfo {
             operator: Operators::Process(SumInfo {
                 labels: scope.labels.clone(),
@@ -312,7 +307,8 @@ impl<'a> QueryMaker<'a> {
         ));
     }
 
-    fn container_cpu_query(&mut self, scope: QueryProperties) {
+    //The query to build the cpu usage in a the container
+    fn snapshot_cpu_usage_in_container(&mut self, scope: QueryProperties) {
         for metric_name in scope.metric_names.iter() {
             let sum = Functions::Sum(AvgInfo {
                 operator: Operators::IRate(IRateInfo {
@@ -331,8 +327,8 @@ impl<'a> QueryMaker<'a> {
             ));
         }
     }
-
-    fn container_query(&mut self, scope: QueryProperties, name: &str) {
+    //The query to build the storage and memory usage in a the container
+    fn snapshot_memory_and_storage_usage_in_container(&mut self, scope: QueryProperties, name: &str) {
         let mut q = vec![];
         for metric_name in scope.metric_names.iter() {
             let sum = Operators::NoOp(IRateInfo {
@@ -348,10 +344,9 @@ impl<'a> QueryMaker<'a> {
         ));
     }
 
-    pub fn pull_metrics(&self) -> Result<MetricResponse> {
-        let res = self.client.pull_metrics(
-            BuildQuery::with_querys(self.querys.clone()),
-        )?;
+    pub fn pull_metrics(&self, querys: Vec<QueryBuilder>) -> Result<MetricResponse> {
+        let res = self.client.pull_metrics(BuildQuery::with_querys(querys))?;
+        println!("----------------------------------------------\n{:?}", res);
         Ok(res)
     }
 }

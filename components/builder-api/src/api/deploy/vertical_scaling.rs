@@ -292,17 +292,17 @@ impl ExpanderSender for VerticalScalingApi {
 
         let _conn = self.conn.clone();
         let _prom = self.prom.clone();
-        // let metric_service = Box::new(NewCacheServiceFn::new(
-        //     CACHE_PREFIX_METRIC.to_string(),
-        //     Box::new(move |id: IdGet| -> Option<String> {
-        //         assembly::DataStore::new(&_conn)
-        //             .show_metrics(&id, &_prom)
-        //             .ok()
-        //             .and_then(|m| serde_json::to_string(&m).ok())
-        //     }),
-        // ));
+        let metric_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_METRIC.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                assembly::DataStore::new(&_conn)
+                    .show_metrics(&id, &_prom)
+                    .ok()
+                    .and_then(|m| serde_json::to_string(&m).ok())
+            }),
+        ));
         &self.conn.expander.with(factory_service);
-        // &self.conn.expander.with(metric_service);
+        &self.conn.expander.with(metric_service);
     }
 }
 

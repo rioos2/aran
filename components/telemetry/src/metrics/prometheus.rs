@@ -38,8 +38,15 @@ impl PrometheusClient {
     ///       label_value = nodes (first labels value)
     pub fn pull_metrics(&self, body: BuildQuery) -> Result<MetricResponse> {
         let url = format!("{}/querys", self.url);
-        let res = http_bearer_post(&url, body)?;
-        Ok(res)
+        println!(
+            "-----------------------------{}",
+            serde_json::to_value(&body)?
+        );
+        let mut res = http_bearer_post(&url, serde_json::to_value(&body)?)?;
+        let mut body = String::new();
+        res.read_to_string(&mut body)?;
+        let data: MetricResponse = serde_json::from_str(&body)?;
+        Ok(data)
     }
 
     /// Returns the contents of the node metrics

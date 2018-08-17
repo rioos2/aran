@@ -5,7 +5,7 @@ use protocol::api::base::QueryInput;
 use std::collections::BTreeMap;
 use telemetry::metrics::collector::Collector;
 use telemetry::metrics::prometheus::PrometheusClient;
-use telemetry::metrics::query_builder::QueryMaker;
+use telemetry::metrics::query::QueryMaker;
 
 const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
 
@@ -28,8 +28,8 @@ impl<'a> Client<'a> {
 
     fn assembly_metric(&self, af_id: &str) -> Result<BTreeMap<String, BTreeMap<String, String>>> {
         let mut mk_query = QueryMaker::new(self.prom);
-        mk_query.set_assembly_cpu_query(af_id);
-        let res = Collector::new(mk_query.pull_metrics()?).get_metrics(node::CAPACITY_CPU);
+        let query = mk_query.snapshot_cpu_usage_in_machine(af_id, node::METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID);
+        let res = Collector::new(mk_query.pull_metrics(query)?).get_metrics(node::CAPACITY_CPU);
         let mut data = BTreeMap::new();
         data.insert("cpu".to_string(), res);
         Ok(data)
@@ -38,9 +38,9 @@ impl<'a> Client<'a> {
     fn container_metric(&self, af_id: &str) -> Result<BTreeMap<String, BTreeMap<String, String>>> {
         let mut mk_query = QueryMaker::new(self.prom);
 
-        mk_query.set_container_query(af_id);
+        let query = mk_query.snapshot_cpu_usage_in_contaner(af_id, node::METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID);
 
-        let mut res = Collector::new(mk_query.pull_metrics()?);
+        let mut res = Collector::new(mk_query.pull_metrics(query)?);
 
         let mut data = BTreeMap::new();
 

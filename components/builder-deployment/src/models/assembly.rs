@@ -14,7 +14,7 @@ use serde_json;
 use std::collections::BTreeMap;
 use telemetry::metrics::collector::Collector;
 use telemetry::metrics::prometheus::PrometheusClient;
-use telemetry::metrics::query_builder::QueryMaker;
+use telemetry::metrics::query::QueryMaker;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -161,16 +161,12 @@ impl<'a> DataStore<'a> {
     //Get the metrics as a map of assembly_id and its metric
     pub fn show_metrics(&self, id: &IdGet, prom: &PrometheusClient) -> Result<BTreeMap<String, String>> {
         let mut mk_query = QueryMaker::new(prom);
-        match &id.get_name()[..] {
-            "machine" => {
-                mk_query.set_assembly_cpu_query(&id.get_id());
-            }
-            "container" => {
-                mk_query.set_container_query(&id.get_id());
-            }
-            _ => {}
+        let query = match &id.get_name()[..] {
+            "machine" => mk_query.snapshot_cpu_usage_in_machine(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
+            "container" => mk_query.snapshot_cpu_usage_in_contaner(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
+            _ => mk_query.snapshot_cpu_usage_in_machine(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
         };
-        let res = Collector::new(mk_query.pull_metrics()?).get_metrics(node::CAPACITY_CPU);
+        let res = Collector::new(mk_query.pull_metrics(query)?).get_metrics(node::CAPACITY_CPU);
         Ok(res)
     }
     /// Expands the assembly by sticking in Spec
