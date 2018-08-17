@@ -6,6 +6,7 @@
 )
 * 100
 )*/
+
 use std::fmt;
 
 pub enum Functions {
@@ -108,7 +109,11 @@ impl fmt::Display for Operators {
                     .collect::<Vec<_>>();
                 format!(
                     "({}-{}-{})/{}({}) *100",
-                    r[0], r[1], r[2], i.total, i.metric[0]
+                    r[0],
+                    r[1],
+                    r[2],
+                    i.total,
+                    i.metric[0]
                 )
             }
             //generate the query to get usage of node memory
@@ -141,15 +146,44 @@ impl fmt::Display for Operators {
                 format!("{}{}{}{}{}", i.metric, "{", s, "}", i.last_x_minutes,)
             }
 
-            Operators::Network(ref i) => format!(
-                "{}__name__=~{}{}|{}|{}|{}{}{}{}",
-                "{", '"', i.metric[0], i.metric[1], i.metric[2], i.metric[3], '"', "}", i.total
-            ),
+            Operators::Network(ref i) => {
+                let s: String = i.labels
+                    .clone()
+                    .into_iter()
+                    .map(|x| {
+                        let data = x.split("=").collect::<Vec<_>>();
+                        format!("{}={}{}{}{}", data[0], '"', data[1], '"', ",")
+                    })
+                    .collect();
+                format!(
+                    "{}__name__=~{}{}|{}|{}|{}{},{}{}{}",
+                    "{",
+                    '"',
+                    i.metric[0],
+                    i.metric[1],
+                    i.metric[2],
+                    i.metric[3],
+                    '"',
+                    s,
+                    "}",
+                    i.total
+                )
+            }
 
-            Operators::Process(ref i) => format!(
-                "{}__name__=~{}{}|{}{}{}",
-                "{", '"', i.metric[0], i.metric[1], '"', "}",
-            ),
+            Operators::Process(ref i) => {
+                let s: String = i.labels
+                    .clone()
+                    .into_iter()
+                    .map(|x| {
+                        let data = x.split("=").collect::<Vec<_>>();
+                        format!("{}={}{}{}{}", data[0], '"', data[1], '"', ",")
+                    })
+                    .collect();
+                format!(
+                "{}__name__=~{}{}|{}{},{}{}",
+                "{", '"', i.metric[0], i.metric[1], '"',s, "}",
+            )
+            }
         };
         write!(f, "{}", msg)
     }

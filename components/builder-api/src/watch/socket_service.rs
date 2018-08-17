@@ -188,7 +188,7 @@ impl ws::Handler for Metrics {
 
         let tick = schedule_recv::periodic_ms(10000);
         thread::spawn(move || loop {
-            match DataStore::new(&ds).healthz_all(&prom) {
+            match DataStore::new(&ds,&prom).healthz_all() {
                 Ok(Some(health_all)) => {
                     let res = serde_json::to_string(&health_all).unwrap();
                     match sender.send(res) {

@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment [assembly, assembly_factory] for the HTTP server
-use std::sync::Arc;
+
 
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
@@ -13,18 +13,16 @@ use deploy::models::{assembly, assemblyfactory, blueprint, endpoint, volume};
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::{MetaFields, StatusUpdate};
 use protocol::api::deploy::Assembly;
 use protocol::api::schema::{dispatch, dispatch_url, type_meta};
-use protocol::cache::{
-    ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_ENDPOINT, CACHE_PREFIX_FACTORY,
-    CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN, CACHE_PREFIX_VOLUME,
-};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_ENDPOINT, CACHE_PREFIX_FACTORY, CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN, CACHE_PREFIX_VOLUME};
 use router::Router;
+use std::sync::Arc;
 use telemetry::metrics::prometheus::PrometheusClient;
 
 #[derive(Clone)]
@@ -55,8 +53,9 @@ impl AssemblyApi {
     //Input: Body of structure deploy::Assembly
     //Returns an updated Assembly with id, ObjectMeta. created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body =
-            self.validate::<Assembly>(req.get::<bodyparser::Struct<Assembly>>()?)?;
+        let mut unmarshall_body = self.validate::<Assembly>(
+            req.get::<bodyparser::Struct<Assembly>>()?,
+        )?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -119,7 +118,7 @@ impl AssemblyApi {
     ///Returns all the Assemblys (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_account(req)?;
-      
+
         match assembly::DataStore::new(&self.conn).list(&params) {
             Ok(Some(assemblys)) => Ok(render_json_list(status::Ok, dispatch(req), &assemblys)),
             Ok(None) => Err(not_found_error(&format!(
@@ -162,7 +161,9 @@ impl AssemblyApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
         match assembly::DataStore::new(&self.conn).status_update(&unmarshall_body) {
@@ -253,8 +254,7 @@ impl Api for AssemblyApi {
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
@@ -290,9 +290,7 @@ impl Api for AssemblyApi {
 
         router.put(
             "/assemblys/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "assembly_status",
         );
         router.put(
@@ -319,9 +317,9 @@ impl ExpanderSender for AssemblyApi {
             CACHE_PREFIX_PLAN.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 debug!("» Planfactory live load for ≈ {}", id);
-                blueprint::DataStore::show(&_conn, &id)
-                    .ok()
-                    .and_then(|p| serde_json::to_string(&p).ok())
+                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
+                    serde_json::to_string(&p).ok()
+                })
             }),
         ));
 

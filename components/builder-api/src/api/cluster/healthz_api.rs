@@ -7,8 +7,8 @@ use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::Error;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::AranResult;
 use http_gateway::util::errors::{badgateway_error, not_found_error};
+use http_gateway::util::errors::AranResult;
 use iron::prelude::*;
 use iron::status;
 use router::Router;
@@ -32,12 +32,15 @@ pub struct HealthzApi {
 /// GET: /node/:ip
 impl HealthzApi {
     pub fn new(datastore: Box<DataStoreConn>, prom: Box<PrometheusClient>) -> Self {
-        HealthzApi { prom: prom, conn: datastore }
+        HealthzApi {
+            prom: prom,
+            conn: datastore,
+        }
     }
 
     //metrics of the overall node from prometheus
     fn healthz_all(&self, _req: &mut Request) -> AranResult<Response> {
-        match DataStore::new(&self.conn).healthz_all(&self.prom) {
+        match DataStore::new(&self.conn, &self.prom).healthz_all() {
             Ok(Some(health_all)) => Ok(render_json(status::Ok, &health_all)),
             Err(err) => Err(badgateway_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -47,7 +50,10 @@ impl HealthzApi {
     /// Endpoint for determining availability of builder-api components.
     /// Returns a status 200 on success. Any non-200 responses are an outage or a partial outage.
     fn status(&self, _req: &mut Request) -> AranResult<Response> {
-        Ok(render_json(status::Ok, &format!("code:{},version:{}", "200", "rioos-2.0")))
+        Ok(render_json(
+            status::Ok,
+            &format!("code:{},version:{}", "200", "rioos-2.0"),
+        ))
     }
 }
 

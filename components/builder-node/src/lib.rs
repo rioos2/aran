@@ -5,7 +5,6 @@
 extern crate chrono;
 extern crate cidr;
 extern crate ipnet;
-extern crate itertools;
 extern crate oping;
 extern crate rand;
 extern crate rioos_builder_apimachinery as protocol;

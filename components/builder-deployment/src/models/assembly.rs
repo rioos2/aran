@@ -1,21 +1,20 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! The PostgreSQL backend for the Deployment - Assembly
+
 use super::super::{AssemblyOutput, AssemblyOutputList};
 use chrono::prelude::*;
 use db::data_store::DataStoreConn;
 use error::{Error, Result};
 use postgres;
-use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::api::{deploy, node};
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
 use serde_json;
 use std::collections::BTreeMap;
-use telemetry::metrics::collector::{Collector, CollectorScope};
+use telemetry::metrics::collector::Collector;
 use telemetry::metrics::prometheus::PrometheusClient;
-
-const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
-const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
+use telemetry::metrics::query::QueryMaker;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -75,8 +74,10 @@ impl<'a> DataStore<'a> {
 
     pub fn show(&self, get_assembly: &IdGet) -> AssemblyOutput {
         let conn = self.db.pool.get_shard(0)?;
-        let rows = &conn.query("SELECT * FROM get_assembly_v1($1)", &[&(get_assembly.get_id().parse::<i64>().unwrap())])
-            .map_err(Error::AssemblyGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_assembly_v1($1)",
+            &[&(get_assembly.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::AssemblyGet)?;
         if rows.len() > 0 {
             for row in rows {
                 let assembly = self.collect_spec(&row, PULL_DIRECTLY)?;
@@ -89,7 +90,8 @@ impl<'a> DataStore<'a> {
     pub fn list_blank(&self) -> AssemblyOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_assemblys_v1()", &[]).map_err(Error::AssemblyGet)?;
+        let rows = &conn.query("SELECT * FROM get_assemblys_v1()", &[])
+            .map_err(Error::AssemblyGet)?;
 
         let mut response = Vec::new();
 
@@ -105,8 +107,10 @@ impl<'a> DataStore<'a> {
     pub fn list(&self, assemblys_get: &IdGet) -> AssemblyOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_assemblys_by_account_v1($1)", &[&(assemblys_get.get_name() as String)])
-            .map_err(Error::AssemblyGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_assemblys_by_account_v1($1)",
+            &[&(assemblys_get.get_name() as String)],
+        ).map_err(Error::AssemblyGet)?;
 
         let mut response = Vec::new();
         if rows.len() > 0 {
@@ -138,8 +142,10 @@ impl<'a> DataStore<'a> {
     pub fn show_by_assemblyfactory(&self, id: &IdGet) -> AssemblyOutputList {
         let conn = self.db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_assemblys_by_parentid_v1($1)", &[&(id.get_id() as String)])
-            .map_err(Error::AssemblyGet)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_assemblys_by_parentid_v1($1)",
+            &[&(id.get_id() as String)],
+        ).map_err(Error::AssemblyGet)?;
 
         let mut response = Vec::new();
 
@@ -154,38 +160,14 @@ impl<'a> DataStore<'a> {
 
     //Get the metrics as a map of assembly_id and its metric
     pub fn show_metrics(&self, id: &IdGet, prom: &PrometheusClient) -> Result<BTreeMap<String, String>> {
-        match &id.get_name()[..] {
-            "machine" => {
-                let label_collection = vec![
-                    format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string(),
-                    node::ASSEMBLY_JOBS.to_string(),
-                    node::IDLEMODE.to_string(),
-                ];
-                let nodes_metric_scope: Vec<String> = vec!["node_cpu".to_string()];
-
-                let scope = CollectorScope {
-                    metric_names: nodes_metric_scope,
-                    labels: label_collection,
-                    last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
-                    avg_by_name: "rioos_assembly_id".to_string(),
-                };
-                Ok(Collector::new(prom, scope).metric_by_avg_for_machines()?)
-            }
-            "container" => {
-                let label_collection: Vec<String> = vec![format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string()];
-
-                let container_metric_scope: Vec<String> = vec!["container_cpu_usage_seconds_total".to_string()];
-
-                let scope = CollectorScope {
-                    metric_names: container_metric_scope,
-                    labels: label_collection,
-                    last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
-                    avg_by_name: "rioos_assembly_id".to_string(),
-                };
-                Ok(Collector::new(prom, scope).metric_by_avg_for_containers("cpu")?)
-            }
-            _ => Ok(BTreeMap::new()),
-        }
+        let mut mk_query = QueryMaker::new(prom);
+        let query = match &id.get_name()[..] {
+            "machine" => mk_query.snapshot_cpu_usage_in_machine(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
+            "container" => mk_query.snapshot_cpu_usage_in_contaner(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
+            _ => mk_query.snapshot_cpu_usage_in_machine(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
+        };
+        let res = Collector::new(mk_query.pull_metrics(query)?).get_metrics(node::CAPACITY_CPU);
+        Ok(res)
     }
     /// Expands the assembly by sticking in Spec
     ///         1. AssemblyFactory (parent information)
