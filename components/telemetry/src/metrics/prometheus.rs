@@ -7,7 +7,7 @@ use super::super::error::Result;
 use chrono::prelude::*;
 use config;
 use http_client::reqwest_client::{http_bearer_post, http_bearer_get};
-use protocol::api::node::{BuildQuery, MetricResponse};
+use protocol::api::node::{PrometheusQuery, MetricResponse};
 
 use serde_json;
 
@@ -36,7 +36,7 @@ impl PrometheusClient {
     ///       label_value = prometheus (first labels value)
     ///       label_name  = group (first label)
     ///       label_value = nodes (first labels value)
-    pub fn pull_metrics(&self, body: BuildQuery) -> Result<MetricResponse> {
+    pub fn pull_metrics(&self, body: PrometheusQuery) -> Result<MetricResponse> {
         let url = format!("{}/querys", self.url);
         let mut res = http_bearer_post(&url, serde_json::to_value(&body)?)?;
         let mut body = String::new();

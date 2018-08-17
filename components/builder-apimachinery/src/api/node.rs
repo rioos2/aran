@@ -780,13 +780,13 @@ impl QueryBuilder {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct BuildQuery {
+pub struct PrometheusQuery {
     querys: Vec<QueryBuilder>,
 }
 
-impl BuildQuery {
-    pub fn with_querys(querys: Vec<QueryBuilder>) -> BuildQuery {
-        BuildQuery { querys: querys }
+impl PrometheusQuery {
+    pub fn with_querys(querys: Vec<QueryBuilder>) -> PrometheusQuery {
+        PrometheusQuery { querys: querys }
     }
 }
 

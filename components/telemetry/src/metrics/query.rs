@@ -9,7 +9,7 @@ use super::super::error::{self, Result};
 use chrono::prelude::*;
 use metrics::prometheus::PrometheusClient;
 use protocol::api::node;
-use protocol::api::node::{MetricResponse, BuildQuery, QueryBuilder};
+use protocol::api::node::{MetricResponse, PrometheusQuery, QueryBuilder};
 
 use serde_json;
 use std::collections::BTreeMap;
@@ -342,7 +342,9 @@ impl<'a> QueryMaker<'a> {
     }
 
     pub fn pull_metrics(&self, querys: Vec<QueryBuilder>) -> Result<MetricResponse> {
-        let res = self.client.pull_metrics(BuildQuery::with_querys(querys))?;
+        let res = self.client.pull_metrics(
+            PrometheusQuery::with_querys(querys),
+        )?;
         Ok(res)
     }
 }
