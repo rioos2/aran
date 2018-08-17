@@ -87,7 +87,10 @@ impl Collector {
             .data
             .into_iter()
             .filter(|x| x.name == name)
-            .collect::<Vec<_>>()[0]
+            .collect::<Vec<_>>()
+            .iter()
+            .next()
+            .unwrap()
             .clone();
 
         let data = self.statistics
@@ -104,7 +107,7 @@ impl Collector {
                             .unwrap_or(&"".to_string())
                             .to_owned();
                         let ins: Vec<&str> = instance.split("-").collect();
-                        x.get_id() == ins[0].to_string()
+                        x.get_id() == ins.first().unwrap_or(&"").to_string()
                     })
                     .collect::<Vec<_>>();
                 let name: Vec<&str> = name.split("-").collect();
@@ -129,7 +132,7 @@ impl Collector {
                             .unwrap_or(&"".to_string())
                             .to_owned();
                         let ins: Vec<&str> = instance.split("-").collect();
-                        x.get_id() == ins[0].to_string()
+                        x.get_id() == ins.first().unwrap_or(&"").to_string()
                     })
                     .collect::<Vec<_>>();
                 x.set_network_speed(group_network(&mut instance_item));
