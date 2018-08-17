@@ -176,7 +176,7 @@ impl VerticalScalingApi {
                     .collect::<Vec<_>>();
                 match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&af_id[0]) {
                     Ok(Some(assemblys)) => {
-                        let metrics = DataStore::new(&self.conn).healthz_all(&self.prom)?;
+                        let metrics = DataStore::new(&self.conn, &self.prom).healthz_all()?;
                         match ReplicasExpander::new(&self.conn, assemblys, metrics, &vs).expand() {
                             Ok(Some(job)) => Ok(render_json(status::Ok, &job)),
                             Err(err) => Err(internal_error(&format!("{}\n", err))),
@@ -292,17 +292,17 @@ impl ExpanderSender for VerticalScalingApi {
 
         let _conn = self.conn.clone();
         let _prom = self.prom.clone();
-        let metric_service = Box::new(NewCacheServiceFn::new(
-            CACHE_PREFIX_METRIC.to_string(),
-            Box::new(move |id: IdGet| -> Option<String> {
-                assembly::DataStore::new(&_conn)
-                    .show_metrics(&id, &_prom)
-                    .ok()
-                    .and_then(|m| serde_json::to_string(&m).ok())
-            }),
-        ));
+        // let metric_service = Box::new(NewCacheServiceFn::new(
+        //     CACHE_PREFIX_METRIC.to_string(),
+        //     Box::new(move |id: IdGet| -> Option<String> {
+        //         assembly::DataStore::new(&_conn)
+        //             .show_metrics(&id, &_prom)
+        //             .ok()
+        //             .and_then(|m| serde_json::to_string(&m).ok())
+        //     }),
+        // ));
         &self.conn.expander.with(factory_service);
-        &self.conn.expander.with(metric_service);
+        // &self.conn.expander.with(metric_service);
     }
 }
 

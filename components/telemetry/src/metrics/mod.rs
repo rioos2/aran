@@ -4,3 +4,4 @@
 pub mod collector;
 pub mod expression;
 pub mod prometheus;
+pub mod query_builder;

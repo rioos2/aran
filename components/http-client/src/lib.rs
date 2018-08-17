@@ -11,6 +11,7 @@ extern crate rioos_core as rio_core;
 extern crate serde;
 extern crate serde_json;
 extern crate url;
+extern crate rioos_builder_apimachinery as protocol;
 
 pub mod api_client;
 pub mod error;

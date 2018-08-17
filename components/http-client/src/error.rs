@@ -1,14 +1,14 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-use std::error;
-use std::fmt;
-use std::io;
-use std::result;
 
 use reqwest;
 use rio_core;
 use serde_json;
+use std::error;
+use std::fmt;
+use std::io;
+use std::result;
 use url;
 
 #[derive(Debug)]
@@ -77,5 +77,11 @@ impl From<io::Error> for Error {
 impl From<url::ParseError> for Error {
     fn from(err: url::ParseError) -> Self {
         Error::UrlParseError(err)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Error {
+        Error::Json(err)
     }
 }

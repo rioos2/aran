@@ -1,446 +1,296 @@
-// Copyright 2018 The Rio Advancement Inc
-
-//! A module containing the health insight for the datacenter
+use chrono::prelude::*;
+use itertools::Itertools;
+use protocol::api::base::MetaFields;
+use protocol::api::node;
+use protocol::api::node::{Data, InstantVecItem, PromResponse};
+use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
 
-use chrono::prelude::*;
-use metrics::prometheus::PrometheusClient;
-
-use serde_json;
-
-use super::super::error::{self, Result};
-use super::expression::*;
-use protocol::api::node::{Data, InstantVecItem, PromResponse};
-
-pub const CPU_TOTAL: &'static str = "cpu_total";
-
-#[derive(Clone)]
-pub struct Collector<'a> {
-    client: &'a PrometheusClient,
-    scope: CollectorScope,
+pub struct Collector {
+    content: node::MetricResponse,
+    statistics: Vec<node::NodeStatistic>,
 }
 
-#[derive(Clone)]
-pub struct CollectorScope {
-    pub metric_names: Vec<String>,
-    pub labels: Vec<String>,
-    pub last_x_minutes: String,
-    pub avg_by_name: String,
-}
-
-impl<'a> Collector<'a> {
-    pub fn new(prom: &'a PrometheusClient, scope: CollectorScope) -> Self {
+impl Collector {
+    pub fn new(content: node::MetricResponse) -> Self {
         Collector {
-            client: &*prom,
-            scope: scope,
+            content: content,
+            statistics: vec![node::NodeStatistic::new()],
         }
     }
 
-    //collect the overall memory of all nodes
-    pub fn average_memory(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
+    pub fn get_reports(&mut self) -> node::HealthzAllGet {
+        let mut x = node::HealthzAllGet::new();
+        x.set_title("Command center operations".to_string());
+        x.set_gauges(self.mk_guages());
+        x.set_statistics(self.new_statistics());
+        x
+    }
 
-        let avg = Functions::Sum(AvgInfo {
-            operator: Operators::Sum(SumInfo {
-                labels: self.scope.labels.clone(),
-                metric: self.scope.metric_names.clone(),
-                total: "sum".to_string(),
-            }),
-        });
-        let data = format!(
-            "{}",
-            MetricQueryBuilder::new(MetricQuery {
-                functions: avg,
-                by: "".to_string()
+    pub fn get_metrics(&mut self, name: &str) -> BTreeMap<String, String> {
+        self.content
+            .data
+            .iter()
+            .filter(|x| x.name == name)
+            .map(|x| {
+                let d: BTreeMap<String, String> = x.clone().into();
+                d
             })
-        );       
-        let content = self.client.pull_metrics(&data)?;
-       
-        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-        content_datas.push(response);
-
-        let memory_contents_data = self.set_metric_name(Ok(content_datas), "ram_total")?;
-
-        Ok(memory_contents_data)
+            .collect::<Vec<_>>()
+            .iter()
+            .next()
+            .unwrap()
+            .clone()
     }
 
-
-    //collect the overall disk of all nodes
-    pub fn average_disk(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-
-        let avg = Functions::SumDisk(AvgInfo {
-            operator: Operators::SumDisk(SumInfo {
-                labels: self.scope.labels.clone(),
-                metric: self.scope.metric_names.clone(),
-                total: "sum".to_string(),
-            }),
-        });
-        let data = format!(
-            "{}",
-            MetricQueryBuilder::new(MetricQuery {
-                functions: avg,
-                by: "".to_string()
+    fn mk_guages(&self) -> node::Guages {
+        self.content
+            .data
+            .iter()
+            .filter(|x| {
+                x.name == node::CAPACITY_CPU || x.name == node::CAPACITY_MEMORY || x.name == node::CAPACITY_STORAGE
             })
-        );       
-        let content = self.client.pull_metrics(&data)?;
-
-        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-        content_datas.push(response);
-
-        let memory_contents_data = self.set_metric_name(Ok(content_datas), "disk_total")?;
-
-        Ok(memory_contents_data)
+            .map(|x| x.clone().into())
+            .collect::<Vec<_>>()
+            .into()
     }
 
-    //get the total usage of all node cpu metric and each node cpu metric
-    pub fn overall_node_cpu(&mut self) -> Result<(Vec<PromResponse>, Vec<PromResponse>)> {
-        let content_datas = self.avg_collect()?;
-        let node_contents_data = self.set_metric_name(Ok(content_datas), "cpu_total")?;
-
-        let gauges = self.set_gauges(Ok(node_contents_data.clone()));
-        let statistics = self.set_statistics(Ok(node_contents_data.clone()));
-        Ok((gauges.unwrap(), statistics.unwrap()))
+    fn new_statistics(&mut self) -> node::Statistics {
+        let mut statistics = node::Statistics::new();
+        statistics.set_title("Statistics".to_string());
+        statistics.set_ninjas(self.mk_statistics(node::NODES[1].0));
+        statistics.set_senseis(self.mk_statistics(node::NODES[0].0));
+        statistics
     }
 
-    pub fn network_metric(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-
-        let network_query = Functions::Network(AvgInfo {
-            operator: Operators::Network(SumInfo {
-                labels: self.scope.labels.clone(),
-                metric: self.scope.metric_names.clone(),
-                total: self.scope.last_x_minutes.clone(),
-            }),
-        });
-
-        let content = self.client.pull_metrics(&format!("{}", network_query))?;
-
-        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-
-        content_datas.push(response);
-
-        Ok(content_datas)
-    }
-
-    pub fn disk_metric(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-
-        let disk_query = Functions::Network(AvgInfo {
-            operator: Operators::Network(SumInfo {
-                labels: self.scope.labels.clone(),
-                metric: self.scope.metric_names.clone(),
-                total: self.scope.last_x_minutes.clone(),
-            }),
-        });
-
-        let content = self.client.pull_metrics(&format!("{}", disk_query))?;
-
-        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-
-        content_datas.push(response);
-
-        Ok(content_datas)
-    }
-
-    pub fn process_metric(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-
-        let process_query = Functions::Network(AvgInfo {
-            operator: Operators::Process(SumInfo {
-                labels: self.scope.labels.clone(),
-                metric: self.scope.metric_names.clone(),
-                total: self.scope.last_x_minutes.clone(),
-            }),
-        });
-
-        let content = self.client.pull_metrics(&format!("{}", process_query))?;
-
-        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-
-        content_datas.push(response);
-
-        Ok(content_datas)
-    }
-
-    //os usage metric of the assemblys
-    pub fn metric_by_os_usage(&mut self) -> Result<(Vec<PromResponse>, Vec<PromResponse>)> {
-        let content_datas = self.avg_collect()?;
-        let node_contents_data = self.set_metric_name(Ok(content_datas), "cpu_total")?;
-        let gauges = self.set_gauges(Ok(node_contents_data.clone()));
-
-        let content = self.os_avg_collect()?;
-
-        Ok((gauges.unwrap(), content))
-    }
-
-    //metric for general
-    pub fn metric_by_avg_for_machines(&mut self) -> Result<BTreeMap<String, String>> {
-        let content_datas = self.avg_collect()?;
-        let metrics = self.set_metrics_average(Ok(content_datas.clone()));
-        Ok(metrics.unwrap())
-    }
-    //metrics for container
-    pub fn metric_by_avg_for_containers(&mut self, name: &str) -> Result<BTreeMap<String, String>> {
-        let content_datas = match name {
-            "cpu" => self.container_cpu_metric()?,
-            "ram" => self.container_metric()?,
-            "disk" => self.container_metric()?,
-            _ => vec![],
-        };
-
-        let metrics = self.set_metrics_average(Ok(content_datas.clone()));
-        Ok(metrics.unwrap())
-    }
-
-    fn set_metric_name(
-        &self,
-        response: Result<Vec<PromResponse>>,
-        name: &str,
-    ) -> Result<Vec<PromResponse>> {
-        match response {
-            Ok(proms) => {
-                return Ok(proms
-                    .into_iter()
-                    .map(|mut p| {
-                        if let Data::Vector(ref mut instancevec) = p.data {
-                            instancevec
-                                .iter_mut()
-                                .map(|x| {
-                                    x.metric.insert("__name__".to_string(), name.to_string());
-                                })
-                                .collect::<Vec<_>>();
-                        }
-                        p
-                    })
-                    .collect::<Vec<_>>());
-            }
-            _ => return Err(error::Error::CryptoError(String::new())),
+    fn mk_statistics(&mut self, name: &str) -> Vec<node::NodeStatistic> {
+        let data = self.content
+            .clone()
+            .data
+            .into_iter()
+            .filter(|x| x.name == format!("{}-cpu", name))
+            .map(|x| { self.statistics = x.into(); })
+            .collect::<Vec<_>>();
+        if self.statistics.len() <= 0 {
+            return self.statistics.clone();
         }
-    }
-
-    // collect the average data for the cpu usage from prometheus
-    fn avg_collect(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-        for scope in self.scope.metric_names.iter() {
-            let avg = Functions::Avg(AvgInfo {
-                operator: Operators::IRate(IRateInfo {
-                    labels: self.scope.labels.clone(),
-                    metric: scope.to_string(),
-                    last_x_minutes: self.scope.last_x_minutes.clone(),
-                }),
-            });
-            let data = format!(
-                "100 - ({} * 100)",
-                MetricQueryBuilder::new(MetricQuery {
-                    functions: avg,
-                    by: format!("avg by ({})", self.scope.avg_by_name.clone()),
-                })
-            );           
-            let content = self.client.pull_metrics(&data)?;
-
-            let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-            content_datas.push(response);
+        for x in node::NODES_METRIC_SOURCE.iter() {
+            self.set_node_resources(&format!("{}-{}", name, x));
         }
-
-        Ok(content_datas)
-    }
-    // collect the average data for the cpu usage from prometheus
-    fn container_cpu_metric(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-        for scope in self.scope.metric_names.iter() {
-            let sum = Functions::Sum(AvgInfo {
-                operator: Operators::IRate(IRateInfo {
-                    labels: self.scope.labels.clone(),
-                    metric: scope.to_string(),
-                    last_x_minutes: self.scope.last_x_minutes.clone(),
-                }),
-            });
-            let content = self.client.pull_metrics(&format!(
-                "sum by({}) ({})*100",
-                self.scope.avg_by_name.clone(),
-                sum
-            ))?;
-
-            let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-            content_datas.push(response);
-        }
-
-        Ok(content_datas)
+        self.statistics.clone()
     }
 
-    fn container_metric(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-        let mut q = vec![];
-        for scope in self.scope.metric_names.iter() {
-            let sum = Operators::NoOp(IRateInfo {
-                labels: self.scope.labels.clone(),
-                metric: scope.to_string(),
-                last_x_minutes: self.scope.last_x_minutes.clone(),
-            });
-            q.push(sum);
-        }
-        let content = self.client.pull_metrics(&format!("{}/{}*100", q[0], q[1]))?;
-        let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-        content_datas.push(response);
-        Ok(content_datas)
-    }
+    fn set_node_resources(&mut self, name: &str) {
+        let mut process = self.content
+            .clone()
+            .data
+            .into_iter()
+            .filter(|x| x.name == name)
+            .collect::<Vec<_>>()[0]
+            .clone();
 
-    // collect the average data for the cpu usage from prometheus
-    fn os_avg_collect(&self) -> Result<Vec<PromResponse>> {
-        let mut content_datas = vec![];
-        for scope in self.scope.metric_names.iter() {
-            let avg = Functions::Avg(AvgInfo {
-                operator: Operators::IRate(IRateInfo {
-                    labels: self.scope.labels.clone(),
-                    metric: scope.to_string(),
-                    last_x_minutes: self.scope.last_x_minutes.clone(),
-                }),
-            });
-            let data = format!(
-                "100 - ({} * 100)",
-                MetricQueryBuilder::new(MetricQuery {
-                    functions: avg,
-                    by: format!("avg by ({})", self.scope.avg_by_name.clone()),
-                })
-            );
-
-            let content = self.client.pull_osusage(&data)?;
-
-            let response: PromResponse = serde_json::from_str(&content.data).unwrap();
-            content_datas.push(response);
-        }
-
-        Ok(content_datas)
-    }
-    fn set_gauges(&self, response: Result<Vec<PromResponse>>) -> Result<Vec<PromResponse>> {
-        match response {
-            Ok(proms) => {
-                return Ok(proms
-                    .into_iter()
-                    .map(|mut p| (p.sum_group().clone()))
-                    .collect::<Vec<_>>())
-            }
-            _ => return Err(error::Error::CryptoError(String::new())),
-        }
-    }
-
-    fn set_statistics(&self, response: Result<Vec<PromResponse>>) -> Result<Vec<PromResponse>> {
-        match response {
-            Ok(proms) => {
-                return Ok(proms
-                    .into_iter()
-                    .filter(|x| {
-                        match (*x).data {
-                            Data::Vector(ref ins) => {
-                                return (*ins)
-                                    .clone()
-                                    .into_iter()
-                                    .find(|m| {
-                                        m.metric.get("__name__").unwrap_or(&"nop".to_string())
-                                            == CPU_TOTAL
-                                    })
-                                    .is_some()
-                            }
-                            _ => return false,
-                        };
-                    })
-                    .collect::<Vec<_>>()
-                    .to_vec())
-            }
-            _ => return Err(error::Error::CryptoError(String::new())),
-        }
-    }
-
-    fn set_metrics_average(
-        &self,
-        response: Result<Vec<PromResponse>>,
-    ) -> Result<BTreeMap<String, String>> {
-        match response {
-            Ok(proms) => {
-                let mut data = BTreeMap::new();
-                proms
-                    .into_iter()
-                    .map(|mut x| {
-                        if let Data::Vector(ref mut instancevec) = x.data {
-                            instancevec
-                                .iter_mut()
-                                .map(|x| {
-                                    data.insert(
-                                        x.metric.get("rioos_assembly_id").unwrap().to_string(),
-                                        x.value.1.clone(),
-                                    );
-                                })
-                                .collect::<Vec<_>>();
-                        }
-                    })
-                    .collect::<Vec<_>>();
-                Ok(data)
-            }
-            _ => return Err(error::Error::CryptoError(String::new())),
-        }
-    }
-}
-
-pub trait SumGroup {
-    fn sum_group(&mut self) -> PromResponse;
-}
-impl SumGroup for PromResponse {
-    fn sum_group(&mut self) -> Self {
-        let mut sum = Data::Vector(vec![]);
-        if let Data::Vector(ref mut instancevec) = (*self).data {
-            let local: DateTime<Utc> = Utc::now();
-            let initvec = vec![InstantVecItem {
-                metric: BTreeMap::new(),
-                value: (local.timestamp() as f64, "0".to_string()),
-            }];
-            let instance_changed = instancevec.iter_mut().fold(initvec, |mut acc, ref mut x| {
-                acc.iter_mut()
-                    .map(|ref mut i| {
-                        for (k, v) in &x.metric {
-                            i.metric.insert(k.to_string(), v.to_string());
-                        }
-                        i.value.0 = x.value.clone().0;
-                        let b = x.value.1.trim().parse::<f64>().unwrap_or(1.0);
-                        let a = i.value.1.trim().parse::<f64>().unwrap_or(1.0);
-                        i.value.1 = (a + b).to_string();
-                    })
-                    .collect::<Vec<_>>();
-                acc
-            });
-
-            sum = Data::Vector(
-                instance_changed
+        let data = self.statistics
+            .clone()
+            .into_iter()
+            .map(|mut x| if let node::Data::Vector(ref mut instancevec) =
+                process.result
+            {
+                let mut instance_item = instancevec
                     .iter()
-                    .map(|x| {
-                        if x.value.1 != "0" {
-                            let avg_metric_val = (
-                                x.value.0,
-                                (x.value
-                                    .1
-                                    .trim()
-                                    .parse::<f64>()
-                                    .unwrap_or(1.0)
-                                    .div((*instancevec).len() as f64))
-                                    .to_string(),
-                            );
-
-                            InstantVecItem {
-                                metric: x.metric.clone(),
-                                value: avg_metric_val,
-                            }
-                        } else {
-                            InstantVecItem {
-                                metric: x.metric.clone(),
-                                value: (x.value.0, "".to_string()),
-                            }
-                        }
+                    .filter(|y| {
+                        let instance = y.metric
+                            .get("instance")
+                            .unwrap_or(&"".to_string())
+                            .to_owned();
+                        let ins: Vec<&str> = instance.split("-").collect();
+                        x.get_id() == ins[0].to_string()
                     })
-                    .collect::<Vec<_>>(),
-            );
-        }
-        self.data = sum;
-        (*self).clone()
+                    .collect::<Vec<_>>();
+                let name: Vec<&str> = name.split("-").collect();
+                match name[1] {
+                    "process" => {
+                        x.set_process(group_process(&mut instance_item));
+                        x
+                    }
+                    "disk" => {
+                        x.set_disk(group_disk(&mut instance_item));
+                        x
+                    }
+                    _ => x,
+
+                }
+            } else if let node::Data::Matrix(ref mut instancevec) = process.result {
+                let mut instance_item = instancevec
+                    .iter()
+                    .filter(|y| {
+                        let instance = y.metric
+                            .get("instance")
+                            .unwrap_or(&"".to_string())
+                            .to_owned();
+                        let ins: Vec<&str> = instance.split("-").collect();
+                        x.get_id() == ins[0].to_string()
+                    })
+                    .collect::<Vec<_>>();
+                x.set_network_speed(group_network(&mut instance_item));
+                x
+            } else {
+                return x;
+            })
+            .collect::<Vec<_>>();
+        self.statistics = data;
     }
+}
+
+fn group_process(process: &mut Vec<&node::InstantVecItem>) -> Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>> {
+    let merged = process
+        .iter()
+        .flat_map(|s| s.metric.get("__name__"))
+        .collect::<Vec<_>>()
+        .into_iter()
+        .unique()
+        .collect::<Vec<_>>();
+
+    merged
+        .into_iter()
+        .map(|x| {
+            let mut process_metric = BTreeMap::new();
+            let mut a = Vec::new();
+            process
+                .into_iter()
+                .map(|y| if x == y.metric.get("__name__").unwrap() {
+                    let mut group = BTreeMap::new();
+                    group.insert(
+                        "pid".to_string(),
+                        y.metric.get("pid").unwrap_or(&"".to_string()).to_string(),
+                    );
+                    group.insert(
+                        "command".to_string(),
+                        y.metric
+                            .get("command")
+                            .unwrap_or(&"".to_string())
+                            .to_string(),
+                    );
+                    group.insert("value".to_string(), y.value.clone().1);
+                    a.push(group)
+                })
+                .collect::<Vec<_>>();
+            process_metric.insert(x.to_string(), a);
+            process_metric
+        })
+        .collect::<_>()
+}
+
+fn group_disk(disk: &mut Vec<&node::InstantVecItem>) -> Vec<BTreeMap<String, String>> {
+    let merged = disk.iter()
+        .flat_map(|s| s.metric.get("device"))
+        .collect::<Vec<_>>()
+        .into_iter()
+        .unique()
+        .collect::<Vec<_>>();
+
+    merged
+        .into_iter()
+        .map(|x| {
+            let mut disk_metric = BTreeMap::new();
+            disk_metric.insert("name".to_string(), x.to_string());
+            disk.into_iter()
+                .map(|y| if x == y.metric.get("device").unwrap() {
+                    disk_metric.insert(
+                        y.metric
+                            .get("__name__")
+                            .unwrap_or(&"".to_string())
+                            .to_string(),
+                        y.value.clone().1,
+                    );
+                })
+                .collect::<Vec<_>>();
+            disk_metric
+        })
+        .collect::<_>()
+}
+
+fn group_network(network: &mut Vec<&node::MatrixItem>) -> Vec<node::NetworkSpeed> {
+    let merged = network
+        .iter()
+        .flat_map(|s| s.metric.get("device"))
+        .collect::<Vec<_>>()
+        .into_iter()
+        .unique()
+        .collect::<Vec<_>>();
+
+    let data = merged
+        .into_iter()
+        .map(|x| {
+            let mut net = node::NetworkDevice::new();
+            let mut a = Vec::new();
+            let mut b = Vec::new();
+            network
+                .into_iter()
+                .map(|y| if x == y.metric.get("device").unwrap() {
+                    if y.metric.get("__name__").unwrap() == "node_network_receive_bytes_total" || y.metric.get("__name__").unwrap() == "node_network_transmit_bytes_total" {
+                        a.push(y.clone())
+                    } else {
+                        b.push(y.clone())
+                    }
+                })
+                .collect::<Vec<_>>();
+            net.set_name(x.to_string());
+            net.set_throughput(a);
+            net.set_error(b);
+            net
+        })
+        .collect::<Vec<_>>();
+    data.iter()
+        .filter(|x| x.throughput.len() > 0 && x.error.len() > 0)
+        .map(|x| {
+            let mut group = node::NetworkSpeed::new();
+            let mut throughput: Vec<node::SpeedSummary> = vec![];
+            let mut error: Vec<node::SpeedSummary> = vec![];
+            x.throughput[0]
+                .values
+                .iter()
+                .map(|y| {
+                    x.throughput[1]
+                        .values
+                        .iter()
+                        .map(|z| if y.0 == z.0 {
+                            throughput.push((
+                                NaiveDateTime::from_timestamp(y.0.round() as i64, 0)
+                                    .format("%H:%M:%S")
+                                    .to_string()
+                                    .to_owned(),
+                                y.1.clone().parse::<i32>().unwrap_or(0).div(1024).div(1024),
+                                z.1.clone().parse::<i32>().unwrap_or(0).div(1024).div(1024),
+                            ));
+                        })
+                        .collect::<Vec<_>>();
+                })
+                .collect::<Vec<_>>();
+            x.error[0]
+                .values
+                .iter()
+                .map(|y| {
+                    x.error[1]
+                        .values
+                        .iter()
+                        .map(|z| if y.0 == z.0 {
+                            error.push((
+                                NaiveDateTime::from_timestamp(y.0.round() as i64, 0)
+                                    .format("%H:%M:%S")
+                                    .to_string()
+                                    .to_owned(),
+                                y.1.clone().parse::<i32>().unwrap_or(0).div(1024).div(1024),
+                                z.1.clone().parse::<i32>().unwrap_or(0).div(1024).div(1024),
+                            ));
+                        })
+                        .collect::<Vec<_>>();
+                })
+                .collect::<Vec<_>>();
+            group.set_name(x.name.clone());
+            group.set_throughput(throughput);
+            group.set_error(error);
+            group
+        })
+        .collect::<Vec<_>>()
 }
