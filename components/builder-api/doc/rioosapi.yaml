@@ -6,10 +6,10 @@ info:
   termsOfService: http://rio.digital/
   contact:
     name: Rio/OS Team
-    email: info@rio.company
+    email: dev@rio.company
     url: http://rio.digital/
   license:
-    name: RioCorp License
+    name: Rio Advancement License
     url: http://rio.digital/
 servers:
   - url: https://localhost:7443/api/v1
@@ -92,12 +92,15 @@ tags:
     description: Everything about license
   - name: ingress
     description: Everything about ingress
+  - name: passticket
+    description: Everything about pass ticket
 
 paths:
   /healthz:
     get:
       tags:
         - healthz
+      summary: Get health of the api system
       description: |
         Returns the health of the api system. Useful for Rio/OS platform to figure out
 
@@ -119,7 +122,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -134,6 +137,7 @@ paths:
     get:
       tags:
         - healthz
+      summary: Get metrics from prometheus
       description: |
         Retrieve metrics data from prometheus
       operationId: Get metrics data
@@ -157,7 +161,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -184,8 +188,8 @@ paths:
     post:
       tags:
         - authenticate
-      summary: Login with email and password
-      description: Login with email and password
+      summary: Login with accountEmail and accountPassword
+      description: Login with accountEmail and accountPassword
       responses:
         '200':
           description: authenticated
@@ -215,7 +219,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -259,7 +263,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/401Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -281,16 +285,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/License'
-  '/licenses/{name}':
+  '/licenses/{licenseName}':
     get:
       tags:
         - license
-      summary : Get license by name
+      summary : Get license by licenseName
       operationId: getLicenseByAName
       parameters:
-        - name: name
+        - name: licenseName
           in: path
-          description: name id of license to return
+          description: licenseName of license to return
           required: true
           schema:
             type: string
@@ -308,7 +312,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/401Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -350,7 +354,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/401Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -373,17 +377,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/licenses/{id}':
+  '/licenses/{licenseId}':
     put:
       tags:
         - license
-      summary: Update license by ID
+      summary: Update license by licenseId
       description: Update license
       operationId: getLicenseById
       parameters:
-        - name: id
+        - name: licenseId
           in: path
-          description: ID of License to return
+          description: licenseId of License to return
           required: true
           schema:
             type: string
@@ -416,7 +420,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -444,18 +448,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/License'
-  '/accounts/{account_id}/stacksfactorys':
+  '/stacksfactorys':
     post:
       tags:
         - stacksfactorys
       summary: Create new stacksfactorys
-      parameters:
-        - name: account_id
-          in: path
-          description: id of the account
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful creation of the stacksfactory
@@ -485,7 +482,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -510,16 +507,9 @@ paths:
     get:
       tags:
         - stacksfactorys
-      summary: Get all the stacksfactorys by account id
-      description: Returns all stacksfactorys by account_id
-      operationId: getStacksFactoryByAccount
-      parameters:
-        - name: account_id
-          in: path
-          description: account_id of stacksfactorys to return
-          required: true
-          schema:
-            type: string
+      summary: Get all the stacksfactorys by accountId
+      description: Returns all stacksfactorys by accountId
+      operationId: getStacksFactoryByAccountId
       responses:
         '200':
           description: successful operation
@@ -540,7 +530,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -563,12 +553,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /stacksfactorys:
+  /stacksfactorys/all:
     get:
       tags:
         - stacksfactorys
-      summary: Returns all stacksfactorys
-      operationId: find stacksfactorys
+      summary: Get all stacksfactorys
+      operationId: getstacksfactorys
       responses:
         '200':
           description: stacksfactorys response
@@ -589,7 +579,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -616,13 +606,13 @@ paths:
     get:
       tags:
         - stacksfactorys
-      summary: Find stacksfactory by ID
+      summary: Get stacksfactory by stacksFactoryId
       description: Returns a single stacksfactory
       operationId: getStacksFactoryById
       parameters:
         - name: stacksFactoryId
           in: path
-          description: ID of stacksfactory to return
+          description: stacksFactoryId of stacksfactory to return
           required: true
           schema:
             type: string
@@ -646,7 +636,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -673,13 +663,13 @@ paths:
     put:
       tags:
         - stacksfactorys
-      summary: Update stacksfactory status by ID
+      summary: Update stacksfactory status by stacksFactoryId
       description: Update stacksfactory status
-      operationId: getStacksFactoryById
+      operationId: updateStacksFactoryById
       parameters:
         - name: stacksFactoryId
           in: path
-          description: ID of stacksfactory to return
+          description: stacksFactoryId of stacksfactory to return
           required: true
           schema:
             type: string
@@ -712,7 +702,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -744,13 +734,13 @@ paths:
     get:
       tags:
         - stacksfactorys
-      summary: Find list of assemblyfactory by  stacksfactory ID
+      summary: Get list of assemblyfactory by  stacksFactoryId
       description: Returns all assemblyfactorys
       operationId: getStacksFactoryById
       parameters:
         - name: stacksFactoryId
           in: path
-          description: parentId of assemblyfactory in stacksfactory to return
+          description: stacksFactoryId of assemblyfactory to return
           required: true
           schema:
             type: string
@@ -774,7 +764,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -797,18 +787,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{account_id}/assemblys':
+  '/assemblys':
     post:
       tags:
         - assembly
       summary: Create new assembly
-      parameters:
-        - name: account_id
-          in: path
-          description: id ofthe account_id
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: succesfull creation of assembly
@@ -838,7 +821,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -863,16 +846,9 @@ paths:
     get:
       tags:
         - assembly
-      summary : Get all assemblys by account
-      description: Returns all assemblys by account_id
-      operationId: getAssemblyByAccount
-      parameters:
-        - name: account_id
-          in: path
-          description: account id of assembly to return
-          required: true
-          schema:
-            type: string
+      summary : Get all assemblys by accountId
+      description: Returns all assemblys by accountId
+      operationId: getAssemblyByAccountId
       responses:
         '200':
           description: successful operation
@@ -893,7 +869,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -916,13 +892,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /assemblys:
+  /assemblys/all:
     get:
       tags:
         - assembly
       summary: Get all assembly
       description: Returns all assembly
-      operationId: find assembly
+      operationId: getAssembly
       responses:
         '200':
           description: successful operation
@@ -943,7 +919,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -970,13 +946,13 @@ paths:
     get:
       tags:
         - assembly
-      summary: Find assembly by ID
-      description: Returns a single assembly
+      summary: Get assembly by assemblyId
+      description: Returns a single assembly by assemblyId
       operationId: getAssemblyById
       parameters:
         - name: assemblyId
           in: path
-          description: ID of assembly to return
+          description: assemblyId of assembly to return
           required: true
           schema:
             type: string
@@ -1000,7 +976,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1026,13 +1002,13 @@ paths:
     put:
       tags:
         - assembly
-      summary: Update assembly by ID
-      description: Returns updated single assembly
-      operationId: getAssemblyById
+      summary: Update assembly by assemblyId
+      description: Returns updated single assembly by assemblyId
+      operationId: updateAssemblyById
       parameters:
         - name: assemblyId
           in: path
-          description: ID of assembly to return
+          description: assemblyId of assembly to return
           required: true
           schema:
             type: string
@@ -1065,13 +1041,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: assemblys not found
+          description: assembly not found
           content:
             application/json:
               schema:
@@ -1097,13 +1073,13 @@ paths:
     put:
       tags:
         - assembly
-      summary: Update assembly status by ID
+      summary: Update assembly status by assemblyId
       description: Update  assembly status
-      operationId: getAssemblyById
+      operationId: updateAssemblyById
       parameters:
         - name: assemblyId
           in: path
-          description: ID of assembly to return
+          description: assemblyId of assembly to return
           required: true
           schema:
             type: string
@@ -1136,13 +1112,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: assemblys not found
+          description: assembly not found
           content:
             application/json:
               schema:
@@ -1164,6 +1140,63 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Status'
+  '/assemblys/{assemblyId}/exec':
+    get:
+      tags:
+        - assembly
+      summary: Get console url and port
+      description: Get console
+      operationId: GetConsoleByAssemblyId
+      parameters:
+        - name: assemblyId
+          in: path
+          description: assemblyId of assembly console to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Console'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: Still deploying. Must have console host and port
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   /accounts:
     post:
       tags:
@@ -1198,7 +1231,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1220,17 +1253,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Accounts'
-  '/accounts/{id}':
+  '/accounts/{accountId}':
     get:
       tags:
         - accounts
-      summary: Find account by ID
-      description: Returns a single account
+      summary: Get account by accountId
+      description: Returns a single account by accountId
       operationId: getAccountById
       parameters:
-        - name: id
+        - name: accountId
           in: path
-          description: ID of account to return
+          description: accountId of account to return
           required: true
           schema:
             type: string
@@ -1254,7 +1287,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1277,17 +1310,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/name/{email}':
+  '/accounts/name/{accountEmail}':
     get:
       tags:
         - accounts
-      summary: Find account by email
-      description: Returns a single account
+      summary: Get account by accountEmail
+      description: Returns a single account by accountEmail
       operationId: getAccountByEmail
       parameters:
-        - name: email
+        - name: accountEmail
           in: path
-          description: email of account to return
+          description: accountEmail of account to return
           required: true
           schema:
             type: string
@@ -1311,7 +1344,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1368,7 +1401,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1415,7 +1448,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1432,17 +1465,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/origins/{name}':
+  '/origins/accounts/{accountId}':
     get:
       tags:
         - origin
-      summary: Find origins by ID
-      description: Returns a single origins
+      summary: Get all origins by accountId
+      description: return all the  origins by accountId
+      operationId: getOriginByAccountId
+      parameters:
+        - name: accountId
+          in: path
+          description: accountId of account to return origins
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OriginsList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: origins not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/origins/{originName}':
+    get:
+      tags:
+        - origin
+      summary: Get origin by originName
+      description: Returns a single origin by originName
       operationId: getOriginByName
       parameters:
-        - name: name
+        - name: originName
           in: path
-          description: name of origins to return
+          description: originName of origin to return
           required: true
           schema:
             type: string
@@ -1466,7 +1550,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1510,13 +1594,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: service not found
+          description: services not found
           content:
             application/json:
               schema:
@@ -1566,7 +1650,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1588,17 +1672,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Services'
-  '/services/{servicesid}':
+  '/services/{serviceId}':
     get:
       tags:
         - services
-      summary: Find services by ID
-      description: Returns a single service
+      summary: Get services by serviceId
+      description: Returns a single service by serviceId
       operationId: getServiceById
       parameters:
-        - name: servicesid
+        - name: serviceId
           in: path
-          description: ID of service to return
+          description: serviceId of service to return
           required: true
           schema:
             type: string
@@ -1631,7 +1715,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1657,13 +1741,13 @@ paths:
     put:
       tags:
         - services
-      summary: Update service by ID
-      description: Returns updated single service
+      summary: Update service by serviceId
+      description: Returns updated single service by serviceId
       operationId: updateServiceById
       parameters:
-        - name: servicesid
+        - name: serviceId
           in: path
-          description: ID of service to return
+          description: serviceId of service to return
           required: true
           schema:
             type: string
@@ -1697,7 +1781,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1729,10 +1813,10 @@ paths:
     post:
       tags:
         - endpoints
-      summary: Create new endpoints
+      summary: Create new endpoint
       responses:
         '200':
-          description: successful creation of endpoints
+          description: successful creation of endpoint
           content:
             aplication/json:
               schema:
@@ -1759,7 +1843,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1807,13 +1891,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: endpoint not found
+          description: endpoints not found
           content:
             application/json:
               schema:
@@ -1830,17 +1914,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/endpoints/{EndpointsId}':
+  '/endpoints/{endpointId}':
     get:
       tags:
         - endpoints
-      summary: Find endpoints by ID
-      description: Returns a single endpoints
+      summary: Get endpoints by endpointId
+      description: Returns a single endpoint by endpointId
       operationId: getEndpointById
       parameters:
-        - name: EndpointsId
+        - name: endpointId
           in: path
-          description: ID of endpoint to return
+          description: endpointId of endpoint to return
           required: true
           schema:
             type: string
@@ -1873,7 +1957,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1896,17 +1980,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/endpoints/assembly/{id}':
+  '/endpoints/assembly/{assemblyId}':
     get:
       tags:
         - endpoints
-      description: Returns all endpoints by assembly
-      summary : Find endpoint by assembly id
-      operationId: getEndpointByAssembly
+      description: Returns all endpoints by assemblyId
+      summary : Get all endpoint by assemblyId
+      operationId: getEndpointByAssemblyId
       parameters:
-        - name: id
+        - name: assemblyId
           in: path
-          description: assembly id of endpoints to return
+          description: assemblyId of endpoints to return
           required: true
           schema:
             type: string
@@ -1939,7 +2023,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -1996,7 +2080,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2021,9 +2105,9 @@ paths:
     get:
       tags:
         - datacenters
-      summary: "Get all datacenter"
-      description: Returns all datacenter
-      operationId: find datacenter
+      summary: "Get all datacenters"
+      description: Returns all datacenters
+      operationId: getDatacenters
       responses:
         '200':
           description: datacenter response
@@ -2044,13 +2128,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: network not found
+          description: datacenters not found
           content:
             application/json:
               schema:
@@ -2071,13 +2155,13 @@ paths:
     get:
       tags:
         - datacenters
-      summary: Find datacenter by ID
-      description: Returns a single datacenter
+      summary: Get datacenter by datacenterId
+      description: Returns a single datacenter by datacenterId
       operationId: getDatacenterById
       parameters:
         - name: datacenterId
           in: path
-          description: ID of datacenter to return
+          description: datacenterId of datacenter to return
           required: true
           schema:
             type: string
@@ -2107,7 +2191,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2127,13 +2211,13 @@ paths:
     put:
       tags:
         - datacenters
-      summary: Update datacenter by ID
-      description: Returns updated single datacenter
+      summary: Update datacenter by datacenterId
+      description: Returns updated single datacenter by datacenterId
       operationId: updateDatacenterById
       parameters:
         - name: datacenterId
           in: path
-          description: ID of datacenter to return
+          description: datacenterId of datacenter to return
           required: true
           schema:
             type: string
@@ -2167,7 +2251,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2229,7 +2313,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2254,9 +2338,9 @@ paths:
     get:
       tags:
         - storagespool
-      summary: "Get all storagespool"
+      summary: "Get all storagespools"
       description: Returns all storages
-      operationId: find storages
+      operationId: getStorages
       responses:
         '200':
           description: storages response
@@ -2277,13 +2361,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: storagepool not found
+          description: storagepools not found
           content:
             application/json:
               schema:
@@ -2304,13 +2388,13 @@ paths:
     get:
       tags:
         - storagespool
-      summary: Get storagespool by connector ID
-      description: Returns all storagepool list by connector id
-      operationId: getstoragespoolById
+      summary: Get storagespools by storageconnectorId
+      description: Returns all storagepool list by storageconnectorId
+      operationId: getstoragespoolByStorageConnectorId
       parameters:
         - name: storageconnectorId
           in: path
-          description: ID of storagespool to return
+          description: storageconnectorId of storagespool to return
           required: true
           schema:
             type: string
@@ -2343,13 +2427,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: storagepool not found
+          description: storagepools not found
           content:
             application/json:
               schema:
@@ -2366,22 +2450,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storagespool/{Id}':
+  '/storagespool/{storagespoolId}':
     get:
       tags:
          - storagespool
-      summary: Get storagespool by Id
+      summary: Get storagespool by storagespoolId
       operationId: getStoragePoolById
       parameters:
-        - name: Id
+        - name: storagespoolId
           in: path
-          description: ID of storagespool to return
+          description: storagespoolId of storagespool to return
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: storages response
+          description: storagespool response
           content:
             application/json:
               schema:
@@ -2404,7 +2488,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2431,13 +2515,13 @@ paths:
     put:
       tags:
         - storagespool
-      summary: update storagespool status by ID
-      description: Update  storagespool status
-      operationId: getStoragePoolById
+      summary: Update storagespool status by storagepoolId
+      description: Update  storagespool status by storagepoolId
+      operationId: updateStoragePoolById
       parameters:
         - name: storagepoolId
           in: path
-          description: ID of storagespool to return
+          description: storagepoolId of storagespool to return
           required: true
           schema:
             type: string
@@ -2470,7 +2554,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2502,27 +2586,54 @@ paths:
     post:
       tags:
         - saml
-      summary: add new saml provider
+      summary: Add new saml provider
       description: Adds an item to the saml provider
       responses:
-        '201':
-          description: created
+        '200':
+          description: successful creation operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SamlResponse'
         '400':
-          description: invalid input
-        '500':
-          description: internal server error
-        '409':
-          description: input conflict
-        default:
-          description: unexpected error
+            description: |
+              Must supply required fields
+
+              Can't parse body, as its invalid/malformed"
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
       requestBody:
         content:
           application/json:
@@ -2532,7 +2643,7 @@ paths:
       tags:
         - saml
       description: Returns all saml providers
-      summary: all saml providers
+      summary: Get all saml providers
       operationId: find saml provider
       responses:
         '200':
@@ -2541,24 +2652,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SamlList'
-
-        default:
-          description: unexpected error
+        '401':
+          description:  UnAuthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  '/auth/saml/providers/{ProviderId}':
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: saml providers not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/auth/saml/providers/{providerId}':
     get:
       tags:
         - saml
-      summary: Find saml provider by ID
+      summary: Get saml provider by providerId
       description: Returns a single saml provider
-      operationId: getsamlProviderById
+      operationId: getSamlProviderById
       parameters:
-        - name: ProviderId
+        - name: providerId
           in: path
-          description: ID of saml provider to return
+          description: providerId of saml provider to return
           required: true
           schema:
             type: string
@@ -2569,85 +2709,107 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SamlResponse'
-            application/xml:
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
               schema:
-                $ref: '#/components/schemas/SamlResponse'
-        '400':
-          description: Invalid ID supplied
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
         '404':
-          description: Assembly not found
+          description: saml provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
-          description: Inter server Error
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   '/auth/oidc/providers/{providerId}':
     post:
       tags:
         - oidc
-      summary: add new open id provider
-      description: Adds an item to the open id provider
+      summary: Add new open id provider by providerId
+      description: Adds an item to the open id provider by providerId
       parameters:
         - name: providerId
           in: path
-          description: ID of provider to create
+          description: providerId of provider to create
           required: true
           schema:
             type: string
       responses:
-        '201':
-          description: created
+        '200':
+          description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpenIdResponse'
-        '400':
-          description: invalid input
-        '500':
-          description: internal server error
-        '409':
-          description: input conflict
-        default:
-          description: unexpected error
+        '401':
+          description:  UnAuthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/OpenId'
-  '/auth/oidc/providers':
     get:
       tags:
         - oidc
-      description: Returns all open id providers
-      summary: all open id providers
-      operationId: find open id provider
-      responses:
-        '200':
-          description: open id providers response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OpenIdList'
-        '404':
-          description: oidc provider not found
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/auth/oidc/providers/{ProviderId}':
-    get:
-      tags:
-        - oidc
-      summary: Find open id provider by ID
-      description: Returns a single openid provider
+      summary: Get openid provider by providerId
+      description: Returns a single openId provider
       operationId: getOidcProviderById
       parameters:
-        - name: ProviderId
+        - name: providerId
           in: path
-          description: ID of openid provider to return
+          description: providerId of openId provider to return
           required: true
           schema:
             type: string
@@ -2658,36 +2820,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpenIdResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/OpenIdResponse'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: openid not found
-        '500':
-          description: Inter server Error
-        default:
-          description: unexpected error
+        '401':
+          description:  UnAuthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  '/accounts/{account_id}/assemblyfactorys':
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: openid provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/auth/oidc/providers':
+    get:
+      tags:
+        - oidc
+      description: Returns all openid providers
+      summary: Get all openid providers
+      operationId: find openid provider
+      responses:
+        '200':
+          description: openid providers response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenIdList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: openid provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/assemblyfactorys':
     post:
       tags:
         - assemblyfactorys
-      summary: Create new assemblyfactorys
-      parameters:
-        - name: account_id
-          in: path
-          description: id of the account
-          required: true
-          schema:
-            type: string
+      summary: Create new assemblyfactory
       responses:
         '200':
-          description: successful creation of the assembly factory
+          description: successful creation of the assemblyfactory
           content:
             application/json:
               schema:
@@ -2714,7 +2940,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -2739,16 +2965,9 @@ paths:
     get:
       tags:
         - assemblyfactorys
-      summary: Get all the assembly factorys by account id
-      description: Returns all assemblyfactorys by account_id
-      operationId: getAssemblyFactoryByAccount
-      parameters:
-        - name: account_id
-          in: path
-          description: account_id of assemblyfactory to return
-          required: true
-          schema:
-            type: string
+      summary: Get all the assembly factorys by accountId
+      description: Returns all assemblyfactorys by accountId
+      operationId: getAssemblyFactoryByAccountId
       responses:
         '200':
           description: successful operation
@@ -2769,13 +2988,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: assembly factory not found
+          description: assemblyfactorys not found
           content:
             application/json:
               schema:
@@ -2792,12 +3011,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /assemblyfactorys:
+  /assemblyfactorys/all:
     get:
       tags:
         - assemblyfactorys
-      summary: Returns all assemblyfactorys
-      operationId: find assemblyfactorys
+      summary: Get all assemblyfactorys
+      operationId: Get assemblyfactorys
       responses:
         '200':
           description: assemblyfactorys response
@@ -2818,13 +3037,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: assembly factory not found
+          description: assemblyfactorys not found
           content:
             application/json:
               schema:
@@ -2845,13 +3064,13 @@ paths:
     get:
       tags:
         - assemblyfactorys
-      summary: Find assemblyfactory by ID
-      description: Returns a single assemblyfactory
+      summary: Get assemblyfactory by assemblyFactoryId
+      description: Returns a single assemblyfactory by assemblyFactoryId
       operationId: getAssemblyFactoryById
       parameters:
         - name: assemblyFactoryId
           in: path
-          description: ID of assemblyfactory to return
+          description: assemblyFactoryId of assemblyfactory to return
           required: true
           schema:
             type: string
@@ -2884,13 +3103,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: assembly factory not found
+          description: assemblyfactory not found
           content:
             application/json:
               schema:
@@ -2911,13 +3130,13 @@ paths:
     put:
       tags:
         - assemblyfactorys
-      summary: update assemblyfactory status by ID
-      description: Update  assemblyfactory status
-      operationId: getAssemblyFactoryById
+      summary: Update assemblyfactory status by assemblyFactoryId
+      description: Update  assemblyfactory status by assemblyFactoryId
+      operationId: updateAssemblyFactoryStatusById
       parameters:
         - name: assemblyFactoryId
           in: path
-          description: ID of assemblyfactory to return
+          description: assemblyFactoryId of assemblyfactory to return
           required: true
           schema:
             type: string
@@ -2951,13 +3170,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: assembly factory not found
+          description: assemblyfactory not found
           content:
             application/json:
               schema:
@@ -2983,13 +3202,13 @@ paths:
     get:
       tags:
         - assemblyfactorys
-      summary: Find assemblys by  assemblyfactory ID
-      description: Returns all assemblys
-      operationId: getAssemblyFactoryById
+      summary: Get assemblys by assemblyFactoryId
+      description: Returns all assemblys by assemblyFactoryId
+      operationId: getAssemblyByAssemblyFactoryId
       parameters:
         - name: assemblyFactoryId
           in: path
-          description: parentId of assembly in assembly factory to return
+          description: parentId of assembly to return
           required: true
           schema:
             type: string
@@ -3013,7 +3232,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3043,7 +3262,7 @@ paths:
       summary: Create new horizontalscaling
       responses:
         '200':
-          description: successful creation of horizontal scaling
+          description: successful creation of horizontalscaling
           content:
             application/json:
               schema:
@@ -3070,7 +3289,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3117,13 +3336,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: horizontal scaling not found
+          description: horizontalscaling not found
           content:
             application/json:
               schema:
@@ -3140,17 +3359,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/horizontalscaling/{HorizontalScalingId}':
+  '/horizontalscaling/{horizontalScalingId}':
     put:
       tags:
         - horizontalscaling
-      summary: Update horizontalscaling by ID
-      description: Returns updated single horizontalscaling
-      operationId: getHorizontalScalingById
+      summary: Update horizontalscaling by horizontalScalingId
+      description: Returns updated single horizontalscaling by horizontalScalingId
+      operationId: updateHorizontalScalingById
       parameters:
-        - name: HorizontalScalingId
+        - name: horizontalScalingId
           in: path
-          description: ID of horizontalscaling to return
+          description: horizontalScalingId of horizontalscaling to return
           required: true
           schema:
             type: string
@@ -3183,13 +3402,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: horizontal scaling not found
+          description: horizontalscaling not found
           content:
             application/json:
               schema:
@@ -3211,17 +3430,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/HorizontalScaling'
-  '/horizontalscaling/{HorizontalScalingId}/status':
+  '/horizontalscaling/{horizontalScalingId}/status':
     put:
       tags:
         - horizontalscaling
-      summary: update horizontalscaling status by ID
-      description: Update  horizontalscaling status
-      operationId: UpdateHSById
+      summary: Update horizontalscaling status by horizontalScalingId
+      description: Update horizontalscaling status
+      operationId: updateHSStatusById
       parameters:
-        - name: HorizontalScalingId
+        - name: horizontalScalingId
           in: path
-          description: ID of horizontalscaling to return
+          description: horizontalScalingId of horizontalscaling to return
           required: true
           schema:
             type: string
@@ -3254,7 +3473,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3282,16 +3501,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/HSstatus'
-  '/horizontalscaling/{HorizontalScalingId}/scale':
+  '/horizontalscaling/{horizontalScalingId}/scale':
     get:
       tags:
         - horizontalscaling
-      summary: Scale up assembly factory
+      summary: Scaleup assemblyfactory by horizontalScalingId
       description: Create assembly by the assembly factory scale up using HS
       parameters:
-        - name: HorizontalScalingId
+        - name: horizontalScalingId
           in: path
-          description: ID of horizontal scaling
+          description: horizontalScalingId of horizontalscaling to assemblyfactory return
           required: true
           schema:
             type: string
@@ -3315,13 +3534,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: horizontal scaling not found
+          description: horizontalscaling not found
           content:
             application/json:
               schema:
@@ -3338,15 +3557,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/horizontalscaling/assemblyfactory/{AssemblyFactoryId}':
+  '/horizontalscaling/assemblyfactory/{assemblyFactoryId}':
     get:
       tags:
         - horizontalscaling
-      summary: Get horizontalscaling by assembly factory id
+      summary: Get horizontalscaling by assemblyFactoryId
       parameters:
-        - name: AssemblyFactoryId
+        - name: assemblyFactoryId
           in: path
-          description: ID of the assembly factory
+          description: assemblyFactoryId of the horizontal scaling to return
           required: true
           schema:
             type: string
@@ -3370,13 +3589,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: horizontal scaling not found
+          description: horizontalscaling not found
           content:
             application/json:
               schema:
@@ -3393,28 +3612,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/horizontalscaling/{AssemblyFactoryId}/metrics(ques)source={sourceName}&job={jobName}':
+  '/metrics/horizontalscaling/{assemblyFactoryId}':
     get:
       tags:
         - horizontalscaling
-      summary: Get assembly factory metrics
-      description: Returns all assemblys metrics
+      summary: Get assemblyfactory metrics by assemblyFactoryId
+      description: Returns all assemblyfactory metrics
       parameters:
-        - name: AssemblyFactoryId
+        - name: assemblyFactoryId
           in: path
-          description: ID of assembly factory
-          required: true
-          schema:
-            type: string
-        - name: sourceName
-          in: path
-          description: name of the source to get machine/container metric(Ex - container_cpu_user_seconds_total/node_cpu)
-          required: true
-          schema:
-            type: string
-        - name: jobName
-          in: path
-          description: name of the job to get machine/container metric(Ex - rioos_sh_containers/rioos_sh_machines)
+          description: assemblyFactoryId of assemblyfactory to metrics return
           required: true
           schema:
             type: string
@@ -3438,7 +3645,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3469,11 +3676,11 @@ paths:
       description: Adds an item to the team
       responses:
         '200':
-          description: successful creation of teams
+          description: successful creation of team
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TeamsResponse'
+                $ref: '#/components/schemas/TeamResponse'
         '400':
           description: |
             Must supply required fields
@@ -3496,7 +3703,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3517,20 +3724,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Teams'
+              $ref: '#/components/schemas/Team'
     get:
       tags:
         - teams
       description: Returns all teams
       summary: Get all teams
-      operationId: Team
+      operationId: getTeams
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TeamsList'
+                $ref: '#/components/schemas/TeamList'
 
         '401':
           description:  UnAuthorized
@@ -3551,7 +3758,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/404Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3568,17 +3775,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/teams/{id}':
+  '/teams/{teamId}':
     get:
       tags:
         - teams
-      summary: Get team by ID
-      description: Returns single team
+      summary: Get team by teamId
+      description: Returns single team by teamId
       operationId: getTeamById
       parameters:
-        - name: id
+        - name: teamId
           in: path
-          description: ID of team to return
+          description: teamId of team to return
           required: true
           schema:
             type: string
@@ -3588,7 +3795,65 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TeamsResponse'
+                $ref: '#/components/schemas/TeamResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '404':
+          description: team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/teams/origins/{originName}':
+    get:
+      tags:
+        - teams
+      description: Returns all teams by originName
+      summary: Get all teams by originName
+      operationId: getTeamById
+      parameters:
+        - name: originName
+          in: path
+          description: originName of the origin to return teams
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamList'
+
         '401':
           description:  UnAuthorized
           content:
@@ -3608,7 +3873,64 @@ paths:
               schema:
                 $ref: '#/components/schemas/404Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/teams/name/{teamName}':
+    get:
+      tags:
+        - teams
+      summary: Get team by teamName
+      description: Returns team by teamName
+      operationId: getTeamByTeamName
+      parameters:
+        - name: teamName
+          in: path
+          description: teamName of team to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '404':
+          description: team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3660,7 +3982,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3687,7 +4009,7 @@ paths:
         - permissions
       description: Returns all permissions
       summary: Get all permissions
-      operationId: find permissions
+      operationId: getPermissions
       responses:
         '200':
           description: successful operation
@@ -3709,7 +4031,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3732,17 +4054,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/{Id}':
+  '/permissions/{permissionId}':
     get:
       tags:
         - permissions
-      summary: Get permissionsr by ID
-      description: Returns a single permissions
+      summary: Get permission by permissionId
+      description: Returns a single permission by permissionId
       operationId: getPermissionById
       parameters:
-        - name: Id
+        - name: permissionId
           in: path
-          description: ID of permission to return
+          description: permissionId of permission to return
           required: true
           schema:
             type: string
@@ -3766,13 +4088,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: permissions not found
+          description: permission not found
           content:
             application/json:
               schema:
@@ -3789,17 +4111,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/teams/{TeamsId}':
+  '/permissions/teams/{teamId}':
     get:
       tags:
         - permissions
-      summary: Get all permissions by team id
-      description: Returns permissions for teamid
-      operationId: getPermissionById
+      summary: Get all permissions by teamId
+      description: Returns permissions by teamId
+      operationId: getPermissionByTeamId
       parameters:
-        - name: TeamsId
+        - name: teamId
           in: path
-          description: ID of permissions to return
+          description: teamId of permissions to return
           required: true
           schema:
             type: string
@@ -3823,7 +4145,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3846,23 +4168,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/permissions/{Id}/teams/{TeamsId}':
+  '/permissions/{permissionId}/teams/{teamId}':
     get:
       tags:
         - permissions
-      summary: Find permission by team id
-      description: Return permission by id
-      operationId: getPermissionById
+      summary: Get permission by teamId and permissionId
+      description: Return permission by teamId and permissionId
+      operationId: getPermissionByTeamIdAndPermissionId
       parameters:
-        - name: Id
+        - name: permissionId
           in: path
-          description: ID of permission to return
+          description: permissionId of permission to return
           required: true
           schema:
             type: string
-        - name: TeamsId
+        - name: teamId
           in: path
-          description: ID of the Team
+          description: teamId of the permission to return
           required: true
           schema:
             type: string
@@ -3888,7 +4210,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3945,7 +4267,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -3970,8 +4292,8 @@ paths:
     get:
       tags:
         - nodes
-      summary: Returns all nodes
-      operationId: find nodes
+      summary: Get all nodes
+      operationId: getNodes
       responses:
         '200':
           description: successful operation
@@ -3992,7 +4314,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4015,17 +4337,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/nodes/{nodeid}':
+  '/nodes/{nodeId}':
     get:
       tags:
         - nodes
-      summary: Find nodes by ID
+      summary: Get nodes by nodeId
       description: Returns a single node
       operationId: getNodeById
       parameters:
-        - name: nodeid
+        - name: nodeId
           in: path
-          description: ID of node to return
+          description: nodeId of node to return
           required: true
           schema:
             type: string
@@ -4049,7 +4371,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4075,11 +4397,11 @@ paths:
     put:
       tags:
         - nodes
-      summary: update node by ID
-      description: Returns updated single node
+      summary: Update node by nodeId
+      description: Returns updated single node by nodeId
       operationId: updateNodeById
       parameters:
-        - name: nodeid
+        - name: nodeId
           in: path
           description: ID of node to return
           required: true
@@ -4114,7 +4436,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4142,17 +4464,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Nodes'
-  '/nodes/{id}/status':
+  '/nodes/{nodeId}/status':
     put:
       tags:
         - nodes
-      summary: update node status by ID
-      description: Returns status updated single node
+      summary: Update node status by nodeId
+      description: Returns status updated single node by nodeId
       operationId: updateNodeStatusById
       parameters:
-        - name: id
+        - name: nodeId
           in: path
-          description: ID of node to return
+          description: nodeId of node to return
           required: true
           schema:
             type: string
@@ -4185,7 +4507,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4213,6 +4535,62 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/NodeStatus'
+  '/ninjasz':
+    post:
+      tags:
+        - nodes
+      summary: Discover nodes
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodesList'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodesDiscover'
   /senseis:
     post:
       tags:
@@ -4247,7 +4625,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4272,8 +4650,8 @@ paths:
     get:
       tags:
         - senseis
-      summary: Returns all senseis
-      operationId: find senseis
+      summary: Get all senseis
+      operationId: getSenseis
       responses:
         '200':
           description: successful operation
@@ -4294,13 +4672,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: nodes not found
+          description: senseis not found
           content:
             application/json:
               schema:
@@ -4317,16 +4695,122 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{Id}/secrets':
+  '/secrets':
     post:
       tags:
         - secrets
-      summary: Create new secrets
-      description: create new secret by account id
+      summary: Create new secrets by accountId
+      description: create new secret by accountId
+      responses:
+        '200':
+          description: successful creation of the secret
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretsResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Secrets'
+    get:
+      tags:
+        - secrets
+      summary: Get all secrets by accountId
+      operationId: getSecretsByAccountId
+      responses:
+        '200':
+          description: successful creation of the secret
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretsList'
+
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/secrets/origins/{originName}':
+    post:
+      tags:
+        - secrets
+      summary: Create new secrets by originName
+      description: Create new secret by originName
       parameters:
-        - name: Id
+        - name: originName
           in: path
-          description: ID of account to create
+          description: originName of origin to return secret
           required: true
           schema:
             type: string
@@ -4359,127 +4843,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Error'
-        '406':
-          description: "Refused since the requested resource is must have headers for the supported authentication."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/406Error'
-        '500':
-          description: "Can't connect with database, blockchain (or) other systems for processing."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Error'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Secrets'
-    get:
-      tags:
-        - secrets
-      summary: Returns all secrets by account
-      operationId: find secrets by account
-      parameters:
-        - name: Id
-          in: path
-          description: ID of account secret to return
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful creation of the secret
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecretsList'
-
-        '401':
-          description:  UnAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/401Error'
-        '402':
-          description:  Must have entitlement to use Rio/OS.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/402Error'
-        '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Error'
-        '404':
-          description: secret not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Error'
-        '406':
-          description: "Refused since the requested resource is must have headers for the supported authentication."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/406Error'
-        '500':
-          description: "Can't connect with database, blockchain (or) other systems for processing."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Error'
-  '/origins/{originName}/secrets':
-    post:
-      tags:
-        - secrets
-      summary: Create new secrets
-      description: create new secret by originName
-      parameters:
-        - name: originName
-          in: path
-          description: name of origin to create secret
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful creation of the secret
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecretsResponse'
-        '400':
-          description: |
-            Must supply required fields
-
-            Can't parse body, as its invalid/malformed"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Error'
-        '401':
-          description:  UnAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/401Error'
-        '402':
-          description:  Must have entitlement to use Rio/OS.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/402Error'
-        '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4498,12 +4862,12 @@ paths:
     get:
       tags:
         - secrets
-      summary: Returns all secrets by origin name
-      operationId: find secrets by origin name
+      summary: Get all secrets by originName
+      operationId: find secrets by originName
       parameters:
         - name: originName
           in: path
-          description: name of origin secret to return
+          description: originName of origin secret to return
           required: true
           schema:
             type: string
@@ -4528,7 +4892,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4545,12 +4909,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  /secrets:
+  /secrets/all:
     get:
       tags:
         - secrets
-      summary: Returns all secrets
-      operationId: find secrets
+      summary: Get all secrets
+      operationId: getSecrets
       responses:
         '200':
           description: successful creation of the secret
@@ -4571,13 +4935,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: secret not found
+          description: secrets not found
           content:
             application/json:
               schema:
@@ -4592,13 +4956,13 @@ paths:
     get:
       tags:
         - secrets
-      summary: Find secrets by ID
-      description: Returns a single secret
+      summary: Find secrets by secretsId
+      description: Returns a single secret by secretsId
       operationId: getSecretById
       parameters:
         - name: secretsId
           in: path
-          description: ID of secret to return
+          description: secretsId of secret to return
           required: true
           schema:
             type: string
@@ -4622,7 +4986,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4645,22 +5009,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/origins/{Origin}/secrets/{SecretName}':
+  '/secrets/{secretName}/origins/{originName}':
     get:
       tags:
         - secrets
-      summary: Returns secrets by origin and secret name
-      operationId: getSecretsByOriginAndSecret
+      summary: Get secrets by originName and secretName
+      operationId: getSecretsByOriginNameAndSecretName
       parameters:
-        - name: Origin
+        - name: originName
           in: path
-          description: origin name  of secrets to return
+          description: originName  of secrets to return
           required: true
           schema:
             type: string
-        - name: SecretName
+        - name: secretName
           in: path
-          description: secret name  of secrets to return
+          description: secretName  of secrets to return
           required: true
           schema:
             type: string
@@ -4685,7 +5049,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4702,16 +5066,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/origins/{origin}/serviceaccounts':
+  '/origins/{originName}/serviceaccounts':
     post:
       tags:
         - serviceaccounts
-      summary: Create new serviceaccounts
+      summary: Create new serviceaccount by originName
       operationId: CreateServiceAccountByOrigin
       parameters:
-        - name: origin
+        - name: originName
           in: path
-          description: name of the origin to create service account
+          description: originName of the origin to create service account
           required: true
           schema:
             type: string
@@ -4744,7 +5108,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -4760,20 +5124,20 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ServiceAccounts'
-  '/origins/{origin}/serviceaccounts/{ServiceAccount}':
+  '/serviceaccounts/{serviceAccountName}/origins/{originName}':
     get:
       tags:
         - serviceaccounts
-      summary: Get service accounts by origin and service account name
-      operationId: getServiceAccountsByOriginAndName
+      summary: Get serviceaccounts by originName and serviceAccountName
+      operationId: getServiceAccountsByOriginNameAndServiceAccountName
       parameters:
-        - name: origin
+        - name: originName
           in: path
-          description: origin name  of service account to return
+          description: originName  of serviceaccount to return
           required: true
           schema:
             type: string
-        - name: ServiceAccount
+        - name: serviceAccountName
           in: path
           description: service account name to return
           required: true
@@ -4799,13 +5163,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: service account not found
+          description: serviceaccount not found
           content:
             application/json:
               schema:
@@ -4819,18 +5183,18 @@ paths:
     put:
       tags:
         - serviceaccounts
-      summary: Update service accounts service account name and origin
+      summary: Update serviceaccount by serviceAccountName and originName
       operationId: updateServiceAccountsByNameAndOrigin
       parameters:
-        - name: ServiceAccount
+        - name: serviceAccountName
           in: path
-          description: service account id to update
+          description: serviceAccountName to update service account to return
           required: true
           schema:
             type: string
-        - name: origin
+        - name: originName
           in: path
-          description: origin name to update service account
+          description: originName to update service account to return
           required: true
           schema:
             type: string
@@ -4863,13 +5227,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: service account not found
+          description: serviceaccount not found
           content:
             application/json:
               schema:
@@ -4885,16 +5249,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SecretUpdate'
-  '/serviceaccounts/{ServiceAccountName}':
+  '/serviceaccounts/{serviceAccountName}':
     get:
       tags:
         - serviceaccounts
-      summary: Get service accounts by service account name
+      summary: Get serviceaccount by serviceAccountName
       operationId: getServiceAccountsByName
       parameters:
-        - name: ServiceAccountName
+        - name: serviceAccountName
           in: path
-          description: service account name to return
+          description: serviceAccountName to return serviceaccount
           required: true
           schema:
             type: string
@@ -4918,13 +5282,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: service account not found
+          description: serviceaccount not found
           content:
             application/json:
               schema:
@@ -4939,8 +5303,8 @@ paths:
     get:
       tags:
         - serviceaccounts
-      summary: Get all service accounts
-      operationId: serviceaccount
+      summary: Get all serviceaccounts
+      operationId: getServiceaccount
       responses:
         '200':
           description: service accounts response
@@ -4961,13 +5325,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: service account not found
+          description: serviceaccounts not found
           content:
             application/json:
               schema:
@@ -5012,7 +5376,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5039,7 +5403,7 @@ paths:
         - networks
       summary: Get all networks
       description: Returns all networks
-      operationId: find networks
+      operationId: getNetworks
       responses:
         '200':
           description: network response
@@ -5048,7 +5412,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/NetworksList'
         '404':
-          description: network not found
+          description: networks not found
           content:
             application/json:
               schema:
@@ -5071,17 +5435,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/401Error'
-  '/networks/{id}':
+  '/networks/{networkId}':
     get:
       tags:
         - networks
-      summary: Get network by ID
-      description: Return single network data
+      summary: Get network by networkId
+      description: Return single network data by networkId
       operationId: getNetworkById
       parameters:
-        - name: id
+        - name: networkId
           in: path
-          description: ID of network to return
+          description: networkId of network to return
           required: true
           schema:
             type: string
@@ -5114,7 +5478,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5140,13 +5504,13 @@ paths:
     put:
       tags:
         - networks
-      summary: Update network by ID
-      description: Returns updated single network
-      operationId: getNetworkById
+      summary: Update network by networkId
+      description: Returns updated single network by networkId
+      operationId: updateNetworkById
       parameters:
-        - name: id
+        - name: networkId
           in: path
-          description: ID of network to return
+          description: networkId of network to return
           required: true
           schema:
             type: string
@@ -5179,7 +5543,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5211,7 +5575,7 @@ paths:
     post:
       tags:
         - storageconnectors
-      summary: Create new storageconnectors
+      summary: Create new storageconnector
       responses:
         '200':
           description: successful creation of storage
@@ -5241,7 +5605,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5268,7 +5632,7 @@ paths:
         - storageconnectors
       summary: Get all storageconnectors
       description: Returns all storageconnectors
-      operationId: find storageconnectors
+      operationId: getStorageConnectors
       responses:
         '200':
           description: storageconnectors response
@@ -5289,7 +5653,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5312,17 +5676,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storageconnectors/{Id}':
+  '/storageconnectors/{storageConnectorId}':
     put:
       tags:
         - storageconnectors
-      summary: Update storageconnectors by ID
-      description: Returns updated single storageconnectors
-      operationId: getstorageconnectorsById
+      summary: Update storageconnector by storageConnectorId
+      description: Returns updated single storageconnector by storageConnectorId
+      operationId: updateStorageConnectorById
       parameters:
-        - name: Id
+        - name: storageConnectorId
           in: path
-          description: ID of storageconnectors to return
+          description: storageConnectorId of storageconnectors to return
           required: true
           schema:
             type: string
@@ -5355,7 +5719,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5386,13 +5750,13 @@ paths:
     get:
       tags:
         - storageconnectors
-      summary: Find storageconnectors by ID
-      description: Returns a single storageconnectors
-      operationId: getstorageconnectorsById
+      summary: Get storageconnector by storageConnectorId
+      description: Returns a single storageconnector by storageConnectorId
+      operationId: getStorageConnectorById
       parameters:
-        - name: Id
+        - name: storageConnectorId
           in: path
-          description: ID of storageconnectors to return
+          description: storageConnectorId of storageconnector to return
           required: true
           schema:
             type: string
@@ -5425,7 +5789,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5448,15 +5812,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/storageconnectors/{Id}/status':
+  '/storageconnectors/{storageConnectorId}/status':
     put:
       tags:
         - storageconnectors
-      summary: update storageconnectors status by ID
-      description: Update  storageconnectors status
-      operationId: getstorageconnectorsById
+      summary: Update storageconnectors status by storageConnectorId
+      description: Update  storageconnectors status by storageConnectorId
+      operationId: updateStorageConnectorsById
       parameters:
-        - name: Id
+        - name: storageConnectorId
           in: path
           description: ID of storageconnectors to return
           required: true
@@ -5491,7 +5855,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5523,21 +5887,54 @@ paths:
     post:
       tags:
         - ldap
-      summary: add new ldap
+      summary: Add new ldap
       description: Adds an item to the ldap
       responses:
-        '201':
-          description: created
+        '200':
+          description: successful creation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/LdapConfigResponse'
         '400':
-          description: invalid input
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
         '500':
-          description: internal server error
-        '409':
-          description: input conflict
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
       requestBody:
         content:
           application/json:
@@ -5577,7 +5974,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5623,13 +6020,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: job not found
+          description: jobs not found
           content:
             application/json:
               schema:
@@ -5646,16 +6043,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/jobs/node(ques)node_id={nodeId}':
+  '/jobs/node':
     get:
       tags:
         - jobs
-      summary: Find jobs by node id
-      description: Returns a single job
+      summary: Get jobs by nodeId
+      description: Returns a single job b y nodeId
       operationId: getJobsByNodeId
       parameters:
-        - name: nodeId
-          in: path
+        - name: node_id
+          in: query
           description: ID of node to return job
           required: true
           schema:
@@ -5689,13 +6086,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: job not found
+          description: jobs not found
           content:
             application/json:
               schema:
@@ -5716,12 +6113,12 @@ paths:
     put:
       tags:
         - jobs
-      summary: update job status
+      summary: Update job status by jobId
       operationId: updateJobById
       parameters:
         - name: jobId
           in: path
-          description: Id of job to return
+          description: jobId of job to return
           required: true
           schema:
             type: string
@@ -5754,7 +6151,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5816,7 +6213,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5842,7 +6239,7 @@ paths:
       tags:
         - plan
       description: Get all  plans
-      summary: Return all plan
+      summary: Get all plans
       responses:
         '200':
           description: successful operation
@@ -5863,7 +6260,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5886,17 +6283,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/plans/{id}':
+  '/plans/{planId}':
     get:
       tags:
         - plan
-      summary: Find plan by ID
-      description: Returns a single plan
+      summary: Get plan by planId
+      description: Returns a single plan  by planId
       operationId: getPlanById
       parameters:
-        - name: id
+        - name: planId
           in: path
-          description: ID of plan to return
+          description: planId of plan to return
           required: true
           schema:
             type: string
@@ -5929,7 +6326,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -5986,7 +6383,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6033,7 +6430,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6056,16 +6453,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/verticalscaling/{VerticalScalingId}':
+  '/verticalscaling/{verticalScalingId}':
     put:
       tags:
         - verticalscaling
-      summary: Update vertical scaling by id
+      summary: Update vertical scaling by verticalScalingId
       operationId: updateVerticalScalingById
       parameters:
-        - name: VerticalScalingId
+        - name: verticalScalingId
           in: path
-          description: ID of vertical scaling to update
+          description: verticalScalingId of vertical scaling to update
           required: true
           schema:
             type: string
@@ -6098,7 +6495,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6126,17 +6523,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/VerticalScaling'
-  '/verticalscaling/{id}/scale':
+  '/verticalscaling/{verticalScalingId}/scale':
     get:
       tags:
         - verticalscaling
-      summary:  vertical scale up/down
-      description: scale by id
+      summary:  Vertical scale up or down by verticalScalingId
+      description: scale by verticalScalingId
       operationId: scaleById
       parameters:
-        - name: id
+        - name: verticalScalingId
           in: path
-          description: ID of vertical scale up or down
+          description: verticalScalingId of vertical scale up or down
           required: true
           schema:
             type: string
@@ -6160,7 +6557,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6183,17 +6580,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/verticalscaling/{id}/status':
+  '/verticalscaling/{verticalScalingId}/status':
     put:
       tags:
         - verticalscaling
-      summary: Update vertical scaling status
-      description: Update vertical scaling status by id
+      summary: Update vertical scaling status by verticalScalingId
+      description: Update vertical scaling status by verticalScalingId
       operationId: updateVerticalScalingStatusById
       parameters:
-        - name: id
+        - name: verticalScalingId
           in: path
-          description: ID of vertical scaling status to update
+          description: verticalScalingId of vertical scaling status to update
           required: true
           schema:
             type: string
@@ -6231,7 +6628,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6254,11 +6651,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+  '/metrics/verticalscaling/{assemblyFactoryId}':
+    get:
+      tags:
+        - verticalscaling
+      summary: Get assembly factory metrics by assemblyFactoryId
+      description: Returns all assemblys metrics by assemblyFactoryId
+      parameters:
+        - name: assemblyFactoryId
+          in: path
+          description: assemblyFactoryId of assembly factory to return metrics
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: metrics not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
   /volumes:
     post:
       tags:
         - volumes
-      summary: Create new Volumes
+      summary: Create new Volume
       responses:
         '200':
           description: successful creation of volume
@@ -6288,7 +6741,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6310,17 +6763,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Volumes'
-  '/volumes/{id}':
+  '/volumes/{volumeId}':
     get:
       tags:
         - volumes
-      summary: Get volume by id
-      description: "Return volume by volume id"
+      summary: Get volume by volumeId
+      description: "Return volume by volumeId"
       operationId: getVolumeById
       parameters:
-        - name: id
+        - name: volumeId
           in: path
-          description: ID of the volume return
+          description: volumeId of the volume return
           required: true
           schema:
             type: string
@@ -6344,13 +6797,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: verical scale not found
+          description: volume not found
           content:
             application/json:
               schema:
@@ -6370,12 +6823,12 @@ paths:
     put:
       tags:
         - volumes
-      summary: Update volume by id
+      summary: Update volume by volumeId
       operationId: updateVolumeById
       parameters:
-        - name: id
+        - name: volumeId
           in: path
-          description: ID of volume to update
+          description: volumeId of volume to update
           required: true
           schema:
             type: string
@@ -6408,7 +6861,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6436,16 +6889,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Volumes'
-  '/volumes/{id}/status':
+  '/volumes/{volumeId}/status':
     put:
       tags:
         - volumes
-      summary: Update volume status by id
+      summary: Update volume status by volumeId
       operationId: updateVolumeStausById
       parameters:
-        - name: id
+        - name: volumeId
           in: path
-          description: ID of volume status to update
+          description: volumeId of volume status to update
           required: true
           schema:
             type: string
@@ -6478,7 +6931,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6506,17 +6959,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Status'
-  '/assemblys/{id}/volumes':
+  '/volumes/assemblys/{assemblyId}':
     get:
       tags:
         - volumes
-      summary: Get all volumes by assembly id
-      description: Return all volumes by assembly id
+      summary: Get all volumes by assemblyId
+      description: Return all volumes by assemblyId
       operationId: getVolumesByAssemblyId
       parameters:
-        - name: id
+        - name: assemblyId
           in: path
-          description: ID of the assembly volumes return
+          description: assemblyId of the assembly to return volumes
           required: true
           schema:
             type: string
@@ -6540,7 +6993,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6598,23 +7051,23 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SettingsMap'
-  '/origins/{origin}/settingsmap/{name}':
+  '/settingsmap/{settingsmapName}/origins/{originName}':
     get:
       tags:
         - settingsmap
-      summary: Get settings map by origin and settingsmap name
-      description: "Return settingsmap by settingsmap name and origin name"
-      operationId: getSettingMapByIdAndOrigin
+      summary: Get settingsmap by originName and settingsmapName
+      description: "Return settingsmap by settingsmapName and originName"
+      operationId: getSettingMapByIdAndOriginName
       parameters:
-        - name: origin
+        - name: originName
           in: path
-          description: name of the origin return
+          description: originName of the origin to return settingsmap
           required: true
           schema:
             type: string
-        - name: name
+        - name: settingsmapName
           in: path
-          description: name of the settingsmap return
+          description: settingsmapName of the settingsmap return
           required: true
           schema:
             type: string
@@ -6655,15 +7108,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/logs/{assembly_id}(ques)range=10m&limits=1':
+  '/logs/{assemblyId}':
     get:
       tags:
         - logs
-      summary: Get logs by assembly id
+      summary: Get logs by assemblyId
       parameters:
-        - name: assembly_id
+        - name: range
+          in: query
+          description: range of the logs return
+          required: true
+          schema:
+            type: string
+        - name: limits
+          in: query
+          description: limits of the logs return
+          required: true
+          schema:
+            type: integer
+        - name: assemblyId
           in: path
-          description: ID of the assembly logs return
+          description: assemblyId of the assembly log return
           required: true
           schema:
             type: string
@@ -6674,6 +7139,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LogsResponse'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
         '404':
           description: "Assembly log not found"
           content:
@@ -6686,7 +7163,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-
+  '/logs':
+    get:
+      tags:
+        - logs
+      summary: Get all the assembly logs
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogsResponse'
         '401':
           description:  UnAuthorized
           content:
@@ -6699,18 +7187,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/402Error'
-  '/logs(ques)limits=1&range=15m':
-    get:
-      tags:
-        - logs
-      summary: Get all the assembly logs
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LogsResponse'
         '404':
           description: "Assemblys log not found"
           content:
@@ -6723,27 +7199,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-        '401':
-          description:  UnAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/401Error'
-        '402':
-          description:  Must have entitlement to use Rio/OS.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/402Error'
-  '/image/{ImageName}/vulnerablity':
+  '/image/{imageName}/vulnerablity':
     get:
       tags:
         - image
-      summary: Get vulnerablity check response of Image
+      summary: Get vulnerablity check by imageName
       parameters:
-        - name: ImageName
+        - name: imageName
           in: path
-          description: Name of the image vulnerablity return
+          description: imageName of the image vulnerablity return
           required: true
           schema:
             type: string
@@ -6772,31 +7236,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{accountId}/audits':
+  '/audits':
     post:
       tags:
         - audit
-      summary: Create new audit by account id
-      parameters:
-        - name: accountId
-          in: path
-          description: Id of the account user audit return
-          required: true
-          schema:
-            type: string
+      summary: Create new audit by accountId
       responses:
         '200':
-          description: successful creation audit using account id
+          description: successful creation audit using accountId
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuditListResponse'
-        '500':
-          description: "Blockchain Connection refused"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Error'
         '401':
           description:  UnAuthorized
           content:
@@ -6809,6 +7260,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/402Error'
+        '500':
+          description: "Blockchain Connection refused"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+
       requestBody:
         content:
           application/json:
@@ -6817,14 +7275,7 @@ paths:
     get:
       tags:
         - audit
-      summary: Get all audits for the account id
-      parameters:
-        - name: accountId
-          in: path
-          description: Id of the account user audit return
-          required: true
-          schema:
-            type: string
+      summary: Get all audits by accountId
       responses:
         '200':
           description: successful operation
@@ -6832,6 +7283,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuditList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
         '404':
           description: "audit not found"
           content:
@@ -6844,18 +7307,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-        '401':
-          description:  UnAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/401Error'
-        '402':
-          description:  Must have entitlement to use Rio/OS.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/402Error'
+
   '/buildconfigs':
     post:
       tags:
@@ -6890,7 +7342,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -6915,7 +7367,7 @@ paths:
     get:
       tags:
         - buildconfig
-      summary: Get all build config
+      summary: Get all build configs
       responses:
         '200':
           description: successful operation
@@ -6936,13 +7388,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: "build config not found"
+          description: "buildconfig not found"
           content:
             application/json:
               schema:
@@ -6959,16 +7411,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/buildconfigs/{id}':
+  '/buildconfigs/{buildConfigId}':
     get:
       tags:
         - buildconfig
-      summary: Get build config by id
+      summary: Get build config by buildConfigId
       operationId: getBuildConfigById
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
-          description: Id of the build config to return
+          description: buildConfigId of the build config to return
           required: true
           schema:
             type: string
@@ -7001,7 +7453,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7027,13 +7479,13 @@ paths:
     put:
       tags:
         - buildconfig
-      summary: Update buildconfig by ID
-      description: Returns updated single buildconfig
+      summary: Update buildconfig by buildConfigId
+      description: Returns updated single buildconfig by buildConfigId
       operationId: getbuildconfigById
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
-          description: ID of buildconfig to return
+          description: buildConfigId of buildconfig to return
           required: true
           schema:
             type: string
@@ -7066,7 +7518,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7094,17 +7546,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BuildConfig'
-  '/buildconfigs/{id}/status':
+  '/buildconfigs/{buildConfigId}/status':
     put:
       tags:
         - buildconfig
-      summary: update buildconfig status by ID
+      summary: Update buildconfig status by buildConfigId
       description: Update  buildconfig status
-      operationId: getBuildConfigById
+      operationId: updateBuildConfigById
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
-          description: ID of buildconfig to return
+          description: buildConfigId of buildconfig to update
           required: true
           schema:
             type: string
@@ -7138,7 +7590,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7166,15 +7618,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Status'
-  '/buildconfigs/assemblyfactorys/{id}':
+  '/buildconfigs/assemblyfactorys/{assemblyFactoryId}':
     get:
       tags:
         - buildconfig
-      summary: Get build config by assembly factory id
+      summary: Get buildconfigs by assemblyFactoryId
       parameters:
-        - name: id
+        - name: assemblyFactoryId
           in: path
-          description: Id of the assembly factory to return build config
+          description: assemblyFactoryId of the assembly factory to return build config
           required: true
           schema:
             type: string
@@ -7207,13 +7659,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: "build config not found"
+          description: "buildconfig not found"
           content:
             application/json:
               schema:
@@ -7264,7 +7716,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7319,7 +7771,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7342,15 +7794,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/builds/{id}':
+  '/builds/{buildId}':
     get:
       tags:
         - build
-      summary: Get build by id
+      summary: Get build by buildId
       parameters:
-        - name: id
+        - name: buildId
           in: path
-          description: Id of the build  to return
+          description: buildId of the build  to return
           required: true
           schema:
             type: string
@@ -7383,7 +7835,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7409,13 +7861,13 @@ paths:
     put:
       tags:
         - build
-      summary: Update build by ID
-      description: Returns updated single build
-      operationId: getBuildById
+      summary: Update build by buildId
+      description: Returns updated single build by buildId
+      operationId: updateBuildById
       parameters:
-        - name: id
+        - name: buildId
           in: path
-          description: ID of build to return
+          description: buildId of build to return
           required: true
           schema:
             type: string
@@ -7448,7 +7900,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7476,15 +7928,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Build'
-  '/builds/buildconfigs/{id}':
+  '/builds/buildconfigs/{buildConfigId}':
     get:
       tags:
         - build
-      summary: Get build by build config id
+      summary: Get build by buildConfigId
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
-          description: Id of the build config to return builds
+          description: buildConfigId of the buildconfig to return builds
           required: true
           schema:
             type: string
@@ -7517,13 +7969,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: "build not found"
+          description: "builds not found"
           content:
             application/json:
               schema:
@@ -7540,17 +7992,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/builds/{id}/status':
+  '/builds/{buildId}/status':
    put:
       tags:
         - build
-      summary: update build status by ID
+      summary: Update build status by buildId
       description: Update  build status
-      operationId: getBuildById
+      operationId: updateBuildStatusById
       parameters:
-        - name: id
+        - name: buildId
           in: path
-          description: ID of build to return
+          description: buildId of build to return
           required: true
           schema:
             type: string
@@ -7584,7 +8036,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7619,7 +8071,7 @@ paths:
       summary: Create new image reference
       responses:
         '200':
-          description: successful creation imageref
+          description: successful creation image reference
           content:
             application/json:
               schema:
@@ -7646,7 +8098,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7671,7 +8123,7 @@ paths:
     get:
       tags:
         - imagereferences
-      summary: Get all imagereference
+      summary: Get all image reference
       responses:
         '200':
           description: successful operation
@@ -7692,7 +8144,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7715,15 +8167,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/imagereferences/{id}':
+  '/imagereferences/{imageReferenceId}':
     get:
       tags:
         - imagereferences
-      summary: Get image reference by id
+      summary: Get image reference by imageReferenceId
       parameters:
-        - name: id
+        - name: imageReferenceId
           in: path
-          description: Id of the imageref  to return
+          description: imageReferenceId of the imagereference  to return
           required: true
           schema:
             type: string
@@ -7756,7 +8208,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7782,13 +8234,13 @@ paths:
     put:
       tags:
         - imagereferences
-      summary: Update imagereference by ID
-      description: Returns updated single imagereference
-      operationId: getImageReferenceById
+      summary: Update image reference by imageReferenceId
+      description: Returns updated single imagereference by imageReferenceId
+      operationId: updateImageReferenceById
       parameters:
-        - name: id
+        - name: imageReferenceId
           in: path
-          description: ID of imagereference to return
+          description: imageReferenceId of imagereference to update
           required: true
           schema:
             type: string
@@ -7821,13 +8273,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: imagereference not found
+          description: image reference not found
           content:
             application/json:
               schema:
@@ -7849,15 +8301,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImageRef'
-  '/imagereferences/buildconfigs/{id}':
+  '/imagereferences/buildconfigs/{buildConfigId}':
     get:
       tags:
         - imagereferences
-      summary: Get imagereferences by buildconfig id
+      summary: Get image references by buildConfigId
       parameters:
-        - name: id
+        - name: buildConfigId
           in: path
-          description: Id of the buildconfig to return imagereferences
+          description: buildConfigId of the buildconfig to return imagereferences
           required: true
           schema:
             type: string
@@ -7881,7 +8333,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7908,7 +8360,7 @@ paths:
     post:
       tags:
         - imagemarks
-      summary: Create new imagemarks
+      summary: Create new image marks
       responses:
         '200':
           description: successful creation imagemarks
@@ -7938,7 +8390,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -7963,7 +8415,7 @@ paths:
     get:
       tags:
         - imagemarks
-      summary: Get all imagemarks
+      summary: Get all image marks
       responses:
         '200':
           description: successful operation
@@ -7984,7 +8436,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8007,15 +8459,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/imagemarks/{id}':
+  '/imagemarks/{imagemarkId}':
     get:
       tags:
         - imagemarks
-      summary: Get imagemarks by id
+      summary: Get image mark by imagemarkId
       parameters:
-        - name: id
+        - name: imagemarkId
           in: path
-          description: Id of the imagemarks  to return
+          description: imagemarkId of the imagemark  to return
           required: true
           schema:
             type: string
@@ -8048,7 +8500,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8074,13 +8526,13 @@ paths:
     put:
       tags:
         - imagemarks
-      summary: Update imagemarks by ID
-      description: Returns updated single imagemarks
-      operationId: UpdateImagemarksById
+      summary: Update image mark by imagemarkId
+      description: Returns updated single imagemarks by imagemarkId
+      operationId: updateImagemarksById
       parameters:
-        - name: id
+        - name: imagemarkId
           in: path
-          description: ID of imagemarks to return
+          description: imagemarkId of imagemarks to return
           required: true
           schema:
             type: string
@@ -8113,13 +8565,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Error'
         '404':
-          description: imagemarks not found
+          description: image mark not found
           content:
             application/json:
               schema:
@@ -8141,15 +8593,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImageMarks'
-  '/imagemarks/builds/{id}':
+  '/imagemarks/builds/{buildId}':
     get:
       tags:
         - imagemarks
-      summary: Get imagemarks by builds id
+      summary: Get image marks by buildId
       parameters:
-        - name: id
+        - name: buildId
           in: path
-          description: Id of the builds to return imagemarks
+          description: buildId of the builds to return imagemarks
           required: true
           schema:
             type: string
@@ -8173,7 +8625,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8196,18 +8648,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/accounts/{account_id}/buckets':
+  '/buckets':
     post:
       tags:
         - buckets
-      summary: Create new buckets
-      parameters:
-        - name: account_id
-          in: path
-          description: Id of the imageref  to return
-          required: true
-          schema:
-            type: string
+      summary: Create new bucket
       responses:
         '200':
           description: successful creation of bucket
@@ -8237,7 +8682,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8264,13 +8709,6 @@ paths:
         - buckets
       summary: Get all buckets
       description: Return all the buckets
-      parameters:
-        - name: account_id
-          in: path
-          description: Id of the imageref  to return
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: successful opertaion
@@ -8292,7 +8730,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8315,19 +8753,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/buckets':
+  '/bucketfiles/{bucketId}/files/{fileName}/upload':
     get:
       tags:
         - buckets
-      summary: Get all buckets
-      description: Return all the buckets
+      summary: Get uploaded file information by bucketId and fileName
+      description: Return uploaded file
+      parameters:
+        - name: bucketId
+          in: path
+          description: bucketId of the bucket
+          required: true
+          schema:
+            type: string
+        - name: fileName
+          in: path
+          description: fileName of the file
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: successful opertaion
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BucketList'
+                $ref: '#/components/schemas/BucketFiles'
 
         '401':
           description:  UnAuthorized
@@ -8342,7 +8793,69 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+  '/bucketfiles/{bucketId}/files/{fileName}/download':
+    get:
+      tags:
+        - buckets
+      summary: Get downloaded file url by bucketId and fileName
+      description: Return downloaded file
+      parameters:
+        - name: bucketId
+          in: path
+          description: bucketId of the bucket
+          required: true
+          schema:
+            type: string
+        - name: fileName
+          in: path
+          description: fileName of the file
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful opertaion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BucketFiles'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8399,7 +8912,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8424,7 +8937,7 @@ paths:
     get:
       tags:
         - ingress
-      summary: list all ingress
+      summary: Get all ingresses
       responses:
         '200':
           description: successful operation
@@ -8445,7 +8958,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8468,17 +8981,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
-  '/ingresses/{id}':
+  '/ingresses/{ingressId}':
     put:
       tags:
         - ingress
-      summary: Update ingress by ID
-      description: Returns updated single ingress
-      operationId: UpdateIngressById
+      summary: Update ingress by ingressId
+      description: Returns updated single ingress by ingressId
+      operationId: updateIngressById
       parameters:
-        - name: id
+        - name: ingressId
           in: path
-          description: ID of ingress to return
+          description: ingressId of ingress to return
           required: true
           schema:
             type: string
@@ -8511,7 +9024,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8539,17 +9052,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Ingress'
-  '/ingresses/{id}/status':
+  '/ingresses/{ingressId}/status':
     put:
       tags:
         - ingress
-      summary: Update ingress status by ID
-      description: Returns updated single ingress
-      operationId: UpdateIngressStatusById
+      summary: Update ingress status by ingressId
+      description: Returns updated single ingress by ingressId
+      operationId: updateIngressStatusById
       parameters:
-        - name: id
+        - name: ingressId
           in: path
-          description: ID of ingress to return
+          description: ingressId of ingress to return
           required: true
           schema:
             type: string
@@ -8582,7 +9095,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8610,15 +9123,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/IngressStatus'
-  '/assemblyfactorys/{id}/ingresses':
+  '/ingresses/assemblyfactorys/{assemblyFactoryId}':
     get:
       tags:
         - ingress
-      summary: Get ingress by assemblyfactory id
+      summary: Get ingress by assemblyFactoryId
       parameters:
-        - name: id
+        - name: assemblyFactoryId
           in: path
-          description: Id of the assemblyfactory to return ingress
+          description: assemblyFactoryId of the assemblyfactory to return ingress
           required: true
           schema:
             type: string
@@ -8642,7 +9155,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/402Error'
         '403':
-          description: "Forbidden, Must have teams and permission to perform action on the resource."
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
           content:
             application/json:
               schema:
@@ -8689,6 +9202,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/500Error'
+  '/passtickets':
+    get:
+      tags:
+        - passticket
+      summary: Get pass ticket
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passticket'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '406':
+          description: "Refused since the requested resource is must have headers for the supported authentication."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/406Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+
 components:
   schemas:
     Assembly:
@@ -8869,7 +9425,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AssemblyResponse'
-
+    Passticket:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "85465458545678765"
+        passticket:
+          type: string
+          example: "9875678876556776"
+        created_at:
+          type: string
+          example: "2017-09-21T06:51:38.763014+00:00"
+    Console:
+      type: object
+      properties:
+        url:
+          type: string
+          example: "192.168.2.66"
+        target:
+          type: string
+          example: "8080"
     Services:
       type: object
       properties:
@@ -9233,6 +9809,22 @@ components:
           status: {"phase": "ready","message": "","reason": "", "conditions": [{ "message": " ", "reason": " ","status": " ", "last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
           metadata: {"rioos_sh_loadbalancer_imagein": "container","rioos_sh_loadbalancer_imagename": "registry.rioos.xyz:5000/rioos/loadbalancer","rioos_sh_loadbalancer_cpu": "1","rioos_sh_loadbalancer_memory": "1024 MiB","rioos_sh_loadbalancer_disk": "1 GiB"}
           created_at: "2017-12-11T11:29:50.547529+00:00"
+    NodesDiscover:
+      type: object
+      properties:
+        ip_address_type:
+          type: string
+          example: "IPV4"
+        cidrs:
+          type: array
+          items:
+            example: []
+        range_address_from:
+          type: string
+          example: "192.168.2.1"
+        range_address_to:
+          type: string
+          example: "192.168.2.5"
     Accounts:
       type: object
       required:
@@ -9399,7 +9991,7 @@ components:
           example: "49.91.88.72"
         teams:
           type: array
-          description: "teams are Rio/OS team label that applies to the user"
+          description: "roles are Rio/OS role label that applies to the user"
           items:
             type: string
             example: "rioos:loneranger"
@@ -13381,6 +13973,12 @@ components:
               api_version: "v1"
               resource_version: ""
               field_path:  ""
+        teams:
+          type: array
+          description: "team are Rio/OS role label that applies to the service account "
+          items:
+            type: string
+            example: "RIOOS:UNIVERSALSOLIDER"
         metadata:
           type: object
           properties:
@@ -13849,17 +14447,33 @@ components:
         client_cert:
           type: string
           example: "if the client needs to access LDAP  using TLS then add the certificate"
-    Teams:
+    Team:
       type: object
       properties:
         name:
           type: string
-          example: "RIOOS:SUPERUSER"
+          example: "RIOOS:TESTER"
           description: "A team is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a team "
         description:
           type: string
-          example: "Superuser of RIO/OS. God given powers.  instance"
-    TeamsResponse:
+          example: "tester of RIO/OS"
+        object_meta:
+          type: object
+          required:
+            - account
+          properties:
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "8765234567845678"
+        metadata:
+          type: object
+          properties:
+            origin:
+              type: string
+              example: "megam"
+
+    TeamResponse:
       type: object
       properties:
         id:
@@ -13867,29 +14481,102 @@ components:
           example: "89075234567834563"
         name:
           type: string
-          example: "RIOOS:SUPERUSER"
+          example: "RIOOS:TESTER"
+          description: "A team is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a team "
         description:
           type: string
-          example: "Superuser of RIO/OS. God given powers.  instance"
+          example: "tester of RIO/OS"
+        object_meta:
+          type: object
+          required:
+            - name
+            - account
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "RIOOS:TESTER"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "8765234567845678"
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2017-12-11T11:29:50.547529+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              required:
+                - uid
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                    example: ""
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                    example: ""
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                    example: ""
+                  uid:
+                    type: string
+                    description: "UID of the referent. owner_refered by <assembly_id> (or) <backup_id> (or) <service_id>"
+                    example: ""
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                    example: false
+        metadata:
+          type: object
+          properties:
+            origin:
+              type: string
+              example: "megam"
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              description: "kind is a string value representing the REST resource this object represents."
+              example: "Team"
+            api_version:
+              type: string
+              description: "api version defines the versioned schema of this representation of an object"
+              example: "v1"
         created_at:
           type: string
           example: "2017-09-21T06:51:38.763014+00:00"
-    TeamDataList:
-      type: object
-      properties:
-        id:
-          type: string
-          description: "id of the team"
-        name:
-          type: string
-          description: "name of the team"
-        description:
-          type: string
-          description: "description of the team"
-        created_at:
-          type: string
-          description: "creation time of the team"
-    TeamsList:
+    TeamList:
       type: object
       properties:
         kind:
@@ -13901,24 +14588,11 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/TeamDataList'
-          example:
-            - id: "89075234567834568"
-              name: "RIOOS:LONERANGER"
-              description: "This is a regular  user"
-              created_at: "2017-09-21T06:51:38.763014+00:00"
-            - id: "89075234567834563"
-              name: "RIOOS:SUPERUSER"
-              description: "Superuser of RIO/OS. God given powers.  instance"
-              created_at: "2017-09-21T06:51:38.763014+00:00"
-            - id: "89075234567834566"
-              name: "RIOOS:UNIVERSALSOLDIER"
-              description: "Universalsoldier is system level user (like service account). instance"
-              created_at: "2017-09-21T06:51:38.763014+00:00"
+            $ref: '#/components/schemas/TeamResponse'
     Permissions:
       type: object
       properties:
-        team_id:
+        role_id:
           type: string
           example: "89075234567834563"
         name:
@@ -13933,7 +14607,7 @@ components:
         id:
           type: string
           example: "8765432123456543"
-        team_id:
+        role_id:
           type: string
           example: "89075234567834563"
         name:
@@ -19710,6 +20384,146 @@ components:
         licensed:
           type: boolean
           example: false
+    BucketFiles:
+      type: object
+      properties:
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              example: "BucketAccessor"
+            api_version:
+              type: string
+              example: "v1"
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              example: ""
+            account:
+              type: string
+              example: ""
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2018-07-11T09:06:10.430927061+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              type: object
+              description: "An initializer is a controller which enforces some system invariant at object creation time."
+              properties:
+                pending:
+                  type: array
+                  description: "Pending is a list of initializers that must execute in order before this object is visible. When the last pending initializer is removed, and no failing result is set, the initializers struct will be set to nil and the object is considered as initialized and visible to all clients."
+                  items:
+                    type: object
+                  example: []
+                result:
+                  type: object
+                  description: "If result is set with the Failure field, the object will be persisted to storage and then deleted, ensuring that other clients can observe the deletion."
+                  properties:
+                    type_meta:
+                      type: object
+                      properties:
+                        kind:
+                          type: string
+                          example: ""
+                        api_version:
+                          type: string
+                          example: ""
+                    status:
+                      type: string
+                      description: " status of the operation. One of: Success or Failure"
+                      example: ""
+                    message:
+                      type: string
+                      description: "a human-readable description of the status of this operation."
+                      example: ""
+                    reason:
+                      type: string
+                      description: "a machine-readable description of why this operation is in the Failure status. If this value is empty there is no     information available. a Reason clarifies an HTTP status  code but does not override it."
+                      example: ""
+                    details:
+                      type: object
+                      description: "atatusDetails is a set of additional properties that MAY be set by the server to provide additional information about a response"
+                      properties:
+                        name:
+                          type: string
+                          description: "the name attribute of the resource associated with the status StatusReason"
+                          example: ""
+                        group:
+                          type: string
+                          description: "the group attribute of the resource associated with the status StatusReason."
+                          example: ""
+                        kind:
+                          type: string
+                          description: "the kind attribute of the resource associated with the status StatusReason."
+                          example: ""
+                        causes:
+                          type: array
+                          description: "the Causes array includes more details associated with the StatusReason failure. Not all StatusReasons may provide detailed causes."
+                          items:
+                            type: object
+                          example: []
+                        uid:
+                          type: string
+                          description: "UID of the resource."
+                          example: ""
+                        retry_after_seconds:
+                          description: "if specified, the time in seconds before the operation should be retried."
+                          type: integer
+                          example: 0
+                    code:
+                      type: integer
+                      description: "suggested HTTP return code for this status, 0 if not set."
+                      example: 0
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+              example: []
+        data:
+          type: object
+          properties:
+            rioos_sh_remote_url:
+              type: string
+              example: ""
+            content_type:
+              type: string
+              example: ""
+            date:
+              type: string
+              example: ""
+            authorization:
+              type: string
+              example: ""
+
     400Error:
       required:
         - status
@@ -19820,10 +20634,10 @@ components:
           example: '403'
         message:
           type: string
-          example: "The request is valid, but the user must have necessary authorization (Team & Permissions) for a performing action on  the resource.Refer  https://bit.ly/rioosauthorization for the supported authorization."
+          example: "The request is valid, but the user must have necessary authorization (Role & Permissions) for a performing action on  the resource.Refer  https://bit.ly/rioosauthorization for the supported authorization."
         reason:
           type: string
-          example: "Forbidden. Must Have Team & Permissions"
+          example: "Forbidden. Must Have Role & Permissions"
     402Error:
       required:
         - status
@@ -19881,14 +20695,3 @@ components:
         reason:
           type: string
           example: "An exact reason from the entitlement checker appears here."
-
-    Error:
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
