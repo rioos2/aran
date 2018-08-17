@@ -57,19 +57,19 @@ macro_rules! log_event {
     }};
 }
 
-// Macros to post in the event logger  from any request.
+// Macros to post in the event logger from any request.
 #[macro_export]
 macro_rules! push_notification {
     ($req:ident, $evt:expr) => {{
         use persistent;
-        let ad = format!("{}", ($req).remote_addr);
+        let ad = format!("{}", ($req).remote_addr);      
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
         el.push_notify($evt, (($evt).get_account(), ad))
     }};
 }
 
 
-// Macros to post in the event logger  from any request.
+// Macros to post in the event logger from any request.
 #[macro_export]
 macro_rules! activate_license {
     ($req:ident, $evt:expr) => {{

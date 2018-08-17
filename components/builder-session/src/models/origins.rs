@@ -8,11 +8,11 @@ use db::data_store::DataStoreConn;
 use postgres;
 use serde_json;
 
-use super::{OriginOutput, OriginOutputList};
+use super::super::{OriginOutput, OriginOutputList};
 
-pub struct OriginDS;
+pub struct DataStore;
 
-impl OriginDS {
+impl DataStore {
     pub fn create(
         datastore: &DataStoreConn,
         org_create: &origin::Origin,

@@ -117,7 +117,7 @@ impl Api for ObjectStorageApi {
                 inner: create.clone(),
             }).before(basic.clone()),
             "account_buckets_create",
-        );        
+        );
         router.get(
             "/buckets",
             XHandler::new(C {
@@ -125,13 +125,13 @@ impl Api for ObjectStorageApi {
             }).before(basic.clone()),
             "buckets_list",
         );
-        router.post(
-            "/bucketfiles/:id/files/:name",
+        router.get(
+            "/bucketfiles/:id/files/:name/upload",
             XHandler::new(C { inner: upload }).before(basic.clone()),
             "buckets_upload",
         );
         router.get(
-            "/bucketfiles/:id/files/:name",
+            "/bucketfiles/:id/files/:name/download",
             XHandler::new(C { inner: download }).before(basic.clone()),
             "buckets_download",
         );

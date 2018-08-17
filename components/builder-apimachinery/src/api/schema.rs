@@ -71,6 +71,10 @@ lazy_static! {
         map.register("POST:teams", "Team");
         map.register("GET:teams", "TeamList");
 
+        map.register("POST:teammembers", "TeamMember");
+
+        map.register("POST:originmembers", "OriginMember");
+
         map.register("POST:permissions", "Permission");
         map.register("GET:permissions", "PermissionList");
 
@@ -125,6 +129,7 @@ lazy_static! {
         map.register("GET:ingresses", "IngressList");
 
         map.register("GET:wizards", "Wizard");
+        map.register("POST:invitations", "Invitations");
 
         map
     };

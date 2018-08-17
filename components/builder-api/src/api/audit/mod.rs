@@ -16,12 +16,14 @@ const CONTAINERRUNNING: &'static str = "ContainerRunning";
 const LAUNCHFAILED: &'static str = "LaunchFailed";
 const KRYPTONITEQRCODE: &'static str = "SecurityQRCode";
 const KRYPTONITESYNCFAILED: &'static str = "SecurityFailed";
+const INVITE: &'static str = "Invite";
 
 pub enum Status {
     DigitalCloudRunning,
     DigitalCloudFailed,
     KryptoniteQRCode,
     KryptoniteSyncFailed,
+    Invite,
     None,
 }
 
@@ -33,6 +35,7 @@ impl Status {
             LAUNCHFAILED => Status::DigitalCloudFailed,
             KRYPTONITEQRCODE => Status::KryptoniteQRCode,
             KRYPTONITESYNCFAILED => Status::KryptoniteSyncFailed,
+            INVITE => Status::Invite,
             _ => Status::None,
         }
     }

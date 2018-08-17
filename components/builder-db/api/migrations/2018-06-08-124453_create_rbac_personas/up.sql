@@ -9,7 +9,7 @@
 WITH first_insert AS
 (
    INSERT INTO
-      teams(name, description, type_meta, object_meta, metadata)
+      teams(full_name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:SUPERUSER',
@@ -18,7 +18,7 @@ WITH first_insert AS
          json_build_object()::jsonb,
          json_build_object()::jsonb
       )
-      ON CONFLICT (name) DO NOTHING RETURNING id
+      ON CONFLICT (full_name) DO NOTHING RETURNING id
 )
 INSERT INTO
    permissions (team_id, name, description)
@@ -46,7 +46,7 @@ VALUES
 WITH first_insert AS
 (
    INSERT INTO
-      teams(name, description, type_meta, object_meta, metadata)
+      teams(full_name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:UNIVERSALSOLDIER',
@@ -55,7 +55,7 @@ WITH first_insert AS
          json_build_object()::jsonb,
          json_build_object()::jsonb
       )
-      ON CONFLICT (name) DO NOTHING RETURNING id
+      ON CONFLICT (full_name) DO NOTHING RETURNING id
 )
 INSERT INTO
    permissions (team_id, name, description)
@@ -454,7 +454,7 @@ VALUES
 WITH second_insert AS
 (
    INSERT INTO
-      teams(name, description, type_meta, object_meta, metadata)
+      teams(full_name, description, type_meta, object_meta, metadata)
    VALUES
       (
          'RIOOS:LONERANGER',
@@ -463,7 +463,7 @@ WITH second_insert AS
          json_build_object()::jsonb,
          json_build_object()::jsonb
       )
-      ON CONFLICT (name) DO NOTHING RETURNING id
+      ON CONFLICT (full_name) DO NOTHING RETURNING id
 )
 INSERT INTO
    permissions (team_id, name, description)
@@ -485,6 +485,16 @@ VALUES
       FROM
          second_insert),
          'ASSEMBLYS.PUT',
+         'Edit only access for assembly resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'TEAMS.*',
          'Edit only access for assembly resource.'
    )
 ,

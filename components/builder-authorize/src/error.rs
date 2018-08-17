@@ -11,6 +11,7 @@ use std::result;
 #[derive(Debug)]
 pub enum Error {
     Db(db::error::Error),
+    AccountNotFound(String),
     TeamsCreate(postgres::error::Error),
     TeamsGet(postgres::error::Error),
     TeamGet(postgres::error::Error),
@@ -18,6 +19,10 @@ pub enum Error {
     PermissionsGet(postgres::error::Error),
     PermissionGet(postgres::error::Error),
     TeamPermissionsGet(postgres::error::Error),
+    InvitationsCreate(postgres::error::Error),
+    InvitationsGet(postgres::error::Error),
+    InvitationsUpdate(postgres::error::Error),
+    TeamMembersCreate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -26,6 +31,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
+            Error::AccountNotFound(ref e) => format!("{}", e),
             Error::TeamsCreate(ref e) => format!("Database error creating a team, {}", e),
             Error::TeamsGet(ref e) => format!("Database error get teams, {}", e),
             Error::TeamGet(ref e) => format!("Database error get team, {}", e),
@@ -37,6 +43,10 @@ impl fmt::Display for Error {
             }
             Error::PermissionsGet(ref e) => format!("Database error get permissions, {}", e),
             Error::PermissionGet(ref e) => format!("Database error get permission, {}", e),
+            Error::InvitationsCreate(ref e) => format!("Database error creating a Invitations, {}", e),
+            Error::InvitationsGet(ref e) => format!("Database error get a Invitations, {}", e),
+            Error::InvitationsUpdate(ref e) => format!("Database error update a Invitations, {}", e),
+            Error::TeamMembersCreate(ref e) => format!("Database error creating a team_member, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -46,6 +56,7 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Db(ref err) => err.description(),
+            Error::AccountNotFound(ref err) => err,
             Error::TeamsCreate(ref err) => err.description(),
             Error::TeamsGet(ref err) => err.description(),
             Error::TeamGet(ref err) => err.description(),
@@ -53,6 +64,10 @@ impl error::Error for Error {
             Error::PermissionsGet(ref err) => err.description(),
             Error::PermissionGet(ref err) => err.description(),
             Error::TeamPermissionsGet(ref err) => err.description(),
+            Error::InvitationsCreate(ref err) => err.description(),
+            Error::InvitationsGet(ref err) => err.description(),
+            Error::InvitationsUpdate(ref err) => err.description(),
+            Error::TeamMembersCreate(ref err) => err.description(),
         }
     }
 }
