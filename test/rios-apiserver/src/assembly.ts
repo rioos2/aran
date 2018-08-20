@@ -10,7 +10,7 @@ describe('Deployment API', function() {
 
     it('returns the assembly by account', function(done) {
       this.timeout(4000)
-      request.get('/accounts/'+globalAny.account_id+'/assemblys')
+      request.get('/assemblys')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -108,7 +108,7 @@ describe('Deployment API', function() {
 
     it('returns all assemblys', function(done) {
       this.timeout(4000)
-      request.get('/assemblys')
+      request.get('/assemblys/all')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -121,15 +121,6 @@ describe('Deployment API', function() {
     });
 
     it('returns Unauthorized error for get account based assembly', function(done) {
-      request.get('/accounts/'+globalAny.account_id+'/assemblys')
-      .ca(globalAny.rootCA)
-        .expect(406)
-        .end(function(err, res) {
-          done(err);
-        });
-    });
-
-    it('returns Unauthorized error for all assembly', function(done) {
       request.get('/assemblys')
       .ca(globalAny.rootCA)
         .expect(406)
@@ -138,17 +129,15 @@ describe('Deployment API', function() {
         });
     });
 
-
-    it('Record not fount fot wrong account id to get assembly', function(done) {
-      request.get('/accounts/2345678/assemblys')
+    it('returns Unauthorized error for all assembly', function(done) {
+      request.get('/assemblys/all')
       .ca(globalAny.rootCA)
-      .set('Authorization', globalAny.bobo_bearer)
-      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(404)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
     });
+
 
     it('returns Record not found assembly get by id', function(done) {
       request.get('/assemblys/23456789')

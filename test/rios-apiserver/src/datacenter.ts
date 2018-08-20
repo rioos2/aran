@@ -111,18 +111,6 @@ describe('Datacenter  API', function() {
         });
     });
 
-    it('returns the datacenters by wrong  id', function(done) {
-      request.get('/datacenters/8907654345677')
-      .ca(globalAny.rootCA)
-      .set('Authorization', globalAny.bobo_bearer)
-      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(404)
-        .end(function(err, res) {
-          done(err);
-        });
-    });
-
-
     it('returns the datacenters by wrong id type', function(done) {
       request.get('/datacenters/890765uikj4345677')
       .ca(globalAny.rootCA)

@@ -84,7 +84,7 @@ describe('Ingress  API', function() {
     });
 
     it('returns the ingress by assemblyfactorys', function(done) {
-      request.get('/assemblyfactorys/'+globalAny.asm_fac_id+'/ingresses')
+      request.get('/ingresses/assemblyfactorys/'+globalAny.asm_fac_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -96,7 +96,7 @@ describe('Ingress  API', function() {
 
 
     it('returns the ingress by assemblyfactorys wrong id', function(done) {
-      request.get('/assemblyfactorys/89756784567/ingresses')
+      request.get('/ingresses/assemblyfactorys/89756784567')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
