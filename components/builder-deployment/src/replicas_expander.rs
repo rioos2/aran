@@ -10,6 +10,7 @@ use protocol::api::base::{MetaFields, WhoAmITypeMeta, Status, IdGet};
 ///replicas expander
 use protocol::api::schema::type_meta_url;
 
+
 const METRIC_LIMIT: &'static str = "10";
 use rand::{self, Rng};
 use rand::distributions::Alphanumeric;
@@ -48,7 +49,25 @@ impl<'a> ReplicasExpander<'a> {
 
         if factory.is_some() {
             let mut factory = factory.unwrap();
-            factory.set_resources(self.scaling_policy.get_status().get_desired_resource());
+            let mut resources = factory.get_resources().clone();
+            for (key, value) in resources.iter_mut() {
+                if key == node::CAPACITY_MEMORY {
+                    *value = self.scaling_policy
+                        .get_status()
+                        .get_desired_resource()
+                        .get(node::CAPACITY_MEMORY)
+                        .unwrap_or(&"0 KiB".to_string())
+                        .to_string();
+                } else if key == node::CAPACITY_CPU {
+                    *value = self.scaling_policy
+                        .get_status()
+                        .get_desired_resource()
+                        .get(node::CAPACITY_CPU)
+                        .unwrap_or(&"0".to_string())
+                        .to_string();
+                }
+            }
+            factory.set_resources(resources.clone());
             assemblyfactory::DataStore::new(&self.conn).update(&factory);
         }
         models::jobs::DataStore::new(&self.conn).create(&self.build_job(&qualified_assembly, &self.get_scale_type()))
