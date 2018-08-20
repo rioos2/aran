@@ -26,7 +26,7 @@ describe('User authenticate API', function() {
         globalAny.account_id =res.body.id;
         globalAny.email = res.body.email;
         globalAny.token = res.body.token;
-        globalAny.bearToken = base64json.stringify({"token" : globalAny.token,"org_id" : globalAny.origin_id,"team_id" : "1052661276171313152","account_id" : globalAny.account_id},null, 2);
+        globalAny.bearToken = base64json.stringify({"token" : globalAny.token,"org_id" : globalAny.origin_id,"team_id" : "1052661276171313152","account_id" : globalAny.account_id},null, 2); 
         globalAny.bobo_bearer = "Bearer " + globalAny.bearToken;
         expect(res.body.teams[0]).to.equal("RIOOS:SUPERUSER");
         expect(res.body.type_meta.kind).to.equal(globalAny.account);
