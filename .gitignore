@@ -15,7 +15,7 @@ tmp/
 *.code-workspace
 .vagrant/
 *.fmt
-test/**/node_modules/
+test/rios-apiserver/node_modules/
 test/**/built/
 *.log
 tags
