@@ -10,7 +10,7 @@ describe('Deployment API', function() {
 describe('Assembly_factory API', function() {
   it('returns the assemblys_factorys by account', function(done) {
     this.timeout(4000)
-    request.get('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.get('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -96,7 +96,7 @@ describe('Assembly_factory API', function() {
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .expect(200)
       .end(function(err, res) {
-        expect(res.body.kind).to.equal(globalAny.assemblylist);
+        expect(res.body.kind).to.equal(globalAny.assemblyfactorylist);
         expect(res.body.api_version).to.equal(globalAny.version);
         expect(res.body.items.length).to.equal(1);
         done()
@@ -118,7 +118,7 @@ describe('Assembly_factory API', function() {
   });
 
   it('returns the all assemblys_factory', function(done) {
-    request.get('/assemblyfactorys')
+    request.get('/assemblyfactorys/all')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -131,7 +131,7 @@ describe('Assembly_factory API', function() {
       });
   });
   it('returns the assembly_factory by account', function(done) {
-    request.get('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.get('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -145,7 +145,7 @@ describe('Assembly_factory API', function() {
 
 
   it('returns Bad request error if object_meta not had name', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.post('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -163,7 +163,7 @@ describe('Assembly_factory API', function() {
 
 
   it('returns Bad request error if object_meta not had account', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.post('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -177,7 +177,7 @@ describe('Assembly_factory API', function() {
 
 
   it('returns Bad request error if no replicas', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.post('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -190,7 +190,7 @@ describe('Assembly_factory API', function() {
   });
 
   it('returns Bad request error if no plan', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.post('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -203,7 +203,7 @@ describe('Assembly_factory API', function() {
   });
 
   it('returns Bad request error if no resources', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.post('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -217,7 +217,7 @@ describe('Assembly_factory API', function() {
 
 
   it('returns Unauthorized error for assemblyfactory create', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.post('/assemblyfactorys')
     .ca(globalAny.rootCA)
     .send({"object_meta": {"name": "levis.megam.io","account": globalAny.account_id,"cluster_name": "chennai","labels": {"rioos_category": "machine"}},  "replicas": 1,"resources": {"compute_type": "cpu","storage_type": "hdd","cpu": "1",
     "memory": "1 GiB","storage": "3 GiB","private_ipv4": "true"},"secret": {"id": globalAny.secrets_id},"plan": globalAny.plan_id,"status": {"phase": "ready"}})
@@ -228,7 +228,7 @@ describe('Assembly_factory API', function() {
   });
 
   it('returns without cluster name to create assembly_factorys ', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.post('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -260,7 +260,7 @@ describe('Assembly_factory API', function() {
   });
 
   it('returns Unauthorized error get  assembly_factory by account', function(done) {
-    request.get('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.get('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .expect(401)
       .end(function(err, res) {
@@ -269,7 +269,7 @@ describe('Assembly_factory API', function() {
   });
 
   it('returns Unauthorized error list all assemblys_factory', function(done) {
-    request.get('/assemblyfactorys')
+    request.get('/assemblyfactorys/all')
     .ca(globalAny.rootCA)
       .expect(401)
       .end(function(err, res) {
@@ -298,20 +298,8 @@ describe('Assembly_factory API', function() {
       });
   });
 
-  it('returns Record not found assembly get by id', function(done) {
-    request.get('/accounts/12345678/assemblyfactorys')
-    .ca(globalAny.rootCA)
-    .set('Authorization', globalAny.bobo_bearer)
-    .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .expect(404)
-      .end(function(err, res) {
-        done()
-      });
-  });
-
-
   it('Malformed body for no replicas field', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/assemblyfactorys')
+    request.post('/assemblyfactorys')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)

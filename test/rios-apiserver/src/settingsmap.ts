@@ -50,7 +50,7 @@ describe('Settings Map  API', function() {
     });
 
     it('returns settings map by origin and map name', function(done) {
-      request.get('/origins/rioos_system/settingsmap/'+globalAny.set_map_name)
+      request.get('/settingsmap/'+globalAny.set_map_name+'/origins/rioos_system')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -61,7 +61,7 @@ describe('Settings Map  API', function() {
     });
 
     it('returns settings map by origin and map name', function(done) {
-      request.get('/origins/rioos_system/settingsmap/'+globalAny.set_map_name)
+      request.get('/settingsmap/'+globalAny.set_map_name+'/origins/rioos_system')
       .ca(globalAny.rootCA)
         .expect(406)
         .end(function(err, res) {
@@ -70,7 +70,7 @@ describe('Settings Map  API', function() {
     });
 
     it('returns settings map by origin and invalid map name', function(done) {
-      request.get('/origins/rioos_system/settingsmap/clus')
+      request.get('/settingsmap/clus/origins/rioos_system')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -81,7 +81,7 @@ describe('Settings Map  API', function() {
     });
 
     it('returns settings map by invalid origin and map name', function(done) {
-      request.get('/origins/rioos/settingsmap/'+globalAny.set_map_name)
+      request.get('/settingsmap/'+globalAny.set_map_name+'/origins/rioos')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -92,7 +92,7 @@ describe('Settings Map  API', function() {
     });
 
     it('returns settings map by origin and map name invalid url', function(done) {
-      request.get('/origin/rioos_system/settingsmap/'+globalAny.set_map_name)
+      request.get('/settingsmap/'+globalAny.set_map_name+'/origin/rioos_system')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)

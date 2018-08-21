@@ -14,7 +14,7 @@ describe('License  API', function() {
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .expect(200)
       .end(function(err, res) {
-        expect(res.body.items.length).to.equal(1);
+        expect(res.body.items.length).to.equal(2);
         expect(res.body.kind).to.equal(globalAny.Licenses);
         expect(res.body.api_version).to.equal(globalAny.version);
         done(err);

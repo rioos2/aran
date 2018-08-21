@@ -11,10 +11,10 @@ describe('User Teams API', function() {
        .ca(globalAny.rootCA)
        .set('Authorization', globalAny.bobo_bearer)
        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-       .send({"name": "ubuntuteam1_rios:superuser","description":"superuser of RIO/OS. God given powers.  instance","object_meta": {"account":"1043206892018475008"},"metadata": {"origin":"rioos"}})
+       .send({"name": "RIOOS:TESTER","description":"tester of RIO/OS.","object_meta": {"account":globalAny.account_id},"metadata": {"origin":"rioos_system"}})
        .expect(200)
        .end(function(err, res) {
-         expect(res.body.name).to.equal("ubuntuteam1_rios:superuser");
+         expect(res.body.name).to.equal("RIOOS:TESTER");
          globalAny.team_id =res.body.id;
          globalAny.team_name =res.body.name;
          done(err);
