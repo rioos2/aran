@@ -8,7 +8,8 @@ use rbac::teams::{Teams, TrustAccess};
 
 #[derive(Clone, Debug)]
 pub enum TeamNames {
-    USERACCOUNT,
+    //-----future purpose for team based authentication
+    // USERACCOUNT,
     SERVICEACCOUNT,
     NONE,
 }
@@ -52,14 +53,15 @@ impl Authorization {
     //And get permissions by team name and verify it.
     //Now we assume account/service_account has only one team.
     //In future we could extend it.
-    pub fn verify(self, team_type: TeamType, incoming_to_trust: String) -> Result<bool> {        
+    pub fn verify(self, team_type: TeamType, incoming_to_trust: String) -> Result<bool> {
         let team_box: Option<String> = match team_type.account {
-            TeamNames::USERACCOUNT => {
-                let mut account_get = session::AccountGet::new();
-                account_get.set_email(team_type.name);
-                let mut account = self.accounts.get_by_email(account_get).get_teams();
-                account.pop()
-            },
+            //`-----future purpose for team based authentication
+            // TeamNames::USERACCOUNT => {
+            //     let mut account_get = session::AccountGet::new();
+            //     account_get.set_email(team_type.name);
+            //     let mut account = self.accounts.get_by_email(account_get).get_is_admin();
+            //     account.pop()
+            // },
             TeamNames::SERVICEACCOUNT => {
                 let mut account = self.service_accounts.get_by_name(IdGet::with_id(team_type.name)).get_teams();
                 account.pop()

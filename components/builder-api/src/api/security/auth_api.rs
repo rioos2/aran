@@ -3,7 +3,6 @@
 //! A collection of auth [accounts, login, teams, permissions,] for the HTTP server
 
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use auth::rbac::BUILTIN_TEAM_RIOOS_LONERANGER;
 use auth::rioos::user_account::UserAccountAuthenticate;
 use auth::rioos::AuthenticateDelegate;
 use auth::util::authenticatable::Authenticatable;
@@ -26,7 +25,6 @@ use protocol::api::session::*;
 use rand;
 use router::Router;
 use session::models::session as sessions;
-use authorize::models::team;
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -94,9 +92,6 @@ impl AuthenticateApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        if unmarshall_body.get_teams().is_empty() {
-            unmarshall_body.set_teams(vec![BUILTIN_TEAM_RIOOS_LONERANGER.to_string()]);
-        }
 
         unmarshall_body.set_token(UserAccountAuthenticate::token().unwrap());
 

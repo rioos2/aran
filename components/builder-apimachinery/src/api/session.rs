@@ -33,7 +33,7 @@ pub struct SessionCreate {
     #[serde(default)]
     approval: bool, //approved user or not
     #[serde(default)]
-    teams: Vec<String>, //Teams are Rio/OS team label that applies to the user
+    is_admin: bool, //is_admin are the specify admin or user of the Rio/OS
     #[serde(default)]
     suspend: bool, //user suspend or not   If true, the user is suspended. Defaults to false
     #[serde(default)]
@@ -152,12 +152,12 @@ impl SessionCreate {
         self.suspend.clone()
     }
 
-    pub fn set_teams(&mut self, v: ::std::vec::Vec<String>) {
-        self.teams = v;
+    pub fn set_is_admin(&mut self, v: bool) {
+        self.is_admin = v;
     }
 
-    pub fn get_teams(&self) -> ::std::vec::Vec<String> {
-        self.teams.clone()
+    pub fn get_is_admin(&self) -> bool {
+        self.is_admin.clone()
     }
 
     pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {
@@ -219,7 +219,7 @@ pub struct Session {
     email: String,      //email of the user
     first_name: String, //first name of the user
     last_name: String,  //last name of the user
-    teams: Vec<String>, //Teams are Rio/OS team label that applies to the user
+    is_admin: bool, // is_admin are the specify admin or user of the Rio/OS
     token: String,      //tolen for individual user
     api_key: String, //A persistenant personal access token is required to authenticate to Rio/OS  in the following situations:  1. When you don't want to login and use the ephermeal authorization tokens. This should be used with caution.
     flags: u32,
@@ -292,12 +292,12 @@ impl Session {
         self.last_name.clone()
     }
 
-    pub fn set_teams(&mut self, v: ::std::vec::Vec<String>) {
-        self.teams = v;
+    pub fn set_is_admin(&mut self, v: bool) {
+        self.is_admin = v;
     }
 
-    pub fn get_teams(&self) -> ::std::vec::Vec<String> {
-        self.teams.clone()
+    pub fn get_is_admin(&self) -> bool {
+        self.is_admin.clone()
     }
 
     pub fn set_token(&mut self, v: ::std::string::String) {
@@ -481,7 +481,7 @@ pub struct Account {
     #[serde(default)]
     approval: bool, //approved user or not
     #[serde(default)]
-    teams: Vec<String>, //Teams are Rio/OS team label that applies to the user
+    is_admin: bool, //is_admin are the specify admin or user of the Rio/OS
     #[serde(default)]
     suspend: bool, //user suspend or not   If true, the user is suspended. Defaults to false
     registration_ip_address: String, //Registration ip address of the user
@@ -499,7 +499,7 @@ impl Into<Session> for Account {
         session.set_apikey(self.get_apikey().to_owned());
         session.set_first_name(self.get_first_name().to_owned());
         session.set_last_name(self.get_last_name().to_owned());
-        session.set_teams(self.get_teams().to_owned());
+        session.set_is_admin(self.get_is_admin().to_owned());
         session.set_meta(self.type_meta(), self.object_meta());
         session
     }
@@ -614,12 +614,12 @@ impl Account {
         self.suspend.clone()
     }
 
-    pub fn set_teams(&mut self, v: ::std::vec::Vec<String>) {
-        self.teams = v;
+    pub fn set_is_admin(&mut self, v: bool) {
+        self.is_admin = v;
     }
 
-    pub fn get_teams(&self) -> ::std::vec::Vec<String> {
-        self.teams.clone()
+    pub fn get_is_admin(&self) -> bool {
+        self.is_admin.clone()
     }
 
     pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {
@@ -668,9 +668,9 @@ impl AccountsFeeder for Account {
         IdGet::with_id_name(self.get_email(), "".to_string())
     }
 
-   fn ifeed(&mut self, m: Option<Vec<String>>) {
+   fn ifeed(&mut self, m: Option<bool>) {
        match m {
-            Some(teams) => self.set_teams(teams),
+            Some(is_admin) => self.set_is_admin(is_admin),
             None => {}
         }
     }

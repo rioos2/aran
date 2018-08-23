@@ -7,19 +7,19 @@ CREATE TABLE IF NOT EXISTS accounts (id bigint UNIQUE PRIMARY KEY DEFAULT next_i
                                                                           email text UNIQUE,
                                                                                      first_name text, last_name text, phone text, api_key text, password text, approval bool,
                                                                                                                                                                suspend bool,
-                                                                                                                                                               TEAMS text[], registration_ip_address text, trust_level text, company_name text, object_meta JSONB,
+                                                                                                                                                               is_admin bool, registration_ip_address text, trust_level text, company_name text, object_meta JSONB,
                                                                                                                                                                                                                                                             type_meta JSONB,
                                                                                                                                                                                                                                                                       avatar BYTEA,
                                                                                                                                                                                                                                                                              updated_at timestamptz,
                                                                                                                                                                                                                                                                              created_at timestamptz DEFAULT now());
 
 
-CREATE OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_teams text[], account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, account_avatar BYTEA) RETURNS
+CREATE OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_is_admin bool, account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, account_avatar BYTEA) RETURNS
 SETOF accounts AS $$
                  BEGIN
-                        RETURN QUERY INSERT INTO accounts ( email, first_name, last_name, phone, api_key, password, approval, suspend, teams,registration_ip_address,trust_level,company_name,object_meta,type_meta,avatar)
+                        RETURN QUERY INSERT INTO accounts ( email, first_name, last_name, phone, api_key, password, approval, suspend, is_admin,registration_ip_address,trust_level,company_name,object_meta,type_meta,avatar)
                          VALUES (account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password,
-                             account_approval, account_suspend, account_teams,account_registration_ip_address,account_trust_level, account_company_name, account_object_meta, account_type_meta,account_avatar) ON CONFLICT DO NOTHING RETURNING *;
+                             account_approval, account_suspend, account_is_admin,account_registration_ip_address,account_trust_level, account_company_name, account_object_meta, account_type_meta,account_avatar) ON CONFLICT DO NOTHING RETURNING *;
                     RETURN;
                  END
              $$ LANGUAGE PLPGSQL VOLATILE;

@@ -118,7 +118,7 @@ impl ServiceAccountTeams {
 
     pub fn get_name(&self) -> ::std::string::String {
         self.name.clone()
-    }    
+    }
 
     pub fn set_teams(&mut self, v: ::std::vec::Vec<String>) {
         self.teams = v;

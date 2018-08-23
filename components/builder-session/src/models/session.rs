@@ -101,7 +101,7 @@ impl<'a> DataStore<'a> {
                 &session_create.get_password(),
                 &session_create.get_approval(),
                 &session_create.get_suspend(),
-                &session_create.get_teams(),
+                &session_create.get_is_admin(),
                 &session_create.get_registration_ip_address(),
                 &session_create.get_trust_level(),
                 &session_create.get_company_name(),
@@ -452,7 +452,7 @@ fn row_to_account(row: postgres::rows::Row) -> session::Account {
     account.set_password(row.get("password"));
     account.set_first_name(row.get("first_name"));
     account.set_last_name(row.get("last_name"));
-    account.set_teams(row.get("teams"));
+    account.set_is_admin(row.get("is_admin"));
     account.set_apikey(row.get("api_key"));
     account.set_company_name(row.get("company_name"));
     account.set_trust_level(row.get("trust_level"));

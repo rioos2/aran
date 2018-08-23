@@ -46,7 +46,7 @@ pub trait PermissionsFeeder: Send {
 pub trait AccountsFeeder: Send {
     fn iget_id(&mut self) -> api::base::IdGet;
 
-    fn ifeed(&mut self, v: Option<Vec<String>>);
+    fn ifeed(&mut self, v: Option<bool>);
 }
 
 pub trait ServiceAccountFeeder: Send {
