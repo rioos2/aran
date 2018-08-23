@@ -84,13 +84,12 @@ impl<'a> DataStore<'a> {
     pub fn account_create(
         datastore: &DataStoreConn,
         session_create: &session::SessionCreate,
-        device: &session::Device,
-        team: &IdGet
+        device: &session::Device
     ) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
 
         let query =
-            "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)";
+            "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
         let rows = conn.query(
             &query,
             &[
@@ -108,9 +107,7 @@ impl<'a> DataStore<'a> {
                 &session_create.get_company_name(),
                 &(serde_json::to_value(session_create.object_meta()).unwrap()),
                 &(serde_json::to_value(session_create.type_meta()).unwrap()),
-                &(format!("default-{}",rand::random::<u8>().to_string())),
                 &session_create.get_avatar(),
-                &team.get_id(),
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {
@@ -306,8 +303,7 @@ impl<'a> DataStore<'a> {
                         let session = Self::account_create(
                             datastore,
                             &mut add_account,
-                            &session::Device::new(),
-                            &IdGet::new(),
+                            &session::Device::new()
                         )?;
                         imported_users.push(session.get_email());
                         Ok(session)
