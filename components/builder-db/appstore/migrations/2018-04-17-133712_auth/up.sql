@@ -115,111 +115,6 @@ SETOF accounts AS $$
             $$ LANGUAGE PLPGSQL VOLATILE;
 
 
-CREATE SEQUENCE IF NOT EXISTS ldap_id_seq;
-
-
-CREATE TABLE IF NOT EXISTS ldap_configs (id bigint PRIMARY KEY DEFAULT next_id_v1('ldap_id_seq'),
-                                                                       HOST text, port text, enforce_starttls bool,
-                                                                                             use_ldaps bool,
-                                                                                             lookup_dn text, lookup_password text, ca_certs text, client_cert text, user_search text, group_search text, updated_at timestamptz,
-                                                                                                                                                                                                         created_at timestamptz DEFAULT now());
-
-
-CREATE OR REPLACE FUNCTION insert_ldap_config_v1 (HOST text, port text, enforce_starttls bool, use_ldaps bool, lookup_dn text, lookup_password text, ca_certs text, client_cert text, user_search text, group_search text) RETURNS
-SETOF ldap_configs AS $$
-                          BEGIN
-                              RETURN QUERY INSERT INTO ldap_configs(host,port,enforce_starttls,use_ldaps,lookup_dn,lookup_password,ca_certs,client_cert,user_search,group_search)
-                                  VALUES (host,port,enforce_starttls,use_ldaps,lookup_dn,lookup_password,ca_certs,client_cert,user_search,group_search)
-                                  RETURNING *;
-                              RETURN;
-                          END
-                      $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION get_ldap_config_v1 (aid bigint) RETURNS
-SETOF ldap_configs AS $$
-                  BEGIN
-                    RETURN QUERY SELECT * FROM ldap_configs WHERE id = aid;
-                    RETURN;
-                  END
-                  $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE SEQUENCE IF NOT EXISTS saml_provider_id_seq;
-
-
-CREATE TABLE IF NOT EXISTS saml_providers (id bigint PRIMARY KEY DEFAULT next_id_v1('saml_provider_id_seq'),
-                                                                         description text, idp_metadata text, sp_base_url text, updated_at timestamptz,
-                                                                                                                                created_at timestamptz DEFAULT now());
-
-
-CREATE OR REPLACE FUNCTION insert_saml_provider_v1 (description text, idp_metadata text, sp_base_url text) RETURNS
-SETOF saml_providers AS $$
-                                                                                                                                                                   BEGIN
-                                                                                                                                                                       RETURN QUERY INSERT INTO saml_providers(description,idp_metadata,sp_base_url)
-                                                                                                                                                                           VALUES (description,idp_metadata,sp_base_url)
-                                                                                                                                                                           RETURNING *;
-                                                                                                                                                                       RETURN;
-                                                                                                                                                                   END
-                                                                                                                                                               $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION get_saml_provider_all_v1() RETURNS
-SETOF saml_providers AS $$
-                  BEGIN
-                    RETURN QUERY SELECT * FROM saml_providers;
-                    RETURN;
-                  END
-                  $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION get_saml_v1 (sid bigint) RETURNS
-SETOF saml_providers AS $$
-                  BEGIN
-                    RETURN QUERY SELECT * FROM saml_providers WHERE id = sid;
-                    RETURN;
-                  END
-                  $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE SEQUENCE IF NOT EXISTS oidc_provider_id_seq;
-
-
-CREATE TABLE IF NOT EXISTS oidc_providers (id bigint PRIMARY KEY DEFAULT next_id_v1('oidc_provider_id_seq'),
-                                                                         description text, issuer text, base_url text, client_secret text, client_id text, verify_server_certificate bool,
-                                                                                                                                                           ca_certs text, updated_at timestamptz,
-                                                                                                                                                                          created_at timestamptz DEFAULT now());
-
-
-CREATE OR REPLACE FUNCTION insert_oidc_provider_v1 (description text, issuer text, base_url text, client_secret text, client_id text, verify_server_certificate bool, ca_certs text) RETURNS
-SETOF oidc_providers AS $$
-                                  BEGIN
-                                      RETURN QUERY INSERT INTO oidc_providers(description, issuer, base_url, client_secret, client_id , verify_server_certificate,ca_certs)
-                                          VALUES (description, issuer, base_url, client_secret, client_id , verify_server_certificate,ca_certs)
-                                          RETURNING *;
-                                      RETURN;
-                                  END
-                              $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION get_oidc_provider_all_v1() RETURNS
-SETOF oidc_providers AS $$
-                  BEGIN
-                    RETURN QUERY SELECT * FROM oidc_providers;
-                    RETURN;
-                  END
-                  $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION get_odic_v1 (oid bigint) RETURNS
-SETOF oidc_providers AS $$
-                  BEGIN
-                    RETURN QUERY SELECT * FROM oidc_providers WHERE id = oid;
-                    RETURN;
-                  END
-                  $$ LANGUAGE PLPGSQL STABLE;
-
-
 CREATE SEQUENCE IF NOT EXISTS origin_id_seq;
 
 
@@ -242,21 +137,25 @@ CREATE TABLE IF NOT EXISTS origin_members (id bigint PRIMARY KEY DEFAULT next_id
                                                                                                                                         updated_at timestamptz);
 
 
-CREATE SEQUENCE IF NOT EXISTS team_mem_id_seq;
-
-
-CREATE TABLE IF NOT EXISTS team_members (id bigint PRIMARY KEY DEFAULT next_id_v1('team_mem_id_seq'),
-                                                                       type_meta JSONB,
-                                                                                 object_meta JSONB,
-                                                                                             meta_data JSONB,
-                                                                                                       created_at timestamptz DEFAULT now(),
-                                                                                                                                      updated_at timestamptz);
-
 
 INSERT INTO origins (name, object_meta, type_meta)
 VALUES ('rioos_system',
         '{"name":"rioos_system", "labels": {}, "account": "", "created_at": "", "deleted_at": "", "finalizers": [], "annotations": {}, "cluster_name": "", "initializers": {"result": {"code": 0, "reason": "", "status": "", "details": {"uid": "", "kind": "", "name": "", "group": "", "causes": [], "retry_after_seconds": 0}, "message": "", "type_meta": {"kind": "", "api_version": ""}}, "pending": []}, "owner_references": [{"uid": "", "kind": "", "name": "", "api_version": "", "block_owner_deletion": false}], "deletion_grace_period_seconds": 0}',
         '{"kind":"Origin","api_version":"v1"}') ON CONFLICT (name) DO NOTHING;
+
+CREATE OR REPLACE FUNCTION internal_insert_origin_member_v1 (om_type_meta JSONB, om_obj_meta JSONB, om_meta_data JSONB) RETURNS void AS $$
+        BEGIN
+           INSERT INTO
+              origin_members ( type_meta, object_meta, meta_data)
+           VALUES
+              (
+                 om_type_meta,
+                 om_obj_meta,
+                 om_meta_data
+              )
+        ;
+        END
+        $$ LANGUAGE PLPGSQL VOLATILE;
 
 
 CREATE OR REPLACE FUNCTION insert_origin_v1 (origin_name text, origin_type_meta JSONB, origin_object_meta JSONB) RETURNS
@@ -295,83 +194,3 @@ SETOF origins AS $$
                     RETURN;
                   END
                   $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION list_origin_members_v1 (om_origin_id bigint) RETURNS TABLE(account_name text) AS $$
-              BEGIN
-                  RETURN QUERY SELECT origin_members.account_name FROM origin_members WHERE origin_id = om_origin_id
-                    ORDER BY account_name ASC;
-                  RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION check_account_in_origin_members_v1 (om_origin_name text, om_account_id bigint) RETURNS TABLE(is_member bool) AS $$
-              BEGIN
-                  RETURN QUERY SELECT true FROM origin_members WHERE origin_name = om_origin_name AND account_id = om_account_id;
-                  RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION list_origin_by_account_id_v1 (o_account_id bigint) RETURNS TABLE(origin_name text) AS $$
-              BEGIN
-                  RETURN QUERY SELECT origin_members.origin_name FROM origin_members WHERE account_id = o_account_id
-                    ORDER BY origin_name ASC;
-                  RETURN;
-              END
-              $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE TABLE IF NOT EXISTS account_origins (account_id bigint, account_email text, origin_id bigint, origin_name text, created_at timestamptz DEFAULT now(),
-                                                                                                                                                      updated_at timestamptz,
-                                                                                                                                                      UNIQUE(account_id, origin_id));
-
-
-CREATE OR REPLACE FUNCTION insert_account_origin_v1 (o_account_id bigint, o_account_email text, o_origin_id bigint, o_origin_name text) RETURNS void AS $$
-                                                                                                                                                                    BEGIN
-                                                                                                                                                                       INSERT INTO account_origins (account_id, account_email, origin_id, origin_name) VALUES (o_account_id, o_account_email, o_origin_id, o_origin_name);
-                                                                                                                                                                    END
-                                                                                                                                                                $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION get_account_origins_v1 (in_account_id bigint) RETURNS
-SETOF account_origins AS $$
-              BEGIN
-                 RETURN QUERY SELECT * FROM account_origins WHERE account_id = in_account_id;
-                 RETURN;
-              END
-          $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE SEQUENCE IF NOT EXISTS passticket_id_seq;
-
-
-CREATE TABLE IF NOT EXISTS passtickets (id bigint PRIMARY KEY DEFAULT next_id_v1('passticket_id_seq'),
-                                                                      passticket text, created_at timestamptz DEFAULT now());
-
-
-CREATE OR REPLACE FUNCTION insert_passticket_v1 (o_passticket text) RETURNS
-SETOF passtickets AS $$
-                                                                                     BEGIN
-                                                                                        RETURN QUERY INSERT INTO passtickets (passticket) VALUES (o_passticket)
-                                                                                        RETURNING *;
-                                                                                    RETURN;
-                                                                                     END
-                                                                                 $$ LANGUAGE PLPGSQL VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION get_passticket_v1 (o_passticket text) RETURNS
-SETOF passtickets AS $$
-                                                                                               BEGIN
-                                                                                                 RETURN QUERY SELECT * FROM passtickets WHERE passticket = o_passticket;
-                                                                                                 RETURN;
-                                                                                               END
-                                                                                               $$ LANGUAGE PLPGSQL STABLE;
-
-
-CREATE OR REPLACE FUNCTION remove_passticket_v1 (o_passticket text) RETURNS void AS $$
-                                                                                                             BEGIN
-                                                                                                                DELETE FROM passtickets WHERE passticket = o_passticket;
-                                                                                                             END
-                                                                                                             $$ LANGUAGE PLPGSQL VOLATILE

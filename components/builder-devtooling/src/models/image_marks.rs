@@ -42,7 +42,7 @@ impl DataStore {
         let conn = datastore.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM get_image_marks_v1($1)",
+            "SELECT * FROM get_image_mark_v1($1)",
             &[&(img_get.get_id().parse::<i64>().unwrap())],
         ).map_err(Error::ImageMarksGet)?;
 

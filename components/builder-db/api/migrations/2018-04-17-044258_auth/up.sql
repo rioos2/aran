@@ -26,23 +26,6 @@ RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
----
---- Table:accounts:list_blank
----
-
-CREATE
-OR REPLACE FUNCTION get_accounts_v1 () RETURNS SETOF accounts AS $$
-BEGIN
-   RETURN QUERY
-   SELECT
-      *
-   FROM
-      accounts;
-RETURN;
-END
-$$ LANGUAGE PLPGSQL STABLE;
-
-
 CREATE
 OR REPLACE FUNCTION get_accounts_v1_by_team (super_team text[]) RETURNS SETOF accounts AS $$
 BEGIN
