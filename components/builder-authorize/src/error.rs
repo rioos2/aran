@@ -23,6 +23,8 @@ pub enum Error {
     InvitationsGet(postgres::error::Error),
     InvitationsUpdate(postgres::error::Error),
     TeamMembersCreate(postgres::error::Error),
+    PoliciesGet(postgres::error::Error),
+
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -41,6 +43,7 @@ impl fmt::Display for Error {
             Error::PolicyPermissionGet(ref e) => {
                 format!("Database error get team based permission, {}", e)
             }
+            Error::PoliciesGet(ref e) => format!("Database error get policies, {}", e),
             Error::PermissionsGet(ref e) => format!("Database error get permissions, {}", e),
             Error::PermissionGet(ref e) => format!("Database error get permission, {}", e),
             Error::InvitationsCreate(ref e) => format!("Database error creating a Invitations, {}", e),
@@ -68,6 +71,7 @@ impl error::Error for Error {
             Error::InvitationsGet(ref err) => err.description(),
             Error::InvitationsUpdate(ref err) => err.description(),
             Error::TeamMembersCreate(ref err) => err.description(),
+            Error::PoliciesGet(ref err) => err.description(),
         }
     }
 }

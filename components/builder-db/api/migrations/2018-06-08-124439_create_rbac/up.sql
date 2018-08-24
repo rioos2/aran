@@ -2,6 +2,39 @@ CREATE SEQUENCE IF NOT EXISTS policies_id_seq;
 CREATE TABLE IF NOT EXISTS policies (id bigint PRIMARY KEY DEFAULT next_id_v1('policies_id_seq'), type_meta JSONB, object_meta JSONB, metadata JSONB, description text, updated_at timestamptz, created_at timestamptz DEFAULT now());
 
 
+
+---
+--- Table:policies:list_blank
+---
+CREATE
+OR REPLACE FUNCTION get_policies_v1 () RETURNS SETOF policies AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      policies;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+---
+--- Table:policies:list_by_level
+---
+CREATE
+OR REPLACE FUNCTION get_policies_by_level_v1 (level text) RETURNS SETOF policies AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      policies
+   WHERE
+      metadata ->> 'level' = level;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
 ---
 --- Table:teams
 ---
