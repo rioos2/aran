@@ -29,18 +29,25 @@ impl<'a> DataStore<'a> {
     pub fn healthz_all(&self) -> Result<Option<node::HealthzAllGetResponse>> {
         let querys = QueryMaker::new().build_consumption_in_datacenter();
         let res = Executer::new(self.client.clone()).pull_metrics(querys)?;
-        let response = self.get_reports(res);
+
+        //os_usage with query_range
+        let os_query = QueryMaker::new().snapshot_os_usage();
+        let result = Executer::new(self.client.clone()).pull_os_usage(&os_query)?;
+
+        let response = self.get_reports(res, result);
+
         Ok(Some(response.into()))
     }
 
-    fn get_reports(&self, response: AHooks) -> node::HealthzAllGet {
+    fn get_reports(&self, response: AHooks, result: Vec<node::Item>) -> node::HealthzAllGet {
         let mut x = node::HealthzAllGet::new();
         x.set_title("Command center operations".to_string());
         x.set_gauges(mk_guages(&response));
-        x.set_statistics(new_statistics(
+        x.set_statistics(mk_statistics(
             self.merge_live_ninjas(&response),
             self.merge_live_senseis(&response),
         ));
+        x.set_osusages(mk_os_usage(&response, result));
         x
     }
 
@@ -112,10 +119,20 @@ fn mk_guages(response: &AHooks) -> node::Guages {
 }
 
 
-fn new_statistics(new_ninjas: Vec<node::NodeStatistic>, new_senseis: Vec<node::NodeStatistic>) -> node::Statistics {
+fn mk_statistics(new_ninjas: Vec<node::NodeStatistic>, new_senseis: Vec<node::NodeStatistic>) -> node::Statistics {
     let mut statistics = node::Statistics::new();
     statistics.set_title("Statistics".to_string());
     statistics.set_ninjas(new_ninjas);
     statistics.set_senseis(new_senseis);
     statistics
+}
+
+fn mk_os_usage(response: &AHooks, result: Vec<node::Item>) -> node::OSUsages {
+    let mut os_usage = node::OSUsages::new();
+    os_usage.set_title("OS Usages".to_owned());
+    os_usage.set_cumulative(
+        serde_json::from_str(&response.get(node::CUMULATIVE_OS_USAGE).unwrap()).unwrap(),
+    );
+    os_usage.set_items(result);
+    os_usage
 }

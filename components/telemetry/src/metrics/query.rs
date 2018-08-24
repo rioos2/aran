@@ -130,9 +130,18 @@ impl QueryMaker {
                 &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[1]),
             ));
         }
+        querys.push(self.snapshot_cpu_usage_in_node(
+            collect_properties(
+                vec![NODE_CPU.to_string()],
+                vec![ASSEMBLY_JOBS.to_string(), IDLEMODE.to_string()],
+                METRIC_DEFAULT_LAST_X_MINUTE,
+                RIOOS_NAME,
+            ),
+            node::CUMULATIVE_OS_USAGE,
+        ));
         querys
-
     }
+
     //Provides the cpu usage in an assembly
     //The (total cpu - ide cpu) is returned.
     //The job name we look for is ASSEMBLY_JOBS
@@ -190,6 +199,19 @@ impl QueryMaker {
             node::CONTAINER_CAPACITY_STORAGE,
         ));
         querys
+    }
+
+    pub fn snapshot_os_usage(&mut self) -> String {
+        let query_builder = self.snapshot_cpu_usage_in_node(
+            collect_properties(
+                vec![NODE_CPU.to_string()],
+                vec![ASSEMBLY_JOBS.to_string(), IDLEMODE.to_string()],
+                METRIC_DEFAULT_LAST_X_MINUTE,
+                RIOOS_NAME,
+            ),
+            node::CUMULATIVE_OS_USAGE,
+        );
+        query_builder.query
     }
 
     //The query to build the snapshot usage of memory in a the datacenter

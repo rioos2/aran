@@ -32,6 +32,12 @@ impl Executer {
         Ok(self.before_hook(data))
     }
 
+    pub fn pull_os_usage(&self, query: &str) -> Result<Vec<node::Item>> {
+        let content = self.client.pull_osusage(query)?;
+        let p1: node::OSUsages = content.into();
+        Ok(p1.get_items())
+    }
+
     fn group(&self, metrics: MetricResponse) -> BTreeMap<String, PromResponse> {
         let mut metgroups_map = BTreeMap::new();
         for metkey in metrics.data.iter() {
@@ -43,7 +49,7 @@ impl Executer {
     fn before_hook(&self, content: BTreeMap<String, PromResponse>) -> AHooks {
         let mut ah = AHooks::new();
         let _content = content.clone();
-        let cpu = Box::new(HookServiceFn::new(
+        let cpu_consumption = Box::new(HookServiceFn::new(
             node::CAPACITY_CPU.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
@@ -56,7 +62,7 @@ impl Executer {
         ));
 
         let _content = content.clone();
-        let memory = Box::new(HookServiceFn::new(
+        let memory_consumption = Box::new(HookServiceFn::new(
             node::CAPACITY_MEMORY.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
@@ -69,7 +75,7 @@ impl Executer {
         ));
 
         let _content = content.clone();
-        let storage = Box::new(HookServiceFn::new(
+        let storage_consumption = Box::new(HookServiceFn::new(
             node::CAPACITY_STORAGE.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
@@ -161,11 +167,25 @@ impl Executer {
             }),
         ));
 
-        ah.register(cpu);
-        ah.register(memory);
-        ah.register(storage);
+        let _content = content.clone();
+        let os_consumption = Box::new(HookServiceFn::new(
+            node::CUMULATIVE_OS_USAGE.to_string(),
+            Box::new(move || -> Option<String> {
+                consumption::Consumption::new(
+                    _content
+                        .get(node::CUMULATIVE_OS_USAGE)
+                        .unwrap_or(&PromResponse::new())
+                        .clone(),
+                ).before()
+            }),
+        ));
+
+        ah.register(cpu_consumption);
+        ah.register(memory_consumption);
+        ah.register(storage_consumption);
         ah.register(ninjas_intstance);
         ah.register(senseis_intstance);
+        ah.register(os_consumption);
         ah.register(machine_cpu);
         ah.register(container_cpu);
         ah.register(container_memory);

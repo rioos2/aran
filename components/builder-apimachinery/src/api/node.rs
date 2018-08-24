@@ -15,6 +15,7 @@ pub const MACHINE_CAPACITY_CPU: &'static str = "machine-cpu";
 pub const CONTAINER_CAPACITY_CPU: &'static str = "container-cpu";
 pub const CONTAINER_CAPACITY_MEMORY: &'static str = "container-memory";
 pub const CONTAINER_CAPACITY_STORAGE: &'static str = "container-storage";
+pub const CUMULATIVE_OS_USAGE: &'static str = "cumulative-os-usage";
 
 pub const SENSEIS: &'static str = "senseis";
 pub const NINJAS: &'static str = "ninjas";
@@ -776,7 +777,7 @@ impl ValueData {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct QueryBuilder {
     name: String,
-    query: String,
+    pub query: String,
 }
 impl QueryBuilder {
     pub fn with_name_query(name: String, query: String) -> QueryBuilder {
@@ -918,18 +919,19 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
         collections
     }
 }
+
 //convert the PromResponse into OSUsages value
-/*impl Into<OSUsages> for PromResponse {
+impl Into<OSUsages> for PromResponse {
     fn into(mut self) -> OSUsages {
         let mut osusage = OSUsages::new();
-        if let Data::Matrix(ref mut instancevec) = self.data {
+        if let Data::Matrix(ref mut instancevec) = self.result {
             let item_collection = instancevec
                 .into_iter()
                 .map(|x| {
                     let mut item = Item::new();
                     item.set_id(
                         x.metric
-                            .get("rioos_assemblyfactory_id")
+                            .get(METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID)
                             .unwrap_or(&"none".to_string())
                             .to_owned(),
                     );
@@ -961,7 +963,7 @@ impl Into<Vec<NodeStatistic>> for PromResponse {
         }
         osusage
     }
-}*/
+}
 
 impl Into<HealthzAllGetResponse> for HealthzAllGet {
     fn into(self) -> HealthzAllGetResponse {

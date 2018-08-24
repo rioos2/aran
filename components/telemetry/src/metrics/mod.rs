@@ -37,3 +37,5 @@ pub const CONTAINER_SPEC_MEM_LIMIT_BYTES: &'static str = "container_spec_memory_
 
 pub const CONTAINER_FS_USAGE_BYTES: &'static str = "container_fs_usage_bytes";
 pub const CONTAINER_FS_LIMIT_BYTES: &'static str = "container_fs_limit_bytes";
+
+pub const RIOOS_NAME: &'static str = "rioos_os_name";
