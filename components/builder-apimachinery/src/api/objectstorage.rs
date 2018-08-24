@@ -7,6 +7,7 @@ pub struct BucketAccessorData {
     content_type: String,
     date: String,
     authorization: String,
+    access_key: String,
 }
 
 impl BucketAccessorData {
@@ -24,6 +25,9 @@ impl BucketAccessorData {
     }
     pub fn set_authorization(&mut self, v: ::std::string::String) {
         self.authorization = v;
+    }
+    pub fn set_access_key(&mut self, v: ::std::string::String) {
+        self.access_key = v;
     }
 }
 

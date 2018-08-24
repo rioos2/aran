@@ -19,6 +19,7 @@ use url::Url;
 
 pub struct Storage {
     parameters: Option<ParametersProvider>,
+    access_key: str
     endpoint: Endpoint,
 }
 
@@ -46,6 +47,7 @@ impl Storage {
         Storage {
             parameters: params,
             endpoint: endpoint,
+            access_key: conn.access_key.clone(),
         }
     }
 
@@ -133,6 +135,8 @@ impl StorageClient for Storage {
         ad.set_url(v["url"].to_string());
         ad.set_date(v["date"].to_string());
         ad.set_authorization(v["authorization"].to_string());
+        ad.set_access_key(format!("AWS {}", self.access_key.clone()));
+
         ad.set_content_type(v["content_type"].to_string());
         ba.set_accessor_data(ad);
         let ref mut om = ba.mut_meta(ba.object_meta(), bucket_name, "".to_string());
