@@ -60,8 +60,8 @@ impl Teams {
 
     pub fn get_description(&self) -> ::std::string::String {
         self.description.clone()
-    }    
-   
+    }
+
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
     }
@@ -113,7 +113,7 @@ impl MembersFeeder for Teams {
         IdGet::with_id(self.get_id().clone())
     }
 
-    fn efeed(&mut self, s: Option<Vec<Invitations>>) {        
+    fn efeed(&mut self, s: Option<Vec<Invitations>>) {
         self.set_members(s);
     }
 }
@@ -121,7 +121,7 @@ impl MembersFeeder for Teams {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TeamMembers {
     #[serde(default)]
-    id: String,   
+    id: String,
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Team
     object_meta: ObjectMeta, ////Standard object metadata
@@ -153,8 +153,8 @@ impl TeamMembers {
     }
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
-    }   
-   
+    }
+
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
     }
@@ -182,7 +182,7 @@ impl TeamMembers {
      pub fn set_team(&mut self, v: Option<Teams>) {
         self.team = v;
     }
-   
+
 }
 
 // The service feeder, which gets called from an expander cache.
@@ -194,7 +194,7 @@ impl TeamsFeeder for TeamMembers {
         IdGet::with_id(id.clone())
     }
 
-    fn efeed(&mut self, s: Option<Teams>) {        
+    fn efeed(&mut self, s: Option<Teams>) {
         self.set_team(s);
     }
 }
