@@ -26,9 +26,7 @@ const NETWORK_DEFAULT_LAST_X_MINUTE: &'static str = "[1m]";
 
 
 #[derive(Clone)]
-pub struct QueryMaker<'a> {
-    client: &'a PrometheusClient,
-}
+pub struct QueryMaker {}
 
 #[derive(Clone)]
 struct QueryProperties {
@@ -38,9 +36,9 @@ struct QueryProperties {
     pub avg_by_name: String,
 }
 
-impl<'a> QueryMaker<'a> {
-    pub fn new(prom: &'a PrometheusClient) -> Self {
-        QueryMaker { client: &*prom }
+impl QueryMaker {
+    pub fn new() -> Self {
+        QueryMaker {}
     }
 
     //Build the query to get metrics for the dashboard.
@@ -151,7 +149,7 @@ impl<'a> QueryMaker<'a> {
                 METRIC_DEFAULT_LAST_X_MINUTE,
                 job,
             ),
-            node::CAPACITY_CPU,
+            node::MACHINE_CAPACITY_CPU,
         ));
         querys
     }
@@ -177,7 +175,7 @@ impl<'a> QueryMaker<'a> {
                 "",
                 "",
             ),
-            node::CAPACITY_MEMORY,
+            node::CONTAINER_CAPACITY_MEMORY,
         ));
         querys.push(self.snapshot_memory_and_storage_usage_in_container(
             collect_properties(
@@ -189,7 +187,7 @@ impl<'a> QueryMaker<'a> {
                 "",
                 "",
             ),
-            node::CAPACITY_STORAGE,
+            node::CONTAINER_CAPACITY_STORAGE,
         ));
         querys
     }
@@ -323,7 +321,7 @@ impl<'a> QueryMaker<'a> {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CAPACITY_CPU.to_string(),
+            node::CONTAINER_CAPACITY_CPU.to_string(),
             format!("sum by({}) ({})*100", scope.avg_by_name.clone(), sum),
         )
     }
@@ -339,13 +337,6 @@ impl<'a> QueryMaker<'a> {
             q.push(sum);
         }
         QueryBuilder::with_name_query(name.to_string(), format!("{}/{}*100", q[0], q[1]))
-    }
-
-    pub fn pull_metrics(&self, querys: Vec<QueryBuilder>) -> Result<MetricResponse> {
-        let res = self.client.pull_metrics(
-            PrometheusQuery::with_querys(querys),
-        )?;
-        Ok(res)
     }
 }
 

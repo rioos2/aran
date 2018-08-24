@@ -12,9 +12,10 @@ use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
 use serde_json;
 use std::collections::BTreeMap;
-use telemetry::metrics::collector::Collector;
+use telemetry::metrics::executer::Executer;
 use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::query::QueryMaker;
+
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -160,15 +161,24 @@ impl<'a> DataStore<'a> {
 
     //Get the metrics as a map of assembly_id and its metric
     pub fn show_metrics(&self, id: &IdGet, prom: &PrometheusClient) -> Result<BTreeMap<String, String>> {
-        let mut mk_query = QueryMaker::new(prom);
-        let query = match &id.get_name()[..] {
-            "machine" => mk_query.snapshot_cpu_usage_in_machine(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
-            "container" => mk_query.snapshot_cpu_usage_in_contaner(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
-            _ => mk_query.snapshot_cpu_usage_in_machine(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID),
-        };
-        let res = Collector::new(mk_query.pull_metrics(query)?).get_metrics(node::CAPACITY_CPU);
-        Ok(res)
+        match &id.get_name()[..] {
+            "machine" => {
+                let querys = QueryMaker::new().snapshot_cpu_usage_in_machine(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID);
+                let res = Executer::new(prom.clone()).pull_metrics(querys)?;
+                Ok(
+                    serde_json::from_str(&res.get(node::MACHINE_CAPACITY_CPU).unwrap()).unwrap(),
+                )
+            }
+            "container" | _ => {
+                let querys = QueryMaker::new().snapshot_cpu_usage_in_contaner(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID);
+                let res = Executer::new(prom.clone()).pull_metrics(querys)?;
+                Ok(
+                    serde_json::from_str(&res.get(node::MACHINE_CAPACITY_CPU).unwrap()).unwrap(),
+                )
+            }
+        }
     }
+
     /// Expands the assembly by sticking in Spec
     ///         1. AssemblyFactory (parent information)
     ///         2. endpoints for this assembly.

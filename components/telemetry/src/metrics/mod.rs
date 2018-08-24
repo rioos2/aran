@@ -4,7 +4,9 @@
 pub mod collector;
 pub mod expression;
 pub mod prometheus;
+pub mod executer;
 pub mod query;
+pub mod hooks;
 
 pub const NODE_MEMORY_TOTAL: &'static str = "node_memory_MemTotal";
 pub const NODE_MEMORY_FREE: &'static str = "node_memory_MemFree";
@@ -36,3 +38,10 @@ pub const CONTAINER_SPEC_MEM_LIMIT_BYTES: &'static str = "container_spec_memory_
 
 pub const CONTAINER_FS_USAGE_BYTES: &'static str = "container_fs_usage_bytes";
 pub const CONTAINER_FS_LIMIT_BYTES: &'static str = "container_fs_limit_bytes";
+
+pub const CPU_CONSUMPTION: &'static str = "cpu_consumption";
+pub const MEMORY_CONSUMPTION: &'static str = "memory_consumption";
+pub const STORAGE_CONSUMPTION: &'static str = "storage_consumption";
+
+pub const SENSEIS: &'static str = "senseis";
+pub const NINJAS: &'static str = "ninjas";

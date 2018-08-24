@@ -8,6 +8,7 @@ use protocol::api::base::MetaFields;
 use std::collections::BTreeMap;
 use std::ops::Div;
 use telemetry::metrics::collector::Collector;
+use telemetry::metrics::executer::Executer;
 use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::query::QueryMaker;
 
@@ -25,13 +26,13 @@ impl<'a> DataStore<'a> {
     }
 
     pub fn healthz_all(&self) -> Result<Option<node::HealthzAllGetResponse>> {
-        let mut mk_query = QueryMaker::new(self.client);
-        let querys = mk_query.build_consumption_in_datacenter();
-        let mut res = Collector::new(mk_query.pull_metrics(querys)?).get_reports();
-        let new_ninjas = self.merge_live_ninjas(res.get_statistics().get_ninjas());
-        let new_senseis = self.merge_live_senseis(res.get_statistics().get_senseis());
-        res.set_statistics(new_statistics(new_ninjas, new_senseis));
-        Ok(Some(res.into()))
+        let querys = QueryMaker::new().build_consumption_in_datacenter();
+        let res = Executer::new(self.client.clone()).pull_metrics(querys)?;
+        let mut response = Collector::new(res).get_reports();
+        let new_ninjas = self.merge_live_ninjas(response.get_statistics().get_ninjas());
+        let new_senseis = self.merge_live_senseis(response.get_statistics().get_senseis());
+        response.set_statistics(new_statistics(new_ninjas, new_senseis));
+        Ok(Some(response.into()))
     }
 
     fn merge_live_ninjas(&self, live: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {

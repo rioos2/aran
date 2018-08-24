@@ -1,0 +1,28 @@
+// Copyright 2018 The Rio Advancement Inc
+
+//! The startup hook is responsible for setting the sensei nodes during the startup.
+
+use error::Result;
+use metrics::hooks::BeforeMetrics;
+use protocol::api::node;
+use serde_json;
+
+pub struct Consumption {
+    content: node::PromResponse,
+}
+
+impl Consumption {
+    pub fn new(content: node::PromResponse) -> Consumption {
+        Consumption { content: content }
+    }
+    fn get_content(&mut self) -> Option<String> {
+        let counters: node::Counters = self.content.clone().into();
+        serde_json::to_string(&counters).ok()
+    }
+}
+
+impl BeforeMetrics for Consumption {
+    fn before(&mut self) -> Option<String> {
+        self.get_content()
+    }
+}

@@ -11,6 +11,11 @@ use std::collections::BTreeMap;
 pub const CAPACITY_CPU: &'static str = "cpu";
 pub const CAPACITY_MEMORY: &'static str = "memory";
 pub const CAPACITY_STORAGE: &'static str = "storage";
+pub const MACHINE_CAPACITY_CPU: &'static str = "machine-cpu";
+pub const CONTAINER_CAPACITY_CPU: &'static str = "container-cpu";
+pub const CONTAINER_CAPACITY_MEMORY: &'static str = "container-memory";
+pub const CONTAINER_CAPACITY_STORAGE: &'static str = "container-storage";
+
 pub const NODE_JOBS: &'static str = "job=rioos-nodes";
 
 pub const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
@@ -854,6 +859,18 @@ pub struct PromResponse {
     pub error: Option<String>,
 }
 
+impl PromResponse {
+    pub fn new() -> PromResponse {
+        PromResponse {
+            name: "".to_string(),
+            result: Data::String((0.0, "".to_string())),
+            error_type: None,
+            error: None,
+        }
+    }
+}
+
+
 //convert the PromResponse into Counters value
 impl Into<Counters> for PromResponse {
     fn into(mut self) -> Counters {
@@ -868,6 +885,7 @@ impl Into<Counters> for PromResponse {
         counters
     }
 }
+
 
 //convert the PromResponse into NodeStatistic value
 impl Into<Vec<NodeStatistic>> for PromResponse {
@@ -980,9 +998,23 @@ impl Into<BTreeMap<String, String>> for PromResponse {
         if let Data::Vector(ref mut instancevec) = self.result {
             instancevec
                 .iter_mut()
-                .map(|x| {
+                .map(|x| if x.metric
+                    .get(METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID)
+                    .is_some()
+                {
                     data.insert(
-                        x.metric.get("rioos_assembly_id").unwrap().to_string(),
+                        x.metric
+                            .get(METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID)
+                            .unwrap_or(&"".to_string())
+                            .to_string(),
+                        x.value.1.clone(),
+                    );
+                } else {
+                    data.insert(
+                        x.metric
+                            .get(METRIC_LBL_RIOOS_ASSEMBLY_ID)
+                            .unwrap_or(&"".to_string())
+                            .to_string(),
                         x.value.1.clone(),
                     );
                 })

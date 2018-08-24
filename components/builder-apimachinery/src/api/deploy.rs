@@ -2,15 +2,13 @@
 
 //! This module defines the Rio/OS APi machinery database interfaces for deployment.
 //! Rio/OS Api machinery encapsulate business logic of the databae.
+
 use api::base::{ChildTypeMeta, IdGet, MetaFields, ObjectMeta, Status, TypeMeta};
 use api::blueprint::Plan;
 use api::endpoints::EndPoints;
 use api::linker::Services;
 use api::volume::Volumes;
-use cache::inject::{
-    EndPointsFeeder, FactoryFeeder, MetricsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder,
-    VolumesFeeder,
-};
+use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder, VolumesFeeder};
 use std::collections::BTreeMap;
 
 pub const AWAIT_PHASE_PENDING: &'static str = "AwaitPending";
@@ -254,9 +252,7 @@ pub struct Affinity {
 }
 impl Affinity {
     pub fn with_affinity(assemblyfactory_affinity: &str) -> Affinity {
-        Affinity {
-            assemblyfactory_affinity: assemblyfactory_affinity.to_string(),
-        }
+        Affinity { assemblyfactory_affinity: assemblyfactory_affinity.to_string() }
     }
 }
 
@@ -339,8 +335,8 @@ pub struct AssemblyFactory {
     id: String, // Id an unique identifier in systems of record. Generated during creation of the AssemblyFactory
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: AssemblyFactory
-    object_meta: ObjectMeta,             ////Standard object metadata
-    replicas: u32,                       //Replicas is the number of desired replicas of the plan.
+    object_meta: ObjectMeta, ////Standard object metadata
+    replicas: u32, //Replicas is the number of desired replicas of the plan.
     resources: BTreeMap<String, String>, //cpu, ram, disk, compute: cpu/gpu, storage: hdd/ssd
     secret: Secret, //Secret references to the secret for user and other sensitive information. If this is not provided, Login operation will fail.
     plan: String, // A Plan is meta-data that provides a description of the artifacts that make up an application, the services that are required to execute or utilize those artifacts, and the relationship of the artifacts to those services. Plans are expressed as json under a /plans resource.    Here we provide the identifier as pointed to /plans
@@ -852,8 +848,8 @@ impl Assembly {
     }
 
     pub fn get_category(&self) -> String {
-        if self.get_spec().get_parent().is_some()
-            && self.get_spec()
+        if self.get_spec().get_parent().is_some() &&
+            self.get_spec()
                 .get_parent()
                 .unwrap()
                 .get_spec()
@@ -1028,9 +1024,9 @@ impl Spec {
 
 #[cfg(test)]
 mod test {
-    use serde_json::from_str as json_decode;
 
     use super::*;
+    use serde_json::from_str as json_decode;
 
     #[test]
     fn decode_assembly_factory() {
@@ -1137,11 +1133,9 @@ mod test {
         assert!(assemblyfactory.resources.contains_key("compute_type"));
         assert!(assemblyfactory.resources.contains_key("stotage_type"));
         assert_eq!(assemblyfactory.metadata.len(), 2);
-        assert!(
-            assemblyfactory
-                .metadata
-                .contains_key("io:rioos:orginin::name",)
-        );
+        assert!(assemblyfactory.metadata.contains_key(
+            "io:rioos:orginin::name",
+        ));
         assert!(assemblyfactory.metadata.contains_key("io:rioos:team::name"));
     }
 
@@ -1250,11 +1244,9 @@ mod test {
         assert!(assemblyfactory.resources.contains_key("compute_type"));
         assert!(assemblyfactory.resources.contains_key("stotage_type"));
         assert_eq!(assemblyfactory.metadata.len(), 2);
-        assert!(
-            assemblyfactory
-                .metadata
-                .contains_key("io:rioos:orginin::name",)
-        );
+        assert!(assemblyfactory.metadata.contains_key(
+            "io:rioos:orginin::name",
+        ));
         assert!(assemblyfactory.metadata.contains_key("io:rioos:team::name"));
     }
 
@@ -1282,8 +1274,7 @@ mod test {
 
     #[test]
     fn decode_affinity() {
-        let affinity =
-            r#"{"assemblyfactory_affinity": "requiredDuringSchedulingIgnoredDuringExecution"}"#;
+        let affinity = r#"{"assemblyfactory_affinity": "requiredDuringSchedulingIgnoredDuringExecution"}"#;
         let affinit: Affinity = json_decode(affinity).unwrap();
         assert_eq!(
             affinit.assemblyfactory_affinity,
