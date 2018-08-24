@@ -4,7 +4,7 @@
 
 use auth::models::permission;
 use db::data_store::DataStoreConn;
-use protocol::api::authorize::PermissionsForTeam;
+use protocol::api::authorize::PermissionsForPolicy;
 use protocol::api::base::IdGet;
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PERMISSION};
 
@@ -26,8 +26,8 @@ impl Permissions {
         permission::DataStore::new(&self.conn).list_by_email_fascade(email)
     }*/
 
-    pub fn list_by_team(&self, team: IdGet) -> PermissionsForTeam {
-        permission::DataStore::new(&self.conn).list_by_team_fascade(team)
+    pub fn list_by_team(&self, policy: IdGet) -> PermissionsForPolicy {
+        permission::DataStore::new(&self.conn).list_by_policy_fascade(policy)
     }
 }
 
@@ -40,7 +40,7 @@ impl ExpanderSender for Permissions {
             Box::new(move |id: IdGet| -> Option<String> {
                 info!("« ExpanderSender GET: with cache ≈ {:?}", id);
                 permission::DataStore::new(&_conn)
-                    .list_by_team_name(&id)
+                    .list_by_policy_name(&id)
                     .ok()
                     .and_then(|p| serde_json::to_string(&p).ok())
             }),

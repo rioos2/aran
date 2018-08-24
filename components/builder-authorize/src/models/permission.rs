@@ -5,7 +5,7 @@
 use chrono::prelude::*;
 use error::{Error, Result};
 
-use protocol::api::authorize::{Permissions, PermissionsForAccount, PermissionsForTeam};
+use protocol::api::authorize::{Permissions, PermissionsForAccount, PermissionsForPolicy};
 use protocol::api::base::IdGet;
 
 use protocol::cache::{InMemoryExpander, PULL_DIRECTLY};
@@ -32,7 +32,7 @@ impl<'a> DataStore<'a> {
         let rows = &conn.query(
             "SELECT * FROM insert_permission_v1 ($1,$2,$3)",
             &[
-                &(permissions.get_team_id().parse::<i64>().unwrap()),
+                &(permissions.get_policy_id().parse::<i64>().unwrap()),
                 &(permissions.get_name() as String),
                 &(permissions.get_description() as String),
             ],
@@ -62,11 +62,11 @@ impl<'a> DataStore<'a> {
     }
 
     //Return a permission for a team_id and permission_id
-    pub fn show_by_team(&self, get_perms: &IdGet) -> PermissionsOutput {
+    pub fn show_by_policy(&self, get_perms: &IdGet) -> PermissionsOutput {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM get_permission_by_team_v1($1,$2)",
+            "SELECT * FROM get_permission_by_policy_v1($1,$2)",
             &[
                 &(get_perms.get_id().parse::<i64>().unwrap()),
                 &(get_perms.get_name().parse::<i64>().unwrap()),
@@ -118,53 +118,53 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
-            }            
+            }
             return Ok(Some(response));
         }
         Ok(None)
     }
 
     //This is a fascade method to get permissions by team from cache.
-    pub fn list_by_team_fascade(&self, team: IdGet) -> PermissionsForTeam {
-        let mut perms_for_team = PermissionsForTeam::new();
-        perms_for_team.set_team(team.get_id());
+    pub fn list_by_policy_fascade(&self, policy: IdGet) -> PermissionsForPolicy {
+        let mut perms_for_policy = PermissionsForPolicy::new();
+        perms_for_policy.set_policy(policy.get_id());
         self.expander
-            .with_permissions(&mut perms_for_team, PULL_DIRECTLY);
-        perms_for_team
+            .with_permissions(&mut perms_for_policy, PULL_DIRECTLY);
+        perms_for_policy
     }
 
     //To get permissions by team name from database
-    pub fn list_by_team_name(&self, team_name: &IdGet) -> PermissionsOutputList {
-        let conn = self.db.pool.get_shard(0)?;    
+    pub fn list_by_policy_name(&self, policy_name: &IdGet) -> PermissionsOutputList {
+        let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_permissions_by_team_name_v1($1)",
-            &[&(team_name.get_id() as String)],
-        ).map_err(Error::TeamPermissionsGet)?;
+            "SELECT * FROM get_permissions_by_policy_name_v1($1)",
+            &[&(policy_name.get_id() as String)],
+        ).map_err(Error::PolicyPermissionGet)?;
 
         let mut response = Vec::new();
 
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
-            }            
+            }
             return Ok(Some(response));
         }
         Ok(None)
     }
 
-    pub fn list_by_team(&self, team_id: &IdGet) -> PermissionsOutputList {
+    pub fn list_by_policy(&self, policy_id: &IdGet) -> PermissionsOutputList {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_permissions_by_team_v1($1)",
-            &[&(team_id.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::TeamPermissionsGet)?;
+            "SELECT * FROM get_permissions_by_policy_v1($1)",
+            &[&(policy_id.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::PolicyPermissionGet)?;
 
         let mut response = Vec::new();
 
         if rows.len() > 0 {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
-            }            
+            }
             return Ok(Some(response));
         }
         Ok(None)
@@ -176,12 +176,12 @@ fn row_to_permissions(row: &postgres::rows::Row) -> Result<Permissions> {
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
-    let team_id: i64 = row.get("team_id");
+    let policy_id: i64 = row.get("policy_id");
     let description: String = row.get("description");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
     permissions.set_id(id.to_string() as String);
-    permissions.set_team_id(team_id.to_string() as String);
+    permissions.set_policy_id(policy_id.to_string() as String);
     permissions.set_name(name as String);
     permissions.set_description(description as String);
     permissions.set_created_at(created_at.to_rfc3339());

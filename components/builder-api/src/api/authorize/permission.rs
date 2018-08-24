@@ -33,8 +33,8 @@ use error::ErrorMessage::{MissingParameter, MustBeNumeric};
 /// POST: /permissions,,
 /// GET: /permissions,
 /// GET: /permissions/:id,
-/// GET: /permissions/teams/:team_id
-/// GET: /permissions/:id/teams/:team_id
+/// GET: /permissions/policies/:policy_id
+/// GET: /permissions/:id/policies/:policy_id
 /// GET: /permissions/email/:name
 #[derive(Clone)]
 pub struct PermissionApi {
@@ -79,18 +79,18 @@ impl PermissionApi {
         }
     }
 
-    //Send in the team id and get all the list the permissions for the team.
-    pub fn list_by_team(&self, req: &mut Request) -> AranResult<Response> {
-        let team_id = {
+    //Send in the policy id and get all the list the permissions for the policy.
+    pub fn list_by_policy(&self, req: &mut Request) -> AranResult<Response> {
+        let policy_id = {
             let params = req.extensions.get::<Router>().unwrap();
-            match params.find("team_id").unwrap().parse::<u64>() {
-                Ok(team_id) => team_id,
-                Err(_) => return Err(bad_request(&MustBeNumeric("team_id".to_string()))),
+            match params.find("policy_id").unwrap().parse::<u64>() {
+                Ok(policy_id) => policy_id,
+                Err(_) => return Err(bad_request(&MustBeNumeric("policy_id".to_string()))),
             }
         };
 
         match permission::DataStore::new(&self.conn)
-            .list_by_team(&IdGet::with_id(team_id.clone().to_string()))
+            .list_by_policy(&IdGet::with_id(policy_id.clone().to_string()))
         {
             Ok(Some(permissions_list)) => Ok(render_json_list(
                 status::Ok,
@@ -101,7 +101,7 @@ impl PermissionApi {
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(RecordsNotFound),
-                team_id
+                policy_id
             ))),
         }
     }
@@ -121,21 +121,21 @@ impl PermissionApi {
         }
     }
 
-    //Permission applied for a team
+    //Permission applied for a policy
     //Don't know the reason we use this.
-    fn show_by_team(&self, req: &mut Request) -> AranResult<Response> {
-        let (perm_id, team_id) = {
+    fn show_by_policy(&self, req: &mut Request) -> AranResult<Response> {
+        let (perm_id, policy_id) = {
             let params = req.extensions.get::<Router>().unwrap();
             let perm_id = params.find("id").unwrap().to_owned();
-            let team_id = params.find("team_id").unwrap().to_owned();
+            let policy_id = params.find("policy_id").unwrap().to_owned();
 
-            (perm_id, team_id)
+            (perm_id, policy_id)
         };
         let mut perms_get = IdGet::new();
         perms_get.set_id(perm_id);
-        perms_get.set_name(team_id);
+        perms_get.set_name(policy_id);
 
-        match permission::DataStore::new(&self.conn).show_by_team(&perms_get) {
+        match permission::DataStore::new(&self.conn).show_by_policy(&perms_get) {
             Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -163,12 +163,12 @@ impl Api for PermissionApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let list_by_team =
-            move |req: &mut Request| -> AranResult<Response> { _self.list_by_team(req) };
+        let list_by_policy =
+            move |req: &mut Request| -> AranResult<Response> { _self.list_by_policy(req) };
 
         let _self = self.clone();
-        let show_by_team =
-            move |req: &mut Request| -> AranResult<Response> { _self.show_by_team(req) };
+        let show_by_policy =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_policy(req) };
 
         //Routes:  Authorization : Permissions
         router.post(
@@ -182,11 +182,11 @@ impl Api for PermissionApi {
             "permission_list",
         );
         router.get(
-            "/permissions/teams/:team_id",
+            "/permissions/policies/:policy_id",
             XHandler::new(C {
-                inner: list_by_team,
+                inner: list_by_policy,
             }).before(basic.clone()),
-            "list_permissions_by_team",
+            "list_permissions_by_policy",
         );
         router.get(
             "/permissions/:id",
@@ -194,9 +194,9 @@ impl Api for PermissionApi {
             "permission_show",
         );
         router.get(
-            "/permissions/:id/teams/:team_id",
+            "/permissions/:id/policies/:policy_id",
             XHandler::new(C {
-                inner: show_by_team,
+                inner: show_by_policy,
             }).before(basic.clone()),
             "show_permissions_applied_for",
         );
@@ -211,7 +211,7 @@ impl ExpanderSender for PermissionApi {
             CACHE_PREFIX_PERMISSION.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 permission::DataStore::new(&_conn)
-                    .show_by_team(&id)
+                    .show_by_policy(&id)
                     .ok()
                     .and_then(|p| serde_json::to_string(&p).ok())
             }),
@@ -238,8 +238,8 @@ impl Validator for Permissions {
             s.push("description".to_string());
         }
 
-        if self.get_team_id().len() <= 0 {
-            s.push("team_id".to_string());
+        if self.get_policy_id().len() <= 0 {
+            s.push("policy_id".to_string());
         }
 
         if s.is_empty() {

@@ -19,7 +19,7 @@ use url::Url;
 
 pub struct Storage {
     parameters: Option<ParametersProvider>,
-    access_key: str
+    access_key: String,
     endpoint: Endpoint,
 }
 
