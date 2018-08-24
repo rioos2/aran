@@ -23,6 +23,8 @@ pub type TeamsOutput = Result<std::option::Option<protocol::api::authorize::Team
 /// Teams output as list
 pub type TeamsOutputList = Result<Option<Vec<protocol::api::authorize::Teams>>>;
 
+pub type PolicyOutputList = Result<Option<Vec<protocol::api::authorize::Policies>>>;
+
 /// permission output
 pub type PermissionsOutput = Result<std::option::Option<protocol::api::authorize::Permissions>>;
 /// permission output as list

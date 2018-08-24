@@ -212,6 +212,10 @@ impl HttpGateway for Wirer {
         let mut team = authorize::team::TeamApi::new(ds.clone());
         team.wire(config.clone(), &mut router);
 
+        let mut policy = authorize::policies::PolicyApi::new(ds.clone());
+        policy.wire(config.clone(), &mut router);
+
+
         let mut permission = authorize::permission::PermissionApi::new(ds.clone());
         permission.wire(config.clone(), &mut router);
 

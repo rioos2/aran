@@ -71,6 +71,9 @@ lazy_static! {
         map.register("POST:teams", "Team");
         map.register("GET:teams", "TeamList");
 
+        map.register("GET:policiesall","PolicyList");
+        map.register("GET:policies","PolicyList");
+
         map.register("POST:teammembers", "TeamMember");
 
         map.register("POST:originmembers", "OriginMember");
