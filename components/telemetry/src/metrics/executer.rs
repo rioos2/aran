@@ -44,7 +44,7 @@ impl Executer {
         let mut ah = AHooks::new();
         let _content = content.clone();
         let cpu = Box::new(HookServiceFn::new(
-            CPU_CONSUMPTION.to_string(),
+            node::CAPACITY_CPU.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
                     _content
@@ -57,7 +57,7 @@ impl Executer {
 
         let _content = content.clone();
         let memory = Box::new(HookServiceFn::new(
-            MEMORY_CONSUMPTION.to_string(),
+            node::CAPACITY_MEMORY.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
                     _content
@@ -70,7 +70,7 @@ impl Executer {
 
         let _content = content.clone();
         let storage = Box::new(HookServiceFn::new(
-            STORAGE_CONSUMPTION.to_string(),
+            node::CAPACITY_STORAGE.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
                     _content
@@ -84,28 +84,28 @@ impl Executer {
         let _content = content.clone();
         let mut x = BTreeMap::new();
         for (key, value) in _content {
-            if key.starts_with(NINJAS) {
+            if key.starts_with(node::NINJAS) {
                 x.insert(key, value);
             }
         }
         let ninjas_intstance = Box::new(HookServiceFn::new(
-            NINJAS.to_string(),
+            node::NINJAS.to_string(),
             Box::new(move || -> Option<String> {
-                instance::Instance::new(NINJAS, x.clone()).before()
+                instance::Instance::new(node::NINJAS, x.clone()).before()
             }),
         ));
 
         let _content = content.clone();
         let mut x = BTreeMap::new();
         for (key, value) in _content {
-            if key.starts_with(SENSEIS) {
+            if key.starts_with(node::SENSEIS) {
                 x.insert(key, value);
             }
         }
         let senseis_intstance = Box::new(HookServiceFn::new(
-            SENSEIS.to_string(),
+            node::SENSEIS.to_string(),
             Box::new(move || -> Option<String> {
-                instance::Instance::new(SENSEIS, x.clone()).before()
+                instance::Instance::new(node::SENSEIS, x.clone()).before()
             }),
         ));
 

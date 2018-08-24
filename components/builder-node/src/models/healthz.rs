@@ -5,10 +5,11 @@ use db::data_store::DataStoreConn;
 use error::Result;
 use protocol::api::{node, senseis};
 use protocol::api::base::MetaFields;
+use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
-use telemetry::metrics::collector::Collector;
 use telemetry::metrics::executer::Executer;
+use telemetry::metrics::hooks::before::AHooks;
 use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::query::QueryMaker;
 
@@ -28,14 +29,23 @@ impl<'a> DataStore<'a> {
     pub fn healthz_all(&self) -> Result<Option<node::HealthzAllGetResponse>> {
         let querys = QueryMaker::new().build_consumption_in_datacenter();
         let res = Executer::new(self.client.clone()).pull_metrics(querys)?;
-        let mut response = Collector::new(res).get_reports();
-        let new_ninjas = self.merge_live_ninjas(response.get_statistics().get_ninjas());
-        let new_senseis = self.merge_live_senseis(response.get_statistics().get_senseis());
-        response.set_statistics(new_statistics(new_ninjas, new_senseis));
+        let response = self.get_reports(res);
         Ok(Some(response.into()))
     }
 
-    fn merge_live_ninjas(&self, live: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
+    fn get_reports(&self, response: AHooks) -> node::HealthzAllGet {
+        let mut x = node::HealthzAllGet::new();
+        x.set_title("Command center operations".to_string());
+        x.set_gauges(mk_guages(&response));
+        x.set_statistics(new_statistics(
+            self.merge_live_ninjas(&response),
+            self.merge_live_senseis(&response),
+        ));
+        x
+    }
+
+    fn merge_live_ninjas(&self, response: &AHooks) -> Vec<node::NodeStatistic> {
+        let live: Vec<node::NodeStatistic> = serde_json::from_str(&response.get(node::NINJAS).unwrap()).unwrap();
         match ninja::DataStore::new(self.db).list_blank() {
             Ok(Some(node)) => {
                 let mut response = Vec::new();
@@ -63,7 +73,8 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    fn merge_live_senseis(&self, live: Vec<node::NodeStatistic>) -> Vec<node::NodeStatistic> {
+    fn merge_live_senseis(&self, response: &AHooks) -> Vec<node::NodeStatistic> {
+        let live: Vec<node::NodeStatistic> = serde_json::from_str(&response.get(node::SENSEIS).unwrap()).unwrap();
         match db_senseis::DataStore::new(self.db).list_blank() {
             Ok(Some(node)) => {
                 let mut response = Vec::new();
@@ -91,6 +102,15 @@ impl<'a> DataStore<'a> {
         }
     }
 }
+
+fn mk_guages(response: &AHooks) -> node::Guages {
+    vec![
+        serde_json::from_str(&response.get(node::CAPACITY_CPU).unwrap()).unwrap(),
+        serde_json::from_str(&response.get(node::CAPACITY_MEMORY).unwrap()).unwrap(),
+        serde_json::from_str(&response.get(node::CAPACITY_STORAGE).unwrap()).unwrap(),
+    ].into()
+}
+
 
 fn new_statistics(new_ninjas: Vec<node::NodeStatistic>, new_senseis: Vec<node::NodeStatistic>) -> node::Statistics {
     let mut statistics = node::Statistics::new();

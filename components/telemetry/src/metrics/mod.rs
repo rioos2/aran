@@ -1,7 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the metrics http clients
-pub mod collector;
 pub mod expression;
 pub mod prometheus;
 pub mod executer;
@@ -38,10 +37,3 @@ pub const CONTAINER_SPEC_MEM_LIMIT_BYTES: &'static str = "container_spec_memory_
 
 pub const CONTAINER_FS_USAGE_BYTES: &'static str = "container_fs_usage_bytes";
 pub const CONTAINER_FS_LIMIT_BYTES: &'static str = "container_fs_limit_bytes";
-
-pub const CPU_CONSUMPTION: &'static str = "cpu_consumption";
-pub const MEMORY_CONSUMPTION: &'static str = "memory_consumption";
-pub const STORAGE_CONSUMPTION: &'static str = "storage_consumption";
-
-pub const SENSEIS: &'static str = "senseis";
-pub const NINJAS: &'static str = "ninjas";

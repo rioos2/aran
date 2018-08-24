@@ -16,6 +16,9 @@ pub const CONTAINER_CAPACITY_CPU: &'static str = "container-cpu";
 pub const CONTAINER_CAPACITY_MEMORY: &'static str = "container-memory";
 pub const CONTAINER_CAPACITY_STORAGE: &'static str = "container-storage";
 
+pub const SENSEIS: &'static str = "senseis";
+pub const NINJAS: &'static str = "ninjas";
+
 pub const NODE_JOBS: &'static str = "job=rioos-nodes";
 
 pub const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
