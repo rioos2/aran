@@ -67,8 +67,3 @@ impl PrometheusClient {
         Ok(contents)
     }
 }
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Contents {
-    pub data: String,
-}
