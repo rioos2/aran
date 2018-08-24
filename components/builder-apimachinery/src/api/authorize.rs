@@ -361,7 +361,7 @@ mod test {
             "description":"superuser of RIO/OS. God given powers.  instance",
             "object_meta": {"account":"1043206892018475008"},"metadata": {"origin":"rioos"}}"#;
         let team: Teams = json_decode(val).unwrap();
-        assert_eq!(team.name, "RIOOS:SUPERUSER");
+        assert_eq!(team.full_name, "RIOOS:SUPERUSER");
         assert_eq!(
             team.description,
             "superuser of RIO/OS. God given powers.  instance"
