@@ -18,7 +18,7 @@ pub enum Error {
     PermissionsCreate(postgres::error::Error),
     PermissionsGet(postgres::error::Error),
     PermissionGet(postgres::error::Error),
-    TeamPermissionsGet(postgres::error::Error),
+    PolicyPermissionGet(postgres::error::Error),
     InvitationsCreate(postgres::error::Error),
     InvitationsGet(postgres::error::Error),
     InvitationsUpdate(postgres::error::Error),
@@ -38,7 +38,7 @@ impl fmt::Display for Error {
             Error::PermissionsCreate(ref e) => {
                 format!("Database error creating a permission, {}", e)
             }
-            Error::TeamPermissionsGet(ref e) => {
+            Error::PolicyPermissionGet(ref e) => {
                 format!("Database error get team based permission, {}", e)
             }
             Error::PermissionsGet(ref e) => format!("Database error get permissions, {}", e),
@@ -63,7 +63,7 @@ impl error::Error for Error {
             Error::PermissionsCreate(ref err) => err.description(),
             Error::PermissionsGet(ref err) => err.description(),
             Error::PermissionGet(ref err) => err.description(),
-            Error::TeamPermissionsGet(ref err) => err.description(),
+            Error::PolicyPermissionGet(ref err) => err.description(),
             Error::InvitationsCreate(ref err) => err.description(),
             Error::InvitationsGet(ref err) => err.description(),
             Error::InvitationsUpdate(ref err) => err.description(),

@@ -222,7 +222,7 @@ impl MetaFields for TeamMembers {
 pub struct Permissions {
     #[serde(default)]
     id: String,
-    team_id: String,
+    policy_id: String,
     name: String,
     description: String,
     #[serde(default)]
@@ -249,12 +249,12 @@ impl Permissions {
         self.name.clone()
     }
 
-    pub fn set_team_id(&mut self, v: ::std::string::String) {
-        self.team_id = v;
+    pub fn set_policy_id(&mut self, v: ::std::string::String) {
+        self.policy_id = v;
     }
 
-    pub fn get_team_id(&self) -> ::std::string::String {
-        self.team_id.clone()
+    pub fn get_policy_id(&self) -> ::std::string::String {
+        self.policy_id.clone()
     }
 
     pub fn set_description(&mut self, v: ::std::string::String) {
@@ -312,22 +312,22 @@ impl PermissionsFeeder for PermissionsForAccount {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct PermissionsForTeam {
-    team: String,
+pub struct PermissionsForPolicy {
+    policy: String,
     permissions: Option<Vec<Permissions>>,
 }
 
-impl PermissionsForTeam {
-    pub fn new() -> PermissionsForTeam {
+impl PermissionsForPolicy {
+    pub fn new() -> PermissionsForPolicy {
         ::std::default::Default::default()
     }
 
-    pub fn set_team(&mut self, v: ::std::string::String) {
-        self.team = v;
+    pub fn set_policy(&mut self, v: ::std::string::String) {
+        self.policy = v;
     }
 
-    pub fn get_team(&self) -> ::std::string::String {
-        self.team.clone()
+    pub fn get_policy(&self) -> ::std::string::String {
+        self.policy.clone()
     }
 
     pub fn set_permissions(&mut self, v: Option<Vec<Permissions>>) {
@@ -338,9 +338,9 @@ impl PermissionsForTeam {
     }
 }
 
-impl PermissionsFeeder for PermissionsForTeam {
+impl PermissionsFeeder for PermissionsForPolicy {
     fn iget_id(&mut self) -> IdGet {
-        IdGet::with_id_name(self.get_team(), "".to_string())
+        IdGet::with_id_name(self.get_policy(), "".to_string())
     }
 
     fn ifeed(&mut self, m: Option<Vec<Permissions>>) {
@@ -371,12 +371,12 @@ mod test {
     #[test]
     fn decode_permission() {
         let val = r#"{
-            "team_id": "98765432123456",
+            "policy_id": "98765432123456",
             "name": "rioos.assembly.get",
             "description":"Read only access to all the users  VMs, Containers"
             }"#;
         let perms: Permissions = json_decode(val).unwrap();
-        assert_eq!(perms.team_id, "98765432123456");
+        assert_eq!(perms.policy_id, "98765432123456");
         assert_eq!(perms.name, "rioos.assembly.get");
         assert_eq!(
             perms.description,
