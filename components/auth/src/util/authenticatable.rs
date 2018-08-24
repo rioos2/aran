@@ -87,10 +87,11 @@ impl ToAuth for Authenticatable {
 impl Into<TeamType> for Authenticatable {
     fn into(self) -> TeamType {
         match self {
-            Authenticatable::UserAndPass {
-                username: ref u,
-                password: ref _p,
-            } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
+            //`-----future purpose for team based authentication
+            // Authenticatable::UserAndPass {
+            //     username: ref u,
+            //     password: ref _p,
+            // } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
 
             Authenticatable::ServiceAccountNameAndWebtoken {
                 name: ref u,
@@ -98,15 +99,17 @@ impl Into<TeamType> for Authenticatable {
                 key: ref _k,
             } => TeamType::new(u.to_string(), TeamNames::SERVICEACCOUNT),
 
-            Authenticatable::UserEmailAndToken {
-                email: ref u,
-                token: ref _p,
-            } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
+            //`-----future purpose for team based authentication
+            // Authenticatable::UserEmailAndToken {
+            //     email: ref u,
+            //     token: ref _p,
+            // } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
 
-            Authenticatable::UserEmailAndWebtoken {
-                email: ref u,
-                webtoken: ref _p,
-            } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
+            //`-----future purpose for team based authentication
+            // Authenticatable::UserEmailAndWebtoken {
+            //     email: ref u,
+            //     webtoken: ref _p,
+            // } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
 
             _ => TeamType::new("".to_string(), TeamNames::NONE),
         }

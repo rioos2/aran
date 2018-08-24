@@ -184,7 +184,7 @@ impl InMemoryExpander {
     /// Returns the cacheservice for the prefix keys
     /// - CACHE_PREFIX_PLAN, CACHE_PREFIX_FACTORY, CACHE_PREFIX_VOLUME, CACHE_PREFIX_ENDPOINT,
     /// - CACHE_PREFIX_METRIC
-    fn cache_service_for(&self, key: String) -> ::std::option::Option<&Box<NewCacheServiceFn>> {        
+    fn cache_service_for(&self, key: String) -> ::std::option::Option<&Box<NewCacheServiceFn>> {
         self.cached.get(&key).map(|p| p)
     }
 
@@ -467,8 +467,8 @@ impl InMemoryExpander {
         i.ifeed(opt_found_as_str.and_then({
             |found_as_str| {
                 let account: api::session::Account = serde_json::from_str(&found_as_str).unwrap_or(api::session::Account::new());
-                let teams: Vec<String> = account.get_teams();
-                Some(teams)
+                let is_admin: bool = account.get_is_admin();
+                Some(is_admin)
             }
         }))
     }

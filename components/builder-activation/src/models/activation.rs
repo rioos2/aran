@@ -27,10 +27,8 @@ impl<'a> DataStore<'a> {
 
         let conn = self.db.pool.get_shard(0)?;
         let rows = conn.query(
-            "SELECT * FROM get_accounts_v1_by_team($1)",
-            &[
-                &(vec![activation::BUILTIN_TEAM_RIOOS_SUPERUSER.to_string()]),
-            ],
+            "SELECT * FROM get_accounts_v1_by_is_admin()",
+            &[ ],
         ).map_err(Error::WizardGet)?;
 
         wizard.set_registered(rows.len() > 0);

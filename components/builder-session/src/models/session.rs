@@ -84,13 +84,12 @@ impl<'a> DataStore<'a> {
     pub fn account_create(
         datastore: &DataStoreConn,
         session_create: &session::SessionCreate,
-        device: &session::Device,
-        team: &IdGet
+        device: &session::Device
     ) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
 
         let query =
-            "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)";
+            "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
         let rows = conn.query(
             &query,
             &[
@@ -102,15 +101,13 @@ impl<'a> DataStore<'a> {
                 &session_create.get_password(),
                 &session_create.get_approval(),
                 &session_create.get_suspend(),
-                &session_create.get_teams(),
+                &session_create.get_is_admin(),
                 &session_create.get_registration_ip_address(),
                 &session_create.get_trust_level(),
                 &session_create.get_company_name(),
                 &(serde_json::to_value(session_create.object_meta()).unwrap()),
                 &(serde_json::to_value(session_create.type_meta()).unwrap()),
-                &(format!("default-{}",rand::random::<u8>().to_string())),
                 &session_create.get_avatar(),
-                &team.get_id(),
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {
@@ -306,8 +303,7 @@ impl<'a> DataStore<'a> {
                         let session = Self::account_create(
                             datastore,
                             &mut add_account,
-                            &session::Device::new(),
-                            &IdGet::new(),
+                            &session::Device::new()
                         )?;
                         imported_users.push(session.get_email());
                         Ok(session)
@@ -456,7 +452,7 @@ fn row_to_account(row: postgres::rows::Row) -> session::Account {
     account.set_password(row.get("password"));
     account.set_first_name(row.get("first_name"));
     account.set_last_name(row.get("last_name"));
-    account.set_teams(row.get("teams"));
+    account.set_is_admin(row.get("is_admin"));
     account.set_apikey(row.get("api_key"));
     account.set_company_name(row.get("company_name"));
     account.set_trust_level(row.get("trust_level"));

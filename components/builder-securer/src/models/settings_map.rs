@@ -47,7 +47,7 @@ impl<'a> DataStore<'a> {
     pub fn show(&self, get_settingsmap: &base::IdGet) -> SettingsMapOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_settings_map_v1($1,$2)",
+            "SELECT * FROM get_settings_map_by_name_v1($1,$2)",
             &[&(get_settingsmap.get_name()), &(get_settingsmap.get_id())],
         ).map_err(Error::SettingsMapGet)?;
         if rows.len() > 0 {
