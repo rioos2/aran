@@ -277,11 +277,11 @@ impl Api for AssemblyApi {
         );
         //Special move here from assemblyfactory code. We have  moved it here since
         //the expanders for endpoints, volume are missing assembly factory,
-       router.get(
-           "assemblys/assemblyfactorys/:id",
-           XHandler::new(C { inner: describe }).before(basic.clone()),
-           "assemblyfactorys_describe",
-       );
+        router.get(
+            "assemblys/assemblyfactorys/:id",
+            XHandler::new(C { inner: describe }).before(basic.clone()),
+            "assemblyfactorys_describe",
+        );
         router.get(
             "/assemblys/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),

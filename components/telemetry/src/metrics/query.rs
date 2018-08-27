@@ -9,26 +9,13 @@ use super::super::error::{self, Result};
 use chrono::prelude::*;
 use metrics::prometheus::PrometheusClient;
 use protocol::api::node;
-use protocol::api::node::{MetricResponse, PrometheusQuery, QueryBuilder};
 
 use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
 
-const ASSEMBLY_JOBS: &'static str = "job=rioos_sh_machines";
-
-//Rioos prometheus tool automatically allocated "rioos-nodes" job, so we use it
-const IDLEMODE: &'static str = "mode=idle";
-
-const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
-
-const NETWORK_DEFAULT_LAST_X_MINUTE: &'static str = "[1m]";
-
-
 #[derive(Clone)]
-pub struct QueryMaker<'a> {
-    client: &'a PrometheusClient,
-}
+pub struct QueryMaker {}
 
 #[derive(Clone)]
 struct QueryProperties {
@@ -38,9 +25,9 @@ struct QueryProperties {
     pub avg_by_name: String,
 }
 
-impl<'a> QueryMaker<'a> {
-    pub fn new(prom: &'a PrometheusClient) -> Self {
-        QueryMaker { client: &*prom }
+impl QueryMaker {
+    pub fn new() -> Self {
+        QueryMaker {}
     }
 
     //Build the query to get metrics for the dashboard.
@@ -56,14 +43,14 @@ impl<'a> QueryMaker<'a> {
                 NODE_MEMORY_FREE.to_string(),
                 NODE_MEMORY_BUFFER.to_string(),
             ],
-            vec![node::NODE_JOBS.to_string()],
+            vec![NODE_JOBS.to_string()],
             "",
             "",
         )));
 
         querys.push(self.snapshot_cpu_usage(collect_properties(
             vec![NODE_CPU.to_string()],
-            vec![node::NODE_JOBS.to_string(), IDLEMODE.to_string()],
+            vec![NODE_JOBS.to_string(), IDLEMODE.to_string()],
             METRIC_DEFAULT_LAST_X_MINUTE,
             INSTANCE,
         )));
@@ -73,12 +60,12 @@ impl<'a> QueryMaker<'a> {
                 NODE_FILE_SYSTEM_SIZE.to_string(),
                 NODE_FILE_SYSTEM_FREE.to_string(),
             ],
-            vec![node::NODE_JOBS.to_string()],
+            vec![NODE_JOBS.to_string()],
             "",
             "",
         )));
 
-        for x in node::NODES.iter() {
+        for x in INSTANCES.iter() {
             querys.push(self.snapshot_cpu_usage_in_node(
                 collect_properties(
                     vec![NODE_CPU.to_string()],
@@ -101,7 +88,7 @@ impl<'a> QueryMaker<'a> {
                     NETWORK_DEFAULT_LAST_X_MINUTE,
                     "",
                 ),
-                &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[2]),
+                &format!("{}-{}", x.0, NODE_NETWORK),
             ));
 
             querys.push(self.snapshot_process_usage_in_node(
@@ -114,7 +101,7 @@ impl<'a> QueryMaker<'a> {
                     "",
                     "",
                 ),
-                &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[0]),
+                &format!("{}-{}", x.0, NODE_PROCESS),
             ));
 
             querys.push(self.snapshot_disk_io_and_network_bandwidth_usage(
@@ -129,12 +116,21 @@ impl<'a> QueryMaker<'a> {
                     "",
                     "",
                 ),
-                &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[1]),
+                &format!("{}-{}", x.0, NODE_DISK),
             ));
         }
+        querys.push(self.snapshot_cpu_usage_in_node(
+            collect_properties(
+                vec![NODE_CPU.to_string()],
+                vec![ASSEMBLY_JOBS.to_string(), IDLEMODE.to_string()],
+                METRIC_DEFAULT_LAST_X_MINUTE,
+                RIOOS_NAME,
+            ),
+            CUMULATIVE_OS_USAGE,
+        ));
         querys
-
     }
+
     //Provides the cpu usage in an assembly
     //The (total cpu - ide cpu) is returned.
     //The job name we look for is ASSEMBLY_JOBS
@@ -151,7 +147,7 @@ impl<'a> QueryMaker<'a> {
                 METRIC_DEFAULT_LAST_X_MINUTE,
                 job,
             ),
-            node::CAPACITY_CPU,
+            MACHINE_CAPACITY_CPU,
         ));
         querys
     }
@@ -177,7 +173,7 @@ impl<'a> QueryMaker<'a> {
                 "",
                 "",
             ),
-            node::CAPACITY_MEMORY,
+            CONTAINER_CAPACITY_MEMORY,
         ));
         querys.push(self.snapshot_memory_and_storage_usage_in_container(
             collect_properties(
@@ -189,9 +185,22 @@ impl<'a> QueryMaker<'a> {
                 "",
                 "",
             ),
-            node::CAPACITY_STORAGE,
+            CONTAINER_CAPACITY_STORAGE,
         ));
         querys
+    }
+
+    pub fn snapshot_os_usage(&mut self) -> String {
+        let query_builder = self.snapshot_cpu_usage_in_node(
+            collect_properties(
+                vec![NODE_CPU.to_string()],
+                vec![ASSEMBLY_JOBS.to_string(), IDLEMODE.to_string()],
+                METRIC_DEFAULT_LAST_X_MINUTE,
+                RIOOS_NAME,
+            ),
+            CUMULATIVE_OS_USAGE,
+        );
+        query_builder.query
     }
 
     //The query to build the snapshot usage of memory in a the datacenter
@@ -204,7 +213,7 @@ impl<'a> QueryMaker<'a> {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CAPACITY_MEMORY.to_string(),
+            CAPACITY_MEMORY.to_string(),
             format!(
                 "{}",
                 MetricQueryBuilder::new(MetricQuery {
@@ -229,7 +238,7 @@ impl<'a> QueryMaker<'a> {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CAPACITY_CPU.to_string(),
+            CAPACITY_CPU.to_string(),
             format!(
                 "avg(100 - ({} * 100))",
                 MetricQueryBuilder::new(MetricQuery {
@@ -250,7 +259,7 @@ impl<'a> QueryMaker<'a> {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CAPACITY_STORAGE.to_string(),
+            CAPACITY_STORAGE.to_string(),
             format!(
                 "{}",
                 MetricQueryBuilder::new(MetricQuery {
@@ -323,7 +332,7 @@ impl<'a> QueryMaker<'a> {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CAPACITY_CPU.to_string(),
+            CONTAINER_CAPACITY_CPU.to_string(),
             format!("sum by({}) ({})*100", scope.avg_by_name.clone(), sum),
         )
     }
@@ -340,13 +349,6 @@ impl<'a> QueryMaker<'a> {
         }
         QueryBuilder::with_name_query(name.to_string(), format!("{}/{}*100", q[0], q[1]))
     }
-
-    pub fn pull_metrics(&self, querys: Vec<QueryBuilder>) -> Result<MetricResponse> {
-        let res = self.client.pull_metrics(
-            PrometheusQuery::with_querys(querys),
-        )?;
-        Ok(res)
-    }
 }
 
 fn collect_properties(metric_scope: Vec<String>, labels: Vec<String>, duration: &str, avg_by: &str) -> QueryProperties {
@@ -355,5 +357,30 @@ fn collect_properties(metric_scope: Vec<String>, labels: Vec<String>, duration: 
         labels: labels,
         last_x_minutes: duration.to_string(),
         avg_by_name: avg_by.to_string(),
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct QueryBuilder {
+    name: String,
+    query: String,
+}
+impl QueryBuilder {
+    pub fn with_name_query(name: String, query: String) -> QueryBuilder {
+        QueryBuilder {
+            name: name,
+            query: query,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PrometheusQuery {
+    querys: Vec<QueryBuilder>,
+}
+
+impl PrometheusQuery {
+    pub fn with_querys(querys: Vec<QueryBuilder>) -> PrometheusQuery {
+        PrometheusQuery { querys: querys }
     }
 }

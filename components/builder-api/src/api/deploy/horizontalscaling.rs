@@ -153,7 +153,7 @@ impl HorizontalScalingApi {
         Bytes::from(res)
     }
     //GET: /horizontalscaling/:assembly_factory_id/metrics
-    //get metrics for the list of assemblys
+    // get metrics for the list of assemblys
     fn metrics(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
         let query_pairs = self.default_validate(req)?;

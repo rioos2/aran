@@ -1,12 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::IdGet;
-use cache::inject::PermissionsFeeder;
-use std::collections::BTreeMap;
 use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields, WhoAmITypeMeta};
-use cache::inject::MembersFeeder;
-use cache::inject::TeamsFeeder;
+use api::base::IdGet;
 use api::invitations::Invitations;
+use cache::inject::MembersFeeder;
+use cache::inject::PermissionsFeeder;
+use cache::inject::TeamsFeeder;
+use std::collections::BTreeMap;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Teams {
@@ -60,8 +60,8 @@ impl Teams {
 
     pub fn get_description(&self) -> ::std::string::String {
         self.description.clone()
-    }    
-   
+    }
+
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
     }
@@ -83,7 +83,7 @@ impl Teams {
         &mut self.metadata
     }
 
-     pub fn set_members(&mut self, v: Option<Vec<Invitations>>) {
+    pub fn set_members(&mut self, v: Option<Vec<Invitations>>) {
         self.members = v;
     }
 }
@@ -113,7 +113,7 @@ impl MembersFeeder for Teams {
         IdGet::with_id(self.get_id().clone())
     }
 
-    fn efeed(&mut self, s: Option<Vec<Invitations>>) {        
+    fn efeed(&mut self, s: Option<Vec<Invitations>>) {
         self.set_members(s);
     }
 }
@@ -121,7 +121,7 @@ impl MembersFeeder for Teams {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct TeamMembers {
     #[serde(default)]
-    id: String,   
+    id: String,
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Team
     object_meta: ObjectMeta, ////Standard object metadata
@@ -153,8 +153,8 @@ impl TeamMembers {
     }
     pub fn get_id(&self) -> ::std::string::String {
         self.id.clone()
-    }   
-   
+    }
+
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
     }
@@ -179,10 +179,9 @@ impl TeamMembers {
         self.updated_at.clone()
     }
 
-     pub fn set_team(&mut self, v: Option<Teams>) {
+    pub fn set_team(&mut self, v: Option<Teams>) {
         self.team = v;
     }
-   
 }
 
 // The service feeder, which gets called from an expander cache.
@@ -194,7 +193,7 @@ impl TeamsFeeder for TeamMembers {
         IdGet::with_id(id.clone())
     }
 
-    fn efeed(&mut self, s: Option<Teams>) {        
+    fn efeed(&mut self, s: Option<Teams>) {
         self.set_team(s);
     }
 }
@@ -361,7 +360,7 @@ mod test {
             "description":"superuser of RIO/OS. God given powers.  instance",
             "object_meta": {"account":"1043206892018475008"},"metadata": {"origin":"rioos"}}"#;
         let team: Teams = json_decode(val).unwrap();
-        assert_eq!(team.name, "RIOOS:SUPERUSER");
+        assert_eq!(team.full_name, "RIOOS:SUPERUSER");
         assert_eq!(
             team.description,
             "superuser of RIO/OS. God given powers.  instance"

@@ -1,24 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use api::base::{Condition, MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
-use api::senseis::SENSEI_JOBS;
-use chrono::naive::NaiveDateTime;
 
 use serde_json;
 use std::collections::BTreeMap;
-
-// The constants to store status.capacity
-pub const CAPACITY_CPU: &'static str = "cpu";
-pub const CAPACITY_MEMORY: &'static str = "memory";
-pub const CAPACITY_STORAGE: &'static str = "storage";
-pub const NODE_JOBS: &'static str = "job=rioos-nodes";
-
-pub const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
-pub const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
-
-pub const NODES: [(&'static str, &'static str); 2] = [("senseis", SENSEI_JOBS), ("ninjas", NODE_JOBS)];
-
-pub const NODES_METRIC_SOURCE: [&'static str; 3] = ["process", "disk", "network"];
 
 pub type SpeedSummary = (String, i32, i32);
 
@@ -644,28 +629,6 @@ impl NetworkSpeed {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct NetworkDevice {
-    pub name: String,
-    pub error: Vec<MatrixItem>,
-    pub throughput: Vec<MatrixItem>,
-}
-
-impl NetworkDevice {
-    pub fn new() -> NetworkDevice {
-        ::std::default::Default::default()
-    }
-    pub fn set_name(&mut self, v: ::std::string::String) {
-        self.name = v;
-    }
-    pub fn set_throughput(&mut self, v: Vec<MatrixItem>) {
-        self.throughput = v;
-    }
-    pub fn set_error(&mut self, v: Vec<MatrixItem>) {
-        self.error = v;
-    }
-}
-
 impl WhoAmITypeMeta for NodeStatistic {
     const MY_KIND: &'static str = "POST:nodes";
 }
@@ -764,184 +727,6 @@ impl ValueData {
     }
 }
 
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct QueryBuilder {
-    name: String,
-    query: String,
-}
-impl QueryBuilder {
-    pub fn with_name_query(name: String, query: String) -> QueryBuilder {
-        QueryBuilder {
-            name: name,
-            query: query,
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct PrometheusQuery {
-    querys: Vec<QueryBuilder>,
-}
-
-impl PrometheusQuery {
-    pub fn with_querys(querys: Vec<QueryBuilder>) -> PrometheusQuery {
-        PrometheusQuery { querys: querys }
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct MetricResponse {
-    status: StatusData,
-    pub data: Vec<PromResponse>,
-}
-
-type Timestamp = f64;
-type Value = String;
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum StatusData {
-    Success,
-    Error,
-}
-
-#[derive(Debug)]
-pub enum Error {
-    BadRequest(String),
-    InvalidExpression(String),
-    Timeout(String),
-    InvalidResponse(serde_json::Error),
-    Unexpected(u16),
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MatrixItem {
-    pub metric: BTreeMap<String, String>,
-    pub values: Vec<Scalar>,
-}
-pub type Matrix = Vec<MatrixItem>;
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct InstantVecItem {
-    pub metric: BTreeMap<String, String>,
-    pub value: Scalar,
-}
-pub type InstantVec = Vec<InstantVecItem>;
-
-pub type Scalar = (Timestamp, Value);
-
-pub type Str = (Timestamp, String);
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "resultType", content = "result")]
-#[serde(rename_all = "lowercase")]
-pub enum Data {
-    Matrix(Matrix),
-    Vector(InstantVec),
-    Scalar(Scalar),
-    String(Str),
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PromResponse {
-    pub name: String,
-    pub result: Data,
-    #[serde(rename = "errorType")]
-    #[serde(default)]
-    pub error_type: Option<String>,
-    #[serde(default)]
-    pub error: Option<String>,
-}
-
-//convert the PromResponse into Counters value
-impl Into<Counters> for PromResponse {
-    fn into(mut self) -> Counters {
-        let mut counters = Counters::new();
-        counters.set_name(self.name);
-        if let Data::Vector(ref mut instancevec) = self.result {
-            instancevec
-                .into_iter()
-                .map(|x| { counters.set_counter(x.value.1.to_owned()); })
-                .collect::<Vec<_>>();
-        }
-        counters
-    }
-}
-
-//convert the PromResponse into NodeStatistic value
-impl Into<Vec<NodeStatistic>> for PromResponse {
-    fn into(mut self) -> Vec<NodeStatistic> {
-        let mut collections = Vec::new();
-        if let Data::Vector(ref mut instancevec) = self.result {
-            collections = instancevec
-                .into_iter()
-                .map(|x| {
-                    let mut node = NodeStatistic::new();
-                    let instance = x.metric
-                        .get("instance")
-                        .unwrap_or(&"".to_string())
-                        .to_owned();
-                    let ins: Vec<&str> = instance.split("-").collect();
-                    node.set_name(ins[1].to_string());
-                    node.set_counter(x.value.1.to_owned());
-                    node.set_id(ins[0].to_string().replace(".", "_").to_string());
-
-                    node.set_kind("Node".to_string());
-                    node.set_api_version("v1".to_string());
-                    node.set_health("up".to_string());
-                    node
-                })
-                .collect::<Vec<_>>();
-        }
-        collections
-    }
-}
-//convert the PromResponse into OSUsages value
-/*impl Into<OSUsages> for PromResponse {
-    fn into(mut self) -> OSUsages {
-        let mut osusage = OSUsages::new();
-        if let Data::Matrix(ref mut instancevec) = self.data {
-            let item_collection = instancevec
-                .into_iter()
-                .map(|x| {
-                    let mut item = Item::new();
-                    item.set_id(
-                        x.metric
-                            .get("rioos_assemblyfactory_id")
-                            .unwrap_or(&"none".to_string())
-                            .to_owned(),
-                    );
-                    item.set_name(
-                        x.metric
-                            .get("rioos_os_name")
-                            .unwrap_or(&"none".to_string())
-                            .to_owned(),
-                    );
-                    let values = x.values
-                        .clone()
-                        .into_iter()
-                        .map(|s| {
-                            let mut value_data = ValueData::new();
-                            value_data.set_date(
-                                NaiveDateTime::from_timestamp(s.0.round() as i64, 0)
-                                    .to_string()
-                                    .to_owned(),
-                            );
-                            value_data.set_value(s.1.to_owned());
-                            value_data
-                        })
-                        .collect::<Vec<_>>();
-                    item.set_values(values);
-                    item
-                })
-                .collect::<Vec<_>>();
-            osusage.set_items(item_collection);
-        }
-        osusage
-    }
-}*/
-
 impl Into<HealthzAllGetResponse> for HealthzAllGet {
     fn into(self) -> HealthzAllGetResponse {
         let mut health = HealthzAllGetResponse::new();
@@ -973,25 +758,6 @@ impl Into<NodeStatistic> for Node {
         ns
     }
 }
-
-impl Into<BTreeMap<String, String>> for PromResponse {
-    fn into(mut self) -> BTreeMap<String, String> {
-        let mut data = BTreeMap::new();
-        if let Data::Vector(ref mut instancevec) = self.result {
-            instancevec
-                .iter_mut()
-                .map(|x| {
-                    data.insert(
-                        x.metric.get("rioos_assembly_id").unwrap().to_string(),
-                        x.value.1.clone(),
-                    );
-                })
-                .collect::<Vec<_>>();
-        }
-        data
-    }
-}
-
 
 #[cfg(test)]
 mod test {

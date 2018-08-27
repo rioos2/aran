@@ -7,7 +7,8 @@ use super::super::error::Result;
 use chrono::prelude::*;
 use config;
 use http_client::reqwest_client::{http_bearer_post, http_bearer_get};
-use protocol::api::node::{PrometheusQuery, MetricResponse};
+use metrics::{MetricResponse, PromResponse};
+use metrics::query::PrometheusQuery;
 
 use serde_json;
 
@@ -36,7 +37,7 @@ impl PrometheusClient {
     ///       label_value = prometheus (first labels value)
     ///       label_name  = group (first label)
     ///       label_value = nodes (first labels value)
-    pub fn pull_metrics(&self, body: PrometheusQuery) -> Result<MetricResponse> {
+    pub fn pull(&self, body: PrometheusQuery) -> Result<MetricResponse> {
         let url = format!("{}/querys", self.url);
         let mut res = http_bearer_post(&url, serde_json::to_value(&body)?)?;
         let mut body = String::new();
@@ -47,7 +48,7 @@ impl PrometheusClient {
 
     /// Returns the contents of the node metrics
     ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
-    pub fn pull_osusage(&self, path: &str) -> Result<Contents> {
+    pub fn pull_in_range(&self, path: &str) -> Result<PromResponse> {
         let utc: DateTime<Utc> = Utc::now();
         let url =
             format!(
@@ -62,13 +63,8 @@ impl PrometheusClient {
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
 
-        let contents: Contents = Contents { data: body };
+        let contents: PromResponse = serde_json::from_str(&body)?;
 
         Ok(contents)
     }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Contents {
-    pub data: String,
 }
