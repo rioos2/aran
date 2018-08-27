@@ -2,6 +2,26 @@ CREATE SEQUENCE IF NOT EXISTS policies_id_seq;
 CREATE TABLE IF NOT EXISTS policies (id bigint PRIMARY KEY DEFAULT next_id_v1('policies_id_seq'), type_meta JSONB, object_meta JSONB, metadata JSONB, description text, updated_at timestamptz, created_at timestamptz DEFAULT now());
 
 
+CREATE SEQUENCE IF NOT EXISTS poli_mem_id_seq;
+CREATE TABLE IF NOT EXISTS policy_members(id bigint PRIMARY KEY DEFAULT next_id_v1('poli_mem_id_seq'),type_meta JSONB, object_meta JSONB, metadata JSONB, policy_name text, created_at timestamptz DEFAULT now());
+
+CREATE OR REPLACE FUNCTION insert_policy_member_v1(account_id bigint, is_admin bool,acc_policy_name text) RETURNS SETOF policy_members AS $$
+DECLARE inserted_policy_member policy_members;
+BEGIN
+   INSERT INTO
+         policy_members(type_meta, object_meta, metadata, policy_name)
+      VALUES
+      (
+         '{"kind":"PolicyMemeber","api_version":"v1"}', json_build_object('account', account_id::text)::jsonb, json_build_object('is_admin', is_admin::text)::jsonb,acc_policy_name
+      )
+      ON CONFLICT DO NOTHING RETURNING * into inserted_policy_member;
+RETURN NEXT inserted_policy_member;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;
+
+
+
 
 ---
 --- Table:policies:list_blank

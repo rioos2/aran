@@ -107,7 +107,7 @@ impl<'a> DataStore<'a> {
                 &session_create.get_company_name(),
                 &(serde_json::to_value(session_create.object_meta()).unwrap()),
                 &(serde_json::to_value(session_create.type_meta()).unwrap()),
-                &session_create.get_avatar(),
+                &session_create.get_avatar()
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {
@@ -116,6 +116,19 @@ impl<'a> DataStore<'a> {
             let account = row_to_account(row);
 
             let id = account.get_id().parse::<i64>().unwrap();
+
+            let policies: Vec<String> = vec!["LONERANGER".to_string(), "MACHINE_VIEW".to_string(),"CONTAINER_VIEW".to_string()];
+
+            for policy in policies {
+                let rows = conn.query(
+                    "SELECT * FROM insert_policy_member_v1($1, $2,$3)",
+                    &[
+                        &id,
+                        &session_create.get_is_admin(),
+                        &policy,
+                    ],
+                ).map_err(Error::SessionCreate)?;
+            }
 
             let provider = match session_create.get_provider() {
                 session::OAuthProvider::OpenID => "openid",
