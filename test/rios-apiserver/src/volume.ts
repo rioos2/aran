@@ -114,7 +114,7 @@ describe('volume  API', function() {
     });
 
     it('returns the volumes by assembly', function(done) {
-      request.get('/assemblys/'+globalAny.assembly_id+'/volumes')
+      request.get('/volumes/assemblys/'+globalAny.assembly_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -126,7 +126,7 @@ describe('volume  API', function() {
 
 
     it('returns the volumes by assembly invalid url', function(done) {
-      request.get('/volumes/'+globalAny.assembly_id+'/assemblys')
+      request.get('/assemblys/volumes/'+globalAny.assembly_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)

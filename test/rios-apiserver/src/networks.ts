@@ -89,17 +89,6 @@ describe('Network  API', function() {
         });
     });
 
-    it('returns the wrong network by id', function(done) {
-      request.get('/networks/87655434578765')
-      .ca(globalAny.rootCA)
-      .set('Authorization', globalAny.bobo_bearer)
-      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(404)
-        .end(function(err, res) {
-          done(err);
-        });
-    });
-
     it('update networks', function(done) {
       request.put('/networks/'+globalAny.network_id)
       .ca(globalAny.rootCA)
@@ -113,7 +102,7 @@ describe('Network  API', function() {
         });
     });
 
-    it('update storage connectors wrong connector id', function(done) {
+    it('update network by wrong id', function(done) {
       request.put('/networks/876890655433')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)

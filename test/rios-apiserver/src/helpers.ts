@@ -32,3 +32,4 @@ globalAny.pending= "Pending";
 globalAny.ingress= "Ingress";
 globalAny.stacksfactorys = "StacksFactory";
 globalAny.stacksfactoryslist = "StacksFactoryList";
+globalAny.origin_id= "rioos_system";

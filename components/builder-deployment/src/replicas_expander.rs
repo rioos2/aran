@@ -82,8 +82,6 @@ impl<'a> ReplicasExpander<'a> {
 
                 factory.set_resources(x.clone());
 
-                println!("========================================{:?}", factory);
-
                 assemblyfactory::DataStore::new(&self.conn).update(&factory);
                 models::jobs::DataStore::new(&self.conn).create(&self.build_job(&qualified_assembly, &self.get_scale_type()))
             }
