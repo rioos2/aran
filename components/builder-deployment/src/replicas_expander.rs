@@ -3,12 +3,14 @@
 use super::models::assemblyfactory;
 use db::data_store::DataStoreConn;
 use human_size::Size;
-
 use job::{error, models, JobOutput};
 use protocol::api::{deploy, job, node, scale};
 use protocol::api::base::{MetaFields, WhoAmITypeMeta, Status, IdGet};
 ///replicas expander
 use protocol::api::schema::type_meta_url;
+use std::collections::BTreeMap;
+use telemetry::metrics;
+
 
 const METRIC_LIMIT: &'static str = "10";
 use rand::{self, Rng};
@@ -40,18 +42,58 @@ impl<'a> ReplicasExpander<'a> {
             // assembly::DataStore::new(&self.conn).status_update(&self.build_assembly_status());
         }
 
-        let id_get = IdGet::with_id(qualified_assembly.get_owner_references()[0].get_uid());
+        let id_get = IdGet::with_id(
+            qualified_assembly
+                .get_owner_references()
+                .iter()
+                .map(|x| x.get_uid().to_string())
+                .collect::<String>(),
+        );
 
-        let factory = assemblyfactory::DataStore::new(&self.conn)
-            .show(&id_get)
-            .unwrap();
+        match assemblyfactory::DataStore::new(&self.conn).show(&id_get) {
+            Ok(Some(mut factory)) => {
+                //Have a method send the desired_resource
+                let desired = self.get_desired_resource();
 
-        if factory.is_some() {
-            let mut factory = factory.unwrap();
-            factory.set_resources(self.scaling_policy.get_status().get_desired_resource());
-            assemblyfactory::DataStore::new(&self.conn).update(&factory);
+                //Instead of these two explicit variable, we could have a method send back a Treemap with the
+                //requested variables to probe. That will help us when we add more resource keys (like disk)
+                //
+                let new_expanded_memory_by = &desired
+                    .get(metrics::CAPACITY_MEMORY)
+                    .unwrap_or(&"0 KiB".to_string())
+                    .to_string();
+
+                let new_expanded_cpu_by = &desired
+                    .get(metrics::CAPACITY_CPU)
+                    .unwrap_or(&"0 KiB".to_string())
+                    .to_string();
+
+                let mut x = factory.get_resources().clone();
+
+                x.insert(
+                    metrics::CAPACITY_CPU.to_string(),
+                    new_expanded_cpu_by.to_string(),
+                );
+
+                x.insert(
+                    metrics::CAPACITY_MEMORY.to_string(),
+                    new_expanded_memory_by.to_string(),
+                );
+
+                factory.set_resources(x.clone());
+
+                assemblyfactory::DataStore::new(&self.conn).update(&factory);
+                models::jobs::DataStore::new(&self.conn).create(&self.build_job(&qualified_assembly, &self.get_scale_type()))
+            }
+            Ok(None) => Ok(None),
+            Err(err) => Err(error::Error::JobError(err.to_string())),
         }
-        models::jobs::DataStore::new(&self.conn).create(&self.build_job(&qualified_assembly, &self.get_scale_type()))
+    }
+    fn get_desired_resource(&self) -> BTreeMap<String, String> {
+        self.scaling_policy
+            .get_status()
+            .get_desired_resource()
+            .clone()
     }
 
     // should return the least resource utilies assembly

@@ -1,6 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
+
 use db;
 use postgres;
 use std::error;
@@ -13,6 +14,7 @@ pub enum Error {
     JobsCreate(postgres::error::Error),
     JobSetStatus(postgres::error::Error),
     JobsGet(postgres::error::Error),
+    JobError(String),
     METRICLIMITERROR,
 }
 
@@ -22,6 +24,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
+            Error::JobError(ref e) => format!("{}", e),
             Error::JobsCreate(ref e) => format!("Database error jobs create, {}", e),
             Error::JobSetStatus(ref e) => format!("Database error status update in jobs, {}", e),
             Error::JobsGet(ref e) => format!("Database error get all the jobs, {}", e),
@@ -39,6 +42,7 @@ impl error::Error for Error {
             Error::JobsGet(ref err) => err.description(),
             Error::JobSetStatus(ref err) => err.description(),
             Error::METRICLIMITERROR => "Metric limit not satisfied for the assembly",
+            Error::JobError(ref err) => "",
         }
     }
 }
