@@ -141,7 +141,7 @@ fn get_account(conn: &DataStoreConn, account_get: AccountGet, verify_password: b
                     })?;
                 return Ok(());
             }
-            Ok(())
+            Ok(( ))
         }
         Err(err) => {
             return Err(error::Error::Auth(rioos::AuthErr {

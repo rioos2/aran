@@ -46,13 +46,13 @@ pub trait PermissionsFeeder: Send {
 pub trait AccountsFeeder: Send {
     fn iget_id(&mut self) -> api::base::IdGet;
 
-    fn ifeed(&mut self, v: Option<bool>);
+    fn ifeed(&mut self, v: Option<api::session::Account>);
 }
 
 pub trait ServiceAccountFeeder: Send {
     fn iget_id(&mut self) -> api::base::IdGet;
 
-    fn ifeed(&mut self, v: Option<Vec<String>>);
+    fn ifeed(&mut self, v: Option<api::service_account::ServiceAccount>);
 }
 
 pub trait StacksFeeder: Send {
@@ -78,3 +78,4 @@ pub trait TeamsFeeder: Send {
 
     fn efeed(&mut self, e: Option<api::authorize::Teams>);
 }
+

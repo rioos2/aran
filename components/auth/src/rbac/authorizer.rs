@@ -7,23 +7,23 @@ use rbac::teams::{Teams, TrustAccess};
 
 
 #[derive(Clone, Debug)]
-pub enum TeamNames {
+pub enum AccountNames {
     //-----future purpose for team based authentication
-    // USERACCOUNT,
+    USERACCOUNT,
     SERVICEACCOUNT,
     NONE,
 }
 
 // team type to get the permission from database
 #[derive(Clone, Debug)]
-pub struct TeamType {
+pub struct AccountType {
     pub name: String,
-    pub account: TeamNames,
+    pub account: AccountNames,
 }
 
-impl TeamType {
-    pub fn new(name: String, account: TeamNames) -> Self {
-        TeamType {
+impl AccountType {
+    pub fn new(name: String, account: AccountNames) -> Self {
+        AccountType {
             name: name,
             account: account,
         }
@@ -53,35 +53,41 @@ impl Authorization {
     //And get permissions by team name and verify it.
     //Now we assume account/service_account has only one team.
     //In future we could extend it.
-    pub fn verify(self, team_type: TeamType, incoming_to_trust: String) -> Result<bool> {
-        let team_box: Option<String> = match team_type.account {
-            //`-----future purpose for team based authentication
-            // TeamNames::USERACCOUNT => {
-            //     let mut account_get = session::AccountGet::new();
-            //     account_get.set_email(team_type.name);
-            //     let mut account = self.accounts.get_by_email(account_get).get_is_admin();
-            //     account.pop()
-            // },
-            TeamNames::SERVICEACCOUNT => {
-                let mut account = self.service_accounts.get_by_name(IdGet::with_id(team_type.name)).get_teams();
-                account.pop()
+    pub fn verify(self, account_type: AccountType, incoming_to_trust: String) -> Result<bool> {
+        match account_type.account {
+             AccountNames::USERACCOUNT => {
+                 let mut account_get = session::AccountGet::new();
+                 account_get.set_email(account_type.name);
+                 let mut account = self.accounts.get_by_email(account_get);
+                 //account.pop()                 
+                 if (account.get_is_admin()) {
+                    return Ok(true);
+                 }
+                 return Err(Error::PermissionError(format!(
+                    "User doesn't have permission for this operation."
+                )))
+             },
+            AccountNames::SERVICEACCOUNT => {
+                let mut account = self.service_accounts.get_by_name(IdGet::with_id(account_type.name));
+                //account.pop()
+                Ok(true)
             },
-            TeamNames::NONE => {
-                info!("« Authorizer verify {:?}", team_type.account);
-                None
+            AccountNames::NONE => {
+                info!("« Authorizer verify {:?}", account_type.account);
+                Ok(false)
             }
-        };
+        }
 
-        let team = match team_box {
+     /*   let account = match account_box {
             Some(r) => r,
             None => {
-                info!("« Authorizer Team none : {:?}", team_box);
+                info!("« Authorizer Team none : {:?}", account_box);
                 return Err(Error::PermissionError(format!(
                 "User doesn't have permission for this operation."
             )))
             },
         };
-        let perms_for_account = self.permissions.list_by_team(IdGet::with_id(team.to_string()));
+        let perms_for_account = self.permissions.list_by_team(IdGet::with_id(account.to_string()));
         match Teams::per_type(perms_for_account.get_permissions()) {
             Ok(perm_for_account) => {
                 let access = TrustAccess::new(incoming_to_trust);
@@ -92,6 +98,6 @@ impl Authorization {
                 info!("« Authorizer team : {}", team.to_string());
                 Err(Error::PermissionError(format!("{}", err)))
             },
-        }
+        }*/
     }
 }

@@ -668,11 +668,8 @@ impl AccountsFeeder for Account {
         IdGet::with_id_name(self.get_email(), "".to_string())
     }
 
-   fn ifeed(&mut self, m: Option<bool>) {
-       match m {
-            Some(is_admin) => self.set_is_admin(is_admin),
-            None => {}
-        }
+   fn ifeed(&mut self, m: Option<Account>) {
+       
     }
 }
 

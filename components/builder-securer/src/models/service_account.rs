@@ -73,8 +73,8 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn get_service_account_by_name_fascade(&self, get_service: &base::IdGet) -> service_account::ServiceAccountTeams {
-        let mut account = service_account::ServiceAccountTeams::new();
+    pub fn get_service_account_by_name_fascade(&self, get_service: &base::IdGet) -> service_account::ServiceAccount {
+        let mut account = service_account::ServiceAccount::new();
         account.set_name(get_service.get_id().clone());       
         self.expander
             .with_service_account(&mut account, PULL_DIRECTLY);

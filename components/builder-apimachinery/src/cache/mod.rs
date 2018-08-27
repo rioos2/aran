@@ -467,8 +467,7 @@ impl InMemoryExpander {
         i.ifeed(opt_found_as_str.and_then({
             |found_as_str| {
                 let account: api::session::Account = serde_json::from_str(&found_as_str).unwrap_or(api::session::Account::new());
-                let is_admin: bool = account.get_is_admin();
-                Some(is_admin)
+                Some(account)
             }
         }))
     }
@@ -492,8 +491,8 @@ impl InMemoryExpander {
         i.ifeed(opt_found_as_str.and_then({
             |found_as_str| {
                 let account: api::service_account::ServiceAccount = serde_json::from_str(&found_as_str).unwrap_or(api::service_account::ServiceAccount::new());
-                let teams: Vec<String> = account.get_teams();
-                Some(teams)
+                //let teams: Vec<String> = account.get_teams();
+                Some(account)
             }
         }))
     }

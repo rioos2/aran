@@ -129,16 +129,13 @@ impl ServiceAccountTeams {
     }
 }
 
-impl ServiceAccountFeeder for ServiceAccountTeams {
+impl ServiceAccountFeeder for ServiceAccount {
     fn iget_id(&mut self) -> IdGet {
         IdGet::with_id_name(self.get_name(), "_service_account".to_string())
     }
 
-    fn ifeed(&mut self, m: Option<Vec<String>>) {
-        match m {
-            Some(teams) => self.set_teams(teams),
-            None => {}
-        }
+    fn ifeed(&mut self, m: Option<ServiceAccount>) {
+       
     }
 }
 
