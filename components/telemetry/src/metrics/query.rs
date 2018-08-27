@@ -373,7 +373,7 @@ fn collect_properties(metric_scope: Vec<String>, labels: Vec<String>, duration: 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct QueryBuilder {
     name: String,
-    pub query: String,
+    query: String,
 }
 impl QueryBuilder {
     pub fn with_name_query(name: String, query: String) -> QueryBuilder {
