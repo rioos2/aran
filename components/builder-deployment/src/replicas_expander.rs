@@ -65,7 +65,7 @@ impl<'a> ReplicasExpander<'a> {
 
                 let new_expanded_cpu_by = &desired
                     .get(metrics::CAPACITY_CPU)
-                    .unwrap_or(&"0 KiB".to_string())
+                    .unwrap_or(&"0".to_string())
                     .to_string();
 
                 let mut x = factory.get_resources().clone();
@@ -173,7 +173,7 @@ impl<'a> ReplicasExpander<'a> {
             self.scaling_policy
                 .get_status()
                 .get_current_resource()
-                .get("ram")
+                .get("memory")
                 .unwrap_or(&"0 KiB".to_string())
                 .parse::<Size>()
                 .unwrap()
@@ -197,7 +197,7 @@ impl<'a> ReplicasExpander<'a> {
             self.scaling_policy
                 .get_status()
                 .get_desired_resource()
-                .get("ram")
+                .get("memory")
                 .unwrap_or(&"0 KiB".to_string())
                 .parse::<Size>()
                 .unwrap()
