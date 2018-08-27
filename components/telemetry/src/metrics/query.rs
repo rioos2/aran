@@ -9,7 +9,6 @@ use super::super::error::{self, Result};
 use chrono::prelude::*;
 use metrics::prometheus::PrometheusClient;
 use protocol::api::node;
-use protocol::api::node::MetricResponse;
 
 use serde_json;
 use std::collections::BTreeMap;

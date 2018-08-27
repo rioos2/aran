@@ -1,4 +1,3 @@
-
 use super::super::*;
 use itertools::Itertools;
 use protocol::api::node;
@@ -6,11 +5,11 @@ use std::collections::BTreeMap;
 
 pub struct Disk {
     statistics: Vec<node::NodeStatistic>,
-    content: node::PromResponse,
+    content: PromResponse,
 }
 
 impl Disk {
-    pub fn new(statistics: Vec<node::NodeStatistic>, content: node::PromResponse) -> Self {
+    pub fn new(statistics: Vec<node::NodeStatistic>, content: PromResponse) -> Self {
         Disk {
             statistics: statistics,
             content: content,
@@ -20,7 +19,7 @@ impl Disk {
         self.statistics
             .clone()
             .into_iter()
-            .map(|mut x| if let node::Data::Vector(ref mut instancevec) =
+            .map(|mut x| if let Data::Vector(ref mut instancevec) =
                 self.content.result.clone()
             {
                 let mut instance_item = instancevec
@@ -40,7 +39,7 @@ impl Disk {
     }
 }
 
-fn group_disk(disk: &mut Vec<&node::InstantVecItem>) -> Vec<BTreeMap<String, String>> {
+fn group_disk(disk: &mut Vec<&InstantVecItem>) -> Vec<BTreeMap<String, String>> {
     let merged = disk.iter()
         .flat_map(|s| s.metric.get("device"))
         .collect::<Vec<_>>()

@@ -10,14 +10,15 @@ use protocol::api::node;
 use serde_json;
 use std::collections::BTreeMap;
 
+
 #[derive(Debug)]
 pub struct Instance {
     name: String,
-    content: BTreeMap<String, node::PromResponse>,
+    content: BTreeMap<String, PromResponse>,
 }
 
 impl Instance {
-    pub fn new(name: &str, content: BTreeMap<String, node::PromResponse>) -> Instance {
+    pub fn new(name: &str, content: BTreeMap<String, PromResponse>) -> Instance {
         Instance {
             name: name.to_string(),
             content: content,
@@ -26,7 +27,7 @@ impl Instance {
     fn get_content(&mut self) -> Option<String> {
         let statistics: Vec<node::NodeStatistic> = self.content
             .get(&format!("{}-{}", self.name, node::CAPACITY_CPU))
-            .unwrap_or(&node::PromResponse::new())
+            .unwrap_or(&PromResponse::new())
             .clone()
             .into();
 
@@ -34,7 +35,7 @@ impl Instance {
             statistics,
             self.content
                 .get(&format!("{}-{}", self.name, node::NODES_METRIC_SOURCE[0]))
-                .unwrap_or(&node::PromResponse::new())
+                .unwrap_or(&PromResponse::new())
                 .clone(),
         ).get_process();
 
@@ -42,7 +43,7 @@ impl Instance {
             statistics_with_process,
             self.content
                 .get(&format!("{}-{}", self.name, node::NODES_METRIC_SOURCE[1]))
-                .unwrap_or(&node::PromResponse::new())
+                .unwrap_or(&PromResponse::new())
                 .clone(),
         ).get_disk();
 
@@ -50,7 +51,7 @@ impl Instance {
             statistics_with_disk,
             self.content
                 .get(&format!("{}-{}", self.name, node::NODES_METRIC_SOURCE[2]))
-                .unwrap_or(&node::PromResponse::new())
+                .unwrap_or(&PromResponse::new())
                 .clone(),
         ).get_network();
 

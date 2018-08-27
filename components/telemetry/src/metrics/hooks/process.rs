@@ -1,16 +1,16 @@
 use super::super::*;
 use itertools::Itertools;
+
 use protocol::api::node;
 use std::collections::BTreeMap;
 
-
 pub struct Process {
     statistics: Vec<node::NodeStatistic>,
-    content: node::PromResponse,
+    content: PromResponse,
 }
 
 impl Process {
-    pub fn new(statistics: Vec<node::NodeStatistic>, content: node::PromResponse) -> Self {
+    pub fn new(statistics: Vec<node::NodeStatistic>, content: PromResponse) -> Self {
         Process {
             statistics: statistics,
             content: content,
@@ -20,7 +20,7 @@ impl Process {
         self.statistics
             .clone()
             .into_iter()
-            .map(|mut x| if let node::Data::Vector(ref mut instancevec) =
+            .map(|mut x| if let Data::Vector(ref mut instancevec) =
                 self.content.result.clone()
             {
                 let mut instance_item = instancevec
@@ -40,7 +40,7 @@ impl Process {
     }
 }
 
-fn group_process(process: &mut Vec<&node::InstantVecItem>) -> Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>> {
+fn group_process(process: &mut Vec<&InstantVecItem>) -> Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>> {
     let merged = process
         .iter()
         .flat_map(|s| s.metric.get("__name__"))

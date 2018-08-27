@@ -1,4 +1,3 @@
-
 use super::super::*;
 use chrono::prelude::*;
 use itertools::Itertools;
@@ -6,14 +5,13 @@ use protocol::api::node;
 use std::collections::BTreeMap;
 use std::ops::Div;
 
-
 pub struct Network {
     statistics: Vec<node::NodeStatistic>,
-    content: node::PromResponse,
+    content: PromResponse,
 }
 
 impl Network {
-    pub fn new(statistics: Vec<node::NodeStatistic>, content: node::PromResponse) -> Self {
+    pub fn new(statistics: Vec<node::NodeStatistic>, content: PromResponse) -> Self {
         Network {
             statistics: statistics,
             content: content,
@@ -23,7 +21,7 @@ impl Network {
         self.statistics
             .clone()
             .into_iter()
-            .map(|mut x| if let node::Data::Matrix(ref mut instancevec) =
+            .map(|mut x| if let Data::Matrix(ref mut instancevec) =
                 self.content.result.clone()
             {
                 let mut instance_item = instancevec
@@ -43,7 +41,7 @@ impl Network {
     }
 }
 
-fn group_network(network: &mut Vec<&node::MatrixItem>) -> Vec<node::NetworkSpeed> {
+fn group_network(network: &mut Vec<&MatrixItem>) -> Vec<node::NetworkSpeed> {
     let merged = network
         .iter()
         .flat_map(|s| s.metric.get("device"))
@@ -55,7 +53,7 @@ fn group_network(network: &mut Vec<&node::MatrixItem>) -> Vec<node::NetworkSpeed
     let data = merged
         .into_iter()
         .map(|x| {
-            let mut net = node::NetworkDevice::new();
+            let mut net = NetworkDevice::new();
             let mut a = Vec::new();
             let mut b = Vec::new();
             network
@@ -126,4 +124,26 @@ fn group_network(network: &mut Vec<&node::MatrixItem>) -> Vec<node::NetworkSpeed
             group
         })
         .collect::<Vec<_>>()
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+struct NetworkDevice {
+    name: String,
+    error: Vec<MatrixItem>,
+    throughput: Vec<MatrixItem>,
+}
+
+impl NetworkDevice {
+    fn new() -> NetworkDevice {
+        ::std::default::Default::default()
+    }
+    fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    fn set_throughput(&mut self, v: Vec<MatrixItem>) {
+        self.throughput = v;
+    }
+    fn set_error(&mut self, v: Vec<MatrixItem>) {
+        self.error = v;
+    }
 }

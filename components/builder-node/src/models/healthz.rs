@@ -30,7 +30,7 @@ impl<'a> DataStore<'a> {
         let mut querys = QueryMaker::new();
         let executer = Executer::new(self.client.clone());
         let res = executer.execute(querys.build_consumption_in_datacenter())?;
-        let result = executer.pull_os_usage(&querys.snapshot_os_usage())?;
+        let result = executer.execute_range(&querys.snapshot_os_usage())?;
         let response = self.get_reports(res, result);
         Ok(Some(response.into()))
     }

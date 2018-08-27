@@ -3,17 +3,18 @@
 //! The startup hook is responsible for setting the sensei nodes during the startup.
 
 use error::Result;
+use metrics::PromResponse;
 use metrics::hooks::BeforeMetrics;
 use protocol::api::node;
 use serde_json;
 use std::collections::BTreeMap;
 
 pub struct Metric {
-    content: node::PromResponse,
+    content: PromResponse,
 }
 
 impl Metric {
-    pub fn new(content: node::PromResponse) -> Metric {
+    pub fn new(content: PromResponse) -> Metric {
         Metric { content: content }
     }
     fn get_content(&mut self) -> Option<String> {

@@ -9,8 +9,6 @@ use metrics::prometheus::PrometheusClient;
 use metrics::query::{PrometheusQuery, QueryBuilder};
 use protocol::api::base::MetaFields;
 use protocol::api::node;
-use protocol::api::node::{Data, InstantVecItem, PromResponse};
-use protocol::api::node::MetricResponse;
 use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
@@ -33,8 +31,8 @@ impl Executer {
         Ok(self.before_hook(data))
     }
 
-    pub fn pull_os_usage(&self, query: &str) -> Result<Vec<node::Item>> {
-        let content = self.client.pull_osusage(query)?;
+    pub fn execute_range(&self, query: &str) -> Result<Vec<node::Item>> {
+        let content = self.client.pull_metrics_range(query)?;
         let p1: node::OSUsages = content.into();
         Ok(p1.get_items())
     }
