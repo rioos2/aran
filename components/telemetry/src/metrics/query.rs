@@ -14,16 +14,6 @@ use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
 
-const ASSEMBLY_JOBS: &'static str = "job=rioos_sh_machines";
-
-//Rioos prometheus tool automatically allocated "rioos-nodes" job, so we use it
-const IDLEMODE: &'static str = "mode=idle";
-
-const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
-
-const NETWORK_DEFAULT_LAST_X_MINUTE: &'static str = "[1m]";
-
-
 #[derive(Clone)]
 pub struct QueryMaker {}
 
@@ -53,14 +43,14 @@ impl QueryMaker {
                 NODE_MEMORY_FREE.to_string(),
                 NODE_MEMORY_BUFFER.to_string(),
             ],
-            vec![node::NODE_JOBS.to_string()],
+            vec![NODE_JOBS.to_string()],
             "",
             "",
         )));
 
         querys.push(self.snapshot_cpu_usage(collect_properties(
             vec![NODE_CPU.to_string()],
-            vec![node::NODE_JOBS.to_string(), IDLEMODE.to_string()],
+            vec![NODE_JOBS.to_string(), IDLEMODE.to_string()],
             METRIC_DEFAULT_LAST_X_MINUTE,
             INSTANCE,
         )));
@@ -70,12 +60,12 @@ impl QueryMaker {
                 NODE_FILE_SYSTEM_SIZE.to_string(),
                 NODE_FILE_SYSTEM_FREE.to_string(),
             ],
-            vec![node::NODE_JOBS.to_string()],
+            vec![NODE_JOBS.to_string()],
             "",
             "",
         )));
 
-        for x in node::NODES.iter() {
+        for x in INSTANCES.iter() {
             querys.push(self.snapshot_cpu_usage_in_node(
                 collect_properties(
                     vec![NODE_CPU.to_string()],
@@ -98,7 +88,7 @@ impl QueryMaker {
                     NETWORK_DEFAULT_LAST_X_MINUTE,
                     "",
                 ),
-                &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[2]),
+                &format!("{}-{}", x.0, NODE_NETWORK),
             ));
 
             querys.push(self.snapshot_process_usage_in_node(
@@ -111,7 +101,7 @@ impl QueryMaker {
                     "",
                     "",
                 ),
-                &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[0]),
+                &format!("{}-{}", x.0, NODE_PROCESS),
             ));
 
             querys.push(self.snapshot_disk_io_and_network_bandwidth_usage(
@@ -126,7 +116,7 @@ impl QueryMaker {
                     "",
                     "",
                 ),
-                &format!("{}-{}", x.0, node::NODES_METRIC_SOURCE[1]),
+                &format!("{}-{}", x.0, NODE_DISK),
             ));
         }
         querys.push(self.snapshot_cpu_usage_in_node(
@@ -136,7 +126,7 @@ impl QueryMaker {
                 METRIC_DEFAULT_LAST_X_MINUTE,
                 RIOOS_NAME,
             ),
-            node::CUMULATIVE_OS_USAGE,
+            CUMULATIVE_OS_USAGE,
         ));
         querys
     }
@@ -157,7 +147,7 @@ impl QueryMaker {
                 METRIC_DEFAULT_LAST_X_MINUTE,
                 job,
             ),
-            node::MACHINE_CAPACITY_CPU,
+            MACHINE_CAPACITY_CPU,
         ));
         querys
     }
@@ -183,7 +173,7 @@ impl QueryMaker {
                 "",
                 "",
             ),
-            node::CONTAINER_CAPACITY_MEMORY,
+            CONTAINER_CAPACITY_MEMORY,
         ));
         querys.push(self.snapshot_memory_and_storage_usage_in_container(
             collect_properties(
@@ -195,7 +185,7 @@ impl QueryMaker {
                 "",
                 "",
             ),
-            node::CONTAINER_CAPACITY_STORAGE,
+            CONTAINER_CAPACITY_STORAGE,
         ));
         querys
     }
@@ -208,7 +198,7 @@ impl QueryMaker {
                 METRIC_DEFAULT_LAST_X_MINUTE,
                 RIOOS_NAME,
             ),
-            node::CUMULATIVE_OS_USAGE,
+            CUMULATIVE_OS_USAGE,
         );
         query_builder.query
     }
@@ -223,7 +213,7 @@ impl QueryMaker {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CAPACITY_MEMORY.to_string(),
+            CAPACITY_MEMORY.to_string(),
             format!(
                 "{}",
                 MetricQueryBuilder::new(MetricQuery {
@@ -248,7 +238,7 @@ impl QueryMaker {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CAPACITY_CPU.to_string(),
+            CAPACITY_CPU.to_string(),
             format!(
                 "avg(100 - ({} * 100))",
                 MetricQueryBuilder::new(MetricQuery {
@@ -269,7 +259,7 @@ impl QueryMaker {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CAPACITY_STORAGE.to_string(),
+            CAPACITY_STORAGE.to_string(),
             format!(
                 "{}",
                 MetricQueryBuilder::new(MetricQuery {
@@ -342,7 +332,7 @@ impl QueryMaker {
             }),
         });
         QueryBuilder::with_name_query(
-            node::CONTAINER_CAPACITY_CPU.to_string(),
+            CONTAINER_CAPACITY_CPU.to_string(),
             format!("sum by({}) ({})*100", scope.avg_by_name.clone(), sum),
         )
     }

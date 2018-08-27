@@ -8,6 +8,7 @@ use protocol::api::base::MetaFields;
 use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
+use telemetry::metrics;
 use telemetry::metrics::executer::Executer;
 use telemetry::metrics::hooks::before::AHooks;
 use telemetry::metrics::prometheus::PrometheusClient;
@@ -29,26 +30,26 @@ impl<'a> DataStore<'a> {
     pub fn healthz_all(&self) -> Result<Option<node::HealthzAllGetResponse>> {
         let mut querys = QueryMaker::new();
         let executer = Executer::new(self.client.clone());
-        let res = executer.execute(querys.build_consumption_in_datacenter())?;
-        let result = executer.execute_range(&querys.snapshot_os_usage())?;
-        let response = self.get_reports(res, result);
+        let processed = executer.execute(querys.build_consumption_in_datacenter())?;
+        let processed_range = executer.execute_range(&querys.snapshot_os_usage())?;
+        let response = self.get_reports(processed, processed_range);
         Ok(Some(response.into()))
     }
 
-    fn get_reports(&self, response: AHooks, result: Vec<node::Item>) -> node::HealthzAllGet {
+    fn get_reports(&self, processed: AHooks, processed_range: Vec<node::Item>) -> node::HealthzAllGet {
         let mut x = node::HealthzAllGet::new();
         x.set_title("Command center operations".to_string());
-        x.set_gauges(mk_guages(&response));
+        x.set_gauges(mk_guages(&processed));
         x.set_statistics(mk_statistics(
-            self.merge_live_ninjas(&response),
-            self.merge_live_senseis(&response),
+            self.merge_live_ninjas(&processed),
+            self.merge_live_senseis(&processed),
         ));
-        x.set_osusages(mk_os_usage(&response, result));
+        x.set_osusages(mk_os_usage(&processed, processed_range));
         x
     }
 
-    fn merge_live_ninjas(&self, response: &AHooks) -> Vec<node::NodeStatistic> {
-        let live: Vec<node::NodeStatistic> = serde_json::from_str(&response.get(node::NINJAS).unwrap()).unwrap();
+    fn merge_live_ninjas(&self, processed: &AHooks) -> Vec<node::NodeStatistic> {
+        let live: Vec<node::NodeStatistic> = serde_json::from_str(&processed.get(metrics::NINJAS).unwrap()).unwrap();
         match ninja::DataStore::new(self.db).list_blank() {
             Ok(Some(node)) => {
                 let mut response = Vec::new();
@@ -76,8 +77,8 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    fn merge_live_senseis(&self, response: &AHooks) -> Vec<node::NodeStatistic> {
-        let live: Vec<node::NodeStatistic> = serde_json::from_str(&response.get(node::SENSEIS).unwrap()).unwrap();
+    fn merge_live_senseis(&self, processed: &AHooks) -> Vec<node::NodeStatistic> {
+        let live: Vec<node::NodeStatistic> = serde_json::from_str(&processed.get(metrics::SENSEIS).unwrap()).unwrap();
         match db_senseis::DataStore::new(self.db).list_blank() {
             Ok(Some(node)) => {
                 let mut response = Vec::new();
@@ -106,11 +107,11 @@ impl<'a> DataStore<'a> {
     }
 }
 
-fn mk_guages(response: &AHooks) -> node::Guages {
+fn mk_guages(processed: &AHooks) -> node::Guages {
     vec![
-        serde_json::from_str(&response.get(node::CAPACITY_CPU).unwrap()).unwrap(),
-        serde_json::from_str(&response.get(node::CAPACITY_MEMORY).unwrap()).unwrap(),
-        serde_json::from_str(&response.get(node::CAPACITY_STORAGE).unwrap()).unwrap(),
+        serde_json::from_str(&processed.get(metrics::CAPACITY_CPU).unwrap()).unwrap(),
+        serde_json::from_str(&processed.get(metrics::CAPACITY_MEMORY).unwrap()).unwrap(),
+        serde_json::from_str(&processed.get(metrics::CAPACITY_STORAGE).unwrap()).unwrap(),
     ].into()
 }
 
@@ -123,12 +124,12 @@ fn mk_statistics(new_ninjas: Vec<node::NodeStatistic>, new_senseis: Vec<node::No
     statistics
 }
 
-fn mk_os_usage(response: &AHooks, result: Vec<node::Item>) -> node::OSUsages {
+fn mk_os_usage(processed: &AHooks, processed_range: Vec<node::Item>) -> node::OSUsages {
     let mut os_usage = node::OSUsages::new();
     os_usage.set_title("OS Usages".to_owned());
     os_usage.set_cumulative(
-        serde_json::from_str(&response.get(node::CUMULATIVE_OS_USAGE).unwrap()).unwrap(),
+        serde_json::from_str(&processed.get(metrics::CUMULATIVE_OS_USAGE).unwrap()).unwrap(),
     );
-    os_usage.set_items(result);
+    os_usage.set_items(processed_range);
     os_usage
 }

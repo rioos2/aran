@@ -1,33 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use api::base::{Condition, MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
-use api::senseis::SENSEI_JOBS;
-use chrono::naive::NaiveDateTime;
 
 use serde_json;
 use std::collections::BTreeMap;
-
-// The constants to store status.capacity
-pub const CAPACITY_CPU: &'static str = "cpu";
-pub const CAPACITY_MEMORY: &'static str = "memory";
-pub const CAPACITY_STORAGE: &'static str = "storage";
-pub const MACHINE_CAPACITY_CPU: &'static str = "machine-cpu";
-pub const CONTAINER_CAPACITY_CPU: &'static str = "container-cpu";
-pub const CONTAINER_CAPACITY_MEMORY: &'static str = "container-memory";
-pub const CONTAINER_CAPACITY_STORAGE: &'static str = "container-storage";
-pub const CUMULATIVE_OS_USAGE: &'static str = "cumulative-os-usage";
-
-pub const SENSEIS: &'static str = "senseis";
-pub const NINJAS: &'static str = "ninjas";
-
-pub const NODE_JOBS: &'static str = "job=rioos-nodes";
-
-pub const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
-pub const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
-
-pub const NODES: [(&'static str, &'static str); 2] = [("senseis", SENSEI_JOBS), ("ninjas", NODE_JOBS)];
-
-pub const NODES_METRIC_SOURCE: [&'static str; 3] = ["process", "disk", "network"];
 
 pub type SpeedSummary = (String, i32, i32);
 

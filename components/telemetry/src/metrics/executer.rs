@@ -1,6 +1,6 @@
 use super::*;
 use super::hooks::{consumption, instance, metric};
-use super::hooks::before::{AHooks, HookServiceFn};
+use super::hooks::before::{AHooks, MetricServiceFn};
 use super::super::error::{self, Result};
 use chrono::prelude::*;
 use itertools::Itertools;
@@ -24,15 +24,13 @@ impl Executer {
     }
 
     pub fn execute(&self, querys: Vec<QueryBuilder>) -> Result<AHooks> {
-        let res = self.client.pull_metrics(
-            PrometheusQuery::with_querys(querys),
-        )?;
+        let res = self.client.pull(PrometheusQuery::with_querys(querys))?;
         let data = self.group(res);
         Ok(self.before_hook(data))
     }
 
     pub fn execute_range(&self, query: &str) -> Result<Vec<node::Item>> {
-        let content = self.client.pull_metrics_range(query)?;
+        let content = self.client.pull_in_range(query)?;
         let p1: node::OSUsages = content.into();
         Ok(p1.get_items())
     }
@@ -48,12 +46,12 @@ impl Executer {
     fn before_hook(&self, content: BTreeMap<String, PromResponse>) -> AHooks {
         let mut ah = AHooks::new();
         let _content = content.clone();
-        let cpu_consumption = Box::new(HookServiceFn::new(
-            node::CAPACITY_CPU.to_string(),
+        let cpu_consumption = Box::new(MetricServiceFn::new(
+            CAPACITY_CPU.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
                     _content
-                        .get(node::CAPACITY_CPU)
+                        .get(CAPACITY_CPU)
                         .unwrap_or(&PromResponse::new())
                         .clone(),
                 ).before()
@@ -61,12 +59,12 @@ impl Executer {
         ));
 
         let _content = content.clone();
-        let memory_consumption = Box::new(HookServiceFn::new(
-            node::CAPACITY_MEMORY.to_string(),
+        let memory_consumption = Box::new(MetricServiceFn::new(
+            CAPACITY_MEMORY.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
                     _content
-                        .get(node::CAPACITY_MEMORY)
+                        .get(CAPACITY_MEMORY)
                         .unwrap_or(&PromResponse::new())
                         .clone(),
                 ).before()
@@ -74,12 +72,12 @@ impl Executer {
         ));
 
         let _content = content.clone();
-        let storage_consumption = Box::new(HookServiceFn::new(
-            node::CAPACITY_STORAGE.to_string(),
+        let storage_consumption = Box::new(MetricServiceFn::new(
+            CAPACITY_STORAGE.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
                     _content
-                        .get(node::CAPACITY_STORAGE)
+                        .get(CAPACITY_STORAGE)
                         .unwrap_or(&PromResponse::new())
                         .clone(),
                 ).before()
@@ -89,38 +87,38 @@ impl Executer {
         let _content = content.clone();
         let mut x = BTreeMap::new();
         for (key, value) in _content {
-            if key.starts_with(node::NINJAS) {
+            if key.starts_with(NINJAS) {
                 x.insert(key, value);
             }
         }
-        let ninjas_intstance = Box::new(HookServiceFn::new(
-            node::NINJAS.to_string(),
+        let ninjas_intstance = Box::new(MetricServiceFn::new(
+            NINJAS.to_string(),
             Box::new(move || -> Option<String> {
-                instance::Instance::new(node::NINJAS, x.clone()).before()
+                instance::Instance::new(NINJAS, x.clone()).before()
             }),
         ));
 
         let _content = content.clone();
         let mut x = BTreeMap::new();
         for (key, value) in _content {
-            if key.starts_with(node::SENSEIS) {
+            if key.starts_with(SENSEIS) {
                 x.insert(key, value);
             }
         }
-        let senseis_intstance = Box::new(HookServiceFn::new(
-            node::SENSEIS.to_string(),
+        let senseis_intstance = Box::new(MetricServiceFn::new(
+            SENSEIS.to_string(),
             Box::new(move || -> Option<String> {
-                instance::Instance::new(node::SENSEIS, x.clone()).before()
+                instance::Instance::new(SENSEIS, x.clone()).before()
             }),
         ));
 
         let _content = content.clone();
-        let machine_cpu = Box::new(HookServiceFn::new(
-            node::MACHINE_CAPACITY_CPU.to_string(),
+        let machine_cpu = Box::new(MetricServiceFn::new(
+            MACHINE_CAPACITY_CPU.to_string(),
             Box::new(move || -> Option<String> {
                 metric::Metric::new(
                     _content
-                        .get(node::MACHINE_CAPACITY_CPU)
+                        .get(MACHINE_CAPACITY_CPU)
                         .unwrap_or(&PromResponse::new())
                         .clone(),
                 ).before()
@@ -128,12 +126,12 @@ impl Executer {
         ));
 
         let _content = content.clone();
-        let container_cpu = Box::new(HookServiceFn::new(
-            node::CONTAINER_CAPACITY_CPU.to_string(),
+        let container_cpu = Box::new(MetricServiceFn::new(
+            CONTAINER_CAPACITY_CPU.to_string(),
             Box::new(move || -> Option<String> {
                 metric::Metric::new(
                     _content
-                        .get(node::CONTAINER_CAPACITY_CPU)
+                        .get(CONTAINER_CAPACITY_CPU)
                         .unwrap_or(&PromResponse::new())
                         .clone(),
                 ).before()
@@ -141,12 +139,12 @@ impl Executer {
         ));
 
         let _content = content.clone();
-        let container_memory = Box::new(HookServiceFn::new(
-            node::CONTAINER_CAPACITY_MEMORY.to_string(),
+        let container_memory = Box::new(MetricServiceFn::new(
+            CONTAINER_CAPACITY_MEMORY.to_string(),
             Box::new(move || -> Option<String> {
                 metric::Metric::new(
                     _content
-                        .get(node::CONTAINER_CAPACITY_MEMORY)
+                        .get(CONTAINER_CAPACITY_MEMORY)
                         .unwrap_or(&PromResponse::new())
                         .clone(),
                 ).before()
@@ -154,12 +152,12 @@ impl Executer {
         ));
 
         let _content = content.clone();
-        let container_storage = Box::new(HookServiceFn::new(
-            node::CONTAINER_CAPACITY_STORAGE.to_string(),
+        let container_storage = Box::new(MetricServiceFn::new(
+            CONTAINER_CAPACITY_STORAGE.to_string(),
             Box::new(move || -> Option<String> {
                 metric::Metric::new(
                     _content
-                        .get(node::CONTAINER_CAPACITY_STORAGE)
+                        .get(CONTAINER_CAPACITY_STORAGE)
                         .unwrap_or(&PromResponse::new())
                         .clone(),
                 ).before()
@@ -167,12 +165,12 @@ impl Executer {
         ));
 
         let _content = content.clone();
-        let os_consumption = Box::new(HookServiceFn::new(
-            node::CUMULATIVE_OS_USAGE.to_string(),
+        let os_consumption = Box::new(MetricServiceFn::new(
+            CUMULATIVE_OS_USAGE.to_string(),
             Box::new(move || -> Option<String> {
                 consumption::Consumption::new(
                     _content
-                        .get(node::CUMULATIVE_OS_USAGE)
+                        .get(CUMULATIVE_OS_USAGE)
                         .unwrap_or(&PromResponse::new())
                         .clone(),
                 ).before()

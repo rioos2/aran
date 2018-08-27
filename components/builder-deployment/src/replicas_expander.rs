@@ -9,6 +9,7 @@ use protocol::api::base::{MetaFields, WhoAmITypeMeta, Status, IdGet};
 ///replicas expander
 use protocol::api::schema::type_meta_url;
 use std::collections::BTreeMap;
+use telemetry::metrics;
 
 
 const METRIC_LIMIT: &'static str = "10";
@@ -58,24 +59,24 @@ impl<'a> ReplicasExpander<'a> {
                 //requested variables to probe. That will help us when we add more resource keys (like disk)
                 //
                 let new_expanded_memory_by = &desired
-                    .get(node::CAPACITY_MEMORY)
+                    .get(metrics::CAPACITY_MEMORY)
                     .unwrap_or(&"0 KiB".to_string())
                     .to_string();
 
                 let new_expanded_cpu_by = &desired
-                    .get(node::CAPACITY_CPU)
+                    .get(metrics::CAPACITY_CPU)
                     .unwrap_or(&"0 KiB".to_string())
                     .to_string();
 
                 let mut x = factory.get_resources().clone();
 
                 x.insert(
-                    node::CAPACITY_CPU.to_string(),
+                    metrics::CAPACITY_CPU.to_string(),
                     new_expanded_cpu_by.to_string(),
                 );
 
                 x.insert(
-                    node::CAPACITY_MEMORY.to_string(),
+                    metrics::CAPACITY_MEMORY.to_string(),
                     new_expanded_memory_by.to_string(),
                 );
 

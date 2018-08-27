@@ -10,20 +10,20 @@ use std::sync::Arc;
 
 /// This is a workload hook function: is a closure that is responsible for presenting a startup
 /// workload hook
-type HookFn = Box<Fn() -> Option<String> + 'static + Send + Sync>;
+type MetricFn = Box<Fn() -> Option<String> + 'static + Send + Sync>;
 
 /// The hook service function wrapper that is responsible for providing the prenup startup
 /// routine workload hook encapsulation.
 /// This has the key of the registered hook function example differ_hookah
 #[derive(Clone)]
-pub struct HookServiceFn {
+pub struct MetricServiceFn {
     key: String,
-    hook: Arc<HookFn>,
+    hook: Arc<MetricFn>,
 }
 
-impl HookServiceFn {
-    pub fn new(key: String, c: HookFn) -> Self {
-        HookServiceFn {
+impl MetricServiceFn {
+    pub fn new(key: String, c: MetricFn) -> Self {
+        MetricServiceFn {
             key: key,
             hook: Arc::new(c),
         }
@@ -34,16 +34,16 @@ impl HookServiceFn {
     }
 }
 
-impl fmt::Display for HookServiceFn {
+impl fmt::Display for MetricServiceFn {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "HookServiceFn ")
+        write!(f, "MetricServiceFn ")
     }
 }
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 #[derive(Clone)]
 pub struct AHooks {
-    pub hooks: BTreeMap<String, Box<HookServiceFn>>,
+    pub hooks: BTreeMap<String, Box<MetricServiceFn>>,
 }
 
 //Responsible for managing the registered Hooks. Ideally this shall be trait.
@@ -53,9 +53,9 @@ impl AHooks {
         AHooks { hooks: hooks_map }
     }
 
-    /// Registers the prenup startup HookServiceFn instances inside this ahook.
+    /// Registers the prenup startup MetricServiceFn instances inside this ahook.
     /// A map stores the (key, hook service function) as a pair.
-    pub fn register(&mut self, v: Box<HookServiceFn>) {
+    pub fn register(&mut self, v: Box<MetricServiceFn>) {
         self.hooks.insert(v.key(), v);
     }
 

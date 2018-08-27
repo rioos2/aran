@@ -12,6 +12,7 @@ use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
 use serde_json;
 use std::collections::BTreeMap;
+use telemetry::metrics;
 use telemetry::metrics::executer::Executer;
 use telemetry::metrics::prometheus::PrometheusClient;
 use telemetry::metrics::query::QueryMaker;
@@ -167,19 +168,19 @@ impl<'a> DataStore<'a> {
             "machine" => {
                 let res = executer.execute(querys.snapshot_cpu_usage_in_machine(
                     &id.get_id(),
-                    node::METRIC_LBL_RIOOS_ASSEMBLY_ID,
+                    metrics::METRIC_LBL_RIOOS_ASSEMBLY_ID,
                 ))?;
                 Ok(
-                    serde_json::from_str(&res.get(node::MACHINE_CAPACITY_CPU).unwrap()).unwrap(),
+                    serde_json::from_str(&res.get(metrics::MACHINE_CAPACITY_CPU).unwrap()).unwrap(),
                 )
             }
             "container" | _ => {
                 let res = executer.execute(querys.snapshot_cpu_usage_in_contaner(
                     &id.get_id(),
-                    node::METRIC_LBL_RIOOS_ASSEMBLY_ID,
+                    metrics::METRIC_LBL_RIOOS_ASSEMBLY_ID,
                 ))?;
                 Ok(
-                    serde_json::from_str(&res.get(node::CONTAINER_CAPACITY_CPU).unwrap()).unwrap(),
+                    serde_json::from_str(&res.get(metrics::CONTAINER_CAPACITY_CPU).unwrap()).unwrap(),
                 )
             }
         }

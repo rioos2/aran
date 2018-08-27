@@ -37,7 +37,7 @@ impl PrometheusClient {
     ///       label_value = prometheus (first labels value)
     ///       label_name  = group (first label)
     ///       label_value = nodes (first labels value)
-    pub fn pull_metrics(&self, body: PrometheusQuery) -> Result<MetricResponse> {
+    pub fn pull(&self, body: PrometheusQuery) -> Result<MetricResponse> {
         let url = format!("{}/querys", self.url);
         let mut res = http_bearer_post(&url, serde_json::to_value(&body)?)?;
         let mut body = String::new();
@@ -48,7 +48,7 @@ impl PrometheusClient {
 
     /// Returns the contents of the node metrics
     ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
-    pub fn pull_metrics_range(&self, path: &str) -> Result<PromResponse> {
+    pub fn pull_in_range(&self, path: &str) -> Result<PromResponse> {
         let utc: DateTime<Utc> = Utc::now();
         let url =
             format!(

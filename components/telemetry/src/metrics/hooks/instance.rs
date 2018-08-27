@@ -26,7 +26,7 @@ impl Instance {
     }
     fn get_content(&mut self) -> Option<String> {
         let statistics: Vec<node::NodeStatistic> = self.content
-            .get(&format!("{}-{}", self.name, node::CAPACITY_CPU))
+            .get(&format!("{}-{}", self.name, CAPACITY_CPU))
             .unwrap_or(&PromResponse::new())
             .clone()
             .into();
@@ -34,7 +34,7 @@ impl Instance {
         let statistics_with_process = process::Process::new(
             statistics,
             self.content
-                .get(&format!("{}-{}", self.name, node::NODES_METRIC_SOURCE[0]))
+                .get(&format!("{}-{}", self.name, NODE_PROCESS))
                 .unwrap_or(&PromResponse::new())
                 .clone(),
         ).get_process();
@@ -42,7 +42,7 @@ impl Instance {
         let statistics_with_disk = disk::Disk::new(
             statistics_with_process,
             self.content
-                .get(&format!("{}-{}", self.name, node::NODES_METRIC_SOURCE[1]))
+                .get(&format!("{}-{}", self.name, NODE_DISK))
                 .unwrap_or(&PromResponse::new())
                 .clone(),
         ).get_disk();
@@ -50,7 +50,7 @@ impl Instance {
         let statistics_with_network = network::Network::new(
             statistics_with_disk,
             self.content
-                .get(&format!("{}-{}", self.name, node::NODES_METRIC_SOURCE[2]))
+                .get(&format!("{}-{}", self.name, NODE_NETWORK))
                 .unwrap_or(&PromResponse::new())
                 .clone(),
         ).get_network();
