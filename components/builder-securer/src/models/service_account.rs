@@ -53,7 +53,7 @@ impl<'a> DataStore<'a> {
             for policy in policies {
                 let _rows = conn.query(
                     "SELECT * FROM insert_policy_member_v1($1, $2,$3)",
-                    &[&id,&false,&policy],
+                    &[&id,&true,&policy],
                 ).map_err(Error::ServiceAccountCreate)?;
             }
             return Ok(Some(service_account));

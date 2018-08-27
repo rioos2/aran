@@ -124,7 +124,7 @@ impl<'a> DataStore<'a> {
                     "SELECT * FROM insert_policy_member_v1($1, $2,$3)",
                     &[
                         &id,
-                        &session_create.get_is_admin(),
+                        &true,
                         &policy,
                     ],
                 ).map_err(Error::SessionCreate)?;
