@@ -170,11 +170,13 @@ impl VerticalScalingApi {
         let params = self.verify_id(req)?;
         match models::verticalscaling::DataStore::new(&self.conn).show(&params) {
             Ok(Some(vs)) => {
-                let af_id: Vec<IdGet> = vs.get_owner_references()
-                    .iter()
-                    .map(|x| IdGet::with_id(x.uid.to_string()))
-                    .collect::<Vec<_>>();
-                match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&af_id[0]) {
+                let id_get = IdGet::with_id(
+                    vs.get_owner_references()
+                        .iter()
+                        .map(|x| x.get_uid().to_string())
+                        .collect::<String>(),
+                );
+                match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&id_get) {
                     Ok(Some(assemblys)) => {
                         let metrics = DataStore::new(&self.conn, &self.prom).healthz_all()?;
                         match ReplicasExpander::new(&self.conn, assemblys, metrics, &vs).expand() {

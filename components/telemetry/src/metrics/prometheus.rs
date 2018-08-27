@@ -7,7 +7,7 @@ use super::super::error::Result;
 use chrono::prelude::*;
 use config;
 use http_client::reqwest_client::{http_bearer_post, http_bearer_get};
-use metrics::{MetricResponse, PromResponse};
+use metrics::{MetricResponse, PromResponse, RangeResponse};
 use metrics::query::PrometheusQuery;
 
 use serde_json;
@@ -48,7 +48,7 @@ impl PrometheusClient {
 
     /// Returns the contents of the node metrics
     ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
-    pub fn pull_in_range(&self, path: &str) -> Result<PromResponse> {
+    pub fn pull_in_range(&self, path: &str) -> Result<RangeResponse> {
         let utc: DateTime<Utc> = Utc::now();
         let url =
             format!(
@@ -58,13 +58,10 @@ impl PrometheusClient {
             utc.timestamp() - 180,
             utc.timestamp(),
         );
-
         let mut rep = http_bearer_get(&url, path)?;
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
-
-        let contents: PromResponse = serde_json::from_str(&body)?;
-
+        let contents: RangeResponse = serde_json::from_str(&body)?;
         Ok(contents)
     }
 }
