@@ -85,11 +85,13 @@ impl HorizontalScalingApi {
         let params = self.verify_id(req)?;
         match models::horizontalscaling::DataStore::new(&self.conn).show(&params) {
             Ok(Some(hs)) => {
-                let af_id: Vec<IdGet> = hs.get_owner_references()
-                    .iter()
-                    .map(|x| IdGet::with_id(x.uid.to_string()))
-                    .collect::<Vec<_>>();
-                match assemblyfactory::DataStore::new(&self.conn).show(&af_id[0]) {
+                let id_get = IdGet::with_id(
+                    hs.get_owner_references()
+                        .iter()
+                        .map(|x| x.get_uid().to_string())
+                        .collect::<String>(),
+                );
+                match assemblyfactory::DataStore::new(&self.conn).show(&id_get) {
                     Ok(Some(factory)) => {
                         match Assembler::new(&self.conn, _cfg).reassemble(
                             hs.get_status().get_desired_replicas(),

@@ -144,6 +144,18 @@ pub enum Data {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RangeResponse {
+    status: StatusData,
+    pub data: Data,
+    #[serde(rename = "errorType")]
+    #[serde(default)]
+    pub error_type: Option<String>,
+    #[serde(default)]
+    pub error: Option<String>,
+}
+
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PromResponse {
     pub name: String,
     pub result: Data,
@@ -207,10 +219,10 @@ impl Into<Vec<node::NodeStatistic>> for PromResponse {
 }
 
 //convert the PromResponse into OSUsages value
-impl Into<node::OSUsages> for PromResponse {
+impl Into<node::OSUsages> for RangeResponse {
     fn into(mut self) -> node::OSUsages {
         let mut osusage = node::OSUsages::new();
-        if let Data::Matrix(ref mut instancevec) = self.result {
+        if let Data::Matrix(ref mut instancevec) = self.data {
             let item_collection = instancevec
                 .into_iter()
                 .map(|x| {
