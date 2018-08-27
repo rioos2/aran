@@ -4,6 +4,7 @@ use rbac::permissions;
 use rbac::account;
 use protocol::api::session;
 use rbac::teams::{Teams, TrustAccess};
+use auth::models::policy_members;
 
 
 #[derive(Clone, Debug)]
@@ -77,17 +78,9 @@ impl Authorization {
                 Ok(false)
             }
         }
+        
 
-     /*   let account = match account_box {
-            Some(r) => r,
-            None => {
-                info!("« Authorizer Team none : {:?}", account_box);
-                return Err(Error::PermissionError(format!(
-                "User doesn't have permission for this operation."
-            )))
-            },
-        };
-        let perms_for_account = self.permissions.list_by_team(IdGet::with_id(account.to_string()));
+       /* let perms_for_account = self.permissions.list_by_team(IdGet::with_id(account.to_string()));
         match Teams::per_type(perms_for_account.get_permissions()) {
             Ok(perm_for_account) => {
                 let access = TrustAccess::new(incoming_to_trust);

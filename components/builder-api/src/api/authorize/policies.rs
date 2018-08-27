@@ -37,6 +37,32 @@ impl PolicyApi {
         PolicyApi { conn: datastore }
     }
 
+    //POST: /policies/teams/:id
+    //The body has the input policy members
+    //Returns a mutated policy_members  with
+    //- id
+    //- ObjectMeta: has updated created_at
+    //- created_at
+    fn apply_to_team(&self, req: &mut Request) -> AranResult<Response> {
+        let mut unmarshall_body = self.validate::<PolicyMemberInputs>(req.get::<bodyparser::Struct<PolicyMemberInputs>>()?)?;
+
+        debug!("{} ✓",
+            format!("======= parsed {:?} ", unmarshall_body.clone()),
+        );
+
+        let converted_body: PolicyMembersList = unmarshall_body.clone().into();
+
+        debug!("{} ✓",
+            format!("======= converted body parsed {:?} ", converted_body),
+        );
+
+        
+        match team::DataStore::new(&self.conn).create(&unmarshall_body) {
+            Ok(create) => Ok(render_json(status::Ok, &create)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+        }
+    }
+
 
     //GET: /policies?level="user"
     //Input as string input and returns a teams
@@ -77,6 +103,9 @@ impl Api for PolicyApi {
         let _self = self.clone();
         let list_by_level = move |req: &mut Request| -> AranResult<Response> { _self.list_by_level(req) };
 
+        let _self = self.clone();
+        let apply_to_team = move |req: &mut Request| -> AranResult<Response> { _self.apply_to_team(req) };
+
         router.get(
             "/policies/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
@@ -86,6 +115,11 @@ impl Api for PolicyApi {
             "/policies",
             XHandler::new(C { inner: list_by_level }).before(basic.clone()),
             "list_by_level",
+        );
+        router.get(
+            "/policies/teams/:id",
+            XHandler::new(C { inner: apply_to_team }).before(basic.clone()),
+            "apply_to_team",
         );
 
     }

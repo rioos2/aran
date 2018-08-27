@@ -379,6 +379,169 @@ impl MetaFields for Policies {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PolicyMemberInputs {
+    account_id: String,
+    origin_id: String,   
+    team_id: String, 
+    policies: Vec<String>,    
+}
+
+impl PolicyMemberInputs {
+    pub fn new() -> PolicyMemberInputs {
+        ::std::default::Default::default()
+    }   
+
+    pub fn set_account_id(&mut self, v: ::std::string::String) {
+        self.account_id = v;
+    }
+    pub fn get_account_id(&self) -> ::std::string::String {
+        self.account_id.clone()
+    }
+
+    pub fn set_origin_id(&mut self, v: ::std::string::String) {
+        self.origin_id = v;
+    }
+    pub fn get_origin_id(&self) -> ::std::string::String {
+        self.origin_id.clone()
+    }
+
+    pub fn set_team_id(&mut self, v: ::std::string::String) {
+        self.team_id = v;
+    }
+    pub fn get_team_id(&self) -> ::std::string::String {
+        self.team_id.clone()
+    }
+
+    pub fn set_policies(&mut self, v: ::std::vec::Vec<String>) {
+        self.policies = v;
+    }
+    pub fn get_policies(&self) -> ::std::vec::Vec<String> {
+        self.policies.clone()
+    }
+}
+
+impl ChildTypeMeta for PolicyMemberInputs {
+    const CHILD_KIND: &'static str = "POST:policymembers";
+}
+
+/// Build Invitations for each invited users
+impl Into<PolicyMembersList> for Box<PolicyMemberInputs> {
+    fn into(self) -> PolicyMembersList {
+        let policies = self.get_policies();
+        let v: Vec<PolicyMembers> = policies.into_iter().map(|x| {
+            let mut policy_members = PolicyMembers::new();
+            let m = policy_members.mut_meta(
+                ObjectMeta::new(),
+                "POLICYMEMBERS".to_string(),
+                self.get_account_id(),
+            );
+            let jackie = self.children();
+            invites.set_meta(type_meta_url(jackie), m);
+            invites.set_origin_id(self.get_origin_id());
+            invites.set_team_id(self.get_team_id());
+            invites.set_policy_name(x.to_string());
+            invites
+        }).collect();
+        InvitationsList{
+            invites: v
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PolicyMembers {
+    #[serde(default)]
+    id: String,
+    policy_name: String,
+    metadata: BTreeMap<String, String>,
+    object_meta: ObjectMeta,
+    #[serde(default)]
+    type_meta: TypeMeta,
+    #[serde(default)]
+    created_at: String,
+    #[serde(default)]
+    permissions: Option<Vec<Permissions>>,
+}
+
+impl PolicyMembers {
+    pub fn new() -> PolicyMembers {
+        ::std::default::Default::default()
+    }
+
+    pub fn with(t: TypeMeta, o: ObjectMeta) -> PolicyMembers {
+        PolicyMembers {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
+    }
+
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
+    pub fn set_policy_name(&mut self, v: ::std::string::String) {
+        self.policy_name = v;
+    }
+    pub fn get_policy_name(&self) -> ::std::string::String {
+        self.policy_name.clone()
+    }
+
+    pub fn set_metadata(&mut self, v: BTreeMap<String, String>) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self) -> &BTreeMap<String, String> {
+        &self.metadata
+    }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
+
+    pub fn set_permissions(&mut self, v: Option<Vec<Permissions>>) {
+        self.permissions = v;
+    }
+    pub fn get_permissions(&self) -> Option<Vec<Permissions>> {
+        self.permissions.clone()
+    }
+}
+
+impl MetaFields for PolicyMembers {
+    /// Returns the latest self with built ObjectMeta and Type_meta
+    /// Wipes out the old meta.
+    /// Should be handled externally by doing Meta::with(by mutating the old ObjectMeta)
+    fn set_meta(&mut self, t: TypeMeta, v: ObjectMeta) {
+        self.type_meta = t;
+        self.object_meta = v;
+    }
+
+    fn object_meta(&self) -> ObjectMeta {
+        self.object_meta.clone()
+    }
+
+    fn type_meta(&self) -> TypeMeta {
+        self.type_meta.clone()
+    }
+}
+
+impl PermissionsFeeder for PolicyMembers {
+    fn iget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(self.get_policy_name(), "".to_string())
+    }
+
+    fn ifeed(&mut self, m: Option<Vec<Permissions>>) {
+        self.set_permissions(m);
+    }
+}
 
 #[cfg(test)]
 mod test {
