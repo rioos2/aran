@@ -30,7 +30,7 @@ impl<'a> Client<'a> {
 
     fn assembly_metric(&self, af_id: &str) -> Result<BTreeMap<String, BTreeMap<String, String>>> {
         let querys = QueryMaker::new().snapshot_cpu_usage_in_machine(af_id, node::METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID);
-        let res = Executer::new(self.prom.clone()).pull_metrics(querys)?;
+        let res = Executer::new(self.prom.clone()).execute(querys)?;
         let mut data = BTreeMap::new();
         data.insert(
             node::CAPACITY_CPU.to_string(),
@@ -41,7 +41,7 @@ impl<'a> Client<'a> {
 
     fn container_metric(&self, af_id: &str) -> Result<BTreeMap<String, BTreeMap<String, String>>> {
         let querys = QueryMaker::new().snapshot_cpu_usage_in_contaner(af_id, node::METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID);
-        let res = Executer::new(self.prom.clone()).pull_metrics(querys)?;
+        let res = Executer::new(self.prom.clone()).execute(querys)?;
         let mut data = BTreeMap::new();
 
         data.insert(

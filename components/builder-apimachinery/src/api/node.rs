@@ -773,32 +773,6 @@ impl ValueData {
     }
 }
 
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct QueryBuilder {
-    name: String,
-    pub query: String,
-}
-impl QueryBuilder {
-    pub fn with_name_query(name: String, query: String) -> QueryBuilder {
-        QueryBuilder {
-            name: name,
-            query: query,
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct PrometheusQuery {
-    querys: Vec<QueryBuilder>,
-}
-
-impl PrometheusQuery {
-    pub fn with_querys(querys: Vec<QueryBuilder>) -> PrometheusQuery {
-        PrometheusQuery { querys: querys }
-    }
-}
-
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct MetricResponse {
     status: StatusData,

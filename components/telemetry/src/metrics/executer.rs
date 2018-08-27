@@ -6,10 +6,11 @@ use chrono::prelude::*;
 use itertools::Itertools;
 use metrics::hooks::BeforeMetrics;
 use metrics::prometheus::PrometheusClient;
+use metrics::query::{PrometheusQuery, QueryBuilder};
 use protocol::api::base::MetaFields;
 use protocol::api::node;
 use protocol::api::node::{Data, InstantVecItem, PromResponse};
-use protocol::api::node::{MetricResponse, PrometheusQuery, QueryBuilder};
+use protocol::api::node::MetricResponse;
 use serde_json;
 use std::collections::BTreeMap;
 use std::ops::Div;
@@ -24,7 +25,7 @@ impl Executer {
         Executer { client: client }
     }
 
-    pub fn pull_metrics(&self, querys: Vec<QueryBuilder>) -> Result<AHooks> {
+    pub fn execute(&self, querys: Vec<QueryBuilder>) -> Result<AHooks> {
         let res = self.client.pull_metrics(
             PrometheusQuery::with_querys(querys),
         )?;

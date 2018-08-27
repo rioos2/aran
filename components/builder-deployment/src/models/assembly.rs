@@ -161,19 +161,25 @@ impl<'a> DataStore<'a> {
 
     //Get the metrics as a map of assembly_id and its metric
     pub fn show_metrics(&self, id: &IdGet, prom: &PrometheusClient) -> Result<BTreeMap<String, String>> {
+        let mut querys = QueryMaker::new();
+        let executer = Executer::new(prom.clone());
         match &id.get_name()[..] {
             "machine" => {
-                let querys = QueryMaker::new().snapshot_cpu_usage_in_machine(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID);
-                let res = Executer::new(prom.clone()).pull_metrics(querys)?;
+                let res = executer.execute(querys.snapshot_cpu_usage_in_machine(
+                    &id.get_id(),
+                    node::METRIC_LBL_RIOOS_ASSEMBLY_ID,
+                ))?;
                 Ok(
                     serde_json::from_str(&res.get(node::MACHINE_CAPACITY_CPU).unwrap()).unwrap(),
                 )
             }
             "container" | _ => {
-                let querys = QueryMaker::new().snapshot_cpu_usage_in_contaner(&id.get_id(), node::METRIC_LBL_RIOOS_ASSEMBLY_ID);
-                let res = Executer::new(prom.clone()).pull_metrics(querys)?;
+                let res = executer.execute(querys.snapshot_cpu_usage_in_contaner(
+                    &id.get_id(),
+                    node::METRIC_LBL_RIOOS_ASSEMBLY_ID,
+                ))?;
                 Ok(
-                    serde_json::from_str(&res.get(node::MACHINE_CAPACITY_CPU).unwrap()).unwrap(),
+                    serde_json::from_str(&res.get(node::CONTAINER_CAPACITY_CPU).unwrap()).unwrap(),
                 )
             }
         }

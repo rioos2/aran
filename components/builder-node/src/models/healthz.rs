@@ -27,15 +27,11 @@ impl<'a> DataStore<'a> {
     }
 
     pub fn healthz_all(&self) -> Result<Option<node::HealthzAllGetResponse>> {
-        let querys = QueryMaker::new().build_consumption_in_datacenter();
-        let res = Executer::new(self.client.clone()).pull_metrics(querys)?;
-
-        //os_usage with query_range
-        let os_query = QueryMaker::new().snapshot_os_usage();
-        let result = Executer::new(self.client.clone()).pull_os_usage(&os_query)?;
-
+        let mut querys = QueryMaker::new();
+        let executer = Executer::new(self.client.clone());
+        let res = executer.execute(querys.build_consumption_in_datacenter())?;
+        let result = executer.pull_os_usage(&querys.snapshot_os_usage())?;
         let response = self.get_reports(res, result);
-
         Ok(Some(response.into()))
     }
 

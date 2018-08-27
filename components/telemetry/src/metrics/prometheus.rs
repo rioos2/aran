@@ -7,7 +7,8 @@ use super::super::error::Result;
 use chrono::prelude::*;
 use config;
 use http_client::reqwest_client::{http_bearer_post, http_bearer_get};
-use protocol::api::node::{PrometheusQuery, MetricResponse, PromResponse};
+use metrics::query::PrometheusQuery;
+use protocol::api::node::{MetricResponse, PromResponse};
 
 use serde_json;
 

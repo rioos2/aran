@@ -9,7 +9,7 @@ use super::super::error::{self, Result};
 use chrono::prelude::*;
 use metrics::prometheus::PrometheusClient;
 use protocol::api::node;
-use protocol::api::node::{MetricResponse, PrometheusQuery, QueryBuilder};
+use protocol::api::node::MetricResponse;
 
 use serde_json;
 use std::collections::BTreeMap;
@@ -368,5 +368,30 @@ fn collect_properties(metric_scope: Vec<String>, labels: Vec<String>, duration: 
         labels: labels,
         last_x_minutes: duration.to_string(),
         avg_by_name: avg_by.to_string(),
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct QueryBuilder {
+    name: String,
+    pub query: String,
+}
+impl QueryBuilder {
+    pub fn with_name_query(name: String, query: String) -> QueryBuilder {
+        QueryBuilder {
+            name: name,
+            query: query,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PrometheusQuery {
+    querys: Vec<QueryBuilder>,
+}
+
+impl PrometheusQuery {
+    pub fn with_querys(querys: Vec<QueryBuilder>) -> PrometheusQuery {
+        PrometheusQuery { querys: querys }
     }
 }
