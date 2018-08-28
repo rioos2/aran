@@ -3,7 +3,6 @@
 //! Libraries  module used by builder node
 
 extern crate chrono;
-extern crate cidr;
 extern crate ipnet;
 extern crate oping;
 extern crate rand;
