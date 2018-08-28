@@ -61,12 +61,13 @@ impl Authorization {
                  account_get.set_email(account_type.name);
                  let mut account = self.accounts.get_by_email(account_get);
                  //account.pop()                            
-                 if (account.get_is_admin()) {
+                 /*if (account.get_is_admin()) {
                     return Ok(true);
                  }
                  return Err(Error::PermissionError(format!(
                     "User doesn't have permission for this operation."
-                )))
+                )))*/
+                return Ok(true);
              },
             AccountNames::SERVICEACCOUNT => {
                 let mut account = self.service_accounts.get_by_name(IdGet::with_id(account_type.name));

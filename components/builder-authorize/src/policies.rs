@@ -78,7 +78,7 @@ impl<'a> PolicyFactory<'a> {
     /// make policymember from PolicyMemberInputs data
     /// set is_allow = true for allowed policies only
     /// otherwise set is_allow = false 
-    pub fn mk_members(&self, inputs: &PolicyMemberInputs) -> PolicyMembersList {
+    fn mk_members(&self, inputs: &PolicyMemberInputs) -> PolicyMembersList {
         let allowed_policies = inputs.get_allowed_policies();
         let mut allowed: Vec<PolicyMembers> = allowed_policies.into_iter().map(|policy_name| {
             self.build_member("true".to_string(), &inputs.clone(), policy_name)
@@ -97,7 +97,7 @@ impl<'a> PolicyFactory<'a> {
         }
     }
 
-    pub fn build_member(&self, is_allow: String, inputs: &PolicyMemberInputs, policy_name: String) -> PolicyMembers {  
+    fn build_member(&self, is_allow: String, inputs: &PolicyMemberInputs, policy_name: String) -> PolicyMembers {  
         let mut policy_members = PolicyMembers::new();
         let m = policy_members.mut_meta(
             ObjectMeta::new(),

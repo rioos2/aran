@@ -45,7 +45,7 @@ impl PolicyApi {
     //- id
     //- ObjectMeta: has updated created_at
     //- created_at
-    fn apply_policy(&self, req: &mut Request) -> AranResult<Response> {
+    fn apply(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
         let mut unmarshall_body = self.validate::<PolicyMemberInputs>(req.get::<bodyparser::Struct<PolicyMemberInputs>>()?)?;
 
@@ -61,7 +61,7 @@ impl PolicyApi {
 
     //PUT: /policies/teams/:id
     /// update policy to particular team
-    fn update_policy(&self, req: &mut Request) -> AranResult<Response> {
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
         let mut unmarshall_body = self.validate::<PolicyMembersList>(req.get::<bodyparser::Struct<PolicyMembersList>>()?)?;
 
@@ -115,15 +115,15 @@ impl Api for PolicyApi {
         let list_by_level = move |req: &mut Request| -> AranResult<Response> { _self.list_by_level(req) };
 
         let _self = self.clone();
-        let apply_policy = move |req: &mut Request| -> AranResult<Response> { _self.apply_policy(req) };
+        let apply = move |req: &mut Request| -> AranResult<Response> { _self.apply(req) };
 
         let _self = self.clone();
-        let update_policy = move |req: &mut Request| -> AranResult<Response> { _self.update_policy(req) };
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         router.get(
             "/policies/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
-            "policy_list",
+            "list_blank",
         );
         router.get(
             "/policies",
@@ -132,13 +132,13 @@ impl Api for PolicyApi {
         );
         router.post(
             "/policies/teams/:id",
-            XHandler::new(C { inner: apply_policy }).before(basic.clone()),
-            "apply_policy",
+            XHandler::new(C { inner: apply }).before(basic.clone()),
+            "apply",
         );
         router.put(
             "/policies/teams/:id",
-            XHandler::new(C { inner: update_policy }).before(basic.clone()),
-            "update_policy",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "update",
         );
 
     }
