@@ -17,7 +17,7 @@ use error::ErrorMessage::MissingParameter;
 
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, badgateway_error, not_found_error};
+use http_gateway::util::errors::{bad_request, badgateway_error, not_found_error, internal_error};
 use iron::prelude::*;
 use iron::status;
 use protocol::api::audit::AuditEvent;
@@ -97,7 +97,12 @@ impl BlockChainApi {
                 Error::Db(RecordsNotFound),
                 params.get_id()
             ))),
-            Err(err) => Err(badgateway_error(&format!("{}", err))),
+            Err(err) => {
+                if format!("{:?}", err).contains("Connection refused") {
+                    return Err(badgateway_error(&format!("{}", err)));
+                }
+                Err(internal_error(&format!("{}", err)))
+            }
         }
     }
 }

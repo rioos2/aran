@@ -7,6 +7,8 @@ use api::audit::mailer::email_sender as mailer;
 use api::audit::slack::slack_sender as slack;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
+const SUB_PRODUCTS: [&'static str; 2] = ["senseis", "ninjas"];
+
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
@@ -44,7 +46,7 @@ impl RuntimeHandler {
             }
 
             ExternalMessage::ActivateLicense(license_id, password, product) => {
-                match self.license.activate(license_id, &password) {
+                match self.license.activate(license_id, &password, &product) {
                     Ok(_) => {
                         self.license.update(
                             &product,
@@ -57,7 +59,7 @@ impl RuntimeHandler {
             }
 
             ExternalMessage::DeActivateLicense(license_id, password, product) => {
-                match self.license.deactivate() {
+                match self.license.deactivate(&product) {
                     Ok(_) => {
                         self.license.update(
                             &product,
@@ -74,7 +76,15 @@ impl RuntimeHandler {
 
     fn handle_internal_event(&mut self, event: &InternalEvent) {
         match *event {
-            InternalEvent::EntitlementTimeToVerify => self.license.live_verify().unwrap(),
+            InternalEvent::EntitlementTimeToVerify => {
+                SUB_PRODUCTS
+                    .iter()
+                    .map(|x| {
+                        self.license.live_verify(x).unwrap();
+                        self.license.update(x, "", "");
+                    })
+                    .collect::<Vec<_>>();
+            }
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }
     }
