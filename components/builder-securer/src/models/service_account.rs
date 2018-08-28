@@ -52,7 +52,7 @@ impl<'a> DataStore<'a> {
 
             for policy in policies {
                 let _rows = conn.query(
-                    "SELECT * FROM insert_policy_member_v1($1, $2,$3)",
+                    "SELECT * FROM internal_insert_policy_member_v1($1, $2,$3)",
                     &[&id,&true,&policy],
                 ).map_err(Error::ServiceAccountCreate)?;
             }
@@ -84,9 +84,10 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn get_service_account_by_name_fascade(&self, get_service: &base::IdGet) -> service_account::ServiceAccountTeams {
-        let mut account = service_account::ServiceAccountTeams::new();
-        account.set_name(get_service.get_id().clone());
+    pub fn get_service_account_by_name_fascade(&self, get_service: &base::IdGet) -> service_account::ServiceAccount {
+        let mut account = service_account::ServiceAccount::new();
+        account.set_name(get_service.get_id().clone());      
+
         self.expander
             .with_service_account(&mut account, PULL_DIRECTLY);
         account

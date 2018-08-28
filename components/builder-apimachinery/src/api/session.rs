@@ -668,11 +668,22 @@ impl AccountsFeeder for Account {
         IdGet::with_id_name(self.get_email(), "".to_string())
     }
 
-   fn ifeed(&mut self, m: Option<bool>) {
+   fn ifeed(&mut self, m: Option<Account>) {
        match m {
-            Some(is_admin) => self.set_is_admin(is_admin),
-            None => {}
-        }
+        Some(acc) => {            
+            self.set_id(acc.get_id());
+            self.set_email(acc.get_email());
+            self.set_password(acc.get_password());
+            self.set_first_name(acc.get_first_name());
+            self.set_last_name(acc.get_last_name());
+            self.set_is_admin(acc.get_is_admin());
+            self.set_apikey(acc.get_apikey());
+            self.set_company_name(acc.get_company_name());
+            self.set_trust_level(acc.get_trust_level());
+            self.set_created_at(acc.get_created_at());
+        },
+        None => {}
+       }
     }
 }
 

@@ -325,7 +325,7 @@ impl BeforeMiddleware for RBAC {
         }
 
         let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
-        let teams: authorizer::TeamType = header.decide()?.into();
+        let teams: authorizer::AccountType = header.decide()?.into();
 
         debug!("↑ RBAC {} {} {:?}", "→", &teams.name, input_trust);
 

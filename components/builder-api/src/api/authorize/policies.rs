@@ -3,7 +3,7 @@
 //! A collection of deployment [assembly, assembly_factory, for the HTTP server
 
 use std::sync::Arc;
-
+use bodyparser;
 use iron::prelude::*;
 use iron::status;
 use router::Router;
@@ -17,9 +17,11 @@ use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 /// TO_DO: Should be named  (authorize::models::teams, authorize::models::permission)
 use authorize::models::policy;
+use protocol::api::authorize::PolicyMemberInputs;
+use authorize::policies::PolicyFactory;
 use protocol::api::schema::{dispatch};
 use protocol::api::base::{MetaFields,IdGet};
-use protocol::api::authorize::Policies;
+use protocol::api::authorize::{Policies, PolicyMembersList};
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
@@ -35,6 +37,42 @@ pub struct PolicyApi {
 impl PolicyApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
         PolicyApi { conn: datastore }
+    }
+
+    //POST: /policies/teams/:id
+    //The body has the input policy members
+    //Returns a mutated policy_members  with
+    //- id
+    //- ObjectMeta: has updated created_at
+    //- created_at
+    fn apply(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+        let mut unmarshall_body = self.validate::<PolicyMemberInputs>(req.get::<bodyparser::Struct<PolicyMemberInputs>>()?)?;
+
+        debug!("{} ✓",
+            format!("======= policy members parsed {:?} ", unmarshall_body.clone()),
+        );        
+
+        match PolicyFactory::new(&self.conn).mk_policy_members(&unmarshall_body) {
+            Ok(mem) => Ok(render_json(status::Ok, &mem)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+        }       
+    }
+
+    //PUT: /policies/teams/:id
+    /// update policy to particular team
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+        let mut unmarshall_body = self.validate::<PolicyMembersList>(req.get::<bodyparser::Struct<PolicyMembersList>>()?)?;
+
+        debug!("{} ✓",
+            format!("======= policy members update parsed {:?} ", unmarshall_body.clone()),
+        );        
+
+        match PolicyFactory::new(&self.conn).update_policy_members(&unmarshall_body) {
+            Ok(mem) => Ok(render_json(status::Ok, &mem)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+        }       
     }
 
 
@@ -71,21 +109,36 @@ impl Api for PolicyApi {
 
         //closures : teams
         let _self = self.clone();
-        let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         let _self = self.clone();
         let list_by_level = move |req: &mut Request| -> AranResult<Response> { _self.list_by_level(req) };
 
+        let _self = self.clone();
+        let apply = move |req: &mut Request| -> AranResult<Response> { _self.apply(req) };
+
+        let _self = self.clone();
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
+
         router.get(
             "/policies/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
-            "policy_list",
+            "list_blank",
         );
         router.get(
             "/policies",
             XHandler::new(C { inner: list_by_level }).before(basic.clone()),
             "list_by_level",
+        );
+        router.post(
+            "/policies/teams/:id",
+            XHandler::new(C { inner: apply }).before(basic.clone()),
+            "apply",
+        );
+        router.put(
+            "/policies/teams/:id",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "update",
         );
 
     }
@@ -112,6 +165,52 @@ impl Validator for Policies {
 
         if level.len() <= 0 {
             s.push("level".to_string());
+        }
+
+        if s.is_empty() {
+            return Ok(Box::new(self));
+        }
+
+        Err(bad_request(&MissingParameter(format!("{:?}", s))))
+    }
+}
+
+impl Validator for PolicyMemberInputs {
+    //default implementation is to check for `account`, 'team id'  and 'origin'
+    fn valid(self) -> AranValidResult<Self> {
+        let mut s: Vec<String> = vec![];
+
+        if self.get_account_id().len() <= 0 {
+            s.push("account_id".to_string());
+        }
+
+        if self.get_origin_id().len() <= 0 {
+            s.push("origin_id".to_string());
+        }
+
+        if self.get_team_id().len() <= 0 {
+            s.push("team_id".to_string());
+        }
+        
+        if self.get_allowed_policies().is_empty() {
+            s.push("allowed_policies".to_string());
+        }
+
+        if s.is_empty() {
+            return Ok(Box::new(self));
+        }
+
+        Err(bad_request(&MissingParameter(format!("{:?}", s))))
+    }
+}
+
+impl Validator for PolicyMembersList {
+    //default implementation is to check for `policies` vec
+    fn valid(self) -> AranValidResult<Self> {
+        let mut s: Vec<String> = vec![];
+        
+        if self.get_policies().is_empty() {
+            s.push("policies".to_string());
         }
 
         if s.is_empty() {

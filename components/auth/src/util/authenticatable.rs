@@ -9,7 +9,7 @@
 //                   password: "sdkjfhkj",
 //                };
 //let auth = delegate.authenticate(&auth_enum);
-use rbac::authorizer::{TeamType, TeamNames};
+use rbac::authorizer::{AccountType, AccountNames};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
@@ -82,36 +82,32 @@ impl ToAuth for Authenticatable {
     }
 }
 
-
 //convert the Authenticatable into TeamType
-impl Into<TeamType> for Authenticatable {
-    fn into(self) -> TeamType {
+impl Into<AccountType> for Authenticatable {
+    fn into(self) -> AccountType {
         match self {
-            //`-----future purpose for team based authentication
-            // Authenticatable::UserAndPass {
-            //     username: ref u,
-            //     password: ref _p,
-            // } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
+             Authenticatable::UserAndPass {
+                 username: ref u,
+                 password: ref _p,
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT),
 
             Authenticatable::ServiceAccountNameAndWebtoken {
                 name: ref u,
                 webtoken: ref _p,
                 key: ref _k,
-            } => TeamType::new(u.to_string(), TeamNames::SERVICEACCOUNT),
+            } => AccountType::new(u.to_string(), AccountNames::SERVICEACCOUNT),
 
-            //`-----future purpose for team based authentication
-            // Authenticatable::UserEmailAndToken {
-            //     email: ref u,
-            //     token: ref _p,
-            // } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
+             Authenticatable::UserEmailAndToken {
+                 email: ref u,
+                 token: ref _p,
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT),
 
-            //`-----future purpose for team based authentication
-            // Authenticatable::UserEmailAndWebtoken {
-            //     email: ref u,
-            //     webtoken: ref _p,
-            // } => TeamType::new(u.to_string(), TeamNames::USERACCOUNT),
+             Authenticatable::UserEmailAndWebtoken {
+                 email: ref u,
+                 webtoken: ref _p,
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT),
 
-            _ => TeamType::new("".to_string(), TeamNames::NONE),
+            _ => AccountType::new("".to_string(), AccountNames::NONE),
         }
     }
 }

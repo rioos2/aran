@@ -3,16 +3,19 @@ CREATE TABLE IF NOT EXISTS policies (id bigint PRIMARY KEY DEFAULT next_id_v1('p
 
 
 CREATE SEQUENCE IF NOT EXISTS poli_mem_id_seq;
-CREATE TABLE IF NOT EXISTS policy_members(id bigint PRIMARY KEY DEFAULT next_id_v1('poli_mem_id_seq'),type_meta JSONB, object_meta JSONB, metadata JSONB, policy_name text, created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS policy_members(id bigint PRIMARY KEY DEFAULT next_id_v1('poli_mem_id_seq'),type_meta JSONB, object_meta JSONB, metadata JSONB, is_allow text, policy_name text, created_at timestamptz DEFAULT now());
 
-CREATE OR REPLACE FUNCTION insert_policy_member_v1(account_id bigint, is_allow bool,acc_policy_name text) RETURNS SETOF policy_members AS $$
+---
+--- Table:policy_members:internal insert
+---
+CREATE OR REPLACE FUNCTION internal_insert_policy_member_v1(account_id bigint, allowed bool, acc_policy_name text) RETURNS SETOF policy_members AS $$
 DECLARE inserted_policy_member policy_members;
 BEGIN
    INSERT INTO
-         policy_members(type_meta, object_meta, metadata, policy_name)
+         policy_members(type_meta, object_meta, is_allow, policy_name)
       VALUES
       (
-         '{"kind":"PolicyMemeber","api_version":"v1"}', json_build_object('account', account_id::text)::jsonb, json_build_object('is_allow', is_allow::text)::jsonb,acc_policy_name
+         '{"kind":"PolicyMemeber","api_version":"v1"}', json_build_object('account', account_id::text)::jsonb, allowed, acc_policy_name
       )
       ON CONFLICT DO NOTHING RETURNING * into inserted_policy_member;
 RETURN NEXT inserted_policy_member;
@@ -21,6 +24,79 @@ END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
 
+---
+--- Table:policy_member:create
+---
+CREATE
+OR REPLACE FUNCTION insert_policy_member_v1 (acc_policy_name text, allowed text, object_meta JSONB, type_meta JSONB, metadata JSONB) RETURNS SETOF policy_members AS $$
+DECLARE inserted_policy_member policy_members;
+BEGIN
+   INSERT INTO
+      policy_members(type_meta, object_meta, metadata, is_allow, policy_name)
+   VALUES
+      (
+         type_meta, 
+         object_meta, 
+         metadata,
+         allowed,
+         acc_policy_name
+      )
+      ON CONFLICT DO NOTHING RETURNING * into inserted_policy_member;
+      RETURN NEXT inserted_policy_member;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;
+
+---
+--- Table:policy_members:update_policy_member
+---
+CREATE
+OR REPLACE FUNCTION update_policy_member_v1 (aid bigint, allowed text) RETURNS SETOF policy_members AS $$
+BEGIN
+   RETURN QUERY
+   UPDATE
+      policy_members
+   SET      
+      is_allow = allowed
+   WHERE
+      id = aid RETURNING *;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;
+
+---
+--- Table:policy_members:list_by_account
+---
+CREATE
+OR REPLACE FUNCTION get_policy_members_by_account_v1 (account_id text) RETURNS SETOF policy_members AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      policy_members
+   WHERE
+      object_meta ->> 'account' = account_id;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+---
+--- Table:policy_members:list_by_account
+---
+CREATE
+OR REPLACE FUNCTION get_policy_members_by_team_v1 (team_id text) RETURNS SETOF policy_members AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      policy_members
+   WHERE
+      metadata ->> 'team' = team_id;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
 
 
 ---

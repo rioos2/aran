@@ -8,7 +8,7 @@ mod multi_cache;
 use self::flock::Cacher;
 use api;
 use cache::inject::{EndPointsFeeder, FactoryFeeder, MetricsFeeder, PermissionsFeeder, PlanFeeder, ServicesFeeder, StacksFeeder, VolumesFeeder,
-                    LicensesFeeder, AccountsFeeder, ServiceAccountFeeder, MembersFeeder, TeamsFeeder};
+                    LicensesFeeder, AccountsFeeder, ServiceAccountFeeder, MembersFeeder, TeamsFeeder, PoliciesFeeder};
 use cache::multi_cache::MultiCache;
 use serde_json;
 use std::collections::BTreeMap;
@@ -32,6 +32,7 @@ pub const CACHE_PREFIX_ACCOUNT: &'static str = "_account";
 pub const CACHE_PREFIX_SERVICEACCOUNT: &'static str = "_service_account";
 pub const CACHE_PREFIX_MEMBER: &'static str = "_member";
 pub const CACHE_PREFIX_TEAM: &'static str = "_team";
+pub const CACHE_PREFIX_POLICY_MEMBER: &'static str = "_policy_member";
 
 /// The fake type that decides how to pull the data from cache (invalidate or just from cache)
 /// PULL_DIRECTLY: This loads from the cache is present, if the copy isn't there then it applies the function closure |_v| to cache the entry
@@ -467,8 +468,7 @@ impl InMemoryExpander {
         i.ifeed(opt_found_as_str.and_then({
             |found_as_str| {
                 let account: api::session::Account = serde_json::from_str(&found_as_str).unwrap_or(api::session::Account::new());
-                let is_admin: bool = account.get_is_admin();
-                Some(is_admin)
+                Some(account)
             }
         }))
     }
@@ -492,8 +492,8 @@ impl InMemoryExpander {
         i.ifeed(opt_found_as_str.and_then({
             |found_as_str| {
                 let account: api::service_account::ServiceAccount = serde_json::from_str(&found_as_str).unwrap_or(api::service_account::ServiceAccount::new());
-                let teams: Vec<String> = account.get_teams();
-                Some(teams)
+                //let teams: Vec<String> = account.get_teams();
+                Some(account)
             }
         }))
     }
@@ -521,6 +521,34 @@ impl InMemoryExpander {
         e.efeed(opt_found_as_str.and_then({
             |found_as_str| {
                 let member: Option<Vec<api::invitations::Invitations>> = serde_json::from_str(&found_as_str).ok();
+                member
+            }
+        }))
+    }
+
+    /// Expands a structure with the policy members information.
+    /// If force is Some, then it applies the function closure |_v| which loads from the cache is present.
+    /// If force is None, then it invalidates the cache and loads a fresh copy
+    pub fn with_policy_members<E: PoliciesFeeder>(&self, e: &mut E, force: Option<bool>) {
+        let eid = e.eget_id();
+        let opt_found_as_str = {
+            force.map_or_else(
+                || {
+                    debug!("» Policy Members Invalidate fn for ≈ {}", eid);
+                    self.cached_invalidate_for(CACHE_PREFIX_POLICY_MEMBER.to_string(), eid.clone())
+                        .clone()
+                },
+                |_v| {
+                    debug!("» Policy Members cache fn for ≈ {}", eid);
+                    self.cached_value_for(CACHE_PREFIX_POLICY_MEMBER.to_string(), eid.clone())
+                        .clone()
+                },
+            )
+        };
+
+        e.efeed(opt_found_as_str.and_then({
+            |found_as_str| {
+                let member: Option<Vec<api::authorize::PolicyMembers>> = serde_json::from_str(&found_as_str).ok();
                 member
             }
         }))

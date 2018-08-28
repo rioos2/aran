@@ -15,6 +15,7 @@ extern crate serde_json;
 pub mod error;
 pub mod models;
 pub mod invites;
+pub mod policies;
 
 pub use self::error::{Error, Result};
 
@@ -39,3 +40,8 @@ pub type InvitationsOutputList = Result<Option<Vec<protocol::api::invitations::I
 pub type TeamMembersOutput = Result<std::option::Option<protocol::api::authorize::TeamMembers>>;
 /// TeamMembers output as list
 pub type TeamMembersOutputList = Result<Option<Vec<protocol::api::authorize::TeamMembers>>>;
+
+/// PolicyMembers output
+pub type PolicyMembersOutput = Result<std::option::Option<protocol::api::authorize::PolicyMembers>>;
+/// PolicyMembers output as list
+pub type PolicyMembersOutputList = Result<Option<Vec<protocol::api::authorize::PolicyMembers>>>;

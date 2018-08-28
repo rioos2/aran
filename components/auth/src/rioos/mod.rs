@@ -12,6 +12,7 @@ use std::fmt;
 use std::sync::Arc;
 use util::authenticatable::{Authenticatable, ToAuth};
 
+
 //Authenticate delegate main function of authentication
 //Authenticate delegate struct support following authentication types
 //1. user email and password

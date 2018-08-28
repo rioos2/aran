@@ -5,7 +5,7 @@
 use chrono::prelude::*;
 use error::{Error, Result};
 
-use protocol::api::authorize::{Permissions, PermissionsForAccount, PermissionsForPolicy};
+use protocol::api::authorize::{Permissions, PermissionsForPolicy};
 use protocol::api::base::IdGet;
 
 use protocol::cache::{InMemoryExpander, PULL_DIRECTLY};
@@ -98,13 +98,13 @@ impl<'a> DataStore<'a> {
     }
 
     //This is a fascade method to list_by_email.
-    pub fn list_by_email_fascade(&self, email: IdGet) -> PermissionsForAccount {
+   /* pub fn list_by_email_fascade(&self, email: IdGet) -> PermissionsForAccount {
         let mut perms_for_account = PermissionsForAccount::new();
         perms_for_account.set_account_email(email.get_id());
         self.expander
             .with_permissions(&mut perms_for_account, PULL_DIRECTLY);
         perms_for_account
-    }
+    }*/
 
     //This is a fascade method to list_by_email.
     pub fn list_by_email(&self, email: &IdGet) -> PermissionsOutputList {

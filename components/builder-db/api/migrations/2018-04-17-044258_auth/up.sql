@@ -9,11 +9,16 @@ CREATE TABLE IF NOT EXISTS accounts (id bigint UNIQUE PRIMARY KEY DEFAULT next_i
 ---
 --- Table:accounts:create
 ---
-
 CREATE
 OR REPLACE FUNCTION insert_account_v1 (account_email text, account_first_name text, account_last_name text, account_phone text, account_api_key text, account_password text, account_approval bool, account_suspend bool, account_is_admin bool, account_registration_ip_address text, account_trust_level text, account_company_name text, account_object_meta JSONB, account_type_meta JSONB, account_avatar BYTEA) RETURNS SETOF accounts AS $$
 DECLARE inserted_account accounts;
-  BEGIN
+BEGIN
+   SELECT
+      * INTO inserted_account
+   FROM
+      accounts;  
+IF FOUND
+THEN
    INSERT INTO
       accounts ( email, first_name, last_name, phone, api_key, password, approval, suspend, is_admin, registration_ip_address, trust_level, company_name, object_meta, type_meta, avatar)
    VALUES
@@ -22,10 +27,25 @@ DECLARE inserted_account accounts;
       )
       ON CONFLICT DO NOTHING RETURNING * INTO inserted_account;
       RETURN NEXT inserted_account;
+ELSE
+   INSERT INTO
+      accounts ( email, first_name, last_name, phone, api_key, password, approval, suspend, is_admin, registration_ip_address, trust_level, company_name, object_meta, type_meta, avatar)
+   VALUES
+      (
+         account_email, account_first_name, account_last_name, account_phone, account_api_key, account_password, account_approval, account_suspend, true, account_registration_ip_address, account_trust_level, account_company_name, account_object_meta, account_type_meta, account_avatar
+      )
+      ON CONFLICT DO NOTHING RETURNING * INTO inserted_account;
+      RETURN NEXT inserted_account;
+RETURN;
+END
+IF;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
+---
+--- Table:accounts:show by admin
+---
 CREATE
 OR REPLACE FUNCTION get_accounts_v1_by_is_admin () RETURNS SETOF accounts AS $$
 BEGIN
