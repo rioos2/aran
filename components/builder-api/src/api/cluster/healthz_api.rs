@@ -7,7 +7,7 @@ use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::Error;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{badgateway_error, not_found_error};
+use http_gateway::util::errors::{badgateway_error, not_found_error, internal_error};
 use http_gateway::util::errors::AranResult;
 use iron::prelude::*;
 use iron::status;
@@ -42,7 +42,12 @@ impl HealthzApi {
     fn healthz_all(&self, _req: &mut Request) -> AranResult<Response> {
         match DataStore::new(&self.conn, &self.prom).healthz_all() {
             Ok(Some(health_all)) => Ok(render_json(status::Ok, &health_all)),
-            Err(err) => Err(badgateway_error(&format!("{}", err))),
+            Err(err) => {
+                if format!("{:?}", err).contains("Connection refused") {
+                    return Err(badgateway_error(&format!("{}", err)));
+                }
+                Err(internal_error(&format!("{}", err)))
+            }
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }

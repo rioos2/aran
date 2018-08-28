@@ -77,11 +77,16 @@ pub struct NativeSDK {
     licenseFilePath: String, //file path to load the license
     isLoaded: bool, //represent the license file is loaded or not
     isWritable: bool, //set read and write permission for license fil
-    state: State,
+    state: BTreeMap<String, State>, //
 }
 
 impl NativeSDK {
     pub fn new(lib: Library, license: LicensesFascade) -> Self {
+        let mut state = BTreeMap::new();
+        SUB_PRODUCTS
+            .iter()
+            .map(|l| state.insert(l.0.to_string(), State::new()))
+            .collect::<Vec<_>>();
         NativeSDK {
             lib: lib,
             cache: license,
@@ -90,7 +95,7 @@ impl NativeSDK {
             isLoaded: false,
             isWritable: false,
             licenseFilePath: "".to_string(),
-            state: State::new(),
+            state: state,
         }
     }
     //Initializes a new API Context, which may be used to open and manipulate a license file.
@@ -254,12 +259,12 @@ NIC (OPTIONAL)
 
             if result == ResultCode::SK_ERROR_COULD_NOT_LOAD_LICENSE as i32 {
                 self.create_trial(30)?;
+                self.create()?;
             } else if result == ResultCode::SK_ERROR_NONE as i32 {
                 self.isLoaded = true;
             } else {
                 return self.check_result(result);
             }
-            self.live_verify()?;
         }
         Ok(())
     }
@@ -335,31 +340,42 @@ NIC (OPTIONAL)
     //5.Evaluation is false and license not valid then it can be consider as expired license
     //6.get_type fn is return the type of the license and the license is time limited and status is set as active and remaining days updated in db
     //7.if all condition set tas false and the license is set as inavalid
-    pub fn live_verify(&mut self) -> Result<()> {
+    pub fn live_verify(&mut self, name: &str) -> Result<()> {
         let is_valid_remote: bool = self.validate()?;
         let no_of_days_to_expire = self.get_days_remaining()?.to_string();
+
         if self.is_evaluation()? {
             if is_valid_remote {
-                self.state.set_status(TRIAL.to_string());
-                self.state.set_no_of_days_to_expire(no_of_days_to_expire);
-                self.create();
+                self.state.get_mut(name).unwrap().set_status(
+                    TRIAL.to_string(),
+                );
+                self.state.get_mut(name).unwrap().set_no_of_days_to_expire(
+                    no_of_days_to_expire,
+                );
             } else {
-                self.state.set_status(EXPIRY.to_string());
-                self.state.set_no_of_days_to_expire(no_of_days_to_expire);
+                self.state.get_mut(name).unwrap().set_status(
+                    EXPIRY.to_string(),
+                );
             }
             return Ok(());
         }
         if is_valid_remote {
             if self.get_type()? as i32 == LicenseType::TimeLimited as i32 {
-                self.state.set_status(ACTIVE.to_string());
-                self.state.set_no_of_days_to_expire(no_of_days_to_expire);
+                self.state.get_mut(name).unwrap().set_status(
+                    ACTIVE.to_string(),
+                );
+                self.state.get_mut(name).unwrap().set_no_of_days_to_expire(
+                    no_of_days_to_expire,
+                );
             } else {
-                self.state.set_status(ACTIVE.to_string());
-                self.state.set_no_of_days_to_expire(no_of_days_to_expire);
+                self.state.get_mut(name).unwrap().set_status(
+                    ACTIVE.to_string(),
+                );
             }
         } else {
-            self.state.set_status(INVALID.to_string());
-            self.state.set_no_of_days_to_expire(no_of_days_to_expire);
+            self.state.get_mut(name).unwrap().set_status(
+                INVALID.to_string(),
+            );
         }
         Ok(())
     }
@@ -749,7 +765,7 @@ NIC (OPTIONAL)
     //8.decrypt_doc fn decrypt the licensePtr
     //9.save the licen file in the specified licensepath
     //refer the link for more details https://www.softwarekey.com/help/plus5/#SK_SOLO_ActivateInstallationGetRequest.html%3FTocPath%3DProtection%2520PLUS%25205%2520SDK%2520Manual%7CAPI%2520References%7CPLUSNative%2520API%2520Reference%7CFunctions%7C_____75
-    pub fn activate(&mut self, license_id: u32, password: &str) -> Result<()> {
+    pub fn activate(&mut self, license_id: u32, password: &str, name: &str) -> Result<()> {
         unsafe {
             let resultCodePtr: &mut SK_IntPointer = &mut 0;
             let statusCodePtr: &mut SK_IntPointer = &mut 0;
@@ -855,9 +871,10 @@ NIC (OPTIONAL)
                 activationleftPtr,
             );
 
-            self.state.set_no_of_activations_available(
-                *activationleftPtr,
-            );
+            self.state
+                .get_mut(name)
+                .unwrap()
+                .set_no_of_activations_available(*activationleftPtr);
 
             let decrypt_doc = *self.lib.get::<fn(SK_ApiContext,
                        c_int,
@@ -900,6 +917,7 @@ NIC (OPTIONAL)
             dispose(SK_FLAGS_NONE, licensePtr);
             dispose(SK_FLAGS_NONE, decLicensePtr);
             self.reload()?;
+            self.live_verify(name)?;
             Ok(())
         }
     }
@@ -910,7 +928,7 @@ NIC (OPTIONAL)
     //3.If call_xml_service is failure then return the correspondig error
     //4.Failure may happen because of network connection lost or incorrect data
     //5.Deactivation is successful then increase the ActivationsLeft data with 1
-    pub fn deactivate(&mut self) -> Result<()> {
+    pub fn deactivate(&mut self, name: &str) -> Result<()> {
         unsafe {
             let resultCodePtr: &mut SK_IntPointer = &mut 0;
             let statusCodePtr: &mut SK_IntPointer = &mut 0;
@@ -982,23 +1000,33 @@ NIC (OPTIONAL)
                 }
                 self.check_result(result);
             }
-            let no_of_activations_available = self.state.get_no_of_activations_available() + 1;
-            self.state.set_no_of_activations_available(
-                no_of_activations_available,
-            );
+            let no_of_activations_available = self.state
+                .get(name)
+                .unwrap()
+                .get_no_of_activations_available() + 1;
+            self.state
+                .get_mut(name)
+                .unwrap()
+                .set_no_of_activations_available(no_of_activations_available);
             Ok(())
         }
     }
 
-    fn create(&self) {
+    fn create(&mut self) -> Result<()> {
         for x in SUB_PRODUCTS.iter() {
-            let license = self.state.mk_new(x.0);
+            self.live_verify(x.0)?;
+            let license = self.state.get(x.0).unwrap().mk_new(x.0);
             Saver::new(&self.cache.conn).create(license);
         }
+        Ok(())
     }
 
     pub fn update(&self, name: &str, license_id: &str, password: &str) {
-        let license = self.state.current(name, license_id, password);
+        let license = self.state.get(name).unwrap().current(
+            name,
+            license_id,
+            password,
+        );
         Saver::new(&self.cache.conn).update(license);
     }
 
