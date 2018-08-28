@@ -23,7 +23,9 @@ pub enum Error {
     InvitationsGet(postgres::error::Error),
     InvitationsUpdate(postgres::error::Error),
     TeamMembersCreate(postgres::error::Error),
+    PolicyMembersCreate(postgres::error::Error),
     PolicyMembersGet(postgres::error::Error),
+    PolicyMembersUpdate(postgres::error::Error),
     PoliciesGet(postgres::error::Error),
 
 }
@@ -52,6 +54,8 @@ impl fmt::Display for Error {
             Error::InvitationsUpdate(ref e) => format!("Database error update a Invitations, {}", e),
             Error::TeamMembersCreate(ref e) => format!("Database error creating a team_member, {}", e),
             Error::PolicyMembersGet(ref e) => format!("Database error get policy members {}", e),
+            Error::PolicyMembersCreate(ref e) => format!("Database error create policy members {}", e),
+            Error::PolicyMembersUpdate(ref e) => format!("Database error update policy members {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -75,6 +79,8 @@ impl error::Error for Error {
             Error::TeamMembersCreate(ref err) => err.description(),
             Error::PoliciesGet(ref err) => err.description(),
             Error::PolicyMembersGet(ref err) => err.description(),
+            Error::PolicyMembersCreate(ref err) => err.description(),
+            Error::PolicyMembersUpdate(ref err) => err.description(),
         }
     }
 }

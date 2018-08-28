@@ -5,6 +5,7 @@ use cache::inject::PermissionsFeeder;
 use std::collections::BTreeMap;
 use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields, WhoAmITypeMeta};
 use cache::inject::MembersFeeder;
+use cache::inject::PoliciesFeeder;
 use cache::inject::TeamsFeeder;
 use api::invitations::Invitations;
 
@@ -24,6 +25,8 @@ pub struct Teams {
     created_at: String,
     #[serde(default)]
     members: Option<Vec<Invitations>>,
+    #[serde(default)]
+    policies: Option<Vec<PolicyMembers>>,
 }
 
 impl Teams {
@@ -83,8 +86,12 @@ impl Teams {
         &mut self.metadata
     }
 
-     pub fn set_members(&mut self, v: Option<Vec<Invitations>>) {
+    pub fn set_members(&mut self, v: Option<Vec<Invitations>>) {
         self.members = v;
+    }
+
+    pub fn set_policies(&mut self, v: Option<Vec<PolicyMembers>>) {
+        self.policies = v;
     }
 }
 
@@ -115,6 +122,17 @@ impl MembersFeeder for Teams {
 
     fn efeed(&mut self, s: Option<Vec<Invitations>>) {
         self.set_members(s);
+    }
+}
+
+
+impl PoliciesFeeder for Teams {
+    fn eget_id(&mut self) -> IdGet {
+        IdGet::with_id(self.get_id().clone())
+    }
+
+    fn efeed(&mut self, s: Option<Vec<PolicyMembers>>) {
+        self.set_policies(s);
     }
 }
 
@@ -380,11 +398,28 @@ impl MetaFields for Policies {
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PolicyMembersList {
+    pub policies: Vec<PolicyMembers>,
+}
+
+impl PolicyMembersList {    
+
+    pub fn set_policies(&mut self, v: ::std::vec::Vec<PolicyMembers>) {
+        self.policies = v;
+    }
+
+    pub fn get_policies(&self) -> ::std::vec::Vec<PolicyMembers> {
+        self.policies.clone()
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct PolicyMemberInputs {
     account_id: String,
     origin_id: String,   
     team_id: String, 
-    policies: Vec<String>,    
+    allowed_policies: Vec<String>,    
+    denied_policies: Vec<String>, 
 }
 
 impl PolicyMemberInputs {
@@ -413,11 +448,18 @@ impl PolicyMemberInputs {
         self.team_id.clone()
     }
 
-    pub fn set_policies(&mut self, v: ::std::vec::Vec<String>) {
-        self.policies = v;
+    pub fn set_allowed_policies(&mut self, v: ::std::vec::Vec<String>) {
+        self.allowed_policies = v;
     }
-    pub fn get_policies(&self) -> ::std::vec::Vec<String> {
-        self.policies.clone()
+    pub fn get_allowed_policies(&self) -> ::std::vec::Vec<String> {
+        self.allowed_policies.clone()
+    }
+
+    pub fn set_denied_policies(&mut self, v: ::std::vec::Vec<String>) {
+        self.denied_policies = v;
+    }
+    pub fn get_denied_policies(&self) -> ::std::vec::Vec<String> {
+        self.denied_policies.clone()
     }
 }
 
@@ -425,36 +467,15 @@ impl ChildTypeMeta for PolicyMemberInputs {
     const CHILD_KIND: &'static str = "POST:policymembers";
 }
 
-/// Build Invitations for each invited users
-impl Into<PolicyMembersList> for Box<PolicyMemberInputs> {
-    fn into(self) -> PolicyMembersList {
-        let policies = self.get_policies();
-        let v: Vec<PolicyMembers> = policies.into_iter().map(|x| {
-            let mut policy_members = PolicyMembers::new();
-            let m = policy_members.mut_meta(
-                ObjectMeta::new(),
-                "POLICYMEMBERS".to_string(),
-                self.get_account_id(),
-            );
-            let jackie = self.children();
-            invites.set_meta(type_meta_url(jackie), m);
-            invites.set_origin_id(self.get_origin_id());
-            invites.set_team_id(self.get_team_id());
-            invites.set_policy_name(x.to_string());
-            invites
-        }).collect();
-        InvitationsList{
-            invites: v
-        }
-    }
-}
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct PolicyMembers {
     #[serde(default)]
     id: String,
     policy_name: String,
+    is_allow: String,
+    #[serde(default)]
     metadata: BTreeMap<String, String>,
+    #[serde(default)]
     object_meta: ObjectMeta,
     #[serde(default)]
     type_meta: TypeMeta,
@@ -489,6 +510,13 @@ impl PolicyMembers {
     }
     pub fn get_policy_name(&self) -> ::std::string::String {
         self.policy_name.clone()
+    }
+
+    pub fn set_is_allow(&mut self, v: ::std::string::String) {
+        self.is_allow = v;
+    }
+    pub fn get_is_allow(&self) -> ::std::string::String {
+        self.is_allow.clone()
     }
 
     pub fn set_metadata(&mut self, v: BTreeMap<String, String>) {

@@ -73,6 +73,12 @@ pub trait MembersFeeder: Send {
     fn efeed(&mut self, e: Option<Vec<api::invitations::Invitations>>);
 }
 
+pub trait PoliciesFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<Vec<api::authorize::PolicyMembers>>);
+}
+
 pub trait TeamsFeeder: Send {
     fn eget_id(&mut self) -> api::base::IdGet;
 

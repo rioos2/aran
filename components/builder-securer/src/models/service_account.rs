@@ -52,7 +52,7 @@ impl<'a> DataStore<'a> {
 
             for policy in policies {
                 let _rows = conn.query(
-                    "SELECT * FROM insert_policy_member_v1($1, $2,$3)",
+                    "SELECT * FROM internal_insert_policy_member_v1($1, $2,$3)",
                     &[&id,&true,&policy],
                 ).map_err(Error::ServiceAccountCreate)?;
             }

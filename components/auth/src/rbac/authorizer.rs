@@ -60,7 +60,7 @@ impl Authorization {
                  let mut account_get = session::AccountGet::new();
                  account_get.set_email(account_type.name);
                  let mut account = self.accounts.get_by_email(account_get);
-                 //account.pop()                 
+                 //account.pop()                            
                  if (account.get_is_admin()) {
                     return Ok(true);
                  }

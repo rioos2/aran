@@ -141,7 +141,8 @@ impl<'a> DataStore<'a> {
     /// Expands the teams by sticking in Members    
     fn collect_members(&self, row: &postgres::rows::Row, how_to: PullFromCache) -> Result<Teams> {
         let mut team = row_to_teams(&row)?;
-        self.expander.with_members(&mut team, how_to);        
+        self.expander.with_members(&mut team, how_to);  
+        self.expander.with_policy_members(&mut team, how_to);      
         Ok(team)
     }
 

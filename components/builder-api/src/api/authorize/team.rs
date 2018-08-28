@@ -17,9 +17,9 @@ use protocol::api::schema::type_meta;
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
-use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_MEMBER, CACHE_PREFIX_TEAM};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_MEMBER, CACHE_PREFIX_TEAM, CACHE_PREFIX_POLICY_MEMBER};
 /// TO_DO: Should be named  (authorize::models::teams, authorize::models::permission)
-use authorize::models::{team, team_members};
+use authorize::models::{team, team_members, policy_members};
 use authorize::models::invitations;
 use authorize::invites::Invites;
 use protocol::api::base::MetaFields;
@@ -327,8 +327,20 @@ impl ExpanderSender for TeamApi {
                     .and_then(|e| serde_json::to_string(&e).ok())
             }),
         ));
+
+        let _conn = self.conn.clone();
+        let policy_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_POLICY_MEMBER.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Policy Members live load for ≈ {}", id);
+                policy_members::DataStore::new(&_conn).list_by_team(&id)
+                    .ok()
+                    .and_then(|e| serde_json::to_string(&e).ok())
+            }),
+        ));
        
         &self.conn.expander.with(member_service);  
+        &self.conn.expander.with(policy_service); 
         &self.conn.expander.with(team_service);       
     }
 }

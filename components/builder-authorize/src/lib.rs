@@ -15,6 +15,7 @@ extern crate serde_json;
 pub mod error;
 pub mod models;
 pub mod invites;
+pub mod policies;
 
 pub use self::error::{Error, Result};
 
