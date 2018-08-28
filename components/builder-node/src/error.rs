@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
-use cidr;
+
 use db;
 use oping;
 use postgres;
@@ -20,7 +20,6 @@ pub enum Error {
     NodeUpdate(postgres::error::Error),
     PromoStatusGetError(telemetry::error::Error),
     PingError(oping::PingError),
-    NetworkError(cidr::NetworkParseError),
     SenseiCreate(postgres::error::Error),
     SenseiGet(postgres::error::Error),
 }
@@ -38,7 +37,6 @@ impl fmt::Display for Error {
             Error::NodeUpdate(ref e) => format!("Database error update node , {}", e),
             Error::PromoStatusGetError(ref e) => format!("Prometheus connection refused , {}", e),
             Error::PingError(ref e) => format!("PingError , {}", e),
-            Error::NetworkError(ref e) => format!("PingError , {}", e),
             Error::SenseiCreate(ref e) => format!("Database error creating a Sensei, {}", e),
             Error::SenseiGet(ref e) => format!("Database error get sensei , {}", e),
         };
@@ -57,7 +55,6 @@ impl error::Error for Error {
             Error::NodeGet(ref err) => err.description(),
             Error::PromoStatusGetError(ref err) => err.description(),
             Error::PingError(ref err) => err.description(),
-            Error::NetworkError(ref err) => err.description(),
             Error::SenseiCreate(ref err) => err.description(),
             Error::SenseiGet(ref err) => err.description(),
         }
@@ -78,11 +75,5 @@ impl From<telemetry::error::Error> for Error {
 impl From<oping::PingError> for Error {
     fn from(err: oping::PingError) -> Error {
         Error::PingError(err)
-    }
-}
-
-impl From<cidr::NetworkParseError> for Error {
-    fn from(err: cidr::NetworkParseError) -> Error {
-        Error::NetworkError(err)
     }
 }
