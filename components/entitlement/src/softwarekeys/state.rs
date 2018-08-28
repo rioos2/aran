@@ -3,7 +3,7 @@
 //! The purpose of this is to store the transient state updates that happen while the NativeSDK interact with SoftwareKey.
 
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
-use protocol::api::licenses::{Licenses, TRIAL};
+use protocol::api::licenses::{Licenses, TRIAL, ACTIVE};
 use protocol::api::schema::type_meta_url;
 use std::collections::BTreeMap;
 
@@ -69,7 +69,7 @@ impl State {
 
     pub fn current(&self, name: &str, license_id: &str, password: &str) -> Licenses {
         let mut license = Licenses::new();
-        license.set_activation(self.current_calculate_limits(name));
+        license.set_activation(self.calculate_limits(name));
         license.set_provider_name(name.to_string());
         license.set_status(self.get_status());
         license.set_expired(self.get_no_of_days_to_expire());
@@ -78,8 +78,10 @@ impl State {
         license
     }
 
+
     fn calculate_limits(&self, name: &str) -> BTreeMap<String, i32> {
         let mut limits_map = BTreeMap::new();
+
         SUB_PRODUCTS
             .iter()
             .filter(|x| x.0 == name)
@@ -88,14 +90,10 @@ impl State {
                 limits_map.insert("no_of_activations_available".to_string(), l.2);
             })
             .collect::<Vec<_>>();
-        limits_map
-    }
 
-    fn current_calculate_limits(&self, name: &str) -> BTreeMap<String, i32> {
-        let mut limits_map = BTreeMap::new();
         SUB_PRODUCTS
             .iter()
-            .filter(|x| x.0 == name)
+            .filter(|x| x.0 == name && self.get_status() == ACTIVE)
             .map(|l| {
                 limits_map.insert("total_number_of_activations".to_string(), l.2);
                 limits_map.insert(
@@ -104,6 +102,7 @@ impl State {
                 );
             })
             .collect::<Vec<_>>();
+
         limits_map
     }
 

@@ -356,6 +356,9 @@ NIC (OPTIONAL)
                 self.state.get_mut(name).unwrap().set_status(
                     EXPIRY.to_string(),
                 );
+                self.state.get_mut(name).unwrap().set_no_of_days_to_expire(
+                    no_of_days_to_expire,
+                );
             }
             return Ok(());
         }
@@ -371,10 +374,16 @@ NIC (OPTIONAL)
                 self.state.get_mut(name).unwrap().set_status(
                     ACTIVE.to_string(),
                 );
+                self.state.get_mut(name).unwrap().set_no_of_days_to_expire(
+                    no_of_days_to_expire,
+                );
             }
         } else {
             self.state.get_mut(name).unwrap().set_status(
                 INVALID.to_string(),
+            );
+            self.state.get_mut(name).unwrap().set_no_of_days_to_expire(
+                no_of_days_to_expire,
             );
         }
         Ok(())
