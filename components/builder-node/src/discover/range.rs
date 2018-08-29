@@ -1,4 +1,5 @@
 use super::IpType;
+use error::Result;
 use ipnet::{IpAddrRange, Ipv4AddrRange, Ipv6AddrRange};
 use std::net::IpAddr;
 
@@ -16,25 +17,15 @@ impl Range {
             ip_type: ip_type,
         }
     }
-    pub fn get_ip_list(&self) -> Vec<String> {
+    pub fn get_ip_list(&self) -> Result<Vec<String>> {
         let ips = match IpType::find(&self.ip_type) {
-            IpType::IPV4 => {
-                IpAddrRange::from(Ipv4AddrRange::new(
-                    self.from.parse().expect("Unable to parsesocket address"),
-                    self.to.parse().expect("Unable to parsesocket address"),
-                )).collect::<Vec<IpAddr>>()
-            }
-            IpType::IPV6 => {
-                IpAddrRange::from(Ipv6AddrRange::new(
-                    self.from.parse().expect("Unable to parsesocket address"),
-                    self.to.parse().expect("Unable to parsesocket address"),
-                )).collect::<Vec<IpAddr>>()
-            }
+            IpType::IPV4 => IpAddrRange::from(Ipv4AddrRange::new(self.from.parse()?, self.to.parse()?)).collect::<Vec<IpAddr>>(),
+            IpType::IPV6 => IpAddrRange::from(Ipv6AddrRange::new(self.from.parse()?, self.to.parse()?)).collect::<Vec<IpAddr>>(),
         };
         let mut x = vec![];
         for d in ips {
             x.push(format!("{}", d));
         }
-        x
+        Ok(x)
     }
 }

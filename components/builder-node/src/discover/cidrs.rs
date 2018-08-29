@@ -1,8 +1,8 @@
 use super::IpType;
+use error::Result;
 use ipnet::{Ipv4Net, Ipv6Net};
 use protocol::api::node::CidrItem;
 use std::net::{Ipv4Addr, Ipv6Addr};
-
 
 pub struct Cidrs {
     name: Vec<CidrItem>,
@@ -16,42 +16,36 @@ impl Cidrs {
             ip_type: ip_type,
         }
     }
-    pub fn get_ip_list(&self) -> Vec<String> {
+    pub fn get_ip_list(&self) -> Result<Vec<String>> {
         let mut ip_list = vec![];
         match IpType::find(&self.ip_type) {
             IpType::IPV4 => {
-                self.name
+                let ipv4_net: Ipv4Net = self.name
                     .iter()
-                    .map(|x| {
-                        let net: Ipv4Net = format!("{}/{}", x.ip, x.range).parse().expect(
-                            "Unable to parse
-                             socket address",
-                        );
-                        net.hosts()
-                            .collect::<Vec<Ipv4Addr>>()
-                            .iter()
-                            .map(|ip| { ip_list.push(format!("{}", ip)); })
-                            .collect::<Vec<_>>();
-                    })
+                    .map(|x| format!("{}/{}", x.ip, x.range))
+                    .collect::<String>()
+                    .parse()?;
+                ipv4_net
+                    .hosts()
+                    .collect::<Vec<Ipv4Addr>>()
+                    .iter()
+                    .map(|ip| { ip_list.push(format!("{}", ip)); })
                     .collect::<Vec<_>>();
             }
             IpType::IPV6 => {
-                self.name
+                let ipv6_net: Ipv6Net = self.name
                     .iter()
-                    .map(|x| {
-                        let net: Ipv6Net = format!("{}/{}", x.ip, x.range).parse().expect(
-                            "Unable to parse
-                             socket address",
-                        );
-                        net.hosts()
-                            .collect::<Vec<Ipv6Addr>>()
-                            .iter()
-                            .map(|ip| { ip_list.push(format!("{}", ip)); })
-                            .collect::<Vec<_>>();
-                    })
+                    .map(|x| format!("{}/{}", x.ip, x.range))
+                    .collect::<String>()
+                    .parse()?;
+                ipv6_net
+                    .hosts()
+                    .collect::<Vec<Ipv6Addr>>()
+                    .iter()
+                    .map(|ip| { ip_list.push(format!("{}", ip)); })
                     .collect::<Vec<_>>();
             }
         };
-        ip_list
+        Ok(ip_list)
     }
 }
