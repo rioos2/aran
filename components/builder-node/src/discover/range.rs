@@ -22,10 +22,10 @@ impl Range {
             IpType::IPV4 => IpAddrRange::from(Ipv4AddrRange::new(self.from.parse()?, self.to.parse()?)).collect::<Vec<IpAddr>>(),
             IpType::IPV6 => IpAddrRange::from(Ipv6AddrRange::new(self.from.parse()?, self.to.parse()?)).collect::<Vec<IpAddr>>(),
         };
-        let mut x = vec![];
-        for d in ips {
-            x.push(format!("{}", d));
+        let mut ip_list = vec![];
+        for ip in ips {
+            ip_list.push(format!("{}", ip));
         }
-        Ok(x)
+        Ok(ip_list)
     }
 }
