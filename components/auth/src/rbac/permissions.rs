@@ -20,13 +20,9 @@ pub struct Permissions {
 impl Permissions {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
         Permissions { conn: datastore }
-    }
+    }  
 
-    /*pub fn list_by_email(&self, email: IdGet) -> PermissionsForAccount {
-        permission::DataStore::new(&self.conn).list_by_email_fascade(email)
-    }*/
-
-    pub fn list_by_team(&self, team: IdGet) -> PermissionsForPolicy {
+    pub fn list_by_policy(&self, team: IdGet) -> PermissionsForPolicy {
         permission::DataStore::new(&self.conn).list_by_policy_fascade(team)
     }
 }

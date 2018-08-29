@@ -242,7 +242,10 @@ impl Api for AssemblyApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
+        let machines_list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
+
+        let _self = self.clone();
+        let containers_list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
@@ -266,9 +269,14 @@ impl Api for AssemblyApi {
             "assemblys",
         );
         router.get(
-            "/assemblys",
-            XHandler::new(C { inner: list }).before(basic.clone()),
-            "assembly_list",
+            "/machines",
+            XHandler::new(C { inner: machines_list }).before(basic.clone()),
+            "machine_assembly_list",
+        );
+        router.get(
+            "/containers",
+            XHandler::new(C { inner: containers_list }).before(basic.clone()),
+            "container_assembly_list",
         );
         router.get(
             "/assemblys/:id",

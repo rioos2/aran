@@ -5,10 +5,10 @@
 use chrono::prelude::*;
 use error::{Error, Result};
 
-use protocol::api::authorize::Policies;
+use protocol::api::authorize::{Policies, PoliciesForLevel};
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
-use protocol::cache::{InMemoryExpander, PullFromCache, PULL_INVALDATED};
+use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY};
 use super::super::{PolicyOutputList};
 use db::data_store::DataStoreConn;
 use postgres;
@@ -16,12 +16,14 @@ use serde_json;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
+    expander: &'a InMemoryExpander,
 }
 
 impl<'a> DataStore<'a> {
     pub fn new(db: &'a DataStoreConn) -> Self {
         DataStore {
-            db: db
+            db: db,
+            expander: &db.expander,
         }
     }
 
@@ -56,6 +58,15 @@ impl<'a> DataStore<'a> {
             return Ok(Some(response));
         }
         Ok(None)
+    }
+
+    //This is a fascade method to get policies by level from cache.
+    pub fn list_by_level_fascade(&self, policy: IdGet) -> PoliciesForLevel {
+        let mut policies_for_level = PoliciesForLevel::new();
+        policies_for_level.set_level(policy.get_id());
+        self.expander
+            .with_policies(&mut policies_for_level, PULL_DIRECTLY);
+        policies_for_level
     }
 
 }

@@ -1,10 +1,16 @@
+// Copyright 2018 The Rio Advancement Inc
+
+use std;
 use super::super::error::{Error, Result};
 use protocol::api::base::IdGet;
 use rbac::permissions;
-use rbac::{account, teams};
+use rbac::{account, teams, policies};
 use protocol::api::session;
 use rbac::trust_access::{TrustedAccess, TrustAccess};
 use auth::models::policy_members;
+use rbac::trust_access::TrustedAccessList;
+use protocol::api::authorize::PolicyMembers;
+use protocol::api::base::MetaFields;
 
 
 #[derive(Clone, Debug)]
@@ -60,15 +66,21 @@ pub struct Authorization {
     accounts: account::AccountsFascade,
     service_accounts: account::ServiceAccountsFascade,
     teams: teams::TeamsFascade,
+    policies: policies::PolicyFascade,
 }
 
 impl Authorization {
-    pub fn new(permissions: permissions::Permissions, accounts: account::AccountsFascade, service_accounts: account::ServiceAccountsFascade, teams: teams::TeamsFascade) -> Self {
+    pub fn new(permissions: permissions::Permissions, 
+        accounts: account::AccountsFascade, 
+        service_accounts: account::ServiceAccountsFascade, 
+        teams: teams::TeamsFascade,
+        policies: policies::PolicyFascade) -> Self {
         Authorization {
             permissions: permissions,
             accounts: accounts,
             service_accounts: service_accounts,
             teams: teams,
+            policies: policies,
         }
     }
 
@@ -79,47 +91,94 @@ impl Authorization {
     //Now we assume account/service_account has only one team.
     //In future we could extend it.
     pub fn verify(self, account_type: AccountType, incoming_to_trust: String) -> Result<bool> {
-        match account_type.account {
+        let permissions = match account_type.account {
              AccountNames::USERACCOUNT => {
                  let mut account_get = session::AccountGet::new();
                  account_get.set_email(account_type.get_name());
                  let mut account = self.accounts.get_by_email(account_get);
-                 //account.pop()                            
-                 /*if (account.get_is_admin()) {
+
+                 if (account.get_is_admin()) {
                     return Ok(true);
-                 }
-                 return Err(Error::PermissionError(format!(
-                    "User doesn't have permission for this operation."
-                )))*/
-            
+                 }                                            
 
-                //let team = self.teams.get_by_id(IdGet::with_id(account_type.get_team_id()));
-
-                return Ok(true);
+                self.collect_permissions(self.collect_policies(Some("default".to_string()), Some(account_type.get_team_id()))?)
              },
             AccountNames::SERVICEACCOUNT => {
-                let mut account = self.service_accounts.get_by_name(IdGet::with_id(account_type.name));
-                //account.pop()
-                Ok(true)
+                //let mut account = self.service_accounts.get_by_name(IdGet::with_id(account_type.name));
+                self.collect_permissions(self.collect_policies(Some("serviceaccount".to_string()), None)?)
             },
             AccountNames::NONE => {
                 info!("« Authorizer verify {:?}", account_type.account);
-                Ok(false)
+                Err(Error::PermissionError(format!("Authorizer doesn't match : {:?}", account_type.account)))
             }
-        }
+        };
         
-
-       /* let perms_for_account = self.permissions.list_by_team(IdGet::with_id(account.to_string()));
-        match Teams::per_type(perms_for_account.get_permissions()) {
+        match permissions {
             Ok(perm_for_account) => {
                 let access = TrustAccess::new(incoming_to_trust);
                 access.is_allowed(perm_for_account)
             }
             Err(err) => {
-                info!("« Authorizer get none permissions : {:?}", perms_for_account.get_permissions());
-                info!("« Authorizer team : {}", team.to_string());
+                info!("« Authorizer get none permissions");
+                info!("« Authorizer team : {}", account_type.get_team_id());
                 Err(Error::PermissionError(format!("{}", err)))
             },
-        }*/
+        }
     }
+
+    fn collect_policies(&self, level: Option<String>, team_id: Option<String>) -> Result<Vec<String>> {
+
+        let mut policy_by_level = match level {
+            Some(lev) => {
+                let pols = match self.policies.list_by_level(IdGet::with_id(lev)).get_policies() {
+                    Some(pol) => {
+                        pol.iter().map(|x| x.object_meta().name).collect::<Vec<_>>()
+                    },
+                    None => std::vec::Vec::new()
+                };
+                pols
+            },
+            None => std::vec::Vec::new()
+        };
+       
+
+        let policy_by_team = match team_id {
+            Some(id) => {
+                let team = self.teams.get_by_id(IdGet::with_id(id));
+                let pols = match team.get_policies() {
+                    Some(pol) => {
+                        pol.iter().map(|x| x.get_policy_name()).collect::<Vec<_>>()
+                    },
+                    None => std::vec::Vec::new()
+                };
+                pols
+            },
+            None => std::vec::Vec::new()
+        };
+        
+        policy_by_level.extend(policy_by_team);
+
+        Ok(policy_by_level)
+        
+    }
+
+    fn collect_permissions(&self, policies: Vec<String>) -> Result<TrustedAccessList> {
+        if (policies.is_empty()) {
+            return Err(Error::PermissionError(format!("{}", "Authorizer get none permissions".to_string())))
+        }
+        let perms_list = policies.into_iter()
+                .map(|policy| {
+                    self.permissions.list_by_policy(IdGet::with_id(policy))
+                })
+                .fold(vec![], |mut acc, x| match TrustedAccess::per_type(x.get_permissions()) {
+                    Ok(perm_for_policy) => {
+                        acc.extend(perm_for_policy);
+                        acc
+                    }
+                    Err(_) => acc,
+                });
+                              
+        Ok(perms_list)
+    }
+   
 }

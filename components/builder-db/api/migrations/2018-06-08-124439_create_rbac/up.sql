@@ -8,14 +8,14 @@ CREATE TABLE IF NOT EXISTS policy_members(id bigint PRIMARY KEY DEFAULT next_id_
 ---
 --- Table:policy_members:internal insert
 ---
-CREATE OR REPLACE FUNCTION internal_insert_policy_member_v1(account_id bigint, allowed bool, acc_policy_name text) RETURNS SETOF policy_members AS $$
+CREATE OR REPLACE FUNCTION internal_insert_policy_member_v1(team_id bigint, org_id text, allowed bool, acc_policy_name text) RETURNS SETOF policy_members AS $$
 DECLARE inserted_policy_member policy_members;
 BEGIN
    INSERT INTO
-         policy_members(type_meta, object_meta, is_allow, policy_name)
+         policy_members(type_meta, metadata, is_allow, policy_name)
       VALUES
       (
-         '{"kind":"PolicyMemeber","api_version":"v1"}', json_build_object('account', account_id::text)::jsonb, allowed, acc_policy_name
+         '{"kind":"PolicyMemeber","api_version":"v1"}', json_build_object('team', team_id::text, 'origin', org_id::text)::jsonb, allowed, acc_policy_name
       )
       ON CONFLICT DO NOTHING RETURNING * into inserted_policy_member;
 RETURN NEXT inserted_policy_member;

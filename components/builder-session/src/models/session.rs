@@ -115,20 +115,7 @@ impl<'a> DataStore<'a> {
 
             let account = row_to_account(row);
 
-            let id = account.get_id().parse::<i64>().unwrap();
-
-            let policies: Vec<String> = vec!["LONERANGER".to_string(), "MACHINE_VIEW".to_string(),"CONTAINER_VIEW".to_string()];
-
-            for policy in policies {
-                let rows = conn.query(
-                    "SELECT * FROM internal_insert_policy_member_v1($1, $2, $3)",
-                    &[
-                        &id,
-                        &true,
-                        &policy,
-                    ],
-                ).map_err(Error::SessionCreate)?;
-            }
+            let id = account.get_id().parse::<i64>().unwrap();     
 
             let provider = match session_create.get_provider() {
                 session::OAuthProvider::OpenID => "openid",

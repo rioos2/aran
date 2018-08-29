@@ -47,15 +47,7 @@ impl<'a> DataStore<'a> {
             let service_account = row_to_service_account(&rows.get(0))?;
 
             let id = service_account.get_id().parse::<i64>().unwrap();
-
-            let policies: Vec<String> = vec!["UNIVERSALSOLDIER".to_string()];
-
-            for policy in policies {
-                let _rows = conn.query(
-                    "SELECT * FROM internal_insert_policy_member_v1($1, $2,$3)",
-                    &[&id,&true,&policy],
-                ).map_err(Error::ServiceAccountCreate)?;
-            }
+            
             return Ok(Some(service_account));
         }
         Ok(None)

@@ -1,12 +1,16 @@
 use super::super::error::{Error, Result};
 use protocol::api::authorize::Permissions;
 use std::fmt;
-type TrustedAccessList = Vec<TrustAccess>;
+pub type TrustedAccessList = Vec<TrustAccess>;
 
 const ALL: &'static str = "*";
 const ASSEMBLY: &'static str = "ASSEMBLYS";
+const MACHINE: &'static str = "MACHINES";
+const CONTAINER: &'static str = "CONTAINERS";
 const ASSEMBLYFACTORY: &'static str = "ASSEMBLYFACTORYS";
 const STACKSFACTORY: &'static str = "STACKSFACTORYS";
+const MACHINEFACTORY: &'static str = "MACHINEFACTORYS";
+const CONTAINERFACTORY: &'static str = "CONTAINERFACTORYS";
 const HORIZONTALSCALING: &'static str = "HORIZONTALSCALING";
 const VERTICALSCALING: &'static str = "VERTICALSCALING";
 const SECRET: &'static str = "SECRETS";
@@ -122,6 +126,10 @@ impl PartialEq for TrustAccess {
 enum TrustResource {
     Assembly,
     AssemblyFactory,
+    MachineFactory,
+    ContainerFactory,
+    Machine,
+    Container,
     StacksFactory,
     ServiceAccount,
     HorizontalScaling,
@@ -186,6 +194,10 @@ impl TrustResource {
             ASSEMBLY => TrustResource::Assembly,
             ASSEMBLYFACTORY => TrustResource::AssemblyFactory,
             STACKSFACTORY => TrustResource::StacksFactory,
+            MACHINEFACTORY => TrustResource::MachineFactory,
+            CONTAINERFACTORY => TrustResource::ContainerFactory,
+            MACHINE => TrustResource::Machine,
+            CONTAINER => TrustResource::Container,
             SERVICEACCOUNT => TrustResource::ServiceAccount,
             HORIZONTALSCALING => TrustResource::HorizontalScaling,
             VERTICALSCALING => TrustResource::VerticalScaling,
