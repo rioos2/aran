@@ -93,6 +93,10 @@ impl Teams {
     pub fn set_policies(&mut self, v: Option<Vec<PolicyMembers>>) {
         self.policies = v;
     }
+
+    pub fn get_policies(&self) -> Option<Vec<PolicyMembers>> {
+        self.policies.clone()
+    }
 }
 
 impl MetaFields for Teams {
@@ -133,6 +137,25 @@ impl PoliciesFeeder for Teams {
 
     fn efeed(&mut self, s: Option<Vec<PolicyMembers>>) {
         self.set_policies(s);
+    }
+}
+
+// The service feeder, which gets called from an expander cache.
+// The expander cache is ttl and loads the service the first time.
+impl TeamsFeeder for Teams {
+    fn eget_id(&mut self) -> IdGet {
+        IdGet::with_id(self.get_id().clone())
+    }
+
+    fn efeed(&mut self, s: Option<Teams>) {
+        println!("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        println!("{:?}", s);
+        match s {
+            Some(acc) => {            
+                self.set_policies(acc.get_policies());           
+            },
+            None => {}
+       }
     }
 }
 

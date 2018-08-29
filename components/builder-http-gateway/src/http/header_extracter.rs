@@ -33,7 +33,7 @@ pub trait HeaderExtracter {
     ) -> Option<Authenticatable>;
 }
 
-struct EmailHeader {}
+/*struct EmailHeader {}
 
 //A trait responsible for extracting the email header
 impl HeaderExtracter for EmailHeader {
@@ -54,7 +54,7 @@ impl HeaderExtracter for EmailHeader {
         }
         None
     }
-}
+}*/
 
 struct RioTokenHeader {}
 
@@ -63,7 +63,7 @@ struct RioTokenHeader {}
 // {
 //   "email" : "info@riocorp.io",
 //   "api_token" : "HgbANWOErPnDbOOTDW",
-//   "orgin_id" : "987286487564875", 
+//   "org_id" : "987286487564875", 
 //   "team_id" : "7634587687267",
 //   "account_id" : "1038115606378848256",
 //}
@@ -84,6 +84,9 @@ impl HeaderExtracter for RioTokenHeader {
             return Some(Authenticatable::UserEmailAndToken {
                 email: email.unwrap().0.clone(),
                 token: token_target.get_token(),
+                team_id: token_target.get_team_id(),
+                org_id: token_target.get_org_id(),
+                account_id: token_target.get_account_id(),
             });
         }
         None
@@ -186,7 +189,7 @@ impl HeaderDecider {
                 PLUGIN_PASSWORD => RioTokenHeader::extract(
                     req.clone(),
                     token.to_string(),
-                    EmailHeader::exists_conf_key().and_then(|x| conf.get(&x)),
+                    RioTokenHeader::exists_conf_key().and_then(|x| conf.get(&x)),
                 ),
                 PLUGIN_SERVICE_ACCOUNT => ServiceAccountHeader::extract(
                     req.clone(),
@@ -221,6 +224,7 @@ impl HeaderDecider {
         let err = not_acceptable_error(&format!("Authentication not supported. You must have headers for the supported authetication. Refer https://bit.ly/rioos_sh_adminguide"));
         return Err(render_json_error(&bad_err(&err), err.http_code()));
     }
+   
 }
 
 fn valid_header(authenticatables: &Vec<Option<Authenticatable>>) -> Option<Authenticatable> {   

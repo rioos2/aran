@@ -1,9 +1,9 @@
 use super::super::error::{Error, Result};
 use protocol::api::base::IdGet;
 use rbac::permissions;
-use rbac::account;
+use rbac::{account, teams};
 use protocol::api::session;
-use rbac::teams::{Teams, TrustAccess};
+use rbac::trust_access::{TrustedAccess, TrustAccess};
 use auth::models::policy_members;
 
 
@@ -20,14 +20,36 @@ pub enum AccountNames {
 pub struct AccountType {
     pub name: String,
     pub account: AccountNames,
+    pub team_id: String,
+    pub org_id: String,
+    pub account_id: String,
 }
 
 impl AccountType {
-    pub fn new(name: String, account: AccountNames) -> Self {
+    pub fn new(name: String, account: AccountNames, team_id: String, org_id: String, account_id: String) -> Self {
         AccountType {
             name: name,
             account: account,
+            team_id: team_id,
+            org_id: org_id,
+            account_id: account_id,
         }
+    }
+
+    pub fn get_team_id(&self) -> String {
+        self.team_id.clone()
+    }
+
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn get_org_id(&self) -> String {
+        self.org_id.clone()
+    }
+
+    pub fn get_account_id(&self) -> String {
+        self.account_id.clone()
     }
 }
 
@@ -37,14 +59,16 @@ pub struct Authorization {
     permissions: permissions::Permissions,
     accounts: account::AccountsFascade,
     service_accounts: account::ServiceAccountsFascade,
+    teams: teams::TeamsFascade,
 }
 
 impl Authorization {
-    pub fn new(permissions: permissions::Permissions, accounts: account::AccountsFascade, service_accounts: account::ServiceAccountsFascade) -> Self {
+    pub fn new(permissions: permissions::Permissions, accounts: account::AccountsFascade, service_accounts: account::ServiceAccountsFascade, teams: teams::TeamsFascade) -> Self {
         Authorization {
             permissions: permissions,
             accounts: accounts,
             service_accounts: service_accounts,
+            teams: teams,
         }
     }
 
@@ -58,7 +82,7 @@ impl Authorization {
         match account_type.account {
              AccountNames::USERACCOUNT => {
                  let mut account_get = session::AccountGet::new();
-                 account_get.set_email(account_type.name);
+                 account_get.set_email(account_type.get_name());
                  let mut account = self.accounts.get_by_email(account_get);
                  //account.pop()                            
                  /*if (account.get_is_admin()) {
@@ -67,6 +91,10 @@ impl Authorization {
                  return Err(Error::PermissionError(format!(
                     "User doesn't have permission for this operation."
                 )))*/
+            
+
+                //let team = self.teams.get_by_id(IdGet::with_id(account_type.get_team_id()));
+
                 return Ok(true);
              },
             AccountNames::SERVICEACCOUNT => {

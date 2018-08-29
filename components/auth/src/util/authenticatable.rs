@@ -21,6 +21,9 @@ pub enum Authenticatable {
     UserEmailAndToken {
         email: String,
         token: String,
+        team_id: String,
+        org_id: String,
+        account_id: String,
     },
     UserEmailAndWebtoken {
         email: String,
@@ -47,7 +50,7 @@ impl ToAuth for Authenticatable {
         match *self {
             Authenticatable::UserAndPass {
                 username: ref u,
-                password: ref p,
+                password: ref p,                
             } => Authenticatable::UserAndPass {
                 username: u.to_string(),
                 password: p.to_string(),
@@ -55,9 +58,15 @@ impl ToAuth for Authenticatable {
             Authenticatable::UserEmailAndToken {
                 email: ref u,
                 token: ref p,
+                team_id: ref t,
+                org_id: ref o,
+                account_id: ref a,
             } => Authenticatable::UserEmailAndToken {
                 email: u.to_string(),
                 token: p.to_string(),
+                team_id: t.to_string(),
+                org_id: o.to_string(),
+                account_id: a.to_string(),
             },
             Authenticatable::UserEmailAndWebtoken {
                 email: ref u,
@@ -89,25 +98,28 @@ impl Into<AccountType> for Authenticatable {
              Authenticatable::UserAndPass {
                  username: ref u,
                  password: ref _p,
-             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT),
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT, "".to_string(), "".to_string(), "".to_string()),
 
             Authenticatable::ServiceAccountNameAndWebtoken {
                 name: ref u,
                 webtoken: ref _p,
                 key: ref _k,
-            } => AccountType::new(u.to_string(), AccountNames::SERVICEACCOUNT),
+            } => AccountType::new(u.to_string(), AccountNames::SERVICEACCOUNT, "".to_string(), "".to_string(), "".to_string()),
 
              Authenticatable::UserEmailAndToken {
-                 email: ref u,
-                 token: ref _p,
-             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT),
+                email: ref u,
+                token: ref _p,
+                team_id: ref t,
+                org_id: ref o,
+                account_id: ref a,
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT, t.to_string(), o.to_string(), a.to_string()),
 
              Authenticatable::UserEmailAndWebtoken {
                  email: ref u,
                  webtoken: ref _p,
-             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT),
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT, "".to_string(), "".to_string(), "".to_string()),
 
-            _ => AccountType::new("".to_string(), AccountNames::NONE),
+            _ => AccountType::new("".to_string(), AccountNames::NONE, "".to_string(), "".to_string(), "".to_string()),
         }
     }
 }
