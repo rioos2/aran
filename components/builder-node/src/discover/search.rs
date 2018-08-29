@@ -14,13 +14,16 @@ impl Nodes {
     pub fn discovered(&self) -> Result<Vec<String>> {
         let list_ip = match DiscoverModes::convert(self.item.get_cidrs(), self.item.get_range_address_from()) {
             DiscoverModes::InMasterSubnet => vec!["".to_string()],
-            DiscoverModes::InProvidedCidrs => cidrs::Cidrs::new(self.item.get_cidrs(), self.item.get_ip_type()).get_ip_list(),
+            DiscoverModes::InProvidedCidrs => {
+                cidrs::Cidrs::new(self.item.get_cidrs(), self.item.get_ip_type())
+                    .get_ip_list()?
+            }
             DiscoverModes::InIpAddressRange => {
                 range::Range::new(
                     self.item.get_range_address_from(),
                     self.item.get_range_address_to(),
                     self.item.get_ip_type(),
-                ).get_ip_list()
+                ).get_ip_list()?
             }
         };
         let mut ips = vec![];
