@@ -56,7 +56,7 @@ impl AuthenticateDelegate {
             Authenticatable::PassTicket { token: t } => {
                 UserAccountAuthenticate::from_passticket(&self.conn, t.to_string())
             }
-            Authenticatable::UserEmailAndToken { email: u, token: p } => {
+            Authenticatable::UserEmailAndToken { email: u, token: p, team_id: _t, org_id: _o, account_id: _a } => {
                 UserAccountAuthenticate::from_email_and_token(
                     &self.conn,
                     u.to_string(),

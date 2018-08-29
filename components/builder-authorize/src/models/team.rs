@@ -8,7 +8,7 @@ use error::{Error, Result};
 use protocol::api::authorize::Teams;
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
-use protocol::cache::{InMemoryExpander, PullFromCache, PULL_INVALDATED};
+use protocol::cache::{InMemoryExpander, PullFromCache, PULL_INVALDATED, PULL_DIRECTLY};
 use super::super::{TeamsOutput, TeamsOutputList};
 use db::data_store::DataStoreConn;
 use postgres;
@@ -72,6 +72,14 @@ impl<'a> DataStore<'a> {
             }
         }
         Ok(None)
+    }
+
+    pub fn show_by_fascade(&self, id: IdGet) -> Teams {
+        let mut team = Teams::new();
+        team.set_id(id.get_id());
+        self.expander.with_teams(&mut team, PULL_DIRECTLY);
+        self.expander.with_policy_members(&mut team, PULL_DIRECTLY);
+        team
     }
 
 

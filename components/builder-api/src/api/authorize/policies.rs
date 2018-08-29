@@ -59,7 +59,7 @@ impl PolicyApi {
         }       
     }
 
-    //PUT: /policies/teams/:id
+    /// PUT: /policies/teams/:id
     /// update policy to particular team
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
@@ -109,7 +109,7 @@ impl Api for PolicyApi {
 
         //closures : teams
         let _self = self.clone();
-        let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
+        let list_all = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         let _self = self.clone();
         let list_by_level = move |req: &mut Request| -> AranResult<Response> { _self.list_by_level(req) };
@@ -122,8 +122,8 @@ impl Api for PolicyApi {
 
         router.get(
             "/policies/all",
-            XHandler::new(C { inner: list_blank }).before(basic.clone()),
-            "list_blank",
+            XHandler::new(C { inner: list_all }).before(basic.clone()),
+            "list_all",
         );
         router.get(
             "/policies",

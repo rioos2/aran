@@ -26,8 +26,8 @@ impl Permissions {
         permission::DataStore::new(&self.conn).list_by_email_fascade(email)
     }*/
 
-    pub fn list_by_team(&self, policy: IdGet) -> PermissionsForPolicy {
-        permission::DataStore::new(&self.conn).list_by_policy_fascade(policy)
+    pub fn list_by_team(&self, team: IdGet) -> PermissionsForPolicy {
+        permission::DataStore::new(&self.conn).list_by_policy_fascade(team)
     }
 }
 
