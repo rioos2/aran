@@ -151,13 +151,16 @@ impl Authorization {
         let mut policy_by_team = std::vec::Vec::new();
         if !team_id.is_empty() {
             let team = self.teams.get_by_id(IdGet::with_id(team_id));
-            let pols = match team.get_policies() {
+            match team.get_policies() {
                 Some(pol) => {
-                    pol.iter().map(|x| x.get_policy_name()).collect::<Vec<_>>()
+                    for p in &pol {
+                        if p.get_is_allow() == "true" {
+                            policy_by_team.push(p.get_policy_name());
+                        }
+                    }                    
                 },
-                None => std::vec::Vec::new()
-            };
-            policy_by_team.extend(pols);
+                None => {}
+            }
         }
         
         /// merge collected policies into one vec

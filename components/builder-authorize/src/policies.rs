@@ -64,12 +64,12 @@ impl<'a> PolicyFactory<'a> {
                                     }
                                     None => acc,
                                 }
-                                
                             }
                             Err(_) => acc,
                         });
         Ok(Some(mk_policy_members))
     }
+
 
     /// make policymember from PolicyMemberInputs data
     /// set is_allow = true for allowed policies only

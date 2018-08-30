@@ -14,6 +14,9 @@ use db::data_store::DataStoreConn;
 use postgres;
 use serde_json;
 
+const MACHINE_VIEW: &'static str = "MACHINE_VIEW";
+const CONTAINER_VIEW: &'static str = "CONTAINER_VIEW";
+
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
     expander: &'a InMemoryExpander,
@@ -53,7 +56,7 @@ impl<'a> DataStore<'a> {
                 let team = self.collect_members(&row, PULL_INVALDATED)?;
 
                 let id = team.get_id().parse::<i64>().unwrap();
-                let policies: Vec<String> = vec!["MACHINE_VIEW".to_string(),"CONTAINER_VIEW".to_string()];
+                let policies: Vec<String> = vec![MACHINE_VIEW.to_string(), CONTAINER_VIEW.to_string()];
 
 
                 for policy in policies {
@@ -79,6 +82,7 @@ impl<'a> DataStore<'a> {
     //show team with team members
     pub fn show(&self,get_teams: &IdGet) -> TeamsOutput {
         let conn = self.db.pool.get_shard(0)?;
+        println!("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         let rows = &conn.query(
             "SELECT * FROM get_team_v1($1)",
             &[&(get_teams.get_id().parse::<i64>().unwrap())],
@@ -96,8 +100,8 @@ impl<'a> DataStore<'a> {
     pub fn show_by_fascade(&self, id: IdGet) -> Teams {
         let mut team = Teams::new();
         team.set_id(id.get_id());
-        self.expander.with_teams(&mut team, PULL_DIRECTLY);
-        self.expander.with_policy_members(&mut team, PULL_DIRECTLY);
+        self.expander.with_teams(&mut team, PULL_INVALDATED);
+        self.expander.with_policy_members(&mut team, PULL_INVALDATED);
         team
     }
 

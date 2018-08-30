@@ -11,6 +11,7 @@ use protocol::api::base::MetaFields;
 use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY};
 use super::super::{PolicyMembersOutput, PolicyMembersOutputList};
 use db::data_store::DataStoreConn;
+use super::team;
 use postgres;
 use serde_json;
 
@@ -62,8 +63,19 @@ impl<'a> DataStore<'a> {
 
         if rows.len() > 0 {
             for row in rows {
-                let assembly = self.merge_permissions(&row, PULL_DIRECTLY)?;
-                return Ok(Some(assembly));
+                let member = self.merge_permissions(&row, PULL_DIRECTLY)?;
+                println!("1111111111111111111111111111111111111111111111111");
+                match member.get_metadata().get(&"team".to_string()) {
+                    Some(team) => {
+                        println!("2222222222222222222222222222222222222222222222222222");
+                        println!("{}", team.clone());
+                        let team_id = IdGet::with_id(team.to_string());
+                        let _teams = team::DataStore::new(self.db).show(&team_id);
+                    },
+                    None => {}
+                }
+
+                return Ok(Some(member));
             }
         }
         Ok(None)
