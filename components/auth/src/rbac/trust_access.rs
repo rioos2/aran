@@ -39,6 +39,7 @@ const SERVICEACCOUNT: &'static str = "SERVICEACCOUNTS";
 const PING: &'static str = "PING";
 const SENSEI: &'static str = "SENSEIS";
 const LICENSE: &'static str = "LICENSES";
+const INVITATION: &'static str = "INVITATIONS";
 
 const RESOURCE_GET: &'static str = "GET";
 const RESOURCE_POST: &'static str = "POST";
@@ -114,10 +115,17 @@ impl PartialEq for TrustAccess {
             self.1.clone(),
             other.1.clone()
         );
-        match self.1 {
-            TrustLevel::ResourceWild => self.0 == other.0,
-            _ => self.0 == other.0 && self.1 == other.1,
+
+        match self.0.clone() {
+            TrustResource::None => false,
+            _ => {
+                match self.1 {
+                    TrustLevel::ResourceWild => self.0 == other.0,
+                    _ => self.0 == other.0 && self.1 == other.1,
+                }
+            },
         }
+        
     }
 }
 
@@ -160,6 +168,7 @@ enum TrustResource {
     Ping,
     Sensei,
     License,
+    Invitation,
     None,
 }
 
@@ -226,6 +235,7 @@ impl TrustResource {
             PING => TrustResource::Ping,
             SENSEI => TrustResource::Sensei,
             LICENSE => TrustResource::License,
+            INVITATION => TrustResource::Invitation,
             _ => TrustResource::None,
         }
     }

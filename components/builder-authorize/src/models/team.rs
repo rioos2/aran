@@ -47,6 +47,7 @@ impl<'a> DataStore<'a> {
             ],
         ).map_err(Error::TeamsCreate)?;
 
+
        if rows.len() > 0 {        
             for row in rows {                
                 let team = self.collect_members(&row, PULL_INVALDATED)?;
@@ -57,9 +58,10 @@ impl<'a> DataStore<'a> {
 
                 for policy in policies {
                     let rows = conn.query(
-                        "SELECT * FROM internal_insert_policy_member_v1($1, $2, $3, $4)",
+                        "SELECT * FROM internal_insert_policy_member_v1($1, $2, $3, $4, $5)",
                         &[
                             &id,
+                            &teams.get_account(),
                             &origin.clone(),
                             &true,
                             &policy,

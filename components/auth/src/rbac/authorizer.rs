@@ -97,15 +97,17 @@ impl Authorization {
                  account_get.set_email(account_type.get_name());
                  let mut account = self.accounts.get_by_email(account_get);
 
+                 /// check account is admin or not
+                 /// account is admin then return true, because admin has full control
+                 /// otherwise we check other permissions                 
                  if (account.get_is_admin()) {
                     return Ok(true);
                  }                                            
 
-                self.collect_permissions(self.collect_policies(Some("default".to_string()), Some(account_type.get_team_id()))?)
+                self.collect_permissions(self.collect_policies(Some("default".to_string()), account_type.get_team_id())?)
              },
             AccountNames::SERVICEACCOUNT => {
-                //let mut account = self.service_accounts.get_by_name(IdGet::with_id(account_type.name));
-                self.collect_permissions(self.collect_policies(Some("serviceaccount".to_string()), None)?)
+                self.collect_permissions(self.collect_policies(Some("serviceaccount".to_string()), "".to_string())?)
             },
             AccountNames::NONE => {
                 info!("« Authorizer verify {:?}", account_type.account);
@@ -126,7 +128,11 @@ impl Authorization {
         }
     }
 
-    fn collect_policies(&self, level: Option<String>, team_id: Option<String>) -> Result<Vec<String>> {
+    /// this collect all policies using team and default level
+    /// first collect level based policies from cache
+    /// and collect policies by requested team id
+    /// finally merge all collected policies and return it
+    fn collect_policies(&self, level: Option<String>, team_id: String) -> Result<Vec<String>> {
 
         let mut policy_by_level = match level {
             Some(lev) => {
@@ -142,26 +148,29 @@ impl Authorization {
         };
        
 
-        let policy_by_team = match team_id {
-            Some(id) => {
-                let team = self.teams.get_by_id(IdGet::with_id(id));
-                let pols = match team.get_policies() {
-                    Some(pol) => {
-                        pol.iter().map(|x| x.get_policy_name()).collect::<Vec<_>>()
-                    },
-                    None => std::vec::Vec::new()
-                };
-                pols
-            },
-            None => std::vec::Vec::new()
-        };
+        let mut policy_by_team = std::vec::Vec::new();
+        if !team_id.is_empty() {
+            let team = self.teams.get_by_id(IdGet::with_id(team_id));
+            let pols = match team.get_policies() {
+                Some(pol) => {
+                    pol.iter().map(|x| x.get_policy_name()).collect::<Vec<_>>()
+                },
+                None => std::vec::Vec::new()
+            };
+            policy_by_team.extend(pols);
+        }
         
+        /// merge collected policies into one vec
         policy_by_level.extend(policy_by_team);
 
         Ok(policy_by_level)
         
     }
 
+    /// this collect permissions by policy name
+    /// and convert to trustedaccess structure for each permissions
+    /// this for using auth verification
+    /// ex . TrustResource::Machine, TrustResource::Container
     fn collect_permissions(&self, policies: Vec<String>) -> Result<TrustedAccessList> {
         if (policies.is_empty()) {
             return Err(Error::PermissionError(format!("{}", "Authorizer get none permissions".to_string())))
