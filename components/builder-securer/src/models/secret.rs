@@ -10,22 +10,12 @@ use protocol::api::{base, secret};
 use db::data_store::DataStoreConn;
 use postgres;
 use serde_json;
-use protocol::cache::InMemoryExpander;
 
 use super::super::{SecretOutput, SecretOutputList};
 
-pub struct DataStore<'a> {
-    db: &'a DataStoreConn,
-    expander: &'a InMemoryExpander,
-}
+pub struct DataStore {}
 
-impl<'a> DataStore<'a> {
-    pub fn new(db: &'a DataStoreConn) -> Self {
-        DataStore {
-            db: db,
-            expander: &db.expander,
-        }
-    }
+impl DataStore {   
     pub fn create(datastore: &DataStoreConn, secret_create: &secret::Secret) -> SecretOutput {
         let conn = datastore.pool.get_shard(0)?;
 

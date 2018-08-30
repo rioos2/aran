@@ -1,12 +1,16 @@
 use super::super::error::{Error, Result};
 use protocol::api::authorize::Permissions;
 use std::fmt;
-type TrustedAccessList = Vec<TrustAccess>;
+pub type TrustedAccessList = Vec<TrustAccess>;
 
 const ALL: &'static str = "*";
 const ASSEMBLY: &'static str = "ASSEMBLYS";
+const MACHINE: &'static str = "MACHINES";
+const CONTAINER: &'static str = "CONTAINERS";
 const ASSEMBLYFACTORY: &'static str = "ASSEMBLYFACTORYS";
 const STACKSFACTORY: &'static str = "STACKSFACTORYS";
+const MACHINEFACTORY: &'static str = "MACHINEFACTORYS";
+const CONTAINERFACTORY: &'static str = "CONTAINERFACTORYS";
 const HORIZONTALSCALING: &'static str = "HORIZONTALSCALING";
 const VERTICALSCALING: &'static str = "VERTICALSCALING";
 const SECRET: &'static str = "SECRETS";
@@ -35,6 +39,8 @@ const SERVICEACCOUNT: &'static str = "SERVICEACCOUNTS";
 const PING: &'static str = "PING";
 const SENSEI: &'static str = "SENSEIS";
 const LICENSE: &'static str = "LICENSES";
+const INVITATION: &'static str = "INVITATIONS";
+const TEAM: &'static str = "TEAMS";
 
 const RESOURCE_GET: &'static str = "GET";
 const RESOURCE_POST: &'static str = "POST";
@@ -110,10 +116,17 @@ impl PartialEq for TrustAccess {
             self.1.clone(),
             other.1.clone()
         );
-        match self.1 {
-            TrustLevel::ResourceWild => self.0 == other.0,
-            _ => self.0 == other.0 && self.1 == other.1,
+
+        match self.0.clone() {
+            TrustResource::None => false,
+            _ => {
+                match self.1 {
+                    TrustLevel::ResourceWild => self.0 == other.0,
+                    _ => self.0 == other.0 && self.1 == other.1,
+                }
+            },
         }
+        
     }
 }
 
@@ -122,6 +135,10 @@ impl PartialEq for TrustAccess {
 enum TrustResource {
     Assembly,
     AssemblyFactory,
+    MachineFactory,
+    ContainerFactory,
+    Machine,
+    Container,
     StacksFactory,
     ServiceAccount,
     HorizontalScaling,
@@ -152,6 +169,8 @@ enum TrustResource {
     Ping,
     Sensei,
     License,
+    Invitation,
+    Team,
     None,
 }
 
@@ -186,6 +205,10 @@ impl TrustResource {
             ASSEMBLY => TrustResource::Assembly,
             ASSEMBLYFACTORY => TrustResource::AssemblyFactory,
             STACKSFACTORY => TrustResource::StacksFactory,
+            MACHINEFACTORY => TrustResource::MachineFactory,
+            CONTAINERFACTORY => TrustResource::ContainerFactory,
+            MACHINE => TrustResource::Machine,
+            CONTAINER => TrustResource::Container,
             SERVICEACCOUNT => TrustResource::ServiceAccount,
             HORIZONTALSCALING => TrustResource::HorizontalScaling,
             VERTICALSCALING => TrustResource::VerticalScaling,
@@ -214,6 +237,8 @@ impl TrustResource {
             PING => TrustResource::Ping,
             SENSEI => TrustResource::Sensei,
             LICENSE => TrustResource::License,
+            TEAM => TrustResource::Team,
+            INVITATION => TrustResource::Invitation,
             _ => TrustResource::None,
         }
     }

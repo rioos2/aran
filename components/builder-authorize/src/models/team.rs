@@ -14,6 +14,9 @@ use db::data_store::DataStoreConn;
 use postgres;
 use serde_json;
 
+const MACHINE_VIEW: &'static str = "MACHINE_VIEW";
+const CONTAINER_VIEW: &'static str = "CONTAINER_VIEW";
+
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
     expander: &'a InMemoryExpander,
@@ -33,23 +36,42 @@ impl<'a> DataStore<'a> {
                         Some(org) => org.to_string(),
                         None => "".to_string()
                     };
-        let builded_name: String = format!("{}:{}", origin, teams.get_name());
+        let builded_name: String = format!("{}:{}", origin.clone(), teams.get_name());
          let rows = &conn.query(
             "SELECT * FROM insert_team_v1 ($1,$2,$3,$4,$5,$6,$7)",
             &[
                 &(builded_name as String),
                 &(teams.get_description() as String),
                 &(teams.get_account() as String),
-                &(origin as String),
+                &(origin.clone() as String),
                 &(serde_json::to_value(teams.object_meta()).unwrap()),
                 &(serde_json::to_value(teams.type_meta()).unwrap()),
                 &(serde_json::to_value(teams.get_metadata()).unwrap()),                
             ],
         ).map_err(Error::TeamsCreate)?;
 
-       if rows.len() > 0 {
-            for row in rows {
+
+       if rows.len() > 0 {        
+            for row in rows {                
                 let team = self.collect_members(&row, PULL_INVALDATED)?;
+
+                let id = team.get_id().parse::<i64>().unwrap();
+                let policies: Vec<String> = vec![MACHINE_VIEW.to_string(), CONTAINER_VIEW.to_string()];
+
+
+                for policy in policies {
+                    let _rows = conn.query(
+                        "SELECT * FROM internal_insert_policy_member_v1($1, $2, $3, $4, $5)",
+                        &[
+                            &id,
+                            &teams.get_account(),
+                            &origin.clone(),
+                            &true,
+                            &policy,
+                        ],
+                    ).map_err(Error::TeamsCreate)?;
+                }
+
                 return Ok(Some(team));
             }
         }
@@ -77,8 +99,8 @@ impl<'a> DataStore<'a> {
     pub fn show_by_fascade(&self, id: IdGet) -> Teams {
         let mut team = Teams::new();
         team.set_id(id.get_id());
-        self.expander.with_teams(&mut team, PULL_DIRECTLY);
-        self.expander.with_policy_members(&mut team, PULL_DIRECTLY);
+        self.expander.with_teams(&mut team, PULL_INVALDATED);
+        self.expander.with_policy_members(&mut team, PULL_INVALDATED);
         team
     }
 

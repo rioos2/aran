@@ -3,9 +3,9 @@
 use api::base::IdGet;
 use cache::inject::PermissionsFeeder;
 use std::collections::BTreeMap;
-use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields, WhoAmITypeMeta};
+use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields};
 use cache::inject::MembersFeeder;
-use cache::inject::PoliciesFeeder;
+use cache::inject::{PoliciesFeeder, PolicyMembersFeeder};
 use cache::inject::TeamsFeeder;
 use api::invitations::Invitations;
 
@@ -130,7 +130,7 @@ impl MembersFeeder for Teams {
 }
 
 
-impl PoliciesFeeder for Teams {
+impl PolicyMembersFeeder for Teams {
     fn eget_id(&mut self) -> IdGet {
         IdGet::with_id(self.get_id().clone())
     }
@@ -147,9 +147,7 @@ impl TeamsFeeder for Teams {
         IdGet::with_id(self.get_id().clone())
     }
 
-    fn efeed(&mut self, s: Option<Teams>) {
-        println!("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        println!("{:?}", s);
+    fn efeed(&mut self, s: Option<Teams>) {       
         match s {
             Some(acc) => {            
                 self.set_policies(acc.get_policies());           
@@ -350,6 +348,45 @@ impl PermissionsFeeder for PermissionsForPolicy {
 
     fn ifeed(&mut self, m: Option<Vec<Permissions>>) {
         self.set_permissions(m);
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct PoliciesForLevel {
+    level: String,
+    policies: Option<Vec<Policies>>,
+}
+
+impl PoliciesForLevel {
+    pub fn new() -> PoliciesForLevel {
+        ::std::default::Default::default()
+    }
+
+     pub fn set_level(&mut self, v: ::std::string::String) {
+        self.level = v;
+    }
+
+    pub fn get_level(&self) -> ::std::string::String {
+        self.level.clone()
+    }
+
+    pub fn set_policies(&mut self, v: Option<Vec<Policies>>) {
+        self.policies = v;
+    }
+
+    pub fn get_policies(&self) -> Option<Vec<Policies>> {
+        self.policies.clone()
+    }
+  
+}
+
+impl PoliciesFeeder for PoliciesForLevel {
+    fn eget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(self.get_level(), "".to_string())
+    }
+
+    fn efeed(&mut self, m: Option<Vec<Policies>>) {
+        self.set_policies(m);
     }
 }
 

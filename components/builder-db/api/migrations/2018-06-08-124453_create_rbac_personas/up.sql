@@ -501,6 +501,26 @@ VALUES
          id
       FROM
          second_insert),
+         'ACCOUNTS.GET',
+         'Read only access for accounts resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'TEAMS.GET',
+         'Read only access for teams resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
          'INVITATIONS.PUT',
          'Edit only access for invitation resource.'
    );
@@ -572,7 +592,7 @@ VALUES(
          id
       FROM
          second_insert),
-         'MACHINE.STACKSFACTORYS.POST',
+         'MACHINEFACTORYS.POST',
          'Read access allowed for machine based stacksfactory resource.'
    )
 ,
@@ -638,7 +658,7 @@ VALUES(
          id
       FROM
          second_insert),
-         'MACHINE.ASSEMBLYS.GET',
+         'MACHINES.GET',
          'Read access allowed for this machine based assembly resource.'
    )
 ,
@@ -673,7 +693,7 @@ VALUES(
          id
       FROM
          second_insert),
-         'MACHINE.ASSEMBLYS.PUT',
+         'ASSEMBLYS.PUT',
          'Edit only access for machine based assembly resource.'
    );
 
@@ -699,7 +719,7 @@ VALUES(
          id
       FROM
          second_insert),
-         'CONTAINER.STACKSFACTORYS.POST',
+         'CONTAINERFACTORYS.POST',
          'Create only access for container based stackfactory resource.'
    )
 ,
@@ -785,7 +805,7 @@ VALUES(
          id
       FROM
          second_insert),
-         'CONTAINER.ASSEMBLYS.GET',
+         'CONTAINERS.GET',
          'Read only access for container based assembly resource.'
    )
 ,
@@ -820,7 +840,7 @@ VALUES(
             id
          FROM
             second_insert),
-            'CONTAINER.ASSEMBLYS.PUT',
+            'ASSEMBLYS.PUT',
             'Edit access for container based assembly resource.'
       )
 ;

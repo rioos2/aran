@@ -9,6 +9,7 @@ use ansi_term::Colour;
 use auth::config::AuthenticationFlowCfg;
 use auth::rbac::account::{AccountsFascade, ServiceAccountsFascade};
 use auth::rbac::teams::TeamsFascade;
+use auth::rbac::policies::PolicyFascade;
 use auth::rbac::authorizer;
 use auth::rbac::license::LicensesFascade;
 use auth::rbac::permissions::Permissions;
@@ -303,12 +304,12 @@ pub struct RBAC {
 }
 
 impl RBAC {
-    pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions, accounts: AccountsFascade, service_accounts: ServiceAccountsFascade, teams: TeamsFascade) -> Self {
+    pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions, accounts: AccountsFascade, service_accounts: ServiceAccountsFascade, teams: TeamsFascade, policy: PolicyFascade) -> Self {
         let plugins_and_its_configuration_tuple = config.modes();
         RBAC {
             plugins: plugins_and_its_configuration_tuple.0,
             conf: plugins_and_its_configuration_tuple.1,
-            authorizer: authorizer::Authorization::new(permissions, accounts, service_accounts, teams),
+            authorizer: authorizer::Authorization::new(permissions, accounts, service_accounts, teams, policy),
         }
     }
 

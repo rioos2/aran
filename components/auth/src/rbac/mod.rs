@@ -4,6 +4,7 @@ pub mod trust_access;
 pub mod teams;
 pub mod license;
 pub mod account;
+pub mod policies;
 
 pub const BUILTIN_TEAM_RIOOS_LONERANGER: &'static str = "RIOOS:LONERANGER";
 pub const BUILTIN_TEAM_RIOOS_UNIVERSALSOLDIER: &'static str = "RIOOS:UNIVERSALSOLDIER";
