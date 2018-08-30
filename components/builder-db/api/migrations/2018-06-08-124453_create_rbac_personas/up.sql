@@ -9,19 +9,18 @@
 WITH first_insert AS
 (
    INSERT INTO
-      teams(full_name, description, type_meta, object_meta, metadata)
+      policies(description, type_meta, object_meta, metadata)
    VALUES
       (
-         'RIOOS:SUPERUSER',
-         'Superuser RIO/OS. God given powers. ',
-         '{"kind":"Team","api_version":"v1"}',
-         json_build_object()::jsonb,
-         json_build_object()::jsonb
+         'Role has complete organization control; can manage full organization and overall teams.',
+         '{"kind":"Policy","api_version":"v1"}',
+         '{"name":"ORG_OWNER"}',
+         '{"level":"system"}'
       )
-      ON CONFLICT (full_name) DO NOTHING RETURNING id
+      ON CONFLICT DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (team_id, name, description)
+   permissions (policy_id, name, description)
 VALUES
    (
 (
@@ -29,8 +28,8 @@ VALUES
          id
       FROM
          first_insert),
-         '*.*',
-         'Allow every access to all resources.'
+         'TEAMS.*',
+         'Allow every team access to all resources.'
    )
 ;
 
@@ -46,19 +45,18 @@ VALUES
 WITH first_insert AS
 (
    INSERT INTO
-      teams(full_name, description, type_meta, object_meta, metadata)
+      policies(description, type_meta, object_meta, metadata)
    VALUES
       (
-         'RIOOS:UNIVERSALSOLDIER',
-         'Universalsoldier is system level user (like service account)',
-         '{"kind":"Team","api_version":"v1"}',
-         json_build_object()::jsonb,
-         json_build_object()::jsonb
+         'used  for system level communication via  serviceaccounts (which is Rio/OS system accounts).',
+         '{"kind":"Policy","api_version":"v1"}',
+         '{"name":"UNIVERSALSOLDIER"}',
+         '{"level":"serviceaccount"}'
       )
-      ON CONFLICT (full_name) DO NOTHING RETURNING id
+      ON CONFLICT DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (team_id, name, description)
+   permissions (policy_id, name, description)
 VALUES
    (
 (
@@ -199,7 +197,7 @@ VALUES
          'VERTICALSCALING.PUT',
          'Edit only access for verticalscaling resource.'
    )
-,  
+,
    (
 (
       SELECT
@@ -454,19 +452,18 @@ VALUES
 WITH second_insert AS
 (
    INSERT INTO
-      teams(full_name, description, type_meta, object_meta, metadata)
+      policies(description, type_meta, object_meta, metadata)
    VALUES
       (
-         'RIOOS:LONERANGER',
-         'This is a regular  user ',
-         '{"kind":"Team","api_version":"v1"}',
-         json_build_object()::jsonb,
-         json_build_object()::jsonb
+         'This is a regular  user used for default permissions for every users ',
+         '{"kind":"Policy","api_version":"v1"}',
+         '{"name":"LONERANGER"}',
+         '{"level":"default"}'
       )
-      ON CONFLICT (full_name) DO NOTHING RETURNING id
+      ON CONFLICT DO NOTHING RETURNING id
 )
 INSERT INTO
-   permissions (team_id, name, description)
+   permissions (policy_id, name, description)
 VALUES
 (
 (
@@ -474,148 +471,8 @@ VALUES
          id
       FROM
          second_insert),
-         'BUCKETS.*',
-         'Any access allowed for this bucket resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'ASSEMBLYS.PUT',
-         'Edit only access for assembly resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'TEAMS.*',
-         'Edit only access for assembly resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'ASSEMBLYS.GET',
-         'Read only access for assembly resource.'
-   )
-,
- (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'SETTINGSMAP.GET',
-         'Read only access for origin based settingsmap resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'ASSEMBLYFACTORYS.*',
-         'Any access allowed for this assemblyfactory resource.'
-   )
-,
-(
-  (
-   SELECT
-      id
-   FROM
-      second_insert),
-      'STACKSFACTORYS.*',
-      'Any access allowed for this stacksfactory resource.'
-)
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'HORIZONTALSCALING.*',
-         'Any access allowed for this horizontalscaling resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'VERTICALSCALING.*',
-         'Any access allowed for this verticalscaling resource.'
-   )
-,
- (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'METRICS.GET',
-         'Read only access for horizontalscaling metric resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'SECRETS.*',
-         'Any access allowed for this secrets resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'ENDPOINTS.*',
-         'Any access allowed for this endpoints resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'SERVICES.*',
-         'Any access allowed for this service resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'BUILDCONFIGS.*',
-         'Any access allowed for this buildconfig resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
          'LOGS.GET',
-         'Read only access for logs resource.'
+         'Read access allowed for this log resource.'
    )
 ,
    (
@@ -625,7 +482,7 @@ VALUES
       FROM
          second_insert),
          'AUDITS.GET',
-         'Read only access for audits resource.'
+         'Read only access for audit resource.'
    )
 ,
    (
@@ -634,8 +491,8 @@ VALUES
          id
       FROM
          second_insert),
-         'VOLUMES.GET',
-         'Read only access for volumes resource.'
+         'SETTINGSMAP.GET',
+         'Read only access for settingsmap resource.'
    )
 ,
    (
@@ -654,8 +511,246 @@ VALUES
          id
       FROM
          second_insert),
-         'ACCOUNTS.PUT',
-         'Edit only access for accounts resource.'
+         'TEAMS.GET',
+         'Read only access for teams resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'INVITATIONS.PUT',
+         'Edit only access for invitation resource.'
+   );
+
+
+   WITH second_insert AS
+   (
+      INSERT INTO
+         policies(description, type_meta, object_meta, metadata)
+      VALUES
+         (
+            ' complete team control, can manage full team and members.',
+            '{"kind":"Policy","api_version":"v1"}',
+            '{"name":"TEAM_OWNER"}',
+            '{"level":"system"}'
+         )
+         ON CONFLICT DO NOTHING RETURNING id
+   )
+   INSERT INTO
+      permissions (policy_id, name, description)
+   VALUES(
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'TEAMS.GET',
+         'Read only access for teams resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'INVITATIONS.POST',
+         'Create access allowed for this invitation resource.'
+   )
+,
+(
+  (
+   SELECT
+      id
+   FROM
+      second_insert),
+      'POLICIES.*',
+      'Any access allowed for this policy resource.'
+);
+
+WITH second_insert AS
+(
+   INSERT INTO
+      policies(description, type_meta, object_meta, metadata)
+   VALUES
+      (
+         'user used for machine create permissions for every users',
+         '{"kind":"Policy","api_version":"v1"}',
+         '{"name":"MACHINE_CREATE"}',
+         '{"level":"user"}'
+      )
+      ON CONFLICT DO NOTHING RETURNING id
+)
+INSERT INTO
+   permissions (policy_id, name, description)
+VALUES(
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'MACHINEFACTORYS.POST',
+         'Read access allowed for machine based stacksfactory resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'SECRETS.POST',
+         'Create access allowed for this secret resource.'
+   )
+,
+ (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'DATACENTERS.GET',
+         'Read only access for datacenters  resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'NETWORKS.GET',
+         'Read access allowed for this networks resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'PLANS.GET',
+         'Read access allowed for this Plans resource.'
+   );
+
+
+   WITH second_insert AS
+   (
+      INSERT INTO
+         policies(description, type_meta, object_meta, metadata)
+      VALUES
+         (
+            'user used for machine view permissions for every users',
+            '{"kind":"Policy","api_version":"v1"}',
+            '{"name":"MACHINE_VIEW"}',
+            '{"level":"user"}'
+         )
+         ON CONFLICT DO NOTHING RETURNING id
+   )
+   INSERT INTO
+      permissions (policy_id, name, description)
+   VALUES(
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'MACHINES.GET',
+         'Read access allowed for this machine based assembly resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'SECRETS.GET',
+         'Read access allowed for this secret resource.'
+   );
+
+   WITH second_insert AS
+   (
+      INSERT INTO
+         policies(description, type_meta, object_meta, metadata)
+      VALUES
+         (
+            'user used for machine delete permissions for every users',
+            '{"kind":"Policy","api_version":"v1"}',
+            '{"name":"MACHINE_DELETE"}',
+            '{"level":"user"}'
+         )
+         ON CONFLICT DO NOTHING RETURNING id
+   )
+   INSERT INTO
+      permissions (policy_id, name, description)
+   VALUES(
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'ASSEMBLYS.PUT',
+         'Edit only access for machine based assembly resource.'
+   );
+
+   WITH second_insert AS
+   (
+      INSERT INTO
+         policies(description, type_meta, object_meta, metadata)
+      VALUES
+         (
+            'user used for conatiner create permissions for every users',
+            '{"kind":"Policy","api_version":"v1"}',
+            '{"name":"CONTAINER_CREATE"}',
+            '{"level":"user"}'
+         )
+         ON CONFLICT DO NOTHING RETURNING id
+   )
+   INSERT INTO
+      permissions (policy_id, name, description)
+   VALUES
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'CONTAINERFACTORYS.POST',
+         'Create only access for container based stackfactory resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'SECRETS.POST',
+         'create only access for secret resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'HORIZONTALSCALING.POST',
+         'Create only access for horizontalscaling resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'VERTICALSCALING.POST',
+         'Create only access for verticalscaling resource.'
    )
 ,
    (
@@ -674,36 +769,6 @@ VALUES
          id
       FROM
          second_insert),
-         'HEALTHZ.GET',
-         'Read only access for healthz resource.'
-   )
-   ,
-      (
-   (
-         SELECT
-            id
-         FROM
-            second_insert),
-            'HEALTHZ.OVERALL.GET',
-            'Read only access for healthz overall resource.'
-      )
-   ,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
-         'PLANS.GET',
-         'Read only access for plan resource.'
-   )
-,
-   (
-(
-      SELECT
-         id
-      FROM
-         second_insert),
          'NETWORKS.GET',
          'Read only access for networks resource.'
    )
@@ -714,7 +779,68 @@ VALUES
             id
          FROM
             second_insert),
-            'PING.POST',
-            'Create access for ping resource.'
+            'PLANS.GET',
+            'Read only access for plans resource.'
+      );
+
+      WITH second_insert AS
+      (
+         INSERT INTO
+            policies(description, type_meta, object_meta, metadata)
+         VALUES
+            (
+               'user used for container view permissions for every users',
+               '{"kind":"Policy","api_version":"v1"}',
+               '{"name":"CONTAINER_VIEW"}',
+               '{"level":"user"}'
+            )
+            ON CONFLICT DO NOTHING RETURNING id
+      )
+      INSERT INTO
+         permissions (policy_id, name, description)
+      VALUES
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'CONTAINERS.GET',
+         'Read only access for container based assembly resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'SECRETS.GET',
+         'Read only access for secret resource.'
+   );
+
+   WITH second_insert AS
+   (
+      INSERT INTO
+         policies(description, type_meta, object_meta, metadata)
+      VALUES
+         (
+            'user used for container delete permissions for every users',
+            '{"kind":"Policy","api_version":"v1"}',
+            '{"name":"CONTAINER_DELETE"}',
+            '{"level":"user"}'
+         )
+         ON CONFLICT DO NOTHING RETURNING id
+   )
+   INSERT INTO
+      permissions (policy_id, name, description)
+   VALUES(
+   (
+         SELECT
+            id
+         FROM
+            second_insert),
+            'ASSEMBLYS.PUT',
+            'Edit access for container based assembly resource.'
       )
 ;

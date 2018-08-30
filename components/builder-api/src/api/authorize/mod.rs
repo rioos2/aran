@@ -4,3 +4,4 @@
 //! Deployment part of the Rioos rest api.
 pub mod permission;
 pub mod team;
+pub mod policies;

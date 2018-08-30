@@ -162,7 +162,7 @@ BEGIN
    FROM
       team_members
    WHERE
-      meta_data ->> 'origin' = org_id 
+      meta_data ->> 'origin' = org_id
       AND object_meta ->> 'account' = account_id;
 RETURN;
 END
@@ -232,103 +232,6 @@ BEGIN
       origin_members
    WHERE
       object_meta ->> 'account' = account_id;
-RETURN;
-END
-$$ LANGUAGE PLPGSQL STABLE;
-
----
---- Table:origin_members:show_members_for_origin
----
-CREATE
-OR REPLACE FUNCTION list_origin_members_v1 (om_origin_id bigint) RETURNS TABLE(account_name text) AS $$
-BEGIN
-   RETURN QUERY
-   SELECT
-      origin_members.account_name
-   FROM
-      origin_members
-   WHERE
-      origin_id = om_origin_id
-   ORDER BY
-      account_name ASC;
-RETURN;
-END
-$$ LANGUAGE PLPGSQL STABLE;
-
----
---- Table:origin_members:check_if_an_account_exists_in_originmembers
----
-CREATE
-OR REPLACE FUNCTION check_account_in_origin_members_v1 (om_origin_name text, om_account_id bigint) RETURNS TABLE(is_member bool) AS $$
-BEGIN
-   RETURN QUERY
-   SELECT
-      true
-   FROM
-      origin_members
-   WHERE
-      origin_name = om_origin_name
-      AND account_id = om_account_id;
-RETURN;
-END
-$$ LANGUAGE PLPGSQL STABLE;
-
----
---- Table:origin_members:list_originmembers_by_accountis
----
-CREATE
-OR REPLACE FUNCTION list_origin_by_account_id_v1 (o_account_id bigint) RETURNS TABLE(origin_name text) AS $$
-BEGIN
-   RETURN QUERY
-   SELECT
-      origin_members.origin_name
-   FROM
-      origin_members
-   WHERE
-      account_id = o_account_id
-   ORDER BY
-      origin_name ASC;
-RETURN;
-END
-$$ LANGUAGE PLPGSQL STABLE;
-
----
---- Table:account_origins
----
-CREATE TABLE IF NOT EXISTS account_origins (account_id bigint, account_email text, origin_id bigint, origin_name text, created_at timestamptz DEFAULT now(), updated_at timestamptz, UNIQUE(account_id, origin_id));
-
----
---- Table:account_origins:create
----
-CREATE
-OR REPLACE FUNCTION insert_account_origin_v1 (o_account_id bigint, o_account_email text, o_origin_id bigint, o_origin_name text) RETURNS void AS $$
-BEGIN
-   INSERT INTO
-      account_origins (account_id, account_email, origin_id, origin_name)
-   VALUES
-      (
-         o_account_id,
-         o_account_email,
-         o_origin_id,
-         o_origin_name
-      )
-;
-END
-$$ LANGUAGE PLPGSQL VOLATILE;
-
----
---- Table:account_origins:show
----
-CREATE
-OR REPLACE FUNCTION get_account_origins_v1 (in_account_id bigint) RETURNS SETOF account_origins AS $$
-BEGIN
-   RETURN QUERY
-   SELECT
-      *
-   FROM
-      account_origins
-   WHERE
-      account_id = in_account_id;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;

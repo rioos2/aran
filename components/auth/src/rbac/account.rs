@@ -63,7 +63,7 @@ impl ServiceAccountsFascade {
         ServiceAccountsFascade { conn: datastore }
     }
 
-     pub fn get_by_name(&self, account: IdGet) -> protocol::api::service_account::ServiceAccountTeams {
+     pub fn get_by_name(&self, account: IdGet) -> protocol::api::service_account::ServiceAccount {
         service_account::DataStore::new(&self.conn).get_service_account_by_name_fascade(&account)
     }
 }

@@ -103,7 +103,7 @@ impl Api for LogApi {
         router.get(
             "/logs",
             XHandler::new(C { inner: list_blank }),
-            "list_blank",
+            "logs_list_blank",
         );
 
         router.get("/logs/:id", XHandler::new(C { inner: list }), "list");

@@ -69,7 +69,6 @@ extern crate serde_json;
 extern crate serde_yaml;
 extern crate url;
 
-#[macro_use]
 extern crate lazy_static;
 
 pub mod appstore;

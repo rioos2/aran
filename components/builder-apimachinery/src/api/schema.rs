@@ -71,6 +71,9 @@ lazy_static! {
         map.register("POST:teams", "Team");
         map.register("GET:teams", "TeamList");
 
+        map.register("GET:policiesall","PolicyList");
+        map.register("GET:policies","PolicyList");
+
         map.register("POST:teammembers", "TeamMember");
 
         map.register("POST:originmembers", "OriginMember");
@@ -130,6 +133,8 @@ lazy_static! {
 
         map.register("GET:wizards", "Wizard");
         map.register("POST:invitations", "Invitations");
+
+        map.register("POST:policymembers", "PolicyMember");
 
         map
     };
@@ -242,7 +247,7 @@ pub fn dispatch(req: &mut Request) -> ApiSchema {
 
 //Helper function for parse url path and finding api schemas
 pub fn parse_schema_url(req: &mut Request) -> String {
-    let mut url: String = req.url.path().into_iter().collect();
+    //let mut _url: String = req.url.path().into_iter().collect();
     /*if req.url.path().len() > 2 {
         url = format!("{}{}", req.url.path()[0], req.url.path()[2]);
     }

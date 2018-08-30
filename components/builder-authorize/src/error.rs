@@ -18,11 +18,16 @@ pub enum Error {
     PermissionsCreate(postgres::error::Error),
     PermissionsGet(postgres::error::Error),
     PermissionGet(postgres::error::Error),
-    TeamPermissionsGet(postgres::error::Error),
+    PolicyPermissionGet(postgres::error::Error),
     InvitationsCreate(postgres::error::Error),
     InvitationsGet(postgres::error::Error),
     InvitationsUpdate(postgres::error::Error),
     TeamMembersCreate(postgres::error::Error),
+    PolicyMembersCreate(postgres::error::Error),
+    PolicyMembersGet(postgres::error::Error),
+    PolicyMembersUpdate(postgres::error::Error),
+    PoliciesGet(postgres::error::Error),
+
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -38,15 +43,19 @@ impl fmt::Display for Error {
             Error::PermissionsCreate(ref e) => {
                 format!("Database error creating a permission, {}", e)
             }
-            Error::TeamPermissionsGet(ref e) => {
+            Error::PolicyPermissionGet(ref e) => {
                 format!("Database error get team based permission, {}", e)
             }
+            Error::PoliciesGet(ref e) => format!("Database error get policies, {}", e),
             Error::PermissionsGet(ref e) => format!("Database error get permissions, {}", e),
             Error::PermissionGet(ref e) => format!("Database error get permission, {}", e),
             Error::InvitationsCreate(ref e) => format!("Database error creating a Invitations, {}", e),
             Error::InvitationsGet(ref e) => format!("Database error get a Invitations, {}", e),
             Error::InvitationsUpdate(ref e) => format!("Database error update a Invitations, {}", e),
             Error::TeamMembersCreate(ref e) => format!("Database error creating a team_member, {}", e),
+            Error::PolicyMembersGet(ref e) => format!("Database error get policy members {}", e),
+            Error::PolicyMembersCreate(ref e) => format!("Database error create policy members {}", e),
+            Error::PolicyMembersUpdate(ref e) => format!("Database error update policy members {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -63,11 +72,15 @@ impl error::Error for Error {
             Error::PermissionsCreate(ref err) => err.description(),
             Error::PermissionsGet(ref err) => err.description(),
             Error::PermissionGet(ref err) => err.description(),
-            Error::TeamPermissionsGet(ref err) => err.description(),
+            Error::PolicyPermissionGet(ref err) => err.description(),
             Error::InvitationsCreate(ref err) => err.description(),
             Error::InvitationsGet(ref err) => err.description(),
             Error::InvitationsUpdate(ref err) => err.description(),
             Error::TeamMembersCreate(ref err) => err.description(),
+            Error::PoliciesGet(ref err) => err.description(),
+            Error::PolicyMembersGet(ref err) => err.description(),
+            Error::PolicyMembersCreate(ref err) => err.description(),
+            Error::PolicyMembersUpdate(ref err) => err.description(),
         }
     }
 }
