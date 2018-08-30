@@ -88,10 +88,8 @@ impl DataStore {
         ).map_err(Error::InvitationsUpdate)?;
 
         if rows.len() > 0 {
-            for row in rows {
-                let end = row_to_invitations(&rows.get(0))?;
-                return Ok(Some(end));
-            }
+            let end = row_to_invitations(&rows.get(0))?;
+            return Ok(Some(end));
         }
         Ok(None)
     }

@@ -40,6 +40,7 @@ const PING: &'static str = "PING";
 const SENSEI: &'static str = "SENSEIS";
 const LICENSE: &'static str = "LICENSES";
 const INVITATION: &'static str = "INVITATIONS";
+const TEAM: &'static str = "TEAMS";
 
 const RESOURCE_GET: &'static str = "GET";
 const RESOURCE_POST: &'static str = "POST";
@@ -169,6 +170,7 @@ enum TrustResource {
     Sensei,
     License,
     Invitation,
+    Team,
     None,
 }
 
@@ -235,6 +237,7 @@ impl TrustResource {
             PING => TrustResource::Ping,
             SENSEI => TrustResource::Sensei,
             LICENSE => TrustResource::License,
+            TEAM => TrustResource::Team,
             INVITATION => TrustResource::Invitation,
             _ => TrustResource::None,
         }

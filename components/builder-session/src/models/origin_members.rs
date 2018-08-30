@@ -8,7 +8,7 @@ use error::{Error, Result};
 use protocol::api::origin::OriginMembers;
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
-use protocol::cache::{InMemoryExpander, PullFromCache, PULL_INVALDATED};
+use protocol::cache::{InMemoryExpander};
 use super::super::{OriginMembersOutput, OriginMembersOutputList};
 use db::data_store::DataStoreConn;
 use postgres;

@@ -247,7 +247,7 @@ pub fn dispatch(req: &mut Request) -> ApiSchema {
 
 //Helper function for parse url path and finding api schemas
 pub fn parse_schema_url(req: &mut Request) -> String {
-    let mut url: String = req.url.path().into_iter().collect();
+    //let mut _url: String = req.url.path().into_iter().collect();
     /*if req.url.path().len() > 2 {
         url = format!("{}{}", req.url.path()[0], req.url.path()[2]);
     }

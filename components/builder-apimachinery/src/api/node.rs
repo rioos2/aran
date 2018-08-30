@@ -2,7 +2,6 @@
 
 use api::base::{Condition, MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
 use api::senseis::SENSEI_JOBS;
-use chrono::naive::NaiveDateTime;
 
 use serde_json;
 use std::collections::BTreeMap;

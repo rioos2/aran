@@ -46,7 +46,7 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             let service_account = row_to_service_account(&rows.get(0))?;
 
-            let id = service_account.get_id().parse::<i64>().unwrap();
+            //let id = service_account.get_id().parse::<i64>().unwrap();
             
             return Ok(Some(service_account));
         }

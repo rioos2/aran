@@ -97,9 +97,9 @@ impl Authorization {
                  account_get.set_email(account_type.get_name());
                  let mut account = self.accounts.get_by_email(account_get);
 
-                 /// check account is admin or not
-                 /// account is admin then return true, because admin has full control
-                 /// otherwise we check other permissions                 
+                 // check account is admin or not
+                 // account is admin then return true, because admin has full control
+                 // otherwise we check other permissions                 
                  if (account.get_is_admin()) {
                     return Ok(true);
                  }                                            

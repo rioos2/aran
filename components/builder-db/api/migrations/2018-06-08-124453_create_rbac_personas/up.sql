@@ -501,6 +501,26 @@ VALUES
          id
       FROM
          second_insert),
+         'ACCOUNTS.GET',
+         'Read only access for accounts resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
+         'TEAMS.GET',
+         'Read only access for teams resource.'
+   )
+,
+   (
+(
+      SELECT
+         id
+      FROM
+         second_insert),
          'INVITATIONS.PUT',
          'Edit only access for invitation resource.'
    );

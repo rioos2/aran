@@ -3,7 +3,7 @@
 use api::base::IdGet;
 use cache::inject::PermissionsFeeder;
 use std::collections::BTreeMap;
-use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields, WhoAmITypeMeta};
+use api::base::{ChildTypeMeta, TypeMeta, ObjectMeta, MetaFields};
 use cache::inject::MembersFeeder;
 use cache::inject::{PoliciesFeeder, PolicyMembersFeeder};
 use cache::inject::TeamsFeeder;

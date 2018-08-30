@@ -34,8 +34,8 @@ impl<'a> Invites<'a> {
    
     /// To store invitation details into postgres
     /// And create EVENT for sends email/slack invitations
-    pub fn mk_invites(&self, invitationsList: &InvitationsList) -> InvitationsOutputList {
-    	let invitation_list = invitationsList.clone();
+    pub fn mk_invites(&self, invitations_list: &InvitationsList) -> InvitationsOutputList {
+    	let invitation_list = invitations_list.clone();
     	let mk_invites = invitation_list.invites
                         .into_iter()
                         .map(|invite| {
@@ -68,12 +68,12 @@ impl<'a> Invites<'a> {
                     invitations::DataStore::update_status(&self.conn, &ini_get)?;
                     //insert new origin member entry into origin member table
                     //now the user merged to invited origin
-                    origin_members::DataStore::new(&self.conn).create(&origin_member); //we must track this error..
+                    let _origin_member = origin_members::DataStore::new(&self.conn).create(&origin_member); //we must track this error..
                     //insert new team member entry into team member table
                     //now the user merged to invited team
                     team_members::DataStore::new(&self.conn).create(&team_member)
             }
-            Err(err) => Err(Error::Db(RecordsNotFound)), //In future  we track this errors
+            Err(_err) => Err(Error::Db(RecordsNotFound)), //In future  we track this errors
             Ok(None) => Err(Error::AccountNotFound(
                     "Invited Account not found, Please sign up your account.".to_string(),
                 )),
@@ -106,7 +106,7 @@ impl<'a> Invites<'a> {
     // build team member data for create new entry 
     pub fn build_team_member(&self, account_id: String, ini: &Invitations) -> TeamMembers {
         let mut members = TeamMembers::new();
-        let mut m = members.mut_meta(
+        let m = members.mut_meta(
                 ObjectMeta::new(),
                 "teammembers".to_string(),
                 account_id,
@@ -124,7 +124,7 @@ impl<'a> Invites<'a> {
     // build origin member data for create new entry 
     pub fn build_origin_member(&self, account_id: String, ini: &Invitations) -> OriginMembers {
         let mut members = OriginMembers::new();
-        let mut m = members.mut_meta(
+        let m = members.mut_meta(
                 ObjectMeta::new(),
                 ini.get_origin_id(),
                 account_id,
