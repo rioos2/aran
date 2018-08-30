@@ -13,10 +13,10 @@ OR REPLACE FUNCTION insert_assembly_v1 (type_meta JSONB, object_meta JSONB, sele
 BEGIN
    RETURN QUERY
    INSERT INTO
-      assemblys(type_meta, object_meta, selector, status, metadata)
+      assemblys(type_meta, object_meta, selector, status, metadata, updated_at)
    VALUES
       (
-         type_meta, object_meta, selector, status, metadata
+         type_meta, object_meta, selector, status, metadata, now()
       )
       RETURNING *;
 RETURN;
@@ -72,14 +72,13 @@ RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
 CREATE
-OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_selector text[], asm_status JSONB, asm_object_meta JSONB, asm_metadata JSONB) RETURNS SETOF assemblys AS $$
+OR REPLACE FUNCTION update_assembly_v1 (aid bigint, asm_selector text[], asm_object_meta JSONB, asm_metadata JSONB) RETURNS SETOF assemblys AS $$
 BEGIN
    RETURN QUERY
    UPDATE
       assemblys
    SET
       selector = asm_selector,
-      status = asm_status,
       object_meta = asm_object_meta,
       metadata = asm_metadata,
       updated_at = now()
@@ -90,10 +89,10 @@ END
 $$ LANGUAGE PLPGSQL VOLATILE;
 
 ---
---- Table:assemblys:update_status
+--- Table:assemblys:update_status with updated_at checking
 ---
 CREATE
-OR REPLACE FUNCTION set_assembly_status_v1 (aid bigint, asm_status JSONB) RETURNS SETOF assemblys AS $$
+OR REPLACE FUNCTION set_assembly_status_v2 (aid bigint,updat timestamptz, asm_status JSONB) RETURNS SETOF assemblys AS $$
 BEGIN
    RETURN QUERY
    UPDATE
@@ -102,7 +101,7 @@ BEGIN
       status = asm_status,
       updated_at = now()
    WHERE
-      id = aid RETURNING *;
+      id = aid and updated_at = updat RETURNING *;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;

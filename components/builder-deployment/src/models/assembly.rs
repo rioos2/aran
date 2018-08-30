@@ -55,11 +55,10 @@ impl<'a> DataStore<'a> {
     pub fn update(&self, assembly: &deploy::Assembly) -> AssemblyOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM update_assembly_v1($1,$2,$3,$4)",
             &[
                 &(assembly.get_id().parse::<i64>().unwrap()),
                 &(assembly.get_selector() as Vec<String>),
-                &(serde_json::to_value(assembly.get_status()).unwrap()),
                 &(serde_json::to_value(assembly.object_meta()).unwrap()),
                 &(serde_json::to_value(assembly.get_metadata()).unwrap()),
             ],
@@ -117,6 +116,7 @@ impl<'a> DataStore<'a> {
         let mut response = Vec::new();
         if rows.len() > 0 {
             for row in rows {
+
                 response.push(self.collect_spec(&row, PULL_DIRECTLY)?);
             }
             return Ok(Some(response));
@@ -124,18 +124,27 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn status_update(&self, upd: &StatusUpdate) -> AssemblyOutput {
+    pub fn status_update(&self, upd: &StatusUpdate, updated_at: ::std::string::String) -> AssemblyOutput {
         let conn = self.db.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * FROM set_assembly_status_v1($1, $2)",
-            &[
-                &(upd.get_id().parse::<i64>().unwrap()),
-                &(serde_json::to_value(upd.get_status()).unwrap()),
-            ],
-        ).map_err(Error::AssemblyUpdate)?;
-        if rows.len() > 0 {
-            for row in rows {
-                return Ok(Some(self.collect_spec(&row, PULL_INVALDATED)?));
+        if updated_at.len() > 0 {
+             // Utc::now();  worked
+             // DateTime::parse_from_rfc3339(updated_at); //
+            let updatedat =  updated_at.parse::<DateTime<Utc>>().unwrap();
+            println!("updatedat :{:?}", updatedat);
+            let rows = &conn.query(
+                "SELECT * FROM set_assembly_status_v2($1, $2, $3)",
+                &[
+                    &(upd.get_id().parse::<i64>().unwrap()),
+                    &updatedat,
+                    &(serde_json::to_value(upd.get_status()).unwrap()),
+
+                ],
+            ).map_err(Error::AssemblyUpdate)?;
+
+            if rows.len() > 0 {
+                for row in rows {
+                    return Ok(Some(self.collect_spec(&row, PULL_INVALDATED)?));
+                }
             }
         }
         Ok(None)
@@ -211,11 +220,13 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<deploy::Assembly> {
 
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
+    let updated_at = row.get::<&str, DateTime<Utc>>("updated_at");
 
     assembly.set_id(id.to_string());
     assembly.set_selector(row.get("selector"));
     assembly.set_status(serde_json::from_value(row.get("status")).unwrap());
     assembly.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
     assembly.set_created_at(created_at.to_rfc3339());
+    assembly.set_updated_at(updated_at.to_rfc3339());
     Ok(assembly)
 }
