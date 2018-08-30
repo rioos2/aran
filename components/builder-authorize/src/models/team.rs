@@ -82,7 +82,6 @@ impl<'a> DataStore<'a> {
     //show team with team members
     pub fn show(&self,get_teams: &IdGet) -> TeamsOutput {
         let conn = self.db.pool.get_shard(0)?;
-        println!("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         let rows = &conn.query(
             "SELECT * FROM get_team_v1($1)",
             &[&(get_teams.get_id().parse::<i64>().unwrap())],

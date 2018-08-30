@@ -64,11 +64,8 @@ impl<'a> DataStore<'a> {
         if rows.len() > 0 {
             for row in rows {
                 let member = self.merge_permissions(&row, PULL_DIRECTLY)?;
-                println!("1111111111111111111111111111111111111111111111111");
                 match member.get_metadata().get(&"team".to_string()) {
-                    Some(team) => {
-                        println!("2222222222222222222222222222222222222222222222222222");
-                        println!("{}", team.clone());
+                    Some(team) => {                       
                         let team_id = IdGet::with_id(team.to_string());
                         let _teams = team::DataStore::new(self.db).show(&team_id);
                     },
