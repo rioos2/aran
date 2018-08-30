@@ -121,14 +121,14 @@ impl RequestVerifier for AccountParmsVerifier {
     fn verify(req: &Request) -> AranResult<IdGet> {
         let token = match req.headers.get::<Authorization<Bearer>>() {
             Some(&Authorization(Bearer { ref token })) => token,
-            _ => {                
+            _ => {
                 return Err(bad_request(&MissingParameter("Authorization Bearer: token not found.".to_string())))
             }
         };
-        let token_target = TokenTarget::parse(token.to_string());  
+        let token_target = TokenTarget::parse(token.to_string());
 
         if !token_target.get_account_id().is_empty() {
-            return Ok(IdGet::with_account(token_target.get_account_id()))            
+            return Ok(IdGet::with_account(token_target.get_account_id()))
         }
         return Err(bad_request(&MissingParameter("account".to_string())))
         /*match req.extensions.get::<Router>().unwrap().find("account_id") {

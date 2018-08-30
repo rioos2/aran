@@ -778,6 +778,8 @@ pub struct Assembly {
     spec: Spec,
     #[serde(default)]
     created_at: String,
+    #[serde(default)]
+    updated_at: String,
 }
 
 impl Assembly {
@@ -824,6 +826,14 @@ impl Assembly {
 
     pub fn get_created_at(&self) -> ::std::string::String {
         self.created_at.clone()
+    }
+
+    pub fn set_updated_at(&mut self, v: ::std::string::String) {
+        self.updated_at = v;
+    }
+
+    pub fn get_updated_at(&self) -> ::std::string::String {
+        self.updated_at.clone()
     }
 
     pub fn set_spec(&mut self, v: Spec) {
