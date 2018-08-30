@@ -8,17 +8,21 @@ use error::Result;
 use hooks::BeforeHook;
 use protocol::api::base::{MetaFields, WhoAmITypeMeta};
 use protocol::api::deploy::PHASE_RUNNING;
-use protocol::api::node::{Bridge, NodeInfo, NodeStatus};
+use protocol::api::node::{Bridge, NodeInfo, NodeStatus, Addresses};
 use protocol::api::schema::type_meta_url;
 use protocol::api::senseis;
 use rio_core::util::stat;
 use rio_core::util::stat::ProbedStat;
 use rio_core::util::sys;
 use std::collections::BTreeMap;
+use std::net::Ipv4Addr;
 
 pub const CAPACITY_CPU: &'static str = "cpu";
 pub const CAPACITY_MEMORY: &'static str = "memory";
 pub const CAPACITY_STORAGE: &'static str = "storage";
+
+const INTERNAL_TYPE: &'static str = "InternalIP";
+const EXTERNAL_TYPE: &'static str = "ExternalIp";
 
 pub struct Sensei {
     conn: Box<DataStoreConn>,
@@ -44,6 +48,7 @@ impl Sensei {
         let mut status = NodeStatus::new();
         status.set_phase(PHASE_RUNNING.to_string());
 
+
         let mut ni = NodeInfo::new();
         ni.set_machine_id(uname.sys_name.clone());
         ni.set_system_uuid(uname.version);
@@ -67,7 +72,12 @@ impl Sensei {
         //cap.insert(CAPACITY_STORAGE.to_string(), pr.get_storage().get_total());
         status.set_capacity(cap);
         status.set_node_info(ni);
-
+        status.set_addresses(vec![
+            Addresses::new(
+                &self.get_type(&pr.get_host_address())?,
+                &pr.get_host_address()
+            ),
+        ]);
         s.set_node_ip(pr.get_host_address());
         s.set_status(status);
 
@@ -79,6 +89,14 @@ impl Sensei {
 
     fn stats(&self) -> ProbedStat {
         stat::Probe::new().probe()
+    }
+
+    fn get_type(&self, ip: &str) -> Result<String> {
+        let hosts: Ipv4Addr = ip.parse()?;
+        if hosts.is_private() {
+            return Ok(INTERNAL_TYPE.to_string());
+        }
+        Ok(EXTERNAL_TYPE.to_string())
     }
 }
 
