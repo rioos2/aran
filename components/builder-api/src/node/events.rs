@@ -7,8 +7,6 @@ use api::audit::mailer::email_sender as mailer;
 use api::audit::slack::slack_sender as slack;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
-const SUB_PRODUCTS: [&'static str; 2] = ["senseis", "ninjas"];
-
 
 impl EventHandler for RuntimeHandler {
     fn handle_event(&mut self, event: Event) {
@@ -46,28 +44,59 @@ impl RuntimeHandler {
             }
 
             ExternalMessage::ActivateLicense(license_id, password, product) => {
-                match self.license.activate(license_id, &password, &product) {
-                    Ok(_) => {
-                        self.license.update(
-                            &product,
-                            &license_id.to_string(),
-                            &password,
-                        )
+                match &product[..] {
+                    NINJAS => {
+                        match self.ninjas_license.activate(license_id, &password) {
+                            Ok(_) => {
+                                self.ninjas_license.update(
+                                    &license_id.to_string(),
+                                    &password,
+                                )
+                            }
+                            Err(err) => self.ninjas_license.persist_error(format!("{}", err)),
+                        }
                     }
-                    Err(err) => self.license.persist_error(&product, format!("{}", err)),
+                    SENSEIS => {
+                        match self.senseis_license.activate(license_id, &password) {
+                            Ok(_) => {
+                                self.senseis_license.update(
+                                    &license_id.to_string(),
+                                    &password,
+                                )
+                            }
+                            Err(err) => self.senseis_license.persist_error(format!("{}", err)),
+                        }
+                    }
+                    _ => {}
+
                 }
             }
 
             ExternalMessage::DeActivateLicense(license_id, password, product) => {
-                match self.license.deactivate(&product) {
-                    Ok(_) => {
-                        self.license.update(
-                            &product,
-                            &license_id.to_string(),
-                            &password,
-                        )
+                match &product[..] {
+                    NINJAS => {
+                        match self.ninjas_license.deactivate() {
+                            Ok(_) => {
+                                self.ninjas_license.update(
+                                    &license_id.to_string(),
+                                    &password,
+                                )
+                            }
+                            Err(err) => self.ninjas_license.persist_error(format!("{}", err)),
+                        }
                     }
-                    Err(err) => self.license.persist_error(&product, format!("{}", err)),
+                    SENSEIS => {
+                        match self.senseis_license.deactivate() {
+                            Ok(_) => {
+                                self.senseis_license.update(
+                                    &license_id.to_string(),
+                                    &password,
+                                )
+                            }
+                            Err(err) => self.senseis_license.persist_error(format!("{}", err)),
+                        }
+                    }
+                    _ => {}
                 }
             }
 
@@ -77,13 +106,10 @@ impl RuntimeHandler {
     fn handle_internal_event(&mut self, event: &InternalEvent) {
         match *event {
             InternalEvent::EntitlementTimeToVerify => {
-                SUB_PRODUCTS
-                    .iter()
-                    .map(|x| {
-                        self.license.live_verify(x).unwrap();
-                        self.license.update(x, "", "");
-                    })
-                    .collect::<Vec<_>>();
+                self.ninjas_license.live_verify().unwrap();
+                self.ninjas_license.update_status();
+                self.senseis_license.live_verify().unwrap();
+                self.senseis_license.update_status();
             }
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }

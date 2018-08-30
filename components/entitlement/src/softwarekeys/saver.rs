@@ -24,4 +24,8 @@ impl<'a> Saver<'a> {
     pub fn update(&self, license: Licenses) {
         license::DataStore::new(&self.conn).update(&license);
     }
+
+    pub fn update_status(&self, license: Licenses) {
+        license::DataStore::new(&self.conn).update_status(&license);
+    }
 }
