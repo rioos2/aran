@@ -19,6 +19,7 @@ use service;
 use std::error;
 use std::fmt;
 use std::io;
+use std::net;
 use std::result;
 use std::str::Utf8Error;
 use url;
@@ -76,6 +77,7 @@ pub enum Error {
     Utf8Error(Utf8Error),
     Yaml(serde_yaml::Error),
     Postgres(postgres::error::Error),
+    NetworkError(net::AddrParseError),
     //Hook errors
     RioConfig(service::Error),
     SenseiHook(clusters::Error),
@@ -104,6 +106,7 @@ impl fmt::Display for Error {
             Error::HTTP(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
+            Error::NetworkError(ref e) => format!("Address Parsing Error, {}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
             Error::UNKNOWSECRET => format!("SecretType not found"),
             Error::SetupNotDone => format!("Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"),
@@ -137,6 +140,7 @@ impl error::Error for Error {
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::UrlParseError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
+            Error::NetworkError(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
             Error::Utf8Error(ref err) => err.description(),
             Error::UNKNOWSECRET => "Unknown SecretType",
@@ -196,6 +200,12 @@ impl From<serde_json::Error> for Error {
 impl From<bodyparser::BodyError> for Error {
     fn from(err: bodyparser::BodyError) -> Self {
         Error::RioosBodyError(err)
+    }
+}
+
+impl From<net::AddrParseError> for Error {
+    fn from(err: net::AddrParseError) -> Error {
+        Error::NetworkError(err)
     }
 }
 
