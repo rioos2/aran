@@ -23,7 +23,7 @@ After you clone  `api_gateway.git`, please do the following.
 
 ```
 	cp .hooks/* ./.git/hooks
-    chmod 755 ./.git/hooks/pre-commit
+  chmod 755 ./.git/hooks/pre-commit
 
 ```
 
@@ -39,7 +39,7 @@ After you clone  `api_gateway.git`, please do the following.
 
 ***
 
-The below section describes setting up a development environment. 
+The below section describes setting up a development environment.
 
 
 ## PostgreSQL - Ubuntu

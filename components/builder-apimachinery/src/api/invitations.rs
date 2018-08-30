@@ -1,6 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::IdGet;
 use api::base::{TypeMeta, ObjectMeta, MetaFields, ChildTypeMeta};
 use api::schema::type_meta_url;
 

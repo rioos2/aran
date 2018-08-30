@@ -12,7 +12,7 @@ use api::objectstorage::config::ObjectStorageCfg;
 use api::security::config::SecurerConn;
 use audit::config::InfluxClientConn;
 use audit::vulnerable::vulnerablity::AnchoreClient;
-use auth::rbac::{permissions, license, account};
+use auth::rbac::{permissions, license, account, teams, policies};
 use config::Config;
 use db::data_store::*;
 use error::Result;
@@ -78,12 +78,20 @@ impl HttpGateway for Wirer {
         //this for cache service account teams
         let mut service_accounts = account::ServiceAccountsFascade::new(ds.clone());
         service_accounts.with_cache();
+        //this for cache teams data
+        let mut teams = teams::TeamsFascade::new(ds.clone());
+        teams.with_cache();
+        //this for cache policies data
+        let mut policies = policies::PolicyFascade::new(ds.clone());
+        policies.with_cache();
 
         chain.link_before(Arc::new(RBAC::new(
             &*_config,
             permissions,
             accounts,
             service_accounts,
+            teams,
+            policies,
         )));
 
         let mut license = license::LicensesFascade::new(ds.clone());
@@ -211,6 +219,10 @@ impl HttpGateway for Wirer {
 
         let mut team = authorize::team::TeamApi::new(ds.clone());
         team.wire(config.clone(), &mut router);
+
+        let mut policy = authorize::policies::PolicyApi::new(ds.clone());
+        policy.wire(config.clone(), &mut router);
+
 
         let mut permission = authorize::permission::PermissionApi::new(ds.clone());
         permission.wire(config.clone(), &mut router);

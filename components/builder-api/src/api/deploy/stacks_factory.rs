@@ -188,12 +188,17 @@ impl Api for StacksFactoryApi {
 
         //closures : stacksfactory
         let _config = &config;
-        let _service_cfg: Box<ServicesConfig> = Box::new(_config.services.clone().into());
+        let _machine_service_cfg: Box<ServicesConfig> = Box::new(_config.services.clone().into());
         self.with_cache();
 
         let mut _self = self.clone();
-        let create =
-            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_service_cfg) };
+        let machinefactorys_create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_machine_service_cfg) };
+
+        let _container_service_cfg: Box<ServicesConfig> = Box::new(_config.services.clone().into());
+        let mut _self = self.clone();
+        let containerfactorys_create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_container_service_cfg) };
 
         let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
@@ -210,9 +215,15 @@ impl Api for StacksFactoryApi {
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         router.post(
-            "/stacksfactorys",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "stacks_factory",
+            "/machinefactorys",
+            XHandler::new(C { inner: machinefactorys_create }).before(basic.clone()),
+            "machine_stacks_factory",
+        );
+
+        router.post(
+            "/containerfactorys",
+            XHandler::new(C { inner: containerfactorys_create }).before(basic.clone()),
+            "container_stacks_factory",
         );
 
         router.get(

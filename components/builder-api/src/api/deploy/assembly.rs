@@ -3,18 +3,18 @@
 //! A collection of deployment [assembly, assembly_factory] for the HTTP server
 
 
-use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
 use bytes::Bytes;
 use config::Config;
 use db::data_store::DataStoreConn;
-use db::error::Error::RecordsNotFound;
+use db::error::Error::{RecordsNotFound, ConflictOnRecordUpdate};
 use deploy::models::{assembly, assemblyfactory, blueprint, endpoint, volume};
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{AranResult, AranValidResult};
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error, conflict_error};
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::{MetaFields, StatusUpdate};
@@ -160,18 +160,19 @@ impl AssemblyApi {
     ///Returns an AssemblyFactory
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-
+        let query_pairs = self.default_validate(req)?;
+        let updated_at = query_pairs.get("updated_at");
         let mut unmarshall_body = self.validate(
             req.get::<bodyparser::Struct<StatusUpdate>>()?,
         )?;
         unmarshall_body.set_id(params.get_id());
 
-        match assembly::DataStore::new(&self.conn).status_update(&unmarshall_body) {
+        match assembly::DataStore::new(&self.conn).status_update(&unmarshall_body, updated_at) {
             Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
+            Ok(None) => Err(conflict_error(&format!(
                 "{} for {}",
-                Error::Db(RecordsNotFound),
+                Error::Db(ConflictOnRecordUpdate),
                 params.get_id()
             ))),
         }
@@ -242,7 +243,10 @@ impl Api for AssemblyApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
+        let machines_list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
+
+        let _self = self.clone();
+        let containers_list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
@@ -266,9 +270,14 @@ impl Api for AssemblyApi {
             "assemblys",
         );
         router.get(
-            "/assemblys",
-            XHandler::new(C { inner: list }).before(basic.clone()),
-            "assembly_list",
+            "/machines",
+            XHandler::new(C { inner: machines_list }).before(basic.clone()),
+            "machine_assembly_list",
+        );
+        router.get(
+            "/containers",
+            XHandler::new(C { inner: containers_list }).before(basic.clone()),
+            "container_assembly_list",
         );
         router.get(
             "/assemblys/:id",
@@ -382,6 +391,9 @@ impl ApiValidator for AssemblyApi {}
 
 ///Convinient helpers to verify any api
 impl ParmsVerifier for AssemblyApi {}
+
+// Convinient helpers to verify query parameters
+impl QueryValidator for AssemblyApi {}
 
 ///Called by implementing ApiValidator when validate() is invoked with the parsed body
 ///Checks for required parameters in the parsed struct Assembly
