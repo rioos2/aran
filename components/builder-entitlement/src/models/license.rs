@@ -142,6 +142,25 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
+
+    pub fn update_status(&self, license: &Licenses) -> LicenseOutput {
+        let conn = self.db.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM update_status_v1($1,$2,$3)",
+            &[
+                &(license.get_provider_name() as String),
+                &(license.get_status() as String),
+                &(license.get_expired() as String),
+            ],
+        ).map_err(Error::LicenseUpdate)?;
+
+        if rows.len() > 0 {
+            let license_data = row_to_licenses(&rows.get(0))?;
+            return Ok(Some(license_data));
+        }
+        Ok(None)
+    }
+
     //This is a fascade method to get_by_name.
     pub fn show(&self, name: IdGet) -> Licenses {
         let mut license = Licenses::new();

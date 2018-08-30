@@ -60,7 +60,8 @@ impl RuntimeChannel {
 /// Handler
 pub struct RuntimeHandler {
     pub config: Box<BlockchainConn>,
-    pub license: NativeSDK,
+    pub ninjas_license: NativeSDK,
+    pub senseis_license: NativeSDK,
     pub mailer: Box<MailerCfg>,
     pub slack: Box<SlackCfg>,
 }
@@ -116,12 +117,13 @@ pub struct Runtime {
 }
 
 impl Runtime {
-    pub fn new(config: Arc<Config>, sdk: NativeSDK) -> Self {
+    pub fn new(config: Arc<Config>, ninjas_license_sdk: NativeSDK, senseis_license_sdk: NativeSDK) -> Self {
         Runtime {
             channel: RuntimeChannel::new(1024),
             handler: RuntimeHandler {
                 config: Box::new(BlockchainConn::new(&*config.clone())),
-                license: sdk,
+                ninjas_license: ninjas_license_sdk,
+                senseis_license: senseis_license_sdk,
                 mailer: Box::new(MailerCfg::new(&*config.clone())),
                 slack: Box::new(SlackCfg::new(&*config.clone())),
             },

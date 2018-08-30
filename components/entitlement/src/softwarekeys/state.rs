@@ -60,7 +60,6 @@ impl State {
 
         license.set_status(self.get_status());
         license.set_expired(self.get_no_of_days_to_expire());
-
         license.set_activation(self.calculate_limits(name));
         license.set_provider_name(PROVIDER.to_string());
         license.set_product(PRODUCT.to_string());
@@ -75,6 +74,15 @@ impl State {
         license.set_expired(self.get_no_of_days_to_expire());
         license.set_license_id(license_id.to_string());
         license.set_password(password.to_string());
+        license
+    }
+
+
+    pub fn status(&self, name: &str) -> Licenses {
+        let mut license = Licenses::new();
+        license.set_provider_name(name.to_string());
+        license.set_status(self.get_status());
+        license.set_expired(self.get_no_of_days_to_expire());
         license
     }
 

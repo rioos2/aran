@@ -22,6 +22,8 @@ pub const SK_NEW: &'static str = "SK_XmlElementAddNew";
 pub const SK_SET: &'static str = "SK_ApiContextSetFieldString";
 //Loads a License from a file or Windows Registry key.
 pub const SK_LOAD_LICENSE: &'static str = "SK_PLUS_LicenseFileLoad";
+
+pub const SK_SET_PERMISSION: &'static str = "SK_PermissionsGrantControlToWorld";
 //Sets an integer field in the API Context.
 pub const SK_SET_INT: &'static str = "SK_ApiContextSetFieldInt";
 //Creates a new License.

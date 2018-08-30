@@ -123,3 +123,12 @@ SETOF licenses AS $$
                                              RETURN;
                                          END
                                       $$ LANGUAGE PLPGSQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION update_status_v1 (lname text,lstatus text,lexpired text) RETURNS
+SETOF licenses AS $$
+                                         BEGIN
+                                             RETURN QUERY UPDATE licenses SET status=lstatus,expired=lexpired,updated_at=now() WHERE  object_meta ->> 'name' = lname
+                                             RETURNING *;
+                                             RETURN;
+                                         END
+                                      $$ LANGUAGE PLPGSQL VOLATILE;

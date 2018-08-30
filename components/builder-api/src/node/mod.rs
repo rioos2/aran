@@ -27,6 +27,10 @@ use rio_core::fs::rioconfig_license_path;
 use std::sync::Arc;
 use watch::config::Streamer;
 
+pub const NINJAS: &'static str = "ninjas";
+pub const SENSEIS: &'static str = "senseis";
+
+
 pub enum Servers {
     APISERVER,
     // The http2 port used by controlmanager, scheduler
@@ -64,7 +68,11 @@ impl Node {
             }
         };
 
-        let rg = runtime::Runtime::new(self.config.clone(), self.create_licensor(ds.clone())?);
+        let rg = runtime::Runtime::new(
+            self.config.clone(),
+            self.create_licensor(ds.clone(), NINJAS)?,
+            self.create_licensor(ds.clone(), SENSEIS)?,
+        );
 
         let api_sender = rg.channel();
 
@@ -94,14 +102,14 @@ impl Node {
     /*This function creates the native API context with software key.
       Needs a cache with access to database
       The Native.so file is loaded and provided as input */
-    fn create_licensor(&self, ds: Box<DataStoreConn>) -> Result<NativeSDK> {
+    fn create_licensor(&self, ds: Box<DataStoreConn>, name: &str) -> Result<NativeSDK> {
         let mut license = license::LicensesFascade::new(ds.clone());
         license.with_cache();
         let so_file = self.config.licenses.so_file.clone();
 
         let lib = lib_load::Library::new(&rioconfig_license_path(None).join(so_file))?;
 
-        let mut sdk = NativeSDK::new(lib, license);
+        let mut sdk = NativeSDK::new(lib, license, name.to_string());
         sdk.initialize_api_context()?;
         Ok(sdk)
 
