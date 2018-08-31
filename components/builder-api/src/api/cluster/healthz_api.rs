@@ -57,7 +57,12 @@ impl HealthzApi {
     fn status(&self, _req: &mut Request) -> AranResult<Response> {
         Ok(render_json(
             status::Ok,
-            &format!("code:{},version:{}", "200", "rioos-2.0"),
+            &format!(
+                "code:{},version:{}:description:{}",
+                "200",
+                "rioos-2.0",
+                "API server is healthy"
+            ),
         ))
     }
 }

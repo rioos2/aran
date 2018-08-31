@@ -11,8 +11,8 @@ use db::error::Error::RecordsNotFound;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error, conflict_error};
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::IdGet;
@@ -73,9 +73,7 @@ impl StorageApi {
     //Will need teams/permission to access this.
     fn list(&self, _req: &mut Request) -> AranResult<Response> {
         match StorageDS::storage_list(&self.conn) {
-            Ok(Some(storage_list)) => {
-                Ok(render_json_list(status::Ok, dispatch(_req), &storage_list))
-            }
+            Ok(Some(storage_list)) => Ok(render_json_list(status::Ok, dispatch(_req), &storage_list)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
@@ -137,7 +135,9 @@ impl StorageApi {
     //Input storageconnector id and returns updated storageconnector
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
         match StorageDS::storage_status_update(&self.conn, &unmarshall_body) {
@@ -168,10 +168,21 @@ impl StorageApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match StorageDS::data_center_create(&self.conn, &unmarshall_body) {
-            Ok(dc_create) => Ok(render_json(status::Ok, &dc_create)),
-            Err(err) => Err(internal_error(&format!("{}\n", err))),
+        match StorageDS::data_center_show_by_name(&self.conn, &unmarshall_body) {
+            Ok(Some(_)) => Err(conflict_error(&format!(
+                "alreay exists {}",
+                unmarshall_body.get_name()
+            ))),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => {
+                match StorageDS::data_center_create(&self.conn, &unmarshall_body) {
+                    Ok(dc_create) => Ok(render_json(status::Ok, &dc_create)),
+                    Err(err) => Err(internal_error(&format!("{}\n", err))),
+                }
+            }
         }
+
+
     }
 
     //GET: /datacenters
@@ -275,7 +286,9 @@ impl StorageApi {
     fn storage_pool_status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
 
         unmarshall_body.set_id(params.get_id());
 
@@ -371,51 +384,39 @@ impl Api for StorageApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         //closures : storagepools
         let _self = self.clone();
-        let storage_pool_create =
-            move |req: &mut Request| -> AranResult<Response> { _self.storage_pool_create(req) };
+        let storage_pool_create = move |req: &mut Request| -> AranResult<Response> { _self.storage_pool_create(req) };
 
         let _self = self.clone();
-        let storage_pool_list =
-            move |req: &mut Request| -> AranResult<Response> { _self.storage_pool_list(req) };
+        let storage_pool_list = move |req: &mut Request| -> AranResult<Response> { _self.storage_pool_list(req) };
 
         let _self = self.clone();
-        let storage_pool_status_update = move |req: &mut Request| -> AranResult<Response> {
-            _self.storage_pool_status_update(req)
-        };
+        let storage_pool_status_update = move |req: &mut Request| -> AranResult<Response> { _self.storage_pool_status_update(req) };
 
         let _self = self.clone();
-        let storage_pool_by_connector = move |req: &mut Request| -> AranResult<Response> {
-            _self.storage_pool_by_connector(req)
-        };
+        let storage_pool_by_connector = move |req: &mut Request| -> AranResult<Response> { _self.storage_pool_by_connector(req) };
 
         let _self = self.clone();
-        let storagepool_show =
-            move |req: &mut Request| -> AranResult<Response> { _self.storagepool_show(req) };
+        let storagepool_show = move |req: &mut Request| -> AranResult<Response> { _self.storagepool_show(req) };
 
         //closures : datacenters
         let _self = self.clone();
-        let data_center_create =
-            move |req: &mut Request| -> AranResult<Response> { _self.data_center_create(req) };
+        let data_center_create = move |req: &mut Request| -> AranResult<Response> { _self.data_center_create(req) };
 
         let _self = self.clone();
-        let data_center_list =
-            move |req: &mut Request| -> AranResult<Response> { _self.data_center_list(req) };
+        let data_center_list = move |req: &mut Request| -> AranResult<Response> { _self.data_center_list(req) };
 
         let _self = self.clone();
-        let data_center_show =
-            move |req: &mut Request| -> AranResult<Response> { _self.data_center_show(req) };
+        let data_center_show = move |req: &mut Request| -> AranResult<Response> { _self.data_center_show(req) };
 
         let _self = self.clone();
-        let datacenter_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.datacenter_update(req) };
+        let datacenter_update = move |req: &mut Request| -> AranResult<Response> { _self.datacenter_update(req) };
 
         router.post(
             "/storageconnectors",
@@ -434,9 +435,7 @@ impl Api for StorageApi {
         );
         router.put(
             "/storageconnectors/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "storages_status_update",
         );
         router.put(
@@ -448,68 +447,50 @@ impl Api for StorageApi {
         //StoragePool API
         router.post(
             "/storagespool",
-            XHandler::new(C {
-                inner: storage_pool_create,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: storage_pool_create }).before(basic.clone()),
             "storages_pool",
         );
         router.get(
             "/storageconnectors/:id/storagespool",
-            XHandler::new(C {
-                inner: storage_pool_by_connector,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: storage_pool_by_connector }).before(basic.clone()),
             "storages_pool_show_by_connector",
         );
         router.get(
             "/storagespool",
-            XHandler::new(C {
-                inner: storage_pool_list,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: storage_pool_list }).before(basic.clone()),
             "storages_pool_list",
         );
         router.put(
             "/storagespool/:id/status",
-            XHandler::new(C {
-                inner: storage_pool_status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: storage_pool_status_update }).before(basic.clone()),
             "storages_pool_status_update",
         );
         router.get(
             "/storagespool/:id",
-            XHandler::new(C {
-                inner: storagepool_show,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: storagepool_show }).before(basic.clone()),
             "storagepool_show",
         );
 
         //DataCenter API
         router.post(
             "/datacenters",
-            XHandler::new(C {
-                inner: data_center_create,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: data_center_create }).before(basic.clone()),
             "data_center",
         );
         router.get(
             "/datacenters",
-            XHandler::new(C {
-                inner: data_center_list,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: data_center_list }).before(basic.clone()),
             "data_center_list",
         );
         router.get(
             "/datacenters/:id",
-            XHandler::new(C {
-                inner: data_center_show,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: data_center_show }).before(basic.clone()),
             "data_center_show",
         );
 
         router.put(
             "/datacenters/:id",
-            XHandler::new(C {
-                inner: datacenter_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: datacenter_update }).before(basic.clone()),
             "data_center_update",
         );
     }

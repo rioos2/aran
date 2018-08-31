@@ -115,6 +115,14 @@ SETOF data_centers AS $$
                   END
                   $$ LANGUAGE PLPGSQL STABLE;
 
+CREATE OR REPLACE FUNCTION get_data_center_by_name_v1(dc_name text) RETURNS
+SETOF data_centers AS $$
+                  BEGIN
+                    RETURN QUERY SELECT * FROM data_centers WHERE  object_meta ->> 'name' = dc_name;
+                    RETURN;
+                  END
+                  $$ LANGUAGE PLPGSQL STABLE;
+
 
 CREATE OR REPLACE FUNCTION update_datacenter_by_v1(dc_id bigint, dc_nodes text[], dc_networks text[], dc_enabled bool, dc_storage text, dc_advanced_settings JSONB, dc_flag text, dc_currency text, dc_status JSONB, dc_object_meta JSONB) RETURNS
 SETOF data_centers AS $$
