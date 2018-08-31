@@ -229,7 +229,7 @@ impl Into<node::OSUsages> for RangeResponse {
                     let mut item = node::Item::new();
                     item.set_id(
                         x.metric
-                            .get(METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID)
+                            .get(RIOOS_NAME)
                             .unwrap_or(&"none".to_string())
                             .to_owned(),
                     );

@@ -186,7 +186,6 @@ impl StorageDS {
                 return Ok(Some(dc));
             }
         }
-        exit(0);
         Ok(None)
     }
 
@@ -202,7 +201,6 @@ impl StorageDS {
                 return Ok(Some(data_center));
             }
         }
-        exit(0);
         Ok(None)
     }
 
