@@ -61,8 +61,8 @@ impl<'a> DataStore<'a> {
 
                 let id = team.get_id().parse::<i64>().unwrap();
                 let policies: Vec<String> = vec![MACHINE_VIEW.to_string(), CONTAINER_VIEW.to_string(),
-                                                    MACHINE_CREATE.to_string(), CONTAINER_CREATE.to_string(),
-                                                    MACHINE_DELETE.to_string(), CONTAINER_DELETE.to_string()];
+                                                 MACHINE_CREATE.to_string(), CONTAINER_CREATE.to_string(),
+                                                 MACHINE_DELETE.to_string(), CONTAINER_DELETE.to_string()];
 
 
                 for policy in policies {
