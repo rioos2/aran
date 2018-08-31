@@ -8,7 +8,7 @@ use error::{Error, Result};
 use protocol::api::authorize::Teams;
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
-use protocol::cache::{InMemoryExpander, PullFromCache, PULL_INVALDATED, PULL_DIRECTLY};
+use protocol::cache::{InMemoryExpander, PullFromCache, PULL_INVALDATED};
 use super::super::{TeamsOutput, TeamsOutputList};
 use db::data_store::DataStoreConn;
 use postgres;
@@ -16,6 +16,10 @@ use serde_json;
 
 const MACHINE_VIEW: &'static str = "MACHINE_VIEW";
 const CONTAINER_VIEW: &'static str = "CONTAINER_VIEW";
+const CONTAINER_CREATE: &'static str = "CONTAINER_CREATE";
+const MACHINE_CREATE: &'static str = "MACHINE_CREATE";
+const MACHINE_DELETE: &'static str = "MACHINE_DELETE";
+const CONTAINER_DELETE: &'static str = "CONTAINER_DELETE";
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -56,7 +60,9 @@ impl<'a> DataStore<'a> {
                 let team = self.collect_members(&row, PULL_INVALDATED)?;
 
                 let id = team.get_id().parse::<i64>().unwrap();
-                let policies: Vec<String> = vec![MACHINE_VIEW.to_string(), CONTAINER_VIEW.to_string()];
+                let policies: Vec<String> = vec![MACHINE_VIEW.to_string(), CONTAINER_VIEW.to_string(),
+                                                    MACHINE_CREATE.to_string(), CONTAINER_CREATE.to_string(),
+                                                    MACHINE_DELETE.to_string(), CONTAINER_DELETE.to_string()];
 
 
                 for policy in policies {
@@ -96,11 +102,11 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn show_by_fascade(&self, id: IdGet) -> Teams {
+    pub fn show_by_fascade(&self, id: IdGet, how_to: PullFromCache) -> Teams {
         let mut team = Teams::new();
         team.set_id(id.get_id());
-        self.expander.with_teams(&mut team, PULL_INVALDATED);
-        self.expander.with_policy_members(&mut team, PULL_INVALDATED);
+        self.expander.with_teams(&mut team, how_to);
+        self.expander.with_policy_members(&mut team, how_to);       
         team
     }
 

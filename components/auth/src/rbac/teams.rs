@@ -5,6 +5,7 @@ use db::data_store::DataStoreConn;
 use protocol;
 use protocol::api::authorize::Teams;
 use protocol::api::base::IdGet;
+use protocol::cache::PULL_DIRECTLY;
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_TEAM, CACHE_PREFIX_POLICY_MEMBER};
 use auth::models::{team, policy_members};
 use serde_json;
@@ -25,7 +26,7 @@ impl TeamsFascade {
     }
 
      pub fn get_by_id(&self, team_id: IdGet) -> Teams {
-        team::DataStore::new(&self.conn).show_by_fascade(team_id)
+        team::DataStore::new(&self.conn).show_by_fascade(team_id, PULL_DIRECTLY)
     }
 }
 

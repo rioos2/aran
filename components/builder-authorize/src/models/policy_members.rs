@@ -8,7 +8,7 @@ use error::{Error, Result};
 use protocol::api::authorize::PolicyMembers;
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
-use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY};
+use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
 use super::super::{PolicyMembersOutput, PolicyMembersOutputList};
 use db::data_store::DataStoreConn;
 use super::team;
@@ -67,7 +67,7 @@ impl<'a> DataStore<'a> {
                 match member.get_metadata().get(&"team".to_string()) {
                     Some(team) => {                       
                         let team_id = IdGet::with_id(team.to_string());
-                        let _teams = team::DataStore::new(self.db).show(&team_id);
+                        let _teams = team::DataStore::new(self.db).show_by_fascade(team_id, PULL_INVALDATED);
                     },
                     None => {}
                 }

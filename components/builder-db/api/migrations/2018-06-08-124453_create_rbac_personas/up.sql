@@ -78,6 +78,16 @@ VALUES
          'Edit access for assembly resource.'
    )
 ,
+   (
+(
+      SELECT
+         id
+      FROM
+         first_insert),
+         'LICENSES.GET',
+         'Read access for license resource.'
+   )
+,
 (
   (
    SELECT
