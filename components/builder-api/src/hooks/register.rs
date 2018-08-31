@@ -22,7 +22,7 @@ pub const CAPACITY_MEMORY: &'static str = "memory";
 pub const CAPACITY_STORAGE: &'static str = "storage";
 
 const INTERNAL_TYPE: &'static str = "InternalIP";
-const EXTERNAL_TYPE: &'static str = "ExternalIp";
+const EXTERNAL_TYPE: &'static str = "ExternalIP";
 
 pub struct Sensei {
     conn: Box<DataStoreConn>,
