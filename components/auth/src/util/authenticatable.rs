@@ -1,4 +1,3 @@
-
 // Copyright 2018 The Rio Advancement Inc
 
 //Authenticatable enum helps for various of authentication types
@@ -10,24 +9,34 @@
 //                   password: "sdkjfhkj",
 //                };
 //let auth = delegate.authenticate(&auth_enum);
-use rbac::authorizer::RoleType;
+use rbac::authorizer::{AccountType, AccountNames};
 use std::path::PathBuf;
-
-const PERMISSION_BY_EMAIL: &'static str = "get_permission_by_email_v1";
-const PERMISSION_BY_SERVICE_ACCOUNT: &'static str = "get_permission_by_service_account_v1";
-
 
 #[derive(Debug, Clone)]
 pub enum Authenticatable {
-    UserAndPass { username: String, password: String },
-    UserEmailAndToken { email: String, token: String },
-    UserEmailAndWebtoken { email: String, webtoken: String },
+    UserAndPass {
+        username: String,
+        password: String,
+    },
+    UserEmailAndToken {
+        email: String,
+        token: String,
+        team_id: String,
+        org_id: String,
+        account_id: String,
+    },
+    UserEmailAndWebtoken {
+        email: String,
+        webtoken: String,
+    },
     ServiceAccountNameAndWebtoken {
         name: String,
         webtoken: String,
         key: PathBuf,
     },
-    PassTicket { token: String },
+    PassTicket {
+        token: String,
+    },
 }
 
 pub trait ToAuth {
@@ -41,7 +50,7 @@ impl ToAuth for Authenticatable {
         match *self {
             Authenticatable::UserAndPass {
                 username: ref u,
-                password: ref p,
+                password: ref p,                
             } => Authenticatable::UserAndPass {
                 username: u.to_string(),
                 password: p.to_string(),
@@ -49,9 +58,15 @@ impl ToAuth for Authenticatable {
             Authenticatable::UserEmailAndToken {
                 email: ref u,
                 token: ref p,
+                team_id: ref t,
+                org_id: ref o,
+                account_id: ref a,
             } => Authenticatable::UserEmailAndToken {
                 email: u.to_string(),
                 token: p.to_string(),
+                team_id: t.to_string(),
+                org_id: o.to_string(),
+                account_id: a.to_string(),
             },
             Authenticatable::UserEmailAndWebtoken {
                 email: ref u,
@@ -69,37 +84,42 @@ impl ToAuth for Authenticatable {
                 webtoken: p.to_string(),
                 key: k.to_path_buf(),
             },
-            Authenticatable::PassTicket { token: ref t } => Authenticatable::PassTicket { token: t.to_string() },
+            Authenticatable::PassTicket { token: ref t } => Authenticatable::PassTicket {
+                token: t.to_string(),
+            },
         }
     }
 }
 
-//convert the Authenticatable into RoleType
-impl Into<RoleType> for Authenticatable {
-    fn into(self) -> RoleType {
+//convert the Authenticatable into TeamType
+impl Into<AccountType> for Authenticatable {
+    fn into(self) -> AccountType {
         match self {
-            Authenticatable::UserAndPass {
-                username: ref u,
-                password: ref _p,
-            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+             Authenticatable::UserAndPass {
+                 username: ref u,
+                 password: ref _p,
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT, "".to_string(), "".to_string(), "".to_string()),
 
             Authenticatable::ServiceAccountNameAndWebtoken {
                 name: ref u,
                 webtoken: ref _p,
                 key: ref _k,
-            } => RoleType::new(u.to_string(), PERMISSION_BY_SERVICE_ACCOUNT),
+            } => AccountType::new(u.to_string(), AccountNames::SERVICEACCOUNT, "".to_string(), "".to_string(), "".to_string()),
 
-            Authenticatable::UserEmailAndToken {
+             Authenticatable::UserEmailAndToken {
                 email: ref u,
                 token: ref _p,
-            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+                team_id: ref t,
+                org_id: ref o,
+                account_id: ref a,
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT, t.to_string(), o.to_string(), a.to_string()),
 
-            Authenticatable::UserEmailAndWebtoken {
-                email: ref u,
-                webtoken: ref _p,
-            } => RoleType::new(u.to_string(), PERMISSION_BY_EMAIL),
+             Authenticatable::UserEmailAndWebtoken {
+                 email: ref u,
+                 webtoken: ref _p,
+             } => AccountType::new(u.to_string(), AccountNames::USERACCOUNT, "".to_string(), "".to_string(), "".to_string()),
 
-            _ => RoleType::new("".to_string(), ""),
+            _ => AccountType::new("".to_string(), AccountNames::NONE, "".to_string(), "".to_string(), "".to_string()),
         }
     }
 }

@@ -6,16 +6,16 @@
 //! As deployments are running, their secret is stored in a storge.
 
 pub mod local;
-pub mod vault;
 pub mod parse;
+pub mod vault;
 
 use db::data_store::DataStoreConn;
 use error::Result;
-use protocol::api::secret::Secret;
-use rio_net::http::middleware::SecurerConn;
-use rio_net::config::SecureBackend;
-use service::{SecretOutput, SecretOutputList};
 use protocol::api::base::IdGet;
+use protocol::api::secret::Secret;
+
+use api::security::config::{SecureBackend, SecurerConn};
+use service::{SecretOutput, SecretOutputList};
 
 /// Currently implemented securer backends
 

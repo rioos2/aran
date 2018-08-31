@@ -5,12 +5,10 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
-extern crate handlebars;
 extern crate rioos_api_client as api_client;
 extern crate rioos_builder_apimachinery as protocol;
 extern crate rioos_common as common;
 extern crate rioos_core;
-extern crate rioos_net as rio_net;
 
 #[macro_use]
 extern crate clap;
@@ -22,11 +20,11 @@ extern crate prettytable;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate base64;
+extern crate serde_json;
+extern crate serde_yaml;
 extern crate toml;
 extern crate url;
-extern crate serde_yaml;
-extern crate serde_json;
-
 
 #[macro_use]
 extern crate lazy_static;
@@ -38,6 +36,7 @@ pub mod error;
 
 pub const PRODUCT: &'static str = "rioos";
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/VERSION"));
+
 pub const AUTH_TOKEN_ENVVAR: &'static str = "RIO_AUTH_TOKEN";
 pub const AUTH_EMAIL_ENVVAR: &'static str = "RIO_AUTH_EMAIL";
 pub const ORIGIN_ENVVAR: &'static str = "RIO_ORIGIN";

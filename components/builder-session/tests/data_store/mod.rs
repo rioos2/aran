@@ -1,7 +1,7 @@
-use protocol::{sessionsrv, servicesrv, asmsrv, originsrv, constants};
 use db::data_store::DataStoreConn;
-use session::models::session;
+use protocol::{asmsrv, constants, originsrv, servicesrv, sessionsrv};
 use rand;
+use session::models::session;
 const ORIGIN: &'static str = "Origin";
 
 #[test]
@@ -20,7 +20,7 @@ fn create_account() {
     account_create.set_states("true".to_string());
     account_create.set_suspend("suapendes".to_string());
     account_create.set_approval("approve".to_string());
-    account_create.set_roles(vec!["role/rioos:superuser".to_string()]);
+    account_create.set_teams(vec!["rioos:superuser".to_string()]);
     account_create.set_registration_ip_address("192.1.1.1".to_string());
     account_create.set_trust_level("platinum".to_string());
 

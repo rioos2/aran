@@ -1,18 +1,17 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::str;
-use std::collections::BTreeMap;
-use base64;
-use std::path::PathBuf;
-use serde_json;
-use util::jwt::{decode_segments, decode};
-use rioos;
 use super::super::error::{self, Result};
-use protocol::api::base::IdGet;
-use secret::secret_ds::SecretDS;
-use util::jwt::{Algorithm, decode_direct};
-
+use base64;
 use db::data_store::DataStoreConn;
+use protocol::api::base::IdGet;
+use rioos;
+use secret::models::secret;
+use serde_json;
+use std::collections::BTreeMap;
+use std::path::PathBuf;
+use std::str;
+use util::jwt::{decode, decode_segments};
+use util::jwt::{decode_direct, Algorithm};
 
 const ISSUERCLAIM: &'static str = "iss";
 const SECRETPUBKEY: &'static str = "rioos_sh/ssh_pubkey";
@@ -34,24 +33,26 @@ impl JWTAuthenticator {
         let parsed_token_data = decode_segments(&token.clone());
         match parsed_token_data {
             Ok(payload_string) => {
-                let payload_claims: BTreeMap<String, String> = match serde_json::from_value(payload_string.1) {
-                    Ok(v) => v,
-                    Err(err) => {
-                        return Err(error::Error::Auth(rioos::AuthErr {
-                            error: format!("Couldn't parse JWT payload claims."),
-                            error_description: format!("{}", err),
-                        }))
-                    }
-                };
-                let header_claims: BTreeMap<String, String> = match serde_json::from_value(payload_string.0) {
-                    Ok(v) => v,
-                    Err(err) => {
-                        return Err(error::Error::Auth(rioos::AuthErr {
-                            error: format!("Couldn't parse JWT header claims."),
-                            error_description: format!("{}", err),
-                        }))
-                    }
-                };
+                let payload_claims: BTreeMap<String, String> =
+                    match serde_json::from_value(payload_string.1) {
+                        Ok(v) => v,
+                        Err(err) => {
+                            return Err(error::Error::Auth(rioos::AuthErr {
+                                error: format!("Couldn't parse JWT payload claims."),
+                                error_description: format!("{}", err),
+                            }))
+                        }
+                    };
+                let header_claims: BTreeMap<String, String> =
+                    match serde_json::from_value(payload_string.0) {
+                        Ok(v) => v,
+                        Err(err) => {
+                            return Err(error::Error::Auth(rioos::AuthErr {
+                                error: format!("Couldn't parse JWT header claims."),
+                                error_description: format!("{}", err),
+                            }))
+                        }
+                    };
 
                 return Ok(JWTAuthenticator {
                     token: token,
@@ -103,7 +104,9 @@ impl JWTAuthenticator {
         let account_name = self.payload.get(claim).unwrap();
         if account_name.is_empty() {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!("Must have an account name[email/service account name] in the claim "),
+                error: format!(
+                    "Must have an account name[email/service account name] in the claim "
+                ),
                 error_description: format!(""),
             }));
         }
@@ -153,7 +156,11 @@ impl JWTAuthenticator {
     // first get secret public key from database using secret_uid claim
     // then decode JWT token using public key, it is valid then returns true
     // otherwise it returns false
-    pub fn has_correct_token_from_secret(&self, datastore: &DataStoreConn, secret_claim: &str) -> Result<bool> {
+    pub fn has_correct_token_from_secret(
+        &self,
+        datastore: &DataStoreConn,
+        secret_claim: &str,
+    ) -> Result<bool> {
         let secret_id = match self.parse_secret_uid(secret_claim) {
             Ok(sid) => sid,
             Err(e) => {
@@ -164,7 +171,7 @@ impl JWTAuthenticator {
             }
         };
         let params = IdGet::with_id(secret_id.to_string().clone());
-        let secret = match SecretDS::show(datastore, &params) {
+        let secret = match secret::DataStore::show(datastore, &params) {
             Ok(s) => s,
             Err(e) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
@@ -199,12 +206,12 @@ impl JWTAuthenticator {
     }
 
     // this function decode JWT token using public key url
-    pub fn has_correct_token_from_path(&self, key_path: PathBuf) -> Result<bool> {       
+    pub fn has_correct_token_from_path(&self, key_path: PathBuf) -> Result<bool> {
         let token_data = decode(&self.token.clone(), &key_path, Algorithm::RS256);
 
         match token_data {
             Ok(_t) => return Ok(true),
-            Err(err) => {               
+            Err(err) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
                     error: format!("JWT bearer token is invalid."),
                     error_description: format!("{:?}", err),

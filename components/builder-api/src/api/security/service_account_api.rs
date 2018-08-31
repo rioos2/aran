@@ -1,32 +1,28 @@
-use std::sync::Arc;
+// Copyright 2018 The Rio Advancement Inc
+//
 
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use auth::rbac::BUILTIN_TEAM_RIOOS_UNIVERSALSOLDIER;
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use bytes::Bytes;
 use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-use protocol::api::service_account::ServiceAccount;
-use protocol::api::base::{IdGet, MetaFields};
-use service::service_account_ds::ServiceAccountDS;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::schema::{dispatch, type_meta};
+use protocol::api::service_account::ServiceAccount;
+use router::Router;
 use serde_json;
-const SERVICEACCOUNTDEFAULT: &'static str = "rioos:universalsoldier";
-
+use service::models::service_account;
+use authorize::models::team;
+use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
 /// and manage them.
@@ -46,7 +42,6 @@ impl SeriveAccountApi {
         SeriveAccountApi { conn: datastore }
     }
 
-
     //POST: /origins/:origin_id/serviceaccount
 
     //The body has the input cluster::serviceaccount
@@ -55,10 +50,7 @@ impl SeriveAccountApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<ServiceAccount>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<ServiceAccount>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -66,28 +58,28 @@ impl SeriveAccountApi {
             unmarshall_body.get_account(),
         );
 
-
         unmarshall_body.set_meta(type_meta(req), m);
-        unmarshall_body.set_roles(vec![SERVICEACCOUNTDEFAULT.to_string()]);
+        unmarshall_body.set_teams(vec![BUILTIN_TEAM_RIOOS_UNIVERSALSOLDIER.to_string()]);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match ServiceAccountDS::create(&self.conn, &unmarshall_body) {
+        match service_account::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(Some(service)) => Ok(render_json(status::Ok, &service)),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
             Err(err) => Err(internal_error(&format!("{}", err))),
         }
     }
+
     //GET: /serviceaccount
     //Blank origin: Returns all the serviceaccount(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match ServiceAccountDS::list_blank(&self.conn) {
-            Ok(Some(service_list)) => Ok(render_json_list(status::Ok, dispatch(req), &service_list)),
+        match service_account::DataStore::list_blank(&self.conn) {
+            Ok(Some(service_list)) => {
+                Ok(render_json_list(status::Ok, dispatch(req), &service_list))
+            }
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
@@ -96,34 +88,27 @@ impl SeriveAccountApi {
     //GET: /serviceaccount/:id
     //Input id - u64 as input and returns a serviceaccount
     fn show(&self, req: &mut Request) -> AranResult<Response> {
-        let (org, name) = {
+        let name = {
             let params = req.extensions.get::<Router>().unwrap();
-            //  let org_name = params.find("origin_id").unwrap().to_owned();
-            let org_name = "".to_string();
             let ser_name = params.find("serviceaccount").unwrap().to_owned();
-            (org_name, ser_name)
+            ser_name
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
-            format!("======= parsed {:?}{} ", org, name),
-        );
-        let mut id = IdGet::with_id(name.clone().to_string());
-        id.set_name(org.clone().to_string());
-        match ServiceAccountDS::show(&self.conn, &id) {
+        debug!("✓ {}", format!("======= parsed {:?} ", name));
+        match service_account::DataStore::show(&self.conn, &IdGet::with_id(name.clone().to_string())) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(
-                &format!("{} for {}", Error::Db(RecordsNotFound), name),
-            )),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                name
+            ))),
         }
     }
 
     ///PUT: /origins/:origin_id/serviceaccount/:serviceaccount
     ///Input: new updated secret
     fn secret_update(&self, req: &mut Request) -> AranResult<Response> {
-
         let (_org, name) = {
             let params = req.extensions.get::<Router>().unwrap();
             let org_name = params.find("origin_id").unwrap().to_owned();
@@ -131,9 +116,7 @@ impl SeriveAccountApi {
             (org_name, ser_name)
         };
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<ServiceAccount>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<ServiceAccount>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -143,7 +126,7 @@ impl SeriveAccountApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match ServiceAccountDS::update(&self.conn, &unmarshall_body) {
+        match service_account::DataStore::update(&self.conn, &unmarshall_body) {
             Ok(Some(serviceaccount)) => Ok(render_json(status::Ok, &serviceaccount)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -159,7 +142,7 @@ impl SeriveAccountApi {
     //Returns an serviceaccount
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match ServiceAccountDS::show_by_id(&self.conn, &idget) {
+        let res = match service_account::DataStore::show_by_id(&self.conn, &idget) {
             Ok(Some(sa)) => {
                 let data = json!({
                             "type": typ,
@@ -191,11 +174,12 @@ impl Api for SeriveAccountApi {
         let show_by_origin = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let secret_update = move |req: &mut Request| -> AranResult<Response> { _self.secret_update(req) };
+        let secret_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.secret_update(req) };
 
         //serviceAccount API
         router.post(
-            "/origins/:origin_id/serviceaccounts",
+            "/serviceaccounts",
             XHandler::new(C { inner: create }),
             "service_accounts",
         );
@@ -205,14 +189,18 @@ impl Api for SeriveAccountApi {
             "service_account_list",
         );
         router.get(
-            "/origins/:origin_id/serviceaccounts/:serviceaccount",
-            C { inner: show_by_origin },
+            "/serviceaccounts/:serviceaccount/origins/:origin_id",
+            C {
+                inner: show_by_origin,
+            },
             "service_account_get_by_origin",
         );
 
         router.put(
-            "/origins/:origin_id/serviceaccounts/:serviceaccount",
-            C { inner: secret_update },
+            "/serviceaccounts/:serviceaccount/origins/:origin_id",
+            C {
+                inner: secret_update,
+            },
             "service_account_secret_update",
         );
 

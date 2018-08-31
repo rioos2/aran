@@ -2,37 +2,32 @@
 
 //! A collection of deployment [assembly, assembly_factory, for the HTTP server
 
-use std::sync::Arc;
-
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier, QueryValidator};
-use rio_net::http::schema::{dispatch, type_meta};
+use bytes::Bytes;
+use clusters::models::healthz::DataStore;
 use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::metrics::prometheus::PrometheusClient;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::models::assembly;
-use scale::{verticalscaling_ds, scaling};
-use nodesrv::node_ds::NodeDS;
-use deploy::replicas_expander::ReplicasExpander;
-
-use protocol::api::scale::{VerticalScaling, VerticalScalingStatusUpdate};
-use protocol::api::base::{MetaFields, IdGet};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::models::{assembly, assemblyfactory, blueprint};
+use deploy::replicas_expander::ReplicasExpander;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::scale::{VerticalScaling, VerticalScalingStatusUpdate};
+use protocol::api::schema::{dispatch, type_meta};
+
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_METRIC, CACHE_PREFIX_FACTORY, CACHE_PREFIX_PLAN};
+use router::Router;
+use scale::{scaling, models};
 use serde_json;
+use std::sync::Arc;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 #[derive(Clone)]
 pub struct VerticalScalingApi {
@@ -71,13 +66,11 @@ impl VerticalScalingApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match verticalscaling_ds::DataStore::new(&self.conn).create(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -94,7 +87,7 @@ impl VerticalScalingApi {
         )?;
         unmarshall_body.set_id(params.get_id());
 
-        match verticalscaling_ds::DataStore::new(&self.conn).status_update(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(vs_update)) => Ok(render_json(status::Ok, &vs_update)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -115,7 +108,7 @@ impl VerticalScalingApi {
         )?;
         unmarshall_body.set_id(params.get_id());
 
-        match verticalscaling_ds::DataStore::new(&self.conn).update(&unmarshall_body) {
+        match models::verticalscaling::DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(vertical)) => Ok(render_json(status::Ok, &vertical)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -131,7 +124,7 @@ impl VerticalScalingApi {
     //Returns an verticalscaling
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match verticalscaling_ds::DataStore::new(&self.conn).show(&idget) {
+        let res = match models::verticalscaling::DataStore::new(&self.conn).show(&idget) {
             Ok(Some(vertical)) => {
                 let data = json!({
                             "type": typ,
@@ -147,7 +140,7 @@ impl VerticalScalingApi {
     //verticalscaling
     //Global: Returns all the verticalScalings (irrespective of origins)
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match verticalscaling_ds::DataStore::new(&self.conn).list_blank() {
+        match models::verticalscaling::DataStore::new(&self.conn).list_blank() {
             Ok(Some(vertical)) => Ok(render_json_list(status::Ok, dispatch(req), &vertical)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -175,15 +168,17 @@ impl VerticalScalingApi {
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn scale(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-        match verticalscaling_ds::DataStore::new(&self.conn).show(&params) {
+        match models::verticalscaling::DataStore::new(&self.conn).show(&params) {
             Ok(Some(vs)) => {
-                let af_id: Vec<IdGet> = vs.get_owner_references()
-                    .iter()
-                    .map(|x| IdGet::with_id(x.uid.to_string()))
-                    .collect::<Vec<_>>();
-                match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&af_id[0]) {
+                let id_get = IdGet::with_id(
+                    vs.get_owner_references()
+                        .iter()
+                        .map(|x| x.get_uid().to_string())
+                        .collect::<String>(),
+                );
+                match assembly::DataStore::new(&self.conn).show_by_assemblyfactory(&id_get) {
                     Ok(Some(assemblys)) => {
-                        let metrics = NodeDS::healthz_all(&self.prom)?;
+                        let metrics = DataStore::new(&self.conn, &self.prom).healthz_all()?;
                         match ReplicasExpander::new(&self.conn, assemblys, metrics, &vs).expand() {
                             Ok(Some(job)) => Ok(render_json(status::Ok, &job)),
                             Err(err) => Err(internal_error(&format!("{}\n", err))),
@@ -217,6 +212,7 @@ impl Api for VerticalScalingApi {
         let basic = Authenticated::new(&*config);
 
         //closures : scaling
+        self.with_cache();
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
@@ -258,17 +254,60 @@ impl Api for VerticalScalingApi {
         );
 
         router.get(
-            "/verticalscaling/scale/:id",
+            "/verticalscaling/:id/scale",
             XHandler::new(C { inner: scale }).before(basic.clone()),
             "verticalscaling_scale",
         );
         router.get(
-            "/verticalscaling/:id/metrics",
+            "/metrics/verticalscaling/:id",
             XHandler::new(C { inner: metrics }).before(basic.clone()),
             "vertical_scaling_metrics",
         );
     }
 }
+
+impl ExpanderSender for VerticalScalingApi {
+    fn with_cache(&mut self) {
+        let _conn = self.conn.clone();
+        let plan_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_PLAN.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Planfactory live load for ≈ {}", id);
+                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
+                    serde_json::to_string(&p).ok()
+                })
+            }),
+        ));
+
+        let mut _conn = self.conn.clone();
+        _conn.expander.with(plan_service.clone());
+        let factory_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_FACTORY.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Assemblyfactory live load for ≈ {}", id);
+                assemblyfactory::DataStore::new(&_conn)
+                    .show(&id)
+                    .ok()
+                    .and_then(|f| serde_json::to_string(&f).ok())
+            }),
+        ));
+
+        let _conn = self.conn.clone();
+        let _prom = self.prom.clone();
+        let metric_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_METRIC.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                assembly::DataStore::new(&_conn)
+                    .show_metrics(&id, &_prom)
+                    .ok()
+                    .and_then(|m| serde_json::to_string(&m).ok())
+            }),
+        ));
+        &self.conn.expander.with(factory_service);
+        &self.conn.expander.with(metric_service);
+    }
+}
+
 
 ///We say verticalscalingAPI resource needs to be validated.
 impl ApiValidator for VerticalScalingApi {}
@@ -278,7 +317,6 @@ impl ParmsVerifier for VerticalScalingApi {}
 
 ///verify the quer params
 impl QueryValidator for VerticalScalingApi {}
-
 
 ///Plugin in a Validator for verticalscaling structure
 ///For now we don't validate anything.

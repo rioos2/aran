@@ -1,12 +1,16 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
+
+use db;
+use ipnet;
+use oping;
 use postgres;
 use std::error;
 use std::fmt;
+use std::net;
 use std::result;
-use db;
-use rio_net;
+use telemetry;
 
 #[derive(Debug)]
 pub enum Error {
@@ -15,7 +19,13 @@ pub enum Error {
     NodeList(postgres::error::Error),
     NodeSetStatus(postgres::error::Error),
     NodeGet(postgres::error::Error),
-    PromoStatusGetError(rio_net::Error),
+    NodeUpdate(postgres::error::Error),
+    PromoStatusGetError(telemetry::error::Error),
+    PingError(oping::PingError),
+    SenseiCreate(postgres::error::Error),
+    SenseiGet(postgres::error::Error),
+    NetworkError(net::AddrParseError),
+    IpNetworkError(ipnet::AddrParseError),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -28,7 +38,13 @@ impl fmt::Display for Error {
             Error::NodeList(ref e) => format!("Database error list nodes, {}", e),
             Error::NodeSetStatus(ref e) => format!("Database error update node status, {}", e),
             Error::NodeGet(ref e) => format!("Database error get node , {}", e),
+            Error::NodeUpdate(ref e) => format!("Database error update node , {}", e),
             Error::PromoStatusGetError(ref e) => format!("Prometheus connection refused , {}", e),
+            Error::PingError(ref e) => format!("PingError , {}", e),
+            Error::SenseiCreate(ref e) => format!("Database error creating a Sensei, {}", e),
+            Error::SenseiGet(ref e) => format!("Database error get sensei , {}", e),
+            Error::NetworkError(ref e) => format!("Address Parsing Error, {}", e),
+            Error::IpNetworkError(ref e) => format!("Address Parsing Error, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -40,9 +56,15 @@ impl error::Error for Error {
             Error::Db(ref err) => err.description(),
             Error::NodeCreate(ref err) => err.description(),
             Error::NodeList(ref err) => err.description(),
+            Error::NodeUpdate(ref err) => err.description(),
             Error::NodeSetStatus(ref err) => err.description(),
             Error::NodeGet(ref err) => err.description(),
             Error::PromoStatusGetError(ref err) => err.description(),
+            Error::PingError(ref err) => err.description(),
+            Error::SenseiCreate(ref err) => err.description(),
+            Error::SenseiGet(ref err) => err.description(),
+            Error::NetworkError(ref err) => err.description(),
+            Error::IpNetworkError(ref err) => err.description(),
         }
     }
 }
@@ -52,8 +74,26 @@ impl From<db::error::Error> for Error {
         Error::Db(err)
     }
 }
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
+impl From<telemetry::error::Error> for Error {
+    fn from(err: telemetry::error::Error) -> Error {
         Error::PromoStatusGetError(err)
+    }
+}
+
+impl From<oping::PingError> for Error {
+    fn from(err: oping::PingError) -> Error {
+        Error::PingError(err)
+    }
+}
+
+impl From<net::AddrParseError> for Error {
+    fn from(err: net::AddrParseError) -> Error {
+        Error::NetworkError(err)
+    }
+}
+
+impl From<ipnet::AddrParseError> for Error {
+    fn from(err: ipnet::AddrParseError) -> Error {
+        Error::IpNetworkError(err)
     }
 }

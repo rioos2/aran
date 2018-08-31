@@ -1,27 +1,32 @@
 // Sets up the framework
 import "./helpers";
-import "./settingsmap";
 import "./auth";
+// import "./package";
+// import "./marketplace";
+//
+import "./license";
 // import "./origin";
-// import "./team";
-import "./roles";
+import "./teams";
 import "./permissions";
+import "./settingsmap";
 import "./secrets";
 import "./serviceaccount";
-import "./ldap";
-import "./saml";
-import "./oidc";
+// import "./ldap";
+// import "./saml";
+// import "./oidc";
 import "./plan";
 import "./node";
 import "./networks";
 import "./storage";
 import "./storagepool";
 import "./datacenter";
+import "./stacksfactory";
 import "./assembly_fac";
 import "./assembly";
 import "./service";
 import "./endpoints";
 import "./scaling";
+import "./ingress";
 import "./job";
 import "./volume";
 import "./vertical_scaling";

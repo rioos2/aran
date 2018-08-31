@@ -2,18 +2,18 @@
 
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 
+
+use super::{DatacenterOutput, DatacenterOutputList, StorageConnectorOutput, StorageConnectorOutputList, StoragePoolOutput, StoragePoolOutputList};
 use chrono::prelude::*;
-use error::{Result, Error};
-
-use protocol::api::storage;
-use protocol::api::base::{IdGet, StatusUpdate, MetaFields};
-
-use postgres;
 use db::data_store::DataStoreConn;
+use error::{Error, Result};
+use postgres;
+
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::storage;
 
 use serde_json;
-
-use super::{StorageConnectorOutput, StorageConnectorOutputList, DatacenterOutput, DatacenterOutputList, StoragePoolOutput, StoragePoolOutputList};
+use std::process::exit;
 
 pub struct StorageDS;
 
@@ -186,9 +186,25 @@ impl StorageDS {
                 return Ok(Some(dc));
             }
         }
+        exit(0);
         Ok(None)
     }
 
+    pub fn data_center_show_by_name(datastore: &DataStoreConn, dc: &storage::DataCenter) -> DatacenterOutput {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_data_center_by_name_v1($1)",
+            &[&(dc.get_name() as String)],
+        ).map_err(Error::StorageGet)?;
+        if rows.len() > 0 {
+            for row in rows {
+                let data_center = row_to_dc(&row)?;
+                return Ok(Some(data_center));
+            }
+        }
+        exit(0);
+        Ok(None)
+    }
 
     pub fn datacenter_update(datastore: &DataStoreConn, dc: &storage::DataCenter) -> DatacenterOutput {
         let conn = datastore.pool.get_shard(0)?;
@@ -281,7 +297,6 @@ impl StorageDS {
         }
         Ok(None)
     }
-
 
     pub fn storage_pool_status_update(datastore: &DataStoreConn, upd: &StatusUpdate) -> StoragePoolOutput {
         let conn = datastore.pool.get_shard(0)?;

@@ -1,18 +1,19 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-use std::error;
-use std::io;
-use std::fmt;
-use std::result;
 
-use rio_core;
 use reqwest;
+use rio_core;
 use serde_json;
+use std::error;
+use std::fmt;
+use std::io;
+use std::result;
 use url;
 
 #[derive(Debug)]
 pub enum Error {
+    APIError(reqwest::StatusCode, String),
     RioosAranCore(rio_core::Error),
     ReqwestError(reqwest::Error),
     /// Occurs when an improper http or https proxy value is given.
@@ -29,6 +30,8 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::RioosAranCore(ref e) => format!("{}", e),
+            Error::APIError(ref c, ref m) if m.len() > 0 => format!("[{}] {}", c, m),
+            Error::APIError(ref c, _) => format!("[{}]", c),
             Error::ReqwestError(ref err) => format!("{}", err),
             Error::Json(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
@@ -42,6 +45,7 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
+            Error::APIError(_, _) => "Received a non-2XX response code from API",
             Error::RioosAranCore(ref err) => err.description(),
             Error::ReqwestError(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
@@ -73,5 +77,11 @@ impl From<io::Error> for Error {
 impl From<url::ParseError> for Error {
     fn from(err: url::ParseError) -> Self {
         Error::UrlParseError(err)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Error {
+        Error::Json(err)
     }
 }

@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
+use db;
 use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use db;
 
 #[derive(Debug)]
 pub enum Error {
@@ -34,11 +34,18 @@ impl fmt::Display for Error {
             Error::StorageSetStatus(ref e) => format!("Database error updating the storage, {}", e),
             Error::DcCreate(ref e) => format!("Database error creating a data_center, {}", e),
             Error::DcGetResponse(ref e) => format!("Database error list data_center, {}", e),
-            Error::StoragePoolCreate(ref e) => format!("Database error creating a storage pool, {}", e),
-            Error::StoragePoolGetResponse(ref e) => format!("Database error list storages pool, {}", e),
-            Error::StoragePoolSetStatus(ref e) => format!("Database error for storages pool status update, {}", e),
-            Error::DatacenterUpdate(ref e) => format!("Database error for datacenter update, {}", e),
-
+            Error::StoragePoolCreate(ref e) => {
+                format!("Database error creating a storage pool, {}", e)
+            }
+            Error::StoragePoolGetResponse(ref e) => {
+                format!("Database error list storages pool, {}", e)
+            }
+            Error::StoragePoolSetStatus(ref e) => {
+                format!("Database error for storages pool status update, {}", e)
+            }
+            Error::DatacenterUpdate(ref e) => {
+                format!("Database error for datacenter update, {}", e)
+            }
         };
         write!(f, "{}", msg)
     }

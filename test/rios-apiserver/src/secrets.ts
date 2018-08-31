@@ -7,7 +7,7 @@ const request = supertest.agent(globalAny.apiServer);
 describe('secrets  API', function() {
 
   it('returns the created secrets', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/secrets')
+    request.post('/secrets')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -21,7 +21,7 @@ describe('secrets  API', function() {
       });
   });
   it('returns all secrets', function(done) {
-    request.get('/secrets')
+    request.get('/secrets/all')
     .ca(globalAny.rootCA)
     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .set('Authorization', globalAny.bobo_bearer)
@@ -44,7 +44,7 @@ describe('secrets  API', function() {
   });
 
   it('returns all secrets account based', function(done) {
-    request.get('/accounts/'+globalAny.account_id+'/secrets')
+    request.get('/secrets')
     .ca(globalAny.rootCA)
     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .set('Authorization', globalAny.bobo_bearer)
@@ -56,7 +56,7 @@ describe('secrets  API', function() {
   });
 
   it('returns Bad Request error for secret_type is empty', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/secrets')
+    request.post('/secrets')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -70,7 +70,7 @@ describe('secrets  API', function() {
   });
 
   it('returns  Bad Request error for ObjectMeta name is empty', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/secrets')
+    request.post('/secrets')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -85,7 +85,7 @@ describe('secrets  API', function() {
 
 
   it('returns internal error if no secret type match', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/secrets')
+    request.post('/secrets')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -99,7 +99,7 @@ describe('secrets  API', function() {
   });
 
   it('returns malformed error  if no secret type field', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/secrets')
+    request.post('/secrets')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -107,17 +107,6 @@ describe('secrets  API', function() {
       "type_meta":{"kind":"Secret","api_version":"v1"},
       "object_meta": {"name":"sdfg","account":globalAny.account_id}})
       .expect(400)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
-
-  it('returns 404 error for secret get by account', function(done) {
-    request.get('/accounts/1234567/secrets')
-    .ca(globalAny.rootCA)
-      .set('Authorization', globalAny.bobo_bearer)
-      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .expect(404)
       .end(function(err, res) {
         done(err);
       });
@@ -135,7 +124,7 @@ describe('secrets  API', function() {
   });
 
   it('returns the unauthorized error created secrets', function(done) {
-    request.post('/accounts/'+globalAny.account_id+'/secrets')
+    request.post('/secrets')
     .ca(globalAny.rootCA)
       .send({"secret_type": "opaque","metadata":{"origin":"rioos_system"},"data": {"username": "USERNAME","password": "PASSWORD","rsa_key": "PRIVATEKEY","rsa_pub": "PUBLICKEY","tls_key": "PRIVATEKEY", "tls_pub": "PUBLICKEY","<anykey>": "<any value>"},
       "type_meta":{"kind":"Secret","api_version":"v1"},
@@ -156,7 +145,7 @@ describe('secrets  API', function() {
   });
 
   it('returns the unauthorized error all secrets account based', function(done) {
-    request.get('/accounts/'+globalAny.account_id+'/secrets')
+    request.get('/secrets')
     .ca(globalAny.rootCA)
       .expect(406)
       .end(function(err, res) {

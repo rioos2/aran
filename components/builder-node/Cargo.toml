@@ -1,14 +1,17 @@
 [package]
-name = "rioos_builder_nodesrv"
+name = "rioos_builder_health_nodes"
 version = "0.0.0"
 authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
-description = "RIO/OS Deployment library"
+description = "RIO/OS Node library"
 workspace = "../../"
 
 [dependencies]
-postgres = { version = "0.15.1", features = ["with-chrono"] }
-chrono = { version = "0.4.0", features = ["serde"] }
-serde_json = "1.0.10"
+postgres = { version = "0.15.2", features = ["with-chrono"] }
+chrono = { version = "0.4.4", features = ["serde"] }
+serde_json = "1.0.22"
+oping = "0.3.3"
+rand = "0.5.3"
+ipnet = "1.2.1"
 
 [dependencies.rioos_builder_apimachinery]
 path = "../builder-apimachinery"
@@ -16,9 +19,8 @@ path = "../builder-apimachinery"
 [dependencies.rioos_builder_db]
 path = "../builder-db"
 
-[dependencies.rioos_net]
-path = "../net"
-
+[dependencies.rioos_telemetry]
+path = "../telemetry"
 
 [features]
 functional = []

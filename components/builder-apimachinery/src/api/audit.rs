@@ -1,28 +1,30 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::fmt;
-
+use api::base::{MetaFields, ObjectMeta, ObjectReference, TypeMeta};
+use chrono::prelude::*;
 use error::{Error, Result};
 use serde_json;
-use chrono::prelude::*;
-
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
+use std::fmt;
 
 /// The accessor information for the audit.
 /// The 0th value of the tuple is the account_id
 /// The 1st value of the tuple is the ip address the request came from
 pub type AccessedBy = (String, String);
 
-/// Rio/OS  blockchain global audit envelop
+/// Rio/OS  blockchain global audit envelope
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Envelope {
-    pub account: String,
-    pub address: String,
-    pub timestamp: String,
-    pub event: AuditEvent,
+    account: String,
+    address: String,
+    timestamp: String,
+    event: AuditEvent,
 }
 
 impl Envelope {
+    /// Creates envelope for an AuditEvent.
+    ///
+    /// This method is necessary to make an envelope stamped with a timestamp,
+    /// ip address of the sender, and the account associated with.   
     pub fn new(event: &AuditEvent, accessed_by: AccessedBy) -> Self {
         Envelope {
             account: accessed_by.0,
@@ -30,6 +32,38 @@ impl Envelope {
             timestamp: Utc::now().to_rfc3339(),
             event: event.clone(),
         }
+    }
+
+    pub fn set_account(&mut self, v: ::std::string::String) {
+        self.account = v;
+    }
+
+    pub fn get_account(&self) -> ::std::string::String {
+        self.account.clone()
+    }
+
+    pub fn set_address(&mut self, v: ::std::string::String) {
+        self.address = v;
+    }
+
+    pub fn get_address(&self) -> ::std::string::String {
+        self.address.clone()
+    }
+
+    pub fn set_timestamp(&mut self, v: ::std::string::String) {
+        self.timestamp = v;
+    }
+
+    pub fn get_timestamp(&self) -> ::std::string::String {
+        self.timestamp.clone()
+    }
+
+    pub fn set_event(&mut self, v: AuditEvent) {
+        self.event = v;
+    }
+
+    pub fn get_event(&self) -> AuditEvent {
+        self.event.clone()
     }
 
     /// Tries to serialize given configuration into the utf8 encoded json.
@@ -54,9 +88,8 @@ impl fmt::Display for Envelope {
     }
 }
 
-
 // EventSource contains information for an event.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EventSource {
     // Component from which the event is generated.
     // +optional
@@ -66,8 +99,8 @@ pub struct EventSource {
     host: String,
 }
 
-// Event is a report of an event somewhere in the cluster.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+// AuditEvent is a report of an event somewhere in the cluster.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AuditEvent {
     // Standard type metadata.
     type_meta: TypeMeta,
@@ -82,12 +115,12 @@ pub struct AuditEvent {
     // for the transition into the object's current status.
     // TODO: provide exact specification for format.
     // +optional
-    reason: String,
+    pub reason: String,
 
     // A human-readable description of the status of this operation.
     // TODO: decide on maximum length.
     // +optional
-    message: String,
+    pub message: String,
 
     // The component reporting this event. Should be a short machine understandable string.
     // +optional
@@ -96,6 +129,44 @@ pub struct AuditEvent {
     // Type of this event (Normal, Warning), new types could be added in the future
     // +optional
     type_of_event: String,
+}
+
+impl AuditEvent {
+    pub fn new() -> AuditEvent {
+        ::std::default::Default::default()
+    }
+
+    pub fn with(t: TypeMeta, o: ObjectMeta) -> AuditEvent {
+        AuditEvent {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
+    }
+
+    pub fn set_object_reference(&mut self, v: ObjectReference) {
+        self.object_reference = v;
+    }
+    pub fn get_object_reference(&self) -> ObjectReference {
+        self.object_reference.clone()
+    }
+
+    pub fn set_reason(&mut self, v: ::std::string::String) {
+        self.reason = v;
+    }
+
+    pub fn get_reason(&self) -> ::std::string::String {
+        self.reason.clone()
+    }
+
+    pub fn set_message(&mut self, v: ::std::string::String) {
+        self.message = v;
+    }
+
+    pub fn get_message(&self) -> ::std::string::String {
+        self.message.clone()
+    }      
+    
 }
 
 impl MetaFields for AuditEvent {
@@ -116,6 +187,7 @@ impl MetaFields for AuditEvent {
     }
 }
 
+/// The envelope response wrapped with typemeta and objectmeta
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EnvelopeResponse {
     type_meta: TypeMeta,
@@ -131,34 +203,4 @@ impl EnvelopeResponse {
             envelope: envelope,
         }
     }
-}
-
-
-// ObjectReference contains enough information to let you inspect or modify the referred object.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
-pub struct ObjectReference {
-    // Kind of the referent.
-    // +optional
-    kind: String,
-    // Origin of the referent.
-    // +optional
-    origin: String,
-    // Name of the referent.
-    // +optional
-    name: String,
-    // UID of the referent.
-    uid: String,
-    // API version of the referent.
-    api_version: String,
-    // Specific resourceVersion to which this reference is made, if any.
-    resource_version: String,
-
-    // If referring to a piece of an object instead of an entire object, this string
-    // should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
-    // For example, if the object reference is to a container within a assemblyfactory, this would take on a value like:
-    // "spec.containers{name}" (where "name" refers to the name of the container that triggered
-    // the event) or if no container name is specified "spec.containers[2]" (container with
-    // index 2 in this assemblyfactory). This syntax is chosen only to have some well-defined way of
-    // referencing a part of an object.
-    field_path: String,
 }

@@ -11,10 +11,10 @@ describe('User Permission API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"role_id":globalAny.role_id,"name": "rioos.job.get","description":"Read only access to all the users  VMs, Containers"})
+        .send({"team_id":globalAny.team_id,"name": "rioos.job.get","description":"Read only access to all the users  VMs, Containers"})
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.role_id).to.equal(globalAny.role_id);
+          expect(res.body.team_id).to.equal(globalAny.team_id);
           globalAny.perm_id =res.body.id;
           done(err);
         });
@@ -25,7 +25,7 @@ describe('User Permission API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"role_id":globalAny.role_id,"name": "","description":"Read only access to all the users  VMs, Containers"})
+        .send({"team_id":globalAny.team_id,"name": "","description":"Read only access to all the users  VMs, Containers"})
         .expect(400)
         .end(function(err, res) {
           done(err);
@@ -37,19 +37,19 @@ describe('User Permission API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"role_id":globalAny.role_id,"description":"Read only access to all the users  VMs, Containers"})
+        .send({"team_id":globalAny.team_id,"description":"Read only access to all the users  VMs, Containers"})
         .expect(400)
         .end(function(err, res) {
           done(err);
         });
     });
 
-    it('created permission empty role id', function(done) {
+    it('created permission empty team id', function(done) {
       request.post('/permissions')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"role_id":"","name": "rioos.job.get","description":"Read only access to all the users  VMs, Containers"})
+        .send({"team_id":"","name": "rioos.job.get","description":"Read only access to all the users  VMs, Containers"})
         .expect(400)
         .end(function(err, res) {
           done(err);
@@ -61,7 +61,7 @@ describe('User Permission API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"role_id":globalAny.role_id,"name": "rioos.job.get","description":""})
+        .send({"team_id":globalAny.team_id,"name": "rioos.job.get","description":""})
         .expect(400)
         .end(function(err, res) {
           done(err);
@@ -71,15 +71,15 @@ describe('User Permission API', function() {
     it('created permission without header', function(done) {
       request.post('/permissions')
       .ca(globalAny.rootCA)
-        .send({"role_id":globalAny.role_id,"name": "rioos.job.get","description":"Read only access to all the users  VMs, Containers"})
+        .send({"team_id":globalAny.team_id,"name": "rioos.job.get","description":"Read only access to all the users  VMs, Containers"})
         .expect(406)
         .end(function(err, res) {
           done(err);
         });
     });
 
-    it('returns role based permission', function(done) {
-      request.get('/permissions/roles/'+ globalAny.role_id)
+    it('returns team based permission', function(done) {
+      request.get('/permissions/teams/'+ globalAny.team_id)
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -92,8 +92,8 @@ describe('User Permission API', function() {
         });
     });
 
-    it('role based permission for wrong role id', function(done) {
-      request.get('/permissions/roles/987987987987987')
+    it('team based permission for wrong team id', function(done) {
+      request.get('/permissions/teams/987987987987987')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -126,21 +126,21 @@ describe('User Permission API', function() {
         });
     });
 
-    it('returns the specfic permission for the specfic role', function(done) {
-      request.get('/permissions/' + globalAny.perm_id + '/roles/' + globalAny.role_id)
+    it('returns the specfic permission for the specfic team', function(done) {
+      request.get('/permissions/' + globalAny.perm_id + '/teams/' + globalAny.team_id)
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
          expect(res.body.id).to.equal(globalAny.perm_id);
-         expect(res.body.role_id).to.equal( globalAny.role_id);
+         expect(res.body.team_id).to.equal( globalAny.team_id);
           done(err);
         });
     });
 
-    it('specfic permission for the specfic role by wrong role id', function(done) {
-      request.get('/permissions/' + globalAny.perm_id + '/roles/89898765432123')
+    it('specfic permission for the specfic team by wrong team id', function(done) {
+      request.get('/permissions/' + globalAny.perm_id + '/teams/89898765432123')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -150,8 +150,8 @@ describe('User Permission API', function() {
         });
     });
 
-    it('specfic permission for the specfic role by wrong permission id', function(done) {
-      request.get('/permissions/98765432345678/roles/' + globalAny.role_id)
+    it('specfic permission for the specfic team by wrong permission id', function(done) {
+      request.get('/permissions/98765432345678/teams/' + globalAny.team_id)
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -168,30 +168,7 @@ describe('User Permission API', function() {
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.items.length).to.equal(7);
-          done(err);
-        });
-    });
-
-    it('returns the all the  permission for the specfic user', function(done) {
-      request.get('/permissions/email/' + globalAny.email)
-      .ca(globalAny.rootCA)
-        .set('Authorization', globalAny.bobo_bearer)
-        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(200)
-        .end(function(err, res) {
-          expect(res.body.items.length).to.equal(2);
-          done(err);
-        });
-    });
-
-    it('returns the all the  permission for the user in wrong user id', function(done) {
-      request.get('/permissions/email/info@rio.io')
-      .ca(globalAny.rootCA)
-        .set('Authorization', globalAny.bobo_bearer)
-        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(404)
-        .end(function(err, res) {
+          expect(res.body.items.length).to.equal(67);
           done(err);
         });
     });

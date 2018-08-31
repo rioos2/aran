@@ -2,21 +2,21 @@
 //
 
 use std::error;
-use std::io;
 use std::fmt;
+use std::io;
 use std::result;
 
 use reqwest;
 use serde_json;
 use url;
 
+use http_gateway;
 use rioos_http;
-use rio_net;
 
 #[derive(Debug)]
 pub enum Error {
     RioHttpClient(rioos_http::Error),
-    RioNetError(rio_net::Error),
+    RioNetError(http_gateway::Error),
     ReqwestError(reqwest::Error),
     IO(io::Error),
     Json(serde_json::Error),
@@ -76,8 +76,8 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
+impl From<http_gateway::Error> for Error {
+    fn from(err: http_gateway::Error) -> Error {
         Error::RioNetError(err)
     }
 }

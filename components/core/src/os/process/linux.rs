@@ -2,15 +2,15 @@
 
 use libc;
 use std::ffi::OsString;
-use std::path::PathBuf;
 use std::ops::Neg;
 use std::os::unix::process::CommandExt;
+use std::path::PathBuf;
 use std::process::{self, Command};
 use time::{Duration, SteadyTime};
 
 use error::{Error, Result};
 
-use super::{HabExitStatus, ExitStatusExt, OsSignal, ShutdownMethod, Signal};
+use super::{ExitStatusExt, HabExitStatus, OsSignal, ShutdownMethod, Signal};
 
 pub type Pid = libc::pid_t;
 pub type SignalCode = libc::c_int;
@@ -105,18 +105,13 @@ impl Child {
 
     pub fn status(&mut self) -> Result<HabExitStatus> {
         match self.last_status {
-            Some(status) => Ok(HabExitStatus {
-                status: Some(status as u32),
-            }),
+            Some(status) => Ok(HabExitStatus { status: Some(status as u32) }),
             None => {
                 let mut exit_status: i32 = 0;
 
                 match unsafe { libc::waitpid(self.pid as i32, &mut exit_status, libc::WNOHANG) } {
                     0 => Ok(HabExitStatus { status: None }),
-                    -1 => Err(Error::WaitpidFailed(format!(
-                        "Error calling waitpid on pid: {}",
-                        self.pid
-                    ))),
+                    -1 => Err(Error::WaitpidFailed(format!("Error calling waitpid on pid: {}", self.pid))),
                     _ => {
                         self.last_status = Some(exit_status);
                         Ok(HabExitStatus {
@@ -135,10 +130,7 @@ impl Child {
         // to prevent orphaned processes.
         let pgid = unsafe { libc::getpgid(self.pid) };
         if self.pid == pgid {
-            debug!(
-                "pid to kill {} is the process group root. Sending signal to process group.",
-                self.pid
-            );
+            debug!("pid to kill {} is the process group root. Sending signal to process group.", self.pid);
             // sending a signal to the negative pid sends it to the
             // entire process group instead just the single pid
             self.pid = self.pid.neg();
@@ -185,9 +177,9 @@ impl ExitStatusExt for HabExitStatus {
 
 #[cfg(test)]
 mod tests {
+    use super::super::*;
     use libc;
     use std::process::Command;
-    use super::super::*;
 
     #[test]
     fn running_process_returns_no_exit_status() {

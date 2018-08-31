@@ -1,0 +1,20 @@
+# ================================================================
+# Deploy Information
+# ================================================================
+---
+stacks_factory:
+  object_meta:
+    name: blockchain-demo.megam.io
+    account: '988832549822283776'
+    cluster_name: Chennai
+  replicas: 1
+  resources:
+    compute_type: cpu
+    storage_type: hdd
+    cpu: '1'
+    memory: 1 GiB
+    storage: 3 GiB
+    private_ipv4: 'true'
+  secret:
+    id: '988843586395095040'
+  plan: '988821495968980992'

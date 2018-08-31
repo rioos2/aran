@@ -9,13 +9,13 @@ use api::{Api, ParmsVerifier, QueryValidator};
 use config::Config;
 use error::Error;
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::AranResult;
-use rio_net::util::errors::{internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::AranResult;
+use http_gateway::util::errors::{internal_error, not_found_error};
 
-use db::error::Error::RecordsNotFound;
+use audit::vulnerable::vulnerablity::AnchoreClient;
 use db::data_store::DataStoreConn;
-use rio_net::metrics::vulnerablity::AnchoreClient;
+use db::error::Error::RecordsNotFound;
 
 #[derive(Clone)]
 pub struct VulnApi {
@@ -39,9 +39,9 @@ impl VulnApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
 
-        match self.anchore.check_vulnerablity(
-            &format!("{}", &params.get_id()),
-        ) {
+        match self.anchore
+            .check_vulnerablity(&format!("{}", &params.get_id()))
+        {
             Ok(Some(image)) => Ok(render_json(status::Ok, &image)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -58,9 +58,7 @@ impl Api for VulnApi {
 
         router.get(
             "/image/:name/vulnerablity",
-            XHandler::new(C { inner: show })
-                .before(basic.clone())
-                .before(TrustAccessed {}),
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "show",
         );
     }

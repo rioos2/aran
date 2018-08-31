@@ -10,7 +10,7 @@ describe('Deployment API', function() {
 
     it('returns the assembly by account', function(done) {
       this.timeout(4000)
-      request.get('/accounts/'+globalAny.account_id+'/assemblys')
+      request.get('/assemblys')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -55,26 +55,6 @@ describe('Deployment API', function() {
         });
     });
 
-
-    it('returns the assembly_update by id', function(done) {
-      this.timeout(4000)
-      request.put('/assemblys/'+globalAny.assembly_id+'/status')
-      .ca(globalAny.rootCA)
-        .set('Authorization', globalAny.bobo_bearer)
-        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta": {"name":"levi.megam.io","account":"87654323456","labels":{"rioos_environment":"development","rioos_category":"machine"},
-              "annotations":{"rioos/karthika.calvincare.org/apply":"OnHeadBald","rioos/ruchi.calvincare.org/pickup":"OnHungry"},"owner_references":[],
-              "created_at":"2017-11-20T06:49:06.907347+00:00","deleted_at":"2017-11-20T06:49:06.907347+00:00","deletion_grace_period_seconds":30,
-              "finalizers":["orphan"],"cluster_name":"dc1_torono"},"selector": ["876543456787654"],"status": {"phase": "pending","message": "",
-              "reason": "","conditions": [{"message": "nodelet has sufficient disk space available","reason": "NodeletHasSufficientDisk","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk",
-              "last_update_time": "2017-09-21T06:35:16Z"}]},"metadata": {"io:rioos:scheduled::node":"765434567"}})
-        .expect(200)
-        .end(function(err, res) {
-         expect(res.body);
-         expect(res.body.id).to.equal(globalAny.assembly_id);
-          done(err);
-        });
-    });
 
     it('returns the bad request error for empty phase field', function(done) {
       request.put('/assemblys/'+globalAny.assembly_id+'/status')
@@ -128,7 +108,7 @@ describe('Deployment API', function() {
 
     it('returns all assemblys', function(done) {
       this.timeout(4000)
-      request.get('/assemblys')
+      request.get('/assemblys/all')
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -141,15 +121,6 @@ describe('Deployment API', function() {
     });
 
     it('returns Unauthorized error for get account based assembly', function(done) {
-      request.get('/accounts/'+globalAny.account_id+'/assemblys')
-      .ca(globalAny.rootCA)
-        .expect(406)
-        .end(function(err, res) {
-          done(err);
-        });
-    });
-
-    it('returns Unauthorized error for all assembly', function(done) {
       request.get('/assemblys')
       .ca(globalAny.rootCA)
         .expect(406)
@@ -158,17 +129,15 @@ describe('Deployment API', function() {
         });
     });
 
-
-    it('Record not fount fot wrong account id to get assembly', function(done) {
-      request.get('/accounts/2345678/assemblys')
+    it('returns Unauthorized error for all assembly', function(done) {
+      request.get('/assemblys/all')
       .ca(globalAny.rootCA)
-      .set('Authorization', globalAny.bobo_bearer)
-      .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .expect(404)
+        .expect(406)
         .end(function(err, res) {
           done(err);
         });
     });
+
 
     it('returns Record not found assembly get by id', function(done) {
       request.get('/assemblys/23456789')

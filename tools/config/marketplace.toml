@@ -1,7 +1,0 @@
-[http]
-listen = "0.0.0.0"
-port = 6443
-tls_port = 8443
-tls_pkcs12_file = "api-server.pfx"
-tls_pkcs12_pwd = "TEAMRIOADVANCEMENT123"
-

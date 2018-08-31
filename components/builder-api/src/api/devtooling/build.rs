@@ -1,36 +1,26 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api assembly_factory
-use std::sync::Arc;
-
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
+use bytes::Bytes;
 use config::Config;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
-
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-
-use protocol::api::devtool::{Build, BuildStatusUpdate};
-use devtooling::models::build;
-
-use protocol::api::base::MetaFields;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-
+use devtooling::models::build;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::devtool::{Build, BuildStatusUpdate};
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct BuildApi {
@@ -53,9 +43,7 @@ impl BuildApi {
     //POST: /builds
     //Input: Body of structure deploy::Build
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<Build>(
-            req.get::<bodyparser::Struct<Build>>()?,
-        )?;
+        let mut unmarshall_body = self.validate::<Build>(req.get::<bodyparser::Struct<Build>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -65,9 +53,7 @@ impl BuildApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -140,14 +126,30 @@ impl BuildApi {
         }
     }
 
+    ///GET: /builds/:id
+    ///Input: id - u64
+    ///Returns Build
+    pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
+        let res = match build::DataStore::show(&self.conn, &idget) {
+            Ok(Some(build)) => {
+                let data = json!({
+                            "type": typ,
+                            "data": build,
+                            });
+                serde_json::to_string(&data).unwrap()
+            }
+            _ => "".to_string(),
+        };
+        Bytes::from(res)
+    }
+
     //PUT: /builds/id/status
     //Input status  as input and returns an updated builds
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<BuildStatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body =
+            self.validate(req.get::<bodyparser::Struct<BuildStatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match build::DataStore::status_update(&self.conn, &unmarshall_body) {
@@ -180,13 +182,15 @@ impl Api for BuildApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_build_config = move |req: &mut Request| -> AranResult<Response> { _self.show_by_build_config(req) };
+        let show_by_build_config =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_build_config(req) };
 
         let _self = self.clone();
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         router.post(
             "/builds",
@@ -206,7 +210,9 @@ impl Api for BuildApi {
         );
         router.get(
             "/builds/buildconfigs/:id",
-            XHandler::new(C { inner: show_by_build_config }).before(basic.clone()),
+            XHandler::new(C {
+                inner: show_by_build_config,
+            }).before(basic.clone()),
             "build_list_by_buildconfig",
         );
         router.put(
@@ -216,7 +222,9 @@ impl Api for BuildApi {
         );
         router.put(
             "/builds/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone()),
             "builds_status_update",
         );
     }
@@ -244,8 +252,10 @@ impl Validator for Build {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }
@@ -254,9 +264,10 @@ impl Validator for Build {
             return Ok(Box::new(self));
         }
 
-        Err(bad_request(
-            &MissingParameter(format!("{:?} -> {}", s, "must have => ")),
-        ))
+        Err(bad_request(&MissingParameter(format!(
+            "{:?} -> {}",
+            s, "must have => "
+        ))))
     }
 }
 

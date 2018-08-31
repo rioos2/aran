@@ -1,0 +1,55 @@
+# ================================================================
+# Deploy Information
+# ================================================================
+---
+stacks_factory:
+  object_meta:
+    name: king.megam.io
+    account: '976649707684110336'
+    cluster_name: newyork
+    labels:
+      rioos_category: 'container'
+  replicas: 1
+  resources:
+    compute_type: cpu
+    storage_type: hdd
+    cpu: '1'
+    memory: 1 GiB
+    storage: 3 GiB
+    private_ipv4: 'true'
+  secret:
+    id: '922303941599854592'
+  plan: '976649514033102848'
+
+# ================================================================
+# BuildConfig Information
+# ================================================================
+
+buildconfig:
+  object_meta:
+    name: blockchain-demo
+    account: '988832549822283776'
+    cluster_name: chennai
+  spec:
+    run_policy: Serial
+    source:
+      source:
+      images:
+      - from:
+          kind: 'DockerImage'
+          name: 'rust-docker-image'
+      git:
+        uri: https://github.com/rioadvancement/blockchain-demo
+        reference: master
+      source_secret: ''
+      context_dir: web
+    strategy:
+      build_type: Source
+      source_strategy:
+        from:
+          kind: 'DockerImage'
+          name: node:latest
+    output:
+      to:
+        kind: ImageMarks
+        name: registry.rioos.xyz:5000/blockchain-sample:latest

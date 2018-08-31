@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta, WhoAmITypeMeta};
 use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields, WhoAmITypeMeta};
 
 pub const RIOOS_ASSEMBLY_FACTORY_ID: &'static str = "rioos_assembly_factory_id";
 
@@ -110,7 +110,7 @@ pub struct Spec {
      Only applies to Service Type: LoadBalancer LoadBalancer will get created with the IP specified in this field.*/
     service_type: String,
     #[serde(default)]
-    loadbalancer_ip: String, //The IP address created and attached to access the loadbalancer.
+    loadbalancer: IngressList, //The IP address created and attached to access the loadbalancer.
     #[serde(default)]
     names: BTreeMap<String, String>, //name(internal) is the reference that internal powerdns will return as a CNAME record for this service. No proxying will be involved. Must be a valid RFC-1123 hostname (https://tools.ietf.org/html/rfc1123) and requires Type to be ExternalName
     #[serde(default)]
@@ -118,10 +118,15 @@ pub struct Spec {
 }
 
 impl Spec {
-    pub fn new(service_type: &str, loadbalancer_ip: &str, names: BTreeMap<String, String>, external_names: BTreeMap<String, String>) -> Spec {
+    pub fn new(
+        service_type: &str,
+        loadbalancer: IngressList,
+        names: BTreeMap<String, String>,
+        external_names: BTreeMap<String, String>,
+    ) -> Spec {
         Spec {
             service_type: service_type.to_string(),
-            loadbalancer_ip: loadbalancer_ip.to_string(),
+            loadbalancer: loadbalancer,
             names: names,
             external_names: external_names,
         }
@@ -130,6 +135,23 @@ impl Spec {
     pub fn get_service_type(&self) -> ::std::string::String {
         self.service_type.clone()
     }
+}
+
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct IngressList {
+    // Ingress is a list containing ingress points for the load-balancer.
+    // Traffic intended for the service should be sent to these ingress points.
+    #[serde(default)]
+    ingress: Vec<Ingress>,
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Ingress {
+    #[serde(default)]
+    ip: String,// IP is set for load-balancer ingress points that are IP based (typically Traefik - Refer pic)
+    #[serde(default)]
+    hostname:  String, // Hostname is set for load-balancer ingress points that are DNS based (typically Traefik - Refer pic)
 }
 
 #[cfg(test)]
@@ -142,7 +164,12 @@ mod test {
     fn decode_service_spec() {
         let val = r#"{
             "service_type" :"LoadBalancer",
-            "loadbalancer_ip": "192.168.1.11",
+            "loadbalancer": {
+                "ingress": [{
+                    "ip": "192.168.1.66",
+		            "hostname": "suganya.rioosbox.com"
+		            }]
+                },
             "names":{"private_name":"levis-01.megam.io"},
             "external_names": {"public_name":"levis-01.megam.io"}
     }"#;
@@ -162,7 +189,12 @@ mod test {
             "status":{"phase":"","message":"","reason":"","conditions":[{"message":"", "reason":"","status":"ready","last_transition_time":"","last_probe_time":"","condition_type":"","last_update_time": ""}]},
             "spec": {
                 "service_type" :"LoadBalancer",
-                "loadbalancer_ip": "192.168.1.11",
+                "loadbalancer": {
+                    "ingress": [{
+                        "ip": "192.168.1.66",
+    		            "hostname": "suganya.rioosbox.com"
+    		            }]
+                    },
                 "names":{"private_name":"levis-01.megam.io"},
                 "external_names": {"public_name":"levis-01.megam.io"}
             }

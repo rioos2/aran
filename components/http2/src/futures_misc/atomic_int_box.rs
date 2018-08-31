@@ -1,9 +1,9 @@
 use std::fmt;
 
+use std::mem;
+use std::ptr;
 use std::sync::atomic::AtomicPtr;
 use std::sync::atomic::Ordering;
-use std::ptr;
-use std::mem;
 
 // Two bit integer
 #[derive(PartialEq, Eq, Copy, Clone)]
@@ -113,9 +113,7 @@ impl<A> AtomicU2OrBox<A> {
     }
 
     pub fn from(b: DecodedBox<A>) -> AtomicU2OrBox<A> {
-        AtomicU2OrBox(AtomicPtr::new(unsafe {
-            b.into_raw()
-        }))
+        AtomicU2OrBox(AtomicPtr::new(unsafe { b.into_raw() }))
     }
 
     pub fn from_u2(v: U2) -> AtomicU2OrBox<A> {
@@ -146,7 +144,11 @@ impl<A> AtomicU2OrBox<A> {
         self.swap(DecodedBox::U2(that))
     }
 
-    pub fn compare_exchange(&self, compare: DecodedRef<A>, exchange: DecodedBox<A>) -> Result<DecodedBox<A>, (DecodedRef<A>, DecodedBox<A>)> {
+    pub fn compare_exchange(
+        &self,
+        compare: DecodedRef<A>,
+        exchange: DecodedBox<A>,
+    ) -> Result<DecodedBox<A>, (DecodedRef<A>, DecodedBox<A>)> {
         match self.0.compare_exchange(
             compare.into_raw(),
             exchange.as_ref().into_raw(),
@@ -161,11 +163,18 @@ impl<A> AtomicU2OrBox<A> {
         }
     }
 
-    pub fn compare_int_exchange(&self, compare: U2, exchange: DecodedBox<A>) -> Result<DecodedBox<A>, (DecodedRef<A>, DecodedBox<A>)> {
+    pub fn compare_int_exchange(
+        &self,
+        compare: U2,
+        exchange: DecodedBox<A>,
+    ) -> Result<DecodedBox<A>, (DecodedRef<A>, DecodedBox<A>)> {
         self.compare_exchange(DecodedRef::U2(compare), exchange)
     }
 
-    pub fn compare_ptr_exchange(&self, exchange: DecodedBox<A>) -> Result<DecodedBox<A>, (DecodedRef<A>, DecodedBox<A>)> {
+    pub fn compare_ptr_exchange(
+        &self,
+        exchange: DecodedBox<A>,
+    ) -> Result<DecodedBox<A>, (DecodedRef<A>, DecodedBox<A>)> {
         match self.load() {
             DecodedRef::U2(i) => Err((DecodedRef::U2(i), exchange)),
             DecodedRef::Ptr(p) => self.compare_exchange(DecodedRef::Ptr(p), exchange),
@@ -175,9 +184,9 @@ impl<A> AtomicU2OrBox<A> {
 
 #[cfg(test)]
 mod test {
-    use std::sync::Arc;
     use std::sync::atomic::AtomicUsize;
     use std::sync::atomic::Ordering;
+    use std::sync::Arc;
 
     use super::*;
 

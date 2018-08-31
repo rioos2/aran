@@ -1,12 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use std::env;
-use std::path::{Path, PathBuf};
 use std::fs::File;
-use std::io::{Read, BufWriter, Write};
 use std::fs::OpenOptions;
+use std::io::{BufWriter, Read, Write};
+use std::path::{Path, PathBuf};
 
-use error::{Result, Error};
+use error::{Error, Result};
 
 use users;
 
@@ -25,7 +25,7 @@ pub const BLOCKCHAIN_PATH: &'static str = "blockchain";
 /// The default path where license (.so) file is place. This is used to connect to nalperion.
 pub const LICENSE_PATH: &'static str = "license";
 
-/// The default path where packages from rio.marketplaces are placed
+/// The default path where packages from rio.appstores are placed
 pub const PACKAGE_PATH: &'static str = "etc/packages";
 /// The environment variable pointing to the filesystem root. This exists for internal
 /// team usage and is not intended to be used by consumers.
@@ -109,7 +109,7 @@ pub fn rioconfig_etc_path(fs_root_path: Option<&Path>) -> PathBuf {
     }
 }
 
-/// Returns the path to the packages from rio.marketplace, optionally taking a custom filesystem root.
+/// Returns the path to the packages from rio.appstores, optionally taking a custom filesystem root.
 pub fn rioconfig_package_path(fs_root_path: Option<&Path>) -> PathBuf {
     match fs_root_path {
         Some(fs_root_path) => Path::new(fs_root_path).join(&*MY_PACKAGE_PATH),
@@ -132,6 +132,41 @@ pub fn rioconfig_license_path(fs_root_path: Option<&Path>) -> PathBuf {
         None => Path::new(&*FS_ROOT_PATH).join(&*MY_LICENSE_PATH),
     }
 }
+
+// Returns whether or not the current process is running with a root effective user id or not.
+pub fn am_i_root() -> bool {
+    *EUID == 0u32
+}
+// A wrapper around File::open to return with the name of the file it couldn't open.
+// The rust error fails to return the name of the file/directory it couldn't open.
+// Use only this function for File::open instead of File::open(..)?
+pub fn open_from(path: &Path) -> Result<File> {
+    match File::open(path) {
+        Ok(f) => Ok(f),
+        Err(e) => Err(Error::FileNotFound(format!("{}\n{:?}", format!("{}", e), path))),
+    }
+}
+
+pub fn read_from_file(cache_path: &Path) -> Result<String> {
+    let mut file = self::open_from(cache_path)?;
+    let mut content = String::new();
+    file.read_to_string(&mut content)?;
+    Ok(content)
+}
+
+pub fn write_to_file(cache_path: &Path, content: &str) -> Result<()> {
+    let file = try!(File::create(cache_path));
+    let mut file_writer = BufWriter::new(&file);
+    try!(file_writer.write_all(content.as_bytes()));
+    Ok(())
+}
+
+pub fn append(cache_path: &Path, content: &str) -> Result<()> {
+    let mut file = try!(OpenOptions::new().append(true).open(cache_path));
+    try!(file.write_all(content.as_bytes()));
+    Ok(())
+}
+
 /// Returns the absolute path for a given command, if it exists, by searching the `PATH`
 /// environment variable.
 ///
@@ -214,58 +249,28 @@ pub fn find_command(command: &str) -> Option<PathBuf> {
 fn find_command_with_pathext(candidate: &PathBuf) -> Option<PathBuf> {
     if candidate.extension().is_none() {
         match renv::var_os("PATHEXT") {
-            Some(pathexts) => {
-                for pathext in env::split_paths(&pathexts) {
-                    let mut source_candidate = candidate.to_path_buf();
-                    let extension = pathext.to_str().unwrap().trim_matches('.');
-                    source_candidate.set_extension(extension);
-                    let current_candidate = source_candidate.to_path_buf();
-                    if current_candidate.is_file() {
-                        return Some(current_candidate);
-                    }
+            Some(pathexts) => for pathext in env::split_paths(&pathexts) {
+                let mut source_candidate = candidate.to_path_buf();
+                let extension = pathext.to_str().unwrap().trim_matches('.');
+                source_candidate.set_extension(extension);
+                let current_candidate = source_candidate.to_path_buf();
+                if current_candidate.is_file() {
+                    return Some(current_candidate);
                 }
-            }
+            },
             None => {}
         };
     }
     None
 }
-// Returns whether or not the current process is running with a root effective user id or not.
-pub fn am_i_root() -> bool {
-    *EUID == 0u32
-}
-
-pub fn read_from_file(cache_path: &Path) -> Result<String> {
-    if File::open(cache_path).is_err() {
-        return Err(Error::FileNotFound(format!("{:?}", cache_path)));
-    }
-    let mut file = File::open(cache_path)?;
-    let mut content = String::new();
-    file.read_to_string(&mut content)?;
-    Ok(content)
-}
-
-pub fn write_to_file(cache_path: &Path, content: &str) -> Result<()> {
-    let file = try!(File::create(cache_path));
-    let mut file_writer = BufWriter::new(&file);
-    try!(file_writer.write_all(content.as_bytes()));
-    Ok(())
-}
-
-pub fn append(cache_path: &Path, content: &str) -> Result<()> {
-    let mut file = try!(OpenOptions::new().append(true).open(cache_path));
-    try!(file.write_all(content.as_bytes()));
-    Ok(())
-}
-
 
 #[cfg(test)]
 mod test_find_command {
 
+    pub use super::find_command;
     use std::env;
     use std::fs;
     use std::path::PathBuf;
-    pub use super::find_command;
 
     #[allow(dead_code)]
     fn setup_pathext() {
@@ -289,8 +294,8 @@ mod test_find_command {
     }
 
     mod without_pathext_set {
-        use super::{setup_path, setup_empty_pathext};
         pub use super::find_command;
+        use super::{setup_empty_pathext, setup_path};
 
         fn setup_environment() {
             setup_path();
@@ -298,7 +303,7 @@ mod test_find_command {
         }
 
         mod argument_without_extension {
-            use super::{setup_environment, find_command};
+            use super::{find_command, setup_environment};
 
             /*#[test]
             fn command_exists() {
@@ -323,8 +328,8 @@ mod test_find_command {
         }
 
         mod argument_with_extension {
+            use super::{find_command, setup_environment};
             use std::fs::canonicalize;
-            use super::{setup_environment, find_command};
 
             #[test]
             fn command_exists() {
@@ -360,8 +365,8 @@ mod test_find_command {
 
     #[cfg(target_os = "windows")]
     mod with_pathext_set {
-        use super::{setup_path, setup_pathext};
         pub use super::find_command;
+        use super::{setup_path, setup_pathext};
 
         fn setup_environment() {
             setup_path();
@@ -369,7 +374,7 @@ mod test_find_command {
         }
 
         mod argument_without_extension {
-            use super::{setup_environment, find_command};
+            use super::{find_command, setup_environment};
 
             #[test]
             fn command_exists() {
@@ -403,8 +408,8 @@ mod test_find_command {
         }
 
         mod argument_with_extension {
+            use super::{find_command, setup_environment};
             use std::fs::canonicalize;
-            use super::{setup_environment, find_command};
 
             #[test]
             fn command_exists() {

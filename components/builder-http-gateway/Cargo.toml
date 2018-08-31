@@ -1,0 +1,52 @@
+[package]
+name = "rioos_builder_httpgateway"
+version = "0.0.0"
+authors = ["Kishorekumar Neelamegam <kishore.neelamegam@rio.company", "Rajthilak Rajamani <rajthilak.rajamani@rio.company>", "vinothini.veerasundaram@rio.company"]
+description = "A library for implementing API HTTP Gateways"
+workspace = "../../"
+
+[dependencies]
+lazy_static="1.0.1"
+regex ="1.0.1"
+rand = "0.5.3"
+ansi_term = "*"
+ env_logger = "0.5.10"
+log = "0.4.2"
+bodyparser = "0.8.0"
+router = "0.6.0"
+persistent = "*"
+iron = "0.6.0"
+mount = "0.4.0"
+serde = "1.0.66"
+serde_derive = "1.0.67"
+serde_json = "1.0.22"
+chrono = { version = "0.4.4", features = ["serde"] }
+rust-crypto = "*"
+hyper-native-tls = "0.2.4"
+
+typemap = "*"
+unicase = "1.4.2"
+url = "1.7.0"
+libflate = "*"
+brotli = "1.1.2"
+rioos_builder_apimachinery = { path = "../builder-apimachinery" }
+time = "*"
+num_cpus="*"
+
+[dependencies.rioos_common]
+path = "../common"
+
+[dependencies.rioos_builder_db]
+path = "../builder-db"
+
+[dependencies.rioos_builder_authorizer]
+path = "../builder-authorize"
+
+[dependencies.rioos_auth]
+path = "../auth"
+
+[dependencies.rioos_entitlement]
+path = "../entitlement"
+
+[features]
+functional = []

@@ -3,12 +3,12 @@
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 use chrono::prelude::*;
 
-use error::{Result, Error};
-use protocol::api::volume;
+use error::{Error, Result};
 use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::api::volume;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 use serde_json;
 
 use super::super::{VolumeOutput, VolumeOutputList};
@@ -19,13 +19,14 @@ impl DataStore {
     pub fn create(db: &DataStoreConn, volume_create: &volume::Volumes) -> VolumeOutput {
         let conn = db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM insert_volume_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM insert_volume_v1($1,$2,$3,$4,$5,$6)",
             &[
                 &(volume_create.get_mount_path() as String),
                 &(volume_create.get_allocated() as String),
                 &(serde_json::to_value(volume_create.get_status()).unwrap()),
                 &(serde_json::to_value(volume_create.object_meta()).unwrap()),
                 &(serde_json::to_value(volume_create.type_meta()).unwrap()),
+                &(serde_json::to_value(volume_create.get_source()).unwrap()),
             ],
         ).map_err(Error::VolumesCreate)?;
 
@@ -38,10 +39,8 @@ impl DataStore {
 
     pub fn show(db: &DataStoreConn, get_vol: &IdGet) -> VolumeOutput {
         let conn = db.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * FROM get_volume_v1($1)",
-            &[&(get_vol.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::VolumesGet)?;
+        let rows = &conn.query("SELECT * FROM get_volume_v1($1)", &[&(get_vol.get_id().parse::<i64>().unwrap())])
+            .map_err(Error::VolumesGet)?;
         if rows.len() > 0 {
             let volumes = row_to_volumes(&rows.get(0))?;
             return Ok(Some(volumes));
@@ -68,10 +67,8 @@ impl DataStore {
     pub fn show_by_assembly(db: &DataStoreConn, vol_get: &IdGet) -> VolumeOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn.query(
-            "SELECT * FROM get_volumes_by_assembly_v1($1)",
-            &[&(vol_get.get_id() as String)],
-        ).map_err(Error::VolumesGet)?;
+        let rows = &conn.query("SELECT * FROM get_volumes_by_assembly_v1($1)", &[&(vol_get.get_id() as String)])
+            .map_err(Error::VolumesGet)?;
 
         let mut response = Vec::new();
 
@@ -87,13 +84,14 @@ impl DataStore {
     pub fn update(db: &DataStoreConn, volume: &volume::Volumes) -> VolumeOutput {
         let conn = db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM update_volume_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM update_volume_v1($1,$2,$3,$4,$5,$6)",
             &[
                 &(volume.get_id().parse::<i64>().unwrap()),
                 &(volume.get_mount_path() as String),
                 &(volume.get_allocated() as String),
                 &(serde_json::to_value(volume.get_status()).unwrap()),
                 &(serde_json::to_value(volume.object_meta()).unwrap()),
+                &(serde_json::to_value(volume.get_source()).unwrap()),
             ],
         ).map_err(Error::VolumeUpdate)?;
 
@@ -118,6 +116,7 @@ fn row_to_volumes(row: &postgres::rows::Row) -> Result<volume::Volumes> {
     volumes.set_mount_path(row.get("mount_path"));
     volumes.set_allocated(row.get("allocated"));
     volumes.set_status(serde_json::from_value(row.get("status")).unwrap());
+    volumes.set_source(serde_json::from_value(row.get("source")).unwrap());
 
     Ok(volumes)
 }

@@ -2,11 +2,11 @@
 
 use std::collections::HashMap;
 use std::ffi::OsString;
+use std::io;
 use std::mem;
 use std::path::PathBuf;
 use std::process::{self, Command};
 use std::ptr;
-use std::io;
 use time::{Duration, SteadyTime};
 
 use kernel32;
@@ -15,7 +15,7 @@ use winapi;
 use error::{Error, Result};
 
 use super::windows_child;
-use super::{HabExitStatus, ExitStatusExt, ShutdownMethod, OsSignal, Signal};
+use super::{ExitStatusExt, HabExitStatus, OsSignal, ShutdownMethod, Signal};
 
 const STILL_ACTIVE: u32 = 259;
 
@@ -56,11 +56,7 @@ pub fn is_alive(pid: Pid) -> bool {
 }
 
 pub fn signal(pid: Pid, signal: Signal) -> Result<()> {
-    debug!(
-        "sending no-op(windows) signal {} to pid {}",
-        signal.os_signal(),
-        pid
-    );
+    debug!("sending no-op(windows) signal {} to pid {}", signal.os_signal(), pid);
     Ok(())
 }
 
@@ -72,11 +68,7 @@ pub fn signal(pid: Pid, signal: Signal) -> Result<()> {
 ///
 /// * If the child process cannot be created
 fn become_child_command(command: PathBuf, args: Vec<OsString>) -> Result<()> {
-    debug!(
-        "Calling child process: ({:?}) {:?}",
-        command.display(),
-        &args
-    );
+    debug!("Calling child process: ({:?}) {:?}", command.display(), &args);
     let status = try!(Command::new(command).args(&args).status());
     // Let's honor the exit codes from the child process we finished running
     process::exit(status.code().unwrap())
@@ -84,11 +76,7 @@ fn become_child_command(command: PathBuf, args: Vec<OsString>) -> Result<()> {
 
 fn handle_from_pid(pid: Pid) -> Option<winapi::HANDLE> {
     unsafe {
-        let proc_handle = kernel32::OpenProcess(
-            winapi::PROCESS_QUERY_LIMITED_INFORMATION | winapi::PROCESS_TERMINATE,
-            winapi::FALSE,
-            pid,
-        );
+        let proc_handle = kernel32::OpenProcess(winapi::PROCESS_QUERY_LIMITED_INFORMATION | winapi::PROCESS_TERMINATE, winapi::FALSE, pid);
 
         // we expect this to happen if the process died
         // before OpenProcess completes
@@ -134,11 +122,7 @@ impl Child {
             _ => (None, {
                 match child.wait() {
                     Ok(exit) => Ok(Some(exit.code().unwrap() as u32)),
-                    Err(e) => Err(format!(
-                        "Failed to retrieve exit code for pid {} : {}",
-                        child.id(),
-                        e
-                    )),
+                    Err(e) => Err(format!("Failed to retrieve exit code for pid {} : {}", child.id(), e)),
                 }
             }),
         };
@@ -170,9 +154,7 @@ impl Child {
             return Ok(HabExitStatus { status: None });
         };
 
-        Ok(HabExitStatus {
-            status: Some(exit_status),
-        })
+        Ok(HabExitStatus { status: Some(exit_status) })
     }
 
     pub fn kill(&mut self) -> Result<ShutdownMethod> {
@@ -185,11 +167,7 @@ impl Child {
             // Send a ctrl-BREAK
             ret = kernel32::GenerateConsoleCtrlEvent(1, self.pid);
             if ret == 0 {
-                debug!(
-                    "Failed to send ctrl-break to pid {}: {}",
-                    self.pid,
-                    io::Error::last_os_error()
-                );
+                debug!("Failed to send ctrl-break to pid {}: {}", self.pid, io::Error::last_os_error());
             }
         }
 
@@ -273,9 +251,7 @@ impl Child {
 
                 // Loop through all processes until we find one hwere `szExeFile` == `name`.
                 while process_success == 1 {
-                    let children = table
-                        .entry(process_entry.th32ParentProcessID)
-                        .or_insert(Vec::new());
+                    let children = table.entry(process_entry.th32ParentProcessID).or_insert(Vec::new());
                     (*children).push(process_entry.th32ProcessID);
 
                     process_success = unsafe { kernel32::Process32NextW(processes_snap_handle, &mut process_entry) };
@@ -319,8 +295,8 @@ impl ExitStatusExt for HabExitStatus {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
     use super::super::*;
+    use std::collections::HashMap;
 
     #[test]
     fn running_process_returns_no_exit_status() {

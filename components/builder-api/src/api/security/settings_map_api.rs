@@ -1,30 +1,26 @@
-use std::sync::Arc;
+// Copyright 2018 The Rio Advancement Inc
+//
 
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::type_meta;
+use bytes::Bytes;
 use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-use protocol::api::settings_map::SettingsMap;
-use protocol::api::base::{IdGet, MetaFields};
-use service::settings_map_ds::SettingsMapDS;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::schema::type_meta;
+use protocol::api::settings_map::SettingsMap;
+use router::Router;
 use serde_json;
+use service::models::settings_map;
+use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
 /// and manage them.
@@ -50,11 +46,10 @@ impl SettingsMapApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<SettingsMap>(req.get::<bodyparser::Struct<SettingsMap>>()?)?;
+        let mut unmarshall_body =
+            self.validate::<SettingsMap>(req.get::<bodyparser::Struct<SettingsMap>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -66,7 +61,7 @@ impl SettingsMapApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match SettingsMapDS::create(&self.conn, &unmarshall_body) {
+        match settings_map::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(settings)) => Ok(render_json(status::Ok, &settings)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -83,15 +78,13 @@ impl SettingsMapApi {
             (org_name, set_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?}{} ", org, name),
         );
         let mut params = IdGet::with_id(name.clone().to_string());
         params.set_name(org.clone().to_string());
 
-        match SettingsMapDS::show(&self.conn, &params) {
+        match settings_map::DataStore::new(&self.conn).show(&params) {
             Ok(Some(settings)) => Ok(render_json(status::Ok, &settings)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -107,7 +100,7 @@ impl SettingsMapApi {
     //Returns an secrets
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match SettingsMapDS::show_by_id(&self.conn, &idget) {
+        let res = match settings_map::DataStore::new(&self.conn).show_by_id(&idget) {
             Ok(Some(settings)) => {
                 let data = json!({
                             "type": typ,
@@ -122,7 +115,8 @@ impl SettingsMapApi {
 }
 
 impl Api for SettingsMapApi {
-    fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
+    fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
+        let basic = Authenticated::new(&*config);
         //closures : secrets
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -137,8 +131,8 @@ impl Api for SettingsMapApi {
             "settingsmap",
         );
         router.get(
-            "/origins/:origin/settingsmap/:name",
-            XHandler::new(C { inner: show }),
+            "/settingsmap/:name/origins/:origin",
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "settingsmap_show",
         );
     }

@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
-use std::io;
 use std::error;
 use std::fmt;
+use std::io;
 use std::result;
 
-use r2d2;
 use postgres;
+use r2d2;
 use rcore;
 use serde_json;
 use serde_yaml;
@@ -19,6 +19,7 @@ pub enum Error {
     AsyncFunctionCheck(postgres::error::Error),
     AsyncFunctionUpdate(postgres::error::Error),
     RecordsNotFound,
+    ConflictOnRecordUpdate,
     ConnectionTimeout(r2d2::Error),
     FunctionCreate(postgres::error::Error),
     FunctionDrop(postgres::error::Error),
@@ -51,16 +52,21 @@ impl fmt::Display for Error {
         let msg = match *self {
             Error::AsyncListen(ref e) => format!("Error setting up async listen, {}", e),
             Error::AsyncNotification(ref e) => format!("Error getting async notification, {}", e),
-            Error::AsyncMalformedChannel(ref e) => format!("Notification received, but the channel is malformed, {}", e),
-            Error::AsyncMalformedShardId(ref e) => {
-                format!(
-                    "Notification received, but the channels shard id is malformed, {}",
-                    e
-                )
+            Error::AsyncMalformedChannel(ref e) => {
+                format!("Notification received, but the channel is malformed, {}", e)
             }
-            Error::AsyncFunctionCheck(ref e) => format!("Async function database check failed, {}", e),
-            Error::AsyncFunctionUpdate(ref e) => format!("Async function database update failed, {}", e),
+            Error::AsyncMalformedShardId(ref e) => format!(
+                "Notification received, but the channels shard id is malformed, {}",
+                e
+            ),
+            Error::AsyncFunctionCheck(ref e) => {
+                format!("Async function database check failed, {}", e)
+            }
+            Error::AsyncFunctionUpdate(ref e) => {
+                format!("Async function database update failed, {}", e)
+            }
             Error::RecordsNotFound => format!("No Record Found"),
+            Error::ConflictOnRecordUpdate => format!("Record has conflict"),
             Error::ConnectionTimeout(ref e) => format!("Connection timeout, {}", e),
             Error::FunctionCreate(ref e) => format!("Error creating a function: {}", e),
             Error::FunctionDrop(ref e) => format!("Error dropping a function: {}", e),
@@ -73,17 +79,25 @@ impl fmt::Display for Error {
             Error::TransactionCreate(ref e) => format!("Error creating transaction: {}", e),
             Error::TransactionCommit(ref e) => format!("Error committing transaction: {}", e),
             Error::DbTransaction(ref e) => format!("Database transaction error, {}", e),
-            Error::DbTransactionStart(ref e) => format!("Failed to start database transaction, {}", e),
-            Error::DbTransactionCommit(ref e) => format!("Failed to commit database transaction, {}", e),
+            Error::DbTransactionStart(ref e) => {
+                format!("Failed to start database transaction, {}", e)
+            }
+            Error::DbTransactionCommit(ref e) => {
+                format!("Failed to commit database transaction, {}", e)
+            }
             Error::Migration(ref e) => format!("Error executing migration: {}", e),
             Error::MigrationCheck(ref e) => format!("Error checking if a migration has run: {}", e),
-            Error::MigrationTable(ref e) => format!("Error creating migration tracking table: {}", e),
-            Error::MigrationTracking(ref e) => format!("Error updating migration tracking table: {}", e),
+            Error::MigrationTable(ref e) => {
+                format!("Error creating migration tracking table: {}", e)
+            }
+            Error::MigrationTracking(ref e) => {
+                format!("Error updating migration tracking table: {}", e)
+            }
             Error::MigrationLock(ref e) => format!("Error getting migration lock: {}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
-            Error::Yaml(ref e) => format!("{}", e),
+            Error::Yaml(ref e) => format!("{:?}\n", e),
         };
         write!(f, "{}", msg)
     }
@@ -99,6 +113,7 @@ impl error::Error for Error {
             Error::AsyncFunctionCheck(ref e) => e.description(),
             Error::AsyncFunctionUpdate(ref e) => e.description(),
             Error::RecordsNotFound => "RecordsNotFound",
+            Error::ConflictOnRecordUpdate => "ConflictOnRecordUpdate",
             Error::ConnectionTimeout(ref e) => e.description(),
             Error::FunctionCreate(_) => "Error creating database function",
             Error::FunctionDrop(_) => "Error dropping database function",

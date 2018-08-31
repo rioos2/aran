@@ -15,7 +15,7 @@ endef
 
 define NOT_SET_RIOOS_HOME
 FATAL: you must set RIOOS_HOME, 'mkdir ~/code/rioos/home; export RIOOS_HOME=~/code/rioos/home'.
-	   Don't forget to set the variable in the bash file
+	   Export the variable in ~/.bashrc file
 endef
 
 ifndef RIOOS_HOME
@@ -29,31 +29,37 @@ else
 endif
 
 BIN = rioos
-LIB = builder-db builder-apimachinery  builder-deployment builder-scaling common core builder-api-client http-client net
+LIB = builder-db builder-apimachinery  builder-deployment builder-scaling common core builder-api-client http-client
 API = builder-api
 AUD = builder-api-audit
-MKT = builder-api-marketplace
+APS = builder-api-appstore
 
-ALL = $(BIN) $(LIB) $(API) $(AUD) $(MKT)
+ALL = $(BIN) $(LIB) $(API) $(AUD) $(APS)
 VERSION := $(shell cat VERSION)
 
 .DEFAULT_GOAL := buildbin
 
 setup:
+	@echo "» $(RIOOS_HOME)"
+ifeq ("$(wildcard $(RIOOS_HOME)/config/pullcache)","")
+	mkdir -p $(RIOOS_HOME)/config/pullcache  > /dev/null
+endif
+	@echo "✔ mkdir $(RIOOS_HOME)/config/pullcache"
 ifeq ("$(wildcard $(RIOOS_HOME)/config/template)","")
-	mkdir -p $(RIOOS_HOME)/config/template
-	cp -R -f $(CONFIG_TEMPLATE_PATH)/* $(RIOOS_HOME)/config/template
+	mkdir -p $(RIOOS_HOME)/config/template > /dev/null
+	cp -R -f $(CONFIG_TEMPLATE_PATH)/* $(RIOOS_HOME)/config/template  > /dev/null
 endif
-
+	@echo "✔ mkdir $(RIOOS_HOME)/config/template && cp -R"
 ifeq ("$(wildcard $(RIOOS_HOME)/license)","")
-	mkdir -p $(RIOOS_HOME)/license
-	cp -R -f $(LICENSE_SO_PATH) $(RIOOS_HOME)
+	mkdir -p $(RIOOS_HOME)/license > /dev/null
+	cp -R -f $(LICENSE_SO_PATH) $(RIOOS_HOME) > /dev/null
 endif
-
+	@echo "✔ mkdir $(RIOOS_HOME)/license && cp -R"
+	@echo "« $(RIOOS_HOME)"
 
 initialize: setup
 
-build: initialize buildbin buildlib buildapi buildaud buildmkt ## builds all the components
+build: initialize buildbin buildlib buildapi buildaud buildapp ## builds all the components
 buildall: build
 .PHONY: build buildall
 
@@ -69,8 +75,8 @@ buildapi: $(addprefix build-,$(API)) ## builds the API components
 buildaud: $(addprefix build-,$(AUD)) ## builds the audit components
 .PHONY: buildaud
 
-buildmkt: $(addprefix build-,$(MKT)) ## builds the marketplace components
-.PHONY: buildmkt
+buildapp: $(addprefix build-,$(APS)) ## builds the marketplace components
+.PHONY: buildapp
 
 unit: unit-bin unit-lib unit-srv ## executes all the components' unit test suites
 unit-all: unit

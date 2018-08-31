@@ -16,13 +16,13 @@
 //! application.
 
 use error::Error;
-use result::Result;
-use solicit::{StreamId, WindowSize};
-use solicit::DEFAULT_SETTINGS;
-use solicit::frame;
-use solicit::frame::*;
-use solicit::frame::settings::HttpSettings;
 use hpack;
+use result::Result;
+use solicit::frame;
+use solicit::frame::settings::HttpSettings;
+use solicit::frame::*;
+use solicit::DEFAULT_SETTINGS;
+use solicit::{StreamId, WindowSize};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum HttpFrameType {
@@ -62,15 +62,31 @@ impl HttpFrame {
     pub fn from_raw(raw_frame: &RawFrame) -> Result<HttpFrame> {
         let frame = match raw_frame.header().frame_type {
             frame::data::DATA_FRAME_TYPE => HttpFrame::Data(HttpFrame::parse_frame(&raw_frame)?),
-            frame::headers::HEADERS_FRAME_TYPE => HttpFrame::Headers(HttpFrame::parse_frame(&raw_frame)?),
-            frame::priority::PRIORITY_FRAME_TYPE => HttpFrame::Priority(HttpFrame::parse_frame(&raw_frame)?),
-            frame::rst_stream::RST_STREAM_FRAME_TYPE => HttpFrame::RstStream(HttpFrame::parse_frame(&raw_frame)?),
-            frame::settings::SETTINGS_FRAME_TYPE => HttpFrame::Settings(HttpFrame::parse_frame(&raw_frame)?),
-            frame::push_promise::PUSH_PROMISE_FRAME_TYPE => HttpFrame::PushPromise(HttpFrame::parse_frame(&raw_frame)?),
+            frame::headers::HEADERS_FRAME_TYPE => {
+                HttpFrame::Headers(HttpFrame::parse_frame(&raw_frame)?)
+            }
+            frame::priority::PRIORITY_FRAME_TYPE => {
+                HttpFrame::Priority(HttpFrame::parse_frame(&raw_frame)?)
+            }
+            frame::rst_stream::RST_STREAM_FRAME_TYPE => {
+                HttpFrame::RstStream(HttpFrame::parse_frame(&raw_frame)?)
+            }
+            frame::settings::SETTINGS_FRAME_TYPE => {
+                HttpFrame::Settings(HttpFrame::parse_frame(&raw_frame)?)
+            }
+            frame::push_promise::PUSH_PROMISE_FRAME_TYPE => {
+                HttpFrame::PushPromise(HttpFrame::parse_frame(&raw_frame)?)
+            }
             frame::ping::PING_FRAME_TYPE => HttpFrame::Ping(HttpFrame::parse_frame(&raw_frame)?),
-            frame::goaway::GOAWAY_FRAME_TYPE => HttpFrame::Goaway(HttpFrame::parse_frame(&raw_frame)?),
-            frame::window_update::WINDOW_UPDATE_FRAME_TYPE => HttpFrame::WindowUpdate(HttpFrame::parse_frame(&raw_frame)?),
-            frame::continuation::CONTINUATION_FRAME_TYPE => HttpFrame::Continuation(HttpFrame::parse_frame(&raw_frame)?),
+            frame::goaway::GOAWAY_FRAME_TYPE => {
+                HttpFrame::Goaway(HttpFrame::parse_frame(&raw_frame)?)
+            }
+            frame::window_update::WINDOW_UPDATE_FRAME_TYPE => {
+                HttpFrame::WindowUpdate(HttpFrame::parse_frame(&raw_frame)?)
+            }
+            frame::continuation::CONTINUATION_FRAME_TYPE => {
+                HttpFrame::Continuation(HttpFrame::parse_frame(&raw_frame)?)
+            }
             _ => HttpFrame::Unknown(raw_frame.as_ref().into()),
         };
 

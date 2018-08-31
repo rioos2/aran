@@ -1,32 +1,31 @@
-use std::sync::Arc;
 
-use ansi_term::Colour;
-use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-use typemap;
-
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use api::events::EventLogger;
-use rio_net::http::schema::{dispatch, type_meta};
-use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, not_found_error, badgateway_error};
 
 use super::ledger;
-use protocol::api::base::MetaFields;
-use protocol::api::audit::AuditEvent;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 
-use db::error::Error::RecordsNotFound;
+use api::audit::config::BlockchainConn;
+use api::events::EventLogger;
+
+use bodyparser;
+
+use config::Config;
+
 use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
 
-
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, badgateway_error, not_found_error, internal_error};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::audit::AuditEvent;
+use protocol::api::base::MetaFields;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use std::sync::Arc;
+use typemap;
 
 define_event_log!();
 
@@ -50,7 +49,7 @@ impl BlockChainApi {
         }
     }
 
-    //POST: /accounts/:account_id/audits
+    //POST: /audits
     //The body has the input audit::AuditEvent
     //Upon receipt of the AuditEvent with an account_id, the event
     //is sent to an asynchronous channel for processing.
@@ -65,30 +64,29 @@ impl BlockChainApi {
             req.get::<bodyparser::Struct<AuditEvent>>()?,
         )?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
             unmarshall_body.get_name(),
-            self.verify_account(req)?.get_name(),
+            unmarshall_body.get_account(),
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
         //Send to the eventlogger and return.
         log_event!(req, *unmarshall_body.clone());
+        push_notification!(req, *unmarshall_body.clone());
 
         Ok(render_json(status::Ok, &unmarshall_body))
     }
 
-    //GET: /accounts/:account_id/audits
+    //GET: /audits
     //Input account_id
     // Returns all the audits (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
+        let params = self.verify_account(req)?;
 
         let data = ledger::from_config(&self.clientcfg)?;
 
@@ -99,7 +97,12 @@ impl BlockChainApi {
                 Error::Db(RecordsNotFound),
                 params.get_id()
             ))),
-            Err(err) => Err(badgateway_error(&format!("{}", err))),
+            Err(err) => {
+                if format!("{:?}", err).contains("Connection refused") {
+                    return Err(badgateway_error(&format!("{}", err)));
+                }
+                Err(internal_error(&format!("{}", err)))
+            }
         }
     }
 }
@@ -113,17 +116,9 @@ impl Api for BlockChainApi {
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         //secret API
-        router.post(
-            "/accounts/:account_id/audits",
-            XHandler::new(C { inner: create }),
-            "audits",
-        );
+        router.post("/audits", XHandler::new(C { inner: create }), "audits");
 
-        router.get(
-            "/accounts/:id/audits",
-            XHandler::new(C { inner: list }),
-            "list_audits",
-        );
+        router.get("/audits", XHandler::new(C { inner: list }), "list_audits");
     }
 }
 

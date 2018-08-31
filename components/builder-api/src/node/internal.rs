@@ -1,32 +1,24 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-
-use futures::{self, Future, Sink};
 use futures::sync::mpsc;
-use tokio_core::reactor::Handle;
-
-use std::io;
+use futures::{Future, Sink};
 
 use events::error::into_other;
-use events::{InternalEvent, tobox};
+use events::InternalEvent;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InternalPart {
     pub internal_tx: mpsc::Sender<InternalEvent>,
 }
 
 impl InternalPart {
-    pub fn run(self, _handle: Handle) -> Box<Future<Item = (), Error = io::Error>> {
-
+    pub fn run(self) {
         let internal_tx = self.internal_tx.clone();
-
-        let f = futures::lazy(move || {
-            internal_tx
-                .send(InternalEvent::EntitlementTimeout)
-                .map(drop)
-                .map_err(into_other)
-        }).map_err(|_| panic!("Can't execute shutdown"));
-        tobox(f)
+        internal_tx
+            .send(InternalEvent::EntitlementTimeToVerify)
+            .map(drop)
+            .wait()
+            .map_err(into_other);
     }
 }

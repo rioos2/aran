@@ -1,6 +1,5 @@
-use crypto::pbkdf2::{pbkdf2_simple, pbkdf2_check};
-
 use super::super::error;
+use crypto::pbkdf2::{pbkdf2_check, pbkdf2_simple};
 use rioos;
 
 pub struct GoofyCrypto {
@@ -22,7 +21,11 @@ impl GoofyCrypto {
         }
     }
 
-    pub fn verify_password(&mut self, actual_password: &str, attempted_password: &str) -> error::Result<()> {
+    pub fn verify_password(
+        &mut self,
+        actual_password: &str,
+        attempted_password: &str,
+    ) -> error::Result<()> {
         let verified = pbkdf2_check(attempted_password, actual_password);
 
         match verified {
@@ -36,7 +39,10 @@ impl GoofyCrypto {
             }
             Err(e) => {
                 return Err(error::Error::Auth(rioos::AuthErr {
-                    error: format!("Unable to verify password. Is it in the right format ? {}",e),
+                    error: format!(
+                        "Unable to verify password. Is it in the right format ? {}",
+                        e
+                    ),
                     error_description: format!("{}", e),
                 }));
             }

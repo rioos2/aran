@@ -1,19 +1,19 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-use std::path::Path;
-use std::time::Duration;
-use std::fs::File;
-use std::io::Read;
-use rio_core::util::sys;
-use reqwest::{Client as ReqwestClient, IntoUrl, RequestBuilder};
 use reqwest;
 use reqwest::header::{Headers, UserAgent};
+use reqwest::{Client as ReqwestClient, IntoUrl, RequestBuilder};
+use rio_core::util::sys;
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+use std::time::Duration;
 
 use url::Url;
 
-use error::Result;
-use proxy::{ProxyInfo, proxy_unless_domain_exempted};
+use error::{Error, Result};
+use proxy::{proxy_unless_domain_exempted, ProxyInfo};
 
 // Read and write TCP socket timeout for Hyper/HTTP client calls.
 const CLIENT_SOCKET_RW_TIMEOUT: u64 = 30;
@@ -48,7 +48,12 @@ impl ApiClient {
     /// * If a suitable SSL context cannot be established
     /// * If an HTTP proxy cannot be correctly setup
     /// * If a `User-Agent` HTTP header string cannot be constructed
-    pub fn new<T>(endpoint: T, product: &str, version: &str, fs_root_path: Option<&Path>) -> Result<Self>
+    pub fn new<T>(
+        endpoint: T,
+        product: &str,
+        version: &str,
+        fs_root_path: Option<&Path>,
+    ) -> Result<Self>
     where
         T: IntoUrl,
     {
@@ -230,20 +235,26 @@ fn new_reqwest_client(url: &Url, fs_root_path: Option<&Path>) -> Result<ReqwestC
     match proxy_unless_domain_exempted(Some(url))? {
         Some(proxy) => {
             debug!("Using proxy {}:{}...", proxy.host(), proxy.port());
-            if !fs_root_path.is_none() && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok() {
+            if !fs_root_path.is_none()
+                && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok()
+            {
                 Ok(ReqwestClient::builder()
                     .timeout(timeout)
                     .add_root_certificate(reqwest::Certificate::from_pem(&buf)?)
-                    .proxy(reqwest::Proxy::https(
-                        &format!("{}:{}", proxy.host(), proxy.port()),
-                    )?)
+                    .proxy(reqwest::Proxy::https(&format!(
+                        "{}:{}",
+                        proxy.host(),
+                        proxy.port()
+                    ))?)
                     .build()?)
             } else {
                 Ok(ReqwestClient::builder().timeout(timeout).build()?)
             }
         }
         None => {
-            if !fs_root_path.is_none() && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok() {
+            if !fs_root_path.is_none()
+                && (File::open(fs_root_path.unwrap()).map(|mut x| x.read_to_end(&mut buf))).is_ok()
+            {
                 Ok(ReqwestClient::builder()
                     .add_root_certificate(reqwest::Certificate::from_pem(&buf)?)
                     .timeout(timeout)
@@ -281,14 +292,18 @@ fn new_reqwest_client(url: &Url, fs_root_path: Option<&Path>) -> Result<ReqwestC
 /// * If system information cannot be obtained via `uname`
 fn user_agent(product: &str, version: &str) -> Result<UserAgent> {
     let uname = try!(sys::uname());
-    let ua = format!(
-        "{}/{} ({}-{}; {})",
-        product.trim(),
-        version.trim(),
-        uname.machine.trim().to_lowercase(),
-        uname.sys_name.trim().to_lowercase(),
-        uname.release.trim().to_lowercase()
-    );
+    let ua = format!("{}/{} ({}-{}; {})", product.trim(), version.trim(), uname.machine.trim().to_lowercase(), uname.sys_name.trim().to_lowercase(), uname.release.trim().to_lowercase());
     debug!("User-Agent: {}", &ua);
     Ok(UserAgent::new(ua))
+}
+
+pub fn err_from_response(mut response: reqwest::Response) -> Error {
+    let mut buff = String::new();
+    match response.read_to_string(&mut buff) {
+        Ok(_) => Error::APIError(response.status(), buff),
+        Err(_) => {
+            buff.truncate(0);
+            Error::APIError(response.status(), buff)
+        }
+    }
 }

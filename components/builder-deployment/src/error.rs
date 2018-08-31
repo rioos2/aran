@@ -2,13 +2,13 @@
 
 //! A module containing the errors handling for the builder deployment
 
+use db;
+use job;
+use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use job;
-use postgres;
-use db;
-use rio_net;
+use telemetry;
 
 #[derive(Debug)]
 pub enum Error {
@@ -16,6 +16,10 @@ pub enum Error {
     AssemblyFactoryCreate(postgres::error::Error),
     AssemblyFactoryGet(postgres::error::Error),
     AssemblyFactoryUpdate(postgres::error::Error),
+    StacksFactoryInvalidType(String),
+    StacksFactoryCreate(postgres::error::Error),
+    StacksFactoryGet(postgres::error::Error),
+    StacksFactoryUpdate(postgres::error::Error),
     AssemblyCreate(postgres::error::Error),
     AssemblyGet(postgres::error::Error),
     AssemblyUpdate(postgres::error::Error),
@@ -30,8 +34,11 @@ pub enum Error {
     VolumesGet(postgres::error::Error),
     VolumeUpdate(postgres::error::Error),
     Jobs(job::error::Error),
-    PromoStatusGetError(rio_net::Error),
+    PromoStatusGetError(telemetry::error::Error),
     PlanSetStatus(postgres::error::Error),
+    IngressCreate(postgres::error::Error),
+    IngressGet(postgres::error::Error),
+    IngressUpdate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -42,7 +49,11 @@ impl fmt::Display for Error {
             Error::Db(ref e) => format!("{}", e),
             Error::AssemblyFactoryCreate(ref e) => format!("Database error creating a new assembly factory, {}", e),
             Error::AssemblyFactoryGet(ref e) => format!("Database error getting assembly factory, {}", e),
-            Error::AssemblyFactoryUpdate(ref e) => format!("Database error updatingassembly factory, {}", e),
+            Error::AssemblyFactoryUpdate(ref e) => format!("Database error updating assembly factory, {}", e),
+            Error::StacksFactoryInvalidType(ref e) => format!("{}", e),
+            Error::StacksFactoryCreate(ref e) => format!("Database error creating a new blockchain factory, {}", e),
+            Error::StacksFactoryGet(ref e) => format!("Database error getting blockchain factory, {}", e),
+            Error::StacksFactoryUpdate(ref e) => format!("Database error updating blockchain factory, {}", e),
             Error::AssemblyCreate(ref e) => format!("Database error creating a new assembly, {}", e),
             Error::AssemblyGet(ref e) => format!("Database error getting assembly, {}", e),
             Error::AssemblyUpdate(ref e) => format!("Database error updating a assembly, {}", e),
@@ -59,6 +70,9 @@ impl fmt::Display for Error {
             Error::VolumeUpdate(ref e) => format!("Error updating volume, {}", e),
             Error::PlanSetStatus(ref e) => format!("Error updating plan status, {}", e),
             Error::Jobs(ref e) => format!("{}", e),
+            Error::IngressCreate(ref e) => format!("Error creating ingress, {}", e),
+            Error::IngressGet(ref e) => format!("Error get ingress, {}", e),
+            Error::IngressUpdate(ref e) => format!("Error update ingress, {}", e),
         };
         write!(f, "{}", msg)
     }
@@ -71,6 +85,10 @@ impl error::Error for Error {
             Error::AssemblyFactoryCreate(ref err) => err.description(),
             Error::AssemblyFactoryGet(ref err) => err.description(),
             Error::AssemblyFactoryUpdate(ref err) => err.description(),
+            Error::StacksFactoryInvalidType(ref err) => err,
+            Error::StacksFactoryCreate(ref err) => err.description(),
+            Error::StacksFactoryGet(ref err) => err.description(),
+            Error::StacksFactoryUpdate(ref err) => err.description(),
             Error::AssemblyCreate(ref err) => err.description(),
             Error::AssemblyGet(ref err) => err.description(),
             Error::AssemblyUpdate(ref err) => err.description(),
@@ -87,6 +105,9 @@ impl error::Error for Error {
             Error::Jobs(ref err) => err.description(),
             Error::PlanSetStatus(ref err) => err.description(),
             Error::PromoStatusGetError(ref err) => err.description(),
+            Error::IngressCreate(ref err) => err.description(),
+            Error::IngressGet(ref err) => err.description(),
+            Error::IngressUpdate(ref err) => err.description(),
         }
     }
 }
@@ -103,8 +124,8 @@ impl From<job::error::Error> for Error {
     }
 }
 
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
+impl From<telemetry::error::Error> for Error {
+    fn from(err: telemetry::error::Error) -> Error {
         Error::PromoStatusGetError(err)
     }
 }

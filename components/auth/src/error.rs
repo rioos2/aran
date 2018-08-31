@@ -1,14 +1,13 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use base64::DecodeError as B64Error;
+use openssl::error::ErrorStack;
+use rioos;
+use serde_json::Error as SJError;
 use std::error;
 use std::fmt;
 use std::io;
 use std::result;
-use serde_json::Error as SJError;
-use openssl::error::ErrorStack;
-use base64::DecodeError as B64Error;
-
-use rioos;
 
 #[derive(Debug)]
 pub enum Error {
@@ -25,6 +24,7 @@ pub enum Error {
     CantVerifyPassticket(String),
     PassticketMismatch,
     PermissionError(String),
+    EntitlementError(String),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -45,6 +45,7 @@ impl fmt::Display for Error {
             Error::OldPassticketMustBeRemoved(ref e) => format!("{}", e),
             Error::CantVerifyPassticket(ref e) => format!("{}", e),
             Error::PermissionError(ref e) => format!("{}", e),
+            Error::EntitlementError(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -58,7 +59,9 @@ impl error::Error for Error {
             Error::FormatInvalid(ref err) => err.description(),
             Error::OpenSslError(ref err) => err.description(),
             Error::ProtocolError(ref err) => err.description(),
-            Error::OldPassticketMustBeRemoved(ref _e) => "Old passticket still remains after one time use.",
+            Error::OldPassticketMustBeRemoved(ref _e) => {
+                "Old passticket still remains after one time use."
+            }
             Error::CantVerifyPassticket(ref _e) => "Passticket Mismatch error",
             Error::PassticketMismatch => "Passticket mismatch",
             Error::SignatureExpired => "signature expired",
@@ -66,6 +69,7 @@ impl error::Error for Error {
             Error::JWTInvalid => "JWT token invalid",
             Error::IssuerInvalid => "JWT token issuer invalid",
             Error::PermissionError(ref e) => e,
+            Error::EntitlementError(ref e) => e,
         }
     }
 }

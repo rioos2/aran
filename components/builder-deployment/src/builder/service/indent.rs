@@ -1,8 +1,8 @@
-use std::fmt;
-use std::cmp::Ordering;
-use std::str::FromStr;
-use std::result;
 use error::Error;
+use std::cmp::Ordering;
+use std::fmt;
+use std::result;
+use std::str::FromStr;
 
 #[derive(Eq, PartialEq, Debug, Clone, Hash)]
 pub struct ServiceIdent {

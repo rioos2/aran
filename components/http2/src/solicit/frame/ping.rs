@@ -1,8 +1,8 @@
 //! Implements the `PING` HTTP/2 frame.
 
-use solicit::StreamId;
-use solicit::frame::{Frame, FrameIR, FrameBuilder, FrameHeader, RawFrame};
 use solicit::frame::flags::*;
+use solicit::frame::{Frame, FrameBuilder, FrameHeader, FrameIR, RawFrame};
+use solicit::StreamId;
 
 /// Ping frames are always 8 bytes
 pub const PING_FRAME_LEN: u32 = 8;
@@ -87,7 +87,8 @@ impl Frame for PingFrame {
             return None;
         }
 
-        let data = unpack_octets_4!(raw_frame.payload(), 0, u64) << 32 | unpack_octets_4!(raw_frame.payload(), 4, u64);
+        let data = unpack_octets_4!(raw_frame.payload(), 0, u64) << 32
+            | unpack_octets_4!(raw_frame.payload(), 4, u64);
 
         Some(PingFrame {
             opaque_data: data,
@@ -125,14 +126,15 @@ impl FrameIR for PingFrame {
 mod tests {
     use super::PingFrame;
 
-    use solicit::tests::common::raw_frame_from_parts;
     use solicit::frame::Frame;
-    use solicit::frame::FrameIR;
     use solicit::frame::FrameHeader;
+    use solicit::frame::FrameIR;
+    use solicit::tests::common::raw_frame_from_parts;
 
     #[test]
     fn test_parse_not_ack() {
-        let raw = raw_frame_from_parts(FrameHeader::new(8, 0x6, 0, 0), vec![0, 0, 0, 0, 0, 0, 0, 0]);
+        let raw =
+            raw_frame_from_parts(FrameHeader::new(8, 0x6, 0, 0), vec![0, 0, 0, 0, 0, 0, 0, 0]);
         let frame = PingFrame::from_raw(&raw).expect("Expected successful parse");
         assert_eq!(frame.is_ack(), false);
         assert_eq!(frame.opaque_data(), 0);
@@ -140,7 +142,8 @@ mod tests {
 
     #[test]
     fn test_parse_ack() {
-        let raw = raw_frame_from_parts(FrameHeader::new(8, 0x6, 1, 0), vec![0, 0, 0, 0, 0, 0, 0, 0]);
+        let raw =
+            raw_frame_from_parts(FrameHeader::new(8, 0x6, 1, 0), vec![0, 0, 0, 0, 0, 0, 0, 0]);
         let frame = PingFrame::from_raw(&raw).expect("Expected successful parse");
         assert_eq!(frame.is_ack(), true);
         assert_eq!(frame.opaque_data(), 0);
@@ -148,7 +151,8 @@ mod tests {
 
     #[test]
     fn test_parse_opaque_data() {
-        let raw = raw_frame_from_parts(FrameHeader::new(8, 0x6, 1, 0), vec![1, 2, 3, 4, 5, 6, 7, 8]);
+        let raw =
+            raw_frame_from_parts(FrameHeader::new(8, 0x6, 1, 0), vec![1, 2, 3, 4, 5, 6, 7, 8]);
         let frame = PingFrame::from_raw(&raw).expect("Expected successful parse");
         assert_eq!(frame.is_ack(), true);
         assert_eq!(frame.opaque_data(), 0x0102030405060708);
@@ -157,9 +161,10 @@ mod tests {
     #[test]
     fn test_serialize() {
         let frame = PingFrame::new_ack(0);
-        let expected: Vec<u8> = raw_frame_from_parts(FrameHeader::new(8, 0x6, 1, 0), vec![0, 0, 0, 0, 0, 0, 0, 0])
-            .as_ref()
-            .to_owned();
+        let expected: Vec<u8> =
+            raw_frame_from_parts(FrameHeader::new(8, 0x6, 1, 0), vec![0, 0, 0, 0, 0, 0, 0, 0])
+                .as_ref()
+                .to_owned();
 
         let raw = frame.serialize_into_vec();
 

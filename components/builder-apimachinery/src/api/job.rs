@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use api::base::{TypeMeta, ObjectMeta, Status, MetaFields, WhoAmITypeMeta};
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta, WhoAmITypeMeta};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Jobs {
@@ -83,7 +83,7 @@ impl MetaFields for Jobs {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct SpecData {
     node_id: String, //applicable node for this job. this job will be scheduler allocate in the specific node id. incase node id is invalid no one can receive this job.
-    group: String,   //`group` represents a grouping of jobs that applies to. The supported groupings are `assembly, service, backup,snapshot`
+    group: String, //`group` represents a grouping of jobs that applies to. The supported groupings are `assembly, service, backup,snapshot`
     /*action represents the requested action to be performed by the job.
     The supported actions for group assembly are `deploy,start, stop,reboot,forcestop,delete,remove, releasecompute`,
     service are `deploy,start, stop,reboot,forcestop,delete,remove, releasecompute`,
@@ -139,7 +139,7 @@ mod test {
         assert_eq!(job.id, "8765431234567");
         assert_eq!(job.created_at, "2017-11-29T12:59:06.809333+00:00");
     }
-
+    #[test]
     fn decode_spec_data() {
         let val = r#"{
             "node_id": "8762345665434",
