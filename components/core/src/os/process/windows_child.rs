@@ -41,9 +41,7 @@ pub struct Child {
 
 impl Child {
     pub fn spawn(program: &str, args: Vec<&str>, env: &HashMap<String, String>) -> Result<Child> {
-        let mut os_env: HashMap<OsString, OsString> = env::vars_os()
-            .map(|(key, val)| (mk_key(key.to_str().unwrap()), val))
-            .collect();
+        let mut os_env: HashMap<OsString, OsString> = env::vars_os().map(|(key, val)| (mk_key(key.to_str().unwrap()), val)).collect();
         for (k, v) in env {
             os_env.insert(mk_key(k.as_str()), OsString::from(v));
         }
@@ -57,8 +55,7 @@ impl Child {
                 // Split the value and test each path to see if the
                 // program exists.
                 for path in env::split_paths(&v) {
-                    let path = path.join(program)
-                        .with_extension(env::consts::EXE_EXTENSION);
+                    let path = path.join(program).with_extension(env::consts::EXE_EXTENSION);
                     if fs::metadata(&path).is_ok() {
                         res = Some(path.into_os_string());
                     }
@@ -294,15 +291,8 @@ pub fn anon_pipe(ours_readable: bool) -> io::Result<Pipes> {
         loop {
             tries += 1;
             let key: u64 = rand::thread_rng().gen();
-            name = format!(
-                r"\\.\pipe\__rust_anonymous_pipe1__.{}.{}",
-                kernel32::GetCurrentProcessId(),
-                key
-            );
-            let wide_name = OsStr::new(&name)
-                .encode_wide()
-                .chain(Some(0))
-                .collect::<Vec<_>>();
+            name = format!(r"\\.\pipe\__rust_anonymous_pipe1__.{}.{}", kernel32::GetCurrentProcessId(), key);
+            let wide_name = OsStr::new(&name).encode_wide().chain(Some(0)).collect::<Vec<_>>();
             let mut flags = winapi::FILE_FLAG_FIRST_PIPE_INSTANCE | winapi::FILE_FLAG_OVERLAPPED;
             if ours_readable {
                 flags |= winapi::PIPE_ACCESS_INBOUND;
@@ -368,15 +358,11 @@ pub fn anon_pipe(ours_readable: bool) -> io::Result<Pipes> {
         opts.read(!ours_readable);
         opts.share_mode(0);
         let theirs = File::open(Path::new(&name), &opts)?;
-        let theirs = AnonPipe {
-            inner: theirs.into_handle(),
-        };
+        let theirs = AnonPipe { inner: theirs.into_handle() };
 
         Ok(Pipes {
             ours: AnonPipe { inner: ours },
-            theirs: AnonPipe {
-                inner: theirs.into_handle(),
-            },
+            theirs: AnonPipe { inner: theirs.into_handle() },
         })
     }
 }
@@ -507,11 +493,7 @@ impl OpenOptions {
             winapi::SECURITY_SQOS_PRESENT
         } else {
             0
-        } | if self.create_new {
-            winapi::FILE_FLAG_OPEN_REPARSE_POINT
-        } else {
-            0
-        }
+        } | if self.create_new { winapi::FILE_FLAG_OPEN_REPARSE_POINT } else { 0 }
     }
 }
 
@@ -536,9 +518,7 @@ impl File {
         if handle == winapi::INVALID_HANDLE_VALUE {
             Err(io::Error::last_os_error())
         } else {
-            Ok(File {
-                handle: Handle::new(handle),
-            })
+            Ok(File { handle: Handle::new(handle) })
         }
     }
 
@@ -562,12 +542,7 @@ impl Handle {
 
     pub fn new_event(manual: bool, init: bool) -> io::Result<Handle> {
         unsafe {
-            let event = kernel32::CreateEventW(
-                ptr::null_mut(),
-                manual as winapi::BOOL,
-                init as winapi::BOOL,
-                ptr::null(),
-            );
+            let event = kernel32::CreateEventW(ptr::null_mut(), manual as winapi::BOOL, init as winapi::BOOL, ptr::null());
             if event.is_null() {
                 Err(io::Error::last_os_error())
             } else {
@@ -610,15 +585,7 @@ impl RawHandle {
     pub fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let mut read = 0;
         let len = cmp::min(buf.len(), <winapi::DWORD>::max_value() as usize) as winapi::DWORD;
-        let res = cvt(unsafe {
-            kernel32::ReadFile(
-                self.0,
-                buf.as_mut_ptr() as winapi::LPVOID,
-                len,
-                &mut read,
-                ptr::null_mut(),
-            )
-        });
+        let res = cvt(unsafe { kernel32::ReadFile(self.0, buf.as_mut_ptr() as winapi::LPVOID, len, &mut read, ptr::null_mut()) });
 
         match res {
             Ok(_) => Ok(read as usize),
@@ -658,15 +625,7 @@ impl RawHandle {
     pub unsafe fn read_overlapped(&self, buf: &mut [u8], overlapped: *mut winapi::OVERLAPPED) -> io::Result<Option<usize>> {
         let len = cmp::min(buf.len(), <winapi::DWORD>::max_value() as usize) as winapi::DWORD;
         let mut amt = 0;
-        let res = cvt({
-            kernel32::ReadFile(
-                self.0,
-                buf.as_ptr() as winapi::LPVOID,
-                len,
-                &mut amt,
-                overlapped,
-            )
-        });
+        let res = cvt({ kernel32::ReadFile(self.0, buf.as_ptr() as winapi::LPVOID, len, &mut amt, overlapped) });
         match res {
             Ok(_) => Ok(Some(amt as usize)),
             Err(e) => {
@@ -711,15 +670,7 @@ impl RawHandle {
     pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
         let mut amt = 0;
         let len = cmp::min(buf.len(), <winapi::DWORD>::max_value() as usize) as winapi::DWORD;
-        cvt(unsafe {
-            kernel32::WriteFile(
-                self.0,
-                buf.as_ptr() as winapi::LPVOID,
-                len,
-                &mut amt,
-                ptr::null_mut(),
-            )
-        })?;
+        cvt(unsafe { kernel32::WriteFile(self.0, buf.as_ptr() as winapi::LPVOID, len, &mut amt, ptr::null_mut()) })?;
         Ok(amt as usize)
     }
 
@@ -762,10 +713,7 @@ fn cvt(i: i32) -> io::Result<i32> {
 
 fn ensure_no_nuls<T: AsRef<OsStr>>(str: T) -> io::Result<T> {
     if str.as_ref().encode_wide().any(|b| b == 0) {
-        Err(io::Error::new(
-            ErrorKind::InvalidInput,
-            "nul byte found in provided data",
-        ))
+        Err(io::Error::new(ErrorKind::InvalidInput, "nul byte found in provided data"))
     } else {
         Ok(str)
     }
@@ -872,10 +820,7 @@ unsafe fn read_to_end_uninitialized(r: &mut Read, buf: &mut Vec<u8>) -> io::Resu
             buf.reserve(1);
         }
 
-        let buf_slice = from_raw_parts_mut(
-            buf.as_mut_ptr().offset(buf.len() as isize),
-            buf.capacity() - buf.len(),
-        );
+        let buf_slice = from_raw_parts_mut(buf.as_mut_ptr().offset(buf.len() as isize), buf.capacity() - buf.len());
 
         match r.read(buf_slice) {
             Ok(0) => {
@@ -897,13 +842,7 @@ fn stdio_piped_handle(stdio_id: winapi::DWORD, pipe: &mut Option<AnonPipe>) -> i
     let ours_readable = stdio_id != winapi::STD_INPUT_HANDLE;
     let pipes = anon_pipe(ours_readable)?;
     *pipe = Some(pipes.ours);
-    cvt(unsafe {
-        kernel32::SetHandleInformation(
-            pipes.theirs.handle().raw(),
-            HANDLE_FLAG_INHERIT,
-            HANDLE_FLAG_INHERIT,
-        )
-    })?;
+    cvt(unsafe { kernel32::SetHandleInformation(pipes.theirs.handle().raw(), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT) })?;
     Ok(pipes.theirs.into_handle())
 }
 

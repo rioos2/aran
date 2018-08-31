@@ -1,14 +1,14 @@
 [package]
-name = "rioos_builder_netsrv"
+name = "rioos_builder_virtual_network"
 version = "0.0.0"
 authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>", "Suganya K <suganyakaliyamoorthy@megam.io>"]
 description = "RIO/OS Deployment library"
 workspace = "../../"
 
 [dependencies]
-postgres = { version = "0.15.1", features = ["with-chrono"] }
-chrono = { version = "0.4.0", features = ["serde"] }
-serde_json = "1.0.10"
+postgres = { version = "0.15.2", features = ["with-chrono"] }
+chrono = { version = "0.4.4", features = ["serde"] }
+serde_json = "1.0.22"
 
 [dependencies.rioos_builder_apimachinery]
 path = "../builder-apimachinery"

@@ -4,10 +4,10 @@ use bytes::Bytes;
 
 use error;
 
+use solicit::connection::EndStream;
+use solicit::header::Headers;
 use solicit::session::StreamState;
 use solicit::WindowSize;
-use solicit::header::Headers;
-use solicit::connection::EndStream;
 
 use futures_misc::ResultOrEof;
 
@@ -35,7 +35,9 @@ impl HttpStreamCommand {
         };
         match part.content {
             HttpStreamPartContent::Data(data) => HttpStreamCommand::Data(data, end_stream),
-            HttpStreamPartContent::Headers(headers) => HttpStreamCommand::Headers(headers, end_stream),
+            HttpStreamPartContent::Headers(headers) => {
+                HttpStreamCommand::Headers(headers, end_stream)
+            }
         }
     }
 }
@@ -60,7 +62,13 @@ pub struct HttpStreamCommon<T: Types> {
 }
 
 impl<T: Types> HttpStreamCommon<T> {
-    pub fn new(in_window_size: u32, out_window_size: u32, incoming: StreamQueueSyncSender, pump_out_window: window_size::StreamOutWindowSender, specific: T::HttpStreamSpecific) -> HttpStreamCommon<T> {
+    pub fn new(
+        in_window_size: u32,
+        out_window_size: u32,
+        incoming: StreamQueueSyncSender,
+        pump_out_window: window_size::StreamOutWindowSender,
+        specific: T::HttpStreamSpecific,
+    ) -> HttpStreamCommon<T> {
         HttpStreamCommon {
             specific: specific,
             state: StreamState::Open,
@@ -119,11 +127,12 @@ impl<T: Types> HttpStreamCommon<T> {
             };
         }
 
-        let pop_headers = if let &HttpStreamPartContent::Headers(..) = self.outgoing.front().unwrap() {
-            true
-        } else {
-            false
-        };
+        let pop_headers =
+            if let &HttpStreamPartContent::Headers(..) = self.outgoing.front().unwrap() {
+                true
+            } else {
+                false
+            };
         if pop_headers {
             let r = self.outgoing.pop_front().unwrap();
             let last = self.outgoing.end() == Some(ErrorCode::NoError);
@@ -174,7 +183,10 @@ impl<T: Types> HttpStreamCommon<T> {
         }))
     }
 
-    pub fn _pop_outg_all(&mut self, conn_out_window_size: &mut WindowSize) -> Vec<HttpStreamCommand> {
+    pub fn _pop_outg_all(
+        &mut self,
+        conn_out_window_size: &mut WindowSize,
+    ) -> Vec<HttpStreamCommand> {
         let mut r = Vec::new();
         while let Some(p) = self.pop_outg(conn_out_window_size) {
             r.push(p);
@@ -201,7 +213,9 @@ impl<T: Types> HttpStreamCommon<T> {
     pub fn goaway_recvd(&mut self, _raw_error_code: u32) {
         if let Some(response_handler) = self.peer_tx.take() {
             // it is OK to ignore error: handler may be already dead
-            drop(response_handler.send(ResultOrEof::Error(error::Error::Other("peer sent GOAWAY"))));
+            drop(
+                response_handler.send(ResultOrEof::Error(error::Error::Other("peer sent GOAWAY"))),
+            );
         }
     }
 }

@@ -2,38 +2,30 @@
 
 //! A collection of deployment [assembly, assembly_factory, for the HTTP server
 
-use std::sync::Arc;
-
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier, QueryValidator, ExpanderSender};
-use rio_net::http::schema::{dispatch, type_meta};
+use bytes::Bytes;
 use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-use rio_net::metrics::prometheus::PrometheusClient;
-use deploy::assembler::{ServicesConfig, Assembler};
-use deploy::models::{assemblyfactory, blueprint, service};
-use protocol::cache::{CACHE_PREFIX_PLAN, NewCacheServiceFn, CACHE_PREFIX_SERVICE};
-
-
-use scale::{horizontalscaling_ds, scaling};
-use protocol::api::scale::{HorizontalScaling, StatusUpdate};
-use protocol::api::base::{MetaFields, IdGet};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::assembler::{Assembler, ServicesConfig};
+use deploy::models::{assemblyfactory, blueprint, service};
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::scale::{HorizontalScaling, StatusUpdate};
+use protocol::api::schema::{dispatch, type_meta};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE};
+use router::Router;
+use scale::{models, scaling};
 use serde_json;
+use std::sync::Arc;
+use telemetry::metrics::prometheus::PrometheusClient;
 
 #[derive(Clone)]
 pub struct HorizontalScalingApi {
@@ -75,13 +67,11 @@ impl HorizontalScalingApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match horizontalscaling_ds::DataStore::new(&self.conn).create(&unmarshall_body) {
+        match models::horizontalscaling::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(response)) => Ok(render_json(status::Ok, &response)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -93,13 +83,15 @@ impl HorizontalScalingApi {
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn scale(&self, req: &mut Request, _cfg: &ServicesConfig) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-        match horizontalscaling_ds::DataStore::new(&self.conn).show(&params) {
+        match models::horizontalscaling::DataStore::new(&self.conn).show(&params) {
             Ok(Some(hs)) => {
-                let af_id: Vec<IdGet> = hs.get_owner_references()
-                    .iter()
-                    .map(|x| IdGet::with_id(x.uid.to_string()))
-                    .collect::<Vec<_>>();
-                match assemblyfactory::DataStore::new(&self.conn).show(&af_id[0]) {
+                let id_get = IdGet::with_id(
+                    hs.get_owner_references()
+                        .iter()
+                        .map(|x| x.get_uid().to_string())
+                        .collect::<String>(),
+                );
+                match assemblyfactory::DataStore::new(&self.conn).show(&id_get) {
                     Ok(Some(factory)) => {
                         match Assembler::new(&self.conn, _cfg).reassemble(
                             hs.get_status().get_desired_replicas(),
@@ -127,32 +119,30 @@ impl HorizontalScalingApi {
         }
     }
 
-    /*//GET: /origin/assembly/:origin_name
-    //Input origin_name Returns all the Assemblys (for that origin)
-    //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //GET: /horizontalscaling/assemblyfactory/:id
+
+    //Input assembly factory id Returns horizontal_scaling
+    //Will need teams/permission to access others horizontal_scaling
     fn show_by_assembly_factory(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match horizontalscaling_ds::DataStore::new(&self.conn).show_by_assembly_factory(&params) {
+        match models::horizontalscaling::DataStore::new(&self.conn).show_by_assembly_factory(&params) {
             Ok(Some(scale)) => Ok(render_json(status::Ok, &scale)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
-            Ok(None) => {
-                Err(not_found_error(&format!(
-                    "{} for {}",
-                    Error::Db(RecordsNotFound),
-                    params.get_id()
-                )))
-            }
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
         }
-    }*/
+    }
 
     //GET: /horizontalscaling/:id
     //Input id - u64 as input
     //Returns an horizontalscaling
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match horizontalscaling_ds::DataStore::new(&self.conn).show(&idget) {
+        let res = match models::horizontalscaling::DataStore::new(&self.conn).show(&idget) {
             Ok(Some(hs)) => {
                 let data = json!({
                             "type": typ,
@@ -165,7 +155,7 @@ impl HorizontalScalingApi {
         Bytes::from(res)
     }
     //GET: /horizontalscaling/:assembly_factory_id/metrics
-    //get metrics for the list of assemblys
+    // get metrics for the list of assemblys
     fn metrics(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
         let query_pairs = self.default_validate(req)?;
@@ -190,7 +180,7 @@ impl HorizontalScalingApi {
         )?;
         unmarshall_body.set_id(params.get_id());
 
-        match horizontalscaling_ds::DataStore::new(&self.conn).status_update(&unmarshall_body) {
+        match models::horizontalscaling::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(hs_update)) => Ok(render_json(status::Ok, &hs_update)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -211,7 +201,7 @@ impl HorizontalScalingApi {
         )?;
         unmarshall_body.set_id(params.get_id());
 
-        match horizontalscaling_ds::DataStore::new(&self.conn).update(&unmarshall_body) {
+        match models::horizontalscaling::DataStore::new(&self.conn).update(&unmarshall_body) {
             Ok(Some(hs)) => Ok(render_json(status::Ok, &hs)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -224,9 +214,9 @@ impl HorizontalScalingApi {
 
     //horizontalscaling
     //Global: Returns all the HorizontalScalings (irrespective of origins)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
-        match horizontalscaling_ds::DataStore::new(&self.conn).list_blank() {
+        match models::horizontalscaling::DataStore::new(&self.conn).list_blank() {
             Ok(Some(hss)) => Ok(render_json_list(status::Ok, dispatch(req), &hss)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -256,8 +246,8 @@ impl Api for HorizontalScalingApi {
         let _self = self.clone();
         let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
-        /*let _self = self.clone();
-        let show_by_assembly_factory = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly_factory(req) };*/
+        let _self = self.clone();
+        let show_by_assembly_factory = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly_factory(req) };
 
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
@@ -281,8 +271,9 @@ impl Api for HorizontalScalingApi {
             XHandler::new(C { inner: update }).before(basic.clone()),
             "horizontal_scaling_update",
         );
+
         router.get(
-            "/horizontalscaling/:id/metrics",
+            "/metrics/horizontalscaling/:id",
             XHandler::new(C { inner: metrics }).before(basic.clone()),
             "horizontal_scaling_metrics",
         );
@@ -293,11 +284,11 @@ impl Api for HorizontalScalingApi {
             "horizontal_scaling",
         );
 
-        /*router.get(
+        router.get(
             "/horizontalscaling/assemblyfactory/:id",
             XHandler::new(C { inner: show_by_assembly_factory }).before(basic.clone()),
             "horizontal_scaling_show_by_assembly_factory",
-        );*/
+        );
 
         router.get(
             "/horizontalscaling",
@@ -322,7 +313,7 @@ impl ExpanderSender for HorizontalScalingApi {
 
         let _conn = self.conn.clone();
 
-        let services = Box::new(NewCacheServiceFn::new(
+        let services_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_SERVICE.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 service::DataStore::list_by_assembly_factory(&_conn, &id)
@@ -332,7 +323,7 @@ impl ExpanderSender for HorizontalScalingApi {
         ));
 
         &self.conn.expander.with(plan_service);
-        &self.conn.expander.with(services);
+        &self.conn.expander.with(services_service);
     }
 }
 ///We say HorizontalScalingAPI resource needs to be validated.

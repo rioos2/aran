@@ -2,14 +2,17 @@
 //
 
 //! Deployment part of the Rioos rest api.
-pub mod origin;
 pub mod assembly;
 pub mod assembly_factory;
+pub mod config;
+pub mod console;
 pub mod endpoint;
-pub mod service;
 pub mod horizontalscaling;
-pub mod plan_factory;
-pub mod team;
 pub mod job;
-pub mod volume;
+pub mod origin;
+pub mod plan_factory;
+pub mod service;
+pub mod stacks_factory;
 pub mod vertical_scaling;
+pub mod volume;
+pub mod ingress;

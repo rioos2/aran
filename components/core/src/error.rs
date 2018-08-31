@@ -3,15 +3,14 @@
 //! A module containing the common errors
 
 use std::error;
-use std::io;
 use std::fmt;
+use std::io;
 use std::num;
 use std::path::PathBuf;
 use std::result;
 use std::str;
 use std::string;
 
-use regex;
 use toml;
 
 use openssl;
@@ -84,10 +83,6 @@ pub enum Error {
     ParseIntError(num::ParseIntError),
     /// Occurs when setting ownership or permissions on a file or directory fails.
     PermissionFailed(String),
-    /// Error parsing the contents of a plan file were incomplete or malformed.
-    PlanMalformed,
-    /// When an error occurs parsing or compiling a regular expression.
-    RegexParse(regex::Error),
     /// When an error occurs converting a `String` from a UTF-8 byte vector.
     StringFromUtf8Error(string::FromUtf8Error),
     /// When the system target (platform and architecture) do not match the package target.
@@ -114,99 +109,50 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::X509Error(ref err) => format!("{}", err),
-            Error::BadKeyPath(ref e) => {
-                format!(
-                    "Invalid keypath: {}. Specify an absolute path to a file on disk.",
-                    e
-                )
-            }
+            Error::BadKeyPath(ref e) => format!("Invalid keypath: {}. Specify an absolute path to a file on disk.", e),
             Error::ConfigFileIO(ref f, ref e) => format!("Error reading configuration file, {}, {}", f.display(), e),
-            Error::ConfigFileSyntax(ref e) => {
-                format!(
-                    "Syntax errors while parsing TOML configuration file:\n\n{}",
-                    e
-                )
-            }
-            Error::ConfigInvalidArraySocketAddr(ref f) => {
-                format!(
-                    "Invalid array value of network address pair strings config, field={}. \
+            Error::ConfigFileSyntax(ref e) => format!("Syntax errors while parsing TOML configuration file:\n\n{}", e),
+            Error::ConfigInvalidArraySocketAddr(ref f) => format!(
+                "Invalid array value of network address pair strings config, field={}. \
                  (example: [\"127.0.0.1:8080\", \"10.0.0.4:22\"])",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayTableString(ref f) => {
-                format!(
-                    "Invalid array value of tables containing string fields and values in \
+                f
+            ),
+            Error::ConfigInvalidArrayTableString(ref f) => format!(
+                "Invalid array value of tables containing string fields and values in \
                  config, field={}",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayTarget(ref f) => {
-                format!(
-                    "Invalid array value of targets containing string fields and values in \
+                f
+            ),
+            Error::ConfigInvalidArrayTarget(ref f) => format!(
+                "Invalid array value of targets containing string fields and values in \
                  config, field={}",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayU16(ref f) => {
-                format!(
-                    "Invalid array value of u16 entries in config, field={}. (example: [1, 2])",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayU32(ref f) => {
-                format!(
-                    "Invalid array value of u32 entries in config, field={}. (example: [1, 2])",
-                    f
-                )
-            }
-            Error::ConfigInvalidArrayU64(ref f) => {
-                format!(
-                    "Invalid array value of u64 entries in config, field={}. (example: [1, 2])",
-                    f
-                )
-            }
-            Error::ConfigInvalidBool(ref f) => {
-                format!(
-                    "Invalid boolean value in config, field={}. (example: true)",
-                    f
-                )
-            }
-            Error::ConfigInvalidIdent(ref f) => {
-                format!(
-                    "Invalid package identifier string value in config, field={}. (example: \
+                f
+            ),
+            Error::ConfigInvalidArrayU16(ref f) => format!("Invalid array value of u16 entries in config, field={}. (example: [1, 2])", f),
+            Error::ConfigInvalidArrayU32(ref f) => format!("Invalid array value of u32 entries in config, field={}. (example: [1, 2])", f),
+            Error::ConfigInvalidArrayU64(ref f) => format!("Invalid array value of u64 entries in config, field={}. (example: [1, 2])", f),
+            Error::ConfigInvalidBool(ref f) => format!("Invalid boolean value in config, field={}. (example: true)", f),
+            Error::ConfigInvalidIdent(ref f) => format!(
+                "Invalid package identifier string value in config, field={}. (example: \
                  \"core/redis\")",
-                    f
-                )
-            }
-            Error::ConfigInvalidIpAddr(ref f) => {
-                format!(
-                    "Invalid IP address string value in config, field={}. (example: \
+                f
+            ),
+            Error::ConfigInvalidIpAddr(ref f) => format!(
+                "Invalid IP address string value in config, field={}. (example: \
                  \"127.0.0.0\")",
-                    f
-                )
-            }
-            Error::ConfigInvalidSocketAddr(ref f) => {
-                format!(
-                    "Invalid network address pair string value in config, field={}. (example: \
+                f
+            ),
+            Error::ConfigInvalidSocketAddr(ref f) => format!(
+                "Invalid network address pair string value in config, field={}. (example: \
                  \"127.0.0.0:8080\")",
-                    f
-                )
-            }
+                f
+            ),
             Error::ConfigInvalidString(ref f) => format!("Invalid string value in config, field={}.", f),
-            Error::ConfigInvalidTableString(ref f) => {
-                format!(
-                    "Invalid table value of string fields and values in config, field={}",
-                    f
-                )
-            }
-            Error::ConfigInvalidTarget(ref f) => {
-                format!(
-                    "Invalid package target string value in config, field={}. (example: \
+            Error::ConfigInvalidTableString(ref f) => format!("Invalid table value of string fields and values in config, field={}", f),
+            Error::ConfigInvalidTarget(ref f) => format!(
+                "Invalid package target string value in config, field={}. (example: \
                  \"x86_64-linux\")",
-                    f
-                )
-            }
+                f
+            ),
             Error::ConfigInvalidU16(ref f) => format!("Invalid u16 value in config, field={}", f),
             Error::ConfigInvalidU32(ref f) => format!("Invalid u32 value in config, field={}", f),
             Error::ConfigInvalidU64(ref f) => format!("Invalid u64 value in config, field={}", f),
@@ -215,27 +161,21 @@ impl fmt::Display for Error {
             Error::FileNotFound(ref e) => format!("File not found at: {}", e),
             Error::InvalidArchitecture(ref e) => format!("Invalid architecture: {}.", e),
             Error::InvalidPlatform(ref e) => format!("Invalid platform: {}.", e),
-            Error::InvalidServiceGroup(ref e) => {
-                format!(
-                    "Invalid service group: {}. A valid service group string is in the form \
+            Error::InvalidServiceGroup(ref e) => format!(
+                "Invalid service group: {}. A valid service group string is in the form \
                  service.group (example: redis.production)",
-                    e
-                )
-            }
-            Error::InvalidCertificateName(ref origin) => {
-                format!(
-                    "Invalid origin: {}. Origins must begin with a lowercase letter or number. \
+                e
+            ),
+            Error::InvalidCertificateName(ref origin) => format!(
+                "Invalid origin: {}. Origins must begin with a lowercase letter or number. \
                  Allowed characters include lowercase letters, numbers, -, and _. \
                  No more than 255 characters.",
-                    origin
-                )
-            }
+                origin
+            ),
             Error::IO(ref err) => format!("{}", err),
             Error::NoOutboundAddr => format!("Failed to discover this hosts outbound IP address"),
             Error::ParseIntError(ref e) => format!("{}", e),
-            Error::PlanMalformed => format!("Failed to read or parse contents of Plan file"),
             Error::PermissionFailed(ref e) => format!("{}", e),
-            Error::RegexParse(ref e) => format!("{}", e),
             Error::StringFromUtf8Error(ref e) => format!("{}", e),
             Error::TargetMatchError(ref e) => format!("{}", e),
             Error::UnameFailed(ref e) => format!("{}", e),
@@ -306,8 +246,6 @@ impl error::Error for Error {
             Error::NoOutboundAddr => "Failed to discover the outbound IP address",
             Error::ParseIntError(_) => "Failed to parse an integer from a string!",
             Error::PermissionFailed(_) => "Failed to set permissions",
-            Error::PlanMalformed => "Failed to read or parse contents of Plan file",
-            Error::RegexParse(_) => "Failed to parse a regular expression",
             Error::StringFromUtf8Error(_) => "Failed to convert a string from a Vec<u8> as UTF-8",
             Error::TargetMatchError(_) => "System target does not match package target",
             Error::UnameFailed(_) => "uname failed",
@@ -343,12 +281,6 @@ impl From<io::Error> for Error {
 impl From<num::ParseIntError> for Error {
     fn from(err: num::ParseIntError) -> Self {
         Error::ParseIntError(err)
-    }
-}
-
-impl From<regex::Error> for Error {
-    fn from(err: regex::Error) -> Self {
-        Error::RegexParse(err)
     }
 }
 

@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
+use std::ptr;
 use std::sync::atomic::AtomicPtr;
 use std::sync::atomic::Ordering;
-use std::ptr;
 
 /// Atomic `Box<Option<T>>`
 pub struct AtomicBoxOption<T> {
@@ -72,7 +72,13 @@ impl<T> AtomicBoxOption<T> {
         self.swap(Some(value), ordering);
     }
 
-    pub fn compare_exchange(&self, compare: *mut T, exchange: Option<Box<T>>, success: Ordering, failure: Ordering) -> Result<Option<Box<T>>, (*mut T, Option<Box<T>>)> {
+    pub fn compare_exchange(
+        &self,
+        compare: *mut T,
+        exchange: Option<Box<T>>,
+        success: Ordering,
+        failure: Ordering,
+    ) -> Result<Option<Box<T>>, (*mut T, Option<Box<T>>)> {
         let exchange = unsafe { into_raw(exchange) };
 
         match self.ptr
@@ -88,9 +94,9 @@ impl<T> AtomicBoxOption<T> {
 mod test {
 
     use std::ptr;
-    use std::sync::Arc;
     use std::sync::atomic::AtomicUsize;
     use std::sync::atomic::Ordering;
+    use std::sync::Arc;
 
     use super::*;
 

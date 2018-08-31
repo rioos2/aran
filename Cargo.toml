@@ -1,5 +1,14 @@
+[profile.debug]
+incremental = true
+codegen-units = 16
+
 [profile.release]
-debug = true
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
 
 [workspace]
 members = [
@@ -8,6 +17,7 @@ members = [
   "components/builder-apimachinery",
   "components/builder-api-client",
   "components/builder-db",
+  "components/builder-http-gateway",
   "components/builder-deployment",
   "components/builder-scaling",
   "components/builder-authorize",
@@ -16,11 +26,15 @@ members = [
   "components/builder-securer",
   "components/builder-network",
   "components/builder-storage",
-  "components/builder-marketplace",
+  "components/builder-appstore",
+  "components/builder-devtooling",
   "components/common",
   "components/core",
   "components/http-client",
-  "components/net",
+  "components/http2",
+  "components/entitlement",
   "components/rioos",
-  "components/builder-api-marketplace",
+  "components/ws-rs",
+  "components/builder-api-appstore",
+  "components/telemetry",
 ]

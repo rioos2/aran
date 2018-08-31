@@ -2,35 +2,27 @@
 
 //! A collection of network functions for the HTTP server
 
-use std::sync::Arc;
-
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
+use bytes::Bytes;
+use config::Config;
+use db::data_store::DataStoreConn;
+use db::error::Error::RecordsNotFound;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
 use iron::prelude::*;
 use iron::status;
-use router::Router;
-use ansi_term::Colour;
-use common::ui;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
-
-use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-use error::ErrorMessage::MissingParameter;
-
 use network::network_ds::NetworkDS;
-use protocol::api::network::Network;
-
-use db::error::Error::RecordsNotFound;
-use db::data_store::DataStoreConn;
-use protocol::api::base::MetaFields;
-use bytes::Bytes;
-use serde_json;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::network::Network;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct NetworkApi {
@@ -66,9 +58,7 @@ impl NetworkApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -81,7 +71,7 @@ impl NetworkApi {
 
     // GET  / //GET: /networks
     //Blank origin: Returns all the Networks (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match NetworkDS::list_blank(&self.conn) {
             Ok(Some(network)) => Ok(render_json_list(status::Ok, dispatch(_req), &network)),

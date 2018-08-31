@@ -22,18 +22,18 @@ pub mod error;
 
 mod result;
 
+pub mod client;
 pub mod client_conf;
 pub mod client_conn;
 mod client_tls;
-mod service;
-mod service_paths;
-pub mod client;
+pub mod server;
 pub mod server_conf;
 pub mod server_conn;
 mod server_tls;
+mod service;
+mod service_paths;
 pub mod socket;
 pub mod socket_tcp;
-pub mod server;
 
 #[cfg(unix)]
 extern crate tokio_uds;
@@ -44,8 +44,8 @@ mod ascii;
 
 mod common;
 
-pub mod stream_part;
 pub mod message;
+pub mod stream_part;
 
 pub mod futures_misc;
 
@@ -64,9 +64,9 @@ mod resp;
 
 mod exec;
 
-pub use solicit::HttpScheme;
 pub use solicit::header::Header;
 pub use solicit::header::Headers;
+pub use solicit::HttpScheme;
 
 pub use service::Service;
 pub use service_paths::ServicePaths;
@@ -80,8 +80,8 @@ pub use client_tls::ClientTlsOption;
 
 pub use server::Server;
 pub use server::ServerBuilder;
-pub use server_conf::ServerConf;
 pub use server_conf::ServerAlpn;
+pub use server_conf::ServerConf;
 pub use server_tls::ServerTlsOption;
 
 pub use resp::Response;

@@ -1,0 +1,1512 @@
+openapi: "3.0.0"
+info:
+  version: "1.0.0"
+  title: Rio AppStore
+  description: Rio AppStore API documentation for Rio/OS v2.0 AppStore is a distribution platform for Rio/OS marketplace items using packages.
+  termsOfService: http://www.rio.digital/
+  contact:
+    name: Rio Advancement Team
+    email: dev@rio.company
+    url: http://www.rio.digital/
+  license:
+    name: Rio AdvacementCorp License
+    url: http://www.rio.digital/
+servers:
+# Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/rioadvancement/rioappstore/1.0.0
+  - description: SwaggerHub API Auto Mocking
+    url: https://appstore.rioos.xyz:6443/api/v1
+
+tags:
+  - name: accounts
+    description: Everything about accounts
+  - name: packages
+    description: Everything about packages
+  - name: marketplaces
+    description: Everything about marketplaces
+
+paths:
+  /accounts:
+    post:
+      tags:
+        - accounts
+      summary: Create new  account
+      responses:
+        '200':
+          description: successful creation of the  account
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '409':
+          description: " Input conflict"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/409Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Accounts'
+  /packages:
+    post:
+      tags:
+        - packages
+      summary: Create new Package
+      responses:
+        '200':
+          description: successful creation of package
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Package'
+  /marketplaces:
+    post:
+      tags:
+        - marketplaces
+      summary: Create marketplace
+      responses:
+        '200':
+          description: successful creation of the marketplace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Marketplace'
+    get:
+      tags:
+        - marketplaces
+      description: Get all  marketplaces
+      summary: Return all marketplaces
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplacesList'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: "plans not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+  '/marketplaces/{id}':
+    get:
+      tags:
+        - marketplaces
+      summary: Find marketplace by ID
+      description: Returns a single marketplaces
+      operationId: getPlanById
+      parameters:
+        - name: id
+          in: path
+          description: ID of marketplace to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContainerPlanResponse'
+        '400':
+          description: |
+            Must supply required fields
+
+            Can't parse body, as its invalid/malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400Error'
+        '401':
+          description:  UnAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Error'
+        '402':
+          description:  Must have entitlement to use Rio/OS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/402Error'
+        '403':
+          description: "Forbidden, Must have roles and permission to perform action on the resource."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Error'
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Error'
+        '500':
+          description: "Can't connect with database, blockchain (or) other systems for processing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500Error'
+
+components:
+  schemas:
+    Accounts:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          description: "email of the user"
+          example: "john.doe@riocorp.io"
+        first_name:
+          type: string
+          description: "first name of the user"
+          example: "John"
+        last_name:
+          type: string
+          description: "last name of the user"
+          example: "Doe"
+        phone:
+          type: string
+          description: "contact number of the user"
+          example: "2128778998"
+        company_name:
+          type: string
+          description: "company name is where the user works"
+          example: "RioCorp Inc"
+        password:
+          type: string
+          description: "password of the user"
+          example: "cool4rio"
+        registration_ip_address:
+          type: string
+          description: "registration ip address of the user"
+          example: "49.91.88.72"
+    AccountsResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "id an unique identifier in systems of record. Generated during creation of the account"
+          example: "870109412813971456"
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "john.doe@riocorp.io"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: ""
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2017-12-11T11:29:50.547529+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              $ref: '#/components/schemas/Initializers'
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                    example: ""
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                    example: ""
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                    example: ""
+                  uid:
+                    type: string
+                    description: "UID of the referent."
+                    example: ""
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                    example: false
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              description: "kind is a string value representing the REST resource this object represents."
+              example: "Accounts"
+            api_version:
+              type: string
+              description: "api version defines the versioned schema of this representation of an object"
+              example: "v1"
+        email:
+          type: string
+          description: "email of the user"
+          example: "john.doe@riocorp.io"
+        first_name:
+          type: string
+          description: "first name of the user"
+          example: "John"
+        last_name:
+          type: string
+          description: "last name of the user"
+          example: "Doe"
+        phone:
+          type: string
+          description: "contact number of the user"
+          example: "2128778998"
+        avatar:
+          type: object
+          description: "avatar picture to identity the user"
+        company_name:
+          type: string
+          description: "company name is where the user works"
+          example: "RioCorp Inc"
+        provider:
+          type: object
+          description: "provider for the user"
+        token:
+          type: string
+          description: "session token for user login"
+          example: "y9rBwkrsM1ksRqGaRV"
+        api_key:
+          type: string
+          description: "a persistenant personal access token is required to authenticate to Rio/OS  in the following situations:  1. When you don't want to login and use the ephermeal authorization tokens. This should be used with caution."
+          example: "8025312526126804015"
+        approval:
+          type: boolean
+          description: "approved user or not"
+          example: false
+        suspend:
+          type: boolean
+          description: "user suspend or not   If true, the user is suspended. Defaults to false"
+          example: false
+        registration_ip_address:
+          type: string
+          description: "registration ip address of the user"
+          example: "49.91.88.72"
+        roles:
+          type: array
+          description: "roles are Rio/OS role label that applies to the user"
+          items:
+            type: string
+            example: "rioos:loneranger"
+        created_at:
+          type: string
+          description: "created_at is a timestamp representing the server time when this account was created. "
+          example: "2017-12-11T11:29:50.547529+00:00"
+    Package:
+      type: object
+      properties:
+        object_meta:
+          type: object
+          properties: 
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "ubuntu"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "870109412813971456"
+        version_number:
+          type: string
+          example: "87689457"
+        extension:
+          type: string
+          example: "tar.gz"
+    PackageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "849703502417502208"
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "ubuntu"
+            account:
+              type: string
+              description: "account  defines the id the user account"
+              example: "870109412813971456"
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2017-12-11T11:29:50.547529+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              $ref: '#/components/schemas/Initializers'
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                    example: ""
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                    example: ""
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                    example: ""
+                  uid:
+                    type: string
+                    description: "UID of the referent."
+                    example: ""
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                    example: false
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              description: "kind is a string value representing the REST resource this object represents."
+              example: "Package"
+            api_version:
+              type: string
+              description: "api version defines the versioned schema of this representation of an object"
+              example: "v1"
+        version_number:
+          type: string
+          example: "87689457"
+        extension:
+          type: string
+          example: "tar.gz"
+        created_at:
+          type: string
+          description: "created_at is a timestamp representing the server time when this object was created. "
+          example: "2017-12-11T11:29:50.547529+00:00"
+    Marketplace:
+      type: object
+      required:
+        - category
+        - version
+      properties:
+        object_meta:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "ubuntu"
+            account:
+              type: string
+              example: "870109412813971456"
+        plans:
+          type: array
+          items:
+            type: object
+            properties:
+              object_meta:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "ubuntu"
+                  account:
+                    type: string
+                    example: "870109412813971456"
+                  owner_references:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kind:
+                          type: string
+                          description: "Kind of the referent."
+                          example: "Package"
+                        api_version:
+                          type: string
+                          description: " API version of the referent."
+                          example: "v1"
+                        name:
+                          type: string
+                          description: "Name of the referent."
+                          example: "ubuntu"
+                        uid:
+                          type: string
+                          description: "UID of the referent."
+                          example: "849703502417502208"
+                        block_owner_deletion:
+                          type: boolean
+                          description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                          example: false
+              category:
+                type: string
+                description: "category represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain."
+                example: "machine"
+              version:
+                type: string
+                description: "version represents the version of this plan software."
+                example: "16.04"
+              characteristics:
+                type: object
+                description: "characteristics The  additional metadata of the plan.  example `extension: iso`, This says this plan is available as an iso."
+                properties:
+                  rioos_sh_image_extension:
+                    type: string
+                    example: "img"
+                  rioos_sh_market_image_extension:
+                    type: string
+                    example: "tar.gz"
+              icon:
+                type: string
+                description: " an identifier to represent this plan pictorially"
+                example: "ubuntu.png"
+              description:
+                type: string
+                description: "plan description"
+                example: " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things "
+              status:
+                type: object
+                properties:
+                  phase:
+                    type: string
+                    example: "SyncPending"
+              metadata:
+                type: object
+                properties:
+                  origin:
+                    type: string
+                    example: "rioos_system"
+        category:
+          type: string
+          description: "category represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain."
+          example: "machine"
+        version:
+          type: string
+          description: "version represents the version of this plan software."
+          example: "16.04"
+        icon:
+          type: string
+          description: " an identifier to represent this plan pictorially"
+          example: "ubuntu.png"
+        description:
+          type: string
+          description: "plan description"
+          example: "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things "
+        status:
+          type: object
+          properties:
+            phase:
+              type: string
+              example: "SyncPending"
+    MarketplaceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "9876543567876543456"
+        object_meta:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "ubuntu"
+            account:
+              type: string
+              example: "870109412813971456"
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2017-12-11T11:29:50.547529+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              $ref: '#/components/schemas/Initializers'
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                    example: ""
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                    example: ""
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                    example: ""
+                  uid:
+                    type: string
+                    description: "UID of the referent."
+                    example: ""
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                    example: false
+        plans:
+          type: array
+          items:
+            type: object
+            properties:
+              object_meta:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "ubuntu"
+                  account:
+                    type: string
+                    example: "870109412813971456"
+                  created_at:
+                    type: string
+                    description: "created_at is a timestamp representing the server time when this object was created. "
+                    example: "2017-12-11T11:29:50.547529+00:00"
+                  deleted_at:
+                    type: string
+                    description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+                    example: ""
+                  deletion_grace_period_seconds:
+                    type: integer
+                    description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+                    example: 30
+                  cluster_name:
+                    type: string
+                    description: "The name of the cluster(datacenter/location) which the object belongs to."
+                    example: ""
+                  labels:
+                    type: object
+                    description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+                  annotations:
+                    type: object
+                    description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+                  initializers:
+                    $ref: '#/components/schemas/Initializers'
+                  finalizers:
+                    type: array
+                    description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+                    items:
+                      type: string
+                      example: ""
+                  owner_references:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kind:
+                          type: string
+                          description: "Kind of the referent."
+                          example: "Package"
+                        api_version:
+                          type: string
+                          description: " API version of the referent."
+                          example: "v1"
+                        name:
+                          type: string
+                          description: "Name of the referent."
+                          example: "ubuntu"
+                        uid:
+                          type: string
+                          description: "UID of the referent."
+                          example: "849703502417502208"
+                        block_owner_deletion:
+                          type: boolean
+                          description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                          example: false
+              category:
+                type: string
+                description: "category represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain."
+                example: "machine"
+              version:
+                type: string
+                description: "version represents the version of this plan software."
+                example: "16.04"
+              characteristics:
+                type: object
+                description: "characteristics The  additional metadata of the plan.  example `extension: iso`, This says this plan is available as an iso."
+                properties:
+                  rioos_sh_image_extension:
+                    type: string
+                    example: "img"
+                  rioos_sh_market_image_extension:
+                    type: string
+                    example: "tar.gz"
+              icon:
+                type: string
+                description: " an identifier to represent this plan pictorially"
+                example: "ubuntu.png"
+              description:
+                type: string
+                description: "plan description"
+                example: " Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things "
+              status:
+                type: object
+                properties:
+                  phase:
+                    type: string
+                    example: "SyncPending"
+              metadata:
+                type: object
+                properties:
+                  origin:
+                    type: string
+                    example: "rioos_system"
+        category:
+          type: string
+          description: "category represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain."
+          example: "machine"
+        version:
+          type: string
+          description: "version represents the version of this plan software."
+          example: "16.04"
+        icon:
+          type: string
+          description: " an identifier to represent this plan pictorially"
+          example: "ubuntu.png"
+        description:
+          type: string
+          description: "plan description"
+          example: "Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things "
+        status:
+          type: object
+          properties:
+            phase:
+              type: string
+              example: "SyncPending"
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              description: "kind is a string value representing the REST resource this object represents."
+              example: "PlanFactory"
+            api_version:
+              type: string
+              description: "api version defines the versioned schema of this representation of an object"
+              example: "v1"
+        created_at:
+          type: string
+          description: "created_at is a timestamp representing the server time when this object was created. "
+          example: "2017-12-11T11:29:50.547529+00:00"
+    ContainerPlanResponse:
+      type: object
+      required:
+        - category
+        - version
+      properties:
+        id:
+          type: string
+          example: "9876543245678456"
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              description: "Name is unique within a namespace.  Name is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically"
+              example: "nginx"
+            account:
+              type: string
+              example: "870109412813971456"
+            owner_references:
+              required:
+              - uid
+              type: array
+              items:
+                $ref: '#/components/schemas/OwnerReference'
+              example:
+                - kind: "Package"
+                  api_version: "v1"
+                  name: "fabric"
+                  uid: "926620393328877568"
+                  block_owner_deletion: false
+        plans:
+          type: array
+          items:
+            type: object
+            properties:
+              object_meta:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "nginx"
+                  account:
+                    type: string
+                    example: "870109412813971456"
+                  owner_references:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kind:
+                          type: string
+                          description: "Kind of the referent."
+                          example: "Package"
+                        api_version:
+                          type: string
+                          description: " API version of the referent."
+                          example: "v1"
+                        name:
+                          type: string
+                          description: "Name of the referent."
+                          example: "nginx"
+                        uid:
+                          type: string
+                          description: "UID of the referent."
+                          example: "849703502417502208"
+                        block_owner_deletion:
+                          type: boolean
+                          description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                          example: false
+              category:
+                type: string
+                description: "category represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain."
+                example: "container"
+              version:
+                type: string
+                description: "version represents the version of this plan software."
+                example: "1.13"
+              characteristics:
+                type: object
+                description: "characteristics The  additional metadata of the plan.  example `extension: iso`, This says this plan is available as an iso."
+                properties:
+                  rioos_sh_image_extension:
+                    type: string
+                    example: "img"
+                  rioos_sh_market_image_extension:
+                    type: string
+                    example: "tar.gz"
+              icon:
+                type: string
+                description: " an identifier to represent this plan pictorially"
+                example: "nginx.png"
+              description:
+                type: string
+                description: "plan description"
+                example: " nginx [engine x] is an HTTP and reverse proxy server, a mail proxy server, and a generic TCP/UDP proxy server, originally written by Igor Sysoev. "
+              status:
+                type: object
+                properties:
+                  phase:
+                    type: string
+                    example: "SyncPending"
+              metadata:
+                type: object
+                properties:
+                  origin:
+                    type: string
+                    example: "rioos_system"
+              ports:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    container_port:
+                      type: integer
+                      example: 80
+                    host_ip:
+                      type: string
+                      example: ""
+                    host_port:
+                      type: integer
+                      example: 0
+                    protocol:
+                      type: string
+                      example: "http"
+        category:
+          type: string
+          description: "category represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain."
+          example: "container"
+        version:
+          type: string
+          description: "version represents the version of this plan software."
+          example: "1.13"
+        icon:
+          type: string
+          description: " an identifier to represent this plan pictorially"
+          example: "nginx.png"
+        description:
+          type: string
+          description: "plan description"
+          example: " nginx [engine x] is an HTTP and reverse proxy server, a mail proxy server, and a generic TCP/UDP proxy server, originally written by Igor Sysoev. "
+        characteristics:
+          type: object
+          description: "characteristics The  additional metadata of the plan.  example `extension: iso`, This says this plan is available as an iso."
+          properties:
+            rioos_sh_image_extension:
+              type: string
+              example: "img"
+            rioos_sh_market_image_extension:
+              type: string
+              example: "tar.gz"
+        type_meta:
+          type: object
+          properties:
+            kind:
+              type: string
+              description: "kind is a string value representing the REST resource this object represents."
+              example: "PlanFactory"
+            api_version:
+              type: string
+              description: "api version defines the versioned schema of this representation of an object"
+              example: "v1"
+        created_at:
+          type: string
+          example: "2017-09-21T06:51:38.763014+00:00"
+    MultiPlanResponse:
+      type: object
+      properties:
+        object_meta:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "rioosfabric"
+            account:
+              type: string
+              example: ""
+            created_at:
+              type: string
+              description: "created_at is a timestamp representing the server time when this object was created. "
+              example: "2017-12-11T11:29:50.547529+00:00"
+            deleted_at:
+              type: string
+              description: " deleted_at is RFC 3339 date and time at which this resource will be deleted. This field is set by the api server when a graceful deletion is requested by the user, and is not directly settable by a client."
+              example: ""
+            deletion_grace_period_seconds:
+              type: integer
+              description: "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened."
+              example: 30
+            cluster_name:
+              type: string
+              description: "The name of the cluster(datacenter/location) which the object belongs to."
+              example: ""
+            labels:
+              type: object
+              description: " Map of string keys and values that can be used to organize and categorize(scope and select) objects. May match selectors of replication controllers and services."
+            annotations:
+              type: object
+              description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. "
+            initializers:
+              $ref: '#/components/schemas/Initializers'
+            finalizers:
+              type: array
+              description: "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list."
+              items:
+                type: string
+                example: ""
+            owner_references:
+              type: array
+              description: "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. "
+              items:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    description: "Kind of the referent."
+                    example: ""
+                  api_version:
+                    type: string
+                    description: " API version of the referent."
+                    example: ""
+                  name:
+                    type: string
+                    description: "Name of the referent."
+                    example: ""
+                  uid:
+                    type: string
+                    description: "UID of the referent."
+                    example: ""
+                  block_owner_deletion:
+                    type: boolean
+                    description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+                    example: false
+        plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanProperties'
+          example:
+            - object_meta: {"name": "hyperledger/fabric-orderer","account": "870109412813971456","created_at": "2017-12-11T11:29:50.547529+00:00","deleted_at": "","deletion_grace_period_seconds": 30,"cluster_name": "","labels": {},"annotations": {},"initializers": {"pending": [],"result": {"type_meta": {"kind": "","api_version": ""},"status": "","message": "","reason": "","details": { "name": "","group": "","kind": "", "causes": [],"uid": "","retry_after_seconds": 0},"code": 0}},  "finalizers":   [""],"owner_references": [{"kind": "AssemblyFactory","api_version": "v1","name": "rough-bush-8634.svc.local","uid": "87543211234567876","block_owner_deletion": false}]}
+              category: "container"
+              description: "Fabric Orderer"
+              version: "x86_64-1.0.5"
+              ports: [{ "container_port": 7050, "host_ip": "", "host_port": 0, "protocol": "" }]
+              icon: "hyperledger_fabric_orderer.png"
+              envs: { "ORDERER_GENERAL_LOGLEVEL": { "value": "debug", "required": "true", "editable": "" }, "ORDERER_GENERAL_LISTENADDRESS": { "value": "0.0.0.0", "required": "true", "editable": "" }, "ORDERER_GENERAL_LISTENPORT": { "value": "7050", "required": "true", "editable": "" }, "ORDERER_GENERAL_GENESISPROFILE": { "value": "ChainHero", "required": "true", "editable": "" }, "ORDERER_GENERAL_GENESISMETHOD": { "value": "file", "required": "true", "editable": "" }, "ORDERER_GENERAL_GENESISFILE": { "value": "/var/hyperledger/orderer/orderer.genesis.block", "required": "true", "editable": "" }, "ORDERER_GENERAL_LOCALMSPID": { "value": "hf.chainhero.io", "required": "true", "editable": "" }, "ORDERER_GENERAL_LOCALMSPDIR": { "value": "/var/hyperledger/orderer/msp", "required": "true", "editable": "" }, "ORDERER_GENERAL_TLS_ENABLED": { "value": "true", "required": "true", "editable": "" }, "ORDERER_GENERAL_TLS_PRIVATEKEY": { "value": "/var/hyperledger/orderer/tls/server.key", "required": "true", "editable": "" }, "ORDERER_GENERAL_TLS_CERTIFICATE": { "value": "/var/hyperledger/orderer/tls/server.crt", "required": "true", "editable": "" }, "ORDERER_GENERAL_TLS_ROOTCAS": { "value": "/var/hyperledger/orderer/tls/ca.crt", "required": "true", "editable": "" } }
+              characteristics: { "rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz" }
+              status: {"phase": "SyncPending","message": "","reason": "","conditions": [{"message": " ","reason": " ","status": " ","last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
+              metadata: { "origin": "rioos_system" }
+              lifecycle: { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } } 
+            - object_meta: {"name": "hyperledger/fabric-ca","account": "870109412813971456","created_at": "2017-12-11T11:29:50.547529+00:00","deleted_at": "","deletion_grace_period_seconds": 30,"cluster_name": "","labels":{} ,"annotations": {},"initializers": {"pending": [],"result": { "type_meta": {"kind": "", "api_version": ""},"status": "","message": "", "reason": "","details": { "name": "", "group": "", "kind": "","causes": [], "uid": "","retry_after_seconds": 0  }, "code": 0}},"finalizers": [""],"owner_references": [{"kind": "AssemblyFactory","api_version": "v1","name": "rough-bush-8634.svc.local","uid": "87543211234567876","block_owner_deletion": false}]}
+              category: "container"
+              description: "Fabric CA"
+              version: "x86_64-1.0.5"
+              ports: [{ "container_port": 7054, "host_ip": "", "host_port": 0, "protocol": "" }]
+              icon: "hyperledger_fabric_ca.png"
+              envs:  { "FABRIC_CA_HOME": { "value": "/etc/hyperledger/fabric-ca-server", "required": "true", "editable": "" }, "FABRIC_CA_SERVER_CA_NAME": { "value": "ca.org1.hf.chainhero.io", "required": "true", "editable": "" }, "FABRIC_CA_SERVER_CA_CERTFILE": { "value": "/etc/hyperledger/fabric-ca-server-config/ca.org1.hf.chainhero.io-cert.pem", "required": "true", "editable": "" }, "FABRIC_CA_SERVER_CA_KEYFILE": { "value": "/etc/hyperledger/fabric-ca-server-config/5289b538c2d82ffaedc0922070c8425ca5763a6727710a71803590228fd35a72_sk", "required": "true", "editable": "" }, "FABRIC_CA_SERVER_TLS_ENABLED": { "value": "true", "required": "true", "editable": "" }, "FABRIC_CA_SERVER_TLS_CERTFILE": { "value": "/etc/hyperledger/fabric-ca-server-config/ca.org1.hf.chainhero.io-cert.pem", "required": "true", "editable": "" }, "FABRIC_CA_SERVER_TLS_KEYFILE": { "value": "/etc/hyperledger/fabric-ca-server-config/5289b538c2d82ffaedc0922070c8425ca5763a6727710a71803590228fd35a72_sk", "required": "true", "editable": "" } }
+              characteristics: { "rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz" }
+              status: {"phase": "SyncPending","message": "","reason": "","conditions": [{"message": " ","reason": " ","status": " ","last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
+              metadata: { "origin": "rioos_system" }
+              lifecycle: { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } } 
+            - object_meta: {"name": "hyperledger/fabric-peer","account": "870109412813971456","created_at": "2017-12-11T11:29:50.547529+00:00","deleted_at": "","deletion_grace_period_seconds": 30,"cluster_name": "","labels":{} ,"annotations": {},"initializers": {"pending": [],"result": { "type_meta": {"kind": "", "api_version": ""},"status": "","message": "", "reason": "","details": { "name": "", "group": "", "kind": "","causes": [], "uid": "","retry_after_seconds": 0  }, "code": 0}},"finalizers": [""],"owner_references": [{"kind": "AssemblyFactory","api_version": "v1","name": "rough-bush-8634.svc.local","uid": "87543211234567876","block_owner_deletion": false}]}
+              category: "container"
+              description: "Fabric peer connector"
+              version: "x86_64-1.0.5"
+              ports: [{ "container_port": 7051, "host_ip": "", "host_port": 0, "protocol": "" }]
+              icon: "hyperledger_fabric_peer.png"
+              envs:   { "CORE_VM_ENDPOINT": { "value": "unix:///host/var/run/docker.sock", "required": "true", "editable": "" }, "CORE_VM_DOCKER_ATTACHSTDOUT": { "value": "true", "required": "true", "editable": "" }, "CORE_LOGGING_LEVEL": { "value": "DEBUG", "required": "true", "editable": "" }, "CORE_PEER_NETWORKID": { "value": "chainhero", "required": "true", "editable": "" }, "CORE_PEER_PROFILE_ENABLED": { "value": "true", "required": "true", "editable": "" }, "CORE_PEER_TLS_ENABLED": { "value": "true", "required": "true", "editable": "" }, "CORE_PEER_TLS_CERT_FILE": { "value": "/var/hyperledger/tls/server.crt", "required": "true", "editable": "" }, "CORE_PEER_TLS_KEY_FILE": { "value": "/var/hyperledger/tls/server.key", "required": "true", "editable": "" }, "CORE_PEER_TLS_ROOTCERT_FILE": { "value": "/var/hyperledger/tls/ca.crt", "required": "true", "editable": "" }, "CORE_PEER_ID": { "value": "peer0.org1.hf.chainhero.io", "required": "true", "editable": "" }, "CORE_PEER_ADDRESSAUTODETECT": { "value": "true", "required": "true", "editable": "" }, "CORE_PEER_ADDRESS": { "value": "peer0.org1.hf.chainhero.io:7051", "required": "true", "editable": "" }, "CORE_PEER_GOSSIP_EXTERNALENDPOINT": { "value": "peer0.org1.hf.chainhero.io:7051", "required": "true", "editable": "" }, "CORE_PEER_GOSSIP_USELEADERELECTION": { "value": "true", "required": "true", "editable": "" }, "CORE_PEER_GOSSIP_ORGLEADER": { "value": "false", "required": "true", "editable": "" }, "CORE_PEER_GOSSIP_SKIPHANDSHAKE": { "value": "true", "required": "true", "editable": "" }, "CORE_PEER_LOCALMSPID": { "value": "org1.hf.chainhero.io", "required": "true", "editable": "" }, "CORE_PEER_MSPCONFIGPATH": { "value": "/var/hyperledger/msp", "required": "true", "editable": "" }, "CORE_PEER_TLS_SERVERHOSTOVERRIDE": { "value": "peer0.org1.hf.chainhero.io", "required": "true", "editable": "" } }
+              characteristics: { "rioos_sh_image_extension": "raw", "rioos_sh_market_image_extension": "tar.gz" }
+              status: {"phase": "SyncPending","message": "","reason": "","conditions": [{"message": " ","reason": " ","status": " ","last_transition_time": " ","last_update_time": " ","last_probe_time": " ","condition_type": " "}]}
+              metadata: { "origin": "rioos_system" }
+              lifecycle: { "probe": { "env": {}, "exec": [], "http_get": { "host": "", "path": "", "port": "", "scheme": "" }, "tcp_socket": { "host": "", "port": "" }, "http_headers": {} }, "pre_stop": { "command": [] }, "post_start": { "command": [] } }
+
+        category:
+          type: string
+          description: "category represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain."
+          example: "blockchain"
+        version:
+          type: string
+          description: "version represents the version of this plan software."
+          example: "x86_64-1.0.5"
+        icon:
+          type: string
+          description: " an identifier to represent this plan pictorially"
+          example: "fabric.png"
+        description:
+          type: string
+          description: "plan description"
+          example: "Hyperledger Fabric is a blockchain framework implementation and one of the Hyperledger projects hosted by The Linux Foundation."
+        status:
+          type: object
+          properties:
+            phase:
+              type: string
+              example: "SyncPending"
+            message:
+              type: string
+              description: "A human-readable description of the status of this operation."
+              example: ""
+            reason:
+              type: string
+              description: "A machine-readable description of why this operation is in the Failure status."
+              example: ""
+            conditions:
+              type: array
+              items:
+                type: object
+              example: []
+        created_at:
+          type: string
+          example: "2017-09-21T06:51:38.763014+00:00"
+    MarketplacesList:
+      type: object
+      properties:
+        kind:
+          type: string
+          description: "kind is a string value representing the REST resource this object represents."
+          example: MarketplacesList
+        api_version:
+          type: string
+          description: "api version defines the versioned schema of this representation of an object"
+          example: v1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MultiPlanResponse'
+    PlanProperties:
+      type: object
+      properties:
+          object_meta:
+            type: object
+            properties:
+              name:
+                type: string
+              account:
+                type: string
+              owner_references:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    kind:
+                      type: string
+                      description: "Kind of the referent."
+                    api_version:
+                      type: string
+                      description: " API version of the referent."
+                    name:
+                      type: string
+                      description: "Name of the referent."
+                    uid:
+                      type: string
+                      description: "UID of the referent."
+                    block_owner_deletion:
+                      type: boolean
+                      description: "If true, AND if the owner has the foregroundDeletion finalizer, then the owner cannot be deleted from the key-value store until this reference is removed."
+          category:
+            type: string
+            description: "category represents a plans  relationship to Rio/OS. Valid relationships are  machine, container, application and blockchain."
+          version:
+            type: string
+            description: "version represents the version of this plan software."
+          characteristics:
+            type: object
+            description: "characteristics The  additional metadata of the plan.  example `extension: iso`, This says this plan is available as an iso."
+          icon:
+            type: string
+            description: " an identifier to represent this plan pictorially"
+          description:
+            type: string
+            description: "plan description"
+          status:
+            type: object
+  
+          metadata:
+            type: object
+          lifecycle:
+            type: object
+          ports:
+            type: array
+            
+    
+
+    OwnerReference:
+      type: object
+      required:
+        - kind
+        - uid
+      properties:
+        kind:
+          type: string
+          description: "kind is a string value representing the REST resource this object represents."
+        api_version:
+          type: string
+          description: "api version defines the versioned schema of this representation of an object"
+        name:
+          type: string
+          description: "name of the referent"
+        uid:
+          type: string
+          description: "id of the referent"
+        block_owner_deletion:
+          type: boolean
+    Initializers:
+      type: object
+      description:  "An initializer is a controller which enforces some system invariant at object creation time."
+      properties:
+        pending:
+          type: array
+          description: "Pending is a list of initializers that must execute in order before this object is visible. When the last pending initializer is removed, and no failing result is set, the initializers struct will be set to nil and the object is considered as initialized and visible to all clients."
+          items:
+            type: object
+          example: []
+        result:
+          type: object
+          description: "If result is set with the Failure field, the object will be persisted to storage and then deleted, ensuring that other clients can observe the deletion."
+          properties:
+            type_meta:
+              type: object
+              properties:
+                kind:
+                  type: string
+                  example: ""
+                api_version:
+                  type: string
+                  example: ""
+            status:
+              type: string
+              description: " status of the operation. One of: Success or Failure"
+              example: ""
+            message:
+              type: string
+              description: "a human-readable description of the status of this operation."
+              example: ""
+            reason:
+              type: string
+              description: "a machine-readable description of why this operation is in the Failure status. If this value is empty there is no     information available. a Reason clarifies an HTTP status  code but does not override it."
+              example: ""
+            details:
+              type: object
+              description: "atatusDetails is a set of additional properties that MAY be set by the server to provide additional information about a response"
+              properties:
+                name:
+                  type: string
+                  description: "the name attribute of the resource associated with the status StatusReason"
+                  example: ""
+                group:
+                  type: string
+                  description: "the group attribute of the resource associated with the status StatusReason."
+                  example: ""
+                kind:
+                  type: string
+                  description: "the kind attribute of the resource associated with the status StatusReason."
+                  example: ""
+                causes:
+                  type: array
+                  description: "the Causes array includes more details associated with the StatusReason failure. Not all StatusReasons may provide detailed causes."
+                  items:
+                    type: object
+                  example: []
+                uid:
+                  type: string
+                  description: "UID of the resource."
+                  example: ""
+                retry_after_seconds:
+                  description: "if specified, the time in seconds before the operation should be retried."
+                  type: integer
+                  example: 0
+            code:
+              type: integer
+              description: "suggested HTTP return code for this status, 0 if not set."
+              example: 0
+
+    400Error:
+      required:
+        - status
+        - code
+        - message
+        - reason
+      properties:
+        status:
+          type: string
+          example: Failure
+        code:
+          type: string
+          example: '400'
+        message:
+          type: string
+          example: "Missing parameters or can't parse body"
+        reason:
+          type: string
+          example: "Bad Request"
+    500Error:
+      required:
+        - status
+        - code
+        - message
+        - reason
+      properties:
+        status:
+          type: string
+          example: Failure
+        code:
+          type: string
+          example: '500'
+        message:
+          type: string
+          example: "Must have database, blockchain running. Is it started yet ?"
+        reason:
+          type: string
+          example: "internal server error"
+    404Error:
+      required:
+        - status
+        - code
+        - message
+        - reason
+      properties:
+        status:
+          type: string
+          example: Failure
+        code:
+          type: string
+          example: '404'
+        message:
+          type: string
+          example: "No Record Found for the id"
+        reason:
+          type: string
+          example: "Not Found"
+    401Error:
+      required:
+        - status
+        - code
+        - message
+        - reason
+      properties:
+        status:
+          type: string
+          example: Failure
+        code:
+          type: string
+          example: '401'
+        message:
+          type: string
+          example: "Refused since authentication is required and has failed or has not yet been provided.Refer  https://bit.ly/rioosauthetication for the supported authentication."
+        reason:
+          type: string
+          example: "Unauthorized"
+    403Error:
+      required:
+        - status
+        - code
+        - message
+        - reason
+      properties:
+        status:
+          type: string
+          example: Failure
+        code:
+          type: string
+          example: '403'
+        message:
+          type: string
+          example: "The request is valid, but the user must have necessary authorization (Role & Permissions) for a performing action on  the resource.Refer  https://bit.ly/rioosauthorization for the supported authorization."
+        reason:
+          type: string
+          example: "Forbidden. Must Have Role & Permissions"
+    402Error:
+      required:
+        - status
+        - code
+        - message
+        - reason
+      properties:
+        status:
+          type: string
+          example: Failure
+        code:
+          type: string
+          example: '402'
+        message:
+          type: string
+          example: "The request is valid, but the user must have necessary entitlement to continue using Rio/OS. Refer  https://bit.ly/rioosentitlement for getting an entitlement."
+        reason:
+          type: string
+          example: "An exact reason from the entitlement checker appears here."
+    409Error:
+      required:
+        - status
+        - code
+        - message
+        - reason
+      properties:
+        status:
+          type: string
+          example: Failure
+        code:
+          type: string
+          example: '402'
+        message:
+          type: string
+          example: "The request is valid, but the user must have necessary entitlement to continue using Rio/OS. Refer  https://bit.ly/rioosentitlement for getting an entitlement."
+        reason:
+          type: string
+          example: "An exact reason from the entitlement checker appears here."

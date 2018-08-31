@@ -1,0 +1,23 @@
+[package]
+name = "rioos_builder_activate"
+version = "0.0.0"
+authors = ["Suganya Kaliyamoorthy  <suganyakaliyamoorthy@megam.io>"]
+description = "RIO/OS Wizard activation for Admin user"
+build = "../build-builder.rs"
+workspace = "../../"
+
+
+[dependencies]
+chrono = { version = "0.4.4", features = ["serde"] }
+rand = "0.5.3"
+postgres = { version = "0.15.2", features = ["with-chrono","with-serde_json"] }
+serde_json = "1.0.22"
+
+[dependencies.rioos_builder_apimachinery]
+path = "../builder-apimachinery"
+
+[dependencies.rioos_builder_db]
+path = "../builder-db"
+
+[features]
+functional = []

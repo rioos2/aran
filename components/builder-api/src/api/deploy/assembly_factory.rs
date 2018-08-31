@@ -1,37 +1,30 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api assembly_factory
-use std::sync::Arc;
-
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier, ExpanderSender};
-use rio_net::http::schema::{dispatch, type_meta, dispatch_url};
-
-use config::{Config, ServicesCfg};
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::assembler::{ServicesConfig, Assembler};
-use deploy::models::{assemblyfactory, blueprint, service};
-
-use protocol::cache::{CACHE_PREFIX_PLAN, NewCacheServiceFn, CACHE_PREFIX_SERVICE};
-use protocol::api::deploy::AssemblyFactory;
-use protocol::api::base::{StatusUpdate, MetaFields};
-
+use bytes::Bytes;
+use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-
-use bytes::Bytes;
+use deploy::assembler::{Assembler, ServicesConfig};
+use deploy::models::{assemblyfactory, blueprint, service, stacksfactory};
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{MetaFields, Status, StatusUpdate};
+use protocol::api::deploy::AssemblyFactory;
+use protocol::api::schema::{dispatch, dispatch_url, type_meta};
+use protocol::cache::{
+    ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PLAN, CACHE_PREFIX_SERVICE,
+    CACHE_PREFIX_STACKS_FACTORY,
+};
+use router::Router;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct AssemblyFactoryApi {
@@ -56,9 +49,8 @@ impl AssemblyFactoryApi {
     //Input: Body of structure deploy::AssemblyFactory
     //Returns an updated AssemblyFactory with id, ObjectMeta. created_at
     fn create(&self, req: &mut Request, _cfg: &ServicesConfig) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate::<AssemblyFactory>(
-            req.get::<bodyparser::Struct<AssemblyFactory>>()?,
-        )?;
+        let mut unmarshall_body =
+            self.validate::<AssemblyFactory>(req.get::<bodyparser::Struct<AssemblyFactory>>()?)?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -67,10 +59,9 @@ impl AssemblyFactoryApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
+        unmarshall_body.set_status(Status::pending());
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -97,7 +88,24 @@ impl AssemblyFactoryApi {
         }
     }
 
+    ///Wide describe, that provides the full information of an assemblyfactory.
+    ///GET: /stacksfactorys/describe/:id
+    ///Input: id = u64
+    ///Returns StacksFactory with all information (plans)
+    ///This doesn't send back spec.assembly_factory
+    fn describe(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
 
+        match assemblyfactory::DataStore::new(&self.conn).show_by_stacksfactory(&params) {
+            Ok(Some(factory)) => Ok(render_json_list(status::Ok, dispatch(req), &factory)),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+        }
+    }
 
     ///PUT: /assemblyfactory/status
     ///Input: Status with conditions
@@ -105,9 +113,7 @@ impl AssemblyFactoryApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<StatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match assemblyfactory::DataStore::new(&self.conn).status_update(&unmarshall_body) {
@@ -139,27 +145,7 @@ impl AssemblyFactoryApi {
         }
     }
 
-    ///Every user will be able to list their own account_id.
-    ///GET: /accounts/:account_id/assemblyfactorys/list
-    ///Input: account_id
-    //Returns all the AssemblyFactorys (for that account)
-    pub fn list_by_account_direct(&self, params: IdGet, dispatch: String) -> Option<String> {
-        let ident = dispatch_url(dispatch);
-        match assemblyfactory::DataStore::new(&self.conn).list(&params) {
-            Ok(Some(factorys)) => {
-                let data = json!({
-                                "api_version": ident.version,
-                                "kind": ident.kind,
-                                "items": factorys,
-                });
-                Some(serde_json::to_string(&data).unwrap())
-            }
-            Ok(None) => None,
-            Err(_err) => None,
-        }
-    }
-
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     //GET: /assemblyfactorys
     //Returns all the AssemblyFactorys (irrespective of accounts, origins)
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
@@ -191,6 +177,27 @@ impl AssemblyFactoryApi {
         };
         Bytes::from(res)
     }
+
+    ///Every user will be able to list their own account_id.
+    ///GET: /accounts/:account_id/assemblyfactorys/list
+    ///Input: account_id
+    //Returns all the AssemblyFactorys (for that account)
+    pub fn watch_list_by_account(&mut self, params: IdGet, dispatch: String) -> Option<String> {
+        self.with_cache();
+        let ident = dispatch_url(dispatch);
+        match assemblyfactory::DataStore::new(&self.conn).list(&params) {
+            Ok(Some(factorys)) => {
+                let data = json!({
+                                "api_version": ident.version,
+                                "kind": ident.kind,
+                                "items": factorys,
+                });
+                Some(serde_json::to_string(&data).unwrap())
+            }
+            Ok(None) => None,
+            Err(_err) => None,
+        }
+    }
 }
 
 ///The Api wirer for AssemblyFactoryApi
@@ -206,7 +213,8 @@ impl Api for AssemblyFactoryApi {
         self.with_cache();
 
         let mut _self = self.clone();
-        let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_service_cfg) };
+        let create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_service_cfg) };
 
         let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
@@ -215,25 +223,25 @@ impl Api for AssemblyFactoryApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let describe = move |req: &mut Request| -> AranResult<Response> { _self.describe(req) };
+
+        let _self = self.clone();
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         //list everything
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         router.post(
-            "/accounts/:account_id/assemblyfactorys",
-            XHandler::new(C { inner: create })
-                .before(basic.clone())
-                .before(TrustAccessed {}),
+            "/assemblyfactorys",
+            XHandler::new(C { inner: create }).before(basic.clone()),
             "assembly_factorys",
         );
 
         router.get(
-            "/accounts/:account_id/assemblyfactorys",
-            XHandler::new(C { inner: list })
-                .before(basic.clone())
-                .before(TrustAccessed {}),
+            "/assemblyfactorys",
+            XHandler::new(C { inner: list }).before(basic.clone()),
             "assemblyfactorys_list",
         );
         router.get(
@@ -242,21 +250,28 @@ impl Api for AssemblyFactoryApi {
             "assembly_factorys_show",
         );
         router.get(
-            "/assemblyfactorys",
-            XHandler::new(C { inner: list_blank })
-                .before(basic.clone())
-                .before(TrustAccessed {}),
+            "/stacksfactorys/:id/describe",
+            XHandler::new(C { inner: describe }).before(basic.clone()),
+            "stacksfactorys_describe",
+        );
+        router.get(
+            "/assemblyfactorys/all",
+            XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "assemblys_factorys_list_blank",
         );
         router.put(
             "/assemblyfactorys/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone()),
             "assembly_factory_status_update",
         );
-
     }
 }
 
+///Setup the cache sender for this api.
+///Essentially hookup all the computation intensive strategry
+///that will reload the cache using closures.
 ///Setup the cache sender for this api.
 ///Essentially hookup all the computation intensive strategry
 ///that will reload the cache using closures.
@@ -270,15 +285,15 @@ impl ExpanderSender for AssemblyFactoryApi {
         let plan_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_PLAN.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
-                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
-                    serde_json::to_string(&p).ok()
-                })
+                blueprint::DataStore::show(&_conn, &id)
+                    .ok()
+                    .and_then(|p| serde_json::to_string(&p).ok())
             }),
         ));
 
         let _conn = self.conn.clone();
 
-        let services = Box::new(NewCacheServiceFn::new(
+        let services_service = Box::new(NewCacheServiceFn::new(
             CACHE_PREFIX_SERVICE.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 service::DataStore::list_by_assembly_factory(&_conn, &id)
@@ -287,21 +302,21 @@ impl ExpanderSender for AssemblyFactoryApi {
             }),
         ));
 
-        &self.conn.expander.with(plan_service);
-        &self.conn.expander.with(services);
-    }
-}
+        let mut _conn = self.conn.clone();
+        _conn.expander.with(plan_service);
+        let stacks_service = Box::new(NewCacheServiceFn::new(
+            CACHE_PREFIX_STACKS_FACTORY.to_string(),
+            Box::new(move |id: IdGet| -> Option<String> {
+                debug!("» Stacksfactory live load for ≈ {}", id);
+                stacksfactory::DataStore::new(&_conn)
+                    .show(&id)
+                    .ok()
+                    .and_then(|f| serde_json::to_string(&f).ok())
+            }),
+        ));
 
-/// Convert into ServicesConfig  from the ServiceCfg provided as defaults.
-impl Into<ServicesConfig> for ServicesCfg {
-    fn into(self) -> ServicesConfig {
-        ServicesConfig {
-            loadbalancer_imagein: self.loadbalancer_imagein,
-            loadbalancer_imagename: self.loadbalancer_imagename,
-            loadbalancer_cpu: self.loadbalancer_cpu,
-            loadbalancer_mem: self.loadbalancer_mem,
-            loadbalancer_disk: self.loadbalancer_disk,
-        }
+        &self.conn.expander.with(stacks_service);
+        &self.conn.expander.with(services_service);
     }
 }
 
@@ -336,6 +351,20 @@ impl Validator for AssemblyFactory {
         }
         if self.get_plan().len() <= 0 {
             s.push("plan".to_string());
+        }
+
+        if self.object_meta().owner_references.len() <= 0 {
+            s.push("owner_references".to_string());
+        } else {
+            self.object_meta()
+                .owner_references
+                .iter()
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
         }
 
         if !self.get_resources().contains_key("compute_type") {

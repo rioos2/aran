@@ -1,30 +1,24 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of auth [origin] for the HTTP server
-use std::sync::Arc;
-
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
-
 use config::Config;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::models::volume;
-use protocol::api::volume::Volumes;
-use protocol::api::base::{MetaFields, StatusUpdate};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::models::volume;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
+use protocol::api::base::{MetaFields, StatusUpdate};
+use protocol::api::schema::{dispatch, type_meta};
+use protocol::api::volume::Volumes;
+use router::Router;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct VolumeApi {
@@ -144,7 +138,8 @@ impl Api for VolumeApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
@@ -153,7 +148,8 @@ impl Api for VolumeApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_assembly = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
+        let show_by_assembly =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
 
         //volumes
         router.post(
@@ -179,7 +175,7 @@ impl Api for VolumeApi {
             "volumes_status_update",
         );
         router.get(
-            "/assemblys/:id/volumes",
+            "/volumes/assemblys/:id",
             XHandler::new(C {
                 inner: show_by_assembly,
             }).before(basic.clone()),
@@ -203,9 +199,6 @@ impl Validator for Volumes {
         }
         if self.get_mount_path().len() <= 0 {
             s.push("mount_path".to_string());
-        }
-        if self.get_allocated().len() <= 0 {
-            s.push("allocated".to_string());
         }
 
         if self.object_meta().owner_references.len() < 2 {

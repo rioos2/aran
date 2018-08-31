@@ -3,15 +3,15 @@
 //
 #![allow(unused_must_use)]
 
-use std::collections::HashMap;
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use protocol::api::linker;
 
-use petgraph::{Graph, Direction};
+use petgraph::algo::{connected_components, is_cyclic_directed};
 use petgraph::graph::NodeIndex;
-use petgraph::algo::{is_cyclic_directed, connected_components};
+use petgraph::{Direction, Graph};
 
 use builder::service::indent::ServiceIdent;
 
@@ -77,8 +77,7 @@ impl ServiceGraph {
             assert_eq!(self.service_names[self.service_max], short_name);
 
             let node_index = self.graph.add_node(self.service_max);
-            self.service_map
-                .insert(short_name.to_string(), (self.service_max, node_index));
+            self.service_map.insert(short_name.to_string(), (self.service_max, node_index));
             self.service_max = self.service_max + 1;
 
             (self.service_max - 1, node_index)
@@ -105,20 +104,16 @@ impl ServiceGraph {
             if skip_update {
                 false
             } else {
-                let neighbors: Vec<NodeIndex> = self.graph
-                    .neighbors_directed(pkg_node, Direction::Incoming)
-                    .collect();
+                let neighbors: Vec<NodeIndex> = self.graph.neighbors_directed(pkg_node, Direction::Incoming).collect();
                 for n in neighbors {
                     let e = self.graph.find_edge(n, pkg_node).unwrap();
                     self.graph.remove_edge(e).unwrap();
                 }
-                self.latest_map
-                    .insert(short_name.to_string(), pkg_ident.clone());
+                self.latest_map.insert(short_name.to_string(), pkg_ident.clone());
                 true
             }
         } else {
-            self.latest_map
-                .insert(short_name.to_string(), pkg_ident.clone());
+            self.latest_map.insert(short_name.to_string(), pkg_ident.clone());
             true
         };
 
@@ -146,11 +141,7 @@ impl ServiceGraph {
     }
 
     pub fn _search(&self, phrase: &str) -> Vec<String> {
-        let v: Vec<String> = self.service_names
-            .iter()
-            .cloned()
-            .filter(|s| s.contains(phrase))
-            .collect();
+        let v: Vec<String> = self.service_names.iter().cloned().filter(|s| s.contains(phrase)).collect();
 
         v
     }

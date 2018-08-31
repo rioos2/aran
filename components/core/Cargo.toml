@@ -10,22 +10,22 @@ gcc = "0.3.54"
 
 [dependencies]
 errno = "*"
-hex = "0.3.0"
-lazy_static = "*"
-libc = "0.2.37"
-log = "0.4.1"
-rand = "*"
-regex = "0.2.1"
-serde = "1.0.27"
-serde_derive = "*"
-serde_json = "1.0.10"
-openssl = "0.9.23"
-exonum_sodiumoxide = "0.0.16"
-# exonum_libsodium-sys = "0.0.16"
+lazy_static = "1.0.1"
+libc = "0.2.42"
+log = "0.4.2"
+rand = "0.5.3"
+serde = "1.0.66"
+serde_derive = "1.0.67"
+serde_json = "1.0.22"
+openssl = "0.9.24"
 time = "*"
+get_if_addrs = "0.5.3"
+sys-info = "0.5.6"
+humansize = "1.1.0"
+regex="*"
+num_cpus="*"
 
-toml = { version = "0.4.5", default-features = false }
-url = "1.7.0"
+toml = { version = "0.4.6", default-features = false }
 
 [target.'cfg(not(windows))'.dependencies]
 users = "*"

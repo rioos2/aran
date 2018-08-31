@@ -6,19 +6,33 @@ description = "The entitlement library for Rio/OS. This library is responsible f
 workspace = "../../"
 
 [dependencies]
-toml = { version = "0.4.5", default-features = false }
-serde = "*"
 log = "*"
-serde_derive = "*"
+toml = { version = "0.4.6", default-features = false }
+serde = "1.0.66"
+serde_derive = "1.0.67"
+serde_json = "1.0.22"
 libloading = "0.5.0"
-handlebars = { version = "*", default-features = false }
-serde_json = "1.0.10"
-failure = { git = "https://github.com/withoutboats/failure.git" }
-rand = "*"
-lazy_static = "*"
+handlebars = { version = "1.0.0-beta.2", default-features = false }
+rand = "0.5.3"
+lazy_static = "1.0.1"
 
 [dependencies.rioos_core]
 path = "../core"
+
+[dependencies.rioos_http_client]
+path = "../http-client"
+
+[dependencies.rioos_builder_db]
+path = "../builder-db"
+
+[dependencies.rioos_builder_entitlement]
+path = "../builder-entitlement"
+
+[dependencies.rioos_builder_apimachinery]
+path = "../builder-apimachinery"
+
+[dependencies.rioos_auth]
+path = "../auth"
 
 [features]
 functional = []

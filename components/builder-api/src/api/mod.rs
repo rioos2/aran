@@ -6,32 +6,34 @@
 use std::sync::Arc;
 
 use iron::prelude::*;
-use common::ui;
-use ansi_term::Colour;
 
-use router::Router;
 use config::Config;
+use router::Router;
 use std::collections::BTreeMap;
+use iron::headers::{Authorization, Bearer};
 
 //The macro should be loaded first. As we want to use it `mod audit`.
 //Hence  `mod events` must be loaded before `mod audit`
 #[macro_use]
 pub mod events;
-
 pub mod audit;
+pub mod authorize;
 pub mod cluster;
 pub mod deploy;
-pub mod security;
 pub mod devtooling;
-pub mod authorize;
-
 mod helpers;
-use protocol::api::base::{IdGet, StatusUpdate, QueryInput};
+pub mod objectstorage;
+pub mod security;
+pub mod entitle;
 
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, malformed_body};
-use error::ErrorMessage::{MissingParameter, MissingBody, MustBeNumeric, MissingQueryParameter};
 use api::helpers::extract_query_value;
+use error::ErrorMessage::{MissingBody, MissingParameter, MissingQueryParameter, MustBeNumeric};
+use http_gateway::util::errors::{bad_request, malformed_body};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use protocol::api::base::{IdGet, QueryInput, StatusUpdate};
+use auth::util::token_target::TokenTarget;
+use http_gateway::http::rendering::render_json_error;
+use http_gateway::util::errors::{bad_err, not_acceptable_error};
 
 // `Api` trait which defines `RESTful` API.
 pub trait Api {
@@ -53,16 +55,6 @@ pub trait ApiValidator: Send + Sized + 'static {
             }
         }
     }
-}
-
-//API resources that wish to expand its own using a cache can do so, by implementing
-//this trait. The with_cache building the expander with the  behaviour  by defining
-//what are the resources the cache needs to manage, and how does it do so.
-//Every expandersender shall provide cache_closures of loading a cache to the expander.
-//The expander supports multiple cache_closures.
-//This is a singular expander meaning, if an id is provided it can provide the cache entry.
-trait ExpanderSender: 'static + Send {
-    fn with_cache(&mut self);
 }
 
 // Implement this trait when the request object (eg: Assembly, AssemblyFactory)
@@ -111,12 +103,10 @@ struct IdParmsVerifier {}
 impl RequestVerifier for IdParmsVerifier {
     fn verify(req: &Request) -> AranResult<IdGet> {
         match req.extensions.get::<Router>().unwrap().find("id") {
-            Some(id) => {
-                match id.parse::<u64>() {
-                    Ok(_name) => Ok(IdGet::with_id(id.to_string())),
-                    Err(_) => return Err(bad_request(&MustBeNumeric("id".to_string()))),
-                }
-            }
+            Some(id) => match id.parse::<u64>() {
+                Ok(_name) => Ok(IdGet::with_id(id.to_string())),
+                Err(_) => return Err(bad_request(&MustBeNumeric("id".to_string()))),
+            },
             None => return Err(bad_request(&MissingParameter("id".to_string()))),
         }
     }
@@ -129,35 +119,55 @@ struct AccountParmsVerifier {}
 
 impl RequestVerifier for AccountParmsVerifier {
     fn verify(req: &Request) -> AranResult<IdGet> {
-        match req.extensions.get::<Router>().unwrap().find("account_id") {
-            Some(account) => {
-                match account.parse::<u64>() {
-                    Ok(account) => Ok(IdGet::with_account(account.to_string())),
-                    Err(_) => return Err(bad_request(&MustBeNumeric("account".to_string()))),
-                }
+        let token = match req.headers.get::<Authorization<Bearer>>() {
+            Some(&Authorization(Bearer { ref token })) => token,
+            _ => {
+                return Err(bad_request(&MissingParameter("Authorization Bearer: token not found.".to_string())))
             }
-            None => return Err(bad_request(&MissingParameter("account".to_string()))),
+        };
+        let token_target = TokenTarget::parse(token.to_string());
+
+        if !token_target.get_account_id().is_empty() {
+            return Ok(IdGet::with_account(token_target.get_account_id()))
         }
+        return Err(bad_request(&MissingParameter("account".to_string())))
+        /*match req.extensions.get::<Router>().unwrap().find("account_id") {
+            Some(account) => match account.parse::<u64>() {
+                Ok(account) => Ok(IdGet::with_account(account.to_string())),
+                Err(_) => return Err(bad_request(&MustBeNumeric("account".to_string()))),
+            },
+            None => return Err(bad_request(&MissingParameter("account".to_string()))),
+        }*/
     }
 }
+
 //NameParmsVerifier verifies if the request sent a parameter
 /// `name`
 /// If it doesn't then it sends an MissingParameter
-
 struct NameParmsVerifier {}
 
 impl RequestVerifier for NameParmsVerifier {
     fn verify(req: &Request) -> AranResult<IdGet> {
         match req.extensions.get::<Router>().unwrap().find("name") {
-            Some(name) => {
-                ui::rawdumpln(
-                    Colour::White,
-                    '✓',
-                    format!("======= parms org {:?} ", name),
-                );
-                Ok(IdGet::with_id(name.to_string()))
-            }
+            Some(name) => Ok(IdGet::with_id(name.to_string())),
             None => return Err(bad_request(&MissingParameter("name".to_string()))),
+        }
+    }
+}
+
+//IdWithNameParmsVerifier verifies if the request sent a parameter
+/// `id`
+/// If it doesn't then it sends an MissingParameter
+/// It is same as idparmverifier, but the difference is id verifier allow only numeric,
+/// but in this verifier allows also string contents
+
+struct IdWithNameParmsVerifier {}
+
+impl RequestVerifier for IdWithNameParmsVerifier {
+    fn verify(req: &Request) -> AranResult<IdGet> {
+        match req.extensions.get::<Router>().unwrap().find("id") {
+            Some(name) => Ok(IdGet::with_id(name.to_string())),
+            None => return Err(bad_request(&MissingParameter("id".to_string()))),
         }
     }
 }
@@ -176,6 +186,10 @@ trait ParmsVerifier {
 
     fn verify_name(&self, req: &Request) -> AranResult<IdGet> {
         NameParmsVerifier::verify(req)
+    }
+
+    fn verify_id_with_name(&self, req: &Request) -> AranResult<IdGet> {
+        IdWithNameParmsVerifier::verify(req)
     }
 }
 
@@ -214,9 +228,9 @@ impl QueryVerifier for DefaultQuery {
         match extract_query_value(req) {
             Some(query_pairs) => Ok(QueryInput::with(query_pairs)),
             None => {
-                return Err(bad_request(
-                    &MissingQueryParameter("No Query Params Found".to_string()),
-                ))
+                return Err(bad_request(&MissingQueryParameter(
+                    "No Query Params Found".to_string(),
+                )))
             }
         }
     }

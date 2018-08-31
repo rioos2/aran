@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::fs;
 use std::fmt;
+use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufWriter;
@@ -10,6 +10,7 @@ use std::result;
 use std::str::FromStr;
 
 use error::{Error, Result};
+use fs::open_from;
 use util::perm;
 
 use super::REGULAR_KEY_PERMISSIONS;
@@ -25,6 +26,8 @@ pub enum PairSaverExtn {
     PubRSA,
     PemX509,
     PfxPKCS12,
+    DSA,
+    ED25519,
 }
 
 impl fmt::Display for PairSaverExtn {
@@ -33,6 +36,8 @@ impl fmt::Display for PairSaverExtn {
             PairSaverExtn::PubRSA => write!(f, "rsa"),
             PairSaverExtn::PemX509 => write!(f, "x509"),
             PairSaverExtn::PfxPKCS12 => write!(f, "pkcs12"),
+            PairSaverExtn::DSA => write!(f, "dsa"),
+            PairSaverExtn::ED25519 => write!(f, "ed25519"),
         }
     }
 }
@@ -119,12 +124,7 @@ impl FromStr for PairType {
         match value {
             "public" => Ok(PairType::Public),
             "secret" => Ok(PairType::Secret),
-            _ => {
-                return Err(Error::CryptoError(format!(
-                    "Invalid PairType conversion from {}",
-                    value
-                )))
-            }
+            _ => return Err(Error::CryptoError(format!("Invalid PairType conversion from {}", value))),
         }
     }
 }
@@ -182,12 +182,11 @@ where
     S1: AsRef<str>,
     S2: AsRef<str>,
 {
-    path.as_ref()
-        .join(format!("{}.{}", keyname.as_ref(), suffix.as_ref()))
+    path.as_ref().join(format!("{}.{}", keyname.as_ref(), suffix.as_ref()))
 }
 
 fn read_key_bytes(keyfile: &Path) -> Result<Vec<u8>> {
-    let mut f = try!(File::open(keyfile));
+    let mut f = try!(open_from(keyfile));
     let mut s = String::new();
     if try!(f.read_to_string(&mut s)) <= 0 {
         return Err(Error::CryptoError("Can't read key bytes".to_string()));
@@ -197,7 +196,7 @@ fn read_key_bytes(keyfile: &Path) -> Result<Vec<u8>> {
 }
 
 pub fn read_key_in_bytes(keyfile: &Path) -> Result<Vec<u8>> {
-    let mut f = try!(File::open(keyfile));
+    let mut f = try!(open_from(keyfile));
     let mut v = vec![];
     if try!(f.read_to_end(&mut v)) <= 0 {
         return Err(Error::CryptoError("Can't read key bytes".to_string()));
@@ -218,9 +217,7 @@ fn write_key_file(regular_keyfile: Option<&Path>, regular_content: Option<&[u8]>
         if let Some(pk_dir) = regular_keyfile.parent() {
             try!(fs::create_dir_all(pk_dir));
         } else {
-            return Err(Error::BadKeyPath(
-                regular_keyfile.to_string_lossy().into_owned(),
-            ));
+            return Err(Error::BadKeyPath(regular_keyfile.to_string_lossy().into_owned()));
         }
 
         if regular_keyfile.exists() {
@@ -234,10 +231,7 @@ fn write_key_file(regular_keyfile: Option<&Path>, regular_content: Option<&[u8]>
         let regular_file = try!(File::create(regular_keyfile));
         let mut regular_writer = BufWriter::new(&regular_file);
         try!(regular_writer.write_all(regular_content));
-        try!(perm::set_permissions(
-            regular_keyfile,
-            REGULAR_KEY_PERMISSIONS,
-        ));
+        try!(perm::set_permissions(regular_keyfile, REGULAR_KEY_PERMISSIONS,));
     }
 
     Ok(())
@@ -245,7 +239,12 @@ fn write_key_file(regular_keyfile: Option<&Path>, regular_content: Option<&[u8]>
 
 ///Write a pair public and secret.
 //Calls and write_key_file for public and secret separately.
-fn write_keypair_files(public_keyfile: Option<&Path>, public_content: Option<&[u8]>, secret_keyfile: Option<&Path>, secret_content: Option<&[u8]>) -> Result<()> {
+fn write_keypair_files(
+    public_keyfile: Option<&Path>,
+    public_content: Option<&[u8]>,
+    secret_keyfile: Option<&Path>,
+    secret_content: Option<&[u8]>,
+) -> Result<()> {
     write_key_file(public_keyfile, public_content)?;
     write_key_file(secret_keyfile, secret_content)?;
     Ok(())
@@ -255,7 +254,6 @@ fn write_keypair_files(public_keyfile: Option<&Path>, public_content: Option<&[u
 mod test {
     use std::fs::{self, File};
 
-    use hex;
     use tempdir::TempDir;
 
     use super::super::test_support::*;
@@ -263,16 +261,6 @@ mod test {
     static VALID_KEY: &'static str = "ring-key-valid-20160504220722.sym.key";
     static VALID_KEY_AS_HEX: &'static str = "\
                                              53594d2d5345432d310a72696e672d6b65792d76616c69642d32303136303530343232303732320a0a524346614f38346a3431476d727a576464784d6473587047646e3369754979374d77337859726a504c73453d";
-
-    #[test]
-    fn read_key_bytes() {
-        let cache = TempDir::new("key_cache").unwrap();
-        let keyfile = cache.path().join(VALID_KEY);
-        fs::copy(fixture(&format!("keys/{}", VALID_KEY)), &keyfile).unwrap();
-        println!("keyfile {:?}", keyfile);
-        let result = super::read_key_bytes(keyfile.as_path()).unwrap();
-        assert_eq!(hex::encode(result.as_slice()), VALID_KEY_AS_HEX);
-    }
 
     #[test]
     #[should_panic(expected = "Can\\'t read key bytes")]

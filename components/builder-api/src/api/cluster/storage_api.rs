@@ -2,35 +2,28 @@
 
 //! A collection of auth [origin] for the HTTP server
 
-use std::sync::Arc;
-
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use bytes::Bytes;
 use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-use storage::storage_ds::StorageDS;
-use protocol::api::base::StatusUpdate;
-use protocol::api::storage::{Storage, DataCenter, StoragePool};
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use protocol::api::base::MetaFields;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use ansi_term::Colour;
-use common::ui;
-use bytes::Bytes;
-use serde_json;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error, conflict_error};
+use iron::prelude::*;
+use iron::status;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::base::StatusUpdate;
+use protocol::api::schema::{dispatch, type_meta};
+use protocol::api::storage::{DataCenter, Storage, StoragePool};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
+use storage::storage_ds::StorageDS;
 
 #[derive(Clone)]
 pub struct StorageApi {
@@ -66,9 +59,7 @@ impl StorageApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
         match StorageDS::storage_create(&self.conn, &unmarshall_body) {
@@ -79,7 +70,7 @@ impl StorageApi {
 
     //GET: /storagesconnectors
     //Blank origin: Returns all the Storage(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list(&self, _req: &mut Request) -> AranResult<Response> {
         match StorageDS::storage_list(&self.conn) {
             Ok(Some(storage_list)) => Ok(render_json_list(status::Ok, dispatch(_req), &storage_list)),
@@ -177,15 +168,26 @@ impl StorageApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match StorageDS::data_center_create(&self.conn, &unmarshall_body) {
-            Ok(dc_create) => Ok(render_json(status::Ok, &dc_create)),
-            Err(err) => Err(internal_error(&format!("{}\n", err))),
+        match StorageDS::data_center_show_by_name(&self.conn, &unmarshall_body) {
+            Ok(Some(_)) => Err(conflict_error(&format!(
+                "alreay exists {}",
+                unmarshall_body.get_name()
+            ))),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => {
+                match StorageDS::data_center_create(&self.conn, &unmarshall_body) {
+                    Ok(dc_create) => Ok(render_json(status::Ok, &dc_create)),
+                    Err(err) => Err(internal_error(&format!("{}\n", err))),
+                }
+            }
         }
+
+
     }
 
     //GET: /datacenters
     //Blank origin: Returns all the Datacenters(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
 
     fn data_center_list(&self, _req: &mut Request) -> AranResult<Response> {
         match StorageDS::data_center_list(&self.conn) {
@@ -268,9 +270,7 @@ impl StorageApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -305,7 +305,7 @@ impl StorageApi {
 
     //GET: /storageconnectors/:id/storagespool
     //Blank origin: Returns all the Storagepool(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn storage_pool_by_connector(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
@@ -335,10 +335,9 @@ impl StorageApi {
         }
     }
 
-
     //GET: /storagespool
     //Blank origin: Returns all the Storagepool(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn storage_pool_list(&self, _req: &mut Request) -> AranResult<Response> {
         match StorageDS::storage_pool_list_all(&self.conn) {
             Ok(Some(storage_pool_list)) => Ok(render_json_list(
@@ -406,7 +405,6 @@ impl Api for StorageApi {
         let _self = self.clone();
         let storagepool_show = move |req: &mut Request| -> AranResult<Response> { _self.storagepool_show(req) };
 
-
         //closures : datacenters
         let _self = self.clone();
         let data_center_create = move |req: &mut Request| -> AranResult<Response> { _self.data_center_create(req) };
@@ -436,12 +434,12 @@ impl Api for StorageApi {
             "storages_show",
         );
         router.put(
-            "storageconnectors/:id/status",
+            "/storageconnectors/:id/status",
             XHandler::new(C { inner: status_update }).before(basic.clone()),
             "storages_status_update",
         );
         router.put(
-            "storageconnectors/:id",
+            "/storageconnectors/:id",
             XHandler::new(C { inner: update }).before(basic.clone()),
             "storages_update",
         );
@@ -472,8 +470,6 @@ impl Api for StorageApi {
             XHandler::new(C { inner: storagepool_show }).before(basic.clone()),
             "storagepool_show",
         );
-
-
 
         //DataCenter API
         router.post(

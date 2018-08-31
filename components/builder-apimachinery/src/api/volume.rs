@@ -1,17 +1,24 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{TypeMeta, ObjectMeta, MetaFields, Status};
+use api::base::{MetaFields, ObjectMeta, Status, TypeMeta};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Volumes {
     #[serde(default)]
-    id: String, //id an unique identifier in systems of record. Generated during creation of the Volumes
+    id: String, //id an unique identifier in systems of record. Generated during creation of the
+    //Volumes
     pub object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //standard type metadata: kind: Volumes
     mount_path: String,          //The mount path/pool name of the block device
     allocated: String,           //The size of the storage allocated.
-    //Most recently observed status of the service. Populated by the system. Read-only.  Initially during submission, the status is "pending"
+    //Most recently observed status of the service. Populated by the system. Read-only.
+    //Initially during submission, the status is "pending"
     status: Status,
+    #[serde(default)]
+    source: VolumeSource, // The contents of the target SettingMap's Data field will be presented in a
+    // volume as files using the keys in the Data field as the file names, unless
+    // the items element is populated with specific mappings of keys to paths.
+    // SettingMap volumes support ownership management and SELinux relabeling.
     #[serde(default)]
     created_at: String,
 }
@@ -58,6 +65,14 @@ impl Volumes {
         &self.status
     }
 
+    pub fn set_source(&mut self, v: VolumeSource) {
+        self.source = v;
+    }
+
+    pub fn get_source(&self) -> &VolumeSource {
+        &self.source
+    }
+
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
     }
@@ -84,10 +99,139 @@ impl MetaFields for Volumes {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct VolumeSource {
+    #[serde(default)]
+    setting_map: SettingMap, // The name of the secret in the assembly's namespace to select from.
+    #[serde(default)]
+    nfs: NFS, // NFS represents an NFS mount on the host that shares a assembly's lifetime
+    #[serde(default)]
+    openio: OpenIO,
+    #[serde(default)]
+    iscsi: ISCSI, // ISCSI represents an ISCSI Disk resource that is attached to a nodelet's host machine and then exposed to the assembly.
+    #[serde(default)]
+    rbd: Rbd, // RBD represents a Rados Block Device mount on the host that shares a assembly's lifetime.
+    #[serde(default)]
+    host_path: HostPath, // HostPath represents a pre-existing file or directory on the host
+                         // machine that is directly exposed to the container. This is generally
+                         // used for system agents or other privileged things that are allowed
+                         // to see the host machine. Most containers will NOT need this.
+}
+
+// The contents of the target SettingMap's Data field will be presented in a
+// volume as files using the keys in the Data field as the file names, unless
+// the items element is populated with specific mappings of keys to paths.
+// SettingMap volumes support ownership management and SELinux relabeling.
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct SettingMap {
+    object_ref: ObjectReference, // The name of the secret in the assembly's namespace to select from.
+    #[serde(default)]
+    items: Vec<Items>, //If unspecified, each key-value pair in the Data field of the referenced
+    // SettingMap will be projected into the volume as a file whose name is the
+    // key and content is the value.
+    #[serde(default)]
+    default_mode: i32, //mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644
+    #[serde(default)]
+    optional: bool, //Specify whether the SettingMap or it's keys must be defined
+}
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct NFS {
+    #[serde(default)]
+    server: String, // Server is the hostname or IP address of the NFS server.
+    #[serde(default)]
+    path: String, // Path that is exported by the NFS server.
+    #[serde(default)]
+    readonly: bool, // ReadOnly here will force
+                    // the NFS export to be mounted with read-only permissions.
+                    // Defaults to false.
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct OpenIO {
+    #[serde(default)]
+    server: String, // // Server is the hostname or IP address of the NFS server.
+    #[serde(default)]
+    key: String,
+    #[serde(default)]
+    user: String,
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ISCSI {
+    #[serde(default)]
+    target_portal: String, // iSCSI target portal. The portal is either an IP or ip_addr:port if the port  is other than default (typically TCP ports 860 and 3260).
+    #[serde(default)]
+    iqn: String, // Target iSCSI Qualified Name.
+    #[serde(default)]
+    lun: i32, // iSCSI target lun number.
+    #[serde(default)]
+    iscsi_interface: String, // Optional: Defaults to 'default' (tcp). iSCSI interface name that uses an iSCSI transport.
+    #[serde(default)]
+    fstype: String, // Filesystem type of the volume that you want to mount.  Tip: Ensure that the filesystem type is supported by the host operating system.  Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
+    #[serde(default)]
+    readonly: bool, // ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false.
+    #[serde(default)]
+    portals: Vec<String>, // iSCSI target portal List. The portal is either an IP or ip_addr:port if the port is other than default (typically TCP ports 860 and 3260).
+    #[serde(default)]
+    chap_auth_discovery: bool, // whether support iSCSI Discovery CHAP authentication
+    #[serde(default)]
+    chap_auth_session: bool, // whether support iSCSI Session CHAP authentication
+    secret_ref: ObjectReference, // CHAP secret for iSCSI target and initiator authentication
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Rbd {
+    #[serde(default)]
+    monitors: Vec<String>, // A collection of Ceph monitors.
+    #[serde(default)]
+    image: String, // The rados image name.
+    #[serde(default)]
+    fstype: String, // Filesystem type of the volume that you want to mount. Tip: Ensure that the filesystem type is supported by the host operating system. Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
+    #[serde(default)]
+    pool: String, // The rados pool name. Default is rbd.
+    #[serde(default)]
+    user: String, // The rados user name. Default is admin.
+    #[serde(default)]
+    keyring: String, // Keyring is the path to key ring for RBDUser. Default is /etc/ceph/keyring.
+    #[serde(default)]
+    readonly: bool, // ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false.
+    secret_ref: ObjectReference, // SecretRef is name of the authentication secret for RBDUser. If provided overrides keyring. Default is nil.
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ObjectReference {
+    // Name of the referent.
+    // More info: https://rioos.sh/docs/concepts/overview/working-with-objects/names/#names
+    // TODO: Add other useful fields. api_version, kind, uid?
+    name: String,
+}
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HostPath {
+    path: String, // Path of the directory on the host.
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Items {
+    #[serde(default)]
+    key: String, // The key to project.
+    // The relative path of the file to map the key to.
+    // May not be an absolute path.
+    // May not contain the path element '..'.
+    // May not start with the string '..'.
+    #[serde(default)]
+    path: String,
+    //mode bits to use on this file, must be a value between 0
+    // and 0777. If not specified, the volume defaultMode will be used.
+    // This might be in conflict with other options that affect the file
+    // mode, like fsGroup, and the result can be other mode bits set.
+    #[serde(default)]
+    mode: i32,
+}
+
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode, Value};
-    use serde_json::ser::to_string;
+    use serde_json::from_str as json_decode;
 
     use super::*;
 

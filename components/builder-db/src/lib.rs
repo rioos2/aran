@@ -44,71 +44,38 @@
 //! 1. Q: But what about those horror stories? A: The horror stories are about encoding your business logic in the database. For example, doing complex transformations on the data, or map reducing it, or all kinds of other crazy business. Both our application and our access patterns mean we likely won't need to do a whole lot of that.
 //!
 
-extern crate fallible_iterator;
 extern crate fnv;
 
 #[macro_use]
 extern crate log;
+extern crate base64;
+extern crate chrono;
+extern crate diesel;
 extern crate num_cpus;
 extern crate postgres;
 extern crate r2d2;
+extern crate r2d2_diesel;
 extern crate r2d2_postgres;
 extern crate rand;
 extern crate rioos_builder_apimachinery as protocol;
-extern crate rioos_common as common;
 extern crate rioos_core as rcore;
 extern crate serde;
-extern crate base64;
-extern crate chrono;
-
+#[macro_use]
+extern crate diesel_migrations;
 
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
 extern crate serde_json;
 extern crate serde_yaml;
+extern crate url;
 
-#[macro_use]
 extern crate lazy_static;
 
-extern crate threadpool;
-extern crate time;
-
+pub mod appstore;
 pub mod config;
+pub mod data_store;
+pub mod diesel_pool;
 pub mod error;
+pub mod migration;
 pub mod pool;
 pub mod test;
-#[allow(unused_must_use)]
-pub mod data_store;
-#[allow(unused_must_use)]
-pub mod auth_storedproc;
-#[allow(unused_must_use)]
-pub mod node_storedproc;
-#[allow(unused_must_use)]
-pub mod deploy_storedproc;
-#[allow(unused_must_use)]
-pub mod plan_storedproc;
-#[allow(unused_must_use)]
-pub mod scale_storedproc;
-#[allow(unused_must_use)]
-pub mod service_account_storedproc;
-#[allow(unused_must_use)]
-pub mod network_storedproc;
-#[allow(unused_must_use)]
-pub mod storage_storedproc;
-pub mod migration;
-#[allow(unused_must_use)]
-pub mod job_storedproc;
-#[allow(unused_must_use)]
-pub mod volume_storedproc;
-#[allow(unused_must_use)]
-pub mod watch_storedproc;
-pub mod package_storedproc;
-#[allow(unused_must_use)]
-pub mod marketplace_storedproc;
-#[allow(unused_must_use)]
-pub mod devtooling_storedproc;
-#[allow(unused_must_use)]
-pub mod system_secret;
-#[allow(unused_must_use)]
-pub mod marketplace_differ;

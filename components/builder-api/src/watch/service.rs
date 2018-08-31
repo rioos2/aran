@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-use std::sync::Arc;
 use std::sync::mpsc;
+use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
@@ -11,19 +11,16 @@ use futures;
 use futures::Stream;
 use regex::Regex;
 
-use httpbis::*;
 use httpbis::Headers;
-
-use db::data_store::DataStoreConn;
+use httpbis::*;
 
 pub struct ServiceImpl {
-    pub datastore: Box<DataStoreConn>,
     pub sender: Arc<Mutex<mpsc::SyncSender<(String, Arc<Mutex<mpsc::Sender<Bytes>>>)>>>,
 }
 
 impl Service for ServiceImpl {
     fn start_request(&self, headers: Headers, _req: HttpPartStream) -> Response {
-        println!("Path ================> {:?}", headers.path());
+        debug!("Start http2 service in path {:?}", headers.path());
         let re = Regex::new("/(\\w+)/watch").expect("regex");
         let captures = re.captures(headers.path()).expect("captures");
         let name: String = captures.get(1).expect("1").as_str().parse().expect("parse");
@@ -45,7 +42,7 @@ impl Service for ServiceImpl {
                 match ry.recv() {
                     Ok(msg) => {
                         //when client disconnect their watch request then this "is_disconnected()" method returns true
-                        //then we break the thread                      
+                        //then we break the thread
                         match tx.try_send(Bytes::from(msg)) {
                             Ok(_success) => {}
                             Err(err) => {

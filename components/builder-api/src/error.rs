@@ -2,24 +2,27 @@
 
 //! A module containing the errors handling for the builder api
 
+use bodyparser;
+use clusters;
+use common;
+use db;
+use entitlement;
+use httpbis;
+use openio_sdk_rust::aws;
+use postgres;
+use reqwest;
+use rio_core;
+use rioos_http;
+use serde_json;
+use serde_yaml;
+use service;
 use std::error;
 use std::fmt;
 use std::io;
+use std::net;
 use std::result;
-use rioos_http;
-use url;
-use httpbis;
 use std::str::Utf8Error;
-use serde_json;
-
-use common;
-use rio_core;
-use reqwest;
-use db;
-use service;
-use bodyparser;
-use rio_net;
-use serde_yaml;
+use url;
 
 const MISSING_PARAMETER: &'static str = "Missing parameters: ";
 const MISSING_BODY: &'static str = "Missing body, empty: ";
@@ -52,25 +55,33 @@ impl ToString for ErrorMessage {
 #[derive(Debug)]
 pub enum Error {
     Db(db::error::Error),
+    Api(String),
     Secret(service::Error),
     BadPort(String),
-    MissingTLS(String),
+    MissingConfiguration(String),
     WatchServer(httpbis::Error),
     UNKNOWSECRET,
     SetupNotDone,
     SyncNotDone,
     RioosAranCore(rio_core::Error),
-    RioNetError(rio_net::Error),
     RioosBodyError(bodyparser::BodyError),
     RioHttpClient(rioos_http::Error),
     RioosAranCommon(common::Error),
     ReqwestError(reqwest::Error),
+    OpenIOCredentialsError(aws::errors::creds::CredentialsError),
+    OpenIOS3Error(aws::errors::s3::S3Error),
     HTTP(reqwest::StatusCode),
     UrlParseError(url::ParseError),
     IO(io::Error),
     Json(serde_json::Error),
     Utf8Error(Utf8Error),
     Yaml(serde_yaml::Error),
+    Postgres(postgres::error::Error),
+    NetworkError(net::AddrParseError),
+    //Hook errors
+    RioConfig(service::Error),
+    SenseiHook(clusters::Error),
+    EntitlementError(entitlement::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -79,28 +90,32 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
+            Error::Api(ref e) => format!("{}", e),
             Error::BadPort(ref e) => format!("{} is an invalid port. Valid range 1-65535.", e),
-            Error::MissingTLS(ref e) => format!(
-                "TLS certificate missing - [{}], Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start",
-                e
-            ),
+            Error::MissingConfiguration(ref e) => format!("{},", e),
             Error::Secret(ref e) => format!("{}", e),
             Error::WatchServer(ref e) => format!("{}", e),
             Error::RioosAranCore(ref e) => format!("{}", e),
-            Error::RioNetError(ref e) => format!("{}", e),
             Error::RioosBodyError(ref e) => format!("{:?}, {:?}", e.detail, e.cause),
             Error::RioHttpClient(ref e) => format!("{}", e),
             Error::RioosAranCommon(ref e) => format!("{}", e),
             Error::ReqwestError(ref e) => format!("{}", e),
+            Error::OpenIOCredentialsError(ref e) => format!("{}", e),
+            Error::OpenIOS3Error(ref e) => format!("{}", e),
             Error::UrlParseError(ref e) => format!("{}", e),
             Error::HTTP(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
+            Error::NetworkError(ref e) => format!("Address Parsing Error, {}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
             Error::UNKNOWSECRET => format!("SecretType not found"),
-            Error::SetupNotDone => format!("Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start"),
-            Error::SyncNotDone => format!("Rio/OS Marketplace sync not done. You must run `rioos-apiserver sync` before attempting start"),
+            Error::SetupNotDone => format!("Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"),
+            Error::SyncNotDone => format!("Rio.AppStore sync not done. Run `rioos-apiserver sync` before attempting start"),
             Error::Yaml(ref e) => format!("{}", e),
+            Error::Postgres(ref e) => format!("{}", e),
+            Error::RioConfig(ref e) => format!("{}", e),
+            Error::EntitlementError(ref e) => format!("{}", e),
+            Error::SenseiHook(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
     }
@@ -110,26 +125,32 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Db(ref err) => err.description(),
+            Error::Api(ref err) => err,
             Error::BadPort(_) => "Received an invalid port or a number outside of the valid range.",
-            Error::MissingTLS(ref err) => err,
+            Error::MissingConfiguration(ref err) => err,
             Error::Secret(ref err) => err.description(),
             Error::WatchServer(ref err) => err.description(),
             Error::RioHttpClient(ref err) => err.description(),
             Error::RioosAranCore(ref err) => err.description(),
-            Error::RioNetError(ref err) => err.description(),
             Error::RioosBodyError(ref err) => err.description(),
             Error::RioosAranCommon(ref err) => err.description(),
             Error::ReqwestError(ref err) => err.description(),
+            Error::OpenIOCredentialsError(ref err) => err.description(),
+            Error::OpenIOS3Error(ref err) => err.description(),
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::UrlParseError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
+            Error::NetworkError(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
             Error::Utf8Error(ref err) => err.description(),
             Error::UNKNOWSECRET => "Unknown SecretType",
-            Error::SetupNotDone => "Rio/OS setup not done. You must run `rioos-apiserver setup` before attempting start",
-            Error::SyncNotDone => "Rio/OS marketplace sync not done. You must run `rioos-apiserver sync` before attempting start",
-
+            Error::SetupNotDone => "Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start",
+            Error::SyncNotDone => "Rio.AppStore sync not done. Run `rioos-apiserver sync` before attempting start",
             Error::Yaml(ref err) => err.description(),
+            Error::Postgres(ref err) => err.description(),
+            Error::RioConfig(ref err) => err.description(),
+            Error::EntitlementError(ref _err) => "",
+            Error::SenseiHook(ref err) => err.description(),
         }
     }
 }
@@ -170,12 +191,6 @@ impl From<url::ParseError> for Error {
     }
 }
 
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
-        Error::RioNetError(err)
-    }
-}
-
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Error {
         Error::Json(err)
@@ -188,6 +203,12 @@ impl From<bodyparser::BodyError> for Error {
     }
 }
 
+impl From<net::AddrParseError> for Error {
+    fn from(err: net::AddrParseError) -> Error {
+        Error::NetworkError(err)
+    }
+}
+
 impl From<Utf8Error> for Error {
     fn from(err: Utf8Error) -> Self {
         Error::Utf8Error(err)
@@ -197,5 +218,30 @@ impl From<Utf8Error> for Error {
 impl From<serde_yaml::Error> for Error {
     fn from(err: serde_yaml::Error) -> Error {
         Error::Yaml(err)
+    }
+}
+
+impl From<postgres::error::Error> for Error {
+    fn from(err: postgres::error::Error) -> Self {
+        Error::Postgres(err)
+    }
+}
+
+impl From<service::Error> for Error {
+    fn from(err: service::Error) -> Self {
+        Error::RioConfig(err)
+    }
+}
+
+
+impl From<entitlement::Error> for Error {
+    fn from(err: entitlement::Error) -> Self {
+        Error::EntitlementError(err)
+    }
+}
+
+impl From<clusters::Error> for Error {
+    fn from(err: clusters::Error) -> Self {
+        Error::SenseiHook(err)
     }
 }

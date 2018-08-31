@@ -44,8 +44,6 @@
 
 use std::path::{Path, PathBuf};
 
-use sodiumoxide::init as nacl_init;
-
 use env as renv;
 use fs::rioconfig_key_path;
 
@@ -57,6 +55,12 @@ pub static SECRET_SIG_KEY_SUFFIX: &'static str = "key";
 
 /// The suffix on the end of a public RSA key file
 pub static PUBLIC_RSA_SUFFIX: &'static str = "pub";
+
+/// The suffix on the end of a public DSA key file
+pub static PUBLIC_DSA_SUFFIX: &'static str = "dsa";
+
+/// The suffix on the end of a public ED25519 key file
+pub static PUBLIC_ED_SUFFIX: &'static str = "ed";
 
 /// The suffix on the end of a pkcs12 bundled public + private key file
 /// Both the X509 public and private RSA key combined into a pkcs12 pfx file
@@ -75,7 +79,6 @@ static REGULAR_KEY_PERMISSIONS: u32 = 0o400;
 
 pub use self::keys::sig_key_pair::SigKeyPair;
 
-pub mod hash;
 pub mod keys;
 
 pub fn default_rioconfig_key_path(fs_root_path: Option<&Path>) -> PathBuf {
@@ -85,24 +88,17 @@ pub fn default_rioconfig_key_path(fs_root_path: Option<&Path>) -> PathBuf {
     }
 }
 
-pub fn init() {
-    nacl_init();
-}
-
 #[cfg(test)]
 pub mod test_support {
-    use std::io::Read;
     use std::fs::File;
+    use std::io::Read;
     use std::path::PathBuf;
     use time;
 
     use error as herror;
 
     pub fn fixture(name: &str) -> PathBuf {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("tests")
-            .join("fixtures")
-            .join(name);
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("fixtures").join(name);
         if !path.is_file() {
             panic!("Fixture '{}' not found at: {:?}", name, path);
         }

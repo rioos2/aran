@@ -1,0 +1,5 @@
+[https]
+listen = "0.0.0.0"
+port = 6443
+tls = "api-server.pfx"
+tls_password = "TEAMRIOADVANCEMENT123"

@@ -1,0 +1,54 @@
+# ================================================================
+# Deploy Information
+# ================================================================
+---
+stacks_factory:
+  object_meta:
+    name: pongo.megam.io
+    account: '976712288302014464'
+    cluster_name: newyork
+  replicas: 1
+  resources:
+    compute_type: cpu
+    storage_type: hdd
+    cpu: '1'
+    memory: 1 GiB
+    storage: 3 GiB
+    private_ipv4: 'true'
+  secret:
+    id: '9824093838888835140096'
+  plan: '976712076380839936'
+# ================================================================
+# Horizontal scaling Information
+# ================================================================
+horizontal_scaling:
+  scale_type: AUTOHS
+  state: ABLETOSCALE
+  spec:
+    min_replicas: 1
+    max_replicas: 4
+    scale_up_wait_time: 5
+    scale_down_wait_time: 5
+    metrics:
+    - metric_type: Resource
+      object:
+        target: hits_as_per_second
+        target_value: 1000
+        metric_time_spec:
+          scale_up_by: '1'
+          scale_down_by: '1'
+      resource:
+        name: cpu
+        min_target_value: '20'
+        max_target_value: '60'
+        metric_time_spec:
+          scale_up_by: '1'
+          scale_down_by: '1'
+  status:
+    last_scale_time: ''
+    current_replicas: 2
+    desired_replicas: 3
+  object_meta:
+    name: hscale
+    account: '976712288302014464'
+    cluster_name: 'newyork'

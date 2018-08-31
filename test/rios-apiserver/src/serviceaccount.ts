@@ -7,7 +7,7 @@ const request = supertest.agent(globalAny.apiServer);
 describe('Service account API', function() {
 
   it('returns the created serviceaccounts', function(done) {
-    request.post('/origins/'+globalAny.origin_id+'/serviceaccounts')
+    request.post('/serviceaccounts')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -19,14 +19,14 @@ describe('Service account API', function() {
         expect(res.body);
         globalAny.servacc_name =res.body.object_meta.name;
         globalAny.servacc_id =res.body.id;
-        expect(res.body.roles.length).to.equal(1);
+        expect(res.body.teams.length).to.equal(1);
         done(err);
       });
   });
 
 
   it('returns  serviceaccounts list by origin and name', function(done) {
-    request.get('/origins/'+globalAny.origin_id+'/serviceaccounts/'+globalAny.servacc_name)
+    request.get('/serviceaccounts/'+globalAny.servacc_name+'/origins/'+globalAny.origin_id)
     .ca(globalAny.rootCA)
     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .set('Authorization', globalAny.bobo_bearer)
@@ -58,30 +58,9 @@ describe('Service account API', function() {
       });
   });
 
-  it('returns  permissions by service account name', function(done) {
-    request.get('/permissions/serviceaccounts/'+globalAny.servacc_name)
-    .ca(globalAny.rootCA)
-    .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .set('Authorization', globalAny.bobo_bearer)
-      .expect(200)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
-
-  it('returns  permissions by wrong service account name', function(done) {
-    request.get('/permissions/serviceaccounts/assembly_servacc_name')
-    .ca(globalAny.rootCA)
-    .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .set('Authorization', globalAny.bobo_bearer)
-      .expect(404)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
 
   it('returns the updated serviceaccounts', function(done) {
-    request.put('/origins/'+globalAny.origin_id+'/serviceaccounts/'+globalAny.servacc_name)
+    request.put('/serviceaccounts/'+globalAny.servacc_name+'/origins/'+globalAny.origin_id)
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -96,7 +75,7 @@ describe('Service account API', function() {
   });
 
   it('returns bad request error for name is empty', function(done) {
-    request.post('/origins/'+globalAny.origin_id+'/serviceaccounts')
+    request.post('/serviceaccounts')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -110,7 +89,7 @@ describe('Service account API', function() {
   });
 
   it('returns malformed for no secrets field', function(done) {
-    request.post('/origins/'+globalAny.origin_id+'/serviceaccounts')
+    request.post('/serviceaccounts')
     .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -124,7 +103,7 @@ describe('Service account API', function() {
   });
 
   it('returns  record not found error serviceaccounts list by origin and name', function(done) {
-    request.get('/origins/'+globalAny.origin_id+'/serviceaccounts/'+globalAny.origin_id)
+    request.get('/serviceaccounts/'+globalAny.origin_id+'/origins/'+globalAny.origin_id)
     .ca(globalAny.rootCA)
     .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
       .set('Authorization', globalAny.bobo_bearer)

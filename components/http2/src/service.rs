@@ -1,6 +1,6 @@
+use resp::Response;
 use solicit::header::Headers;
 use stream_part::HttpPartStream;
-use resp::Response;
 
 /// HTTP/2 service interface
 ///

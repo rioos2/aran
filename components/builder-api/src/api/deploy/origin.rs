@@ -8,26 +8,26 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use protocol::api::schema::{dispatch, type_meta};
 
 use config::Config;
 use error::Error;
-use error::ErrorMessage::{MustBeNumeric, MissingParameter};
+use error::ErrorMessage::{MissingParameter, MustBeNumeric};
 
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
 
-use session::origin_ds::OriginDS;
-use protocol::api::origin::Origin;
 use protocol::api::base::MetaFields;
+use protocol::api::origin::Origin;
+use session::models::{origins, origin_members};
 
+use bytes::Bytes;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use bytes::Bytes;
-use serde_json;
 use protocol::api::base::IdGet;
+use serde_json;
 
 #[derive(Clone)]
 pub struct OriginApi {
@@ -66,7 +66,7 @@ impl OriginApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match OriginDS::create(&self.conn, &unmarshall_body) {
+        match origins::DataStore::create(&self.conn, &unmarshall_body) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -75,12 +75,27 @@ impl OriginApi {
 
     //GET: /origins
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
-    fn list(&self, req: &mut Request) -> AranResult<Response> {
-        match OriginDS::list(&self.conn) {
+    //Will need teams/permission to access others origin.
+    fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
+        match origins::DataStore::list_blank(&self.conn) {
             Ok(Some(origins)) => Ok(render_json_list(status::Ok, dispatch(req), &origins)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+        }
+    }
+
+    //Input account id as input and returns a origins
+    fn list(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_account(req)?;
+
+        match origin_members::DataStore::new(&self.conn).list(&params) {
+            Ok(Some(origins)) => Ok(render_json_list(status::Ok, dispatch(req), &origins)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_name()
+            ))),
         }
     }
 
@@ -89,7 +104,7 @@ impl OriginApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
 
-        match OriginDS::show(&self.conn, &params) {
+        match origins::DataStore::show(&self.conn, &params) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -105,11 +120,11 @@ impl OriginApi {
     //Returns an origins
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match OriginDS::show(&self.conn, &idget) {
+        let res = match origins::DataStore::show(&self.conn, &idget) {
             Ok(Some(origin)) => {
                 let data = json!({
                             "type": typ,
-                            "data": origin,      
+                            "data": origin,
                             });
                 serde_json::to_string(&data).unwrap()
             }
@@ -127,6 +142,9 @@ impl Api for OriginApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
+        let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
+
+        let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
@@ -139,15 +157,18 @@ impl Api for OriginApi {
             "origins",
         );
 
-        //TODO 
+        //TODO
         //without authentication
-        router.get(
-            "/origins",
-            XHandler::new(C { inner: list }),
-            "origin_list",
-        );
+        router.get("/origins", XHandler::new(C { inner: list_blank }), "origin_list");
 
-        //TODO 
+        router.get(
+            "/origins/accounts/:account_id",
+            XHandler::new(C { inner: list }).before(basic.clone()),
+            "origin_list_by_account"
+         );
+
+
+        //TODO
         //without authentication
         router.get(
             "/origins/:name",

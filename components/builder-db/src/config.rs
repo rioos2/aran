@@ -1,10 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use std::error::Error;
-use std::net::{Ipv4Addr, IpAddr};
+use std::fmt;
+use std::net::{IpAddr, Ipv4Addr};
 
 use num_cpus;
 use postgres::params::{ConnectParams, Host, IntoConnectParams};
+use url::percent_encoding::{utf8_percent_encode, PATH_SEGMENT_ENCODE_SET};
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
@@ -26,6 +28,17 @@ pub struct DataStore {
 
 impl Default for DataStore {
     fn default() -> Self {
+        // If the cpus are more then 4, then we round it up to 20 .
+        // This make sure the max_connections in close to 100 in postgres.
+        // If you still find issues, increase it by configuring postgres.
+        let pool_factor = {
+            if num_cpus::get() <= 4 {
+                num_cpus::get() * 10
+            } else {
+                40
+            }
+        };
+
         DataStore {
             host: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             port: 5432,
@@ -35,7 +48,7 @@ impl Default for DataStore {
             connection_retry_ms: 300,
             connection_timeout_sec: 3600,
             connection_test: false,
-            pool_size: (num_cpus::get() * 2) as u32,
+            pool_size: pool_factor as u32,
         }
     }
 }
@@ -47,5 +60,21 @@ impl<'a> IntoConnectParams for &'a DataStore {
         builder.user(&self.user, self.password.as_ref().map(|p| &**p));
         builder.database(&self.database);
         Ok(builder.build(Host::Tcp(self.host.to_string())))
+    }
+}
+
+impl fmt::Display for DataStore {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut connect = format!("postgres://{}", self.user);
+        connect = match self.password {
+            Some(ref p) => {
+                // We can potentially get non-url friendly chars here so we need to encode them
+                let encoded_password = utf8_percent_encode(p, PATH_SEGMENT_ENCODE_SET).to_string();
+                format!("{}:{}", connect, encoded_password)
+            }
+            None => connect,
+        };
+        connect = format!("{}@{}:{}/{}", connect, self.host, self.port, self.database);
+        write!(f, "{}", connect)
     }
 }

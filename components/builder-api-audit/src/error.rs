@@ -5,8 +5,8 @@
 use std::error;
 use std::fmt;
 use std::io;
-use std::str::Utf8Error;
 use std::result;
+use std::str::Utf8Error;
 
 use common;
 use rio_core;
@@ -41,7 +41,9 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::MissingTls(_) => "Tls certificate is missing, Watch server need tls certificate.",
+            Error::MissingTls(_) => {
+                "Tls certificate is missing, Watch server need tls certificate."
+            }
             Error::IO(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
             Error::Utf8Error(ref err) => err.description(),

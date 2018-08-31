@@ -2,13 +2,13 @@
 
 //! The PostgreSQL backend for the Scaling [horizonalscaler].
 use chrono::prelude::*;
-use error::{Result, Error};
+use error::{Error, Result};
 
-use protocol::api::linker;
 use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::linker;
 
-use postgres;
 use db::data_store::DataStoreConn;
+use postgres;
 
 use serde_json;
 
@@ -42,10 +42,8 @@ impl DataStore {
     pub fn show(db: &DataStoreConn, services_get: &IdGet) -> ServiceOutput {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn.query(
-            "SELECT * FROM get_services_v1($1)",
-            &[&(services_get.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::ServicesGet)?;
+        let rows = &conn.query("SELECT * FROM get_services_v1($1)", &[&(services_get.get_id().parse::<i64>().unwrap())])
+            .map_err(Error::ServicesGet)?;
 
         if rows.len() > 0 {
             for row in rows {
@@ -58,8 +56,7 @@ impl DataStore {
     pub fn list_blank(db: &DataStoreConn) -> ServiceOutputList {
         let conn = db.pool.get_shard(0)?;
 
-        let rows = &conn.query("SELECT * FROM get_services_list_v1()", &[])
-            .map_err(Error::ServicesGet)?;
+        let rows = &conn.query("SELECT * FROM get_services_list_v1()", &[]).map_err(Error::ServicesGet)?;
 
         let mut response = Vec::new();
 
@@ -90,6 +87,26 @@ impl DataStore {
         }
         Ok(None)
     }
+
+    pub fn list_by_blockchain_factory(db: &DataStoreConn, services_get: &IdGet) -> ServiceOutputList {
+        let conn = db.pool.get_shard(0)?;
+
+        let rows = &conn.query(
+            "SELECT * FROM get_services_by_blockchain_factory_v1($1)",
+            &[&(services_get.get_id() as String)],
+        ).map_err(Error::ServicesGet)?;
+
+        let mut response = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_services(&row))
+            }
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
     pub fn update(db: &DataStoreConn, service: &linker::Services) -> Result<Option<linker::Services>> {
         let conn = db.pool.get_shard(0)?;
 

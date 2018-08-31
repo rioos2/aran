@@ -1,31 +1,27 @@
-use std::sync::Arc;
+// Copyright 2018 The Rio Advancement Inc
+//
 
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use bytes::Bytes;
 use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-use protocol::api::base::MetaFields;
-
-use deploy::models::service;
-use protocol::api::linker::Services;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::models::service;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
-use serde_json;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::linker::Services;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct ServiceApi {
@@ -61,9 +57,7 @@ impl ServiceApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -107,7 +101,7 @@ impl ServiceApi {
 
     //GET: /services
     //Blank origin: Returns all the Services (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match service::DataStore::list_blank(&self.conn) {
             Ok(Some(linkers)) => Ok(render_json_list(status::Ok, dispatch(_req), &linkers)),
@@ -209,8 +203,10 @@ impl Validator for Services {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }

@@ -19,13 +19,13 @@ pub trait EndPointsFeeder: Send {
     fn efeed(&mut self, e: Option<api::endpoints::EndPoints>);
 }
 
-pub trait VolumeFeeder: Send {
+pub trait VolumesFeeder: Send {
     fn vget_id(&mut self) -> api::base::IdGet;
 
     fn vfeed(&mut self, v: Option<Vec<api::volume::Volumes>>); //change it to mount::Volume
 }
 
-pub trait MetricFeeder: Send {
+pub trait MetricsFeeder: Send {
     fn mget_id(&mut self) -> api::base::IdGet;
 
     fn mfeed(&mut self, v: Option<BTreeMap<String, String>>);
@@ -36,3 +36,58 @@ pub trait ServicesFeeder: Send {
 
     fn sfeed(&mut self, v: Option<Vec<api::linker::Services>>);
 }
+
+pub trait PermissionsFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<Vec<api::authorize::Permissions>>);
+}
+
+pub trait AccountsFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<api::session::Account>);
+}
+
+pub trait ServiceAccountFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<api::service_account::ServiceAccount>);
+}
+
+pub trait StacksFeeder: Send {
+    fn bget_id(&mut self) -> api::base::IdGet;
+
+    fn bfeed(&mut self, a: Option<api::deploy::StacksFactory>);
+}
+
+pub trait LicensesFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<String>);
+}
+
+pub trait MembersFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<Vec<api::invitations::Invitations>>);
+}
+
+pub trait PoliciesFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<Vec<api::authorize::Policies>>);
+}
+
+pub trait PolicyMembersFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<Vec<api::authorize::PolicyMembers>>);
+}
+
+pub trait TeamsFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<api::authorize::Teams>);
+}
+

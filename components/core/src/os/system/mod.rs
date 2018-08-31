@@ -1,9 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
+use error::Error;
 use std::fmt;
 use std::result;
 use std::str::FromStr;
-use error::Error;
 #[cfg(windows)]
 mod windows;
 
@@ -14,26 +14,16 @@ pub mod linux;
 #[cfg(not(windows))]
 pub use self::linux::uname;
 
+//The distribution architecture is figured out from here.
+pub mod dist;
+
 #[derive(Debug)]
 pub struct Uname {
-    pub sys_name: String,
-    pub node_name: String,
-    pub release: String,
-    pub version: String,
-    pub machine: String,
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Debug, Hash, Clone, Serialize, Deserialize, Eq, PartialEq)]
-pub enum Architecture {
-    X86_64,
-}
-
-impl fmt::Display for Architecture {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let architecture_string = format!("{:?}", self);
-        write!(f, "{}", architecture_string.to_lowercase())
-    }
+    pub sys_name: String,  /* Operating system name (e.g., "Linux") */
+    pub node_name: String, /* Name within "some implementation-defined network" */
+    pub release: String,   /* Operating system release (e.g., "2.6.28") */
+    pub version: String,   /* Operating system version */
+    pub machine: String,   /* Hardware identifier */
 }
 
 #[derive(Debug, Hash, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -47,18 +37,6 @@ impl fmt::Display for Platform {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let platform_string = format!("{:?}", self);
         write!(f, "{}", platform_string.to_lowercase())
-    }
-}
-
-impl FromStr for Architecture {
-    type Err = Error;
-
-    fn from_str(value: &str) -> result::Result<Self, Self::Err> {
-        let architecture = value.trim().to_lowercase();
-        match architecture.as_ref() {
-            "x86_64" => Ok(Architecture::X86_64),
-            _ => return Err(Error::InvalidArchitecture(value.to_string())),
-        }
     }
 }
 

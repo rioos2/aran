@@ -1,13 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
+use db;
 use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use db;
-use rio_net;
-
+use telemetry;
 
 #[derive(Debug)]
 pub enum Error {
@@ -20,7 +19,7 @@ pub enum Error {
     VSGet(postgres::error::Error),
     VSSetStatus(postgres::error::Error),
     VSUpdate(postgres::error::Error),
-    RioNetError(rio_net::Error),
+    RioNetError(telemetry::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -29,15 +28,23 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
-            Error::HSCreate(ref e) => format!("Database error creating a horizontal_scaling, {}", e),
+            Error::HSCreate(ref e) => {
+                format!("Database error creating a horizontal_scaling, {}", e)
+            }
             Error::HSGet(ref e) => format!("Database error get horizontal_scaling, {}", e),
             Error::HSSetStatus(ref e) => format!("Database error while update status, {}", e),
-            Error::HSUpdate(ref e) => format!("Database error while update horizontal scaling, {}", e),
+            Error::HSUpdate(ref e) => {
+                format!("Database error while update horizontal scaling, {}", e)
+            }
             Error::VSCreate(ref e) => format!("Database error creating a vertical_scaling, {}", e),
             Error::VSGet(ref e) => format!("Database error get vertical_scaling, {}", e),
-            Error::VSSetStatus(ref e) => format!("Database error while vertical scaling update status, {}", e),
+            Error::VSSetStatus(ref e) => {
+                format!("Database error while vertical scaling update status, {}", e)
+            }
             Error::RioNetError(ref e) => format!("Prometheus connection refused , {}", e),
-            Error::VSUpdate(ref e) => format!("Database error while update vertical scaling, {}", e),
+            Error::VSUpdate(ref e) => {
+                format!("Database error while update vertical scaling, {}", e)
+            }
         };
         write!(f, "{}", msg)
     }
@@ -66,8 +73,8 @@ impl From<db::error::Error> for Error {
     }
 }
 
-impl From<rio_net::Error> for Error {
-    fn from(err: rio_net::Error) -> Error {
+impl From<telemetry::error::Error> for Error {
+    fn from(err: telemetry::error::Error) -> Error {
         Error::RioNetError(err)
     }
 }

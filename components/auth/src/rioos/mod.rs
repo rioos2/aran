@@ -4,13 +4,13 @@
 pub mod service_account;
 pub mod user_account;
 
-use std::fmt;
-use super::error;
-use self::user_account::UserAccountAuthenticate;
 use self::service_account::ServiceAccountAuthenticate;
-use util::authenticatable::{Authenticatable, ToAuth};
+use self::user_account::UserAccountAuthenticate;
+use super::error;
 use db::data_store::DataStoreConn;
+use std::fmt;
 use std::sync::Arc;
+use util::authenticatable::{Authenticatable, ToAuth};
 
 
 //Authenticate delegate main function of authentication
@@ -48,18 +48,39 @@ impl AuthenticateDelegate {
             Authenticatable::UserAndPass {
                 username: u,
                 password: p,
-            } => UserAccountAuthenticate::from_username_and_password(&self.conn, u.to_string(), p.to_string()),
-            Authenticatable::PassTicket { token: t } => UserAccountAuthenticate::from_passticket(&self.conn, t.to_string()),
-            Authenticatable::UserEmailAndToken { email: u, token: p } => UserAccountAuthenticate::from_email_and_token(&self.conn, u.to_string(), p.to_string()),
+            } => UserAccountAuthenticate::from_username_and_password(
+                &self.conn,
+                u.to_string(),
+                p.to_string(),
+            ),
+            Authenticatable::PassTicket { token: t } => {
+                UserAccountAuthenticate::from_passticket(&self.conn, t.to_string())
+            }
+            Authenticatable::UserEmailAndToken { email: u, token: p, team_id: _t, org_id: _o, account_id: _a } => {
+                UserAccountAuthenticate::from_email_and_token(
+                    &self.conn,
+                    u.to_string(),
+                    p.to_string(),
+                )
+            }
             Authenticatable::UserEmailAndWebtoken {
                 email: u,
                 webtoken: p,
-            } => UserAccountAuthenticate::from_email_and_webtoken(&self.conn, u.to_string(), p.to_string()),
+            } => UserAccountAuthenticate::from_email_and_webtoken(
+                &self.conn,
+                u.to_string(),
+                p.to_string(),
+            ),
             Authenticatable::ServiceAccountNameAndWebtoken {
                 name: u,
                 webtoken: p,
                 key: k,
-            } => ServiceAccountAuthenticate::from_name_and_webtoken(&self.conn, u.to_string(), p.to_string(), k),
+            } => ServiceAccountAuthenticate::from_name_and_webtoken(
+                &self.conn,
+                u.to_string(),
+                p.to_string(),
+                k,
+            ),
         }
     }
 }

@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the errors handling for the builder scaling
+use db;
 use postgres;
 use std::error;
 use std::fmt;
 use std::result;
-use db;
 
 #[derive(Debug)]
 pub enum Error {
@@ -19,6 +19,7 @@ pub enum Error {
     ServiceAccountGet(postgres::error::Error),
     SettingsMapCreate(postgres::error::Error),
     SettingsMapGet(postgres::error::Error),
+    SecretUpdate(postgres::error::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -30,15 +31,22 @@ impl fmt::Display for Error {
             Error::SecretCreate(ref e) => format!("Database error creating a secret, {}", e),
             Error::SecretGet(ref e) => format!("Database error get secret, {}", e),
             Error::SecretGetResponse(ref e) => format!("Error retrive secret_list database, {}", e),
-            Error::ServiceAccountCreate(ref e) => format!("Database error creating a service_account, {}", e),
-            Error::ServiceAccountUpdate(ref e) => format!("Database error updating a service_account, {}", e),
-            Error::SettingsMapCreate(ref e) => format!("Database error creating a settings map, {}", e),
+            Error::ServiceAccountCreate(ref e) => {
+                format!("Database error creating a service_account, {}", e)
+            }
+            Error::ServiceAccountUpdate(ref e) => {
+                format!("Database error updating a service_account, {}", e)
+            }
+            Error::SettingsMapCreate(ref e) => {
+                format!("Database error creating a settings map, {}", e)
+            }
             Error::SettingsMapGet(ref e) => format!("Database error getting a settings map, {}", e),
 
             Error::ServiceAccountGetResponse(ref e) => format!(
                 "Error retrive service_account for account in database, {}",
                 e
             ),
+            Error::SecretUpdate(ref e) => format!("Database error updating a secret, {}", e),
             Error::ServiceAccountGet(ref e) => format!("Error retrive service_account , {}", e),
         };
         write!(f, "{}", msg)
@@ -58,6 +66,7 @@ impl error::Error for Error {
             Error::ServiceAccountGet(ref err) => err.description(),
             Error::SettingsMapCreate(ref err) => err.description(),
             Error::SettingsMapGet(ref err) => err.description(),
+            Error::SecretUpdate(ref err) => err.description(),
         }
     }
 }

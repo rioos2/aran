@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use futures::task::Task;
 use futures::task;
+use futures::task::Task;
 
+use futures::stream::Stream;
 use futures::Async;
 use futures::Poll;
-use futures::stream::Stream;
 
 use void::Void;
 
@@ -138,8 +138,8 @@ mod test {
 
     use std::fmt::Debug;
 
-    use futures::executor::Spawn;
     use futures::executor;
+    use futures::executor::Spawn;
     use futures::Poll;
 
     use futures_misc::test::*;

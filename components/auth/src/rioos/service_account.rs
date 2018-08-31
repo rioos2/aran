@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
-use rioos;
-use serviceaccount::service_account_ds::ServiceAccountDS;
-use util::jwt_authenticator::JWTAuthenticator;
 use super::super::error::{self, Result};
-use protocol::api::session::*;
 use db::data_store::DataStoreConn;
-use std::path::{PathBuf};
+use protocol::api::base::IdGet;
+use rioos;
+use serviceaccount::models::service_account;
+use std::path::PathBuf;
+use util::jwt_authenticator::JWTAuthenticator;
 
 const LEGACYUSERACCOUNTISSUER: &'static str = "rioos_sh/serviceaccount";
 const SERVICEACCOUNTNAMECLAIM: &'static str = "rioos_sh/serviceaccount/service-account.name";
@@ -19,29 +19,30 @@ impl ServiceAccountAuthenticate {
     // it authenticates serviceaccount name and JWT token values
     // first it validates some static header and payload claims
     // then token is valid or not
-    pub fn from_name_and_webtoken(datastore: &DataStoreConn, name: String, webtoken: String, key: PathBuf) -> error::Result<bool> {
+    pub fn from_name_and_webtoken(
+        datastore: &DataStoreConn,
+        name: String,
+        webtoken: String,
+        key: PathBuf,
+    ) -> error::Result<bool> {
+        try!(get_service_account(datastore, name));
         let jwt = try!(JWTAuthenticator::new(webtoken.clone()));
         try!(jwt.has_correct_issuer(LEGACYUSERACCOUNTISSUER));
         try!(jwt.has_correct_subject(SERVICEACCOUNTNAMECLAIM));
         try!(jwt.has_secret_name_claim(SECRETNAMECLAIM));
         try!(jwt.has_account_uid_claim(SERVICEACCOUNTUIDCLAIM));
         try!(jwt.has_correct_token_from_path(key));
-        let mut session_tk: SessionCreate = SessionCreate::new();
-        session_tk.set_email(name);
-        session_tk.set_token(webtoken.clone());
-
-        let _session = try!(session_create(datastore, session_tk));
         Ok(true)
     }
 }
 
-pub fn session_create(conn: &DataStoreConn, request: SessionCreate) -> Result<Session> {
-    match ServiceAccountDS::find_service_account(&conn, &request) {
-        Ok(session) => return Ok(session),
-        Err(e) => {
+fn get_service_account(conn: &DataStoreConn, name: String) -> Result<()> {
+    match service_account::DataStore::show(&conn, &IdGet::with_id(name.clone())) {
+        Ok(_account) => Ok(()),
+        Err(err) => {
             return Err(error::Error::Auth(rioos::AuthErr {
-                error: format!("Couldn not create session for the service account."),
-                error_description: format!("{}", e),
+                error: format!("Couldn't find {} in ServiceAccount", name.clone()),
+                error_description: format!("{}", err),
             }))
         }
     }

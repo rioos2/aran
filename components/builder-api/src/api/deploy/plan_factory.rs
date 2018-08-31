@@ -4,35 +4,27 @@
 //! PlanFactory produces plans which are blueprint for deployment.
 //These are pre built recipes that a customer can use (ready to cook).
 
-use std::sync::Arc;
-
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
-
+use bytes::Bytes;
 use config::Config;
-use error::Error;
-use error::ErrorMessage::MissingParameter;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::models::blueprint;
-use protocol::api::blueprint::Plan;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
-use protocol::api::base::{MetaFields, StatusUpdate};
-use bytes::Bytes;
-use serde_json;
+use deploy::models::blueprint;
+use error::Error;
+use error::ErrorMessage::MissingParameter;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
 use protocol::api::base::IdGet;
+use protocol::api::base::{MetaFields, StatusUpdate};
+use protocol::api::blueprint::Plan;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct PlanFactory {
@@ -70,9 +62,7 @@ impl PlanFactory {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -85,7 +75,7 @@ impl PlanFactory {
 
     //GET: /planctorys
     //Blank origin: Returns all the PlanFactorys (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match blueprint::DataStore::list_blank(&self.conn) {
             Ok(Some(plans)) => Ok(render_json_list(status::Ok, dispatch(_req), &plans)),
@@ -115,9 +105,7 @@ impl PlanFactory {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<StatusUpdate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
         unmarshall_body.set_id(params.get_id());
 
         match blueprint::DataStore::status_update(&self.conn, &unmarshall_body) {
@@ -165,8 +153,8 @@ impl Api for PlanFactory {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
-
+        let status_update =
+            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         router.post(
             "/plans",
@@ -187,7 +175,9 @@ impl Api for PlanFactory {
         );
         router.put(
             "/plans/:id/status",
-            XHandler::new(C { inner: status_update }).before(basic.clone()),
+            XHandler::new(C {
+                inner: status_update,
+            }).before(basic.clone()),
             "plan_status_update",
         );
     }

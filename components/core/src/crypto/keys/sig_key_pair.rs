@@ -7,19 +7,19 @@ use openssl::bn::{BigNum, MSB_MAYBE_ZERO};
 use openssl::hash::MessageDigest;
 use openssl::pkey::{PKey, PKeyRef};
 
-use openssl::x509::{X509, X509NameBuilder, X509Req, X509ReqBuilder};
 use openssl::x509::extension::{AuthorityKeyIdentifier, BasicConstraints, KeyUsage, SubjectAlternativeName, SubjectKeyIdentifier};
-
-use openssl::rsa::Rsa;
-use openssl::pkcs12::Pkcs12;
+use openssl::x509::{X509, X509NameBuilder, X509Req, X509ReqBuilder};
 
 use crypto::keys::{PairConf, PairSaverExtn};
+use openssl::dsa::Dsa;
+use openssl::pkcs12::Pkcs12;
+use openssl::rsa::Rsa;
 
-use error::{Error, Result};
 use error::Error::X509Error;
+use error::{Error, Result};
 
-use super::{mk_key_filename, read_key_bytes, write_keypair_files, write_key_file, KeyPair};
-use super::super::{ROOT_CA, PUBLIC_KEY_SUFFIX, SECRET_SIG_KEY_SUFFIX, PUBLIC_RSA_SUFFIX, PUBLIC_PFX_SUFFIX};
+use super::super::{PUBLIC_DSA_SUFFIX, PUBLIC_KEY_SUFFIX, PUBLIC_PFX_SUFFIX, PUBLIC_RSA_SUFFIX, ROOT_CA, SECRET_SIG_KEY_SUFFIX};
+use super::{mk_key_filename, read_key_bytes, write_key_file, write_keypair_files, KeyPair};
 
 pub type SigKeyPair = KeyPair<Vec<u8>, Vec<u8>>;
 
@@ -27,6 +27,7 @@ pub type SigKeyPair = KeyPair<Vec<u8>, Vec<u8>>;
 const X509_VERSION3: i32 = 2;
 
 ///
+
 const RIOOS_WITH_SIGNED: &'static str = "wi_rioos";
 
 const RIOOS_COUNTRY: &'static str = "US";
@@ -70,7 +71,7 @@ impl SigKeyPair {
     }
 
     fn gen_ca_pair(name_with_rev: &str, conf: PairConf, cache_key_path: &Path) -> Result<(Vec<u8>, Vec<u8>)> {
-        let key = gen_key(conf.bit_len())?;
+        let key = gen_key_rsa(conf.bit_len())?;
 
         let cert = gen_ca(&key)?;
 
@@ -101,11 +102,7 @@ impl SigKeyPair {
     pub fn mk_signed<P: AsRef<Path> + ?Sized>(name: &str, conf: PairConf, cache_key_path: &P) -> Result<Self> {
         debug!("new signed key name = {}", &name);
 
-        let (public, secret) = try!(Self::gen_ca_signed_pair(
-            &name,
-            conf,
-            cache_key_path.as_ref(),
-        ));
+        let (public, secret) = try!(Self::gen_ca_signed_pair(&name, conf, cache_key_path.as_ref(),));
 
         Ok(Self::new(name.to_string(), Some(public), Some(secret)))
     }
@@ -114,7 +111,18 @@ impl SigKeyPair {
     ///
     /// CSR and PKey will be generated if it doesn't set or loaded first.
     fn gen_ca_signed_pair(name_with_rev: &str, conf: PairConf, cache_key_path: &Path) -> Result<(Vec<u8>, Vec<u8>)> {
-        let privkey = gen_key(conf.bit_len())?;
+        let privkey = {
+            match conf.save_as_extn() {
+                PairSaverExtn::PubRSA => gen_key_rsa(conf.bit_len())?,
+                PairSaverExtn::PemX509 => gen_key_rsa(conf.bit_len())?,
+                PairSaverExtn::PfxPKCS12 => gen_key_rsa(conf.bit_len())?,
+                PairSaverExtn::DSA => gen_key_dsa(conf.bit_len())?,
+                _ => {
+                    let msg = format!("Private key not generated for this extension {}", conf.save_as_extn());
+                    return Err(Error::CryptoError(msg));
+                }
+            }
+        };
 
         let ca = Self::get_pair_for(ROOT_CA, cache_key_path)?;
 
@@ -130,7 +138,6 @@ impl SigKeyPair {
             let secret_keyfile = mk_key_filename(cache_key_path, name_with_rev, SECRET_SIG_KEY_SUFFIX);
 
             let p = {
-
                 let public_pem = (cert.public_key()?.public_key_to_pem()?).clone();
                 let pfx = (mk_pkcs12_pfx(name_with_rev, &cert, &privkey)?).clone();
 
@@ -150,6 +157,15 @@ impl SigKeyPair {
                         public: pfx,
                         multi: None,
                     },
+                    PairSaverExtn::DSA => PairSavingData {
+                        public_keyfile: mk_key_filename(cache_key_path, name_with_rev, PUBLIC_DSA_SUFFIX),
+                        public: public_pem,
+                        multi: None,
+                    },
+                    _ => {
+                        let msg = format!("File not saved for this extension {}", conf.save_as_extn());
+                        return Err(Error::CryptoError(msg));
+                    }
                 }
             };
 
@@ -176,11 +192,7 @@ impl SigKeyPair {
             Ok(k) => Some(k),
             Err(e) => {
                 // Not an error, just continue
-                debug!(
-                    "Can't find public key for name_with_rev {}: {}",
-                    name_with_rev,
-                    e
-                );
+                debug!("Can't find public key for name_with_rev {}: {}", name_with_rev, e);
                 None
             }
         };
@@ -189,20 +201,13 @@ impl SigKeyPair {
             Ok(k) => Some(k),
             Err(e) => {
                 // Not an error, just continue
-                debug!(
-                    "Can't find secret key for name_with_rev {}: {}",
-                    name_with_rev,
-                    e
-                );
+                debug!("Can't find secret key for name_with_rev {}: {}", name_with_rev, e);
                 None
             }
         };
 
         if pk == None && sk == None {
-            let msg = format!(
-                "No public or secret keys found for name_with_rev {}",
-                name_with_rev
-            );
+            let msg = format!("No public or secret keys found for name_with_rev {}", name_with_rev);
             return Err(Error::CryptoError(msg));
         }
         Ok(SigKeyPair::new(name_with_rev.to_string(), pk, sk))
@@ -212,9 +217,7 @@ impl SigKeyPair {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, PUBLIC_KEY_SUFFIX);
 
         if !path.is_file() {
-            return Err(Error::CryptoError(
-                format!("No public key found at {}", path.display()),
-            ));
+            return Err(Error::CryptoError(format!("No public key found at {}", path.display())));
         }
         Ok(path)
     }
@@ -223,9 +226,7 @@ impl SigKeyPair {
         let path = mk_key_filename(cache_key_path.as_ref(), key_with_rev, SECRET_SIG_KEY_SUFFIX);
 
         if !path.is_file() {
-            return Err(Error::CryptoError(
-                format!("No secret key found at {}", path.display()),
-            ));
+            return Err(Error::CryptoError(format!("No secret key found at {}", path.display())));
         }
         Ok(path)
     }
@@ -237,13 +238,7 @@ impl SigKeyPair {
 
         match X509::from_pem(&bytes) {
             Ok(sk) => Ok(sk.to_pem().unwrap()),
-            Err(e) => {
-                return Err(Error::CryptoError(format!(
-                    "Can't read sig public key for {}\n: {}",
-                    key_with_rev,
-                    e
-                )))
-            }
+            Err(e) => return Err(Error::CryptoError(format!("Can't read sig public key for {}\n: {}", key_with_rev, e))),
         }
     }
 
@@ -254,13 +249,7 @@ impl SigKeyPair {
 
         match PKey::public_key_from_pem(&bytes) {
             Ok(pk) => Ok(pk.public_key_to_pem().unwrap()),
-            Err(e) => {
-                return Err(Error::CryptoError(format!(
-                    "Can't read rsa public key for {}\n: {}",
-                    key_with_rev,
-                    e
-                )))
-            }
+            Err(e) => return Err(Error::CryptoError(format!("Can't read rsa public key for {}\n: {}", key_with_rev, e))),
         }
     }
 
@@ -270,13 +259,7 @@ impl SigKeyPair {
 
         match PKey::private_key_from_pem(&bytes) {
             Ok(sk) => Ok(sk.private_key_to_pem().unwrap()),
-            Err(e) => {
-                return Err(Error::CryptoError(format!(
-                    "Can't read sig secret key for {}: {}",
-                    key_with_rev,
-                    e
-                )))
-            }
+            Err(e) => return Err(Error::CryptoError(format!("Can't read sig secret key for {}: {}", key_with_rev, e))),
         }
     }
 }
@@ -303,17 +286,22 @@ fn mk_request(privkey: &PKey) -> Result<X509Req> {
 fn mk_pkcs12_pfx(name_with_rev: &str, cert: &X509, privkey: &PKey) -> Result<Vec<u8>> {
     let pkcs12_builder = Pkcs12::builder();
 
-    let pkcs12 = pkcs12_builder
-        .build(RIOOS_PFX_PASSWORD, &name_with_rev, &privkey, &cert)
-        .unwrap();
+    let pkcs12 = pkcs12_builder.build(RIOOS_PFX_PASSWORD, &name_with_rev, &privkey, &cert).unwrap();
 
     pkcs12.to_der().map_err(X509Error)
 }
 
 /// Generates a new PKey
-fn gen_key(bit_len: u32) -> Result<PKey> {
+fn gen_key_rsa(bit_len: u32) -> Result<PKey> {
     let rsa = Rsa::generate(bit_len)?;
     let key = PKey::from_rsa(rsa)?;
+    Ok(key)
+}
+
+/// Generates a new PKey
+fn gen_key_dsa(bit_len: u32) -> Result<PKey> {
+    let rsa = Dsa::generate(bit_len)?;
+    let key = PKey::from_dsa(rsa)?;
     Ok(key)
 }
 
@@ -337,16 +325,10 @@ fn gen_ca(privkey: &PKey) -> Result<X509> {
     cert_builder.set_issuer_name(&x509_name)?;
     cert_builder.set_pubkey(&privkey)?;
 
-    cert_builder.set_not_before(
-        &Asn1Time::days_from_now(0).unwrap(),
-    )?;
-    cert_builder.set_not_after(&Asn1Time::days_from_now(
-        *RIOOS_CERT_EXPIRES_IN_DAYS,
-    ).unwrap())?;
+    cert_builder.set_not_before(&Asn1Time::days_from_now(0).unwrap())?;
+    cert_builder.set_not_after(&Asn1Time::days_from_now(*RIOOS_CERT_EXPIRES_IN_DAYS).unwrap())?;
 
-    cert_builder.append_extension(
-        BasicConstraints::new().critical().ca().build()?,
-    )?;
+    cert_builder.append_extension(BasicConstraints::new().critical().ca().build()?)?;
 
     cert_builder.append_extension(KeyUsage::new()
         .critical()
@@ -356,12 +338,7 @@ fn gen_ca(privkey: &PKey) -> Result<X509> {
         .crl_sign()
         .build()?)?;
 
-    let subject_key_identifier = SubjectKeyIdentifier::new().build(
-        &cert_builder.x509v3_context(
-            None,
-            None,
-        ),
-    )?;
+    let subject_key_identifier = SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(None, None))?;
     cert_builder.append_extension(subject_key_identifier)?;
 
     cert_builder.sign(&privkey, MessageDigest::sha256())?;
@@ -389,16 +366,10 @@ fn gen_signed(ca_cert: &X509, ca_privkey: &PKeyRef, privkey: &PKey) -> Result<X5
     cert_builder.set_issuer_name(ca_cert.subject_name())?;
     cert_builder.set_pubkey(&privkey)?;
 
-    cert_builder.set_not_before(
-        &Asn1Time::days_from_now(0).unwrap(),
-    )?;
-    cert_builder.set_not_after(&Asn1Time::days_from_now(
-        *RIOOS_CERT_EXPIRES_IN_DAYS,
-    ).unwrap())?;
+    cert_builder.set_not_before(&Asn1Time::days_from_now(0).unwrap())?;
+    cert_builder.set_not_after(&Asn1Time::days_from_now(*RIOOS_CERT_EXPIRES_IN_DAYS).unwrap())?;
 
-    cert_builder.append_extension(
-        BasicConstraints::new().build()?,
-    )?;
+    cert_builder.append_extension(BasicConstraints::new().build()?)?;
 
     cert_builder.append_extension(KeyUsage::new()
         .critical()
@@ -407,12 +378,7 @@ fn gen_signed(ca_cert: &X509, ca_privkey: &PKeyRef, privkey: &PKey) -> Result<X5
         .key_encipherment()
         .build()?)?;
 
-    let subject_key_identifier = SubjectKeyIdentifier::new().build(
-        &cert_builder.x509v3_context(
-            Some(ca_cert),
-            None,
-        ),
-    )?;
+    let subject_key_identifier = SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(Some(ca_cert), None))?;
     cert_builder.append_extension(subject_key_identifier)?;
 
     let auth_key_identifier = AuthorityKeyIdentifier::new()
@@ -449,9 +415,9 @@ mod test {
 
     use tempdir::TempDir;
 
+    use super::super::super::test_support::*;
     use super::SigKeyPair;
     use crypto::keys::PairConf;
-    use super::super::super::test_support::*;
 
     static VALID_KEY: &'static str = "ca.key";
     static VALID_PUB: &'static str = "ca.cert.pem";
@@ -503,10 +469,7 @@ mod test {
     #[test]
     fn get_public_key_path() {
         let cache = TempDir::new("key_cache").unwrap();
-        fs::copy(
-            fixture(&format!("keys/{}", VALID_PUB)),
-            cache.path().join(VALID_PUB),
-        ).unwrap();
+        fs::copy(fixture(&format!("keys/{}", VALID_PUB)), cache.path().join(VALID_PUB)).unwrap();
 
         let result = SigKeyPair::get_public_key_path(VALID_NAME_WITH_REV, cache.path()).unwrap();
         assert_eq!(result, cache.path().join(VALID_PUB));
@@ -522,10 +485,7 @@ mod test {
     #[test]
     fn get_secret_key_path() {
         let cache = TempDir::new("key_cache").unwrap();
-        fs::copy(
-            fixture(&format!("keys/{}", VALID_KEY)),
-            cache.path().join(VALID_KEY),
-        ).unwrap();
+        fs::copy(fixture(&format!("keys/{}", VALID_KEY)), cache.path().join(VALID_KEY)).unwrap();
 
         let result = SigKeyPair::get_secret_key_path(VALID_NAME_WITH_REV, cache.path()).unwrap();
         assert_eq!(result, cache.path().join(VALID_KEY));

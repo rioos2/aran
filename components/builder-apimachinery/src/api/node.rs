@@ -1,15 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, Condition, MetaFields, WhoAmITypeMeta};
-use chrono::naive::NaiveDateTime;
+use api::base::{Condition, MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
 
 use serde_json;
+use std::collections::BTreeMap;
 
-pub const ASSEMBLY_JOBS: &'static str = "job=rioos_sh_machines";
-pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
-pub const NODE_JOBS: &'static str = "job=rioos_sh_nodes";
-pub const IDLEMODE: &'static str = "mode=idle";
+pub type SpeedSummary = (String, i32, i32);
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Node {
@@ -21,6 +17,8 @@ pub struct Node {
     type_meta: TypeMeta,
     spec: Spec, //
     status: NodeStatus, //NodeStatus is information about the current status of a node.
+    #[serde(default)]
+    metadata: BTreeMap<String, String>,
     #[serde(default)]
     created_at: String,
 }
@@ -62,6 +60,13 @@ impl Node {
     pub fn get_status(&self) -> &NodeStatus {
         &self.status
     }
+    pub fn set_metadata(&mut self, v: BTreeMap<String, String>) {
+        self.metadata = v;
+    }
+
+    pub fn get_metadata(&self) -> &BTreeMap<String, String> {
+        &self.metadata
+    }
 
     pub fn set_created_at(&mut self, v: ::std::string::String) {
         self.created_at = v;
@@ -90,7 +95,9 @@ impl MetaFields for Node {
     }
 }
 
-
+impl WhoAmITypeMeta for Node {
+    const MY_KIND: &'static str = "POST:nodes";
+}
 
 /// assembly_cidr:
 //  external_id:
@@ -98,13 +105,13 @@ impl MetaFields for Node {
 //  unschedulable:   True: Indicates .. False: .. Who is responsible for doing so ?
 /// Taints:
 /// Places a taint on node node1. The taint has key key, value value, and taint effect NoSchedule.
-/// This means that no pod will be able to schedule onto node1 unless it has a matching toleration.
+/// This means that no assembly will be able to schedule onto node1 unless it has a matching toleration.
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Spec {
     assembly_cidr: String,
     external_id: String, //External ID of the node assigned by some machine database
     provider_id: String, //ID of the node assigned by the cloud provider
-    unschedulable: bool, //Unschedulable controls node schedulability of new pods. By default, node is schedulable.
+    unschedulable: bool, //Unschedulable controls node schedulability of new assemblys. By default, node is schedulable.
     taints: Vec<Taints>, //If specified, the node's taints.
 }
 
@@ -166,7 +173,11 @@ pub struct NodeStatus {
 }
 
 impl NodeStatus {
-    pub fn new(capacity: BTreeMap<String, String>, allocatable: BTreeMap<String, String>, phase: &str, conditions: Vec<Condition>, addresses: Vec<Addresses>, node_info: NodeInfo) -> NodeStatus {
+    pub fn new() -> NodeStatus {
+        ::std::default::Default::default()
+    }
+
+    pub fn with(capacity: BTreeMap<String, String>, allocatable: BTreeMap<String, String>, phase: &str, conditions: Vec<Condition>, addresses: Vec<Addresses>, node_info: NodeInfo) -> NodeStatus {
         NodeStatus {
             capacity: capacity,
             allocatable: allocatable,
@@ -176,6 +187,11 @@ impl NodeStatus {
             node_info: node_info,
         }
     }
+
+    pub fn set_phase(&mut self, v: ::std::string::String) {
+        self.phase = v;
+    }
+
     pub fn get_phase(&self) -> ::std::string::String {
         self.phase.clone()
     }
@@ -184,18 +200,71 @@ impl NodeStatus {
         &self.conditions
     }
 
+    pub fn set_addresses(&mut self, v: Vec<Addresses>) {
+        self.addresses = v;
+    }
+
     pub fn get_addresses(&self) -> &Vec<Addresses> {
         &self.addresses
     }
+
+    pub fn set_node_info(&mut self, v: NodeInfo) {
+        self.node_info = v;
+    }
+
     pub fn get_node_info(&self) -> &NodeInfo {
         &self.node_info
     }
+
+    pub fn set_capacity(&mut self, v: BTreeMap<String, String>) {
+        self.capacity = v;
+    }
+
     pub fn get_capacity(&self) -> &BTreeMap<String, String> {
         &self.capacity
     }
     pub fn get_allocatable(&self) -> &BTreeMap<String, String> {
         &self.allocatable
     }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct NodeFilter {
+    #[serde(default)]
+    cidrs: Vec<CidrItem>,
+    #[serde(default)]
+    range_address_from: String,
+    #[serde(default)]
+    range_address_to: String,
+    #[serde(default)]
+    ip_type: String,
+}
+
+impl NodeFilter {
+    pub fn get_cidrs(&self) -> Vec<CidrItem> {
+        self.cidrs.clone()
+    }
+
+    pub fn get_range_address_from(&self) -> ::std::string::String {
+        self.range_address_from.clone()
+    }
+
+    pub fn get_range_address_to(&self) -> ::std::string::String {
+        self.range_address_to.clone()
+    }
+
+    pub fn get_ip_type(&self) -> ::std::string::String {
+        self.ip_type.clone()
+    }
+}
+
+///The status that is used to parse request in /status update of any api.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CidrItem {
+    #[serde(default)]
+    pub ip: String,
+    #[serde(default)]
+    pub range: u8,
 }
 
 ///The status that is used to parse request in /status update of any api.
@@ -256,7 +325,11 @@ pub struct NodeInfo {
 }
 
 impl NodeInfo {
-    pub fn new(machine_id: &str, system_uuid: &str, kernel_version: &str, os_image: &str, architecture: &str, bridges: Vec<Bridge>) -> NodeInfo {
+    pub fn new() -> Self {
+        ::std::default::Default::default()
+    }
+
+    pub fn with(machine_id: &str, system_uuid: &str, kernel_version: &str, os_image: &str, architecture: &str, bridges: Vec<Bridge>) -> NodeInfo {
         NodeInfo {
             machine_id: machine_id.to_string(),
             system_uuid: system_uuid.to_string(),
@@ -266,11 +339,37 @@ impl NodeInfo {
             bridges: bridges,
         }
     }
+
+    pub fn set_machine_id(&mut self, v: ::std::string::String) {
+        self.machine_id = v;
+    }
+
+    pub fn set_architecture(&mut self, v: ::std::string::String) {
+        self.architecture = v;
+    }
+
     pub fn get_architecture(&self) -> ::std::string::String {
         self.architecture.clone()
     }
+
+    pub fn set_system_uuid(&mut self, v: ::std::string::String) {
+        self.system_uuid = v;
+    }
+
+    pub fn set_kernel_version(&mut self, v: ::std::string::String) {
+        self.kernel_version = v;
+    }
+
+    pub fn set_os_image(&mut self, v: ::std::string::String) {
+        self.os_image = v;
+    }
+
     pub fn get_os_image(&self) -> ::std::string::String {
         self.os_image.clone()
+    }
+
+    pub fn set_bridges(&mut self, v: Vec<Bridge>) {
+        self.bridges = v;
     }
 }
 
@@ -293,14 +392,42 @@ impl Bridge {
     }
 }
 
+// report data starts here
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct HealthzAllGetResponse {
+    kind: String,
+    api_version: String,
+    id: String,
+    results: HealthzAllGet,
+}
+
+impl HealthzAllGetResponse {
+    pub fn new() -> HealthzAllGetResponse {
+        ::std::default::Default::default()
+    }
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+    pub fn set_kind(&mut self, v: ::std::string::String) {
+        self.kind = v;
+    }
+    pub fn set_api_version(&mut self, v: ::std::string::String) {
+        self.api_version = v;
+    }
+    pub fn set_results(&mut self, v: HealthzAllGet) {
+        self.results = v;
+    }
+    pub fn get_results(&self) -> HealthzAllGet {
+        self.results.clone()
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HealthzAllGet {
     title: String,
     guages: Guages, //average of the cpu ram disk values get from PromResponse
     statistics: Statistics, //ovarall cpu usage of the each node
-    osusages: Osusages, //overall cpu usage of the each os
-    from_date: String,
-    to_date: String,
+    osusages: OSUsages, //overall cpu usage of the each os
 }
 
 impl HealthzAllGet {
@@ -320,14 +447,11 @@ impl HealthzAllGet {
     pub fn set_statistics(&mut self, v: Statistics) {
         self.statistics = v;
     }
-    pub fn set_osusages(&mut self, v: Osusages) {
+    pub fn get_statistics(&mut self) -> Statistics {
+        self.statistics.clone()
+    }
+    pub fn set_osusages(&mut self, v: OSUsages) {
         self.osusages = v;
-    }
-    pub fn set_from_date(&mut self, v: ::std::string::String) {
-        self.from_date = v;
-    }
-    pub fn set_to_date(&mut self, v: ::std::string::String) {
-        self.to_date = v;
     }
 }
 
@@ -383,7 +507,8 @@ impl Counters {
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Statistics {
     title: String,
-    nodes: Vec<NodeStatistic>,
+    ninjas: Vec<NodeStatistic>,
+    senseis: Vec<NodeStatistic>,
 }
 impl Statistics {
     pub fn new() -> Statistics {
@@ -392,8 +517,18 @@ impl Statistics {
     pub fn set_title(&mut self, v: ::std::string::String) {
         self.title = v;
     }
-    pub fn set_nodes(&mut self, v: Vec<NodeStatistic>) {
-        self.nodes = v;
+    pub fn set_ninjas(&mut self, v: Vec<NodeStatistic>) {
+        self.ninjas = v;
+    }
+    pub fn set_senseis(&mut self, v: Vec<NodeStatistic>) {
+        self.senseis = v;
+    }
+
+    pub fn get_ninjas(&mut self) -> Vec<NodeStatistic> {
+        self.ninjas.clone()
+    }
+    pub fn get_senseis(&mut self) -> Vec<NodeStatistic> {
+        self.senseis.clone()
     }
 }
 
@@ -408,6 +543,9 @@ pub struct NodeStatistic {
     counter: String,
     cost_of_consumption: String,
     health: String,
+    network: Vec<NetworkSpeed>,
+    process: Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>>,
+    disk: Vec<BTreeMap<String, String>>,
 }
 impl NodeStatistic {
     pub fn new() -> NodeStatistic {
@@ -418,9 +556,18 @@ impl NodeStatistic {
         self.id = v;
     }
 
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
     pub fn set_name(&mut self, v: ::std::string::String) {
         self.name = v;
     }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
     pub fn set_description(&mut self, v: ::std::string::String) {
         self.description = v;
     }
@@ -446,24 +593,56 @@ impl NodeStatistic {
         self.kind = type_meta.kind;
         self.api_version = type_meta.api_version;
     }
+
+    pub fn set_network_speed(&mut self, v: Vec<NetworkSpeed>) {
+        self.network = v;
+    }
+
+    pub fn set_process(&mut self, v: Vec<BTreeMap<String, Vec<BTreeMap<String, String>>>>) {
+        self.process = v;
+    }
+
+    pub fn set_disk(&mut self, v: Vec<BTreeMap<String, String>>) {
+        self.disk = v;
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct NetworkSpeed {
+    name: String,
+    error: Vec<SpeedSummary>,
+    throughput: Vec<SpeedSummary>,
+}
+
+impl NetworkSpeed {
+    pub fn new() -> NetworkSpeed {
+        ::std::default::Default::default()
+    }
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+    pub fn set_throughput(&mut self, v: Vec<SpeedSummary>) {
+        self.throughput = v;
+    }
+    pub fn set_error(&mut self, v: Vec<SpeedSummary>) {
+        self.error = v;
+    }
 }
 
 impl WhoAmITypeMeta for NodeStatistic {
     const MY_KIND: &'static str = "POST:nodes";
 }
 
-
-
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Osusages {
+pub struct OSUsages {
     title: String,
     from_date: String,
     to_date: String,
     cumulative: Counters,
     items: Vec<Item>,
 }
-impl Osusages {
-    pub fn new() -> Osusages {
+impl OSUsages {
+    pub fn new() -> OSUsages {
         ::std::default::Default::default()
     }
     pub fn get_items(&self) -> Vec<Item> {
@@ -548,194 +727,6 @@ impl ValueData {
     }
 }
 
-type Timestamp = f64;
-type Value = String;
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum StatusData {
-    Success,
-    Error,
-}
-
-#[derive(Debug)]
-pub enum Error {
-    BadRequest(String),
-    InvalidExpression(String),
-    Timeout(String),
-    InvalidResponse(serde_json::Error),
-    Unexpected(u16),
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MatrixItem {
-    pub metric: BTreeMap<String, String>,
-    pub values: Vec<Scalar>,
-}
-pub type Matrix = Vec<MatrixItem>;
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct InstantVecItem {
-    pub metric: BTreeMap<String, String>,
-    pub value: Scalar,
-}
-pub type InstantVec = Vec<InstantVecItem>;
-
-pub type Scalar = (Timestamp, Value);
-
-pub type Str = (Timestamp, String);
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "resultType", content = "result")]
-#[serde(rename_all = "lowercase")]
-pub enum Data {
-    Matrix(Matrix),
-    Vector(InstantVec),
-    Scalar(Scalar),
-    String(Str),
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PromResponse {
-    pub status: StatusData,
-    pub data: Data,
-    #[serde(rename = "errorType")]
-    #[serde(default)]
-    pub error_type: Option<String>,
-    #[serde(default)]
-    pub error: Option<String>,
-}
-
-//convert the PromResponse into Counters value
-impl Into<Counters> for PromResponse {
-    fn into(mut self) -> Counters {
-        let mut counters = Counters::new();
-        if let Data::Vector(ref mut instancevec) = self.data {
-            instancevec
-                .into_iter()
-                .map(|x| {
-                    counters.set_name(
-                        x.metric
-                            .get("__name__")
-                            .unwrap_or(&"".to_string())
-                            .to_owned(),
-                    );
-                    counters.set_counter(x.value.1.to_owned());
-                })
-                .collect::<Vec<_>>();
-        }
-        counters
-    }
-}
-
-//convert the PromResponse into NodeStatistic value
-impl Into<Vec<NodeStatistic>> for PromResponse {
-    fn into(mut self) -> Vec<NodeStatistic> {
-        let mut collections = Vec::new();
-        if let Data::Vector(ref mut instancevec) = self.data {
-            collections = instancevec
-                .into_iter()
-                .map(|x| {
-                    let mut node = NodeStatistic::new();
-                    node.set_name(
-                        x.metric
-                            .get("instance")
-                            .unwrap_or(&"".to_string())
-                            .to_owned(),
-                    );
-                    node.set_counter(x.value.1.to_owned());
-                    node.set_id(
-                        x.metric
-                            .get("instance")
-                            .unwrap_or(&"".to_string())
-                            .replace(".", "_")
-                            .to_string(),
-                    );
-                    node.set_kind("Node".to_string());
-                    node.set_api_version("v1".to_string());
-                    node
-                })
-                .collect::<Vec<_>>();
-
-        }
-        collections
-    }
-}
-//convert the PromResponse into Osusages value
-impl Into<Osusages> for PromResponse {
-    fn into(mut self) -> Osusages {
-        let mut osusage = Osusages::new();
-        if let Data::Matrix(ref mut instancevec) = self.data {
-            let item_collection = instancevec
-                .into_iter()
-                .map(|x| {
-                    let mut item = Item::new();
-                    item.set_id(
-                        x.metric
-                            .get("rioos_assemblyfactory_id")
-                            .unwrap_or(&"none".to_string())
-                            .to_owned(),
-                    );
-                    item.set_name(
-                        x.metric
-                            .get("rioos_os_name")
-                            .unwrap_or(&"none".to_string())
-                            .to_owned(),
-                    );
-                    let values = x.values
-                        .clone()
-                        .into_iter()
-                        .map(|s| {
-                            let mut value_data = ValueData::new();
-                            value_data.set_date(
-                                NaiveDateTime::from_timestamp(s.0.round() as i64, 0)
-                                    .to_string()
-                                    .to_owned(),
-                            );
-                            value_data.set_value(s.1.to_owned());
-                            value_data
-                        })
-                        .collect::<Vec<_>>();
-                    item.set_values(values);
-                    item
-                })
-                .collect::<Vec<_>>();
-            osusage.set_items(item_collection);
-        }
-        osusage
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct HealthzAllGetResponse {
-    kind: String,
-    api_version: String,
-    id: String,
-    results: HealthzAllGet,
-}
-
-impl HealthzAllGetResponse {
-    pub fn new() -> HealthzAllGetResponse {
-        ::std::default::Default::default()
-    }
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-    pub fn set_kind(&mut self, v: ::std::string::String) {
-        self.kind = v;
-    }
-    pub fn set_api_version(&mut self, v: ::std::string::String) {
-        self.api_version = v;
-    }
-    pub fn set_results(&mut self, v: HealthzAllGet) {
-        self.results = v;
-    }
-
-    pub fn get_results(&self) -> HealthzAllGet {
-        self.results.clone()
-    }
-}
-
 impl Into<HealthzAllGetResponse> for HealthzAllGet {
     fn into(self) -> HealthzAllGetResponse {
         let mut health = HealthzAllGetResponse::new();
@@ -747,20 +738,39 @@ impl Into<HealthzAllGetResponse> for HealthzAllGet {
     }
 }
 
+impl Into<Guages> for Vec<Counters> {
+    fn into(self) -> Guages {
+        let mut guages = Guages::new();
+        guages.set_title("Cumulative operations counter".to_string());
+        guages.set_counters(self);
+        guages
+    }
+}
+
+impl Into<NodeStatistic> for Node {
+    fn into(self) -> NodeStatistic {
+        let mut ns = NodeStatistic::new();
+        ns.set_id(self.get_id());
+        ns.set_kind(self.type_meta().kind);
+        ns.set_api_version(self.type_meta().api_version);
+        ns.set_name(self.get_name());
+        ns.set_health("down".to_string());
+        ns
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode, Value};
-    use serde_json::ser::to_string;
-
     use super::*;
+    use serde_json::from_str as json_decode;
     #[test]
     fn decode_node() {
         let val = r#"
         {
         "node_ip": "private_ipv4",
         "status":{
-            "capacity": {"cpu":"4","memory":"16331164 MiB","pods":"110","storage":"1633 MiB"} ,
-            "allocatable": {"cpu":"4","memory":"16228764 KiB","pods":"110","storage":"161 MiB"},
+            "capacity": {"cpu":"4","memory":"16331164 MiB","assemblys":"110","storage":"1633 MiB"} ,
+            "allocatable": {"cpu":"4","memory":"16228764 KiB","assemblys":"110","storage":"161 MiB"},
             "phase": "pending",
             "conditions": [{"message":"nodelet has sufficient disk space available","reason":"NodeletHasSufficientDisk","status":"False","last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z","condition_type":"OutOfDisk","last_update_time": ""}],
             "addresses": [{"node_type":"InternalIP","address":"192.168.2.47"},{"node_type":"Hostname","address":"rajesh"}],
@@ -825,8 +835,8 @@ mod test {
     #[test]
     fn decode_node_status() {
         let val = r#"{
-            "capacity": {"cpu":"4","memory":"16331164 MiB","pods":"110","storage":"1633 MiB"} ,
-            "allocatable": {"cpu":"4","memory":"16228764 KiB","pods":"110","storage":"161 MiB"},
+            "capacity": {"cpu":"4","memory":"16331164 MiB","assemblys":"110","storage":"1633 MiB"} ,
+            "allocatable": {"cpu":"4","memory":"16228764 KiB","assemblys":"110","storage":"161 MiB"},
             "phase": "pending",
             "conditions": [{"message":"nodelet has sufficient disk space available","reason":"NodeletHasSufficientDisk","status":"False","last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z","condition_type":"OutOfDisk","last_update_time": ""}],
             "addresses": [{"node_type":"InternalIP","address":"192.168.2.47"},{"node_type":"Hostname","address":"rajesh"}],

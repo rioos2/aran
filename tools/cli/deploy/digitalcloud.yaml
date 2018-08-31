@@ -1,0 +1,22 @@
+# ================================================================
+# Deploy in newyork a digitalcloud by plan (freebsd)
+# ================================================================
+---
+stacks_factory:
+  object_meta:
+    name: pongo.megam.io
+    account: '976712288302014464'
+    cluster_name: newyork
+    labels:
+      rioos_category: machine 
+  replicas: 1
+  resources:
+    compute_type: cpu
+    storage_type: hdd
+    cpu: '1'
+    memory: 1 GiB
+    storage: 3 GiB
+    private_ipv4: 'true'
+  secret:
+    id: '1004372190482677760'
+  plan: '1004387580206129152'

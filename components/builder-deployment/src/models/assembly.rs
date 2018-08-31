@@ -1,25 +1,22 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! The PostgreSQL backend for the Authorization [assembly, assemblyfactory].
-use std::collections::BTreeMap;
+//! The PostgreSQL backend for the Deployment - Assembly
 
-use chrono::prelude::*;
-use error::{Result, Error};
-use protocol::api::{deploy, node};
-use protocol::api::base::{IdGet, StatusUpdate, MetaFields};
-
-use protocol::cache::{PULL_DIRECTLY, PULL_INVALDATED, PullFromCache, InMemoryExpander};
-
-use rio_net::metrics::collector::{CollectorScope, Collector};
-use rio_net::metrics::prometheus::PrometheusClient;
 use super::super::{AssemblyOutput, AssemblyOutputList};
-
-use serde_json;
-use postgres;
+use chrono::prelude::*;
 use db::data_store::DataStoreConn;
+use error::{Error, Result};
+use postgres;
+use protocol::api::{deploy, node};
+use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
+use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
+use serde_json;
+use std::collections::BTreeMap;
+use telemetry::metrics;
+use telemetry::metrics::executer::Executer;
+use telemetry::metrics::prometheus::PrometheusClient;
+use telemetry::metrics::query::QueryMaker;
 
-const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
-const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -58,11 +55,10 @@ impl<'a> DataStore<'a> {
     pub fn update(&self, assembly: &deploy::Assembly) -> AssemblyOutput {
         let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM update_assembly_v1($1,$2,$3,$4,$5)",
+            "SELECT * FROM update_assembly_v1($1,$2,$3,$4)",
             &[
                 &(assembly.get_id().parse::<i64>().unwrap()),
                 &(assembly.get_selector() as Vec<String>),
-                &(serde_json::to_value(assembly.get_status()).unwrap()),
                 &(serde_json::to_value(assembly.object_meta()).unwrap()),
                 &(serde_json::to_value(assembly.get_metadata()).unwrap()),
             ],
@@ -120,6 +116,7 @@ impl<'a> DataStore<'a> {
         let mut response = Vec::new();
         if rows.len() > 0 {
             for row in rows {
+
                 response.push(self.collect_spec(&row, PULL_DIRECTLY)?);
             }
             return Ok(Some(response));
@@ -127,18 +124,27 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn status_update(&self, upd: &StatusUpdate) -> AssemblyOutput {
+    pub fn status_update(&self, upd: &StatusUpdate, updated_at: ::std::string::String) -> AssemblyOutput {
         let conn = self.db.pool.get_shard(0)?;
-        let rows = &conn.query(
-            "SELECT * FROM set_assembly_status_v1($1, $2)",
-            &[
-                &(upd.get_id().parse::<i64>().unwrap()),
-                &(serde_json::to_value(upd.get_status()).unwrap()),
-            ],
-        ).map_err(Error::AssemblyUpdate)?;
-        if rows.len() > 0 {
-            for row in rows {
-                return Ok(Some(self.collect_spec(&row, PULL_INVALDATED)?));
+        if updated_at.len() > 0 {
+             // Utc::now();  worked
+             // DateTime::parse_from_rfc3339(updated_at); //
+            let updatedat =  updated_at.parse::<DateTime<Utc>>().unwrap();
+            println!("updatedat :{:?}", updatedat);
+            let rows = &conn.query(
+                "SELECT * FROM set_assembly_status_v2($1, $2, $3)",
+                &[
+                    &(upd.get_id().parse::<i64>().unwrap()),
+                    &updatedat,
+                    &(serde_json::to_value(upd.get_status()).unwrap()),
+
+                ],
+            ).map_err(Error::AssemblyUpdate)?;
+
+            if rows.len() > 0 {
+                for row in rows {
+                    return Ok(Some(self.collect_spec(&row, PULL_INVALDATED)?));
+                }
             }
         }
         Ok(None)
@@ -165,21 +171,28 @@ impl<'a> DataStore<'a> {
 
     //Get the metrics as a map of assembly_id and its metric
     pub fn show_metrics(&self, id: &IdGet, prom: &PrometheusClient) -> Result<BTreeMap<String, String>> {
-        // code will be changed
-        let label_collection = vec![
-            format!("{}={}", METRIC_LBL_RIOOS_ASSEMBLY_ID, id.get_id()).to_string(),
-            node::ASSEMBLY_JOBS.to_string(),
-            node::IDLEMODE.to_string(),
-        ];
-        let nodes_metric_scope: Vec<String> = vec!["node_cpu".to_string()];
-
-        let scope = CollectorScope {
-            metric_names: nodes_metric_scope,
-            labels: label_collection,
-            last_x_minutes: METRIC_DEFAULT_LAST_X_MINUTE.to_string(),
-            avg_by_name: "rioos_assembly_id".to_string(),
-        };
-        Ok(Collector::new(prom, scope).metric_by_avg()?)
+        let mut querys = QueryMaker::new();
+        let executer = Executer::new(prom.clone());
+        match &id.get_name()[..] {
+            "machine" => {
+                let res = executer.execute(querys.snapshot_cpu_usage_in_machine(
+                    &id.get_id(),
+                    metrics::METRIC_LBL_RIOOS_ASSEMBLY_ID,
+                ))?;
+                Ok(
+                    serde_json::from_str(&res.get(metrics::MACHINE_CAPACITY_CPU).unwrap()).unwrap(),
+                )
+            }
+            "container" | _ => {
+                let res = executer.execute(querys.snapshot_cpu_usage_in_contaner(
+                    &id.get_id(),
+                    metrics::METRIC_LBL_RIOOS_ASSEMBLY_ID,
+                ))?;
+                Ok(
+                    serde_json::from_str(&res.get(metrics::CONTAINER_CAPACITY_CPU).unwrap()).unwrap(),
+                )
+            }
+        }
     }
 
     /// Expands the assembly by sticking in Spec
@@ -197,6 +210,8 @@ impl<'a> DataStore<'a> {
     }
 }
 
+/// A private convertor of postgres Row to the required structure.
+/// In this case Assembly.
 fn row_to_assembly(row: &postgres::rows::Row) -> Result<deploy::Assembly> {
     let mut assembly = deploy::Assembly::with(
         serde_json::from_value(row.get("type_meta")).unwrap(),
@@ -205,11 +220,13 @@ fn row_to_assembly(row: &postgres::rows::Row) -> Result<deploy::Assembly> {
 
     let id: i64 = row.get("id");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
+    let updated_at = row.get::<&str, DateTime<Utc>>("updated_at");
 
     assembly.set_id(id.to_string());
     assembly.set_selector(row.get("selector"));
     assembly.set_status(serde_json::from_value(row.get("status")).unwrap());
     assembly.set_metadata(serde_json::from_value(row.get("metadata")).unwrap());
     assembly.set_created_at(created_at.to_rfc3339());
+    assembly.set_updated_at(updated_at.to_rfc3339());
     Ok(assembly)
 }

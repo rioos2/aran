@@ -1,10 +1,10 @@
 // Copyright 2018 The Rio Advancement Inc
 
+pub mod error;
 #[cfg(any(test, feature = "long_benchmarks"))]
 pub mod tests;
-pub mod error;
 
-use futures::{Future, Async, Poll, Stream};
+use futures::{Async, Future, Poll, Stream};
 use futures::sync::mpsc;
 use node::runtime::ExternalMessage;
 
@@ -13,7 +13,7 @@ use node::runtime::ExternalMessage;
 #[derive(Debug)]
 pub enum InternalEvent {
     /// Shutdown the node.
-    EntitlementTimeout,
+    EntitlementTimeToVerify,
     Shutdown,
 }
 
@@ -27,7 +27,7 @@ pub trait EventHandler {
     fn handle_event(&mut self, event: Event);
 }
 
-#[derive(Debug)]
+
 pub struct HandlerPart<H: EventHandler> {
     pub handler: H,
     pub internal_rx: mpsc::Receiver<InternalEvent>,
@@ -37,7 +37,6 @@ pub struct HandlerPart<H: EventHandler> {
 impl<H: EventHandler + 'static> HandlerPart<H> {
     pub fn run(self) -> Box<Future<Item = (), Error = ()>> {
         let mut handler = self.handler;
-
         let fut = EventsAggregator::new(self.internal_rx, self.api_rx).for_each(move |event| {
             handler.handle_event(event);
             Ok(())
@@ -102,10 +101,9 @@ where
                 Async::Ready(Some(item)) => {
                     return Ok(Async::Ready(Some(Event::Internal(item))));
                 }
-                // comment code will be open when the internal event sender initialize
                 Async::Ready(None) => {
-                    // self.done = true;
-                    // return Ok(Async::Ready(None));
+                    self.done = true;
+                    return Ok(Async::Ready(None));
                 }
                 Async::NotReady => {}
             };

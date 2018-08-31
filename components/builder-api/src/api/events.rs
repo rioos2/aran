@@ -2,14 +2,12 @@
 
 //! A module containing events and logger
 
-use std::fs::{self, File};
-use std::path::{Path, PathBuf};
-
+use node::runtime::ApiSender;
+use protocol::api::audit::{AccessedBy, AuditEvent, Envelope};
 use serde::Serialize;
 use serde_json;
-
-use node::runtime::ApiSender;
-use protocol::api::audit::{Envelope, AuditEvent, AccessedBy};
+use std::fs::{self, File};
+use std::path::{Path, PathBuf};
 
 /// The records created by the Rio/OS AuditBlockchain capture information on
 /// who has performed, what action, when, and how successfully:
@@ -45,7 +43,7 @@ macro_rules! define_event_log {
         impl typemap::Key for EventLog {
             type Value = EventLogger;
         }
-    }
+    };
 }
 
 // Macros to post in the event logger  from any request.
@@ -56,6 +54,39 @@ macro_rules! log_event {
         let ad = format!("{}", ($req).remote_addr);
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
         el.record_event($evt, (($evt).get_account(), ad))
+    }};
+}
+
+// Macros to post in the event logger from any request.
+#[macro_export]
+macro_rules! push_notification {
+    ($req:ident, $evt:expr) => {{
+        use persistent;
+        let ad = format!("{}", ($req).remote_addr);      
+        let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
+        el.push_notify($evt, (($evt).get_account(), ad))
+    }};
+}
+
+
+// Macros to post in the event logger from any request.
+#[macro_export]
+macro_rules! activate_license {
+    ($req:ident, $evt:expr) => {{
+        use persistent;
+        let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
+        el.request_activation_to_licensor(($evt).get_license_id(),($evt).get_password(),($evt).object_meta().name)
+    }};
+}
+
+
+// Macros to post in the event logger  from any request.
+#[macro_export]
+macro_rules! deactivate_license {
+    ($req:ident,$evt:expr) => {{
+        use persistent;
+        let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
+        el.request_deactivation_to_licensor(($evt).get_license_id(),($evt).get_password(),($evt).object_meta().name)
     }};
 }
 
@@ -92,13 +123,42 @@ impl EventLogger {
             self.channel.peer_add(envelope);
         }
     }
+
+    pub fn push_notify(&self, event: AuditEvent, accessed_by: AccessedBy) {
+        if self.enabled {
+            let envelope = Envelope::new(&event, accessed_by);
+            self.channel.push_notify(envelope);
+        }
+    }
+
+    // Macros to post in the licensor from any request.
+    // Called by the userinferface requesting to activate the license
+    // key (license_id/password) combination
+
+
+    pub fn request_activation_to_licensor(&self, license_id: String, password: String, product: String) {
+        self.channel.activate_license(
+            license_id.parse::<u32>().unwrap_or(0),
+            password,
+            product,
+        );
+
+    }
+
+    pub fn request_deactivation_to_licensor(&self, license_id: String, password: String, product: String) {
+        self.channel.deactivate_license(
+            license_id.parse::<u32>().unwrap_or(0),
+            password,
+            product,
+        );
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use futures::sync::mpsc;
 
     use super::*;
+    use futures::sync::mpsc;
 
     #[test]
     fn event_logger_path() {

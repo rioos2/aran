@@ -1,32 +1,27 @@
-use std::sync::Arc;
+// Copyright 2018 The Rio Advancement Inc
+//
 
-use ansi_term::Colour;
+use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
-use iron::prelude::*;
-use iron::status;
-use router::Router;
-
-use common::ui;
-use api::{Api, ApiValidator, Validator, ParmsVerifier};
-use rio_net::http::schema::{dispatch, type_meta};
+use bytes::Bytes;
 use config::Config;
-use error::Error;
-
-use rio_net::http::controller::*;
-use rio_net::util::errors::{AranResult, AranValidResult};
-use rio_net::util::errors::{bad_request, internal_error, not_found_error};
-
-use deploy::models::endpoint;
-
-use protocol::api::base::MetaFields;
-use protocol::api::endpoints::EndPoints;
-
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use deploy::models::endpoint;
+use error::Error;
 use error::ErrorMessage::MissingParameter;
-use bytes::Bytes;
-use serde_json;
+use http_gateway::http::controller::*;
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
+use http_gateway::util::errors::{AranResult, AranValidResult};
+use iron::prelude::*;
+use iron::status;
 use protocol::api::base::IdGet;
+use protocol::api::base::MetaFields;
+use protocol::api::endpoints::EndPoints;
+use protocol::api::schema::{dispatch, type_meta};
+use router::Router;
+use serde_json;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct EndpointApi {
@@ -63,9 +58,7 @@ impl EndpointApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -112,10 +105,9 @@ impl EndpointApi {
 
     //GET: /endpoint/assembly/:id
     //Input assembly_id Returns list of endpoints for an assembly
-    //Will need roles/permission to access others origin
+    //Will need teams/permission to access others origin
     pub fn show_by_assembly(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-
         match endpoint::DataStore::show_by_assembly(&self.conn, &params) {
             Ok(Some(end)) => Ok(render_json(status::Ok, &end)),
             Ok(None) => Err(not_found_error(&format!(
@@ -129,7 +121,7 @@ impl EndpointApi {
 
     //GET: /endpoint
     //Global: Returns all the Endpoints (irrespective of origin)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match endpoint::DataStore::list_blank(&self.conn) {
             Ok(Some(endpoints)) => Ok(render_json_list(status::Ok, dispatch(req), &endpoints)),
@@ -151,7 +143,8 @@ impl Api for EndpointApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let show_by_assembly = move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
+        let show_by_assembly =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_assembly(req) };
 
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
@@ -168,7 +161,9 @@ impl Api for EndpointApi {
         );
         router.get(
             "/endpoints/assembly/:id",
-            XHandler::new(C { inner: show_by_assembly }).before(basic.clone()),
+            XHandler::new(C {
+                inner: show_by_assembly,
+            }).before(basic.clone()),
             "endpoint_show_by_assembly",
         );
         router.get(
@@ -197,8 +192,10 @@ impl Validator for EndPoints {
             self.object_meta()
                 .owner_references
                 .iter()
-                .map(|x| if x.uid.len() <= 0 {
-                    s.push("uid".to_string());
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
                 })
                 .collect::<Vec<_>>();
         }

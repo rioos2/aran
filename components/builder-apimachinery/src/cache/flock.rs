@@ -1,9 +1,7 @@
-use std::sync::Arc;
 use std::fmt;
+use std::sync::Arc;
 
 use cache::multi_cache::MultiCache;
-
-const DEFAULT_VAL_STOR_SIZE: usize = 100;
 
 //The default cache time to live is 500ms = 0.5 seconds.
 /// A generic cacher that takes a cache_load closure.
@@ -22,21 +20,33 @@ impl Cacher {
     }
 
     pub fn get(&self, lru: &Box<MultiCache<String, String>>, key: String) -> Option<Arc<String>> {
-        info!("« GET: cached ≈ {}", key);
+        info!("« Flock GET: cached ≈ {}", key);
         lru.get(&key)
     }
 
-    pub fn insert(&self, lru: &Box<MultiCache<String, String>>, key: String, value: Option<String>) {
-
-        if value.is_some() {
-            info!("» PUT: cached ≈ {}", key);
-            &mut lru.put(key, value.unwrap(), DEFAULT_VAL_STOR_SIZE);
+    pub fn insert(
+        &self,
+        lru: &Box<MultiCache<String, String>>,
+        key: String,
+        value: Option<String>,
+        existing_val_size: usize,
+    ) -> Option<Arc<String>> {       
+        match value {
+            Some(v) => {
+                info!("» Flock PUT: Some cached ≈ {}", key);
+                &mut lru.put(key, v.clone(), v.capacity(), existing_val_size);
+                Some(Arc::new(v))
+            }
+            None => {
+                info!("» Flock PUT: None cached ≈ {}", key);
+                None
+            }
         }
     }
 }
 
 impl fmt::Display for Cacher {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Cacher => is ok.")
+        write!(f, "Flock Cacher => is ok.")
     }
 }

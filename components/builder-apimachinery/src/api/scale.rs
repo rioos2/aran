@@ -1,6 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
+use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use std::collections::BTreeMap;
-use api::base::{TypeMeta, ObjectMeta, MetaFields};
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct HorizontalScaling {
@@ -117,8 +117,8 @@ impl MetaFields for HorizontalScaling {
 pub struct Spec {
     min_replicas: u32, //Min_replicas is the lower limit for the number of replicas to which the horizontalscaler can scale down
     max_replicas: u32, //Max Replicas is the upper limit for the number of replicas to which the horizontalscaler can scale up. It cannot be less that minReplicas
-    scale_up_wait_time: String,
-    scale_down_wait_time: String,
+    scale_up_wait_time: u32,
+    scale_down_wait_time: u32,
     metrics: Vec<Metrics>,
 }
 
@@ -148,17 +148,16 @@ impl Spec {
     pub fn get_metrics(&self) -> Vec<Metrics> {
         self.metrics.clone()
     }
-
-    pub fn set_scale_down_wait_time(&mut self, v: ::std::string::String) {
+    pub fn set_scale_down_wait_time(&mut self, v: u32) {
         self.scale_down_wait_time = v;
     }
-    pub fn set_scale_up_wait_time(&mut self, v: ::std::string::String) {
+    pub fn set_scale_up_wait_time(&mut self, v: u32) {
         self.scale_up_wait_time = v;
     }
-    pub fn get_scale_up_wait_time(&self) -> ::std::string::String {
+    pub fn get_scale_up_wait_time(&self) -> u32 {
         self.scale_up_wait_time.clone()
     }
-    pub fn get_scale_down_wait_time(&self) -> ::std::string::String {
+    pub fn get_scale_down_wait_time(&self) -> u32 {
         self.scale_down_wait_time.clone()
     }
 }
@@ -215,7 +214,7 @@ impl MetricObject {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct MetricResource {
-    name: String, //`Name` is the name of the metric in question.
+    name: String,             //`Name` is the name of the metric in question.
     min_target_value: String, //`MinTargetValue` is the Instance Range for a range of machines allowed to run. This is the minimum allowed.
     max_target_value: String, //`MaxTargetValue` is the Instance Range for a range of machines allowed to run. This is the maximum allowed. Example minimum 2 machines shall be running, scaled up to 4 machines.
     metric_time_spec: TimeSpec,
@@ -335,14 +334,14 @@ impl StatusUpdate {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ScalingGetResponse {
-    metrics: BTreeMap<String, String>,
+    metrics: BTreeMap<String, BTreeMap<String, String>>,
 }
 
 impl ScalingGetResponse {
     pub fn new() -> ScalingGetResponse {
         ::std::default::Default::default()
     }
-    pub fn set_metrics(&mut self, v: BTreeMap<String, String>) {
+    pub fn set_metrics(&mut self, v: BTreeMap<String, BTreeMap<String, String>>) {
         self.metrics = v;
     }
 }
@@ -360,6 +359,7 @@ pub struct VerticalScaling {
     scale_type: String,
     state: String,
     update_policy: UpdatePolicy, //The update policy controls how verticalscaling(VS) applies changes.
+    #[serde(default)]
     metadata: BTreeMap<String, String>, //Standard object's metadata. Can contain optional label selector team, origin
     spec: VerticalScalingSpec,
     status: VerticalScalingStatus, //Most recently observed status of the service.last_scale_time,current_replicas,desired_replicas details
@@ -488,8 +488,8 @@ impl UpdatePolicy {
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct VerticalScalingSpec {
-    scale_up_wait_time: String,
-    scale_down_wait_time: String,
+    scale_up_wait_time: u32,
+    scale_down_wait_time: u32,
     min_resource: BTreeMap<String, String>, //Min_resource is the lower limit for the number of resource to which the vertical scaler can scale down
     max_resource: BTreeMap<String, String>, //Max resource is the upper limit for the number of resource to which the verticalscaler can scale up.
     /*eg:
@@ -545,22 +545,23 @@ impl VerticalScalingSpec {
         self.metrics.clone()
     }
 
-    pub fn set_scale_down_wait_time(&mut self, v: ::std::string::String) {
+    pub fn set_scale_down_wait_time(&mut self, v: u32) {
         self.scale_down_wait_time = v;
     }
-    pub fn set_scale_up_wait_time(&mut self, v: ::std::string::String) {
+    pub fn set_scale_up_wait_time(&mut self, v: u32) {
         self.scale_up_wait_time = v;
     }
-    pub fn get_scale_up_wait_time(&self) -> ::std::string::String {
+    pub fn get_scale_up_wait_time(&self) -> u32 {
         self.scale_up_wait_time.clone()
     }
-    pub fn get_scale_down_wait_time(&self) -> ::std::string::String {
+    pub fn get_scale_down_wait_time(&self) -> u32 {
         self.scale_down_wait_time.clone()
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct VerticalScalingStatus {
+    #[serde(default)]
     last_scale_time: String,
     current_resource: BTreeMap<String, String>, //`current_resources` is current resource average of the metrics for the assemblyfactory managed by this verticalscaler, as last seen by the verticalscaler.
     desired_resource: BTreeMap<String, String>, //`desired_resources` is desired resource average of the metrics for the assemblyfactory managed by this verticalscaler, as last seen by the verticalscaler.
@@ -636,7 +637,11 @@ The following will  scale for  `CumulativeAll` strategy
 }
 
 impl VerticalScalingStatus {
-    pub fn new(last_scale_time: &str, current_resource: BTreeMap<String, String>, desired_resource: BTreeMap<String, String>) -> VerticalScalingStatus {
+    pub fn new(
+        last_scale_time: &str,
+        current_resource: BTreeMap<String, String>,
+        desired_resource: BTreeMap<String, String>,
+    ) -> VerticalScalingStatus {
         VerticalScalingStatus {
             last_scale_time: last_scale_time.to_string(),
             current_resource: current_resource,
@@ -681,8 +686,7 @@ impl VerticalScalingStatusUpdate {
 
 #[cfg(test)]
 mod test {
-    use serde_json::{from_str as json_decode, Value};
-    use serde_json::ser::to_string;
+    use serde_json::from_str as json_decode;
 
     use super::*;
 
@@ -695,7 +699,7 @@ mod test {
             "scale_type":"AUTOHS",
             "state":"data",
             "metadata":{},
-            "spec":{"scale_up_wait_time":"5m","scale_down_wait_time":"5m","min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":
+            "spec":{"scale_up_wait_time":5,"scale_down_wait_time":5,"min_replicas":4,"max_replicas":5,"metrics":[{"metric_type": "Resource","object":
             {"target": "hits_as_per_second","target_value":1000,"metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}},
             "resource":{"name": "memory","min_target_value":"2","max_target_value":"4","metric_time_spec":{"scale_up_by":"5m","scale_down_by":"5m"}}}]}
     }"#;
@@ -708,8 +712,8 @@ mod test {
     fn decode_scale_spec() {
         let val = r#"
         {
-        "scale_up_wait_time":"5m",
-        "scale_down_wait_time":"5m",
+        "scale_up_wait_time":5,
+        "scale_down_wait_time":5,
         "min_replicas": 4,
         "max_replicas": 5,
         "metrics": [{
@@ -735,8 +739,8 @@ mod test {
                     }]
         }"#;
         let spec: Spec = json_decode(val).unwrap();
-        assert_eq!(spec.scale_up_wait_time, "5m");
-        assert_eq!(spec.scale_down_wait_time, "5m");
+        assert_eq!(spec.scale_up_wait_time, 5);
+        assert_eq!(spec.scale_down_wait_time, 5);
         assert_eq!(spec.min_replicas, 4);
         assert_eq!(spec.max_replicas, 5);
         assert_eq!(spec.metrics.len(), 1);
@@ -800,8 +804,7 @@ mod test {
         {
         "last_scale_time": "",
         "current_replicas": 1,
-        "desired_replicas": 1,
-        "scale_down_wait_time": "5m"
+        "desired_replicas": 1
         }"#;
         let status: Status = json_decode(val).unwrap();
         assert_eq!(status.last_scale_time, "");
@@ -854,8 +857,8 @@ mod test {
             "metadata":{},
             "spec":
                     {
-                        "scale_up_wait_time":"5m",
-                        "scale_down_wait_time":"5m",
+                        "scale_up_wait_time":5,
+                        "scale_down_wait_time":5,
                         "min_resource":
                                 {
                                     "cpu":"2",
@@ -877,9 +880,7 @@ mod test {
                                             "metric_time_spec":
                                                 {
                                                     "scale_up_by":"5m",
-                                                    "scale_up_wait_time":"5m",
-                                                    "scale_down_by":"5m",
-                                                    "scale_down_wait_time":"5m"
+                                                    "scale_down_by":"5m"
                                                 }
                                             }
                                 }

@@ -6,15 +6,15 @@ use std::collections::BTreeMap;
 
 use error::Result;
 
-use protocol::api::linker;
 use protocol::api::base::IdGet;
+use protocol::api::linker;
 
-use builder::service::{SERVICE_TYPE_LOADBALANCER, SERVICE_TYPE_EXTERNALNAME};
-use builder::service::tree::{ServiceTree, ServiceTreeStats};
 use builder::service::graph::ServiceGraph;
+use builder::service::tree::{ServiceTree, ServiceTreeStats};
+use builder::service::{SERVICE_TYPE_EXTERNALNAME, SERVICE_TYPE_LOADBALANCER};
 
-use models::{assembly, service};
 use db::data_store::DataStoreConn;
+use models::{assembly, service};
 
 pub struct LinkersState<'a> {
     _state: ServiceTree,
@@ -52,31 +52,17 @@ impl<'a> LinkersState<'a> {
 
     /// Return list of connected loadbalancers
     pub fn _loadbalancers_connections(&self) -> Vec<&ServiceGraph> {
-        self._state
-            .graphs
-            .get(SERVICE_TYPE_LOADBALANCER)
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>()
+        self._state.graphs.get(SERVICE_TYPE_LOADBALANCER).iter().cloned().collect::<Vec<_>>()
     }
     /// Return list of our connected dns
     pub fn _dns_connections(&self) -> Vec<&ServiceGraph> {
-        self._state
-            .graphs
-            .get(SERVICE_TYPE_EXTERNALNAME)
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>()
+        self._state.graphs.get(SERVICE_TYPE_EXTERNALNAME).iter().cloned().collect::<Vec<_>>()
     }
     /// add loadbalancer links if none of the nodes exists of type LoadBalancer exists
     /// [LoadBalancer] = node_count=0
 
     pub fn add_loadbalancer_connection(&self, service: &linker::Services) -> Result<Option<linker::Services>> {
-        if self.stats
-            .get(SERVICE_TYPE_LOADBALANCER)
-            .unwrap()
-            .node_count <= 0
-        {
+        if self.stats.get(SERVICE_TYPE_LOADBALANCER).unwrap().node_count <= 0 {
             service::DataStore::create(self.conn, &service)?;
         }
         Ok(None)
@@ -84,11 +70,7 @@ impl<'a> LinkersState<'a> {
     /// add dns connection if none of the nodes exists of type ExternalName
     /// [ExternalName] = node_count=0
     pub fn add_dns_connection(&self, service: &linker::Services) -> Result<Option<linker::Services>> {
-        if self.stats
-            .get(SERVICE_TYPE_EXTERNALNAME)
-            .unwrap()
-            .node_count <= 0
-        {
+        if self.stats.get(SERVICE_TYPE_EXTERNALNAME).unwrap().node_count <= 0 {
             service::DataStore::create(self.conn, &service)?;
         }
         Ok(None)

@@ -1,18 +1,18 @@
-use std::thread;
+use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::net::ToSocketAddrs;
-use std::collections::HashMap;
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread;
 
 use tls_api;
 
 use tokio_core::reactor;
 
 use futures::future;
-use futures::future::Future;
 use futures::future::join_all;
+use futures::future::Future;
 use futures::stream;
 use futures::stream::Stream;
 use futures::sync::oneshot;
@@ -31,8 +31,8 @@ use futures_misc::*;
 use tls_api::TlsAcceptor;
 use tls_api_stub;
 
-use super::server_conn::*;
 use super::common::*;
+use super::server_conn::*;
 
 use service::Service;
 use service_paths::ServicePaths;
@@ -256,7 +256,17 @@ impl ServerStateSnapshot {
     }
 }
 
-fn spawn_server_event_loop<S, A>(handle: reactor::Handle, state: Arc<Mutex<ServerState>>, tls: ServerTlsOption<A>, listen: Box<ToTokioListener + Send>, exec: CpuPoolOption, shutdown_future: ShutdownFuture, conf: ServerConf, service: S, _alive_tx: mpsc::Sender<()>) -> oneshot::Receiver<()>
+fn spawn_server_event_loop<S, A>(
+    handle: reactor::Handle,
+    state: Arc<Mutex<ServerState>>,
+    tls: ServerTlsOption<A>,
+    listen: Box<ToTokioListener + Send>,
+    exec: CpuPoolOption,
+    shutdown_future: ShutdownFuture,
+    conf: ServerConf,
+    service: S,
+    _alive_tx: mpsc::Sender<()>,
+) -> oneshot::Receiver<()>
 where
     S: Service,
     A: TlsAcceptor,
@@ -285,7 +295,8 @@ where
                         .expect("failed to set TCP_NODELAY");
                 }
 
-                let (conn, future) = ServerConnection::new(&loop_handle, socket, tls, exec.clone(), conf, service);
+                let (conn, future) =
+                    ServerConnection::new(&loop_handle, socket, tls, exec.clone(), conf, service);
 
                 let conn_id = {
                     let mut g = state.lock().expect("lock");

@@ -1,6 +1,6 @@
 use futures::stream::Stream;
-use futures::Poll;
 use futures::Async;
+use futures::Poll;
 
 pub enum ResultOrEof<T, E> {
     Item(T),
