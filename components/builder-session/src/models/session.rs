@@ -1,21 +1,22 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! The PostgreSQL backend for the DataStore.
-use chrono::prelude::*;
-use error::{Error, Result};
 
-use protocol::api::base::{IdGet, MetaFields};
-use protocol::cache::PULL_DIRECTLY;
-use protocol::api::session;
-use protocol::cache::InMemoryExpander;
+
+use super::super::{OpenIdOutputList, SamlOutputList};
+use chrono::prelude::*;
 
 use db;
 use db::data_store::DataStoreConn;
-use postgres;
-use serde_json;
-
-use super::super::{OpenIdOutputList, SamlOutputList};
+use error::{Error, Result};
 use ldap::{LDAPClient, LDAPUser};
+use postgres;
+
+use protocol::api::base::{IdGet, MetaFields};
+use protocol::api::session;
+use protocol::cache::InMemoryExpander;
+use protocol::cache::PULL_DIRECTLY;
+use serde_json;
 
 pub struct DataStore<'a> {
     db: &'a DataStoreConn,
@@ -29,15 +30,12 @@ impl<'a> DataStore<'a> {
             expander: &db.expander,
         }
     }
-    pub fn find_account(
-        datastore: &DataStoreConn,
-        session_create: &session::SessionCreate,
-        device: &session::Device,
-    ) -> Result<session::Session> {
+    pub fn find_account(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
         let query = "SELECT * FROM get_account_by_email_v1($1)";
-        let rows = conn.query(&query, &[&session_create.get_email()])
-            .map_err(Error::AccountGetById)?;
+        let rows = conn.query(&query, &[&session_create.get_email()]).map_err(
+            Error::AccountGetById,
+        )?;
 
         if rows.len() > 0 {
             let account_row = rows.get(0);
@@ -79,15 +77,10 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn account_create(
-        datastore: &DataStoreConn,
-        session_create: &session::SessionCreate,
-        device: &session::Device
-    ) -> Result<session::Session> {
+    pub fn account_create(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
 
-        let query =
-            "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
+        let query = "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
         let rows = conn.query(
             &query,
             &[
@@ -105,7 +98,7 @@ impl<'a> DataStore<'a> {
                 &session_create.get_company_name(),
                 &(serde_json::to_value(session_create.object_meta()).unwrap()),
                 &(serde_json::to_value(session_create.type_meta()).unwrap()),
-                &session_create.get_avatar()
+                &session_create.get_avatar(),
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {
@@ -113,7 +106,7 @@ impl<'a> DataStore<'a> {
 
             let account = row_to_account(row);
 
-            let id = account.get_id().parse::<i64>().unwrap();     
+            let id = account.get_id().parse::<i64>().unwrap();
 
             let provider = match session_create.get_provider() {
                 session::OAuthProvider::OpenID => "openid",
@@ -143,15 +136,11 @@ impl<'a> DataStore<'a> {
     pub fn get_account_by_email_fascade(&self, account_get: session::AccountGet) -> session::Account {
         let mut account = session::Account::new();
         account.set_email(account_get.get_email());
-        self.expander
-            .with_account(&mut account, PULL_DIRECTLY);
+        self.expander.with_account(&mut account, PULL_DIRECTLY);
         account
     }
 
-    pub fn get_account(
-        datastore: &DataStoreConn,
-        account_get: &session::AccountGet,
-    ) -> Result<Option<session::Account>> {
+    pub fn get_account(datastore: &DataStoreConn, account_get: &session::AccountGet) -> Result<Option<session::Account>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT * FROM get_account_by_email_v1($1)",
@@ -165,10 +154,7 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn get_account_by_id(
-        datastore: &DataStoreConn,
-        account_get_id: &session::AccountGetId,
-    ) -> Result<Option<session::Account>> {
+    pub fn get_account_by_id(datastore: &DataStoreConn, account_get_id: &session::AccountGetId) -> Result<Option<session::Account>> {
         let conn = datastore.pool.get_shard(0)?;
         let id = account_get_id.get_id().parse::<i64>().unwrap();
         let rows = conn.query("SELECT * FROM get_account_by_id_v1($1)", &[&id])
@@ -181,10 +167,20 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn get_session(
-        datastore: &DataStoreConn,
-        session_get: &session::SessionGet,
-    ) -> Result<Option<session::Session>> {
+
+    pub fn list_blank(datastore: &DataStoreConn) -> Result<Option<session::Account>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query("SELECT * FROM get_account_all_v1()", &[])
+            .map_err(Error::AccountGetById)?;
+        if rows.len() != 0 {
+            let row = rows.get(0);
+            return Ok(Some(row_to_account(row)));
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn get_session(datastore: &DataStoreConn, session_get: &session::SessionGet) -> Result<Option<session::Session>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT * FROM get_account_session_by_email_token_v1($1, $2)",
@@ -207,11 +203,7 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn account_logout(
-        datastore: &DataStoreConn,
-        logout: &session::AccountTokenGet,
-        device: &session::Device,
-    ) -> Result<Option<session::Account>> {
+    pub fn account_logout(datastore: &DataStoreConn, logout: &session::AccountTokenGet, device: &session::Device) -> Result<Option<session::Account>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_logout_v1($1,$2,$3)",
@@ -230,10 +222,7 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn ldap_config_create(
-        datastore: &DataStoreConn,
-        ldap_config: &session::LdapConfig,
-    ) -> Result<Option<session::LdapConfig>> {
+    pub fn ldap_config_create(datastore: &DataStoreConn, ldap_config: &session::LdapConfig) -> Result<Option<session::LdapConfig>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_ldap_config_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
@@ -257,10 +246,7 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn test_ldap_config(
-        datastore: &DataStoreConn,
-        get_id: &IdGet,
-    ) -> Result<Option<session::Success>> {
+    pub fn test_ldap_config(datastore: &DataStoreConn, get_id: &IdGet) -> Result<Option<session::Success>> {
         match Self::get_ldap_config(datastore, get_id) {
             Ok(Some(ldap_config)) => return test_ldap(ldap_config),
             Err(err) => Err(err),
@@ -268,10 +254,7 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn get_ldap_config(
-        datastore: &DataStoreConn,
-        get_id: &IdGet,
-    ) -> Result<Option<session::LdapConfig>> {
+    pub fn get_ldap_config(datastore: &DataStoreConn, get_id: &IdGet) -> Result<Option<session::LdapConfig>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_ldap_config_v1($1)",
@@ -286,10 +269,7 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn import_ldap_config(
-        datastore: &DataStoreConn,
-        get_id: &IdGet,
-    ) -> Result<session::ImportResult> {
+    pub fn import_ldap_config(datastore: &DataStoreConn, get_id: &IdGet) -> Result<session::ImportResult> {
         match Self::get_ldap_config(datastore, get_id) {
             Ok(Some(ldap_config)) => {
                 let importing_users = ldap_users(ldap_config)?;
@@ -298,11 +278,7 @@ impl<'a> DataStore<'a> {
                     .into_iter()
                     .map(|import_user| {
                         let mut add_account: session::SessionCreate = import_user.into();
-                        let session = Self::account_create(
-                            datastore,
-                            &mut add_account,
-                            &session::Device::new()
-                        )?;
+                        let session = Self::account_create(datastore, &mut add_account, &session::Device::new())?;
                         imported_users.push(session.get_email());
                         Ok(session)
                     })
@@ -322,10 +298,7 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn saml_provider_create(
-        datastore: &DataStoreConn,
-        saml_provider: &session::SamlProvider,
-    ) -> Result<Option<session::SamlProvider>> {
+    pub fn saml_provider_create(datastore: &DataStoreConn, saml_provider: &session::SamlProvider) -> Result<Option<session::SamlProvider>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_saml_provider_v1($1,$2,$3)",
@@ -358,10 +331,7 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn saml_show(
-        datastore: &DataStoreConn,
-        saml_provider_get: &IdGet,
-    ) -> Result<Option<session::SamlProvider>> {
+    pub fn saml_show(datastore: &DataStoreConn, saml_provider_get: &IdGet) -> Result<Option<session::SamlProvider>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_saml_v1($1)",
@@ -376,10 +346,7 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn oidc_provider_create(
-        datastore: &DataStoreConn,
-        oidc_provider: &session::OidcProvider,
-    ) -> Result<Option<session::OidcProvider>> {
+    pub fn oidc_provider_create(datastore: &DataStoreConn, oidc_provider: &session::OidcProvider) -> Result<Option<session::OidcProvider>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM insert_oidc_provider_v1($1,$2,$3,$4,$5,$6,$7)",
@@ -417,10 +384,7 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn oidc_show(
-        datastore: &DataStoreConn,
-        oidc_provider_get: &IdGet,
-    ) -> Result<Option<session::OidcProvider>> {
+    pub fn oidc_show(datastore: &DataStoreConn, oidc_provider_get: &IdGet) -> Result<Option<session::OidcProvider>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query(
             "SELECT * FROM get_odic_v1($1)",

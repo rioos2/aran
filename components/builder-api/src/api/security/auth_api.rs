@@ -3,8 +3,8 @@
 //! A collection of auth [accounts, login, teams, permissions,] for the HTTP server
 
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use auth::rioos::user_account::UserAccountAuthenticate;
 use auth::rioos::AuthenticateDelegate;
+use auth::rioos::user_account::UserAccountAuthenticate;
 use auth::util::authenticatable::Authenticatable;
 use bodyparser;
 use config::Config;
@@ -13,13 +13,11 @@ use db::error::Error::RecordsNotFound;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{
-    bad_request, conflict_error, internal_error, not_found_error, unauthorized_error,
-};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, conflict_error, internal_error, not_found_error, unauthorized_error};
 use iron::prelude::*;
 use iron::status;
-use protocol::api::base::{MetaFields,IdGet};
+use protocol::api::base::{MetaFields, IdGet};
 use protocol::api::schema::{dispatch, type_meta};
 use protocol::api::session::*;
 use rand;
@@ -79,7 +77,9 @@ impl AuthenticateApi {
     //POST: accounts",
     //Input account and creates an user, by returning the Account information of an user
     fn account_create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<SessionCreate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<SessionCreate>>()?,
+        )?;
 
         if unmarshall_body.get_apikey().len() <= 0 {
             unmarshall_body.set_apikey(rand::random::<u64>().to_string());
@@ -105,19 +105,18 @@ impl AuthenticateApi {
         device.set_ip(format!("{}", req.remote_addr.ip()));
 
         match sessions::DataStore::get_account(&self.conn, &account_get) {
-            Ok(Some(_account)) => Err(conflict_error(&format!(
-                "alreay exists {}",
-                account_get.get_email()
-            ))),
+            Ok(Some(_account)) => Err(conflict_error(
+                &format!("alreay exists {}", account_get.get_email()),
+            )),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => {
-                    match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device) {
-                            Ok(account) => Ok(render_json(status::Ok, &account)),
-                            Err(err) => Err(internal_error(&format!("{}", err))),
-                        }
-                    }
+                match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device) {
+                    Ok(account) => Ok(render_json(status::Ok, &account)),
+                    Err(err) => Err(internal_error(&format!("{}", err))),
                 }
             }
+        }
+    }
 
     //GET: accounts/:id",
     //Input id, and returns the Account information of an user
@@ -135,6 +134,16 @@ impl AuthenticateApi {
                 Error::Db(RecordsNotFound),
                 &account_get_by_id.get_id()
             ))),
+        }
+    }
+
+    //GET: accounts",
+    //returns the Account information of all users
+    fn account_list(&self, req: &mut Request) -> AranResult<Response> {
+        match sessions::DataStore::list_blank(&self.conn) {
+            Ok(Some(accounts)) => Ok(render_json_list(status::Ok, dispatch(req), &accounts)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
         }
     }
 
@@ -164,7 +173,9 @@ impl AuthenticateApi {
     //POST: /logout
     //Global: Logout the current user
     fn account_logout(&self, req: &mut Request) -> AranResult<Response> {
-        let account = self.validate(req.get::<bodyparser::Struct<AccountTokenGet>>()?)?;
+        let account = self.validate(
+            req.get::<bodyparser::Struct<AccountTokenGet>>()?,
+        )?;
 
         let mut device: Device = user_agent(req).into();
         device.set_ip(format!("{}", req.remote_addr.ip()));
@@ -215,7 +226,9 @@ impl AuthenticateApi {
     //POST: Create a new saml provider
     ///auth/saml/providers/:providerid
     fn config_saml(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<SamlProvider>>()?)?;
+        let unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<SamlProvider>>()?,
+        )?;
 
         match sessions::DataStore::saml_provider_create(&self.conn, &unmarshall_body) {
             Ok(Some(saml)) => Ok(render_json(status::Ok, &saml)),
@@ -254,7 +267,9 @@ impl AuthenticateApi {
     //POST: Create a new openid
     //  /auth/oidc/providers/:providerid
     fn config_openid(&self, req: &mut Request) -> AranResult<Response> {
-        let unmarshall_body = self.validate(req.get::<bodyparser::Struct<OidcProvider>>()?)?;
+        let unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<OidcProvider>>()?,
+        )?;
 
         //do you have to set the provider id in unmarshall_body here ?
 
@@ -299,109 +314,95 @@ impl Api for AuthenticateApi {
 
         //closures : scaling
         let _self = self.clone();
-        let account_create =
-            move |req: &mut Request| -> AranResult<Response> { _self.account_create(req) };
+        let account_create = move |req: &mut Request| -> AranResult<Response> { _self.account_create(req) };
 
         let _self = self.clone();
-        let account_show =
-            move |req: &mut Request| -> AranResult<Response> { _self.account_show(req) };
+        let account_show = move |req: &mut Request| -> AranResult<Response> { _self.account_show(req) };
 
         let _self = self.clone();
-        let account_show_by_name =
-            move |req: &mut Request| -> AranResult<Response> { _self.account_show_by_name(req) };
+        let account_list = move |req: &mut Request| -> AranResult<Response> { _self.account_list(req) };
 
         let _self = self.clone();
-        let authenticate =
-            move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
+        let account_show_by_name = move |req: &mut Request| -> AranResult<Response> { _self.account_show_by_name(req) };
 
         let _self = self.clone();
-        let account_logout =
-            move |req: &mut Request| -> AranResult<Response> { _self.account_logout(req) };
+        let authenticate = move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
 
         let _self = self.clone();
-        let authenticate_ldap =
-            move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
+        let account_logout = move |req: &mut Request| -> AranResult<Response> { _self.account_logout(req) };
+
+        let _self = self.clone();
+        let authenticate_ldap = move |req: &mut Request| -> AranResult<Response> { _self.default_authenticate(req) };
 
         //closures: ldap
         let _self = self.clone();
-        let config_ldap =
-            move |req: &mut Request| -> AranResult<Response> { _self.config_ldap(req) };
+        let config_ldap = move |req: &mut Request| -> AranResult<Response> { _self.config_ldap(req) };
 
         let _self = self.clone();
-        let import_ldap =
-            move |req: &mut Request| -> AranResult<Response> { _self.import_ldap(req) };
+        let import_ldap = move |req: &mut Request| -> AranResult<Response> { _self.import_ldap(req) };
 
         let _self = self.clone();
         let test_ldap = move |req: &mut Request| -> AranResult<Response> { _self.test_ldap(req) };
 
         //closures: saml
         let _self = self.clone();
-        let config_saml =
-            move |req: &mut Request| -> AranResult<Response> { _self.config_saml(req) };
+        let config_saml = move |req: &mut Request| -> AranResult<Response> { _self.config_saml(req) };
 
         let _self = self.clone();
         let saml_show = move |req: &mut Request| -> AranResult<Response> { _self.saml_show(req) };
 
         let _self = self.clone();
-        let saml_list_blank =
-            move |req: &mut Request| -> AranResult<Response> { _self.saml_list_blank(req) };
+        let saml_list_blank = move |req: &mut Request| -> AranResult<Response> { _self.saml_list_blank(req) };
 
         //closures: openid
         let _self = self.clone();
-        let config_openid =
-            move |req: &mut Request| -> AranResult<Response> { _self.config_openid(req) };
+        let config_openid = move |req: &mut Request| -> AranResult<Response> { _self.config_openid(req) };
 
         let _self = self.clone();
-        let openid_show =
-            move |req: &mut Request| -> AranResult<Response> { _self.openid_show(req) };
+        let openid_show = move |req: &mut Request| -> AranResult<Response> { _self.openid_show(req) };
 
         let _self = self.clone();
-        let openid_list_blank =
-            move |req: &mut Request| -> AranResult<Response> { _self.openid_list_blank(req) };
+        let openid_list_blank = move |req: &mut Request| -> AranResult<Response> { _self.openid_list_blank(req) };
 
         router.post(
             "/accounts",
-            XHandler::new(C {
-                inner: account_create,
-            }),
+            XHandler::new(C { inner: account_create }),
             "account_create:signup",
         );
+
+        router.get(
+            "/accounts",
+            XHandler::new(C { inner: account_list }).before(basic.clone()),
+            "account_list",
+        );
+
         router.get(
             "/accounts/:id",
-            XHandler::new(C {
-                inner: account_show,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: account_show }).before(basic.clone()),
             "account_show",
         );
 
         router.get(
             "/accounts/name/:name",
-            XHandler::new(C {
-                inner: account_show_by_name,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: account_show_by_name }).before(basic.clone()),
             "account_show_by_name",
         );
 
         router.post(
             "/authenticate",
-            XHandler::new(C {
-                inner: authenticate,
-            }),
+            XHandler::new(C { inner: authenticate }),
             "authenticate",
         );
+
         router.post(
             "/logout",
-            XHandler::new(C {
-                inner: account_logout,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: account_logout }).before(basic.clone()),
             "account_logout",
         );
 
         router.post(
             "/authenticate/ldap/:code",
-            XHandler::new(C {
-                inner: authenticate_ldap,
-            }),
+            XHandler::new(C { inner: authenticate_ldap }),
             "authenticate_ldap",
         );
 
@@ -417,9 +418,7 @@ impl Api for AuthenticateApi {
 
         router.get(
             "/auth/saml/providers",
-            C {
-                inner: saml_list_blank,
-            },
+            C { inner: saml_list_blank },
             "saml_list",
         );
 
@@ -431,16 +430,12 @@ impl Api for AuthenticateApi {
 
         router.post(
             "/auth/oidc/providers/:providerid",
-            C {
-                inner: config_openid,
-            },
+            C { inner: config_openid },
             "config_openid",
         );
         router.get(
             "/auth/oidc/providers",
-            C {
-                inner: openid_list_blank,
-            },
+            C { inner: openid_list_blank },
             "openid_list_blank",
         );
         router.get(

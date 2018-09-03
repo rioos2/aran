@@ -16,7 +16,7 @@ BEGIN
    SELECT
       * INTO inserted_account
    FROM
-      accounts;  
+      accounts;
 IF FOUND
 THEN
    INSERT INTO
@@ -71,6 +71,21 @@ BEGIN
       accounts
    WHERE
       id = uid;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+---
+--- Table:accounts:list
+---
+CREATE
+OR REPLACE FUNCTION get_account_all_v1 () RETURNS SETOF accounts AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      accounts;
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
