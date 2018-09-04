@@ -16,7 +16,7 @@ BEGIN
    SELECT
       * INTO inserted_account
    FROM
-      accounts;  
+      accounts;
 IF FOUND
 THEN
    INSERT INTO
@@ -74,6 +74,42 @@ BEGIN
 RETURN;
 END
 $$ LANGUAGE PLPGSQL STABLE;
+
+---
+--- Table:accounts:list
+---
+CREATE
+OR REPLACE FUNCTION get_account_all_v1 () RETURNS SETOF accounts AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      accounts;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL STABLE;
+
+
+---
+--- Table:accounts:list
+---
+CREATE
+OR REPLACE FUNCTION update_account_by_id_v1 (aid bigint,account_is_admin bool,account_approval bool,account_suspend bool) RETURNS SETOF accounts AS $$
+BEGIN
+   RETURN QUERY
+   UPDATE
+      accounts
+   SET
+      is_admin = account_is_admin,
+      approval = account_approval,
+      suspend = account_suspend,
+      updated_at = now()
+   WHERE
+      id = aid  RETURNING *;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;
 
 ---
 --- Table:accounts:list_by_email

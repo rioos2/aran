@@ -51,7 +51,6 @@ pub const CONTAINER_SPEC_MEM_LIMIT_BYTES: &'static str = "container_spec_memory_
 pub const CONTAINER_FS_USAGE_BYTES: &'static str = "container_fs_usage_bytes";
 pub const CONTAINER_FS_LIMIT_BYTES: &'static str = "container_fs_limit_bytes";
 
-pub const RIOOS_NAME: &'static str = "rioos_os_name";
 
 pub const CAPACITY_CPU: &'static str = "cpu";
 pub const CAPACITY_MEMORY: &'static str = "memory";
@@ -70,10 +69,14 @@ pub const NODE_NETWORK: &'static str = "network";
 //RioOS prometheus automatically allocates "rioos-masters" job with a dash.
 //TO-DO: Usually our conventions is to use rioos_sh_masters, but in this case
 //we don't want to change prometheus.
-const SENSEI_JOBS: &'static str = "job=rioos-masters";
+const SENSEI_JOBS: &'static str = "job=rioos_sh_masters";
 pub const CONTAINER_JOBS: &'static str = "job=rioos_sh_containers";
 pub const ASSEMBLY_JOBS: &'static str = "job=rioos_sh_machines";
-pub const NODE_JOBS: &'static str = "job=rioos-nodes";
+pub const NODE_JOBS: &'static str = "job=rioos_sh_nodes";
+pub const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_sh_assemblyfactory_id";
+pub const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_sh_assembly_id";
+pub const RIOOS_NAME: &'static str = "rioos_sh_os_name";
+
 
 //Rioos prometheus tool automatically allocated "rioos-nodes" job, so we use it
 pub const IDLEMODE: &'static str = "mode=idle";
@@ -83,8 +86,7 @@ pub const METRIC_DEFAULT_LAST_X_MINUTE: &'static str = "[5m]";
 //duration to pull the metric from the prometheus(return last 1 min metrics of network)
 pub const NETWORK_DEFAULT_LAST_X_MINUTE: &'static str = "[1m]";
 
-pub const METRIC_LBL_RIOOS_ASSEMBLYFACTORY_ID: &'static str = "rioos_assemblyfactory_id";
-pub const METRIC_LBL_RIOOS_ASSEMBLY_ID: &'static str = "rioos_assembly_id";
+
 
 pub const INSTANCES: [(&'static str, &'static str); 2] = [(SENSEIS, SENSEI_JOBS), (NINJAS, NODE_JOBS)];
 pub const INSTANCE: &'static str = "instance";
