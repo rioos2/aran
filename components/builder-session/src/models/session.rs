@@ -140,6 +140,26 @@ impl<'a> DataStore<'a> {
         account
     }
 
+
+    pub fn account_update(datastore: &DataStoreConn, account: &session::AccountsInput) -> Result<Option<session::Account>> {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = conn.query(
+            "SELECT * FROM update_account_by_id_v1($1,$2,$3,$4)",
+            &[
+                &account.get_id(),
+                &account.get_is_admin(),
+                &account.get_approval(),
+                &account.get_suspend(),
+            ],
+        ).map_err(Error::AccountUpdate)?;
+        if rows.len() != 0 {
+            let row = rows.get(0);
+            return Ok(Some(row_to_account(row)));
+        } else {
+            Ok(None)
+        }
+    }
+
     pub fn get_account(datastore: &DataStoreConn, account_get: &session::AccountGet) -> Result<Option<session::Account>> {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(

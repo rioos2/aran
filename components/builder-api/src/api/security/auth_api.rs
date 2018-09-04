@@ -147,6 +147,27 @@ impl AuthenticateApi {
         }
     }
 
+
+    //PUT: accounts/:id",
+    //Input id, and returns the Account information of an user
+    fn account_update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<AccountsInput>>()?,
+        )?;
+        unmarshall_body.set_id(params.get_id());
+
+        match sessions::DataStore::account_update(&self.conn, &unmarshall_body) {
+            Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
+            Err(err) => Err(internal_error(&format!("{}", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &unmarshall_body.get_id()
+            ))),
+        }
+    }
+
     //GET: accounts/:name",
     //Input name, and returns the Account information of an user
     //Change it by building a NameParmsVerifier
@@ -323,6 +344,9 @@ impl Api for AuthenticateApi {
         let account_list = move |req: &mut Request| -> AranResult<Response> { _self.account_list(req) };
 
         let _self = self.clone();
+        let account_update = move |req: &mut Request| -> AranResult<Response> { _self.account_update(req) };
+
+        let _self = self.clone();
         let account_show_by_name = move |req: &mut Request| -> AranResult<Response> { _self.account_show_by_name(req) };
 
         let _self = self.clone();
@@ -374,6 +398,13 @@ impl Api for AuthenticateApi {
             "/accounts",
             XHandler::new(C { inner: account_list }).before(basic.clone()),
             "account_list",
+        );
+
+
+        router.put(
+            "/accounts/:id",
+            XHandler::new(C { inner: account_update }).before(basic.clone()),
+            "account_update",
         );
 
         router.get(
@@ -514,6 +545,19 @@ impl Validator for SessionGet {
 }
 
 impl Validator for LdapConfig {
+    //default implementation is to check for `name` and 'origin'
+    fn valid(self) -> AranValidResult<Self> {
+        let s: Vec<String> = vec![];
+
+        if s.is_empty() {
+            return Ok(Box::new(self));
+        }
+
+        Err(bad_request(&MissingParameter(format!("{:?}", s))))
+    }
+}
+
+impl Validator for AccountsInput {
     //default implementation is to check for `name` and 'origin'
     fn valid(self) -> AranValidResult<Self> {
         let s: Vec<String> = vec![];

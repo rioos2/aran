@@ -18,6 +18,7 @@ pub enum Error {
     SessionCreate(postgres::error::Error),
     DeviceCreate(postgres::error::Error),
     AccountGet(postgres::error::Error),
+    AccountUpdate(postgres::error::Error),
     AccountGetById(postgres::error::Error),
     SessionGet(postgres::error::Error),
     AccountOriginInvitationCreate(postgres::error::Error),
@@ -48,49 +49,35 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             Error::Db(ref e) => format!("{}", e),
-            Error::AccountIdFromString(ref e) => {
-                format!("Cannot convert from string to Account ID, {}", e)
-            }
+            Error::AccountIdFromString(ref e) => format!("Cannot convert from string to Account ID, {}", e),
             Error::AccountCreate(ref e) => format!("Error creating account in database, {}", e),
             Error::SessionCreate(ref e) => format!("Error creating session in database, {}", e),
             Error::DeviceCreate(ref e) => format!("Error creating device in database, {}", e),
             Error::AccountGet(ref e) => format!("Error getting account from database, {}", e),
+            Error::AccountUpdate(ref e) => format!("Error getting account from database, {}", e),
             Error::AccountGetById(ref e) => format!("Error getting account from database, {}", e),
             Error::SessionGet(ref e) => format!("Error getting session from database, {}", e),
-            Error::AccountOriginInvitationCreate(ref e) => {
-                format!("Error creating invitation in database, {}", e)
-            }
-            Error::AccountOriginInvitationList(ref e) => {
-                format!("Error listing invitation in database, {}", e)
-            }
-            Error::AccountOriginInvitationAccept(ref e) => {
-                format!("Error accepting invitation in database, {}", e)
-            }
-            Error::OriginAccountList(ref e) => {
-                format!("Error listing origins for account in database, {}", e)
-            }
-            Error::OriginCreate(ref e) => {
-                format!("Error creating origin for account in database, {}", e)
-            }
+            Error::AccountOriginInvitationCreate(ref e) => format!("Error creating invitation in database, {}", e),
+            Error::AccountOriginInvitationList(ref e) => format!("Error listing invitation in database, {}", e),
+            Error::AccountOriginInvitationAccept(ref e) => format!("Error accepting invitation in database, {}", e),
+            Error::OriginAccountList(ref e) => format!("Error listing origins for account in database, {}", e),
+            Error::OriginCreate(ref e) => format!("Error creating origin for account in database, {}", e),
             Error::OriginMembersCreate(ref e) => {
-                format!("Error creating origin members for account in database, {}", e)
+                format!(
+                    "Error creating origin members for account in database, {}",
+                    e
+                )
             }
-            Error::OriginGetResponse(ref e) => {
-                format!("Error retrive origin for account in database, {}", e)
-            }
+            Error::OriginGetResponse(ref e) => format!("Error retrive origin for account in database, {}", e),
             Error::OriginGet(ref e) => format!("Error retrive origin by name, {}", e),
             Error::OriginMembersGet(ref e) => format!("Error retrive origin member by name, {}", e),
             Error::LdapConfigCreate(ref e) => format!("Error creating ldap config, {}", e),
             Error::IO(ref e) => format!("{}", e),
             Error::SamlProviderCreate(ref e) => format!("Error creating saml provider, {}", e),
             Error::OidcProviderCreate(ref e) => format!("Error creating open id provider, {}", e),
-            Error::SamlProviderGetResponse(ref e) => {
-                format!("Error get all saml provider list, {}", e)
-            }
+            Error::SamlProviderGetResponse(ref e) => format!("Error get all saml provider list, {}", e),
             Error::SamlProviderGet(ref e) => format!("Error get saml provider data, {}", e),
-            Error::OpenidProviderGetResponse(ref e) => {
-                format!("Error get all open id  provider data, {}", e)
-            }
+            Error::OpenidProviderGetResponse(ref e) => format!("Error get all open id  provider data, {}", e),
             Error::OidcProviderGet(ref e) => format!("Error get openid  provider data, {}", e),
             Error::PassTicketGet(ref e) => format!("Error get otp data, {}", e),
             Error::PassTicketDelete(ref e) => format!("Error removing otp data, {}", e),
@@ -109,6 +96,7 @@ impl error::Error for Error {
             Error::SessionCreate(ref err) => err.description(),
             Error::DeviceCreate(ref err) => err.description(),
             Error::AccountGet(ref err) => err.description(),
+            Error::AccountUpdate(ref err) => err.description(),
             Error::AccountGetById(ref err) => err.description(),
             Error::SessionGet(ref err) => err.description(),
             Error::AccountOriginInvitationCreate(ref err) => err.description(),
