@@ -17,6 +17,8 @@ pub use self::error::{Error, Result};
 
 //// The public types of outputs
 
+pub type AccountOutputList = Result<Option<Vec<protocol::api::session::Account>>>;
+
 pub type OriginOutputList = Result<Option<Vec<protocol::api::origin::Origin>>>;
 
 pub type OriginOutput = Result<Option<protocol::api::origin::Origin>>;

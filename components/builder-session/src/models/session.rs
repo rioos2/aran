@@ -3,7 +3,7 @@
 //! The PostgreSQL backend for the DataStore.
 
 
-use super::super::{OpenIdOutputList, SamlOutputList};
+use super::super::{OpenIdOutputList, SamlOutputList, AccountOutputList};
 use chrono::prelude::*;
 
 use db;
@@ -188,16 +188,18 @@ impl<'a> DataStore<'a> {
     }
 
 
-    pub fn list_blank(datastore: &DataStoreConn) -> Result<Option<session::Account>> {
+    pub fn list_blank(datastore: &DataStoreConn) -> AccountOutputList {
         let conn = datastore.pool.get_shard(0)?;
         let rows = &conn.query("SELECT * FROM get_account_all_v1()", &[])
             .map_err(Error::AccountGetById)?;
-        if rows.len() != 0 {
-            let row = rows.get(0);
-            return Ok(Some(row_to_account(row)));
-        } else {
-            Ok(None)
+        let mut response = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_account(row))
+            }
+            return Ok(Some(response));
         }
+        Ok(None)
     }
 
     pub fn get_session(datastore: &DataStoreConn, session_get: &session::SessionGet) -> Result<Option<session::Session>> {

@@ -13,6 +13,7 @@ lazy_static! {
     static ref DISPATCH_TABLE: DispatchTable = {
         let mut map = DispatchTable::new();
         map.register("POST:accounts", "Account");
+        map.register("GET:accounts", "AccountList");
 
         map.register("POST:assemblyfactorys", "AssemblyFactory");
         map.register("GET:assemblyfactorys", "AssemblyFactoryList");
