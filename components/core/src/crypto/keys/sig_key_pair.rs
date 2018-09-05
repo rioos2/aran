@@ -139,9 +139,6 @@ impl SigKeyPair {
             &privkey,
         )?;
 
-        let secret = privkey.private_key_to_pem()?;
-        let secret_keyfile = mk_key_filename(cache_key_path, name_with_rev, SECRET_SIG_KEY_SUFFIX);
-
         let p = {
             match conf.save_as_extn() {
                 PairSaverExtn::PubRSA => PairSavingData {
@@ -171,9 +168,12 @@ impl SigKeyPair {
             }
         };
 
-        debug!("public keyfile = {}", &p.public_keyfile.display());
-        debug!("secret keyfile = {}", &secret_keyfile.display());
+        let secret = privkey.private_key_to_pem()?;
+
         if conf.save() {
+            let secret_keyfile = mk_key_filename(cache_key_path, name_with_rev, SECRET_SIG_KEY_SUFFIX);
+            debug!("public keyfile = {}", &p.public_keyfile.display());
+            debug!("secret keyfile = {}", &secret_keyfile.display());
             if p.multi.is_some() {
                 try!(write_keypair_files(
                     Some(&p.public_keyfile),
