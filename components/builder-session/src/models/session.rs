@@ -146,7 +146,7 @@ impl<'a> DataStore<'a> {
         let rows = conn.query(
             "SELECT * FROM update_account_by_id_v1($1,$2,$3,$4)",
             &[
-                &account.get_id(),
+                &(account.get_id().parse::<i64>().unwrap()),
                 &account.get_is_admin(),
                 &account.get_approval(),
                 &account.get_suspend(),
@@ -437,6 +437,8 @@ fn row_to_account(row: postgres::rows::Row) -> session::Account {
     account.set_first_name(row.get("first_name"));
     account.set_last_name(row.get("last_name"));
     account.set_is_admin(row.get("is_admin"));
+    account.set_approval(row.get("approval"));
+    account.set_suspend(row.get("suspend"));
     account.set_apikey(row.get("api_key"));
     account.set_company_name(row.get("company_name"));
     account.set_trust_level(row.get("trust_level"));
