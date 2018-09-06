@@ -414,11 +414,8 @@ impl AccountTokenGet {
 pub struct AccountsInput {
     #[serde(default)]
     id: String,
-    #[serde(default)]
     approval: bool, //approved user or not
-    #[serde(default)]
     is_admin: bool, //is_admin are the specify admin or user of the Rio/OS
-    #[serde(default)]
     suspend: bool, //user suspend or not   If true, the user is suspended. Defaults to false
 }
 
