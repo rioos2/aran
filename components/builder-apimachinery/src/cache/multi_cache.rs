@@ -70,7 +70,11 @@ impl<K, V> MultiCache<K, V> {
         info!("« Multi cache PUT: start");
 
         let mut mparts = self.parts.lock().unwrap();
-        mparts.totalsize -= existing_bytes;
+        info!("« Multi cache PUT: totalsize - {}", mparts.totalsize);
+        info!("« Multi cache PUT: existing_bytes - {}", existing_bytes);
+        if (mparts.totalsize > existing_bytes) {
+            mparts.totalsize -= existing_bytes;
+        }         
 
         while mparts.totalsize + bytes > mparts.maxsize {
             warn!("« Multi cache PUT: cacher max size reached ≈ {:?}", mparts);
