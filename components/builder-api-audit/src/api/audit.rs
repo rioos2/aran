@@ -192,6 +192,7 @@ impl Transaction for TxCreateEnvelope {
 
     /// Apply logic to the storage when executing the transaction.
     fn execute(&self, view: &mut Fork) {
+        warn!("» ※ » TRANSACTION POST AUDIT TX === ✔");
         let mut schema = HabitatSchema::new(view);
 
         schema.push_audit(self.clone());
