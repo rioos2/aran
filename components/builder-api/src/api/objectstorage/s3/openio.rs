@@ -58,7 +58,7 @@ impl Storage {
             .map(|x| {
                 let mut ba = Bucket::new();
                 let ref mut om = ba.mut_meta(ba.object_meta(), x.name, "".to_string());
-                ba.set_created_at(x.creation_date);
+                ba.set_createdat(x.creation_date);
                 let whoami = ba.who_am_i();
                 ba.set_meta(type_meta_url(whoami), om.clone());
                 ba
