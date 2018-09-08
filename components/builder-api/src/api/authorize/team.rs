@@ -185,9 +185,13 @@ impl TeamApi {
                 Error::Db(RecordsNotFound),
                 account_id.clone()
             ))),
-        };
+        };   
 
-        let originated_url = format!("https://{}:{}", req.url.host().to_owned(), req.url.port().to_string());
+        let mut originated_url = format!("https://{}", req.url.host().to_owned());
+
+        if (req.url.port().to_string() != "80" && req.url.port().to_string() != "443") {
+            originated_url = format!("{}:{}", originated_url, req.url.port().to_string());
+        }
 
         let invites = Invites::new(&self.conn);
 
