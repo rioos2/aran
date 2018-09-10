@@ -24,7 +24,7 @@ pub trait Ledger: Send {
     /// Store the envelop in the warehouse storage.
     fn record_audit(&self, envl: &Envelope) -> Result<()>;
 
-    /// Given a `account_id`, retrieves the events output for that accountfrom
+    ///  retrieves the audits output for that accountfrom
     /// warehouse storage.
     fn retrieve_audits(&self) -> EnvelopeOutputList;
 
