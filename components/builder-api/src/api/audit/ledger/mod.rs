@@ -19,11 +19,18 @@ pub type EnvelopeOutputList = Result<Option<Vec<EnvelopeResponse>>>;
 
 pub trait Ledger: Send {
     /// Store the envelop in the warehouse storage.
-    fn record(&self, envl: &Envelope) -> Result<()>;
+    fn record_event(&self, envl: &Envelope) -> Result<()>;
+
+    /// Store the envelop in the warehouse storage.
+    fn record_audit(&self, envl: &Envelope) -> Result<()>;
 
     /// Given a `account_id`, retrieves the events output for that accountfrom
     /// warehouse storage.
-    fn retrieve_by(&self, id: &IdGet) -> EnvelopeOutputList;
+    fn retrieve_audits(&self) -> EnvelopeOutputList;
+
+    /// Given a `account_id`, retrieves the events output for that accountfrom
+    /// warehouse storage.
+    fn retrieve_events(&self, id: &IdGet) -> EnvelopeOutputList;
 }
 
 /// Create appropriate Ledger variant based on configuration values.

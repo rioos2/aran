@@ -5,7 +5,7 @@
 //!
 
 use api::{audit, authorize, cluster, deploy, devtooling, objectstorage, security, Api, entitle};
-use api::audit::blockchain_api::EventLog;
+use api::audit::audit_api::EventLog;
 use api::audit::config::BlockchainConn;
 use api::events::EventLogger;
 use api::objectstorage::config::ObjectStorageCfg;
@@ -254,8 +254,11 @@ impl HttpGateway for Wirer {
         let mut image_marks = devtooling::image_marks::ImageMarksApi::new(ds.clone());
         image_marks.wire(config.clone(), &mut router);
 
-        let mut block_chain = audit::blockchain_api::BlockChainApi::new(ds.clone(), Box::new(BlockchainConn::new(&*config.clone())));
-        block_chain.wire(config.clone(), &mut router);
+        let mut audit_api = audit::audit_api::AuditsApi::new(ds.clone(), Box::new(BlockchainConn::new(&*config.clone())));
+        audit_api.wire(config.clone(), &mut router);
+
+        let mut event_api = audit::event_api::EventsApi::new(ds.clone(), Box::new(BlockchainConn::new(&*config.clone())));
+        event_api.wire(config.clone(), &mut router);
 
         router
     }
