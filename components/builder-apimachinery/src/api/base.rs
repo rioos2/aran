@@ -1,10 +1,11 @@
-use std::collections::BTreeMap;
-use std::fmt;
+
 
 use api::deploy::{PHASE_PENDING, PHASE_RUNNING};
 use chrono;
 use chrono::prelude::*;
 use chrono_humanize;
+use std::collections::BTreeMap;
+use std::fmt;
 
 // These are internal finalizer values for rioos-like APIs, must be qualified name
 // unless defined here
@@ -281,27 +282,23 @@ pub trait MetaFields {
 
     //TO-DO: Revamp, as its appear correct. We provide a self and object with
     //the objectMeta to mutate.
-    fn set_owner_reference(
-        &self,
-        current: &mut ObjectMeta,
-        kind: String,
-        api_version: String,
-        name: String,
-        uid: String,
-    ) {
-        current
-            .owner_references
-            .push(OwnerReferences::with(kind, api_version, name, uid));
+    fn set_owner_reference(&self, current: &mut ObjectMeta, kind: String, api_version: String, name: String, uid: String) {
+        current.owner_references.push(OwnerReferences::with(
+            kind,
+            api_version,
+            name,
+            uid,
+        ));
     }
 
     // fn set_owner_references(&self, owner_references: Vec<OwnerReferences>) {
     //     self.object_meta().owner_references = owner_references
     // }
 
-    fn get_created_at(&self) -> String {
+    fn get_createdat(&self) -> String {
         self.object_meta().created_at.clone()
     }
-    fn set_created_at(&self, created_at: String) {
+    fn set_createdat(&self, created_at: String) {
         self.object_meta().created_at = created_at
     }
 }
@@ -456,12 +453,7 @@ pub struct Status {
 }
 
 impl Status {
-    pub fn with_conditions(
-        phase: &str,
-        message: &str,
-        reason: &str,
-        conditions: Vec<Condition>,
-    ) -> Status {
+    pub fn with_conditions(phase: &str, message: &str, reason: &str, conditions: Vec<Condition>) -> Status {
         Status {
             phase: phase.to_string(),
             message: message.to_string(),
@@ -485,7 +477,7 @@ impl Status {
         }
     }
 
-    /// Use this to indicate a successful Phase: Running.    
+    /// Use this to indicate a successful Phase: Running.
     /// For more customized usage, try with_conditions()
     pub fn running() -> Status {
         Status {
@@ -541,14 +533,7 @@ pub struct Condition {
 }
 
 impl Condition {
-    pub fn with_type(
-        condition_type: &str,
-        message: &str,
-        reason: &str,
-        status: &str,
-        last_transition_time: &str,
-        last_probe_time: &str,
-    ) -> Condition {
+    pub fn with_type(condition_type: &str, message: &str, reason: &str, status: &str, last_transition_time: &str, last_probe_time: &str) -> Condition {
         Condition {
             condition_type: condition_type.to_string(),
             status: status.to_string(),
@@ -732,9 +717,9 @@ pub fn hours_ago(time: String) -> String {
 
 #[cfg(test)]
 mod test {
-    use serde_json::from_str as json_decode;
 
     use super::*;
+    use serde_json::from_str as json_decode;
 
     #[test]
     fn decode_typemeta() {
@@ -832,10 +817,9 @@ mod test {
         assert!(meta.labels.contains_key("rioos_environment"));
         assert!(meta.labels.contains_key("rioos_category"));
         assert_eq!(meta.annotations.len(), 2);
-        assert!(
-            meta.annotations
-                .contains_key("rioos/ruchi.calvincare.org/pickup",)
-        );
+        assert!(meta.annotations.contains_key(
+            "rioos/ruchi.calvincare.org/pickup",
+        ));
         assert_eq!(meta.created_at, "2017-11-20T06:49:06.907347+00:00");
         assert_eq!(meta.deleted_at, "2017-11-20T06:49:06.907347+00:00");
         assert_eq!(meta.deletion_grace_period_seconds, 30);
@@ -894,10 +878,9 @@ mod test {
         assert!(meta.labels.contains_key("rioos_environment"));
         assert!(meta.labels.contains_key("rioos_category"));
         assert_eq!(meta.annotations.len(), 2);
-        assert!(
-            meta.annotations
-                .contains_key("rioos/ruchi.calvincare.org/pickup",)
-        );
+        assert!(meta.annotations.contains_key(
+            "rioos/ruchi.calvincare.org/pickup",
+        ));
         assert_eq!(meta.created_at, "2017-11-20T06:49:06.907347+00:00");
         assert_eq!(meta.deleted_at, "2017-11-20T06:49:06.907347+00:00");
         assert_eq!(meta.deletion_grace_period_seconds, 30);
@@ -937,10 +920,9 @@ mod test {
         assert!(meta.labels.contains_key("rioos_environment"));
         assert!(meta.labels.contains_key("rioos_category"));
         assert_eq!(meta.annotations.len(), 2);
-        assert!(
-            meta.annotations
-                .contains_key("rioos/ruchi.calvincare.org/pickup",)
-        );
+        assert!(meta.annotations.contains_key(
+            "rioos/ruchi.calvincare.org/pickup",
+        ));
         assert_eq!(meta.created_at, "2017-11-20T06:49:06.907347+00:00");
         assert_eq!(meta.deleted_at, "2017-11-20T06:49:06.907347+00:00");
         assert_eq!(meta.deletion_grace_period_seconds, 30);

@@ -4,21 +4,21 @@
 //! CLI for Rio/OS API setup
 
 use base64;
-use std::fs::File;
-use std::path::{Path, PathBuf};
-use std::str;
 
-use config::Config;
-use handlebars::Handlebars;
+use command;
 
 use common::ui::UI;
 
-use rio_core::crypto::keys::{PairConf, PairSaverExtn};
-use rio_core::crypto::{SigKeyPair, ROOT_CA};
-use rio_core::fs::{read_from_file, rioconfig_config_path, write_to_file};
-
-use command;
+use config::Config;
 use error::{Error, Result};
+use handlebars::Handlebars;
+use rio_core::crypto::{SigKeyPair, ROOT_CA};
+
+use rio_core::crypto::keys::{PairConf, PairSaverExtn};
+use rio_core::fs::{read_from_file, rioconfig_config_path, write_to_file};
+use std::fs::File;
+use std::path::{Path, PathBuf};
+use std::str;
 
 lazy_static! {
     static ref RIOCONFIG_TEMPLATE: PathBuf = PathBuf::from(&*rioconfig_config_path(None)
@@ -35,22 +35,25 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
 
     ui.heading("Set up a PKI infrastructure")?;
     ui.para(
-        "Every system in Rio/OS belongs to an certificate authority, which indicates the systems \
-         identity responsible in the connected infrastructure. Each system has \
-         a key used in cryptographically transporting data across other Rio/OS systems.",
+        "Every system in Rio/OS belongs to an certificate \
+         authority, which indicates the systems identity \
+         responsible in the connected infrastructure. Each \
+         system has a key used in cryptographically transporting \
+         data across other Rio/OS systems.",
     )?;
 
     ui.para(
-        "For more information on pki infrastructure and how they are used in connecting your infrastructure, \
-         please consult the docs at https://bit.ly/rioos_sh_adminguide",
+        "For more information on pki infrastructure and how they \
+         are used in connecting your infrastructure, please \
+         consult the docs at https://bit.ly/rioos_sh_adminguide",
     )?;
 
     let server_ca = "server-ca";
 
     if is_server_ca_in_cache(&server_ca, cache_path) {
         ui.para(&format!(
-            "You already have an certificate autority (CA) for {} created and \
-             installed. Great work!",
+            "You already have an certificate autority (CA) for {} \
+             created and installed. Great work!",
             &server_ca
         ))?;
     } else {
@@ -62,8 +65,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             &server_ca
         ))?;
         ui.para(
-            "For more information on the use of certificate authority, please consult \
-             the documentation at \
+            "For more information on the use of certificate \
+             authority, please consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -71,8 +74,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_server_ca(ui, &server_ca, cache_path)?;
         } else {
             ui.para(&format!(
-                "You might want to create a server certificate authority with: \
-                 `rioos setup '"
+                "You might want to create a server certificate \
+                 authority with: `rioos setup '"
             ))?;
         }
 
@@ -87,8 +90,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ))?;
 
         ui.para(
-            "For more information on the use of api key pair, please consult \
-             the documentation at \
+            "For more information on the use of api key pair, please \
+             consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -105,15 +108,15 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
 
         ui.heading("Create service account key pair")?;
         ui.para(&format!(
-            "It doesn't look like you have a service account key pair \
-             `{}'. Without it, you won't be able to securely \
+            "It doesn't look like you have a service account key \
+             pair `{}'. Without it, you won't be able to securely \
              connect to your api server.",
             &service_account
         ))?;
 
         ui.para(
-            "For more information on the use of service account key pairs, please consult \
-             the documentation at \
+            "For more information on the use of service account key \
+             pairs, please consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -121,8 +124,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_serviceaccount(ui, &service_account, cache_path)?;
         } else {
             ui.para(&format!(
-                "You might want to create a service account key later with: \
-                 `rioos setup '"
+                "You might want to create a service account key later \
+                 with: `rioos setup '"
             ))?;
         }
 
@@ -130,15 +133,15 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
 
         ui.heading("Create client-controller key pair")?;
         ui.para(&format!(
-            "It doesn't look like you have a client-controller key pair \
-             `{}'. Without it, you won't be able to securely \
+            "It doesn't look like you have a client-controller key \
+             pair `{}'. Without it, you won't be able to securely \
              connect to your api server.",
             &controller
         ))?;
 
         ui.para(
-            "For more information on the use of client-controller key pair, please consult \
-             the documentation at \
+            "For more information on the use of client-controller \
+             key pair, please consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -146,8 +149,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_controller(ui, &controller, cache_path, config)?;
         } else {
             ui.para(&format!(
-                "You might want to create an client-controller key later with: \
-                 `rioos setup '"
+                "You might want to create an client-controller key \
+                 later with: `rioos setup '"
             ))?;
         }
 
@@ -155,15 +158,15 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
 
         ui.heading("Create client-nodelet key pair")?;
         ui.para(&format!(
-            "It doesn't look like you have a client-nodelet key pair \
-             `{}'. Without it, you won't be able to securely \
+            "It doesn't look like you have a client-nodelet key \
+             pair `{}'. Without it, you won't be able to securely \
              connect to your api server.",
             &nodelet
         ))?;
 
         ui.para(
-            "For more information on the use of client-nodelet key pair, please consult \
-             the documentation at \
+            "For more information on the use of client-nodelet key \
+             pair, please consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -171,8 +174,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_nodelet(ui, &nodelet, cache_path, config)?;
         } else {
             ui.para(&format!(
-                "You might want to create an client-nodelet key later with: \
-                 `rioos setup '"
+                "You might want to create an client-nodelet key later \
+                 with: `rioos setup '"
             ))?;
         }
 
@@ -180,15 +183,15 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
 
         ui.heading("Create client-storelet key pair")?;
         ui.para(&format!(
-            "It doesn't look like you have a client-storelet key pair \
-             `{}'. Without it, you won't be able to securely \
+            "It doesn't look like you have a client-storelet key \
+             pair `{}'. Without it, you won't be able to securely \
              connect to your api server.",
             &storelet
         ))?;
 
         ui.para(
-            "For more information on the use of client-storelet key pair, please consult \
-             the documentation at \
+            "For more information on the use of client-storelet key \
+             pair, please consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -196,8 +199,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_storelet(ui, &storelet, cache_path, config)?;
         } else {
             ui.para(&format!(
-                "You might want to create an client-storelet key later with: \
-                 `rioos setup '"
+                "You might want to create an client-storelet key later \
+                 with: `rioos setup '"
             ))?;
         }
 
@@ -205,15 +208,15 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
 
         ui.heading("Create client-scheduler key pair")?;
         ui.para(&format!(
-            "It doesn't look like you have a client-scheduler key pair \
-             `{}'. Without it, you won't be able to securely \
+            "It doesn't look like you have a client-scheduler key \
+             pair `{}'. Without it, you won't be able to securely \
              connect to your api server.",
             &scheduler
         ))?;
 
         ui.para(
-            "For more information on the use of client-scheduler key pair, please consult \
-             the documentation at \
+            "For more information on the use of client-scheduler key \
+             pair, please consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -221,8 +224,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_scheduler(ui, &scheduler, cache_path, config)?;
         } else {
             ui.para(&format!(
-                "You might want to create an client-scheduler key later with: \
-                 `rioos setup '"
+                "You might want to create an client-scheduler key later \
+                 with: `rioos setup '"
             ))?;
         }
 
@@ -237,8 +240,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
         ))?;
 
         ui.para(
-            "For more information on the use of client-gulp key pair, please consult \
-             the documentation at \
+            "For more information on the use of client-gulp key \
+             pair, please consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -246,8 +249,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_gulp(ui, &gulp, cache_path, config)?;
         } else {
             ui.para(&format!(
-                "You might want to create an client-gulp key later with: \
-                 `rioos setup '"
+                "You might want to create an client-gulp key later \
+                 with: `rioos setup '"
             ))?;
         }
 
@@ -255,15 +258,15 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
 
         ui.heading("Create client-prometheus key pair")?;
         ui.para(&format!(
-            "It doesn't look like you have a client-prometheus key pair \
-             `{}'. Without it, you won't be able to securely \
+            "It doesn't look like you have a client-prometheus key \
+             pair `{}'. Without it, you won't be able to securely \
              connect to your api server.",
             &prometheus
         ))?;
 
         ui.para(
-            "For more information on the use of client-prometheus key pair, please consult \
-             the documentation at \
+            "For more information on the use of client-prometheus \
+             key pair, please consult the documentation at \
              https://bit.ly/rioos_sh_adminguide",
         )?;
 
@@ -271,8 +274,8 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
             create_prometheus(ui, &prometheus, cache_path)?;
         } else {
             ui.para(&format!(
-                "You might want to create an client-prometheus key later with: \
-                 `rioos setup '"
+                "You might want to create an client-prometheus key \
+                 later with: `rioos setup '"
             ))?;
         }
     }
@@ -280,23 +283,30 @@ pub fn start(ui: &mut UI, cache_path: &Path, config: &Config) -> Result<()> {
     create_rioos_setup_file(cache_path, ".rioos_setup_complete")?;
 
     ui.heading("Rio/OS Setup Complete")?;
-    ui.para(&format!("That's all for now. Thanks for using Rio/OS!"))?;
+    ui.para(
+        &format!("That's all for now. Thanks for using Rio/OS!"),
+    )?;
     Ok(())
 }
 
 fn is_server_ca_in_cache(server_ca: &str, cache_path: &Path) -> bool {
     match SigKeyPair::get_pair_for(server_ca, cache_path) {
-        Ok(pair) => match pair.secret() {
-            Ok(_) => true,
-            _ => false,
-        },
+        Ok(pair) => {
+            match pair.secret() {
+                Ok(_) => true,
+                _ => false,
+            }
+        }
         _ => false,
     }
 }
 
 fn ask_create_server_ca(ui: &mut UI, ca: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create a server certificate authority `{}'?", ca),
+        &format!(
+            "Create a server certificate authority `{}'?",
+            ca
+        ),
         Some(true),
     )?)
 }
@@ -308,7 +318,10 @@ fn create_server_ca(ui: &mut UI, server_ca: &str, cache_path: &Path) -> Result<(
 }
 
 fn ask_create_api(ui: &mut UI, api: &str) -> Result<bool> {
-    Ok(ui.prompt_yes_no(&format!("Create an api key pair `{}'?", api), Some(true))?)
+    Ok(ui.prompt_yes_no(
+        &format!("Create an api key pair `{}'?", api),
+        Some(true),
+    )?)
 }
 
 //redundant (create_api and create_serviceaccount)
@@ -320,23 +333,21 @@ fn create_api(ui: &mut UI, api: &str, cache_path: &Path) -> Result<()> {
 
 fn ask_create_controller(ui: &mut UI, controller: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create a client-controller key pair `{}'?", controller),
+        &format!(
+            "Create a client-controller key pair `{}'?",
+            controller
+        ),
         Some(true),
     )?)
 }
 
 //redundant (create_api and create_serviceaccount)
-fn create_controller(
-    ui: &mut UI,
-    controller: &str,
-    cache_path: &Path,
-    config: &Config,
-) -> Result<()> {
+fn create_controller(ui: &mut UI, controller: &str, cache_path: &Path, config: &Config) -> Result<()> {
     let result = command::origin::key::generate::signed_with_rsa(
         ui,
         &controller,
         cache_path,
-        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+        PairConf::with_save(false, None, PairSaverExtn::PemX509),
     )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "controller.rioconfig", config)?;
@@ -345,7 +356,10 @@ fn create_controller(
 
 fn ask_create_nodelet(ui: &mut UI, nodelet: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create a client-nodelet key pair `{}'?", nodelet),
+        &format!(
+            "Create a client-nodelet key pair `{}'?",
+            nodelet
+        ),
         Some(true),
     )?)
 }
@@ -356,7 +370,7 @@ fn create_nodelet(ui: &mut UI, nodelet: &str, cache_path: &Path, config: &Config
         ui,
         &nodelet,
         cache_path,
-        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+        PairConf::with_save(false, None, PairSaverExtn::PemX509),
     )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "nodelet.rioconfig", config)?;
@@ -365,7 +379,10 @@ fn create_nodelet(ui: &mut UI, nodelet: &str, cache_path: &Path, config: &Config
 
 fn ask_create_storelet(ui: &mut UI, storelet: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create a client-storelet key pair `{}'?", storelet),
+        &format!(
+            "Create a client-storelet key pair `{}'?",
+            storelet
+        ),
         Some(true),
     )?)
 }
@@ -376,7 +393,7 @@ fn create_storelet(ui: &mut UI, storelet: &str, cache_path: &Path, config: &Conf
         ui,
         &storelet,
         cache_path,
-        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+        PairConf::with_save(false, None, PairSaverExtn::PemX509),
     )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "storlet.rioconfig", config)?;
@@ -385,23 +402,21 @@ fn create_storelet(ui: &mut UI, storelet: &str, cache_path: &Path, config: &Conf
 
 fn ask_create_scheduler(ui: &mut UI, scheduler: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create a client-scheduler key pair `{}'?", scheduler),
+        &format!(
+            "Create a client-scheduler key pair `{}'?",
+            scheduler
+        ),
         Some(true),
     )?)
 }
 
 //redundant (create_api and create_serviceaccount)
-fn create_scheduler(
-    ui: &mut UI,
-    scheduler: &str,
-    cache_path: &Path,
-    config: &Config,
-) -> Result<()> {
+fn create_scheduler(ui: &mut UI, scheduler: &str, cache_path: &Path, config: &Config) -> Result<()> {
     let result = command::origin::key::generate::signed_with_rsa(
         ui,
         &scheduler,
         cache_path,
-        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+        PairConf::with_save(false, None, PairSaverExtn::PemX509),
     )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "scheduler.rioconfig", config)?;
@@ -421,7 +436,7 @@ fn create_gulp(ui: &mut UI, gulp: &str, cache_path: &Path, config: &Config) -> R
         ui,
         &gulp,
         cache_path,
-        PairConf::with_save(false, None, PairSaverExtn::PubRSA),
+        PairConf::with_save(false, None, PairSaverExtn::PemX509),
     )?;
     ui.br()?;
     create_rioconfig(&result, cache_path, "gulp.rioconfig", config)?;
@@ -430,7 +445,10 @@ fn create_gulp(ui: &mut UI, gulp: &str, cache_path: &Path, config: &Config) -> R
 
 fn ask_create_prometheus(ui: &mut UI, prometheus: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create a client-prometheus key pair `{}'?", prometheus),
+        &format!(
+            "Create a client-prometheus key pair `{}'?",
+            prometheus
+        ),
         Some(true),
     )?)
 }
@@ -445,28 +463,21 @@ fn create_prometheus(ui: &mut UI, prometheus: &str, cache_path: &Path) -> Result
 //redundant (ask_create_api and ask_create_serviceaccount)
 fn ask_create_serviceaccount(ui: &mut UI, service_account: &str) -> Result<bool> {
     Ok(ui.prompt_yes_no(
-        &format!("Create a service account `{}'?", service_account),
+        &format!(
+            "Create a service account `{}'?",
+            service_account
+        ),
         Some(true),
     )?)
 }
 
 fn create_serviceaccount(ui: &mut UI, service_account: &str, cache_path: &Path) -> Result<()> {
-    command::origin::key::generate::signed_with_rsa(
-        ui,
-        &service_account,
-        cache_path,
-        PairConf::new(),
-    )?;
+    command::origin::key::generate::signed_with_rsa(ui, &service_account, cache_path, PairConf::new())?;
     ui.br()?;
     Ok(())
 }
 
-fn create_rioconfig(
-    result: &SigKeyPair,
-    cache_path: &Path,
-    name: &str,
-    config: &Config,
-) -> Result<()> {
+fn create_rioconfig(result: &SigKeyPair, cache_path: &Path, name: &str, config: &Config) -> Result<()> {
     let server_ca = SigKeyPair::get_pair_for(ROOT_CA, cache_path)?;
 
     let json = json!({
