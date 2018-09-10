@@ -17,8 +17,8 @@
 
 use super::Ledger;
 
-use api::audit::config::BlockchainConn;
-use api::audit::ledger::EnvelopeOutputList;
+use api::blockchain::config::BlockchainConn;
+use api::blockchain::ledger::EnvelopeOutputList;
 
 use error::{Error, Result};
 use protocol::api::audit::{Envelope, EnvelopeResponse};

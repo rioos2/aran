@@ -3,20 +3,20 @@
 // A module containing the common things needed to build an API
 // Every API needs to implement a wire, and use the common typemeta/objectmeta
 
-use std::sync::Arc;
-
-use iron::prelude::*;
 
 use config::Config;
+use iron::headers::{Authorization, Bearer};
+
+use iron::prelude::*;
 use router::Router;
 use std::collections::BTreeMap;
-use iron::headers::{Authorization, Bearer};
+use std::sync::Arc;
 
 //The macro should be loaded first. As we want to use it `mod audit`.
 //Hence  `mod events` must be loaded before `mod audit`
 #[macro_use]
 pub mod events;
-pub mod audit;
+pub mod blockchain;
 pub mod authorize;
 pub mod cluster;
 pub mod deploy;
@@ -27,13 +27,13 @@ pub mod security;
 pub mod entitle;
 
 use api::helpers::extract_query_value;
-use error::ErrorMessage::{MissingBody, MissingParameter, MissingQueryParameter, MustBeNumeric};
-use http_gateway::util::errors::{bad_request, malformed_body};
-use http_gateway::util::errors::{AranResult, AranValidResult};
-use protocol::api::base::{IdGet, QueryInput, StatusUpdate};
 use auth::util::token_target::TokenTarget;
+use error::ErrorMessage::{MissingBody, MissingParameter, MissingQueryParameter, MustBeNumeric};
 use http_gateway::http::rendering::render_json_error;
+use http_gateway::util::errors::{AranResult, AranValidResult};
 use http_gateway::util::errors::{bad_err, not_acceptable_error};
+use http_gateway::util::errors::{bad_request, malformed_body};
+use protocol::api::base::{IdGet, QueryInput, StatusUpdate};
 
 // `Api` trait which defines `RESTful` API.
 pub trait Api {
@@ -103,10 +103,12 @@ struct IdParmsVerifier {}
 impl RequestVerifier for IdParmsVerifier {
     fn verify(req: &Request) -> AranResult<IdGet> {
         match req.extensions.get::<Router>().unwrap().find("id") {
-            Some(id) => match id.parse::<u64>() {
-                Ok(_name) => Ok(IdGet::with_id(id.to_string())),
-                Err(_) => return Err(bad_request(&MustBeNumeric("id".to_string()))),
-            },
+            Some(id) => {
+                match id.parse::<u64>() {
+                    Ok(_name) => Ok(IdGet::with_id(id.to_string())),
+                    Err(_) => return Err(bad_request(&MustBeNumeric("id".to_string()))),
+                }
+            }
             None => return Err(bad_request(&MissingParameter("id".to_string()))),
         }
     }
@@ -122,15 +124,17 @@ impl RequestVerifier for AccountParmsVerifier {
         let token = match req.headers.get::<Authorization<Bearer>>() {
             Some(&Authorization(Bearer { ref token })) => token,
             _ => {
-                return Err(bad_request(&MissingParameter("Authorization Bearer: token not found.".to_string())))
+                return Err(bad_request(&MissingParameter(
+                    "Authorization Bearer: token not found.".to_string(),
+                )))
             }
         };
         let token_target = TokenTarget::parse(token.to_string());
 
         if !token_target.get_account_id().is_empty() {
-            return Ok(IdGet::with_account(token_target.get_account_id()))
+            return Ok(IdGet::with_account(token_target.get_account_id()));
         }
-        return Err(bad_request(&MissingParameter("account".to_string())))
+        return Err(bad_request(&MissingParameter("account".to_string())));
         /*match req.extensions.get::<Router>().unwrap().find("account_id") {
             Some(account) => match account.parse::<u64>() {
                 Ok(account) => Ok(IdGet::with_account(account.to_string())),
@@ -228,9 +232,9 @@ impl QueryVerifier for DefaultQuery {
         match extract_query_value(req) {
             Some(query_pairs) => Ok(QueryInput::with(query_pairs)),
             None => {
-                return Err(bad_request(&MissingQueryParameter(
-                    "No Query Params Found".to_string(),
-                )))
+                return Err(bad_request(
+                    &MissingQueryParameter("No Query Params Found".to_string()),
+                ))
             }
         }
     }

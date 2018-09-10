@@ -4,7 +4,7 @@
 
 
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use api::audit::audit_api::EventLog;
+use api::blockchain::audits_api::EventLog;
 use authorize::invites::Invites;
 /// TO_DO: Should be named  (authorize::models::teams, authorize::models::permission)
 use authorize::models::{team, team_members, policy_members};

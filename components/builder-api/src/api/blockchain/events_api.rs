@@ -1,9 +1,8 @@
-
-
 use super::ledger;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
+use api::blockchain::audits_api::EventLog;
 
-use api::audit::config::BlockchainConn;
+use api::blockchain::config::BlockchainConn;
 use api::events::EventLogger;
 
 use bodyparser;
@@ -14,7 +13,6 @@ use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
-
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use http_gateway::util::errors::{bad_request, badgateway_error, not_found_error, internal_error};
@@ -27,29 +25,28 @@ use router::Router;
 use std::sync::Arc;
 use typemap;
 
-define_event_log!();
 
 #[derive(Clone)]
-pub struct AuditsApi {
+pub struct EventsApi {
     clientcfg: Box<BlockchainConn>,
     conn: Box<DataStoreConn>,
 }
 
-/// AuditsApi: AuditsApi provides ability to post the audits of the users
+/// EventsApi: EventsApi provides ability to post the events of the users
 /// and manage them.
 //
 /// URL:
-/// POST:/account/:account_id/audits,
-/// GET: /account/:account_id/audits
-impl AuditsApi {
+/// POST:/account/:account_id/events,
+/// GET: /account/:account_id/events
+impl EventsApi {
     pub fn new(datastore: Box<DataStoreConn>, clientcfg: Box<BlockchainConn>) -> Self {
-        AuditsApi {
+        EventsApi {
             clientcfg: clientcfg,
             conn: datastore,
         }
     }
 
-    //POST: /audits
+    //POST: /events
     //The body has the input audit::AuditEvent
     //Upon receipt of the AuditEvent with an account_id, the event
     //is sent to an asynchronous channel for processing.
@@ -76,22 +73,27 @@ impl AuditsApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
         //Send to the eventlogger and return.
-        log_audit!(req, *unmarshall_body.clone());
+        log_event!(req, *unmarshall_body.clone());
         push_notification!(req, *unmarshall_body.clone());
 
         Ok(render_json(status::Ok, &unmarshall_body))
     }
 
-    //GET: /audits
+    //GET: /events
     //Input account_id
-    // Returns all the audits (for that account)
+    // Returns all the events (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_account(req)?;
 
         let data = ledger::from_config(&self.clientcfg)?;
 
-        match data.retrieve_audits() {
+        match data.retrieve_events(&params) {
             Ok(Some(envelopes)) => Ok(render_json_list(status::Ok, dispatch(req), &envelopes)),
-            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                params.get_id()
+            ))),
             Err(err) => {
                 if format!("{:?}", err).contains("Connection refused") {
                     return Err(badgateway_error(&format!("{}", err)));
@@ -102,7 +104,7 @@ impl AuditsApi {
     }
 }
 
-impl Api for AuditsApi {
+impl Api for EventsApi {
     fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -111,28 +113,12 @@ impl Api for AuditsApi {
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         //secret API
-        router.post("/audits", XHandler::new(C { inner: create }), "audits");
+        router.post("/events", XHandler::new(C { inner: create }), "events");
 
-        router.get("/audits", XHandler::new(C { inner: list }), "list_audits");
+        router.get("/events", XHandler::new(C { inner: list }), "list_events");
     }
 }
 
-impl ApiValidator for AuditsApi {}
+impl ApiValidator for EventsApi {}
 
-impl ParmsVerifier for AuditsApi {}
-
-impl Validator for AuditEvent {
-    //default implementation is to check for `name` and 'origin'
-    fn valid(self) -> AranValidResult<Self> {
-        let mut s: Vec<String> = vec![];
-        if self.object_meta().account.len() <= 0 {
-            s.push("account".to_string());
-        }
-
-        if s.is_empty() {
-            return Ok(Box::new(self));
-        }
-
-        Err(bad_request(&MissingParameter(format!("{:?}", s))))
-    }
-}
+impl ParmsVerifier for EventsApi {}

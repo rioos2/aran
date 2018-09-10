@@ -7,7 +7,7 @@
 
 pub mod warehouse;
 
-use api::audit::config::{AuditBackend, BlockchainConn};
+use api::blockchain::config::{AuditBackend, BlockchainConn};
 use error::Result;
 use protocol::api::audit::{Envelope, EnvelopeResponse};
 use protocol::api::base::IdGet;
