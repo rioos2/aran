@@ -64,7 +64,7 @@ impl Blockchain {
 
 impl Ledger for Blockchain {
     fn record_audit(&self, envl_req: &Envelope) -> Result<()> {
-        let url = format!("api/services/habitat/v1/audits");
+        let url = format!("api/services/audit/v1/audits");
         let sbody = serde_json::to_string(&envl_req).unwrap();
 
         let res = self._client
@@ -84,7 +84,7 @@ impl Ledger for Blockchain {
     }
 
     fn record_event(&self, envl_req: &Envelope) -> Result<()> {
-        let url = format!("api/services/habitat/v1/events");
+        let url = format!("api/services/event/v1/events");
         let sbody = serde_json::to_string(&envl_req).unwrap();
 
         let res = self._client
@@ -104,7 +104,7 @@ impl Ledger for Blockchain {
     }
 
     fn retrieve_audits(&self) -> EnvelopeOutputList {
-        let url = format!("api/services/habitat/v1/audits");
+        let url = format!("api/services/audit/v1/audits");
         let mut res = self._client
             ._inner
             .get(&url)
@@ -139,7 +139,7 @@ impl Ledger for Blockchain {
 
     fn retrieve_events(&self, id: &IdGet) -> EnvelopeOutputList {
         let url = format!(
-            "api/services/habitat/v1/accounts/events?account={}",
+            "api/services/event/v1/accounts/events?account={}",
             id.get_name()
         );
         let mut res = self._client

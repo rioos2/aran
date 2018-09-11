@@ -57,7 +57,7 @@ impl Client {
         ))
     }
 
-    pub fn signup(&self, body: session::SessionCreate) -> Result<session::Session> {
+    pub fn signup(&self, body: session::Session) -> Result<session::Session> {
         let mut res = self.0
             .post(&format!("accounts"))
             .body(Body::from(serde_json::to_string(&body)?))

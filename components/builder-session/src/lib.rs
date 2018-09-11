@@ -19,6 +19,10 @@ pub use self::error::{Error, Result};
 
 pub type AccountOutputList = Result<Option<Vec<protocol::api::session::Account>>>;
 
+pub type SessionOutput = Result<Option<protocol::api::session::Session>>;
+
+pub type SessionOutputList = Result<Option<Vec<protocol::api::session::Session>>>;
+
 pub type OriginOutputList = Result<Option<Vec<protocol::api::origin::Origin>>>;
 
 pub type OriginOutput = Result<Option<protocol::api::origin::Origin>>;

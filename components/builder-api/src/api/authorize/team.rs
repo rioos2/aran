@@ -181,7 +181,7 @@ impl TeamApi {
             format!("======= Invited team {:?} ", team.clone()),
         );
 
-        let mut account_get = session::AccountGetId::new();
+        let mut account_get = IdGet::new();
         account_get.set_id(account_id.clone());
         let account = match sessions::DataStore::get_account_by_id(&self.conn, &account_get) {
             Ok(Some(opt_account)) => opt_account,

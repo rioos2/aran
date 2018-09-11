@@ -14,6 +14,7 @@ lazy_static! {
         let mut map = DispatchTable::new();
         map.register("POST:accounts", "Account");
         map.register("GET:accounts", "AccountList");
+        map.register("GET:sessions", "SessionList");
 
         map.register("POST:assemblyfactorys", "AssemblyFactory");
         map.register("GET:assemblyfactorys", "AssemblyFactoryList");
@@ -106,8 +107,11 @@ lazy_static! {
 
         map.register("GET:logs", "LogList");
 
-        map.register("POST:audits", "Event");
-        map.register("GET:audits", "EventList");
+        map.register("POST:audits", "Audit");
+        map.register("GET:audits", "AuditList");
+
+        map.register("POST:events", "Event");
+        map.register("GET:events", "EventList");
 
         ////map.register("GET:imagevulnerablity", "Image");
 

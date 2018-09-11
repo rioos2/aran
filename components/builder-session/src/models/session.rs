@@ -3,7 +3,7 @@
 //! The PostgreSQL backend for the DataStore.
 
 
-use super::super::{OpenIdOutputList, SamlOutputList, AccountOutputList};
+use super::super::{OpenIdOutputList, SamlOutputList, AccountOutputList, SessionOutput, SessionOutputList};
 use chrono::prelude::*;
 
 use db;
@@ -30,10 +30,10 @@ impl<'a> DataStore<'a> {
             expander: &db.expander,
         }
     }
-    pub fn find_account(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device) -> Result<session::Session> {
+    pub fn find_account(datastore: &DataStoreConn, account_create: &session::Account, session_create: &session::Session) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
         let query = "SELECT * FROM get_account_by_email_v1($1)";
-        let rows = conn.query(&query, &[&session_create.get_email()]).map_err(
+        let rows = conn.query(&query, &[&account_create.get_email()]).map_err(
             Error::AccountGetById,
         )?;
 
@@ -41,14 +41,17 @@ impl<'a> DataStore<'a> {
             let account_row = rows.get(0);
             let account = row_to_account(account_row);
             let id = account.get_id().parse::<i64>().unwrap();
-            let provider = match session_create.get_provider() {
+            let provider = match account_create.get_provider() {
                 session::OAuthProvider::OpenID => "openid",
                 _ => "password",
             };
 
             let session_rows = conn.query(
                 "SELECT * FROM get_session_v1($1, $2)",
-                &[&id, &serde_json::to_value(device).unwrap()],
+                &[
+                    &id,
+                    &serde_json::to_value(session_create.get_device()).unwrap(),
+                ],
             ).map_err(Error::SessionGet)?;
 
             if session_rows.len() > 0 {
@@ -58,12 +61,14 @@ impl<'a> DataStore<'a> {
                 return Ok(session);
             } else {
                 let new_rows = conn.query(
-                    "SELECT * FROM insert_account_session_v1($1, $2, $3, $4)",
+                    "SELECT * FROM insert_account_session_v1($1, $2, $3, $4,$5,$6)",
                     &[
                         &id,
                         &session_create.get_token(),
                         &provider,
-                        &(serde_json::to_value(device).unwrap()),
+                        &(serde_json::to_value(session_create.get_device()).unwrap()),
+                        &(serde_json::to_value(session_create.object_meta()).unwrap()),
+                        &(serde_json::to_value(session_create.type_meta()).unwrap()),
                     ],
                 ).map_err(Error::SessionCreate)?;
 
@@ -77,28 +82,28 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn account_create(datastore: &DataStoreConn, session_create: &session::SessionCreate, device: &session::Device) -> Result<session::Session> {
+    pub fn account_create(datastore: &DataStoreConn, account_create: &session::Account, session_create: &session::Session) -> Result<session::Session> {
         let conn = datastore.pool.get_shard(0)?;
 
         let query = "SELECT * FROM insert_account_v1($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
         let rows = conn.query(
             &query,
             &[
-                &session_create.get_email(),
-                &session_create.get_first_name(),
-                &session_create.get_last_name(),
-                &session_create.get_phone(),
-                &session_create.get_apikey(),
-                &session_create.get_password(),
-                &session_create.get_approval(),
-                &session_create.get_suspend(),
-                &session_create.get_is_admin(),
-                &session_create.get_registration_ip_address(),
-                &session_create.get_trust_level(),
-                &session_create.get_company_name(),
-                &(serde_json::to_value(session_create.object_meta()).unwrap()),
-                &(serde_json::to_value(session_create.type_meta()).unwrap()),
-                &session_create.get_avatar(),
+                &account_create.get_email(),
+                &account_create.get_first_name(),
+                &account_create.get_last_name(),
+                &account_create.get_phone(),
+                &account_create.get_apikey(),
+                &account_create.get_password(),
+                &account_create.get_approval(),
+                &account_create.get_suspend(),
+                &account_create.get_is_admin(),
+                &account_create.get_registration_ip_address(),
+                &account_create.get_trust_level(),
+                &account_create.get_company_name(),
+                &(serde_json::to_value(account_create.object_meta()).unwrap()),
+                &(serde_json::to_value(account_create.type_meta()).unwrap()),
+                &account_create.get_avatar(),
             ],
         ).map_err(Error::AccountCreate)?;
         if rows.len() > 0 {
@@ -108,18 +113,20 @@ impl<'a> DataStore<'a> {
 
             let id = account.get_id().parse::<i64>().unwrap();
 
-            let provider = match session_create.get_provider() {
+            let provider = match account_create.get_provider() {
                 session::OAuthProvider::OpenID => "openid",
                 _ => "password",
             };
 
             let rows = conn.query(
-                "SELECT * FROM insert_account_session_v1($1, $2, $3, $4)",
+                "SELECT * FROM insert_account_session_v1($1, $2, $3, $4,$5,$6)",
                 &[
                     &id,
                     &session_create.get_token(),
                     &provider,
-                    &serde_json::to_value(device).unwrap(),
+                    &serde_json::to_value(session_create.get_device()).unwrap(),
+                    &(serde_json::to_value(account_create.object_meta()).unwrap()),
+                    &(serde_json::to_value(account_create.type_meta()).unwrap()),
                 ],
             ).map_err(Error::SessionCreate)?;
 
@@ -174,7 +181,7 @@ impl<'a> DataStore<'a> {
         }
     }
 
-    pub fn get_account_by_id(datastore: &DataStoreConn, account_get_id: &session::AccountGetId) -> Result<Option<session::Account>> {
+    pub fn get_account_by_id(datastore: &DataStoreConn, account_get_id: &IdGet) -> Result<Option<session::Account>> {
         let conn = datastore.pool.get_shard(0)?;
         let id = account_get_id.get_id().parse::<i64>().unwrap();
         let rows = conn.query("SELECT * FROM get_account_by_id_v1($1)", &[&id])
@@ -202,7 +209,23 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    pub fn get_session(datastore: &DataStoreConn, session_get: &session::SessionGet) -> Result<Option<session::Session>> {
+    pub fn get_session_by_account_id(datastore: &DataStoreConn, account_id: &IdGet) -> SessionOutputList {
+        let conn = datastore.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_session_by_account_id_v1($1)",
+            &[&(account_id.get_name().parse::<i64>().unwrap())],
+        ).map_err(Error::AccountGetById)?;
+        let mut response = Vec::new();
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_session(row))
+            }
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+    pub fn get_session(datastore: &DataStoreConn, session_get: &session::SessionGet) -> SessionOutput {
         let conn = datastore.pool.get_shard(0)?;
         let rows = conn.query(
             "SELECT * FROM get_account_session_by_email_token_v1($1, $2)",
@@ -299,8 +322,8 @@ impl<'a> DataStore<'a> {
                 let imported: Vec<Result<session::Session>> = importing_users
                     .into_iter()
                     .map(|import_user| {
-                        let mut add_account: session::SessionCreate = import_user.into();
-                        let session = Self::account_create(datastore, &mut add_account, &session::Device::new())?;
+                        let mut add_account: session::Account = import_user.into();
+                        let session = Self::account_create(datastore, &mut add_account, &session::Session::new())?;
                         imported_users.push(session.get_email());
                         Ok(session)
                     })
@@ -444,6 +467,18 @@ fn row_to_account(row: postgres::rows::Row) -> session::Account {
     account.set_trust_level(row.get("trust_level"));
     account.set_created_at(created_at.to_rfc3339());
     account
+}
+
+fn row_to_session(row: postgres::rows::Row) -> session::Session {
+    let mut session = session::Session::with(
+        serde_json::from_value(row.get("type_meta")).unwrap(),
+        serde_json::from_value(row.get("object_meta")).unwrap(),
+    );
+    let id: i64 = row.get("account_id");
+    session.set_id(id.to_string());
+    session.set_device(serde_json::from_value(row.get("device")).unwrap());
+
+    session
 }
 
 fn row_to_ldap_config(row: &postgres::rows::Row) -> Result<session::LdapConfig> {

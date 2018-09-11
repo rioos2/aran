@@ -515,6 +515,17 @@ VALUES
          'Read only access for accounts resource.'
    )
 ,
+
+(
+(
+   SELECT
+      id
+   FROM
+      second_insert),
+      'SESSIONS.GET',
+      'Read only access for session resource.'
+)
+,
    (
 (
       SELECT
