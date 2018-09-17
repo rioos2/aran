@@ -137,13 +137,20 @@ fmt-all: fmt
 .PHONY: fmt fmt-all
 
 fmt-bin: $(addprefix fmt-,$(BIN)) ## formats the binary components' codebases
-.PHONY: clean-bin
+.PHONY: fmt-bin
 
 fmt-lib: $(addprefix fmt-,$(LIB)) ## formats the library components' codebases
-.PHONY: clean-lib
+.PHONY: fmt-lib
 
 fmt-srv: $(addprefix fmt-,$(SRV)) ## formats the service components' codebases
-.PHONY: clean-srv
+.PHONY: fix-srv
+
+fix: fix-lib  ## fixes all the components' codebases
+fix-all: fix
+.PHONY: fix fix-all
+
+fix-lib: $(addprefix fix-,$(LIB))
+.PHONY: fix-lib
 
 help:
 	@perl -nle'print $& if m{^[a-zA-Z_-]+:.*?## .*$$}' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -201,3 +208,11 @@ fmt-$1: image ## formats the $1 component
 
 endef
 $(foreach component,$(ALL),$(eval $(call FMT,$(component))))
+
+define FIX
+fix-$1: image ## fixes the $1 component
+	$(run) sh -c 'cd components/$1 && cargo fix'
+.PHONY: fix-$1
+
+endef
+$(foreach component,$(ALL),$(eval $(call FIX,$(component))))
