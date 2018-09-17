@@ -4,9 +4,8 @@ pub mod error;
 #[cfg(any(test, feature = "long_benchmarks"))]
 pub mod tests;
 
-use db::data_store::*;
-use futures::sync::mpsc;
 use futures::{Async, Future, Poll, Stream};
+use futures::sync::mpsc;
 use node::runtime::ExternalMessage;
 
 /// This kind of events is used to schedule execution in next event-loop ticks
@@ -14,7 +13,7 @@ use node::runtime::ExternalMessage;
 #[derive(Debug)]
 pub enum InternalEvent {
     /// Shutdown the node.
-    EntitlementTimeout,
+    EntitlementTimeToVerify,
     Shutdown,
 }
 
@@ -25,7 +24,7 @@ pub enum Event {
 }
 
 pub trait EventHandler {
-    fn handle_event(&mut self, event: Event, ds: Box<DataStoreConn>);
+    fn handle_event(&mut self, event: Event);
 }
 
 
@@ -33,15 +32,13 @@ pub struct HandlerPart<H: EventHandler> {
     pub handler: H,
     pub internal_rx: mpsc::Receiver<InternalEvent>,
     pub api_rx: mpsc::Receiver<ExternalMessage>,
-    pub datastore: Box<DataStoreConn>,
 }
 
 impl<H: EventHandler + 'static> HandlerPart<H> {
     pub fn run(self) -> Box<Future<Item = (), Error = ()>> {
         let mut handler = self.handler;
-        let ds = self.datastore.clone();
         let fut = EventsAggregator::new(self.internal_rx, self.api_rx).for_each(move |event| {
-            handler.handle_event(event, ds.clone());
+            handler.handle_event(event);
             Ok(())
         });
 

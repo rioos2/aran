@@ -1,8 +1,9 @@
-use ansi_term::Colour;
+// Copyright 2018 The Rio Advancement Inc
+//
+
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -48,9 +49,7 @@ impl SettingsMapApi {
         let mut unmarshall_body =
             self.validate::<SettingsMap>(req.get::<bodyparser::Struct<SettingsMap>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -79,9 +78,7 @@ impl SettingsMapApi {
             (org_name, set_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?}{} ", org, name),
         );
         let mut params = IdGet::with_id(name.clone().to_string());
@@ -118,7 +115,8 @@ impl SettingsMapApi {
 }
 
 impl Api for SettingsMapApi {
-    fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
+    fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
+        let basic = Authenticated::new(&*config);
         //closures : secrets
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -133,8 +131,8 @@ impl Api for SettingsMapApi {
             "settingsmap",
         );
         router.get(
-            "/origins/:origin/settingsmap/:name",
-            XHandler::new(C { inner: show }),
+            "/settingsmap/:name/origins/:origin",
+            XHandler::new(C { inner: show }).before(basic.clone()),
             "settingsmap_show",
         );
     }

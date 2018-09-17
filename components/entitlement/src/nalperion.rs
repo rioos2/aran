@@ -2,17 +2,18 @@
 //
 
 //! A module containing the middleware of the HTTP server
-use std::path::PathBuf;
-use std::str;
+
+
+use config;
 
 use error::{Error, Result};
 use handlebars::Handlebars;
+use lib_load;
 use rand::{self, Rng};
 
 use rio_core::fs::{read_from_file, rioconfig_config_path, rioconfig_license_path};
-
-use config;
-use lib_load;
+use std::path::PathBuf;
+use std::str;
 
 lazy_static! {
     static ref NALPERION_SHAFER_FILECHK_XML_TEMPLATE: PathBuf =
@@ -46,16 +47,14 @@ pub struct Nalperion {
 
 impl Nalperion {
     pub fn new<T: config::License>(config: &T) -> Self {
-        Nalperion {
-            fascade: API::new(config.so_file().to_string(), config.activation_code()),
-        }
+        Nalperion { fascade: API::new(config.so_file().to_string(), config.activation_code()) }
     }
 
     // Returns the status of license verified with nalperion
-    pub fn verify(&self) -> Result<()> {
-        self.fascade.check_license()?;
-        Ok(())
-    }
+    // pub fn verify(&self) -> Result<()> {
+    //     self.fascade.check_license()?;
+    //     Ok(())
+    // }
 }
 
 #[derive(Debug)]
@@ -90,11 +89,7 @@ impl API {
         Ok(())
     }
 
-    fn call_dynamic(
-        so_file: String,
-        secret_offset: (u32, u32),
-        activation_code: Option<String>,
-    ) -> Result<()> {
+    fn call_dynamic(so_file: String, secret_offset: (u32, u32), activation_code: Option<String>) -> Result<()> {
         let lib = lib_load::Library::new(&rioconfig_license_path(None).join(so_file))?;
 
         unsafe {
@@ -108,7 +103,9 @@ impl API {
             }
 
             //validate the library with customer id and product id
-            let validate_fn = lib.get::<fn(u32, u32) -> i32>(NALP_VALIDATE_LIBRARY.as_bytes())?;
+            let validate_fn = lib.get::<fn(u32, u32) -> i32>(
+                NALP_VALIDATE_LIBRARY.as_bytes(),
+            )?;
             let response = validate_fn(CUSTOMER_ID, PRODUCT_ID);
             debug!("=> validate_lib: {:?}", response);
 
@@ -117,9 +114,7 @@ impl API {
             }
 
             //check the status of the license (license status has negative value return the error)
-            let get_license_fn = lib.get::<fn(Option<String>, *mut i32, Option<String>) -> i32>(
-                NALP_GET_LIBRARY.as_bytes(),
-            )?;
+            let get_license_fn = lib.get::<fn(Option<String>, *mut i32, Option<String>) -> i32>(NALP_GET_LIBRARY.as_bytes())?;
             let x: &mut i32 = &mut 0;
             let ret_val = get_license_fn(activation_code, x, None);
             debug!("=> get_license_status: {:?}", ret_val);

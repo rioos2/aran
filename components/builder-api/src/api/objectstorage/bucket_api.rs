@@ -1,3 +1,6 @@
+// Copyright 2018 The Rio Advancement Inc
+//
+
 use std::sync::Arc;
 
 use bodyparser;
@@ -19,8 +22,6 @@ use protocol::api::base::MetaFields;
 use protocol::api::objectstorage::Bucket;
 
 use super::s3;
-use ansi_term::Colour;
-use common::ui;
 use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
 
@@ -45,9 +46,7 @@ impl ObjectStorageApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -113,18 +112,11 @@ impl Api for ObjectStorageApi {
         let download = move |req: &mut Request| -> AranResult<Response> { _self.download(req) };
 
         router.post(
-            "/accounts/:account_id/buckets",
+            "/buckets",
             XHandler::new(C {
                 inner: create.clone(),
             }).before(basic.clone()),
             "account_buckets_create",
-        );
-        router.get(
-            "/accounts/:account_id/buckets",
-            XHandler::new(C {
-                inner: list_blank.clone(),
-            }).before(basic.clone()),
-            "account_buckets_list",
         );
         router.get(
             "/buckets",
@@ -134,12 +126,12 @@ impl Api for ObjectStorageApi {
             "buckets_list",
         );
         router.get(
-            "/accounts/:account_id/buckets/:id/files/:name/upload",
+            "/bucketfiles/:id/files/:name/upload",
             XHandler::new(C { inner: upload }).before(basic.clone()),
             "buckets_upload",
         );
         router.get(
-            "/accounts/:account_id/buckets/:id/files/:name/download",
+            "/bucketfiles/:id/files/:name/download",
             XHandler::new(C { inner: download }).before(basic.clone()),
             "buckets_download",
         );

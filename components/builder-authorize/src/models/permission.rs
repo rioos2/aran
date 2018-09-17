@@ -1,11 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
 
-//! The PostgreSQL backend for the Authorization [roles, permissions].
+//! The PostgreSQL backend for the Authorization [teams, permissions].
 
 use chrono::prelude::*;
 use error::{Error, Result};
 
-use protocol::api::authorize::{Permissions, PermissionsForAccount};
+use protocol::api::authorize::{Permissions, PermissionsForPolicy};
 use protocol::api::base::IdGet;
 
 use protocol::cache::{InMemoryExpander, PULL_DIRECTLY};
@@ -32,7 +32,7 @@ impl<'a> DataStore<'a> {
         let rows = &conn.query(
             "SELECT * FROM insert_permission_v1 ($1,$2,$3)",
             &[
-                &(permissions.get_role_id().parse::<i64>().unwrap()),
+                &(permissions.get_policy_id().parse::<i64>().unwrap()),
                 &(permissions.get_name() as String),
                 &(permissions.get_description() as String),
             ],
@@ -61,12 +61,12 @@ impl<'a> DataStore<'a> {
         Ok(None)
     }
 
-    //Return a permission for a role_id and permission_id
-    pub fn show_by_role(&self, get_perms: &IdGet) -> PermissionsOutput {
+    //Return a permission for a team_id and permission_id
+    pub fn show_by_policy(&self, get_perms: &IdGet) -> PermissionsOutput {
         let conn = self.db.pool.get_shard(0)?;
 
         let rows = &conn.query(
-            "SELECT * FROM get_permission_by_role_v1($1,$2)",
+            "SELECT * FROM get_permission_by_policy_v1($1,$2)",
             &[
                 &(get_perms.get_id().parse::<i64>().unwrap()),
                 &(get_perms.get_name().parse::<i64>().unwrap()),
@@ -98,13 +98,13 @@ impl<'a> DataStore<'a> {
     }
 
     //This is a fascade method to list_by_email.
-    pub fn list_by_email_fascade(&self, email: IdGet) -> PermissionsForAccount {
+   /* pub fn list_by_email_fascade(&self, email: IdGet) -> PermissionsForAccount {
         let mut perms_for_account = PermissionsForAccount::new();
         perms_for_account.set_account_email(email.get_id());
         self.expander
             .with_permissions(&mut perms_for_account, PULL_DIRECTLY);
         perms_for_account
-    }
+    }*/
 
     //This is a fascade method to list_by_email.
     pub fn list_by_email(&self, email: &IdGet) -> PermissionsOutputList {
@@ -119,27 +119,45 @@ impl<'a> DataStore<'a> {
             for row in rows {
                 response.push(row_to_permissions(&row)?)
             }
-            info!(
-                "---------- STRT: Permission loader {} ----------",
-                email.get_id()
-            );
-            info!("Loaded ! Permissions\n{:?}", response);
-            info!(
-                "---------- DONE: Permission loader {} ----------",
-                email.get_id()
-            );
             return Ok(Some(response));
         }
         Ok(None)
     }
 
-    pub fn list_by_role(&self, role_id: &IdGet) -> PermissionsOutputList {
-        let conn = self.db.pool.get_shard(0)?;
+    //This is a fascade method to get permissions by team from cache.
+    pub fn list_by_policy_fascade(&self, policy: IdGet) -> PermissionsForPolicy {
+        let mut perms_for_policy = PermissionsForPolicy::new();
+        perms_for_policy.set_policy(policy.get_id());
+        self.expander
+            .with_permissions(&mut perms_for_policy, PULL_DIRECTLY);
+        perms_for_policy
+    }
 
+    //To get permissions by team name from database
+    pub fn list_by_policy_name(&self, policy_name: &IdGet) -> PermissionsOutputList {
+        let conn = self.db.pool.get_shard(0)?;
         let rows = &conn.query(
-            "SELECT * FROM get_permissions_by_role_v1($1)",
-            &[&(role_id.get_id().parse::<i64>().unwrap())],
-        ).map_err(Error::RolePermissionsGet)?;
+            "SELECT * FROM get_permissions_by_policy_name_v1($1)",
+            &[&(policy_name.get_id() as String)],
+        ).map_err(Error::PolicyPermissionGet)?;
+
+        let mut response = Vec::new();
+
+        if rows.len() > 0 {
+            for row in rows {
+                response.push(row_to_permissions(&row)?)
+            }
+            return Ok(Some(response));
+        }
+        Ok(None)
+    }
+
+    pub fn list_by_policy(&self, policy_id: &IdGet) -> PermissionsOutputList {
+        let conn = self.db.pool.get_shard(0)?;
+        let rows = &conn.query(
+            "SELECT * FROM get_permissions_by_policy_v1($1)",
+            &[&(policy_id.get_id().parse::<i64>().unwrap())],
+        ).map_err(Error::PolicyPermissionGet)?;
 
         let mut response = Vec::new();
 
@@ -158,12 +176,12 @@ fn row_to_permissions(row: &postgres::rows::Row) -> Result<Permissions> {
 
     let id: i64 = row.get("id");
     let name: String = row.get("name");
-    let role_id: i64 = row.get("role_id");
+    let policy_id: i64 = row.get("policy_id");
     let description: String = row.get("description");
     let created_at = row.get::<&str, DateTime<Utc>>("created_at");
 
     permissions.set_id(id.to_string() as String);
-    permissions.set_role_id(role_id.to_string() as String);
+    permissions.set_policy_id(policy_id.to_string() as String);
     permissions.set_name(name as String);
     permissions.set_description(description as String);
     permissions.set_created_at(created_at.to_rfc3339());

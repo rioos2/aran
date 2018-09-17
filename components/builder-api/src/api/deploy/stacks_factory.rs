@@ -1,11 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api blockchain_factory
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -61,9 +59,7 @@ impl StacksFactoryApi {
         unmarshall_body.set_meta(type_meta(req), m);
         unmarshall_body.set_status(Status::pending());
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -128,7 +124,7 @@ impl StacksFactoryApi {
         }
     }
 
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     //GET: /stacksfactorys
     //Returns all the StacksFactorys (irrespective of accounts, origins)
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
@@ -192,12 +188,17 @@ impl Api for StacksFactoryApi {
 
         //closures : stacksfactory
         let _config = &config;
-        let _service_cfg: Box<ServicesConfig> = Box::new(_config.services.clone().into());
+        let _machine_service_cfg: Box<ServicesConfig> = Box::new(_config.services.clone().into());
         self.with_cache();
 
         let mut _self = self.clone();
-        let create =
-            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_service_cfg) };
+        let machinefactorys_create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_machine_service_cfg) };
+
+        let _container_service_cfg: Box<ServicesConfig> = Box::new(_config.services.clone().into());
+        let mut _self = self.clone();
+        let containerfactorys_create =
+            move |req: &mut Request| -> AranResult<Response> { _self.create(req, &_container_service_cfg) };
 
         let _self = self.clone();
         let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
@@ -214,13 +215,19 @@ impl Api for StacksFactoryApi {
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         router.post(
-            "/accounts/:account_id/stacksfactorys",
-            XHandler::new(C { inner: create }).before(basic.clone()),
-            "stacks_factory",
+            "/machinefactorys",
+            XHandler::new(C { inner: machinefactorys_create }).before(basic.clone()),
+            "machine_stacks_factory",
+        );
+
+        router.post(
+            "/containerfactorys",
+            XHandler::new(C { inner: containerfactorys_create }).before(basic.clone()),
+            "container_stacks_factory",
         );
 
         router.get(
-            "/accounts/:account_id/stacksfactorys",
+            "/stacksfactorys",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "stacksfactors_list",
         );
@@ -230,7 +237,7 @@ impl Api for StacksFactoryApi {
             "stacksfactory_show",
         );
         router.get(
-            "/stacksfactorys",
+            "/stacksfactorys/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "stacksfactory_list_blank",
         );

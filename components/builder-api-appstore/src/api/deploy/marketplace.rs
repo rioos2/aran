@@ -68,9 +68,7 @@ impl MarketPlaceApi {
             unmarshall_body.get_account(),
         );
         unmarshall_body.set_meta(type_meta(req), m);
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
         match marketplace_ds::DataStore::new(&self.conn).create(&unmarshall_body) {
@@ -82,7 +80,7 @@ impl MarketPlaceApi {
 
     //GET: /marketplaces
     //Blank origin: Returns all the MarketPlaces (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match marketplace_ds::DataStore::new(&self.conn).list_blank() {
             Ok(Some(marketplaces)) => {

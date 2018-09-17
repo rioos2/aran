@@ -104,9 +104,16 @@ fn config_from_args(args: &clap::ArgMatches) -> Result<Config> {
         None => {
             let mut default_config = Config::default();
 
-            NodeInternalConfig::from_file(CFG_DEFAULT_FILE.to_str().unwrap())
+            match NodeInternalConfig::from_file(CFG_DEFAULT_FILE.to_str().unwrap()) {
+                Ok(conf) => Config { node: conf },
+                Err(err) => {                    
+                    default_config 
+                }
+            }
+
+            /*NodeInternalConfig::from_file(CFG_DEFAULT_FILE.to_str().unwrap())
                 .and_then(|n| Ok(Config { node: n }))
-                .unwrap_or(default_config) // panic shouldn't happen
+                .unwrap_or(default_config) // panic shouldn't happen*/
         }
     })
 }

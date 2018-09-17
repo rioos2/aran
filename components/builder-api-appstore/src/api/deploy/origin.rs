@@ -21,7 +21,7 @@ use http_gateway::util::errors::{AranResult, AranValidResult};
 
 use protocol::api::base::MetaFields;
 use protocol::api::origin::Origin;
-use session::origin_ds::OriginDS;
+use session::models::origins::DataStore;
 
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -63,7 +63,7 @@ impl OriginApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        match OriginDS::create(&self.conn, &unmarshall_body) {
+        match DataStore::create(&self.conn, &unmarshall_body) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -72,9 +72,9 @@ impl OriginApi {
 
     //GET: /origins
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //Will need teams/permission to access others origin.
     fn list(&self, req: &mut Request) -> AranResult<Response> {
-        match OriginDS::list(&self.conn) {
+        match DataStore::list_blank(&self.conn) {
             Ok(Some(origins)) => Ok(render_json_list(status::Ok, dispatch(req), &origins)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -86,7 +86,7 @@ impl OriginApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_name(req)?;
 
-        match OriginDS::show(&self.conn, &params) {
+        match DataStore::show(&self.conn, &params) {
             Ok(Some(origin)) => Ok(render_json(status::Ok, &origin)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(

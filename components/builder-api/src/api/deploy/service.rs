@@ -1,8 +1,9 @@
-use ansi_term::Colour;
+// Copyright 2018 The Rio Advancement Inc
+//
+
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -56,9 +57,7 @@ impl ServiceApi {
         );
 
         unmarshall_body.set_meta(type_meta(req), m);
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -102,7 +101,7 @@ impl ServiceApi {
 
     //GET: /services
     //Blank origin: Returns all the Services (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match service::DataStore::list_blank(&self.conn) {
             Ok(Some(linkers)) => Ok(render_json_list(status::Ok, dispatch(_req), &linkers)),

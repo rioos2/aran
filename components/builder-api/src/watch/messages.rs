@@ -32,6 +32,7 @@ custom_derive! {
         Assemblys,
         Builds,
         Buildconfigs,
+        Ingress,
     }
 }
 
@@ -51,7 +52,7 @@ pub fn handle_assembly_list(
     prom: Box<PrometheusClient>,
 ) -> Option<String> {
     let mut assembly = deploy::assembly::AssemblyApi::new(datastore, prom);
-    assembly.watch_list_by_account(idget, "GET:accountsassemblys".to_string())
+    assembly.watch_list_by_account(idget, "GET:assemblys".to_string())
 }
 
 pub fn handle_assemblyfactory(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
@@ -61,7 +62,7 @@ pub fn handle_assemblyfactory(idget: IdGet, typ: String, datastore: Box<DataStor
 
 pub fn handle_assemblyfactory_list(idget: IdGet, datastore: Box<DataStoreConn>) -> Option<String> {
     let mut assembly_factory = deploy::assembly_factory::AssemblyFactoryApi::new(datastore);
-    assembly_factory.watch_list_by_account(idget, "GET:accountsassemblyfactorys".to_string())
+    assembly_factory.watch_list_by_account(idget, "GET:assemblyfactorys".to_string())
 }
 
 pub fn handle_services(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
@@ -99,7 +100,7 @@ pub fn handle_secrets_list(
     securer: Box<SecurerConn>,
 ) -> Option<String> {
     let secret = security::secret_api::SecretApi::new(datastore, securer);
-    secret.watch_list_by_account(idget, "GET:accountssecrets".to_string())
+    secret.watch_list_by_account(idget, "GET:secrets".to_string())
 }
 
 pub fn handle_jobs(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
@@ -155,6 +156,11 @@ pub fn handle_settingsmap(idget: IdGet, typ: String, datastore: Box<DataStoreCon
 pub fn handle_endpoints(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
     let mut endpoints = deploy::endpoint::EndpointApi::new(datastore);
     endpoints.watch(idget, typ)
+}
+
+pub fn handle_ingress(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {
+    let mut ingress = deploy::ingress::IngressApi::new(datastore);
+    ingress.watch(idget, typ)
 }
 
 pub fn handle_origins(idget: IdGet, typ: String, datastore: Box<DataStoreConn>) -> Bytes {

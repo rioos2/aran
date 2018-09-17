@@ -59,7 +59,7 @@ pub trait Handler {
 
         error!("{:?}", err);
         if !log_enabled!(ErrorLevel) {
-            println!(
+            debug!(
                 "Encountered an error: {}\nEnable a logger to see more information.",
                 err
             );
@@ -336,7 +336,6 @@ mod test {
     struct M;
     impl Handler for M {
         fn on_message(&mut self, _: message::Message) -> Result<()> {
-            println!("test");
             Ok(())
         }
 

@@ -4,12 +4,15 @@
 
 use super::super::error::Result;
 
-use std::io::Read;
-
 use chrono::prelude::*;
-use http_client::reqwest_client::http_bearer_get;
-
 use config;
+use http_client::reqwest_client::{http_bearer_post, http_bearer_get};
+use metrics::{MetricResponse, PromResponse, RangeResponse};
+use metrics::query::PrometheusQuery;
+
+use serde_json;
+
+use std::io::Read;
 
 /// Read the expression query language as per this link
 //https://prometheus.io/docs/querying/basics/
@@ -20,9 +23,7 @@ pub struct PrometheusClient {
 
 impl PrometheusClient {
     pub fn new<T: config::Telemetry>(config: &T) -> Self {
-        PrometheusClient {
-            url: config.endpoint().to_string(),
-        }
+        PrometheusClient { url: config.endpoint().to_string() }
     }
 
     /// Returns the instant vector metric for all nodes
@@ -36,40 +37,31 @@ impl PrometheusClient {
     ///       label_value = prometheus (first labels value)
     ///       label_name  = group (first label)
     ///       label_value = nodes (first labels value)
-    pub fn pull_metrics(&self, path: &str) -> Result<Contents> {
-        let url = format!("{}/query?query={}", self.url, path);
-        let mut rep = http_bearer_get(&url, path)?;
+    pub fn pull(&self, body: PrometheusQuery) -> Result<MetricResponse> {
+        let url = format!("{}/querys", self.url);
+        let mut res = http_bearer_post(&url, serde_json::to_value(&body)?)?;
         let mut body = String::new();
-        rep.read_to_string(&mut body)?;
-
-        let contents: Contents = Contents { data: body };
-
-        Ok(contents)
+        res.read_to_string(&mut body)?;
+        let data: MetricResponse = serde_json::from_str(&body)?;
+        Ok(data)
     }
 
     /// Returns the contents of the node metrics
     ///http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
-    pub fn pull_osusage(&self, path: &str) -> Result<Contents> {
+    pub fn pull_in_range(&self, path: &str) -> Result<RangeResponse> {
         let utc: DateTime<Utc> = Utc::now();
-        let url = format!(
+        let url =
+            format!(
             "{}/query_range?query={}&start={}&end={}&step=15s",
             self.url,
             path,
             utc.timestamp() - 180,
             utc.timestamp(),
         );
-
         let mut rep = http_bearer_get(&url, path)?;
         let mut body = String::new();
         rep.read_to_string(&mut body)?;
-
-        let contents: Contents = Contents { data: body };
-
+        let contents: RangeResponse = serde_json::from_str(&body)?;
         Ok(contents)
     }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Contents {
-    pub data: String,
 }

@@ -1,32 +1,37 @@
 // Copyright 2018 The Rio Advancement Inc
 
+
+use api::audit::config::{BlockchainConn, MailerCfg, SlackCfg};
+use config::Config;
+use entitlement::softwarekeys::licensor::NativeSDK;
+
+use events::{HandlerPart, InternalEvent};
+
+use events::error::{into_other, other_error};
+use futures::{Future, Sink, Stream};
+
+use futures::sync::mpsc;
+use node::internal::InternalPart;
+
+use protocol::api::audit::Envelope;
 use std::fmt;
 use std::io;
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
-
-use api::audit::config::{BlockchainConn, MailerCfg, SlackCfg};
-use config::Config;
-use entitlement::licensor::Client;
-use protocol::api::audit::Envelope;
-
-use events::error::{into_other, other_error};
-use db::data_store::*;
-use events::{HandlerPart, InternalEvent};
-use node::internal::InternalPart;
-
-use futures::sync::mpsc;
-use futures::{Future, Sink, Stream};
+use std::time::{Duration, Instant};
 
 use tokio_core::reactor::Core;
 use tokio_timer;
+
+const DURATION: u64 = 86400;
 
 /// External messages.
 #[derive(Debug)]
 pub enum ExternalMessage {
     PeerAdd(Envelope),
     PushNotification(Envelope),
+    ActivateLicense(u32, String, String),
+    DeActivateLicense(u32, String, String),
 }
 
 /// Transactions sender.
@@ -37,10 +42,7 @@ pub struct ApiSender(pub mpsc::Sender<ExternalMessage>);
 #[derive(Debug)]
 pub struct RuntimeChannel {
     /// Channel for api requests.
-    pub api_requests: (
-        mpsc::Sender<ExternalMessage>,
-        mpsc::Receiver<ExternalMessage>,
-    ),
+    pub api_requests: (mpsc::Sender<ExternalMessage>, mpsc::Receiver<ExternalMessage>),
     /// Channel for internal events.
     pub internal_events: (mpsc::Sender<InternalEvent>, mpsc::Receiver<InternalEvent>),
 }
@@ -58,7 +60,8 @@ impl RuntimeChannel {
 /// Handler
 pub struct RuntimeHandler {
     pub config: Box<BlockchainConn>,
-    pub license: Box<Client>,
+    pub ninjas_license: NativeSDK,
+    pub senseis_license: NativeSDK,
     pub mailer: Box<MailerCfg>,
     pub slack: Box<SlackCfg>,
 }
@@ -78,43 +81,52 @@ impl ApiSender {
     /// Add peer to peer list
     pub fn peer_add(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PeerAdd(envl);
-        self.0
-            .clone()
-            .send(msg)
-            .wait()
-            .map(drop)
-            .map_err(into_other)
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
     }
 
     /// Add peer to peer list
     pub fn push_notify(&self, envl: Envelope) -> io::Result<()> {
         let msg = ExternalMessage::PushNotification(envl);
-        self.0
-            .clone()
-            .send(msg)
-            .wait()
-            .map(drop)
-            .map_err(into_other)
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
+    }
+
+    /// Request the licensor to activate the license with the licenseid/password
+    pub fn activate_license(&self, license_id: u32, password: String, product: String) -> io::Result<()> {
+        let msg = ExternalMessage::ActivateLicense(license_id, password, product);
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
+    }
+
+    /// Request the licensor to activate the license with the licenseid/password
+    pub fn deactivate_license(&self, license_id: u32, password: String, product: String) -> io::Result<()> {
+        let msg = ExternalMessage::DeActivateLicense(license_id, password, product);
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
     }
 }
 
 pub struct Runtime {
     channel: RuntimeChannel,
     handler: RuntimeHandler,
-    datastore: Box<DataStoreConn>,
 }
 
 impl Runtime {
-    pub fn new(config: Arc<Config>, ds: Box<DataStoreConn>) -> Self {
+    pub fn new(config: Arc<Config>, ninjas_license_sdk: NativeSDK, senseis_license_sdk: NativeSDK) -> Self {
         Runtime {
             channel: RuntimeChannel::new(1024),
             handler: RuntimeHandler {
                 config: Box::new(BlockchainConn::new(&*config.clone())),
-                license: Box::new(Client::new(&*config.clone())),
+                ninjas_license: ninjas_license_sdk,
+                senseis_license: senseis_license_sdk,
                 mailer: Box::new(MailerCfg::new(&*config.clone())),
                 slack: Box::new(SlackCfg::new(&*config.clone())),
             },
-            datastore: ds,
         }
     }
 
@@ -126,9 +138,10 @@ impl Runtime {
         thread::spawn(move || {
             let mut core = Core::new().unwrap();
             let tx = Arc::new(internal_part);
-            let duration = Duration::new(3600, 0); // 10 minutes
+            let duration = Duration::new(DURATION, 0); // 1day
             let builder = tokio_timer::wheel().max_timeout(duration);
-            let wakeups = builder.build().interval(duration);
+            let wakeups = builder.build().interval_at(Instant::now(), duration);
+
             let task = wakeups.for_each(|_| {
                 &(*tx).clone().run();
                 Ok(())
@@ -138,8 +151,9 @@ impl Runtime {
 
         thread::spawn(move || {
             let mut core = Core::new()?;
-            core.run(handler_part.run())
-                .map_err(|_| other_error("An error in the `RuntimeHandler` thread occurred"))
+            core.run(handler_part.run()).map_err(|_| {
+                other_error("An error in the `RuntimeHandler` thread occurred")
+            })
         });
 
         Ok(())
@@ -162,7 +176,6 @@ impl Runtime {
             handler: self.handler,
             internal_rx,
             api_rx: self.channel.api_requests.1,
-            datastore: self.datastore,
         };
 
         let internal_part = InternalPart { internal_tx };

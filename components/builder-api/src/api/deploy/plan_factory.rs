@@ -4,11 +4,9 @@
 //! PlanFactory produces plans which are blueprint for deployment.
 //These are pre built recipes that a customer can use (ready to cook).
 
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -64,9 +62,7 @@ impl PlanFactory {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -79,7 +75,7 @@ impl PlanFactory {
 
     //GET: /planctorys
     //Blank origin: Returns all the PlanFactorys (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match blueprint::DataStore::list_blank(&self.conn) {
             Ok(Some(plans)) => Ok(render_json_list(status::Ok, dispatch(_req), &plans)),

@@ -1,11 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
 use bytes::Bytes;
 use clusters::models::senseis::DataStore;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -58,9 +56,7 @@ impl SenseisApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -72,7 +68,7 @@ impl SenseisApi {
     }
     // GET  / //GET: /senseis
     //Blank origin: Returns all the senseis (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match DataStore::new(&self.conn).list_blank() {
             Ok(Some(sensei_list)) => Ok(render_json_list(status::Ok, dispatch(_req), &sensei_list)),

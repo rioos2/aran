@@ -1,5 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
-use api::base::{MetaFields, ObjectMeta, TypeMeta};
+
+use api::base::{MetaFields, ObjectMeta, TypeMeta, IdGet};
+use cache::inject::AccountsFeeder;
 use iron::headers::UserAgent;
 use iron::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -15,10 +17,10 @@ pub struct SessionCreate {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //Standard type metadata: kind: SesssionCreate
-    email: String,      //email of the user
+    email: String, //email of the user
     first_name: String, //first name of the user
-    last_name: String,  //last name of the user
-    phone: String,      //contact number of the user
+    last_name: String, //last name of the user
+    phone: String, //contact number of the user
     #[serde(default)]
     avatar: Option<Vec<u8>>, //Avatar picture to identity the user
     company_name: String, //Company name is where the user works.
@@ -32,7 +34,7 @@ pub struct SessionCreate {
     #[serde(default)]
     approval: bool, //approved user or not
     #[serde(default)]
-    roles: Vec<String>, //Roles are Rio/OS role label that applies to the user
+    is_admin: bool, //is_admin are the specify admin or user of the Rio/OS
     #[serde(default)]
     suspend: bool, //user suspend or not   If true, the user is suspended. Defaults to false
     #[serde(default)]
@@ -151,12 +153,12 @@ impl SessionCreate {
         self.suspend.clone()
     }
 
-    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
-        self.roles = v;
+    pub fn set_is_admin(&mut self, v: bool) {
+        self.is_admin = v;
     }
 
-    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
-        self.roles.clone()
+    pub fn get_is_admin(&self) -> bool {
+        self.is_admin.clone()
     }
 
     pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {
@@ -215,11 +217,11 @@ impl Into<Session> for SessionCreate {
 pub struct Session {
     #[serde(default)]
     id: String, //Id an unique identifier in systems of record. Generated during creation of the session.
-    email: String,      //email of the user
+    email: String, //email of the user
     first_name: String, //first name of the user
-    last_name: String,  //last name of the user
-    roles: Vec<String>, //Roles are Rio/OS role label that applies to the user
-    token: String,      //tolen for individual user
+    last_name: String, //last name of the user
+    is_admin: bool, // is_admin are the specify admin or user of the Rio/OS
+    token: String, //tolen for individual user
     api_key: String, //A persistenant personal access token is required to authenticate to Rio/OS  in the following situations:  1. When you don't want to login and use the ephermeal authorization tokens. This should be used with caution.
     flags: u32,
     #[serde(default)]
@@ -291,12 +293,12 @@ impl Session {
         self.last_name.clone()
     }
 
-    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
-        self.roles = v;
+    pub fn set_is_admin(&mut self, v: bool) {
+        self.is_admin = v;
     }
 
-    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
-        self.roles.clone()
+    pub fn get_is_admin(&self) -> bool {
+        self.is_admin.clone()
     }
 
     pub fn set_token(&mut self, v: ::std::string::String) {
@@ -408,6 +410,42 @@ impl AccountTokenGet {
     }
 }
 
+#[derive(PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct AccountsInput {
+    #[serde(default)]
+    id: String,
+    approval: bool, //approved user or not
+    is_admin: bool, //is_admin are the specify admin or user of the Rio/OS
+    suspend: bool, //user suspend or not   If true, the user is suspended. Defaults to false
+}
+
+impl AccountsInput {
+    pub fn new() -> AccountsInput {
+        ::std::default::Default::default()
+    }
+
+    pub fn get_id(&self) -> ::std::string::String {
+        self.id.clone()
+    }
+
+    pub fn set_id(&mut self, v: ::std::string::String) {
+        self.id = v;
+    }
+
+    pub fn get_approval(&self) -> bool {
+        self.approval.clone()
+    }
+
+    pub fn get_suspend(&self) -> bool {
+        self.suspend.clone()
+    }
+
+    pub fn get_is_admin(&self) -> bool {
+        self.is_admin.clone()
+    }
+}
+
+
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AccountGetId {
     id: String,
@@ -465,10 +503,10 @@ pub struct Account {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //Standard type metadata: kind: Account
-    email: String,      //email of the user
+    email: String, //email of the user
     first_name: String, //first name of the user
-    last_name: String,  //last name of the user
-    phone: String,      //contact number of the user
+    last_name: String, //last name of the user
+    phone: String, //contact number of the user
     #[serde(default)]
     avatar: Option<Vec<u8>>, //Avatar picture to identity the user
     company_name: String, //Company name is where the user works.
@@ -480,7 +518,7 @@ pub struct Account {
     #[serde(default)]
     approval: bool, //approved user or not
     #[serde(default)]
-    roles: Vec<String>, //Roles are Rio/OS role label that applies to the user
+    is_admin: bool, //is_admin are the specify admin or user of the Rio/OS
     #[serde(default)]
     suspend: bool, //user suspend or not   If true, the user is suspended. Defaults to false
     registration_ip_address: String, //Registration ip address of the user
@@ -498,7 +536,7 @@ impl Into<Session> for Account {
         session.set_apikey(self.get_apikey().to_owned());
         session.set_first_name(self.get_first_name().to_owned());
         session.set_last_name(self.get_last_name().to_owned());
-        session.set_roles(self.get_roles().to_owned());
+        session.set_is_admin(self.get_is_admin().to_owned());
         session.set_meta(self.type_meta(), self.object_meta());
         session
     }
@@ -613,12 +651,12 @@ impl Account {
         self.suspend.clone()
     }
 
-    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
-        self.roles = v;
+    pub fn set_is_admin(&mut self, v: bool) {
+        self.is_admin = v;
     }
 
-    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
-        self.roles.clone()
+    pub fn get_is_admin(&self) -> bool {
+        self.is_admin.clone()
     }
 
     pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {
@@ -659,6 +697,30 @@ impl Account {
 
     pub fn get_avatar(&self) -> &Option<Vec<u8>> {
         &self.avatar
+    }
+}
+
+impl AccountsFeeder for Account {
+    fn iget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(self.get_email(), "".to_string())
+    }
+
+    fn ifeed(&mut self, m: Option<Account>) {
+        match m {
+            Some(acc) => {
+                self.set_id(acc.get_id());
+                self.set_email(acc.get_email());
+                self.set_password(acc.get_password());
+                self.set_first_name(acc.get_first_name());
+                self.set_last_name(acc.get_last_name());
+                self.set_is_admin(acc.get_is_admin());
+                self.set_apikey(acc.get_apikey());
+                self.set_company_name(acc.get_company_name());
+                self.set_trust_level(acc.get_trust_level());
+                self.set_created_at(acc.get_created_at());
+            }
+            None => {}
+        }
     }
 }
 
@@ -1016,15 +1078,7 @@ impl Device {
     pub fn new() -> Device {
         ::std::default::Default::default()
     }
-    pub fn with(
-        name: String,
-        category: String,
-        os: String,
-        os_version: String,
-        browser_type: String,
-        version: String,
-        vendor: String,
-    ) -> Device {
+    pub fn with(name: String, category: String, os: String, os_version: String, browser_type: String, version: String, vendor: String) -> Device {
         Device {
             name: name,
             category: category,

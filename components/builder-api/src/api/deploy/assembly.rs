@@ -1,32 +1,28 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment [assembly, assembly_factory] for the HTTP server
-use std::sync::Arc;
 
-use ansi_term::Colour;
-use api::{Api, ApiValidator, ParmsVerifier, Validator};
+
+use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
-use db::error::Error::RecordsNotFound;
+use db::error::Error::{RecordsNotFound, ConflictOnRecordUpdate};
 use deploy::models::{assembly, assemblyfactory, blueprint, endpoint, volume};
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error, conflict_error};
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::{MetaFields, StatusUpdate};
 use protocol::api::deploy::Assembly;
 use protocol::api::schema::{dispatch, dispatch_url, type_meta};
-use protocol::cache::{
-    ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_ENDPOINT, CACHE_PREFIX_FACTORY,
-    CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN, CACHE_PREFIX_VOLUME,
-};
+use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_ENDPOINT, CACHE_PREFIX_FACTORY, CACHE_PREFIX_METRIC, CACHE_PREFIX_PLAN, CACHE_PREFIX_VOLUME};
 use router::Router;
+use std::sync::Arc;
 use telemetry::metrics::prometheus::PrometheusClient;
 
 #[derive(Clone)]
@@ -57,8 +53,9 @@ impl AssemblyApi {
     //Input: Body of structure deploy::Assembly
     //Returns an updated Assembly with id, ObjectMeta. created_at
     fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body =
-            self.validate::<Assembly>(req.get::<bodyparser::Struct<Assembly>>()?)?;
+        let mut unmarshall_body = self.validate::<Assembly>(
+            req.get::<bodyparser::Struct<Assembly>>()?,
+        )?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -68,9 +65,7 @@ impl AssemblyApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -117,7 +112,7 @@ impl AssemblyApi {
     }
 
     ///Every user will be able to list their own account_id.
-    ///Will need roles/permission to access others account_id.
+    ///Will need teams/permission to access others account_id.
     ///GET: /accounts/:account_id/assemblys/list
     ///Input account_id
     ///Returns all the Assemblys (for that account)
@@ -165,16 +160,19 @@ impl AssemblyApi {
     ///Returns an AssemblyFactory
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let query_pairs = self.default_validate(req)?;
+        let updated_at = query_pairs.get("updated_at");
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
-        match assembly::DataStore::new(&self.conn).status_update(&unmarshall_body) {
+        match assembly::DataStore::new(&self.conn).status_update(&unmarshall_body, updated_at) {
             Ok(Some(assembly)) => Ok(render_json(status::Ok, &assembly)),
             Err(err) => Err(internal_error(&format!("{}", err))),
-            Ok(None) => Err(not_found_error(&format!(
+            Ok(None) => Err(conflict_error(&format!(
                 "{} for {}",
-                Error::Db(RecordsNotFound),
+                Error::Db(ConflictOnRecordUpdate),
                 params.get_id()
             ))),
         }
@@ -182,7 +180,7 @@ impl AssemblyApi {
 
     //Global: Returns all the AssemblyFactorys (irrespective of origins)
     //GET: /assembly
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         match assembly::DataStore::new(&self.conn).list_blank() {
             Ok(Some(assemblys)) => Ok(render_json_list(status::Ok, dispatch(req), &assemblys)),
@@ -210,7 +208,7 @@ impl AssemblyApi {
     }
 
     ///Every user will be able to list their own account_id.
-    ///Will need roles/permission to access others account_id.
+    ///Will need teams/permission to access others account_id.
     ///GET: /accounts/:account_id/assemblys/list
     ///Input account_id
     ///Returns all the Assemblys (for that account)
@@ -245,7 +243,10 @@ impl Api for AssemblyApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
+        let machines_list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
+
+        let _self = self.clone();
+        let containers_list = move |req: &mut Request| -> AranResult<Response> { _self.list(req) };
 
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
@@ -257,22 +258,26 @@ impl Api for AssemblyApi {
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
         let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
 
         //routes: assemblys
         router.post(
-            "/accounts/:account_id/assemblys",
+            "/assemblys",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "assemblys",
         );
         router.get(
-            "/accounts/:account_id/assemblys",
-            XHandler::new(C { inner: list }).before(basic.clone()),
-            "assembly_list",
+            "/machines",
+            XHandler::new(C { inner: machines_list }).before(basic.clone()),
+            "machine_assembly_list",
+        );
+        router.get(
+            "/containers",
+            XHandler::new(C { inner: containers_list }).before(basic.clone()),
+            "container_assembly_list",
         );
         router.get(
             "/assemblys/:id",
@@ -282,21 +287,19 @@ impl Api for AssemblyApi {
         //Special move here from assemblyfactory code. We have  moved it here since
         //the expanders for endpoints, volume are missing assembly factory,
         router.get(
-            "/assemblyfactorys/:id/describe",
+            "assemblys/assemblyfactorys/:id",
             XHandler::new(C { inner: describe }).before(basic.clone()),
             "assemblyfactorys_describe",
         );
         router.get(
-            "/assemblys",
+            "/assemblys/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "assembly_list_blank",
         );
 
         router.put(
             "/assemblys/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "assembly_status",
         );
         router.put(
@@ -323,9 +326,9 @@ impl ExpanderSender for AssemblyApi {
             CACHE_PREFIX_PLAN.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 debug!("» Planfactory live load for ≈ {}", id);
-                blueprint::DataStore::show(&_conn, &id)
-                    .ok()
-                    .and_then(|p| serde_json::to_string(&p).ok())
+                blueprint::DataStore::show(&_conn, &id).ok().and_then(|p| {
+                    serde_json::to_string(&p).ok()
+                })
             }),
         ));
 
@@ -388,6 +391,9 @@ impl ApiValidator for AssemblyApi {}
 
 ///Convinient helpers to verify any api
 impl ParmsVerifier for AssemblyApi {}
+
+// Convinient helpers to verify query parameters
+impl QueryValidator for AssemblyApi {}
 
 ///Called by implementing ApiValidator when validate() is invoked with the parsed body
 ///Checks for required parameters in the parsed struct Assembly

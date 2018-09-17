@@ -2,11 +2,9 @@
 
 //! A collection of network functions for the HTTP server
 
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -60,9 +58,7 @@ impl NetworkApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -75,7 +71,7 @@ impl NetworkApi {
 
     // GET  / //GET: /networks
     //Blank origin: Returns all the Networks (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
         match NetworkDS::list_blank(&self.conn) {
             Ok(Some(network)) => Ok(render_json_list(status::Ok, dispatch(_req), &network)),

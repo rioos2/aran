@@ -1,7 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! Libraries  module used by builder authorization
-#[macro_use]
 extern crate log;
 extern crate chrono;
 extern crate rioos_builder_apimachinery as protocol;

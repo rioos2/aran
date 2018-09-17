@@ -14,21 +14,21 @@
 //! Currently the rioos-blockchain-server must be configured with configuration
 //! must be available in $RIOOS_HOME/config/blockchain.toml
 
-use rioos_http::api_client::err_from_response;
-use rioos_http::ApiClient as ReqwestClient;
-
-use error::{Error, Result};
-use reqwest::header::{Accept, ContentType};
-use reqwest::IntoUrl;
-use reqwest::{Body, StatusCode};
-use serde_json;
 
 use super::Ledger;
-use protocol::api::audit::{Envelope, EnvelopeResponse};
-use protocol::api::base::{IdGet, MetaFields};
 
 use api::audit::config::BlockchainConn;
 use api::audit::ledger::EnvelopeOutputList;
+
+use error::{Error, Result};
+use protocol::api::audit::{Envelope, EnvelopeResponse};
+use protocol::api::base::{IdGet, MetaFields};
+use reqwest::{Body, StatusCode};
+use reqwest::IntoUrl;
+use reqwest::header::{Accept, ContentType};
+use rioos_http::ApiClient as ReqwestClient;
+use rioos_http::api_client::err_from_response;
+use serde_json;
 
 pub struct ExonumClient {
     _inner: ReqwestClient,
@@ -42,7 +42,9 @@ impl ExonumClient {
         let url = url.into_url()?;
         Ok(ExonumClient {
             _token: token.to_string(),
-            _inner: ReqwestClient::new(url, "rioos", "v1", None).map_err(Error::RioHttpClient)?,
+            _inner: ReqwestClient::new(url, "rioos", "v1", None).map_err(
+                Error::RioHttpClient,
+            )?,
         })
     }
 }
@@ -82,7 +84,7 @@ impl Ledger for Blockchain {
     }
 
     fn retrieve_by(&self, id: &IdGet) -> EnvelopeOutputList {
-        let url = format!("api/services/habitat/v1/accounts/{}/audits", id.get_id());
+        let url = format!("api/services/habitat/v1/accounts/{}/audits", id.get_name());
         let mut res = self._client
             ._inner
             .get(&url)

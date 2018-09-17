@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS build_configs (id bigint PRIMARY KEY DEFAULT next_id_
 ---
 --- Table:build_configs:create
 ---
-CREATE 
-OR REPLACE FUNCTION insert_build_config_v1 (meta_data JSONB, spec JSONB, status JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF build_configs AS $$ 
+CREATE
+OR REPLACE FUNCTION insert_build_config_v1 (meta_data JSONB, spec JSONB, status JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF build_configs AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    INSERT INTO
-      build_configs(meta_data, spec, status, object_meta, type_meta) 
+      build_configs(meta_data, spec, status, object_meta, type_meta)
    VALUES
       (
          meta_data, spec, status, object_meta, type_meta
@@ -26,12 +26,12 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:build_configs:list_blank
 ---
-CREATE 
-OR REPLACE FUNCTION get_build_configs_v1() RETURNS SETOF build_configs AS $$ 
+CREATE
+OR REPLACE FUNCTION get_build_configs_v1() RETURNS SETOF build_configs AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
       build_configs;
 RETURN;
@@ -41,14 +41,14 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:build_configs:show
 ---
-CREATE 
-OR REPLACE FUNCTION get_build_config_v1(bid bigint) RETURNS SETOF build_configs AS $$ 
+CREATE
+OR REPLACE FUNCTION get_build_config_v1(bid bigint) RETURNS SETOF build_configs AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      build_configs 
+      build_configs
    where
       id = bid;
 RETURN;
@@ -58,14 +58,14 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:build_configs:show_for_assembly_factory
 ---
-CREATE 
-OR REPLACE FUNCTION get_build_config_by_assembly_factory_v1(aid text) RETURNS SETOF build_configs AS $$ 
+CREATE
+OR REPLACE FUNCTION get_build_config_by_assembly_factory_v1(aid text) RETURNS SETOF build_configs AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      build_configs 
+      build_configs
    where
       object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
 RETURN;
@@ -75,18 +75,18 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:build_configs:update
 ---
-CREATE 
-OR REPLACE FUNCTION update_build_config_by_v1 (sid bigint, build_spec JSONB, build_status JSONB, build_meta_data JSONB, build_object_meta JSONB) RETURNS SETOF build_configs AS $$ 
+CREATE
+OR REPLACE FUNCTION update_build_config_by_v1 (sid bigint, build_spec JSONB, build_status JSONB, build_meta_data JSONB, build_object_meta JSONB) RETURNS SETOF build_configs AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    UPDATE
-      build_configs 
+      build_configs
    SET
       spec = build_spec,
       status = build_status,
       meta_data = build_meta_data,
       object_meta = build_object_meta,
-      updated_at = now() 
+      updated_at = now()
    WHERE
       id = sid RETURNING *;
 RETURN;
@@ -96,15 +96,15 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:build_configs:update_status
 ---
-CREATE 
-OR REPLACE FUNCTION set_build_configs_status_v1 (bid bigint, bc_status JSONB) RETURNS SETOF build_configs AS $$ 
+CREATE
+OR REPLACE FUNCTION set_build_configs_status_v1 (bid bigint, bc_status JSONB) RETURNS SETOF build_configs AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    UPDATE
-      build_configs 
+      build_configs
    SET
       status = bc_status,
-      updated_at = now() 
+      updated_at = now()
    WHERE
       id = bid RETURNING *;
 RETURN;
@@ -120,12 +120,12 @@ CREATE TABLE IF NOT EXISTS builds (id bigint PRIMARY KEY DEFAULT next_id_v1('bui
 ---
 --- Table:builds:create
 ---
-CREATE 
-OR REPLACE FUNCTION insert_build_v1 (status JSONB, spec JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF builds AS $$ 
+CREATE
+OR REPLACE FUNCTION insert_build_v1 (status JSONB, spec JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF builds AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    INSERT INTO
-      builds(status, spec, object_meta, type_meta) 
+      builds(status, spec, object_meta, type_meta)
    VALUES
       (
          status,
@@ -141,12 +141,12 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:builds:list_blank
 ---
-CREATE 
-OR REPLACE FUNCTION get_builds_v1() RETURNS SETOF builds AS $$ 
+CREATE
+OR REPLACE FUNCTION get_builds_v1() RETURNS SETOF builds AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
       builds;
 RETURN;
@@ -156,14 +156,14 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:builds:show
 ---
-CREATE 
-OR REPLACE FUNCTION get_build_v1(bid bigint) RETURNS SETOF builds AS $$ 
+CREATE
+OR REPLACE FUNCTION get_build_v1(bid bigint) RETURNS SETOF builds AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      builds 
+      builds
    where
       id = bid;
 RETURN;
@@ -173,14 +173,14 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:builds:show_build_for_build_config
 ---
-CREATE 
-OR REPLACE FUNCTION get_build_by_build_config_v1(bid text) RETURNS SETOF builds AS $$ 
+CREATE
+OR REPLACE FUNCTION get_build_by_build_config_v1(bid text) RETURNS SETOF builds AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      builds 
+      builds
    where
       object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', bid)))::jsonb;
 RETURN;
@@ -190,17 +190,17 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:builds:update
 ---
-CREATE 
-OR REPLACE FUNCTION update_build_by_v1 (sid bigint, build_spec JSONB, build_status JSONB, build_object_meta JSONB) RETURNS SETOF builds AS $$ 
+CREATE
+OR REPLACE FUNCTION update_build_by_v1 (sid bigint, build_spec JSONB, build_status JSONB, build_object_meta JSONB) RETURNS SETOF builds AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    UPDATE
-      builds 
+      builds
    SET
       spec = build_spec,
       status = build_status,
       object_meta = build_object_meta,
-      updated_at = now() 
+      updated_at = now()
    WHERE
       id = sid RETURNING *;
 RETURN;
@@ -210,15 +210,15 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:builds:update_status
 ---
-CREATE 
-OR REPLACE FUNCTION update_build_status_by_v1 (bid bigint, build_status JSONB) RETURNS SETOF builds AS $$ 
+CREATE
+OR REPLACE FUNCTION update_build_status_by_v1 (bid bigint, build_status JSONB) RETURNS SETOF builds AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    UPDATE
-      builds 
+      builds
    SET
       status = build_status,
-      updated_at = now() 
+      updated_at = now()
    WHERE
       id = bid RETURNING *;
 RETURN;
@@ -234,12 +234,12 @@ CREATE TABLE IF NOT EXISTS image_references (id bigint PRIMARY KEY DEFAULT next_
 ---
 --- Table:image_references:create
 ---
-CREATE 
-OR REPLACE FUNCTION insert_image_ref_v1 (status JSONB, spec JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF image_references AS $$ 
+CREATE
+OR REPLACE FUNCTION insert_image_ref_v1 (status JSONB, spec JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF image_references AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    INSERT INTO
-      image_references(spec, status, object_meta, type_meta) 
+      image_references(spec, status, object_meta, type_meta)
    VALUES
       (
          spec,
@@ -255,14 +255,14 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:image_references:show
 ---
-CREATE 
-OR REPLACE FUNCTION get_image_ref_v1(iid bigint) RETURNS SETOF image_references AS $$ 
+CREATE
+OR REPLACE FUNCTION get_image_ref_v1(iid bigint) RETURNS SETOF image_references AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      image_references 
+      image_references
    where
       id = iid;
 RETURN;
@@ -272,14 +272,14 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:image_references:show_by_build_config
 ---
-CREATE 
-OR REPLACE FUNCTION get_image_ref_by_build_config_v1(aid text) RETURNS SETOF image_references AS $$ 
+CREATE
+OR REPLACE FUNCTION get_image_ref_by_build_config_v1(aid text) RETURNS SETOF image_references AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      image_references 
+      image_references
    where
       object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
 RETURN;
@@ -289,12 +289,12 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:image_references:list_blank
 ---
-CREATE 
-OR REPLACE FUNCTION get_image_ref_by_v1() RETURNS SETOF image_references AS $$ 
+CREATE
+OR REPLACE FUNCTION get_image_ref_by_v1() RETURNS SETOF image_references AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
       image_references;
 RETURN;
@@ -304,17 +304,17 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:image_references:update
 ---
-CREATE 
-OR REPLACE FUNCTION update_image_ref_by_v1 (iid bigint, image_spec JSONB, image_status JSONB, image_object_meta JSONB) RETURNS SETOF image_references AS $$ 
+CREATE
+OR REPLACE FUNCTION update_image_ref_by_v1 (iid bigint, image_spec JSONB, image_status JSONB, image_object_meta JSONB) RETURNS SETOF image_references AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    UPDATE
-      image_references 
+      image_references
    SET
       spec = image_spec,
       status = image_status,
       object_meta = image_object_meta,
-      updated_at = now() 
+      updated_at = now()
    WHERE
       id = iid RETURNING *;
 RETURN;
@@ -330,12 +330,12 @@ CREATE TABLE IF NOT EXISTS image_marks (id bigint PRIMARY KEY DEFAULT next_id_v1
 ---
 --- Table:image_marks:create
 ---
-CREATE 
-OR REPLACE FUNCTION insert_image_marks_v1 (tags JSONB, generation bigint, conditions JSONB, lookup_policy bool, image JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF image_marks AS $$ 
+CREATE
+OR REPLACE FUNCTION insert_image_marks_v1 (tags JSONB, generation bigint, conditions JSONB, lookup_policy bool, image JSONB, object_meta JSONB, type_meta JSONB) RETURNS SETOF image_marks AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    INSERT INTO
-      image_marks(tags, generation, conditions, lookup_policy, image, object_meta, type_meta) 
+      image_marks(tags, generation, conditions, lookup_policy, image, object_meta, type_meta)
    VALUES
       (
          tags,
@@ -354,14 +354,14 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:image_marks:show
 ---
-CREATE 
-OR REPLACE FUNCTION get_image_marks_v1(iid bigint) RETURNS SETOF image_marks AS $$ 
+CREATE
+OR REPLACE FUNCTION get_image_mark_v1(iid bigint) RETURNS SETOF image_marks AS $$ 
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      image_marks 
+      image_marks
    where
       id = iid;
 RETURN;
@@ -371,12 +371,12 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:image_marks:list_blank
 ---
-CREATE 
-OR REPLACE FUNCTION get_image_marks_v1() RETURNS SETOF image_marks AS $$ 
+CREATE
+OR REPLACE FUNCTION get_image_marks_v1() RETURNS SETOF image_marks AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
       image_marks;
 RETURN;
@@ -386,12 +386,12 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:image_marks:update
 ---
-CREATE 
-OR REPLACE FUNCTION update_image_marks_by_v1 (iid bigint, image_tags JSONB, image_generation bigint, image_conditions JSONB, image_look_up_policy bool, image_data JSONB, image_object_meta JSONB) RETURNS SETOF image_marks AS $$ 
+CREATE
+OR REPLACE FUNCTION update_image_marks_by_v1 (iid bigint, image_tags JSONB, image_generation bigint, image_conditions JSONB, image_look_up_policy bool, image_data JSONB, image_object_meta JSONB) RETURNS SETOF image_marks AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    UPDATE
-      image_marks 
+      image_marks
    SET
       tags = image_tags,
       generation = image_generation,
@@ -399,7 +399,7 @@ BEGIN
       lookup_policy = image_look_up_policy,
       image = image_data,
       object_meta = image_object_meta,
-      updated_at = now() 
+      updated_at = now()
    WHERE
       id = iid RETURNING *;
 RETURN;
@@ -409,14 +409,14 @@ $$ LANGUAGE PLPGSQL VOLATILE;
 ---
 --- Table:image_marks:show_by_build
 ---
-CREATE 
-OR REPLACE FUNCTION get_image_marks_by_build_v1(aid text) RETURNS SETOF image_marks AS $$ 
+CREATE
+OR REPLACE FUNCTION get_image_marks_by_build_v1(aid text) RETURNS SETOF image_marks AS $$
 BEGIN
-   RETURN QUERY 
+   RETURN QUERY
    SELECT
-      * 
+      *
    FROM
-      image_marks 
+      image_marks
    where
       object_meta @> json_build_object('owner_references', json_build_array(json_build_object('uid', aid)))::jsonb;
 RETURN;

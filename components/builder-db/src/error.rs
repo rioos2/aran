@@ -19,6 +19,7 @@ pub enum Error {
     AsyncFunctionCheck(postgres::error::Error),
     AsyncFunctionUpdate(postgres::error::Error),
     RecordsNotFound,
+    ConflictOnRecordUpdate,
     ConnectionTimeout(r2d2::Error),
     FunctionCreate(postgres::error::Error),
     FunctionDrop(postgres::error::Error),
@@ -65,6 +66,7 @@ impl fmt::Display for Error {
                 format!("Async function database update failed, {}", e)
             }
             Error::RecordsNotFound => format!("No Record Found"),
+            Error::ConflictOnRecordUpdate => format!("Record has conflict"),
             Error::ConnectionTimeout(ref e) => format!("Connection timeout, {}", e),
             Error::FunctionCreate(ref e) => format!("Error creating a function: {}", e),
             Error::FunctionDrop(ref e) => format!("Error dropping a function: {}", e),
@@ -111,6 +113,7 @@ impl error::Error for Error {
             Error::AsyncFunctionCheck(ref e) => e.description(),
             Error::AsyncFunctionUpdate(ref e) => e.description(),
             Error::RecordsNotFound => "RecordsNotFound",
+            Error::ConflictOnRecordUpdate => "ConflictOnRecordUpdate",
             Error::ConnectionTimeout(ref e) => e.description(),
             Error::FunctionCreate(_) => "Error creating database function",
             Error::FunctionDrop(_) => "Error dropping database function",

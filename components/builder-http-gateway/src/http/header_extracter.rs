@@ -13,6 +13,7 @@ use auth::config::PLUGIN_JWT;
 use auth::config::{PLUGIN_PASSTICKET, PLUGIN_PASSWORD, PLUGIN_SERVICE_ACCOUNT};
 
 use auth::util::authenticatable::Authenticatable;
+use auth::util::token_target::TokenTarget;
 
 //A trait responsible for extracting the identity plugin headers.
 pub trait HeaderExtracter {
@@ -32,7 +33,7 @@ pub trait HeaderExtracter {
     ) -> Option<Authenticatable>;
 }
 
-struct EmailHeader {}
+/*struct EmailHeader {}
 
 //A trait responsible for extracting the email header
 impl HeaderExtracter for EmailHeader {
@@ -53,6 +54,43 @@ impl HeaderExtracter for EmailHeader {
         }
         None
     }
+}*/
+
+struct RioTokenHeader {}
+
+//A trait responsible for extracting the riotoken header
+//Riotoken format
+// {
+//   "email" : "info@riocorp.io",
+//   "api_token" : "HgbANWOErPnDbOOTDW",
+//   "org_id" : "987286487564875", 
+//   "team_id" : "7634587687267",
+//   "account_id" : "1038115606378848256",
+//}
+//riotoken is only for user authentication
+//it is used for origin and team based requests
+impl HeaderExtracter for RioTokenHeader {
+    const AUTH_CONF_NAME: &'static str = "email";
+
+    fn extract(
+        req: iron::Headers,
+        token: String,
+        _config_value: Option<&String>,
+    ) -> Option<Authenticatable> {        
+        let email = req.get::<XAuthRioOSEmail>();
+        let token_target = TokenTarget::parse(token);  
+
+        if !email.is_none() {
+            return Some(Authenticatable::UserEmailAndToken {
+                email: email.unwrap().0.clone(),
+                token: token_target.get_token(),
+                team_id: token_target.get_team_id(),
+                org_id: token_target.get_org_id(),
+                account_id: token_target.get_account_id(),
+            });
+        }
+        None
+    }
 }
 
 struct ServiceAccountHeader {}
@@ -66,7 +104,7 @@ impl HeaderExtracter for ServiceAccountHeader {
         token: String,
         config_value: Option<&String>,
     ) -> Option<Authenticatable> {
-        let serviceaccount = req.get::<XAuthRioOSServiceAccountName>();
+        let serviceaccount = req.get::<XAuthRioOSServiceAccountName>();       
         if !serviceaccount.is_none() {
             return Some(Authenticatable::ServiceAccountNameAndWebtoken {
                 name: serviceaccount.unwrap().0.clone(),
@@ -139,14 +177,19 @@ impl HeaderDecider {
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
             }
         };
-
+        
         let scrappers = plugins
             .into_iter()
             .map(|p| match p.as_str() {
-                PLUGIN_PASSWORD => EmailHeader::extract(
+                /*PLUGIN_PASSWORD => EmailHeader::extract(
                     req.clone(),
                     token.to_string(),
                     EmailHeader::exists_conf_key().and_then(|x| conf.get(&x)),
+                ),*/
+                PLUGIN_PASSWORD => RioTokenHeader::extract(
+                    req.clone(),
+                    token.to_string(),
+                    RioTokenHeader::exists_conf_key().and_then(|x| conf.get(&x)),
                 ),
                 PLUGIN_SERVICE_ACCOUNT => ServiceAccountHeader::extract(
                     req.clone(),
@@ -166,7 +209,7 @@ impl HeaderDecider {
                 &_ => None,
             })
             .collect();
-
+            
         Ok(HeaderDecider {
             extractables: scrappers,
         })
@@ -181,9 +224,10 @@ impl HeaderDecider {
         let err = not_acceptable_error(&format!("Authentication not supported. You must have headers for the supported authetication. Refer https://bit.ly/rioos_sh_adminguide"));
         return Err(render_json_error(&bad_err(&err), err.http_code()));
     }
+   
 }
 
-fn valid_header(authenticatables: &Vec<Option<Authenticatable>>) -> Option<Authenticatable> {
+fn valid_header(authenticatables: &Vec<Option<Authenticatable>>) -> Option<Authenticatable> {   
     authenticatables
         .iter()
         .fold(None, |acc, x| acc.or(x.clone()).clone())

@@ -6,6 +6,7 @@ use bodyparser;
 use clusters;
 use common;
 use db;
+use entitlement;
 use httpbis;
 use openio_sdk_rust::aws;
 use postgres;
@@ -18,6 +19,7 @@ use service;
 use std::error;
 use std::fmt;
 use std::io;
+use std::net;
 use std::result;
 use std::str::Utf8Error;
 use url;
@@ -75,9 +77,11 @@ pub enum Error {
     Utf8Error(Utf8Error),
     Yaml(serde_yaml::Error),
     Postgres(postgres::error::Error),
+    NetworkError(net::AddrParseError),
     //Hook errors
     RioConfig(service::Error),
     SenseiHook(clusters::Error),
+    EntitlementError(entitlement::Error),
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -102,6 +106,7 @@ impl fmt::Display for Error {
             Error::HTTP(ref e) => format!("{}", e),
             Error::Json(ref e) => format!("{}", e),
             Error::IO(ref e) => format!("{}", e),
+            Error::NetworkError(ref e) => format!("Address Parsing Error, {}", e),
             Error::Utf8Error(ref e) => format!("{}", e),
             Error::UNKNOWSECRET => format!("SecretType not found"),
             Error::SetupNotDone => format!("Rio/OS setup not done. Run `rioos-apiserver setup` before attempting start"),
@@ -109,6 +114,7 @@ impl fmt::Display for Error {
             Error::Yaml(ref e) => format!("{}", e),
             Error::Postgres(ref e) => format!("{}", e),
             Error::RioConfig(ref e) => format!("{}", e),
+            Error::EntitlementError(ref e) => format!("{}", e),
             Error::SenseiHook(ref e) => format!("{}", e),
         };
         write!(f, "{}", msg)
@@ -134,6 +140,7 @@ impl error::Error for Error {
             Error::HTTP(_) => "Non-200 HTTP response.",
             Error::UrlParseError(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
+            Error::NetworkError(ref err) => err.description(),
             Error::Json(ref err) => err.description(),
             Error::Utf8Error(ref err) => err.description(),
             Error::UNKNOWSECRET => "Unknown SecretType",
@@ -142,6 +149,7 @@ impl error::Error for Error {
             Error::Yaml(ref err) => err.description(),
             Error::Postgres(ref err) => err.description(),
             Error::RioConfig(ref err) => err.description(),
+            Error::EntitlementError(ref _err) => "",
             Error::SenseiHook(ref err) => err.description(),
         }
     }
@@ -195,6 +203,12 @@ impl From<bodyparser::BodyError> for Error {
     }
 }
 
+impl From<net::AddrParseError> for Error {
+    fn from(err: net::AddrParseError) -> Error {
+        Error::NetworkError(err)
+    }
+}
+
 impl From<Utf8Error> for Error {
     fn from(err: Utf8Error) -> Self {
         Error::Utf8Error(err)
@@ -216,6 +230,13 @@ impl From<postgres::error::Error> for Error {
 impl From<service::Error> for Error {
     fn from(err: service::Error) -> Self {
         Error::RioConfig(err)
+    }
+}
+
+
+impl From<entitlement::Error> for Error {
+    fn from(err: entitlement::Error) -> Self {
+        Error::EntitlementError(err)
     }
 }
 

@@ -2,13 +2,14 @@
 name = "rioos_builder_services"
 version = "0.0.0"
 authors = ["Vinothini Veerasundaram <vino.veerasundaram@rio.company>", "Kishorekumar Neelamegam <kishore.neelamegam@rio.company>"]
-description = "RIO/OS Identity and Access (roles/permissions) library"
+description = "RIO/OS Identity and Access (teams/permissions) library"
 workspace = "../../"
 
 [dependencies]
 postgres = { version = "0.15.2", features = ["with-chrono"] }
 chrono = { version = "0.4.4", features = ["serde"] }
 serde_json = "1.0.22"
+rand = "0.5.3"
 
 [dependencies.rioos_builder_apimachinery]
 path = "../builder-apimachinery"

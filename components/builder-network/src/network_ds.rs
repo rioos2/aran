@@ -6,6 +6,7 @@ use error::{Error, Result};
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
 use protocol::api::network;
+use std::process::exit;
 
 use db::data_store::DataStoreConn;
 use postgres;
@@ -52,8 +53,7 @@ impl NetworkDS {
                 response.push(row_to_network(&row)?)
             }
             return Ok(Some(response));
-        }
-
+        }       
         Ok(None)
     }
 
@@ -66,9 +66,10 @@ impl NetworkDS {
         ).map_err(Error::NetworksGet)?;
 
         if rows.len() > 0 {
-            let net = row_to_network(&rows.get(0))?;
+            let net = row_to_network(&rows.get(0))?;            
             return Ok(Some(net));
-        }
+        }       
+        
         Ok(None)
     }
     pub fn update(datastore: &DataStoreConn, net: &network::Network) -> NetworkOutput {

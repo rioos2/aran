@@ -13,15 +13,19 @@ extern crate serde_json;
 pub mod error;
 pub mod ldap;
 pub mod models;
-pub mod origin_ds;
-pub mod team_ds;
 pub use self::error::{Error, Result};
 
 //// The public types of outputs
 
+pub type AccountOutputList = Result<Option<Vec<protocol::api::session::Account>>>;
+
 pub type OriginOutputList = Result<Option<Vec<protocol::api::origin::Origin>>>;
 
 pub type OriginOutput = Result<Option<protocol::api::origin::Origin>>;
+
+pub type OriginMembersOutputList = Result<Option<Vec<protocol::api::origin::OriginMembers>>>;
+
+pub type OriginMembersOutput = Result<Option<protocol::api::origin::OriginMembers>>;
 
 pub type SamlOutputList = Result<Option<Vec<protocol::api::session::SamlProvider>>>;
 

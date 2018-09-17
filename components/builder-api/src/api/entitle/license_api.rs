@@ -1,23 +1,23 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
+use api::audit::blockchain_api::EventLog;
+use api::events::EventLogger;
 use bodyparser;
-use entitle::models::license::DataStore;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
+use entitle::models::license::DataStore;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::MetaFields;
 use protocol::api::licenses::Licenses;
-use protocol::api::schema::{type_meta,dispatch};
+use protocol::api::schema::{type_meta, dispatch};
 use router::Router;
 use std::sync::Arc;
 
@@ -32,14 +32,13 @@ pub struct LicenseApi {
 
 impl LicenseApi {
     pub fn new(datastore: Box<DataStoreConn>) -> Self {
-        LicenseApi {
-            conn: datastore
-        }
+        LicenseApi { conn: datastore }
     }
     //POST: /license/activate
-    fn create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body =
-            self.validate::<Licenses>(req.get::<bodyparser::Struct<Licenses>>()?)?;
+    fn activate(&self, req: &mut Request) -> AranResult<Response> {
+        let mut unmarshall_body = self.validate::<Licenses>(
+            req.get::<bodyparser::Struct<Licenses>>()?,
+        )?;
 
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
@@ -49,16 +48,42 @@ impl LicenseApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        activate_license!(req, *unmarshall_body.clone());
+
+        if unmarshall_body.get_activation_completed() {
+            try!(DataStore::new(&self.conn).update_activation(
+                &unmarshall_body,
+            ));
+        }
+
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match DataStore::new(&self.conn).create_or_update(&unmarshall_body) {
-            Ok(license) => Ok(render_json(status::Ok, &license)),
-            Err(err) => Err(internal_error(&format!("{}\n", err))),
-        }
+        Ok(render_json(status::Ok, &unmarshall_body))
+    }
+
+    //POST: /license/deactivate
+    fn deactivate(&self, req: &mut Request) -> AranResult<Response> {
+        let mut unmarshall_body = self.validate::<Licenses>(
+            req.get::<bodyparser::Struct<Licenses>>()?,
+        )?;
+
+        let m = unmarshall_body.mut_meta(
+            unmarshall_body.object_meta(),
+            unmarshall_body.get_name(),
+            unmarshall_body.get_account(),
+        );
+
+        unmarshall_body.set_meta(type_meta(req), m);
+
+        deactivate_license!(req, *unmarshall_body.clone());
+
+        debug!("✓ {}",
+            format!("======= parsed {:?} ", unmarshall_body),
+        );
+
+        Ok(render_json(status::Ok, &unmarshall_body))
     }
 
     //GET: /license/:name
@@ -87,13 +112,35 @@ impl LicenseApi {
         }
     }
 
+    ///PUT: /licenses/:id
+    ///Input license id
+    ///Returns updated license
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Licenses>>()?)?;
+        unmarshall_body.set_id(params.get_id());
+
+        match DataStore::new(&self.conn).update(&unmarshall_body) {
+            Ok(Some(license)) => Ok(render_json(status::Ok, &license)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
+        }
+    }
 }
 impl Api for LicenseApi {
     fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
         let basic = Authenticated::new(&*config);
 
         let _self = self.clone();
-        let create_or_update = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
+        let activate = move |req: &mut Request| -> AranResult<Response> { _self.activate(req) };
+
+        let _self = self.clone();
+        let deactivate = move |req: &mut Request| -> AranResult<Response> { _self.deactivate(req) };
 
         let _self = self.clone();
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show_by_name(req) };
@@ -101,23 +148,39 @@ impl Api for LicenseApi {
         let _self = self.clone();
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
+        let _self = self.clone();
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
+
+
 
         router.get(
-            "/license/:name",
+            "/licenses/:name",
             XHandler::new(C { inner: show }).before(basic.clone()),
             "license_show_by_name",
         );
 
         router.post(
-            "/license/activate",
-            XHandler::new(C { inner: create_or_update }).before(basic.clone()),
-            "license_create_or_update",
+            "/licenses/activate",
+            XHandler::new(C { inner: activate }).before(basic.clone()),
+            "activate",
+        );
+
+        router.post(
+            "/licenses/deactivate",
+            XHandler::new(C { inner: deactivate }).before(basic.clone()),
+            "deactivate",
         );
 
         router.get(
-            "/license",
+            "/licenses",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "license_list",
+        );
+
+        router.put(
+            "/licenses/:id",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "license_update",
         );
 
     }
@@ -136,17 +199,6 @@ impl Validator for Licenses {
 
         if self.object_meta().name.len() <= 0 {
             s.push("name".to_string());
-        }
-        if self.get_status().len() <= 0 {
-            s.push("status".to_string());
-        }
-
-        if self.get_activation_code().len() <= 0 {
-            s.push("activation_code".to_string());
-        }
-
-        if self.get_product().len() <= 0 {
-            s.push("product".to_string());
         }
 
         if s.is_empty() {

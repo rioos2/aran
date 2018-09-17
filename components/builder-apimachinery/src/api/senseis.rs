@@ -1,13 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use api::base::{MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
-use api::node::{NodeStatus, Spec};
+use api::node::{NodeStatus, Spec, NodeStatistic};
 use std::collections::BTreeMap;
-
-//RioOS prometheus automatically allocates "rioos-masters" job with a dash.
-//TO-DO: Usually our conventions is to use rioos_sh_masters, but in this case
-//we don't want to change prometheus.
-pub const SENSEI_JOBS: &'static str = "job=rioos-masters";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Senseis {
@@ -17,7 +12,7 @@ pub struct Senseis {
     object_meta: ObjectMeta,
     #[serde(default)]
     type_meta: TypeMeta,
-    spec: Spec,         //
+    spec: Spec, //
     status: NodeStatus, //Status is information about the current status of a senseis.
     #[serde(default)]
     metadata: BTreeMap<String, String>,
@@ -98,5 +93,17 @@ impl MetaFields for Senseis {
 
     fn type_meta(&self) -> TypeMeta {
         self.type_meta.clone()
+    }
+}
+
+impl Into<NodeStatistic> for Senseis {
+    fn into(self) -> NodeStatistic {
+        let mut ns = NodeStatistic::new();
+        ns.set_id(self.get_id());
+        ns.set_kind(self.type_meta().kind);
+        ns.set_api_version(self.type_meta().api_version);
+        ns.set_name(self.get_name());
+        ns.set_health("down".to_string());
+        ns
     }
 }

@@ -12,10 +12,10 @@ describe('volume  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta": {"name":"", "account":globalAny.account_id,"labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1",
-        "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "",
-        "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]},
-         "mount_path": "/var/lib/path","allocated": "50 GiB","source":{"setting_map":{"object_ref":{"name":"log-config"},"items":{"key":"log_level","path":"log_level","mode":0}}}})
+        .send({"object_meta": {"name":"", "account":globalAny.account_id,"labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},
+        { "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""},
+        "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB",
+        "setting_map":{"object_reference":{"name":"example-config"}}})
         .expect(200)
         .end(function(err, res) {
           globalAny.vol_id =res.body.id;
@@ -42,7 +42,10 @@ describe('volume  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta": {"name":"", "account":"","labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB"})
+        .send({"object_meta": {"name":"", "account":"","labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},
+        { "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""},
+        "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB",
+        "setting_map":{"object_reference":{"name":"example-config"}}})
         .expect(400)
         .end(function(err, res) {
           expect(res.body);
@@ -55,7 +58,10 @@ describe('volume  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta": {"name":"","labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB"})
+        .send({"object_meta": {"name":"","labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},
+        { "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""},
+        "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB",
+        "setting_map":{"object_reference":{"name":"example-config"}}})
         .expect(400)
         .end(function(err, res) {
           expect(res.body);
@@ -68,20 +74,10 @@ describe('volume  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta": {"name":"", "account":globalAny.account_id,"labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "","allocated": "50 GiB"})
-        .expect(400)
-        .end(function(err, res) {
-          expect(res.body);
-          done(err);
-        });
-    });
-
-    it('created volume empty allocated ', function(done) {
-      request.post('/volumes')
-      .ca(globalAny.rootCA)
-        .set('Authorization', globalAny.bobo_bearer)
-        .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta": {"account":globalAny.account_id,"name":"","labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": ""})
+        .send({"object_meta": {"name":"", "account":globalAny.account_id,"labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},
+        { "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""},
+        "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]},
+         "mount_path": "","allocated": "50 GiB","setting_map":{"object_reference":{"name":"example-config"}}})
         .expect(400)
         .end(function(err, res) {
           expect(res.body);
@@ -92,19 +88,25 @@ describe('volume  API', function() {
     it('returns error without header create volume', function(done) {
       request.post('/volumes')
       .ca(globalAny.rootCA)
-      .send({"object_meta": {"account":globalAny.account_id,"name":"","labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB"})
+      .send({"object_meta": {"name":"", "account":globalAny.account_id,"labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},
+      { "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""},
+      "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB",
+      "setting_map":{"object_reference":{"name":"example-config"}}})
       .expect(406)
         .end(function(err, res) {
           done(err);
         });
     });
 
-    it('returns create volume with owner reference', function(done) {
+    it('returns create volume without owner reference', function(done) {
       request.post('/volumes')
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-      .send({"object_meta": {"account":globalAny.account_id,"name":"","labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":"","block_owner_deletion":false},{ "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""}, "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB"})
+      .send({"object_meta": {"name":"", "account":globalAny.account_id,"labels":{}, "annotations":{},"owner_references":[ {"kind":"Assembly",  "api_version":"v1",  "name":"lev.megam.io","uid":"","block_owner_deletion":false},
+      { "kind":"StoragePool","api_version":"v1", "name":"private", "uid":globalAny.stp_id,"block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":30,  "finalizers":[],"cluster_name":""},
+      "status": {"phase": "pending","message": "","reason": "", "conditions": [ {"message": "","reason": "","status": "False","last_transition_time": "2017-09-21T06:35:16Z","last_probe_time": "2017-09-21T06:35:16Z","condition_type": "OutOfDisk", "last_update_time": "2017-09-21T06:35:16Z"  }  ]}, "mount_path": "/var/lib/path","allocated": "50 GiB",
+      "setting_map":{"object_reference":{"name":"example-config"}}})
       .expect(400)
         .end(function(err, res) {
           done(err);
@@ -112,7 +114,7 @@ describe('volume  API', function() {
     });
 
     it('returns the volumes by assembly', function(done) {
-      request.get('/assemblys/'+globalAny.assembly_id+'/volumes')
+      request.get('/volumes/assemblys/'+globalAny.assembly_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -124,7 +126,7 @@ describe('volume  API', function() {
 
 
     it('returns the volumes by assembly invalid url', function(done) {
-      request.get('/volumes/'+globalAny.assembly_id+'/assemblys')
+      request.get('/assemblys/volumes/'+globalAny.assembly_id)
       .ca(globalAny.rootCA)
       .set('Authorization', globalAny.bobo_bearer)
       .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
@@ -150,10 +152,13 @@ describe('volume  API', function() {
       .ca(globalAny.rootCA)
         .set('Authorization', globalAny.bobo_bearer)
         .set('X-AUTH-RIOOS-EMAIL',globalAny.email)
-        .send({"object_meta":{"name":"","account":"876234567","created_at":"2017-12-15T11:22:56.243005857+00:00","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Assembly",
-        "api_version":"v1","name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},{"kind":"StoragePool","api_version":"v1","name":"private","uid":globalAny.stp_id,"block_owner_deletion":false}], "finalizers":["orphan"],"cluster_name":""},
-        "type_meta":{"kind":"Volume","api_version":"v1"},"mount_path":"/var/lib/path","allocated":"50 GiB","status":{"phase":"pending","message":"","reason":"","conditions":[{"condition_type":"OutOfDisk","message":"nodelet has sufficient disk space available",
-        "reason":"NodeletHasSufficientDisk","status":"False","last_update_time":"2017-09-21T06:35:16Z","last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z"}]}})
+        .send({"object_meta":{"name":"","account":globalAny.account_id,"created_at":"2018-07-12T13:21:34.930041867+00:00","deleted_at":"","deletion_grace_period_seconds":30,"labels":{},"annotations":{},"owner_references":[{"kind":"Assembly","api_version":"v1","name":"lev.megam.io","uid":globalAny.assembly_id,"block_owner_deletion":false},
+        {"kind":"StoragePool","api_version":"v1","name":"private","uid":globalAny.stp_id,"block_owner_deletion":false}],"initializers":{"pending":[],"result":{"type_meta":{"kind":"","api_version":""},"status":"","message":"","reason":"",
+        "details":{"name":"","group":"","kind":"","causes":[],"uid":"","retry_after_seconds":0},"code":0}},"finalizers":["orphan"],"cluster_name":""},"type_meta":{"kind":"Volume",
+        "api_version":"v1"},"mount_path":"/var/lib/path","allocated": "50 GiB","status":{"phase":"pending","message":"","reason":"","conditions":[{"condition_type":"OutOfDisk","message":"","reason":"","status":"False","last_update_time":"2017-09-21T06:35:16Z",
+        "last_transition_time":"2017-09-21T06:35:16Z","last_probe_time":"2017-09-21T06:35:16Z"}]},"source":{"setting_map":{"object_ref":{"name":""},"items":[],"default_mode":0,"optional":false},"nfs":{"server":"","path":"","readonly":false},
+        "openio":{"server":"","key":"","user":""},"iscsi":{"target_portal":"","iqn":"","lun":0,"iscsi_interface":"","fstype":"","readonly":false,"portals":[],"chap_auth_discovery":false,"chap_auth_session":false,
+        "secret_ref":{"name":""}},"rbd":{"monitors":[],"image":"","fstype":"","pool":"","user":"","keyring":"","readonly":false,"secret_ref":{"name":""}},"host_path":{"path":""}},"created_at":""})
         .expect(200)
         .end(function(err, res) {
           expect(res.body.id).to.equal(globalAny.vol_id);

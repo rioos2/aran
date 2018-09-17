@@ -210,15 +210,24 @@ pub struct Port {
     host_ip: String,     //ip address for the host
     host_port: i32,      //port of the host
     protocol: String,    //plan protocol type like tcp or udp
+    // (i.e this follows the egrep/unix syntax, not the perl syntax)
+   // matched against the path of an incoming request. Currently it can
+   // contain characters disallowed from the conventional "path"
+   // part of a URL as defined by RFC 3986. Paths must begin with
+   // a '/'. If unspecified, the path defaults to a catch all sending
+   // traffic to the backend.
+    #[serde(default)]
+    path: String,
 }
 
 impl Port {
-    pub fn new(container_port: i32, host_ip: &str, host_port: i32, protocol: &str) -> Port {
+    pub fn new(container_port: i32, host_ip: &str, host_port: i32, protocol: &str, path: &str) -> Port {
         Port {
             container_port: container_port,
             host_ip: host_ip.to_string(),
             host_port: host_port,
             protocol: protocol.to_string(),
+            path: path.to_string(),
         }
     }
 }

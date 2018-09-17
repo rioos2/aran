@@ -43,6 +43,18 @@ pub trait PermissionsFeeder: Send {
     fn ifeed(&mut self, v: Option<Vec<api::authorize::Permissions>>);
 }
 
+pub trait AccountsFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<api::session::Account>);
+}
+
+pub trait ServiceAccountFeeder: Send {
+    fn iget_id(&mut self) -> api::base::IdGet;
+
+    fn ifeed(&mut self, v: Option<api::service_account::ServiceAccount>);
+}
+
 pub trait StacksFeeder: Send {
     fn bget_id(&mut self) -> api::base::IdGet;
 
@@ -54,3 +66,28 @@ pub trait LicensesFeeder: Send {
 
     fn ifeed(&mut self, v: Option<String>);
 }
+
+pub trait MembersFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<Vec<api::invitations::Invitations>>);
+}
+
+pub trait PoliciesFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<Vec<api::authorize::Policies>>);
+}
+
+pub trait PolicyMembersFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<Vec<api::authorize::PolicyMembers>>);
+}
+
+pub trait TeamsFeeder: Send {
+    fn eget_id(&mut self) -> api::base::IdGet;
+
+    fn efeed(&mut self, e: Option<api::authorize::Teams>);
+}
+

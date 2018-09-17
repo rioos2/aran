@@ -8,10 +8,60 @@ These are end-to-end functional tests for the builder-api.
 
 To run these tests, you need to do:
 
+* `cd api-gateway/test/rios-apiserver`
+
 * `npm install`
 * `npm test`
 
 These instructions will trigger an error. Only after you have read that
 message and done what it says should you run the test suite. ;)test
 
+If run appstores
 
+* Change api.ts file
+Uncomment for below statements
+
+```
+import "./package";
+
+import "./marketplace";
+
+```
+And comment all the below statements.
+
+* Change auth.ts
+
+- Uncomment for appstore servername assigned and certificate add
+
+ ```
+ const request = supertest.agent(globalAny.marketplaceServer);
+ .ca(globalAny.rootMarketplaceCA)
+ ```
+
+- Add comment  apiserver servername assigned and certificate add
+
+ ```
+ const request = supertest.agent(globalAny.apiServer);
+ .ca(globalAny.rootCA)
+ ```
+
+* Change helpers.ts file
+
+If change gateway or appstore pointed server URL in below statements
+
+```
+globalAny.apiServer = 'https://localhost:7443/api/v1';
+
+globalAny.marketplaceServer = 'https://appstores.rioos.xyz:6443/api/v1';
+
+```
+
+ ## Troubleshooting
+
+1.Error found while running `npm test`
+sh: 1: tsc: not found
+
+Fix: To install this
+```
+npm install -g typescript
+```

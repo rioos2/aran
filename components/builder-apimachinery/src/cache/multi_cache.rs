@@ -11,6 +11,7 @@ struct MultiCacheItem<V> {
     bytes: usize,
 }
 
+
 impl<V> MultiCacheItem<V> {
     pub fn new(val: V, bytes: usize) -> MultiCacheItem<Arc<V>> {
         MultiCacheItem {
@@ -62,12 +63,21 @@ impl<K, V> MultiCache<K, V> {
     /// Add a new element by key/value with a given bytesize, if after inserting this
     /// element we would be going over the bytesize of the cache first enough elements are
     /// evicted for that to not be the case
-    pub fn put(&self, key: K, value: V, bytes: usize)
+    pub fn put(&self, key: K, value: V, bytes: usize, existing_bytes: usize)
     where
         K: Hash + Eq,
     {
+        info!("« Multi cache PUT: start");
+
         let mut mparts = self.parts.lock().unwrap();
+        info!("« Multi cache PUT: totalsize - {}", mparts.totalsize);
+        info!("« Multi cache PUT: existing_bytes - {}", existing_bytes);
+        if (mparts.totalsize > existing_bytes) {
+            mparts.totalsize -= existing_bytes;
+        }         
+
         while mparts.totalsize + bytes > mparts.maxsize {
+            warn!("« Multi cache PUT: cacher max size reached ≈ {:?}", mparts);
             match mparts.hash.pop_front() {
                 None => break, // probably even the only item is larger than the max
                 Some(val) => {
@@ -75,9 +85,11 @@ impl<K, V> MultiCache<K, V> {
                 }
             }
         }
+        info!("« Multi cache PUT: cacher mparts ≈ {:?}", mparts);
         (*mparts)
             .hash
             .insert(key, MultiCacheItem::new(value, bytes));
+        info!("« Multi cache PUT: End");
         mparts.totalsize += bytes;
     }
 
@@ -87,19 +99,23 @@ impl<K, V> MultiCache<K, V> {
     where
         K: Hash + Eq,
     {
+        info!("« Multi cache GET: cacher wait  ≈ ");
         let mparts = &mut *(self.parts.lock().unwrap());
-
+        info!("« Multi cache GET: cacher ≈ {:?}", mparts);
         if let Some(val) = mparts.hash.get_refresh(key) {
+            info!("« Multi cache GET: cacher hash ≈ ");
             return Some(val.val.clone());
         }
 
         // If direct failed try an alias
         if let Some(val) = mparts.aliases.get(&key) {
+            info!("« Multi cache GET: cacher aliases ≈ ");
             if let Some(val) = mparts.hash.get_refresh(&val) {
                 return Some(val.val.clone());
             }
         }
-
+        info!("« Multi cache GET: cacher none ≈ ");
+        info!("« Multi cache GET: cacher mparts ≈ {:?}", mparts);
         None
     }
 
@@ -145,9 +161,9 @@ mod tests {
     fn evicts() {
         let cache = MultiCache::new(200);
 
-        cache.put(0, 0, 100);
-        cache.put(1, 1, 100);
-        cache.put(2, 2, 100);
+        cache.put(0, 0, 100, 0);
+        cache.put(1, 1, 100, 0);
+        cache.put(2, 2, 100, 0);
 
         assert_eq!(cache.get(&2), Some(Arc::new(2)));
         assert_eq!(cache.get(&1), Some(Arc::new(1)));
@@ -158,10 +174,10 @@ mod tests {
     fn get_refreshes() {
         let cache = MultiCache::new(200);
 
-        cache.put(0, 0, 100);
-        cache.put(1, 1, 100);
+        cache.put(0, 0, 100, 0);
+        cache.put(1, 1, 100, 0);
         cache.get(&0);
-        cache.put(2, 2, 100);
+        cache.put(2, 2, 100, 0);
 
         assert_eq!(cache.get(&0), Some(Arc::new(0)));
         assert_eq!(cache.get(&1), None);
@@ -172,9 +188,9 @@ mod tests {
     fn aliases() {
         let cache = MultiCache::new(200);
 
-        cache.put(0, 0, 100);
+        cache.put(0, 0, 100,0);
         cache.alias(0, 1);
-        cache.put(2, 2, 100);
+        cache.put(2, 2, 100,0);
 
         assert_eq!(cache.get(&0), Some(Arc::new(0)));
         assert_eq!(cache.get(&1), Some(Arc::new(0)));
@@ -185,14 +201,14 @@ mod tests {
     fn contains() {
         let cache = MultiCache::new(100);
 
-        cache.put(0, 0, 100);
+        cache.put(0, 0, 100, 0);
         cache.alias(0, 1);
 
         assert_eq!(cache.contains_key(&0), true);
         assert_eq!(cache.contains_key(&1), true);
         assert_eq!(cache.contains_key(&2), false);
 
-        cache.put(2, 2, 100);
+        cache.put(2, 2, 100, 0);
 
         assert_eq!(cache.contains_key(&0), false);
         assert_eq!(cache.contains_key(&1), false);

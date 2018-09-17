@@ -1,9 +1,14 @@
 // account test case total -9
 import { expect } from 'chai';
 import supertest = require('supertest');
+import base64json = require('base64json');
 
 const globalAny:any = global;
-const request = supertest.agent(globalAny.marketplaceServer);
+//------marketplace creation using marketplaceServer
+// const request = supertest.agent(globalAny.marketplaceServer);
+
+//------ apiserver api creation using apiServer
+const request = supertest.agent(globalAny.apiServer);
 
 describe('Authorization API', function() {
 
@@ -11,15 +16,19 @@ describe('User authenticate API', function() {
   it('returns the created user account', function(done) {
     this.timeout(4000)
     request.post('/accounts')
-      .ca(globalAny.rootMarketplaceCA)
-      .send({"email":"info@riocorp.io","roles":["RIOOS:SUPERUSER"],"first_name":"vino","last_name": "v","phone":"9994048897","company_name": "megam","password": "team4riocorp","registration_ip_address": "192.168.1.10","object_meta":{"name":"info@riocorp.io","account":"","labels":{},"annotations":{},"owner_references":[{"kind":"","api_version":"","name":"","uid":"","block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}})
+      //---------------using api server using server-ca.cert.pem
+    .ca(globalAny.rootCA)
+        //---------------using marketplace server using client-appstores.cert.pem
+      // .ca(globalAny.rootMarketplaceCA)
+      .send({"email":"info@riocorp.io","teams":["RIOOS:SUPERUSER"],"first_name":"vino","last_name": "v","phone":"9994048897","company_name": "megam","password": "team4riocorp","registration_ip_address": "192.168.1.10","object_meta":{"name":"info@riocorp.io","account":"","labels":{},"annotations":{},"owner_references":[{"kind":"","api_version":"","name":"","uid":"","block_owner_deletion":false}],"created_at":"","deleted_at":"","deletion_grace_period_seconds":0, "finalizers":[],"cluster_name":""}})
       .expect(200)
       .end(function(err, res) {
         globalAny.account_id =res.body.id;
         globalAny.email = res.body.email;
         globalAny.token = res.body.token;
-        globalAny.bobo_bearer = "Bearer " + globalAny.token;
-        expect(res.body.roles[0]).to.equal("RIOOS:SUPERUSER");
+        globalAny.bearToken = base64json.stringify({"token" : globalAny.token,"org_id" : globalAny.origin_id,"team_id" : "1052661276171313152","account_id" : globalAny.account_id},null, 2); 
+        globalAny.bobo_bearer = "Bearer " + globalAny.bearToken;
+        expect(res.body.teams[0]).to.equal("RIOOS:SUPERUSER");
         expect(res.body.type_meta.kind).to.equal(globalAny.account);
         expect(res.body.type_meta.api_version).to.equal(globalAny.version);
         expect(res.body.object_meta.name).to.equal(globalAny.email);

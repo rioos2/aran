@@ -1,11 +1,9 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of deployment declaration api assembly_factory
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -63,9 +61,7 @@ impl AssemblyFactoryApi {
         unmarshall_body.set_meta(type_meta(req), m);
         unmarshall_body.set_status(Status::pending());
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -149,7 +145,7 @@ impl AssemblyFactoryApi {
         }
     }
 
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     //GET: /assemblyfactorys
     //Returns all the AssemblyFactorys (irrespective of accounts, origins)
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
@@ -238,13 +234,13 @@ impl Api for AssemblyFactoryApi {
         let list_blank = move |req: &mut Request| -> AranResult<Response> { _self.list_blank(req) };
 
         router.post(
-            "/accounts/:account_id/assemblyfactorys",
+            "/assemblyfactorys",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "assembly_factorys",
         );
 
         router.get(
-            "/accounts/:account_id/assemblyfactorys",
+            "/assemblyfactorys",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "assemblyfactorys_list",
         );
@@ -259,7 +255,7 @@ impl Api for AssemblyFactoryApi {
             "stacksfactorys_describe",
         );
         router.get(
-            "/assemblyfactorys",
+            "/assemblyfactorys/all",
             XHandler::new(C { inner: list_blank }).before(basic.clone()),
             "assemblys_factorys_list_blank",
         );
@@ -355,6 +351,20 @@ impl Validator for AssemblyFactory {
         }
         if self.get_plan().len() <= 0 {
             s.push("plan".to_string());
+        }
+
+        if self.object_meta().owner_references.len() <= 0 {
+            s.push("owner_references".to_string());
+        } else {
+            self.object_meta()
+                .owner_references
+                .iter()
+                .map(|x| {
+                    if x.uid.len() <= 0 {
+                        s.push("uid".to_string());
+                    }
+                })
+                .collect::<Vec<_>>();
         }
 
         if !self.get_resources().contains_key("compute_type") {

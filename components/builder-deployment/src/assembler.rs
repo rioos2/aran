@@ -10,29 +10,14 @@ use std::collections::BTreeMap;
 
 #[derive(Clone)]
 pub struct ServicesConfig {
-    pub loadbalancer_imagein: String,
-    pub loadbalancer_imagename: String,
-    pub loadbalancer_cpu: String,
-    pub loadbalancer_mem: String,
-    pub loadbalancer_disk: String,
     pub dns: String,
 }
 
 impl ServicesConfig {
-    const LOAD_BALANCER_IMAGEIN_KEY: &'static str = "rioos_sh_loadbalancer_imagein";
-    const LOAD_BALANCER_IMAGENAME_KEY: &'static str = "rioos_sh_loadbalancer_imagename";
-    const LOAD_BALANCER_CPU_KEY: &'static str = "rioos_sh_loadbalancer_cpu";
-    const LOAD_BALANCER_MEM_KEY: &'static str = "rioos_sh_loadbalancer_mem";
-    const LOAD_BALANCER_DISK_KEY: &'static str = "rioos_sh_loadbalancer_disk";
     const DNS_NAMESERVER_KEY: &'static str = "rioos_sh_dns_nameservers";
 
     pub fn as_map(&self) -> BTreeMap<String, String> {
         vec![
-            (Self::LOAD_BALANCER_IMAGEIN_KEY.to_string(), self.loadbalancer_imagein.clone()),
-            (Self::LOAD_BALANCER_IMAGENAME_KEY.to_string(), self.loadbalancer_imagename.clone()),
-            (Self::LOAD_BALANCER_CPU_KEY.to_string(), self.loadbalancer_cpu.clone()),
-            (Self::LOAD_BALANCER_MEM_KEY.to_string(), self.loadbalancer_mem.clone()),
-            (Self::LOAD_BALANCER_DISK_KEY.to_string(), self.loadbalancer_disk.clone()),
             (Self::DNS_NAMESERVER_KEY.to_string(), self.dns.clone()),
         ].into_iter()
             .collect::<BTreeMap<_, String>>()

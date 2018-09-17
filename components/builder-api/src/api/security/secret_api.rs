@@ -1,10 +1,11 @@
+// Copyright 2018 The Rio Advancement Inc
+//
+
 use super::securer;
-use ansi_term::Colour;
 use api::security::config::SecurerConn;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
@@ -20,7 +21,7 @@ use protocol::api::schema::{dispatch, dispatch_url, type_meta};
 use protocol::api::secret::Secret;
 use router::Router;
 use serde_json;
-use service::secret_ds::SecretDS;
+use service::models::secret;
 use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node
@@ -54,22 +55,18 @@ impl SecretApi {
         let mut unmarshall_body =
             self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
-
         let m = unmarshall_body.mut_meta(
             unmarshall_body.object_meta(),
             unmarshall_body.get_name(),
             self.verify_account(req)?.get_name(),
         );
-
+        
         unmarshall_body.set_meta(type_meta(req), m);
 
         let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
-
         match data.secure(&securer::parse::parse_key(&unmarshall_body)?) {
             Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
             Err(err) => Err(internal_error(&format!("{}", err))),
@@ -87,9 +84,7 @@ impl SecretApi {
         let mut unmarshall_body =
             self.validate::<Secret>(req.get::<bodyparser::Struct<Secret>>()?)?;
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -115,7 +110,7 @@ impl SecretApi {
     fn show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        match SecretDS::show(&self.conn, &params) {
+        match secret::DataStore::show(&self.conn, &params) {
             Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -131,11 +126,11 @@ impl SecretApi {
     //Returns an secrets
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
         //self.with_cache();
-        let res = match SecretDS::show(&self.conn, &idget) {
+        let res = match secret::DataStore::show(&self.conn, &idget) {
             Ok(Some(secrets)) => {
                 let data = json!({
                             "type": typ,
-                            "data": secrets,      
+                            "data": secrets,
                             });
                 serde_json::to_string(&data).unwrap()
             }
@@ -146,7 +141,7 @@ impl SecretApi {
 
     //GET: /secrets
     //Blank origin: Returns all the secrets(irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, req: &mut Request) -> AranResult<Response> {
         let data = securer::from_config(&self.secret, Box::new(*self.conn.clone()))?;
 
@@ -162,7 +157,7 @@ impl SecretApi {
     //GET: /accounts/:account_id/secrets
     //Input origin_name Returns all the secrets (fpr that namespaces)
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //Will need teams/permission to access others origin.
     fn list(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_account(req)?;
 
@@ -182,7 +177,7 @@ impl SecretApi {
     //GET: /accounts/:account_id/secrets
     //Input origin_name Returns all the secrets (fpr that namespaces)
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //Will need teams/permission to access others origin.
     pub fn watch_list_by_account(&self, params: IdGet, dispatch: String) -> Option<String> {
         let data = match securer::from_config(&self.secret, Box::new(*self.conn.clone())) {
             Ok(result) => result,
@@ -206,7 +201,7 @@ impl SecretApi {
     //GET: /origins/:origin_id/secrets
     //Input origin_name Returns all the secrets (fpr that namespaces)
     //Every user will be able to list their own origin.
-    //Will need roles/permission to access others origin.
+    //Will need teams/permission to access others origin.
     fn list_by_origin(&self, req: &mut Request) -> AranResult<Response> {
         let (org, name) = {
             let params = req.extensions.get::<Router>().unwrap();
@@ -215,15 +210,13 @@ impl SecretApi {
             (org_name, ser_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?}{} ", org, name),
         );
         let mut params = IdGet::with_id(org.clone().to_string());
         params.set_name(name.clone().to_string());
 
-        match SecretDS::list_by_origin(&self.conn, &params) {
+        match secret::DataStore::list_by_origin(&self.conn, &params) {
             Ok(Some(secrets)) => Ok(render_json_list(status::Ok, dispatch(req), &secrets)),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for account {}",
@@ -231,6 +224,26 @@ impl SecretApi {
                 &params.get_id()
             ))),
             Err(err) => Err(internal_error(&format!("{}", err))),
+        }
+    }
+
+    //PUT: /secrets/:id
+    //Input secrets id and returns updated secrets
+    fn update(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_id(req)?;
+
+        let mut unmarshall_body =
+            self.validate(req.get::<bodyparser::Struct<Secret>>()?)?;
+        unmarshall_body.set_id(params.get_id());
+
+        match secret::DataStore::update(&self.conn,&unmarshall_body) {
+            Ok(Some(secret)) => Ok(render_json(status::Ok, &secret)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
         }
     }
 
@@ -244,15 +257,13 @@ impl SecretApi {
             (org_name, set_name)
         };
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?}{} ", org, name),
         );
         let mut params = IdGet::with_id(name.clone().to_string());
         params.set_name(org.clone().to_string());
 
-        match SecretDS::show_by_origin_and_name(&self.conn, &params) {
+        match secret::DataStore::show_by_origin_and_name(&self.conn, &params) {
             Ok(Some(secrets)) => Ok(render_json(status::Ok, &secrets)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -293,9 +304,12 @@ impl Api for SecretApi {
         let show_by_org_and_name =
             move |req: &mut Request| -> AranResult<Response> { _self.show_by_origin_and_name(req) };
 
+        let _self = self.clone();
+        let update = move |req: &mut Request| -> AranResult<Response> { _self.update(req) };
+
         //secret API
         router.post(
-            "/accounts/:account_id/secrets",
+            "/secrets",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "secrets",
         );
@@ -303,7 +317,7 @@ impl Api for SecretApi {
         //MEGAM
         //without authentication
         router.post(
-            "/origins/:origin_id/secrets",
+            "/secrets/origins/:origin_id",
             XHandler::new(C {
                 inner: create_by_origin,
             }),
@@ -318,7 +332,7 @@ impl Api for SecretApi {
         //without authentication
 
         router.get(
-            "/secrets",
+            "/secrets/all",
             XHandler::new(C { inner: list_blank }),
             "secrets_list",
         );
@@ -328,15 +342,20 @@ impl Api for SecretApi {
             "secret_show",
         );
         router.get(
-            "/accounts/:account_id/secrets",
+            "/secrets",
             XHandler::new(C { inner: list }).before(basic.clone()),
             "secret_show_by_account",
+        );
+        router.put(
+            "/secrets/:id",
+            XHandler::new(C { inner: update }).before(basic.clone()),
+            "secret_update",
         );
 
         //MEGAM
         //without authentication
         router.get(
-            "/origins/:origin_id/secrets",
+            "/secrets/origins/:origin_id",
             C {
                 inner: list_by_origin,
             },
@@ -350,7 +369,7 @@ impl Api for SecretApi {
             "secret_show_by_origin_name",
         );*/
         router.get(
-            "/origins/:origin/secrets/:secret_name",
+            "/secrets/:secret_name/origins/:origin",
             C {
                 inner: show_by_org_and_name,
             },

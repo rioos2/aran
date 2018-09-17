@@ -9,8 +9,6 @@ workspace = "../../"
 postgres = { version = "0.15.2", features = ["with-chrono"] }
 chrono = { version = "0.4.4", features = ["serde"] }
 serde_json = "1.0.22"
-itertools = "*"
-cidr = "0.0.4"
 oping = "0.3.3"
 rand = "0.5.3"
 ipnet = "1.2.1"

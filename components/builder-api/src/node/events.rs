@@ -1,23 +1,19 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use events::{Event, EventHandler, InternalEvent};
-use node::runtime::{ExternalMessage, RuntimeHandler};
-use db::data_store::DataStoreConn;
 
 use api::audit::PushNotifier;
 use api::audit::ledger;
 use api::audit::mailer::email_sender as mailer;
 use api::audit::slack::slack_sender as slack;
-
-const EXPIRY: &'static str = "expiry";
-const ACTIVE: &'static str = "active";
+use events::{Event, EventHandler, InternalEvent};
+use node::runtime::{ExternalMessage, RuntimeHandler};
 
 impl EventHandler for RuntimeHandler {
-    fn handle_event(&mut self, event: Event, ds: Box<DataStoreConn>) {
+    fn handle_event(&mut self, event: Event) {
         match event {
             Event::Api(api) => self.handle_api_event(api),
             Event::Internal(internal) => {
-                self.handle_internal_event(&internal, ds);
+                self.handle_internal_event(&internal);
             }
         }
     }
@@ -28,17 +24,17 @@ impl RuntimeHandler {
     fn handle_api_event(&mut self, event: ExternalMessage) {
         match event {
             ExternalMessage::PeerAdd(event_envl) => {
-                println!("--> ledger config is {:?}", self.config);
+                debug!("--> ledger config is {:?}", self.config);
 
                 match ledger::from_config(&self.config) {
                     Ok(ledger) => {
                         match ledger.record(&event_envl) {
-                            Ok(_) => println!("--> save success"),
+                            Ok(_) => debug!("--> save success"),
 
-                            _ => println!("--> save fail. {:?}", event_envl),
+                            _ => debug!("--> save fail. {:?}", event_envl),
                         };
                     }
-                    _ => println!("--> ledger load  fail."),
+                    _ => debug!("--> ledger load  fail."),
                 }
             }
             ExternalMessage::PushNotification(event_envl) => {
@@ -46,30 +42,74 @@ impl RuntimeHandler {
                 mailer::EmailNotifier::new(e, *self.mailer.clone()).notify();
                 slack::SlackNotifier::new(event_envl, *self.slack.clone()).notify();
             }
+
+            ExternalMessage::ActivateLicense(license_id, password, product) => {
+                match &product[..] {
+                    NINJAS => {
+                        match self.ninjas_license.activate(license_id, &password) {
+                            Ok(_) => {
+                                self.ninjas_license.update(
+                                    &license_id.to_string(),
+                                    &password,
+                                )
+                            }
+                            Err(err) => self.ninjas_license.persist_error(format!("{}", err)),
+                        }
+                    }
+                    SENSEIS => {
+                        match self.senseis_license.activate(license_id, &password) {
+                            Ok(_) => {
+                                self.senseis_license.update(
+                                    &license_id.to_string(),
+                                    &password,
+                                )
+                            }
+                            Err(err) => self.senseis_license.persist_error(format!("{}", err)),
+                        }
+                    }
+                    _ => {}
+
+                }
+            }
+
+            ExternalMessage::DeActivateLicense(license_id, password, product) => {
+                match &product[..] {
+                    NINJAS => {
+                        match self.ninjas_license.deactivate() {
+                            Ok(_) => {
+                                self.ninjas_license.update(
+                                    &license_id.to_string(),
+                                    &password,
+                                )
+                            }
+                            Err(err) => self.ninjas_license.persist_error(format!("{}", err)),
+                        }
+                    }
+                    SENSEIS => {
+                        match self.senseis_license.deactivate() {
+                            Ok(_) => {
+                                self.senseis_license.update(
+                                    &license_id.to_string(),
+                                    &password,
+                                )
+                            }
+                            Err(err) => self.senseis_license.persist_error(format!("{}", err)),
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
         }
     }
 
-    fn handle_internal_event(&mut self, event: &InternalEvent, _ds: Box<DataStoreConn>) {
-
+    fn handle_internal_event(&mut self, event: &InternalEvent) {
         match *event {
-             /*InternalEvent::EntitlementTimeout => match self.license.create_trial_or_verify() {
-                 Ok(()) => {
-                     let str = " ✓ All Good. You have a valid entitlement. !";
-                     info!{" ✓ All Good. You have a valid entitlement. !"}
-                     self.license.update_license_status(ds.clone(),ACTIVE.to_string(), str.to_string());
-                 },
-                 Err(err) => {
-                     let expiry_attempt = self.license.hard_stop();
-                     if expiry_attempt.is_err() {
-                         self.license.update_license_status(ds.clone(),EXPIRY.to_string(), "error".to_string());
-                         error!("{:?}", err)
-                     } else {
-                         warn!("{:?}, Message: {:?}", expiry_attempt.unwrap(), err)
-                     }
-                 }
-             },*/
-            InternalEvent::EntitlementTimeout => {
-                info!{" ✓ All Good. You have a valid entitlement. !"}
+            InternalEvent::EntitlementTimeToVerify => {
+                self.ninjas_license.live_verify().unwrap();
+                self.ninjas_license.update_status();
+                self.senseis_license.live_verify().unwrap();
+                self.senseis_license.update_status();
             }
             InternalEvent::Shutdown => warn!("Shutting down...please wait!."),
         }

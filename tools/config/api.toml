@@ -22,6 +22,7 @@ endpoint = "https://appstores.rioos.xyz:6443/api/v1"
 
 [blockchain]
 endpoint = "http://localhost:7000"
+enabled = false
 
 [ui]
 root = "/public"
@@ -33,8 +34,7 @@ endpoint = "http://localhost:9090/api/v1"
 backend = "Local"
 
 [licenses]
-so_file = "ShaferFilechck.so"
-activation_code = ""
+so_file = "libPLUSNative.so"
 
 [logs]
 influx_endpoint = "http://localhost:8086"
@@ -55,6 +55,9 @@ backend = "OpenIO"
 endpoint = "https://env.envkey.com/v1/"
 access_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
 secret_key = "srXrg7a1T3Th3kmU1cz5-2dtpkX9DaUSXoD5R"
+
+[services]
+dns= "107.152.143.242"
 
 [notifications]
  [notifications.mailer]

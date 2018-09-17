@@ -1,22 +1,21 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A collection of auth [origin] for the HTTP server
-use ansi_term::Colour;
+
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use bodyparser;
 use bytes::Bytes;
-use common::ui;
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::Error;
 use error::ErrorMessage::MissingParameter;
 use http_gateway::http::controller::*;
-use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
+use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use iron::prelude::*;
 use iron::status;
-use job::job_ds::JobDS;
+use job::models::jobs;
 use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::api::job::Jobs;
 use protocol::api::schema::{dispatch, type_meta};
@@ -54,13 +53,11 @@ impl JobApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("✓ {}",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
-        match JobDS::create(&self.conn, &unmarshall_body) {
+        match jobs::DataStore::new(&self.conn).create(&unmarshall_body) {
             Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
             Err(err) => Err(internal_error(&format!("{}\n", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -69,9 +66,9 @@ impl JobApi {
 
     //GET: /jobs
     //Blank origin: Returns all the Jobs (irrespective of namespaces)
-    //Will need roles/permission to access this.
+    //Will need teams/permission to access this.
     fn list_blank(&self, _req: &mut Request) -> AranResult<Response> {
-        match JobDS::list(&self.conn) {
+        match jobs::DataStore::new(&self.conn).list() {
             Ok(Some(jobs)) => Ok(render_json_list(status::Ok, dispatch(_req), &jobs)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -82,7 +79,7 @@ impl JobApi {
     //Returns all the Jobs for a particular node
     fn show_by_node(&self, req: &mut Request) -> AranResult<Response> {
         let query_pairs = self.default_validate(req)?;
-        match JobDS::show_by_node(&self.conn, &IdGet::with_id(query_pairs.get("node_id"))) {
+        match jobs::DataStore::new(&self.conn).show_by_node(&IdGet::with_id(query_pairs.get("node_id"))) {
             Ok(Some(jobs_get)) => Ok(render_json_list(status::Ok, dispatch(req), &jobs_get)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
@@ -94,10 +91,12 @@ impl JobApi {
     fn status_update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<StatusUpdate>>()?)?;
+        let mut unmarshall_body = self.validate(
+            req.get::<bodyparser::Struct<StatusUpdate>>()?,
+        )?;
         unmarshall_body.set_id(params.get_id());
 
-        match JobDS::status_update(&self.conn, &unmarshall_body) {
+        match jobs::DataStore::new(&self.conn).status_update(&unmarshall_body) {
             Ok(Some(jobs)) => Ok(render_json(status::Ok, &jobs)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -112,7 +111,7 @@ impl JobApi {
     //Input id - u64 as input
     //Returns an jobs
     pub fn watch(&mut self, idget: IdGet, typ: String) -> Bytes {
-        let res = match JobDS::show(&self.conn, &idget) {
+        let res = match jobs::DataStore::new(&self.conn).show(&idget) {
             Ok(Some(job)) => {
                 let data = json!({
                             "type": typ,
@@ -134,16 +133,10 @@ impl Api for JobApi {
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
 
         let _self = self.clone();
-        let service_account_based_create =
-            move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
+        let status_update = move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
 
         let _self = self.clone();
-        let status_update =
-            move |req: &mut Request| -> AranResult<Response> { _self.status_update(req) };
-
-        let _self = self.clone();
-        let show_by_node =
-            move |req: &mut Request| -> AranResult<Response> { _self.show_by_node(req) };
+        let show_by_node = move |req: &mut Request| -> AranResult<Response> { _self.show_by_node(req) };
 
         //origin less,
         let _self = self.clone();
@@ -153,27 +146,15 @@ impl Api for JobApi {
             "/jobs",
             XHandler::new(C { inner: create }).before(basic.clone()),
             "jobs",
-        );
-
-        router.post(
-            "serviceaccounts/:service_name/jobs",
-            XHandler::new(C {
-                inner: service_account_based_create,
-            }).before(basic.clone()),
-            "jobs_create",
-        );
+        );        
         router.put(
             "/jobs/:id/status",
-            XHandler::new(C {
-                inner: status_update,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: status_update }).before(basic.clone()),
             "job_status_update",
         );
         router.get(
             "/jobs/node",
-            XHandler::new(C {
-                inner: show_by_node,
-            }).before(basic.clone()),
+            XHandler::new(C { inner: show_by_node }).before(basic.clone()),
             "job_show_by_node",
         );
         router.get(

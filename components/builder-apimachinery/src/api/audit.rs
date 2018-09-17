@@ -89,7 +89,7 @@ impl fmt::Display for Envelope {
 }
 
 // EventSource contains information for an event.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EventSource {
     // Component from which the event is generated.
     // +optional
@@ -100,7 +100,7 @@ pub struct EventSource {
 }
 
 // AuditEvent is a report of an event somewhere in the cluster.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AuditEvent {
     // Standard type metadata.
     type_meta: TypeMeta,
@@ -129,6 +129,44 @@ pub struct AuditEvent {
     // Type of this event (Normal, Warning), new types could be added in the future
     // +optional
     type_of_event: String,
+}
+
+impl AuditEvent {
+    pub fn new() -> AuditEvent {
+        ::std::default::Default::default()
+    }
+
+    pub fn with(t: TypeMeta, o: ObjectMeta) -> AuditEvent {
+        AuditEvent {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
+    }
+
+    pub fn set_object_reference(&mut self, v: ObjectReference) {
+        self.object_reference = v;
+    }
+    pub fn get_object_reference(&self) -> ObjectReference {
+        self.object_reference.clone()
+    }
+
+    pub fn set_reason(&mut self, v: ::std::string::String) {
+        self.reason = v;
+    }
+
+    pub fn get_reason(&self) -> ::std::string::String {
+        self.reason.clone()
+    }
+
+    pub fn set_message(&mut self, v: ::std::string::String) {
+        self.message = v;
+    }
+
+    pub fn get_message(&self) -> ::std::string::String {
+        self.message.clone()
+    }      
+    
 }
 
 impl MetaFields for AuditEvent {

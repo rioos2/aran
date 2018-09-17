@@ -10,6 +10,7 @@ use iron::prelude::*;
 use config::Config;
 use router::Router;
 use std::collections::BTreeMap;
+use iron::headers::{Authorization, Bearer};
 
 //The macro should be loaded first. As we want to use it `mod audit`.
 //Hence  `mod events` must be loaded before `mod audit`
@@ -30,6 +31,9 @@ use error::ErrorMessage::{MissingBody, MissingParameter, MissingQueryParameter, 
 use http_gateway::util::errors::{bad_request, malformed_body};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use protocol::api::base::{IdGet, QueryInput, StatusUpdate};
+use auth::util::token_target::TokenTarget;
+use http_gateway::http::rendering::render_json_error;
+use http_gateway::util::errors::{bad_err, not_acceptable_error};
 
 // `Api` trait which defines `RESTful` API.
 pub trait Api {
@@ -115,19 +119,31 @@ struct AccountParmsVerifier {}
 
 impl RequestVerifier for AccountParmsVerifier {
     fn verify(req: &Request) -> AranResult<IdGet> {
-        match req.extensions.get::<Router>().unwrap().find("account_id") {
+        let token = match req.headers.get::<Authorization<Bearer>>() {
+            Some(&Authorization(Bearer { ref token })) => token,
+            _ => {
+                return Err(bad_request(&MissingParameter("Authorization Bearer: token not found.".to_string())))
+            }
+        };
+        let token_target = TokenTarget::parse(token.to_string());
+
+        if !token_target.get_account_id().is_empty() {
+            return Ok(IdGet::with_account(token_target.get_account_id()))
+        }
+        return Err(bad_request(&MissingParameter("account".to_string())))
+        /*match req.extensions.get::<Router>().unwrap().find("account_id") {
             Some(account) => match account.parse::<u64>() {
                 Ok(account) => Ok(IdGet::with_account(account.to_string())),
                 Err(_) => return Err(bad_request(&MustBeNumeric("account".to_string()))),
             },
             None => return Err(bad_request(&MissingParameter("account".to_string()))),
-        }
+        }*/
     }
 }
+
 //NameParmsVerifier verifies if the request sent a parameter
 /// `name`
 /// If it doesn't then it sends an MissingParameter
-
 struct NameParmsVerifier {}
 
 impl RequestVerifier for NameParmsVerifier {

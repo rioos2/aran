@@ -1,30 +1,35 @@
 // Copyright 2018 The Rio Advancement Inc
 
 //! A module containing the middleware of the HTTP server
-use super::super::util::errors::*;
+
 use super::header_extracter::HeaderDecider;
 use super::rendering::*;
+use super::super::util::errors::*;
 use ansi_term::Colour;
 use auth::config::AuthenticationFlowCfg;
-use entitlement::config::License;
-use auth::rbac::{authorizer, permissions::Permissions};
+use auth::rbac::account::{AccountsFascade, ServiceAccountsFascade};
+use auth::rbac::teams::TeamsFascade;
+use auth::rbac::policies::PolicyFascade;
+use auth::rbac::authorizer;
+use auth::rbac::license::LicensesFascade;
+use auth::rbac::permissions::Permissions;
 use auth::rioos::AuthenticateDelegate;
 use common::ui;
 use db::data_store::DataStoreConn;
+use entitlement::config::License;
+use iron::Handler;
 use iron::headers;
 use iron::method::Method;
 use iron::middleware::{AfterMiddleware, AroundMiddleware, BeforeMiddleware};
 use iron::prelude::*;
 use iron::status::NotFound;
 use iron::typemap::Key;
-use iron::Handler;
 use persistent;
 use regex::Regex;
 use router::NoRoute;
 use std::collections::HashMap;
 use unicase::UniCase;
-use util::errors::{bad_err, forbidden_error, internal_error};
-use auth::rbac::license::LicensesFascade;
+use util::errors::{bad_err, forbidden_error, internal_error, entitlement_error};
 
 /// Wrapper around the standard `handler functions` to assist in formatting errors or success
 // Can't Copy or Debug the fn.
@@ -52,18 +57,20 @@ where
     fn handle(&self, req: &mut Request) -> Result<Response, IronError> {
         match (&self.inner)(req) {
             Ok(resp) => Ok(resp),
-            Err(e) => match e.response() {
-                Some(response) => {
-                    println!("\n----------------\nOutput response: \n{}\n", response);
-                    Ok(response)
+            Err(e) => {
+                match e.response() {
+                    Some(response) => {
+                        debug!("\n----------------\nOutput response: \n{}\n", response);
+                        Ok(response)
+                    }
+                    None => {
+                        let err = internal_error(&format!(
+                            "BUG! Report to development http://bit.ly/rioosbug"
+                        ));
+                        Err(render_json_error(&bad_err(&err), err.http_code()))
+                    }
                 }
-                None => {
-                    let err = internal_error(&format!(
-                        "BUG! Report to development http://bit.ly/rioosbug"
-                    ));
-                    Err(render_json_error(&bad_err(&err), err.http_code()))
-                }
-            },
+            }
         }
     }
 }
@@ -99,25 +106,23 @@ impl XHandler {
 impl Handler for XHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
         ///// Maybe move this Request to a seperate method.
-        ui::rawdumpln(
-            Colour::Green,
-            '→',
-            "------------------------------------------------------------------------------------",
+        debug!(
+            "{}",
+            format!("→ ------------------------------------------------------------------------------------")
         );
-        ui::rawdumpln(
-            Colour::Cyan,
-            ' ',
-            format!("======= {}:{}:{}", req.version, req.method, req.url),
+        debug!(
+            "{}",
+            format!("======= {}:{}:{}", req.version, req.method, req.url)
         );
-        ui::rawdumpln(Colour::Blue, ' ', "Headers:");
-        ui::rawdumpln(Colour::White, ' ', "========");
+        debug!("{}", "Headers:");
+        debug!("{}", "========");
 
         for hv in req.headers.iter() {
-            ui::rawdump(Colour::Purple, ' ', hv);
+            debug!("{}", hv);
         }
-        ui::rawdumpln(Colour::Blue, ' ', "Body");
-        ui::rawdumpln(Colour::White, ' ', "========");
-        ui::rawdumpln(Colour::Purple, ' ', "»");
+        debug!("{}", "Body");
+        debug!("{}", "========");
+        debug!("{}", "»");
 
         //// dump ends.
 
@@ -151,7 +156,9 @@ pub trait AuthFlow {
 
     //Tell the reason the auth flow is invalid
     fn reason(&self) -> Option<String> {
-        Some("You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`.".to_string())
+        Some(
+            "You must have a service account. `systemctl stop rioos-api-server`, `rioos-api-server setup`.".to_string(),
+        )
     }
 }
 
@@ -177,12 +184,13 @@ impl Authenticated {
 /// Returns a status 200 on success. Any non-200 responses.
 impl BeforeMiddleware for Authenticated {
     fn before(&self, req: &mut Request) -> IronResult<()> {
-        ui::rawdumpln(
-            Colour::Yellow,
-            '☛',
+        debug!("{} ☛",
             format!(
                 "======= {}:{}:{}:{}",
-                req.version, req.method, req.url, req.headers
+                req.version,
+                req.method,
+                req.url,
+                req.headers
             ),
         );
 
@@ -202,11 +210,7 @@ impl BeforeMiddleware for Authenticated {
 pub struct ProceedAuthenticating {}
 
 impl ProceedAuthenticating {
-    pub fn proceed(
-        req: &mut Request,
-        plugins: Vec<String>,
-        conf: HashMap<String, String>,
-    ) -> IronResult<()> {
+    pub fn proceed(req: &mut Request, plugins: Vec<String>, conf: HashMap<String, String>) -> IronResult<()> {
         let broker = match req.get::<persistent::Read<DataStoreBroker>>() {
             Ok(broker) => broker,
             Err(err) => {
@@ -233,47 +237,21 @@ struct URLGrabber {}
 
 impl URLGrabber {
     const WHITE_LIST: &'static [&'static str] = &[
-        "RIOOS.ACCOUNTS.POST",
-        "RIOOS.ACCOUNTS.*.AUDITS.POST",
-        "RIOOS.ACCOUNTS.*.AUDITS.GET",
-        "RIOOS.ACCOUNTS.*.ASSEMBLYS*EXEC",
-        "RIOOS.AUTHENTICATE.POST",
-        "RIOOS.LOGOUT.POST",
-        "RIOOS.LOGS.GET",
-        "RIOOS.IMAGES.*.VULNERABILITY.GET",
-        "RIOOS.ROLES.GET",
-        "RIOOS.ROLES.POST",
-        "RIOOS.PERMISSIONS.GET",
-        "RIOOS.PERMISSIONS.POST",
-        "RIOOS.TEAMS.POST",
-        "RIOOS.ORIGINS.GET",
-        "RIOOS.ORIGINS.POST",
-        "RIOOS.ORIGINS.*.SECRETS.POST",
-        "RIOOS.ORIGINS.*.SECRETS.GET",
-        "RIOOS.ORIGINS.*.SECRETS*.POST",
-        "RIOOS.ORIGINS.*.SERVICEACCOUNTS.POST",
-        "RIOOS.ORIGINS.*.SERVICEACCOUNTS*.GET",
-        "RIOOS.ORIGINS.*.SERVICEACCOUNTS*.PUT",
-        "RIOOS.ORIGINS.*.SETTINGSMAP*.POST",
-        "RIOOS.SERVICEACCOUNTS.GET",
-        "RIOOS.SETTINGSMAP.GET",
-        "RIOOS.PING.GET",
-        "RIOOS.HEALTHZ.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.POST",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SECRETS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.GET",
-        "RIOOS.SECRETS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.POST",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.CONTROLLER-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.NODELET-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.SCHEDULER-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.STORLET-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.PROMETHEUS-SHARED-INFORMERS.GET",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.PROMETHEUS-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.CONTROLLER-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.NODELET-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.SCHEDULER-SHARED-INFORMERS.PUT",
-        "RIOOS.ORIGINS.RIOOS_SYSTEM.SERVICEACCOUNTS.STORLET-SHARED-INFORMERS.PUT",
+        "ACCOUNTS.POST",
+        "AUTHENTICATE.POST",
+        "LOGOUT.POST",
+        "ORIGINS.GET",
+        "ORIGINS.POST",
+        "SECRETS.POST",
+        "SECRETS.GET",
+        "SERVICEACCOUNTS.POST",
+        "SERVICEACCOUNTS.GET",
+        "SERVICEACCOUNTS.PUT",
+        "PING.GET",
+        "HEALTHZ.GET",
+        "WIZARDS.GET",
+        "AUDITS.POST",
+        "AUDITS.GET",
     ];
 
     fn grab(req: &mut Request) -> Option<String> {
@@ -283,34 +261,33 @@ impl URLGrabber {
 
         let system = "rioos";
         let method = &req.method;
-        let resource = format!(
-            "{}{}.{:?}",
-            system,
+        /*let resource = format!(
+            "{}.{:?}",
             &req.url
                 .path()
                 .into_iter()
-                .map(|p| {
-                    if RE.is_match(&p) {
-                        ".*".to_string()
-                    } else {
-                        format!(".{}", &p)
-                    }
+                .map(|p| if RE.is_match(&p) {
+                    "*".to_string()
+                } else {
+                    format!("{}", &p)
                 })
                 .collect::<String>(),
             method
-        ).to_uppercase();
+        ).to_uppercase();*/
 
-        info!("{}", format!("↑ Permission {} {}", "→", resource));
+        let resource = format!("{}.{:?}", &req.url.path()[0], method).to_uppercase();
+
+        debug!("{}", format!("↑ Permission {} {}", "→", resource));
 
         if !URLGrabber::WHITE_LIST.contains(&resource.as_str()) {
-            info!(
+            debug!(
                 "{}",
                 format!("↑ Permission Verify {} {}", "→", resource)
             );
             return Some(resource.clone());
         }
 
-        info!(
+        debug!(
             "{}",
             format!("↑ Permission WHITE_LIST {} {}", "→", resource)
         );
@@ -327,12 +304,12 @@ pub struct RBAC {
 }
 
 impl RBAC {
-    pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions) -> Self {
+    pub fn new<T: AuthenticationFlowCfg>(config: &T, permissions: Permissions, accounts: AccountsFascade, service_accounts: ServiceAccountsFascade, teams: TeamsFascade, policy: PolicyFascade) -> Self {
         let plugins_and_its_configuration_tuple = config.modes();
         RBAC {
             plugins: plugins_and_its_configuration_tuple.0,
             conf: plugins_and_its_configuration_tuple.1,
-            authorizer: authorizer::Authorization::new(permissions),
+            authorizer: authorizer::Authorization::new(permissions, accounts, service_accounts, teams, policy),
         }
     }
 
@@ -340,6 +317,7 @@ impl RBAC {
         URLGrabber::grab(req)
     }
 }
+
 
 impl BeforeMiddleware for RBAC {
     fn before(&self, req: &mut Request) -> IronResult<()> {
@@ -349,38 +327,32 @@ impl BeforeMiddleware for RBAC {
             return Ok(());
         }
 
-        let header =
-            HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
-        let roles: authorizer::RoleType = header.decide()?.into();
+        let header = HeaderDecider::new(req.headers.clone(), self.plugins.clone(), self.conf.clone())?;
+        let teams: authorizer::AccountType = header.decide()?.into();
 
-        info!(
-            "↑ RBAC {} {} {:?}",
-            "→",
-            &roles.name.get_id(),
-            input_trust
-        );
+        debug!("↑ RBAC {} {} {:?}", "→", &teams.name, input_trust);
 
-        if roles.name.get_id().pop().is_none() {
-            info!("↑ RBAC SKIP {} {} {:?}", "→", &roles.name, input_trust);
+        if teams.name.is_empty() {
+            debug!("↑ RBAC SKIP {} {} {:?}", "→", &teams.name, input_trust);
             return Ok(());
         }
 
-        match self.authorizer
-            .clone()
-            .verify(roles.clone(), input_trust.clone().unwrap())
-        {
+        match self.authorizer.clone().verify(
+            teams.clone(),
+            input_trust.clone().unwrap(),
+        ) {
             Ok(_validate) => Ok(()),
             Err(_) => {
-                info!(
+                debug!(
                     "↑☒ RBAC ERROR {} {} {:?}",
                     "→",
-                    &roles.clone().name,
+                    &teams.clone().name,
                     input_trust.clone()
                 );
 
                 let err = forbidden_error(&format!(
                     "{}, is denied access. Must have permission for [{}].",
-                    &roles.clone().name.get_id(),
+                    &teams.clone().name,
                     input_trust.clone().unwrap_or("".to_string())
                 ));
                 return Err(render_json_error(&bad_err(&err), err.http_code()));
@@ -389,23 +361,30 @@ impl BeforeMiddleware for RBAC {
     }
 }
 
+
 pub struct EntitlementAct {
-   _license: LicensesFascade,
-   _backend: String,
+    license: LicensesFascade,
+    backend: String,
 }
 
 impl EntitlementAct {
     pub fn new<T: License>(config: &T, fascade: LicensesFascade) -> Self {
         EntitlementAct {
-            _license: fascade, 
-            _backend: config.backend().to_string(),           
+            license: fascade,
+            backend: config.backend().to_string(),
         }
     }
 }
 
 impl BeforeMiddleware for EntitlementAct {
     fn before(&self, _req: &mut Request) -> IronResult<()> {
-        Ok(())
+        match self.license.clone().get_by_name("senseis".to_string()) {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                let err = entitlement_error(&format!("{}\n", err));
+                return Err(render_json_error(&bad_err(&err), err.http_code()));
+            }
+        }
     }
 }
 
@@ -414,10 +393,9 @@ pub struct Custom404;
 impl AfterMiddleware for Custom404 {
     fn catch(&self, req: &mut Request, err: IronError) -> IronResult<Response> {
         if err.error.is::<NoRoute>() {
-            Ok(Response::with((
-                NotFound,
-                format!("404: {:?}", req.url.path()),
-            )))
+            Ok(Response::with(
+                (NotFound, format!("404: {:?}", req.url.path())),
+            ))
         } else {
             Err(err)
         }
@@ -433,21 +411,16 @@ impl AfterMiddleware for Cors {
             UniCase("authorization".to_string()),
             UniCase("range".to_string()),
         ]));
-        res.headers.set(headers::AccessControlAllowMethods(vec![
-            Method::Put,
-            Method::Delete,
-        ]));
+        res.headers.set(headers::AccessControlAllowMethods(
+            vec![Method::Put, Method::Delete],
+        ));
 
-        ui::rawdumpln(
-            Colour::Green,
-            ' ',
+        debug!("{}",
             format!("Response {}:{}:{}", _req.version, _req.method, _req.url),
         );
-        ui::rawdumpln(Colour::White, ' ', "========");
-        ui::rawdumpln(Colour::Purple, ' ', res.to_string());
-        ui::rawdumpln(
-            Colour::Cyan,
-            '✓',
+        debug!("{}", "========");
+        debug!("{}", res.to_string());
+        debug!("✓{}",
             "------------------------------------------------------------------------------------",
         );
 

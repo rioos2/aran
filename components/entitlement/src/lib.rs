@@ -17,11 +17,10 @@ extern crate rioos_http_client as http_client;
 extern crate rioos_builder_db as db;
 extern crate rioos_builder_entitlement as entitlement;
 extern crate rioos_builder_apimachinery as protocol;
+extern crate rioos_auth as auth;
 
 pub use self::error::{Error, Result};
 
 pub mod config;
 pub mod error;
-pub mod licensecloud;
-pub mod licensor;
-pub mod nalperion;
+pub mod softwarekeys;

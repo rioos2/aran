@@ -3,6 +3,8 @@ use super::session::Session;
 use api::base::ObjectReference;
 use api::base::{MetaFields, ObjectMeta, TypeMeta};
 use std::collections::BTreeMap;
+use cache::inject::ServiceAccountFeeder;
+use api::base::IdGet;
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ServiceAccount {
@@ -14,7 +16,7 @@ pub struct ServiceAccount {
     metadata: BTreeMap<String, String>,
     secrets: Vec<ObjectReference>,
     #[serde(default)]
-    roles: Vec<String>,
+    teams: Vec<String>,
     #[serde(default)]
     created_at: String,
 }
@@ -52,12 +54,12 @@ impl ServiceAccount {
         self.created_at = v;
     }
 
-    pub fn set_roles(&mut self, v: ::std::vec::Vec<String>) {
-        self.roles = v;
+    pub fn set_teams(&mut self, v: ::std::vec::Vec<String>) {
+        self.teams = v;
     }
 
-    pub fn get_roles(&self) -> ::std::vec::Vec<String> {
-        self.roles.clone()
+    pub fn get_teams(&self) -> ::std::vec::Vec<String> {
+        self.teams.clone()
     }
 
     pub fn get_created_at(&self) -> ::std::string::String {
@@ -96,6 +98,44 @@ impl Into<Session> for ServiceAccount {
         session.set_id(self.get_id());
         session.set_meta(self.type_meta(), self.object_meta());
         session
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct ServiceAccountTeams {
+    name: String,
+    teams: Vec<String>,
+}
+
+impl ServiceAccountTeams {
+    pub fn new() -> ServiceAccountTeams {
+        ::std::default::Default::default()
+    }
+
+    pub fn set_name(&mut self, v: ::std::string::String) {
+        self.name = v;
+    }
+
+    pub fn get_name(&self) -> ::std::string::String {
+        self.name.clone()
+    }
+
+    pub fn set_teams(&mut self, v: ::std::vec::Vec<String>) {
+        self.teams = v;
+    }
+
+    pub fn get_teams(&self) -> ::std::vec::Vec<String> {
+        self.teams.clone()
+    }
+}
+
+impl ServiceAccountFeeder for ServiceAccount {
+    fn iget_id(&mut self) -> IdGet {
+        IdGet::with_id_name(self.get_name(), "_service_account".to_string())
+    }
+
+    fn ifeed(&mut self, _m: Option<ServiceAccount>) {
+       
     }
 }
 

@@ -9,9 +9,7 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 
-use ansi_term::Colour;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
-use common::ui;
 use config::Config;
 use error::Error;
 
@@ -19,7 +17,7 @@ use http_gateway::http::controller::*;
 use http_gateway::util::errors::{bad_request, internal_error, not_found_error};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 
-/// TO_DO: Should be named  (authorize::models::roles, authorize::models::permission)
+/// TO_DO: Should be named  (authorize::models::teams, authorize::models::permission)
 use authorize::models::permission;
 use protocol::api::{authorize::Permissions, base::IdGet, schema::dispatch};
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_PERMISSION};
@@ -35,8 +33,8 @@ use error::ErrorMessage::{MissingParameter, MustBeNumeric};
 /// POST: /permissions,,
 /// GET: /permissions,
 /// GET: /permissions/:id,
-/// GET: /permissions/roles/:role_id
-/// GET: /permissions/:id/roles/:role_id
+/// GET: /permissions/policies/:policy_id
+/// GET: /permissions/:id/policies/:policy_id
 /// GET: /permissions/email/:name
 #[derive(Clone)]
 pub struct PermissionApi {
@@ -56,9 +54,7 @@ impl PermissionApi {
     fn create(&self, req: &mut Request) -> AranResult<Response> {
         let unmarshall_body =
             self.validate::<Permissions>(req.get::<bodyparser::Struct<Permissions>>()?)?;
-        ui::rawdumpln(
-            Colour::White,
-            '✓',
+        debug!("{} ✓",
             format!("======= parsed {:?} ", unmarshall_body),
         );
 
@@ -83,18 +79,18 @@ impl PermissionApi {
         }
     }
 
-    //Send in the role id and get all the list the permissions for the role.
-    pub fn list_by_role(&self, req: &mut Request) -> AranResult<Response> {
-        let role_id = {
+    //Send in the policy id and get all the list the permissions for the policy.
+    pub fn list_by_policy(&self, req: &mut Request) -> AranResult<Response> {
+        let policy_id = {
             let params = req.extensions.get::<Router>().unwrap();
-            match params.find("role_id").unwrap().parse::<u64>() {
-                Ok(role_id) => role_id,
-                Err(_) => return Err(bad_request(&MustBeNumeric("role_id".to_string()))),
+            match params.find("policy_id").unwrap().parse::<u64>() {
+                Ok(policy_id) => policy_id,
+                Err(_) => return Err(bad_request(&MustBeNumeric("policy_id".to_string()))),
             }
         };
 
         match permission::DataStore::new(&self.conn)
-            .list_by_role(&IdGet::with_id(role_id.clone().to_string()))
+            .list_by_policy(&IdGet::with_id(policy_id.clone().to_string()))
         {
             Ok(Some(permissions_list)) => Ok(render_json_list(
                 status::Ok,
@@ -105,7 +101,7 @@ impl PermissionApi {
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(RecordsNotFound),
-                role_id
+                policy_id
             ))),
         }
     }
@@ -125,21 +121,21 @@ impl PermissionApi {
         }
     }
 
-    //Permission applied for a role
+    //Permission applied for a policy
     //Don't know the reason we use this.
-    fn show_by_role(&self, req: &mut Request) -> AranResult<Response> {
-        let (perm_id, role_id) = {
+    fn show_by_policy(&self, req: &mut Request) -> AranResult<Response> {
+        let (perm_id, policy_id) = {
             let params = req.extensions.get::<Router>().unwrap();
             let perm_id = params.find("id").unwrap().to_owned();
-            let role_id = params.find("role_id").unwrap().to_owned();
+            let policy_id = params.find("policy_id").unwrap().to_owned();
 
-            (perm_id, role_id)
+            (perm_id, policy_id)
         };
         let mut perms_get = IdGet::new();
         perms_get.set_id(perm_id);
-        perms_get.set_name(role_id);
+        perms_get.set_name(policy_id);
 
-        match permission::DataStore::new(&self.conn).show_by_role(&perms_get) {
+        match permission::DataStore::new(&self.conn).show_by_policy(&perms_get) {
             Ok(Some(perms)) => Ok(render_json(status::Ok, &perms)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
@@ -167,12 +163,12 @@ impl Api for PermissionApi {
         let show = move |req: &mut Request| -> AranResult<Response> { _self.show(req) };
 
         let _self = self.clone();
-        let list_by_role =
-            move |req: &mut Request| -> AranResult<Response> { _self.list_by_role(req) };
+        let list_by_policy =
+            move |req: &mut Request| -> AranResult<Response> { _self.list_by_policy(req) };
 
         let _self = self.clone();
-        let show_by_role =
-            move |req: &mut Request| -> AranResult<Response> { _self.show_by_role(req) };
+        let show_by_policy =
+            move |req: &mut Request| -> AranResult<Response> { _self.show_by_policy(req) };
 
         //Routes:  Authorization : Permissions
         router.post(
@@ -186,11 +182,11 @@ impl Api for PermissionApi {
             "permission_list",
         );
         router.get(
-            "/permissions/roles/:role_id",
+            "/permissions/policies/:policy_id",
             XHandler::new(C {
-                inner: list_by_role,
+                inner: list_by_policy,
             }).before(basic.clone()),
-            "list_permissions_by_role",
+            "list_permissions_by_policy",
         );
         router.get(
             "/permissions/:id",
@@ -198,9 +194,9 @@ impl Api for PermissionApi {
             "permission_show",
         );
         router.get(
-            "/permissions/:id/roles/:role_id",
+            "/permissions/:id/policies/:policy_id",
             XHandler::new(C {
-                inner: show_by_role,
+                inner: show_by_policy,
             }).before(basic.clone()),
             "show_permissions_applied_for",
         );
@@ -215,7 +211,7 @@ impl ExpanderSender for PermissionApi {
             CACHE_PREFIX_PERMISSION.to_string(),
             Box::new(move |id: IdGet| -> Option<String> {
                 permission::DataStore::new(&_conn)
-                    .show_by_role(&id)
+                    .show_by_policy(&id)
                     .ok()
                     .and_then(|p| serde_json::to_string(&p).ok())
             }),
@@ -242,8 +238,8 @@ impl Validator for Permissions {
             s.push("description".to_string());
         }
 
-        if self.get_role_id().len() <= 0 {
-            s.push("role_id".to_string());
+        if self.get_policy_id().len() <= 0 {
+            s.push("policy_id".to_string());
         }
 
         if s.is_empty() {
