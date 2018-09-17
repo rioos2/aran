@@ -23,7 +23,7 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     ui.br()?;
     ui.para("Enter your credentials.")?;
 
-    let mut account = session::Session::new();
+    let mut account = session::Account::new();
     account.set_first_name(prompt_firstname(ui)?);
     account.set_last_name(prompt_lastname(ui)?);
     account.set_email(ui.prompt_ask("Email", None)?);
@@ -57,7 +57,7 @@ fn write_cli_config_auth_token(auth_token: &str, email: &str, account: &str) -> 
     config::save(&config)
 }
 
-fn signup(ui: &mut UI, rio_client: Client, account: session::Session) -> Result<session::Session> {
+fn signup(ui: &mut UI, rio_client: Client, account: session::Account) -> Result<session::Session> {
     ui.br()?;
     Ok(rio_client.signup(account)?)
 }
