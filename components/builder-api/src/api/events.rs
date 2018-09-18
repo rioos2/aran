@@ -57,12 +57,24 @@ macro_rules! log_event {
     }};
 }
 
+// Macros to post in the event logger  from any request.
+#[macro_export]
+macro_rules! log_audit {
+    ($req:ident, $evt:expr) => {{
+        use persistent;
+        let ad = format!("{}", ($req).remote_addr);
+        let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
+        el.record_audit($evt, (($evt).get_account(), ad))
+    }};
+}
+
+
 // Macros to post in the event logger from any request.
 #[macro_export]
 macro_rules! push_notification {
     ($req:ident, $evt:expr) => {{
         use persistent;
-        let ad = format!("{}", ($req).remote_addr);      
+        let ad = format!("{}", ($req).remote_addr);
         let el = ($req).get::<persistent::Read<EventLog>>().unwrap();
         el.push_notify($evt, (($evt).get_account(), ad))
     }};
@@ -118,9 +130,18 @@ impl EventLogger {
     pub fn record_event(&self, event: AuditEvent, accessed_by: AccessedBy) {
         if self.enabled {
             let envelope = Envelope::new(&event, accessed_by);
+            let file_path = self.log_dir.join("events-blockchain.json");
+            write_file(&self.log_dir, &file_path, &envelope);
+            self.channel.push_event(envelope);
+        }
+    }
+
+    pub fn record_audit(&self, event: AuditEvent, accessed_by: AccessedBy) {
+        if self.enabled {
+            let envelope = Envelope::new(&event, accessed_by);
             let file_path = self.log_dir.join("audits-blockchain.json");
             write_file(&self.log_dir, &file_path, &envelope);
-            self.channel.peer_add(envelope);
+            self.channel.push_audit(envelope);
         }
     }
 

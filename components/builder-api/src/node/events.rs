@@ -1,10 +1,10 @@
 // Copyright 2018 The Rio Advancement Inc
 
 
-use api::audit::PushNotifier;
-use api::audit::ledger;
-use api::audit::mailer::email_sender as mailer;
-use api::audit::slack::slack_sender as slack;
+use api::blockchain::PushNotifier;
+use api::blockchain::ledger;
+use api::blockchain::mailer::email_sender as mailer;
+use api::blockchain::slack::slack_sender as slack;
 use events::{Event, EventHandler, InternalEvent};
 use node::runtime::{ExternalMessage, RuntimeHandler};
 
@@ -23,15 +23,29 @@ impl EventHandler for RuntimeHandler {
 impl RuntimeHandler {
     fn handle_api_event(&mut self, event: ExternalMessage) {
         match event {
-            ExternalMessage::PeerAdd(event_envl) => {
+            ExternalMessage::EmitEvent(event_envl) => {
                 debug!("--> ledger config is {:?}", self.config);
 
                 match ledger::from_config(&self.config) {
                     Ok(ledger) => {
-                        match ledger.record(&event_envl) {
-                            Ok(_) => debug!("--> save success"),
+                        match ledger.record_event(&event_envl) {
+                            Ok(_) => debug!("--> event save success"),
 
-                            _ => debug!("--> save fail. {:?}", event_envl),
+                            _ => debug!("--> event save fail. {:?}", event_envl),
+                        };
+                    }
+                    _ => debug!("--> ledger load  fail."),
+                }
+            }
+            ExternalMessage::EmitAudit(event_envl) => {
+                debug!("--> ledger config is {:?}", self.config);
+
+                match ledger::from_config(&self.config) {
+                    Ok(ledger) => {
+                        match ledger.record_audit(&event_envl) {
+                            Ok(_) => debug!("--> audit save success"),
+
+                            _ => debug!("--> audit save fail. {:?}", event_envl),
                         };
                     }
                     _ => debug!("--> ledger load  fail."),

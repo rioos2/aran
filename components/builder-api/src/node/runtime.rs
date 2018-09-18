@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 
-use api::audit::config::{BlockchainConn, MailerCfg, SlackCfg};
+use api::blockchain::config::{BlockchainConn, MailerCfg, SlackCfg};
 use config::Config;
 use entitlement::softwarekeys::licensor::NativeSDK;
 
@@ -28,7 +28,8 @@ const DURATION: u64 = 86400;
 /// External messages.
 #[derive(Debug)]
 pub enum ExternalMessage {
-    PeerAdd(Envelope),
+    EmitAudit(Envelope),
+    EmitEvent(Envelope),
     PushNotification(Envelope),
     ActivateLicense(u32, String, String),
     DeActivateLicense(u32, String, String),
@@ -79,8 +80,16 @@ impl ApiSender {
     }
 
     /// Add peer to peer list
-    pub fn peer_add(&self, envl: Envelope) -> io::Result<()> {
-        let msg = ExternalMessage::PeerAdd(envl);
+    pub fn push_audit(&self, envl: Envelope) -> io::Result<()> {
+        let msg = ExternalMessage::EmitAudit(envl);
+        self.0.clone().send(msg).wait().map(drop).map_err(
+            into_other,
+        )
+    }
+
+    /// Add peer to peer list
+    pub fn push_event(&self, envl: Envelope) -> io::Result<()> {
+        let msg = ExternalMessage::EmitEvent(envl);
         self.0.clone().send(msg).wait().map(drop).map_err(
             into_other,
         )

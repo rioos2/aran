@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use audit::config::LogsCfg;
 use watch::config::StreamerCfg;
 
-use api::audit::config::{AppStoresCfg, BlockchainCfg};
+use api::blockchain::config::{AppStoresCfg, BlockchainCfg};
 use api::deploy::config::ServicesCfg;
 use api::security::config::SecurerCfg;
 use rio_core::fs::rioconfig_config_path;

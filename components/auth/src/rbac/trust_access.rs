@@ -41,6 +41,7 @@ const SENSEI: &'static str = "SENSEIS";
 const LICENSE: &'static str = "LICENSES";
 const INVITATION: &'static str = "INVITATIONS";
 const TEAM: &'static str = "TEAMS";
+const SESSION: &'static str = "SESSIONS";
 
 const RESOURCE_GET: &'static str = "GET";
 const RESOURCE_POST: &'static str = "POST";
@@ -124,9 +125,9 @@ impl PartialEq for TrustAccess {
                     TrustLevel::ResourceWild => self.0 == other.0,
                     _ => self.0 == other.0 && self.1 == other.1,
                 }
-            },
+            }
         }
-        
+
     }
 }
 
@@ -171,6 +172,7 @@ enum TrustResource {
     License,
     Invitation,
     Team,
+    Session,
     None,
 }
 
@@ -239,6 +241,7 @@ impl TrustResource {
             LICENSE => TrustResource::License,
             TEAM => TrustResource::Team,
             INVITATION => TrustResource::Invitation,
+            SESSION => TrustResource::Session,
             _ => TrustResource::None,
         }
     }

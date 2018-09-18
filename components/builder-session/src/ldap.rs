@@ -92,9 +92,9 @@ impl Into<LDAPUser> for SearchEntry {
     }
 }
 
-impl Into<session::SessionCreate> for LDAPUser {
-    fn into(self) -> session::SessionCreate {
-        let mut session = session::SessionCreate::new();
+impl Into<session::Account> for LDAPUser {
+    fn into(self) -> session::Account {
+        let mut session = session::Account::new();
         session.set_email(self.email.to_owned());
         if session.get_email().is_empty() {
             session.set_email(self.first_name.to_owned());

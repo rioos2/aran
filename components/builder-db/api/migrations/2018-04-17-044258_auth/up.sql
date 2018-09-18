@@ -131,24 +131,26 @@ $$ LANGUAGE PLPGSQL STABLE;
 ---
 --- Table:account_sessions
 ---
-CREATE TABLE IF NOT EXISTS account_sessions (account_id bigint REFERENCES accounts(id), token text, device JSONB, provider text, is_admin bool DEFAULT FALSE, is_service_access bool DEFAULT FALSE, created_at timestamptz DEFAULT now(), expires_at timestamptz DEFAULT now() + interval '1 day');
+CREATE TABLE IF NOT EXISTS account_sessions (account_id bigint REFERENCES accounts(id), token text, device JSONB, provider text, is_admin bool DEFAULT FALSE, is_service_access bool DEFAULT FALSE, object_meta JSONB, type_meta JSONB, created_at timestamptz DEFAULT now(), expires_at timestamptz DEFAULT now() + interval '1 day');
 
 ---
 --- Table:account_sessions:create
 ---
 
 CREATE
-OR REPLACE FUNCTION insert_account_session_v1 (a_account_id bigint, account_token text, account_provider text, device JSONB) RETURNS SETOF account_sessions AS $$
+OR REPLACE FUNCTION insert_account_session_v1 (a_account_id bigint, account_token text, account_provider text, device JSONB,object_meta JSONB,type_meta JSONB) RETURNS SETOF account_sessions AS $$
 BEGIN
    RETURN QUERY
    INSERT INTO
-      account_sessions (account_id, token, provider, device)
+      account_sessions (account_id, token, provider, device,object_meta,type_meta)
    VALUES
       (
          a_account_id,
          account_token,
          account_provider,
-         device
+         device,
+         object_meta,
+         type_meta
       )
       RETURNING *;
 RETURN;
@@ -172,6 +174,25 @@ BEGIN
 RETURN;
 END
 $$ LANGUAGE PLPGSQL VOLATILE;
+
+
+---
+--- Table:account_sessions:get_session_by_account_id_v1
+---
+CREATE
+OR REPLACE FUNCTION get_session_by_account_id_v1 (acc_id bigint) RETURNS SETOF account_sessions AS $$
+BEGIN
+   RETURN QUERY
+   SELECT
+      *
+   FROM
+      account_sessions
+   WHERE
+      account_id = acc_id;
+RETURN;
+END
+$$ LANGUAGE PLPGSQL VOLATILE;
+
 
 ---
 --- Table:account_sessions:show
