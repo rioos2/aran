@@ -4,10 +4,10 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use api::audit::config::AuditBackend;
+use api::blockchain::config::AuditBackend;
 use audit::config::{Logs, LogsCfg, Vulnerability, VulnerabilityCfg};
 
-use api::audit::config::{AppStores, AppStoresCfg, Blockchain, BlockchainCfg, Mailer, Notifications, Slack};
+use api::blockchain::config::{AppStores, AppStoresCfg, Blockchain, BlockchainCfg, Mailer, Notifications, Slack};
 use api::deploy::config::ServicesCfg;
 use api::objectstorage::config::ObjectStorage;
 use api::objectstorage::config::{ObjectStorageBackend, ObjectStorageCfg};

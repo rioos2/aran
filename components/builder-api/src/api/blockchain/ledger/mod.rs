@@ -7,7 +7,7 @@
 
 pub mod warehouse;
 
-use api::audit::config::{AuditBackend, BlockchainConn};
+use api::blockchain::config::{AuditBackend, BlockchainConn};
 use error::Result;
 use protocol::api::audit::{Envelope, EnvelopeResponse};
 use protocol::api::base::IdGet;
@@ -19,11 +19,18 @@ pub type EnvelopeOutputList = Result<Option<Vec<EnvelopeResponse>>>;
 
 pub trait Ledger: Send {
     /// Store the envelop in the warehouse storage.
-    fn record(&self, envl: &Envelope) -> Result<()>;
+    fn record_event(&self, envl: &Envelope) -> Result<()>;
+
+    /// Store the envelop in the warehouse storage.
+    fn record_audit(&self, envl: &Envelope) -> Result<()>;
+
+    ///  retrieves the audits output for that accountfrom
+    /// warehouse storage.
+    fn retrieve_audits(&self) -> EnvelopeOutputList;
 
     /// Given a `account_id`, retrieves the events output for that accountfrom
     /// warehouse storage.
-    fn retrieve_by(&self, id: &IdGet) -> EnvelopeOutputList;
+    fn retrieve_events(&self, id: &IdGet) -> EnvelopeOutputList;
 }
 
 /// Create appropriate Ledger variant based on configuration values.

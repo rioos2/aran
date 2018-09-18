@@ -1,14 +1,14 @@
 // Copyright 2018 The Rio Advancement Inc
 
-pub use error::{Error, Result};
-
-use common::ui::UI;
+use AUTH_TOKEN_ENVVAR;
 
 use api_client::Client;
+
+use common::ui::UI;
 use config;
+pub use error::{Error, Result};
 use protocol::api::session;
 use rioos_core::env;
-use AUTH_TOKEN_ENVVAR;
 
 pub fn start(ui: &mut UI, client: Client) -> Result<()> {
     ui.br()?;
@@ -16,14 +16,14 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
 
     ui.heading("Signup")?;
     ui.para(
-        "For more information on onboard using commandline, read the \
-         documentation at https://bit.ly/rioos_sh_usersguide",
+        "For more information on onboard using commandline, read \
+         the documentation at https://bit.ly/rioos_sh_usersguide",
     )?;
 
     ui.br()?;
     ui.para("Enter your credentials.")?;
 
-    let mut account = session::SessionCreate::new();
+    let mut account = session::Account::new();
     account.set_first_name(prompt_firstname(ui)?);
     account.set_last_name(prompt_lastname(ui)?);
     account.set_email(ui.prompt_ask("Email", None)?);
@@ -39,8 +39,13 @@ pub fn start(ui: &mut UI, client: Client) -> Result<()> {
         &account.get_id(),
     )?;
 
-    ui.heading("Onboarded in Rio/OS and Logged in successfully.")?;
-    ui.para("To get you started, Run 'rioos digitalcloud list'. Thanks for using Rio/OS!")?;
+    ui.heading(
+        "Onboarded in Rio/OS and Logged in successfully.",
+    )?;
+    ui.para(
+        "To get you started, Run 'rioos digitalcloud list'. \
+         Thanks for using Rio/OS!",
+    )?;
     Ok(())
 }
 
@@ -52,11 +57,7 @@ fn write_cli_config_auth_token(auth_token: &str, email: &str, account: &str) -> 
     config::save(&config)
 }
 
-fn signup(
-    ui: &mut UI,
-    rio_client: Client,
-    account: session::SessionCreate,
-) -> Result<session::Session> {
+fn signup(ui: &mut UI, rio_client: Client, account: session::Account) -> Result<session::Session> {
     ui.br()?;
     Ok(rio_client.signup(account)?)
 }

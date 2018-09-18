@@ -1,7 +1,7 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
-use api::audit::blockchain_api::EventLog;
+use api::blockchain::audits_api::EventLog;
 use bodyparser;
 use config::Config;
 use db::data_store::DataStoreConn;

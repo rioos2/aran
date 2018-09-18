@@ -56,16 +56,19 @@ impl AuthenticateApi {
 
         match delegate.authenticate(&auth) {
             Ok(_validate) => {
-                let mut session_data = SessionCreate::new();
-                session_data.set_email(account.get_email());
-                session_data.set_password(account.get_password());
+                let mut account_data = Account::new();
+                account_data.set_email(account.get_email());
+                account_data.set_password(account.get_password());
 
+                let mut session_data = Session::new();
                 session_data.set_token(UserAccountAuthenticate::token().unwrap());
 
                 let mut device: Device = user_agent(req).into();
                 device.set_ip(format!("{}", req.remote_addr.ip()));
 
-                match sessions::DataStore::find_account(&self.conn, &session_data, &device) {
+                session_data.set_device(device);
+
+                match sessions::DataStore::find_account(&self.conn, &account_data, &session_data) {
                     Ok(session) => Ok(render_json(status::Ok, &session)),
                     Err(err) => Err(internal_error(&format!("{}", err))),
                 }
@@ -77,9 +80,7 @@ impl AuthenticateApi {
     //POST: accounts",
     //Input account and creates an user, by returning the Account information of an user
     fn account_create(&self, req: &mut Request) -> AranResult<Response> {
-        let mut unmarshall_body = self.validate(
-            req.get::<bodyparser::Struct<SessionCreate>>()?,
-        )?;
+        let mut unmarshall_body = self.validate(req.get::<bodyparser::Struct<Account>>()?)?;
 
         if unmarshall_body.get_apikey().len() <= 0 {
             unmarshall_body.set_apikey(rand::random::<u64>().to_string());
@@ -93,8 +94,6 @@ impl AuthenticateApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
 
-        unmarshall_body.set_token(UserAccountAuthenticate::token().unwrap());
-
         let en = unmarshall_body.get_password();
         unmarshall_body.set_password(UserAccountAuthenticate::encrypt(en).unwrap());
 
@@ -104,13 +103,17 @@ impl AuthenticateApi {
         let mut device: Device = user_agent(req).into();
         device.set_ip(format!("{}", req.remote_addr.ip()));
 
+        let mut session = Session::new();
+        session.set_device(device);
+        session.set_token(UserAccountAuthenticate::token().unwrap());
+
         match sessions::DataStore::get_account(&self.conn, &account_get) {
             Ok(Some(_account)) => Err(conflict_error(
                 &format!("alreay exists {}", account_get.get_email()),
             )),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => {
-                match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &device) {
+                match sessions::DataStore::account_create(&self.conn, &unmarshall_body, &session) {
                     Ok(account) => Ok(render_json(status::Ok, &account)),
                     Err(err) => Err(internal_error(&format!("{}", err))),
                 }
@@ -123,16 +126,13 @@ impl AuthenticateApi {
     fn account_show(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
 
-        let mut account_get_by_id = AccountGetId::new();
-        account_get_by_id.set_id(params.get_id());
-
-        match sessions::DataStore::get_account_by_id(&self.conn, &account_get_by_id) {
+        match sessions::DataStore::get_account_by_id(&self.conn, &params) {
             Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
             Err(err) => Err(internal_error(&format!("{}", err))),
             Ok(None) => Err(not_found_error(&format!(
                 "{} for {}",
                 Error::Db(RecordsNotFound),
-                &account_get_by_id.get_id()
+                &params.get_id()
             ))),
         }
     }
@@ -147,6 +147,21 @@ impl AuthenticateApi {
         }
     }
 
+    //GET: accounts",
+    //returns the Account information of all users
+    fn session_list(&self, req: &mut Request) -> AranResult<Response> {
+        let params = self.verify_account(req)?;
+        match sessions::DataStore::get_session_by_account_id(&self.conn, &params) {
+            Ok(Some(sessions)) => Ok(render_json_list(status::Ok, dispatch(req), &sessions)),
+            Err(err) => Err(internal_error(&format!("{}\n", err))),
+            Ok(None) => Err(not_found_error(&format!(
+                "{} for {}",
+                Error::Db(RecordsNotFound),
+                &params.get_id()
+            ))),
+        }
+    }
+
 
     //PUT: accounts/:id",
     //Input id, and returns the Account information of an user
@@ -155,7 +170,7 @@ impl AuthenticateApi {
         let mut unmarshall_body = self.validate(
             req.get::<bodyparser::Struct<AccountsInput>>()?,
         )?;
-        unmarshall_body.set_id(params.get_id());
+        unmarshall_body.set_id(params.get_name());
 
         match sessions::DataStore::account_update(&self.conn, &unmarshall_body) {
             Ok(Some(account)) => Ok(render_json(status::Ok, &account)),
@@ -344,6 +359,9 @@ impl Api for AuthenticateApi {
         let account_list = move |req: &mut Request| -> AranResult<Response> { _self.account_list(req) };
 
         let _self = self.clone();
+        let session_list = move |req: &mut Request| -> AranResult<Response> { _self.session_list(req) };
+
+        let _self = self.clone();
         let account_update = move |req: &mut Request| -> AranResult<Response> { _self.account_update(req) };
 
         let _self = self.clone();
@@ -398,6 +416,13 @@ impl Api for AuthenticateApi {
             "/accounts",
             XHandler::new(C { inner: account_list }).before(basic.clone()),
             "account_list",
+        );
+
+
+        router.get(
+            "/sessions",
+            XHandler::new(C { inner: session_list }).before(basic.clone()),
+            "session_list",
         );
 
 
@@ -512,7 +537,27 @@ impl Validator for AccountTokenGet {
     }
 }
 
-impl Validator for SessionCreate {
+impl Validator for Account {
+    //default implementation is to check for `name` and 'origin'
+    fn valid(self) -> AranValidResult<Self> {
+        let mut s: Vec<String> = vec![];
+
+        if self.get_email().len() <= 0 {
+            s.push("email".to_string());
+        }
+        if self.get_password().len() <= 0 {
+            s.push("password".to_string());
+        }
+        if s.is_empty() {
+            return Ok(Box::new(self));
+        }
+
+        Err(bad_request(&MissingParameter(format!("{:?}", s))))
+    }
+}
+
+
+impl Validator for Session {
     //default implementation is to check for `name` and 'origin'
     fn valid(self) -> AranValidResult<Self> {
         let mut s: Vec<String> = vec![];

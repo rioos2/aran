@@ -7,11 +7,11 @@ use super::rendering::*;
 use super::super::util::errors::*;
 use auth::config::AuthenticationFlowCfg;
 use auth::rbac::account::{AccountsFascade, ServiceAccountsFascade};
-use auth::rbac::teams::TeamsFascade;
-use auth::rbac::policies::PolicyFascade;
 use auth::rbac::authorizer;
 use auth::rbac::license::LicensesFascade;
 use auth::rbac::permissions::Permissions;
+use auth::rbac::policies::PolicyFascade;
+use auth::rbac::teams::TeamsFascade;
 use auth::rioos::AuthenticateDelegate;
 use db::data_store::DataStoreConn;
 use entitlement::config::License;
@@ -250,6 +250,8 @@ impl URLGrabber {
         "WIZARDS.GET",
         "AUDITS.POST",
         "AUDITS.GET",
+        "EVENTS.POST",
+        "EVENTS.GET",
     ];
 
     fn grab(req: &mut Request) -> Option<String> {

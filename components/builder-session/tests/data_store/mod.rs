@@ -7,7 +7,7 @@ const ORIGIN: &'static str = "Origin";
 #[test]
 fn create_account() {
     let conn = Broker::connect().unwrap();
-    let mut account_create = sessionsrv::SessionCreate::new();
+    let mut account_create = sessionsrv::Session::new();
     let api_key = rand::random::<u64>().to_string();
     account_create.set_apikey(api_key);
     account_create.set_token("ty987645yhnbfert".to_string());

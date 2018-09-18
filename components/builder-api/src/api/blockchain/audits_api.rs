@@ -3,7 +3,7 @@
 use super::ledger;
 use api::{Api, ApiValidator, ParmsVerifier, Validator};
 
-use api::audit::config::BlockchainConn;
+use api::blockchain::config::BlockchainConn;
 use api::events::EventLogger;
 
 use bodyparser;
@@ -30,20 +30,20 @@ use typemap;
 define_event_log!();
 
 #[derive(Clone)]
-pub struct BlockChainApi {
+pub struct AuditsApi {
     clientcfg: Box<BlockchainConn>,
     conn: Box<DataStoreConn>,
 }
 
-/// BlockChainApi: BlockChainApi provides ability to post the audits of the users
+/// AuditsApi: AuditsApi provides ability to post the audits of the users
 /// and manage them.
 //
 /// URL:
 /// POST:/account/:account_id/audits,
 /// GET: /account/:account_id/audits
-impl BlockChainApi {
+impl AuditsApi {
     pub fn new(datastore: Box<DataStoreConn>, clientcfg: Box<BlockchainConn>) -> Self {
-        BlockChainApi {
+        AuditsApi {
             clientcfg: clientcfg,
             conn: datastore,
         }
@@ -76,7 +76,7 @@ impl BlockChainApi {
 
         unmarshall_body.set_meta(type_meta(req), m);
         //Send to the eventlogger and return.
-        log_event!(req, *unmarshall_body.clone());
+        log_audit!(req, *unmarshall_body.clone());
         push_notification!(req, *unmarshall_body.clone());
 
         Ok(render_json(status::Ok, &unmarshall_body))
@@ -86,17 +86,12 @@ impl BlockChainApi {
     //Input account_id
     // Returns all the audits (for that account)
     fn list(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_account(req)?;
 
         let data = ledger::from_config(&self.clientcfg)?;
 
-        match data.retrieve_by(&params) {
+        match data.retrieve_audits() {
             Ok(Some(envelopes)) => Ok(render_json_list(status::Ok, dispatch(req), &envelopes)),
-            Ok(None) => Err(not_found_error(&format!(
-                "{} for {}",
-                Error::Db(RecordsNotFound),
-                params.get_id()
-            ))),
+            Ok(None) => Err(not_found_error(&format!("{}", Error::Db(RecordsNotFound)))),
             Err(err) => {
                 if format!("{:?}", err).contains("Connection refused") {
                     return Err(badgateway_error(&format!("{}", err)));
@@ -107,7 +102,7 @@ impl BlockChainApi {
     }
 }
 
-impl Api for BlockChainApi {
+impl Api for AuditsApi {
     fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
         let _self = self.clone();
         let create = move |req: &mut Request| -> AranResult<Response> { _self.create(req) };
@@ -122,9 +117,9 @@ impl Api for BlockChainApi {
     }
 }
 
-impl ApiValidator for BlockChainApi {}
+impl ApiValidator for AuditsApi {}
 
-impl ParmsVerifier for BlockChainApi {}
+impl ParmsVerifier for AuditsApi {}
 
 impl Validator for AuditEvent {
     //default implementation is to check for `name` and 'origin'

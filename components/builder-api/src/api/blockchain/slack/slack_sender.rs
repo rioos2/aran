@@ -1,8 +1,8 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
-use api::audit::config::{SlackCfg, SLACK_URL};
-use api::audit::{PushNotifier, Status};
+use api::blockchain::config::{SlackCfg, SLACK_URL};
+use api::blockchain::{PushNotifier, Status};
 use error::{Error, Result};
 use protocol::api::audit::Envelope;
 use protocol::api::base::MetaFields;

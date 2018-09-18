@@ -10,214 +10,11 @@ use woothee::parser::{Parser, WootheeResult};
 pub const DEFAULT_AGENT: &'static str = "Rio Bulldog";
 
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct SessionCreate {
-    #[serde(default)]
-    id: String, //Id an unique identifier in systems of record. Generated during creation of the session.
-    #[serde(default)]
-    object_meta: ObjectMeta, //Standard object metadata
-    #[serde(default)]
-    type_meta: TypeMeta, //Standard type metadata: kind: SesssionCreate
-    email: String, //email of the user
-    first_name: String, //first name of the user
-    last_name: String, //last name of the user
-    phone: String, //contact number of the user
-    #[serde(default)]
-    avatar: Option<Vec<u8>>, //Avatar picture to identity the user
-    company_name: String, //Company name is where the user works.
-    #[serde(default)]
-    provider: ::std::option::Option<OAuthProvider>,
-    #[serde(default)]
-    api_key: String, //A persistenant personal access token is required to authenticate to Rio/OS  in the following situations:  1. When you don't want to login and use the ephermeal authorization tokens. This should be used with caution.
-    #[serde(default)]
-    token: String, //tolen for individual user
-    password: String, //user password
-    #[serde(default)]
-    approval: bool, //approved user or not
-    #[serde(default)]
-    is_admin: bool, //is_admin are the specify admin or user of the Rio/OS
-    #[serde(default)]
-    suspend: bool, //user suspend or not   If true, the user is suspended. Defaults to false
-    #[serde(default)]
-    registration_ip_address: String, //Registration ip address of the user
-    #[serde(default)]
-    trust_level: String,
-    #[serde(default)]
-    created_at: String, //when session created
-}
-
-impl MetaFields for SessionCreate {
-    /// Returns the latest self with built ObjectMeta and Type_meta
-    /// Wipes out the old meta.
-    /// Should be handled externally by doing Meta::with(by mutating the old ObjectMeta)
-    fn set_meta(&mut self, t: TypeMeta, v: ObjectMeta) {
-        self.type_meta = t;
-        self.object_meta = v;
-    }
-
-    fn object_meta(&self) -> ObjectMeta {
-        self.object_meta.clone()
-    }
-
-    fn type_meta(&self) -> TypeMeta {
-        self.type_meta.clone()
-    }
-}
-
-impl SessionCreate {
-    pub fn new() -> SessionCreate {
-        ::std::default::Default::default()
-    }
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-    pub fn get_id(&self) -> ::std::string::String {
-        self.id.clone()
-    }
-    pub fn set_email(&mut self, v: ::std::string::String) {
-        self.email = v;
-    }
-
-    pub fn get_email(&self) -> ::std::string::String {
-        self.email.clone()
-    }
-
-    pub fn set_provider(&mut self, v: OAuthProvider) {
-        self.provider = ::std::option::Option::Some(v);
-    }
-
-    pub fn get_provider(&self) -> OAuthProvider {
-        self.provider.clone().unwrap_or(OAuthProvider::PasswordAuth)
-    }
-
-    pub fn set_first_name(&mut self, v: ::std::string::String) {
-        self.first_name = v;
-    }
-
-    pub fn get_first_name(&self) -> ::std::string::String {
-        self.first_name.clone()
-    }
-
-    pub fn set_last_name(&mut self, v: ::std::string::String) {
-        self.last_name = v;
-    }
-
-    pub fn get_last_name(&self) -> ::std::string::String {
-        self.last_name.clone()
-    }
-
-    pub fn set_phone(&mut self, v: ::std::string::String) {
-        self.phone = v;
-    }
-
-    pub fn get_phone(&self) -> ::std::string::String {
-        self.phone.clone()
-    }
-
-    pub fn set_apikey(&mut self, v: ::std::string::String) {
-        self.api_key = v;
-    }
-
-    pub fn get_apikey(&self) -> ::std::string::String {
-        self.api_key.clone()
-    }
-
-    pub fn set_token(&mut self, v: ::std::string::String) {
-        self.token = v;
-    }
-
-    pub fn get_token(&self) -> ::std::string::String {
-        self.token.clone()
-    }
-
-    pub fn set_password(&mut self, v: ::std::string::String) {
-        self.password = v;
-    }
-
-    pub fn get_password(&self) -> ::std::string::String {
-        self.password.clone()
-    }
-
-    pub fn set_approval(&mut self, v: bool) {
-        self.approval = v;
-    }
-
-    pub fn get_approval(&self) -> bool {
-        self.approval.clone()
-    }
-
-    pub fn set_suspend(&mut self, v: bool) {
-        self.suspend = v;
-    }
-
-    pub fn get_suspend(&self) -> bool {
-        self.suspend.clone()
-    }
-
-    pub fn set_is_admin(&mut self, v: bool) {
-        self.is_admin = v;
-    }
-
-    pub fn get_is_admin(&self) -> bool {
-        self.is_admin.clone()
-    }
-
-    pub fn set_registration_ip_address(&mut self, v: ::std::string::String) {
-        self.registration_ip_address = v;
-    }
-
-    pub fn get_registration_ip_address(&self) -> ::std::string::String {
-        self.registration_ip_address.clone()
-    }
-
-    pub fn set_trust_level(&mut self, v: ::std::string::String) {
-        self.trust_level = v;
-    }
-
-    pub fn get_trust_level(&self) -> ::std::string::String {
-        self.trust_level.clone()
-    }
-
-    pub fn set_company_name(&mut self, v: ::std::string::String) {
-        self.company_name = v;
-    }
-
-    pub fn get_company_name(&self) -> ::std::string::String {
-        self.company_name.clone()
-    }
-
-    pub fn set_created_at(&mut self, v: ::std::string::String) {
-        self.created_at = v;
-    }
-
-    pub fn get_created_at(&self) -> ::std::string::String {
-        self.created_at.clone()
-    }
-
-    pub fn set_avatar(&mut self, v: Option<Vec<u8>>) {
-        self.avatar = v;
-    }
-
-    pub fn get_avatar(&self) -> &Option<Vec<u8>> {
-        &self.avatar
-    }
-}
-
-impl Into<Session> for SessionCreate {
-    fn into(self) -> Session {
-        let mut session = Session::new();
-        session.set_id(self.get_id());
-        session.set_email(self.get_email().to_owned());
-        session.set_token(self.get_token().to_owned());
-        session.set_apikey(self.get_apikey().to_owned());
-        session
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Session {
     #[serde(default)]
     id: String, //Id an unique identifier in systems of record. Generated during creation of the session.
     email: String, //email of the user
+    password: String, //user password
     first_name: String, //first name of the user
     last_name: String, //last name of the user
     is_admin: bool, // is_admin are the specify admin or user of the Rio/OS
@@ -228,6 +25,10 @@ pub struct Session {
     object_meta: ObjectMeta, //Standard object metadata
     #[serde(default)]
     type_meta: TypeMeta, //Standard Type metadata
+    #[serde(default)]
+    device: Device, //Device that user login
+    #[serde(default)]
+    created_at: String, //Device that user login
 }
 
 impl MetaFields for Session {
@@ -253,6 +54,15 @@ impl Session {
         ::std::default::Default::default()
     }
 
+
+    pub fn with(t: TypeMeta, o: ObjectMeta) -> Session {
+        Session {
+            type_meta: t,
+            object_meta: o,
+            ..Default::default()
+        }
+    }
+
     pub fn set_id(&mut self, v: ::std::string::String) {
         self.id = v;
     }
@@ -269,12 +79,28 @@ impl Session {
         self.email.clone()
     }
 
+    pub fn set_password(&mut self, v: ::std::string::String) {
+        self.password = v;
+    }
+
+    pub fn get_password(&self) -> ::std::string::String {
+        self.password.clone()
+    }
+
     pub fn set_apikey(&mut self, v: ::std::string::String) {
         self.api_key = v;
     }
 
     pub fn get_apikey(&self) -> ::std::string::String {
         self.api_key.clone()
+    }
+
+    pub fn set_device(&mut self, v: Device) {
+        self.device = v;
+    }
+
+    pub fn get_device(&self) -> Device {
+        self.device.clone()
     }
 
     pub fn set_first_name(&mut self, v: ::std::string::String) {
@@ -315,6 +141,14 @@ impl Session {
     pub fn get_flags(&self) -> u32 {
         self.flags
     }
+
+    pub fn set_created_at(&mut self, v: ::std::string::String) {
+        self.created_at = v;
+    }
+
+    pub fn get_created_at(&self) -> ::std::string::String {
+        self.created_at.clone()
+    }
 }
 
 #[derive(PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -328,6 +162,7 @@ impl SessionGet {
     pub fn new() -> SessionGet {
         ::std::default::Default::default()
     }
+
 
     pub fn set_email(&mut self, v: ::std::string::String) {
         self.email = v;
@@ -445,25 +280,6 @@ impl AccountsInput {
     }
 }
 
-
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct AccountGetId {
-    id: String,
-}
-
-impl AccountGetId {
-    pub fn new() -> AccountGetId {
-        ::std::default::Default::default()
-    }
-
-    pub fn set_id(&mut self, v: ::std::string::String) {
-        self.id = v;
-    }
-
-    pub fn get_id(&self) -> ::std::string::String {
-        self.id.clone()
-    }
-}
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum OAuthProvider {

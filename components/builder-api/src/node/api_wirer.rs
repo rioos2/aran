@@ -4,9 +4,9 @@
 //! Api gets wired here for the node api server.
 //!
 
-use api::{audit, authorize, cluster, deploy, devtooling, objectstorage, security, Api, entitle};
-use api::audit::blockchain_api::EventLog;
-use api::audit::config::BlockchainConn;
+use api::{blockchain, authorize, cluster, deploy, devtooling, objectstorage, security, Api, entitle};
+use api::blockchain::audits_api::EventLog;
+use api::blockchain::config::BlockchainConn;
 use api::events::EventLogger;
 use api::objectstorage::config::ObjectStorageCfg;
 use api::security::config::SecurerConn;
@@ -233,13 +233,13 @@ impl HttpGateway for Wirer {
         let mut settings = security::settings_map_api::SettingsMapApi::new(ds.clone());
         settings.wire(config.clone(), &mut router);
 
-        let mut log = audit::log_api::LogApi::new(
+        let mut log = blockchain::log_api::LogApi::new(
             ds.clone(),
             Box::new(InfluxClientConn::new(&*config.clone())),
         );
         log.wire(config.clone(), &mut router);
 
-        let mut vuln = audit::vuln_api::VulnApi::new(ds.clone(), Box::new(AnchoreClient::new(&*config.clone())));
+        let mut vuln = blockchain::vuln_api::VulnApi::new(ds.clone(), Box::new(AnchoreClient::new(&*config.clone())));
         vuln.wire(config.clone(), &mut router);
 
         let mut build_config = devtooling::build_config::BuildConfigApi::new(ds.clone());
@@ -254,8 +254,11 @@ impl HttpGateway for Wirer {
         let mut image_marks = devtooling::image_marks::ImageMarksApi::new(ds.clone());
         image_marks.wire(config.clone(), &mut router);
 
-        let mut block_chain = audit::blockchain_api::BlockChainApi::new(ds.clone(), Box::new(BlockchainConn::new(&*config.clone())));
-        block_chain.wire(config.clone(), &mut router);
+        let mut audits_api = blockchain::audits_api::AuditsApi::new(ds.clone(), Box::new(BlockchainConn::new(&*config.clone())));
+        audits_api.wire(config.clone(), &mut router);
+
+        let mut events_api = blockchain::events_api::EventsApi::new(ds.clone(), Box::new(BlockchainConn::new(&*config.clone())));
+        events_api.wire(config.clone(), &mut router);
 
         router
     }
