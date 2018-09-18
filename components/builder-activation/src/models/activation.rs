@@ -7,10 +7,8 @@ use db::data_store::DataStoreConn;
 use error::{Error, Result};
 use protocol::api::activation;
 
-use protocol::api::base::{IdGet, MetaFields, WhoAmITypeMeta};
+use protocol::api::base::{MetaFields, WhoAmITypeMeta};
 use protocol::api::schema::type_meta_url;
-
-use serde_json::from_str;
 
 
 pub struct DataStore<'a> {

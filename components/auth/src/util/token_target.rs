@@ -1,12 +1,12 @@
 // Copyright 2018 The Rio Advancement Inc
 //
 
+use std::fmt;
+
 use super::super::error::Result;
 use protocol::api::session::SessionGet;
 use base64;
 use base64::decode_config as b64_dec;
-use serde_json::Value as JsonValue;
-use std::fmt;
 use serde_json;
 pub use error::Error;
 

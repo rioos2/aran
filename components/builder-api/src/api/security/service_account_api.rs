@@ -21,7 +21,6 @@ use protocol::api::service_account::ServiceAccount;
 use router::Router;
 use serde_json;
 use service::models::service_account;
-use authorize::models::team;
 use std::sync::Arc;
 
 /// Securer api: SecurerApi provides ability to declare the node

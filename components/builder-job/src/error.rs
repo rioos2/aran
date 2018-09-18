@@ -42,7 +42,7 @@ impl error::Error for Error {
             Error::JobsGet(ref err) => err.description(),
             Error::JobSetStatus(ref err) => err.description(),
             Error::METRICLIMITERROR => "Metric limit not satisfied for the assembly",
-            Error::JobError(ref err) => "",
+            Error::JobError(ref err) => err,
         }
     }
 }

@@ -4,15 +4,6 @@
 
 use super::*;
 use super::expression::*;
-use super::super::error::{self, Result};
-
-use chrono::prelude::*;
-use metrics::prometheus::PrometheusClient;
-use protocol::api::node;
-
-use serde_json;
-use std::collections::BTreeMap;
-use std::ops::Div;
 
 #[derive(Clone)]
 pub struct QueryMaker {}

@@ -1,9 +1,12 @@
+#![allow(non_snake_case)]
+
+use std::collections::BTreeMap;
+
 use error::Result;
-use protocol::api::{node, scale};
+use protocol::api::scale;
 
 use protocol::api::base::QueryInput;
 use serde_json;
-use std::collections::BTreeMap;
 use telemetry::metrics;
 use telemetry::metrics::executer::Executer;
 use telemetry::metrics::prometheus::PrometheusClient;
@@ -18,7 +21,7 @@ impl<'a> Client<'a> {
     }
     pub fn metrics(&self, af_id: &str, querypair: QueryInput) -> Result<Option<Vec<scale::ScalingGetResponse>>> {
         let metric_response = match &format!("job={}", querypair.get("job"))[..] {
-            CONTAINER_JOBS => self.container_metric(&af_id),
+            _CONTAINER_JOBS => self.container_metric(&af_id),
             _ => self.assembly_metric(&af_id),
         };
         let mut response = scale::ScalingGetResponse::new();

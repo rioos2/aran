@@ -1,6 +1,6 @@
 use super::super::error::{Error, Result};
 use protocol::api::authorize::Permissions;
-use std::fmt;
+
 pub type TrustedAccessList = Vec<TrustAccess>;
 
 const ALL: &'static str = "*";

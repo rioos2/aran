@@ -2,23 +2,21 @@
 
 //! An entitlement for the Rio/OS using SoftwareKey.com
 
+#![allow(non_snake_case)]
 
 use super::*;
 use super::saver::Saver;
-use super::state::{State, SUB_PRODUCTS};
+use super::state::State;
 
 use auth::rbac::license::LicensesFascade;
 use entitlement::models::license;
 use error::{Result, Error, ResultCode};
-use lib_load;
-use lib_load::{Symbol, Library};
+use lib_load::Library;
 
 use protocol::api::licenses::{Licenses, INVALID, TRIAL, ACTIVE, EXPIRY};
 use rio_core::fs::rioconfig_license_path;
-use std::collections::BTreeMap;
 use std::ffi::{CString, CStr};
 use std::fs::OpenOptions;
-use std::os::raw::*;
 use std::path::PathBuf;
 
 //ID of the RIOOS product
@@ -58,7 +56,7 @@ const SK_FLAGS_USE_ENCRYPTION: c_int = 0x00010000;
 //When specified, the function call will use digital signatures.
 const SK_FLAGS_USE_SIGNATURE: c_int = 0x00020000;
 //If specified when calling SK_ApiContextDispose, the PLUSNative API will shutdown and free all memory.
-const SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
+const _SK_FLAGS_APICONTEXTDISPOSE_SHUTDOWN: c_int = 0x00000001;
 
 pub struct NativeSDK {
     lib: Library, //sdk file for the licensor
@@ -380,7 +378,6 @@ NIC (OPTIONAL)
                 return Ok(false);
             }
             let valuePtr: &mut SK_IntPointer = &mut 0;
-            let daysPtr: &mut SK_IntPointer = &mut 0;
             let countPtr: &mut SK_IntPointer = &mut 0;
             let matchesPtr: &mut SK_IntPointer = &mut 0;
 
@@ -640,7 +637,9 @@ NIC (OPTIONAL)
         }
     }
 
-    fn manual_reponse(&mut self, activation_code: &str) -> Result<bool> {
+    // Not used currrently. This is the manual activation option.
+    // This code is left as is, just so if we use manual activation in the future.
+    fn _activate_manually(&mut self, activation_code: &str) -> Result<bool> {
         unsafe {
             let sessionCode: &mut SK_StringPointer = &mut (0 as *const c_char);
             let response: &mut SK_XmlDoc = &mut 0;
@@ -853,7 +852,7 @@ NIC (OPTIONAL)
             let node_get_int = *self.lib
                 .get::<fn(c_int, SK_XmlDoc, *const c_char, *mut c_int) -> c_int>(SK_NODE_GET_INT.as_bytes())?;
 
-            let result = node_get_int(
+            node_get_int(
                 SK_FLAGS_NONE,
                 *responsePtr,
                 CString::new(ACTIVATION_LEFT_URL).unwrap().into_raw(),
@@ -924,8 +923,6 @@ NIC (OPTIONAL)
             let responsePtr: &mut SK_XmlDoc = &mut 0;
             let errorMsgPtr: &mut SK_StringPointer = &mut (0 as *const c_char);
             let sessionCode: &mut SK_StringPointer = &mut (0 as *const c_char);
-            let activationleftPtr: &mut SK_IntPointer = &mut 0;
-            let licensePtr: &mut SK_XmlDoc = &mut 0;
 
             let deactivate_request = *self.lib.get::<fn(SK_ApiContext,
                        c_int,

@@ -2,7 +2,6 @@
 
 use api::base::{Condition, MetaFields, ObjectMeta, TypeMeta, WhoAmITypeMeta};
 
-use serde_json;
 use std::collections::BTreeMap;
 
 pub type SpeedSummary = (String, i32, i32);

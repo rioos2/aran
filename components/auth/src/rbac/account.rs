@@ -1,6 +1,5 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use super::super::error::{Error, Result};
 use db::data_store::DataStoreConn;
 use session::models::{session as sessions};
 use protocol;

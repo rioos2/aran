@@ -28,7 +28,6 @@ use protocol::api::invitations::{InvitationInputs, InvitationsList};
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;
 use error::ErrorMessage::MissingParameter;
-use typemap;
 use api::audit::blockchain_api::EventLog;
 use protocol::api::session;
 use session::models::{session as sessions};
@@ -189,7 +188,7 @@ impl TeamApi {
 
         let mut originated_url = format!("https://{}", req.url.host().to_owned());
 
-        if (req.url.port().to_string() != "80" && req.url.port().to_string() != "443") {
+        if req.url.port().to_string() != "80" && req.url.port().to_string() != "443" {
             originated_url = format!("{}:{}", originated_url, req.url.port().to_string());
         }
 

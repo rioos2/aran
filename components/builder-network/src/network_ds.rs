@@ -6,7 +6,6 @@ use error::{Error, Result};
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
 use protocol::api::network;
-use std::process::exit;
 
 use db::data_store::DataStoreConn;
 use postgres;

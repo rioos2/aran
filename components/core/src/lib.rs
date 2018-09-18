@@ -21,6 +21,7 @@ extern crate serde_json;
 extern crate sys_info;
 #[cfg(test)]
 extern crate tempdir;
+extern crate dirs;
 extern crate time;
 extern crate toml;
 

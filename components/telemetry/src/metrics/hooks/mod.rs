@@ -8,8 +8,6 @@ mod process;
 mod disk;
 mod network;
 
-use error::Result;
-use protocol::api::node;
 
 //The trait responsible for providing a workload to be executed
 //By default, we say that the startup hook needs to executed.

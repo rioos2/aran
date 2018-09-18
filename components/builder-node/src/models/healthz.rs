@@ -1,13 +1,9 @@
 use super::ninja;
 use super::senseis as db_senseis;
-use chrono::prelude::*;
 use db::data_store::DataStoreConn;
 use error::Result;
-use protocol::api::{node, senseis};
-use protocol::api::base::MetaFields;
+use protocol::api::node;
 use serde_json;
-use std::collections::BTreeMap;
-use std::ops::Div;
 use telemetry::metrics;
 use telemetry::metrics::executer::Executer;
 use telemetry::metrics::hooks::before::AHooks;

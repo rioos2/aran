@@ -1,6 +1,11 @@
 // Copyright 2018 The Rio Advancement Inc
-
+//
+// The import super::sys is needed. But rust complains, it isn't needed. 
+// We need to remove super::sys and test it. If all is good.
+// remove the allow unused_imports
+#[allow(unused_imports)]
 use super::sys;
+
 use get_if_addrs;
 use humansize::{file_size_opts, FileSize};
 use num_cpus;
@@ -52,7 +57,7 @@ impl MemInfo {
         }
     }
 
-    fn get_avail(&self) -> String {
+    fn _get_avail(&self) -> String {
         match (self.avail * TO_BYTES).file_size(self.opts_gi_b()) {
             Ok(res) => res,
             Err(_err) => "".to_string(),
@@ -62,7 +67,7 @@ impl MemInfo {
 
 impl ProbedDisk {
     //
-    fn new(avail: u64, total: u64) -> Self {
+    fn _new(avail: u64, total: u64) -> Self {
         ProbedDisk { avail: avail, total: total }
     }
     //
@@ -81,7 +86,7 @@ impl ProbedDisk {
         }
     }
 
-    fn get_avail(&self) -> String {
+    fn _get_avail(&self) -> String {
         match (self.avail * TO_BYTES).file_size(self.opts_gi_b()) {
             Ok(res) => res,
             Err(_err) => "".to_string(),
@@ -98,7 +103,7 @@ impl ProbedBridge {
         self.name.clone()
     }
 
-    fn get_ip(&self) -> String {
+    fn _get_ip(&self) -> String {
         self.ip.clone()
     }
 }

@@ -1,9 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use super::super::error::{Error, Result};
 use db::data_store::DataStoreConn;
-use protocol;
-use protocol::api::authorize::Policies;
 use protocol::api::base::IdGet;
 use protocol::cache::{ExpanderSender, NewCacheServiceFn, CACHE_PREFIX_POLICY};
 use auth::models::{policy};

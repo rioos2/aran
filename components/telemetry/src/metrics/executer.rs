@@ -1,18 +1,14 @@
+use std::collections::BTreeMap;
+
 use super::*;
 use super::hooks::{consumption, instance, metric};
 use super::hooks::before::{AHooks, MetricServiceFn};
-use super::super::error::{self, Result};
-use chrono::prelude::*;
-use itertools::Itertools;
+use super::super::error::Result;
+
 use metrics::hooks::BeforeMetrics;
 use metrics::prometheus::PrometheusClient;
 use metrics::query::{PrometheusQuery, QueryBuilder};
-use protocol::api::base::MetaFields;
 use protocol::api::node;
-use serde_json;
-use std::collections::BTreeMap;
-use std::ops::Div;
-use std::sync::Arc;
 
 pub struct Executer {
     client: PrometheusClient,

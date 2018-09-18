@@ -5,7 +5,7 @@ use api::Api;
 use chrono::Local;
 use config::Config;
 use db::data_store::DataStoreConn;
-use handlebars::{to_json, Handlebars, Helper, JsonRender, Output, RenderContext, RenderError};
+use handlebars::{to_json, Context, Handlebars, Helper, JsonRender, Output, RenderContext, RenderError};
 use http_gateway::http::controller::*;
 use http_gateway::util::errors::internal_error;
 use http_gateway::util::errors::AranResult;
@@ -132,8 +132,9 @@ impl DiagnosticsApi {
     fn status_symbol_helper(
         h: &Helper,
         _: &Handlebars,
+        _: &Context,
         _: &mut RenderContext,
-        out: &mut Output,
+        out: &mut Output
     ) -> Result<(), RenderError> {
         // get parameter from helper or throw an error
         let param = try!(h.param(0,).ok_or(RenderError::new(

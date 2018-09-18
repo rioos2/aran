@@ -2,7 +2,6 @@
 
 use api::{Api, ApiValidator, ParmsVerifier, QueryValidator, Validator};
 use api::audit::blockchain_api::EventLog;
-use api::events::EventLogger;
 use bodyparser;
 use config::Config;
 use db::data_store::DataStoreConn;

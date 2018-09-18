@@ -7,7 +7,6 @@ use error::{Error, Result};
 
 use protocol::api::authorize::{Policies, PoliciesForLevel};
 use protocol::api::base::IdGet;
-use protocol::api::base::MetaFields;
 use protocol::cache::{InMemoryExpander, PULL_DIRECTLY};
 use super::super::{PolicyOutputList};
 use db::data_store::DataStoreConn;

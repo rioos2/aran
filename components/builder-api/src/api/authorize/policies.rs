@@ -46,8 +46,9 @@ impl PolicyApi {
     //- ObjectMeta: has updated created_at
     //- created_at
     fn apply(&self, req: &mut Request) -> AranResult<Response> {
-        let params = self.verify_id(req)?;
-        let mut unmarshall_body = self.validate::<PolicyMemberInputs>(req.get::<bodyparser::Struct<PolicyMemberInputs>>()?)?;
+        self.verify_id(req)?;
+
+        let unmarshall_body = self.validate::<PolicyMemberInputs>(req.get::<bodyparser::Struct<PolicyMemberInputs>>()?)?;
 
         debug!("{} ✓",
             format!("======= policy members parsed {:?} ", unmarshall_body.clone()),
@@ -63,7 +64,7 @@ impl PolicyApi {
     /// update policy to particular team
     fn update(&self, req: &mut Request) -> AranResult<Response> {
         let params = self.verify_id(req)?;
-        let mut unmarshall_body = self.validate::<PolicyMembersList>(req.get::<bodyparser::Struct<PolicyMembersList>>()?)?;
+        let unmarshall_body = self.validate::<PolicyMembersList>(req.get::<bodyparser::Struct<PolicyMembersList>>()?)?;
 
         debug!("{} ✓",
             format!("======= policy members update parsed {:?} ", unmarshall_body.clone()),

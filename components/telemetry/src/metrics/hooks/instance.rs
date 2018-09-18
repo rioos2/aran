@@ -2,13 +2,13 @@
 
 //! The startup hook is responsible for setting the sensei nodes during the startup.
 
+use std::collections::BTreeMap;
+
 use super::{process, disk, network};
 use super::super::*;
-use error::Result;
 use metrics::hooks::BeforeMetrics;
 use protocol::api::node;
 use serde_json;
-use std::collections::BTreeMap;
 
 
 #[derive(Debug)]

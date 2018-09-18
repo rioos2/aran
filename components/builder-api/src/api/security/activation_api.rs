@@ -13,7 +13,6 @@ use http_gateway::util::errors::AranResult;
 use iron::prelude::*;
 use iron::status;
 use protocol::api::base::IdGet;
-use protocol::api::base::MetaFields;
 use router::Router;
 
 
@@ -51,9 +50,7 @@ impl ActivationApi {
 }
 
 impl Api for ActivationApi {
-    fn wire(&mut self, config: Arc<Config>, router: &mut Router) {
-        let basic = Authenticated::new(&*config);
-
+    fn wire(&mut self, _config: Arc<Config>, router: &mut Router) {
         let _self = self.clone();
         let wizard = move |req: &mut Request| -> AranResult<Response> { _self.wizard(req) };
 

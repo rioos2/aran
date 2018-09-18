@@ -1,8 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
-use super::super::error::{Error, Result};
 use db::data_store::DataStoreConn;
-use protocol;
 use protocol::api::authorize::Teams;
 use protocol::api::base::IdGet;
 use protocol::cache::PULL_DIRECTLY;

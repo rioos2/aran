@@ -5,7 +5,6 @@
 use super::header_extracter::HeaderDecider;
 use super::rendering::*;
 use super::super::util::errors::*;
-use ansi_term::Colour;
 use auth::config::AuthenticationFlowCfg;
 use auth::rbac::account::{AccountsFascade, ServiceAccountsFascade};
 use auth::rbac::teams::TeamsFascade;
@@ -14,7 +13,6 @@ use auth::rbac::authorizer;
 use auth::rbac::license::LicensesFascade;
 use auth::rbac::permissions::Permissions;
 use auth::rioos::AuthenticateDelegate;
-use common::ui;
 use db::data_store::DataStoreConn;
 use entitlement::config::License;
 use iron::Handler;
@@ -259,7 +257,6 @@ impl URLGrabber {
             static ref RE: Regex = Regex::new(r"^(0|[1-9][0-9]*)$").unwrap();
         }
 
-        let system = "rioos";
         let method = &req.method;
         /*let resource = format!(
             "{}.{:?}",
@@ -364,14 +361,14 @@ impl BeforeMiddleware for RBAC {
 
 pub struct EntitlementAct {
     license: LicensesFascade,
-    backend: String,
+    _backend: String,
 }
 
 impl EntitlementAct {
     pub fn new<T: License>(config: &T, fascade: LicensesFascade) -> Self {
         EntitlementAct {
             license: fascade,
-            backend: config.backend().to_string(),
+            _backend: config.backend().to_string(),
         }
     }
 }

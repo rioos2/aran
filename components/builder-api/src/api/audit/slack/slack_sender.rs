@@ -19,8 +19,8 @@ const FAILED_SUBJECT: &'static str = "Kryptonite QRCode sync failure";
 
 pub struct SlackSender {
     config: SlackCfg,
-    user: String,
-    subject: String,
+    _user: String,
+    _subject: String,
     content: String,
     // files: Vec<String>,
 }
@@ -30,8 +30,8 @@ impl SlackSender {
         debug!("« Slack sender: new {} ≈ {}", user, subject);
         SlackSender {
             config: config,
-            user: user,
-            subject: subject,
+            _user: user,
+            _subject: subject,
             content: content,
         }
     }
@@ -75,7 +75,7 @@ impl SlackNotifier {
             config: config,
         }
     }
-    fn getlabel(&self, key: String) -> String {
+    fn _getlabel(&self, key: String) -> String {
         self.envelope
             .get_event()
             .object_meta()
@@ -85,8 +85,8 @@ impl SlackNotifier {
             .clone()
     }
 
-    fn user(&self) -> String {
-        self.getlabel("slack_user".to_string())
+    fn _user(&self) -> String {
+        self._getlabel("slack_user".to_string())
     }
     //
     // fn qr_image(&self) -> Vec<u8> {

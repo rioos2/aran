@@ -177,7 +177,7 @@ impl<'a> ReplicasExpander<'a> {
                 .unwrap_or(&"0 KiB".to_string())
                 .parse::<Size>()
                 .unwrap()
-                .into_bytes(),
+                .value(),
         )
     }
 
@@ -187,8 +187,7 @@ impl<'a> ReplicasExpander<'a> {
                 .get_status()
                 .get_desired_resource()
                 .get("cpu")
-                .unwrap_or(&"0".to_string())
-                .to_string(),
+                .unwrap_or(&"0".to_string()).clone(),
         )
     }
 
@@ -201,7 +200,7 @@ impl<'a> ReplicasExpander<'a> {
                 .unwrap_or(&"0 KiB".to_string())
                 .parse::<Size>()
                 .unwrap()
-                .into_bytes(),
+                .value(),
         )
     }
 

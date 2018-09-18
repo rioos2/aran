@@ -13,7 +13,6 @@ use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::api::storage;
 
 use serde_json;
-use std::process::exit;
 
 pub struct StorageDS;
 

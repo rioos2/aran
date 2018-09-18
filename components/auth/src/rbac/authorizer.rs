@@ -1,8 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
 use super::super::error::{Error, Result};
-use auth::models::policy_members;
-use protocol::api::authorize::PolicyMembers;
 use protocol::api::base::IdGet;
 use protocol::api::base::MetaFields;
 use protocol::api::session;
@@ -96,7 +94,7 @@ impl Authorization {
                 // check account is admin or not
                 // account is admin then return true, because admin has full control
                 // otherwise we check other permissions
-                if (account.get_is_admin()) {
+                if account.get_is_admin() {
                     return Ok(true);
                 }
                 debug!(
@@ -182,7 +180,7 @@ impl Authorization {
     /// this for using auth verification
     /// ex . TrustResource::Machine, TrustResource::Container
     fn collect_permissions(&self, policies: Vec<String>) -> Result<TrustedAccessList> {
-        if (policies.is_empty()) {
+        if policies.is_empty() {
             return Err(Error::PermissionError(
                 format!("{}", "Authorizer get none permissions".to_string()),
             ));

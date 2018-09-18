@@ -13,9 +13,10 @@ pbr = {git = "https://github.com/a8m/pb.git" }
 term = "*"
 toml = { version = "0.4.6", default-features = false }
 uuid = { version = "*", features = ["v4"] }
-serde = "1.0.66"
-serde_json = "1.0.22"
+serde = "1.0.79"
+serde_json = "1.0.27"
 rpassword = "0.0.4"
+walkdir = "2.2.5"
 
 [target.'cfg(windows)'.dependencies]
 kernel32-sys = "*"

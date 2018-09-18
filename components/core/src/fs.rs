@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use error::{Error, Result};
 
 use users;
+use dirs;
 
 use env as renv;
 
@@ -41,7 +42,7 @@ lazy_static! {
                     if *EUID == 0u32 {
                         PathBuf::from(renv::var(FS_ROOT_ENVVAR).unwrap_or(ROOT_PATH.to_string()))
                     } else {
-                       env::home_dir().unwrap()
+                       dirs::home_dir().unwrap()
                     }
                 },
             }

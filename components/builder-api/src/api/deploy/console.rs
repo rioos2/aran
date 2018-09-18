@@ -1,4 +1,4 @@
-use api::{Api, ApiValidator, ParmsVerifier};
+use api::{Api,  ParmsVerifier};
 use config::Config;
 use db::data_store::DataStoreConn;
 use db::error::Error::RecordsNotFound;

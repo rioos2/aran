@@ -1,3 +1,5 @@
+#![allow(non_camel_case_types)]
+
 use rio_core;
 use std::fmt;
 use std::io::Error as IoError;

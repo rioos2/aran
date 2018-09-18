@@ -1,5 +1,6 @@
 // Copyright 2018 The Rio Advancement Inc
 
+#![allow(non_snake_case)]
 
 use api::audit::PushNotifier;
 use api::audit::ledger;

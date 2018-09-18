@@ -1,4 +1,7 @@
-use error::{Error, ResultCode, Result};
+#![allow(non_snake_case)]
+#![allow(non_camel_case_types)]
+#![allow(non_upper_case_globals)]
+
 use std::os::raw::*;
 pub mod licensor;
 pub mod saver;

@@ -17,7 +17,7 @@ use http_gateway::util::errors::{AranResult, AranValidResult};
 use http_gateway::util::errors::{bad_request, conflict_error, internal_error, not_found_error, unauthorized_error};
 use iron::prelude::*;
 use iron::status;
-use protocol::api::base::{MetaFields, IdGet};
+use protocol::api::base::MetaFields;
 use protocol::api::schema::{dispatch, type_meta};
 use protocol::api::session::*;
 use rand;

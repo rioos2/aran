@@ -32,8 +32,6 @@ use http_gateway::util::errors::{bad_request, malformed_body};
 use http_gateway::util::errors::{AranResult, AranValidResult};
 use protocol::api::base::{IdGet, QueryInput, StatusUpdate};
 use auth::util::token_target::TokenTarget;
-use http_gateway::http::rendering::render_json_error;
-use http_gateway::util::errors::{bad_err, not_acceptable_error};
 
 // `Api` trait which defines `RESTful` API.
 pub trait Api {

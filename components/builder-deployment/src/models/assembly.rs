@@ -7,7 +7,7 @@ use chrono::prelude::*;
 use db::data_store::DataStoreConn;
 use error::{Error, Result};
 use postgres;
-use protocol::api::{deploy, node};
+use protocol::api::deploy;
 use protocol::api::base::{IdGet, MetaFields, StatusUpdate};
 use protocol::cache::{InMemoryExpander, PullFromCache, PULL_DIRECTLY, PULL_INVALDATED};
 use serde_json;
