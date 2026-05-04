@@ -2,7 +2,7 @@
 
 Rio/OS is the worlds first private cloud operating sytem.
 
-To learn more about Rio/OS, please visit the [Rio/OS website](http://rio.digital).
+To learn more about Rio/OS, please visit the [Rio/OS website](https://megam.io).
 
 ## Installation
 
@@ -13,7 +13,7 @@ See [BUILDING.md](BUILDING.md) for platform specific info on building Rio/OS API
 
 ## documentation
 
-Please use the online studio to refer [API documentation](https://app.swaggerhub.com/apis/riocorp/rioos/2.0)
+Please use the online studio to refer [API documentation](https://rioos.megam.io/api_reference/index)
 
 ## Useful reference material
 
